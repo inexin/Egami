@@ -1,4 +1,18 @@
 #nullable enable
+Egami.ClearMode
+Egami.ClearMode.None = 0 -> Egami.ClearMode
+Egami.ClearMode.Zero = 1 -> Egami.ClearMode
+Egami.IPixelMemorySource
+Egami.IPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
+Egami.IPixelMemorySource.MaxBlockBytes.get -> int
+Egami.PixelPlane
+Egami.PixelPlane<TPixel>
+Egami.PixelPlane<TPixel>.Dispose() -> void
+Egami.PixelPlane<TPixel>.Height.get -> int
+Egami.PixelPlane<TPixel>.OwnsMemory.get -> bool
+Egami.PixelPlane<TPixel>.Row(int y) -> System.Span<TPixel>
+Egami.PixelPlane<TPixel>.TryGetContiguous(out System.Span<TPixel> pixels) -> bool
+Egami.PixelPlane<TPixel>.Width.get -> int
 Egami.Pixels.AlphaKind
 Egami.Pixels.AlphaKind.None = 0 -> Egami.Pixels.AlphaKind
 Egami.Pixels.AlphaKind.Straight = 1 -> Egami.Pixels.AlphaKind
@@ -116,6 +130,13 @@ Egami.Pixels.RgbaF32.RgbaF32() -> void
 Egami.Pixels.RgbaF32.RgbaF32(float r, float g, float b, float a) -> void
 Egami.Pixels.RgbaF32.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.RgbaF32.ToScaled() -> System.Numerics.Vector4
+Egami.PooledPixelMemorySource
+Egami.PooledPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
+Egami.PooledPixelMemorySource.MaxBlockBytes.get -> int
+Egami.PooledPixelMemorySource.MaxBlockBytes.init -> void
+Egami.PooledPixelMemorySource.PooledPixelMemorySource() -> void
+Egami.PooledPixelMemorySource.PoolThresholdBytes.get -> int
+Egami.PooledPixelMemorySource.PoolThresholdBytes.init -> void
 override Egami.Pixels.Bgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Bgr8.GetHashCode() -> int
 override Egami.Pixels.Bgr8.ToString() -> string!
@@ -144,6 +165,8 @@ override Egami.Pixels.Rgba8.ToString() -> string!
 override Egami.Pixels.RgbaF32.Equals(object? obj) -> bool
 override Egami.Pixels.RgbaF32.GetHashCode() -> int
 override Egami.Pixels.RgbaF32.ToString() -> string!
+static Egami.PixelPlane.Allocate<TPixel>(int width, int height, Egami.IPixelMemorySource! source, Egami.ClearMode clear = Egami.ClearMode.None) -> Egami.PixelPlane<TPixel>!
+static Egami.PixelPlane.Wrap<TPixel>(System.Memory<TPixel> memory, int width, int height, int stride = 0) -> Egami.PixelPlane<TPixel>!
 static Egami.Pixels.Bgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Bgr8
 static Egami.Pixels.Bgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Bgr8
 static Egami.Pixels.Bgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
@@ -211,5 +234,6 @@ static Egami.Pixels.RgbaF32.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pi
 static Egami.Pixels.RgbaF32.Layout.get -> Egami.Pixels.PixelLayoutInfo
 static Egami.Pixels.RgbaF32.operator !=(Egami.Pixels.RgbaF32 left, Egami.Pixels.RgbaF32 right) -> bool
 static Egami.Pixels.RgbaF32.operator ==(Egami.Pixels.RgbaF32 left, Egami.Pixels.RgbaF32 right) -> bool
+static Egami.PooledPixelMemorySource.Shared.get -> Egami.PooledPixelMemorySource!
 ~override Egami.Pixels.PixelLayoutInfo.Equals(object obj) -> bool
 ~override Egami.Pixels.PixelLayoutInfo.ToString() -> string

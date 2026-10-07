@@ -7,6 +7,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- Needed for unmanaged pixel memory (Memory/UnmanagedBlock.cs). Other unsafe code needs a benchmark showing the gain. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Build-time analyzer only; ships nothing. The only package reference allowed in src/ (checked in ci.yml). -->
