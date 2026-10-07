@@ -1,0 +1,44 @@
+namespace Egami.Metadata;
+
+/// <summary>What happens to a frame's area before the next frame is drawn.</summary>
+public enum FrameDisposal
+{
+    /// <summary>Leave the frame in place.</summary>
+    None,
+
+    /// <summary>Clear the frame's area to transparent.</summary>
+    ClearToBackground,
+
+    /// <summary>Restore the area to what it was before the frame was drawn.</summary>
+    RestorePrevious,
+}
+
+/// <summary>How a frame is combined with what is already on the canvas.</summary>
+public enum FrameBlend
+{
+    /// <summary>Replace the pixels.</summary>
+    Source,
+
+    /// <summary>Alpha-blend over the existing pixels.</summary>
+    Over,
+}
+
+/// <summary>Metadata that belongs to one frame.</summary>
+public sealed class FrameMetadata
+{
+    /// <summary>Gets or sets how long the frame is shown in an animation.</summary>
+    public TimeSpan Delay { get; set; }
+
+    /// <summary>Gets or sets what happens to the frame's area before the next frame.</summary>
+    public FrameDisposal Disposal { get; set; }
+
+    /// <summary>Gets or sets how the frame is combined with the canvas.</summary>
+    public FrameBlend Blend { get; set; }
+
+    /// <summary>Returns a copy.</summary>
+    /// <returns>The copy.</returns>
+    public FrameMetadata Copy()
+    {
+        return new FrameMetadata { Delay = Delay, Disposal = Disposal, Blend = Blend };
+    }
+}
