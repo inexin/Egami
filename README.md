@@ -25,6 +25,10 @@ dotnet test Egami.slnx
 | `src/Egami/` | The library, the only shipped project |
 | `tests/Egami.Tests/` | Unit, conformance and round-trip tests (xUnit) |
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Every change is written from specifications and the libraries in [docs/references.md](docs/references.md), and every commit is signed off.
+
 ## License
 
 [MIT](LICENSE)
