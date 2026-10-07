@@ -165,15 +165,16 @@ public sealed class EgamiInput : IDisposable
 
     /// <summary>
     /// Creates the raster a reader decodes into, after checking the size against <see cref="SafetyLimits"/> and the memory budget.
-    /// Pixels are not cleared; the reader must write every pixel.
+    /// Unless <paramref name="clear"/> asks for it, pixels are not cleared and the reader must write every one.
     /// </summary>
     /// <typeparam name="TPixel">The pixel type.</typeparam>
     /// <param name="width">The width from the header.</param>
     /// <param name="height">The height from the header.</param>
+    /// <param name="clear">Whether to zero the pixels first. Readers that write every pixel skip it.</param>
     /// <returns>A one-frame raster. The reader owns it until it returns it, and must dispose it if decoding fails.</returns>
     /// <exception cref="LimitExceededException">The size breaks a safety limit.</exception>
     /// <exception cref="CorruptDataException">The width or height is zero or negative.</exception>
-    public Raster<TPixel> CreateRaster<TPixel>(long width, long height)
+    public Raster<TPixel> CreateRaster<TPixel>(long width, long height, ClearMode clear = ClearMode.None)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (width < 1 || height < 1)
@@ -183,7 +184,7 @@ public sealed class EgamiInput : IDisposable
 
         Limits.CheckFrameSize(width, height);
         _memory.Check(width * height * TPixel.Layout.BytesPerPixel);
-        PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>((int)width, (int)height, _memory);
+        PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>((int)width, (int)height, _memory, clear);
         return new Raster<TPixel>(plane, new RasterMetadata { FormatName = FormatName }, Context);
     }
 
@@ -272,6 +273,6 @@ public sealed class EgamiInput : IDisposable
 
     private CorruptDataException Truncated(long offset)
     {
-        return new CorruptDataException(FormatName, offset, "The data ends unexpectedly.");
+        return new CorruptDataException(FormatName, offset, "The data ends unexpectedly.") { IsTruncation = true };
     }
 }

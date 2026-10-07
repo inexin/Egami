@@ -46,6 +46,9 @@ public sealed class CorruptDataException : EgamiException
 
     /// <summary>Gets the byte offset of the problem in the input, or -1 if unknown.</summary>
     public long Offset { get; }
+
+    /// <summary>Gets a value indicating whether the problem is that the data ended early.</summary>
+    internal bool IsTruncation { get; init; }
 }
 
 /// <summary>Thrown when a <see cref="SafetyLimits"/> limit is exceeded.</summary>
