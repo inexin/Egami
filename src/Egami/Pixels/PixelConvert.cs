@@ -18,6 +18,10 @@ public static class PixelConvert
     /// Converting to a gray type takes the Rec. 709 luma of the color, weighted in linear light; gray colors keep their value.
     /// Converting to a type without alpha drops alpha, and converting from one gives every pixel full alpha.
     /// </para>
+    /// <para>
+    /// Common pairs use SIMD: channel reordering between the 8-bit RGB layouts, 8 to 16 bits and back, and gray to RGB.
+    /// Results are identical with and without SIMD.
+    /// </para>
     /// <para>The spans must not overlap unless both are the same type and start at the same address.</para>
     /// </remarks>
     /// <typeparam name="TFrom">The source pixel type.</typeparam>
@@ -40,6 +44,15 @@ public static class PixelConvert
             return;
         }
 
+        int done = PixelKernels.Convert(source, destination, PixelKernels.HardwareBits);
+        ConvertScalar(source[done..], destination[done..]);
+    }
+
+    /// <summary>Converts with the scalar path only. SIMD kernels must match its output exactly.</summary>
+    internal static void ConvertScalar<TFrom, TTo>(ReadOnlySpan<TFrom> source, Span<TTo> destination)
+        where TFrom : unmanaged, IPixelType<TFrom>
+        where TTo : unmanaged, IPixelType<TTo>
+    {
         if (ConvertsThroughRgba8(TFrom.Layout.ChannelType, TTo.Layout.ChannelType))
         {
             ConvertThroughRgba8(source, destination);
