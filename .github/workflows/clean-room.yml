@@ -1,0 +1,30 @@
+name: Provenance
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  provenance:
+    name: Provenance boxes ticked
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the PR template's provenance section
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Both boxes under "Provenance (required)" in .github/PULL_REQUEST_TEMPLATE.md must be ticked.
+          section="$(printf '%s\n' "$BODY" | tr -d '\r' | awk '/^## Provenance/{f=1;next} /^## /{f=0} f')"
+          if [ -z "$section" ]; then
+            echo "::error::The PR description is missing the 'Provenance (required)' section from the PR template."
+            exit 1
+          fi
+          unticked="$(printf '%s\n' "$section" | grep -cE '^\s*[-*] \[ \]' || true)"
+          ticked="$(printf '%s\n' "$section" | grep -cE '^\s*[-*] \[[xX]\]' || true)"
+          if [ "$unticked" -ne 0 ] || [ "$ticked" -lt 2 ]; then
+            echo "::error::Tick both provenance boxes in the PR description ($ticked ticked, $unticked unticked)."
+            exit 1
+          fi

@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    name: Build and test (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x64, os: ubuntu-latest }
+          - { name: linux-arm64, os: ubuntu-24.04-arm }
+          - { name: windows-x64, os: windows-latest }
+          - { name: macos-arm64, os: macos-latest }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - run: dotnet build Egami.slnx -c Release
+      - run: dotnet test Egami.slnx -c Release --no-build
+
+  simd-fallbacks:
+    # Runs the tests with each level of hardware intrinsics turned off, so every SIMD fallback path is covered.
+    name: Tests without ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: AVX-512, var: DOTNET_EnableAVX512F }
+          - { name: AVX2, var: DOTNET_EnableAVX2 }
+          - { name: hardware intrinsics, var: DOTNET_EnableHWIntrinsic }
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - run: dotnet build Egami.slnx -c Release
+      - run: env "${{ matrix.var }}=0" dotnet test Egami.slnx -c Release --no-build
+
+  checks:
+    name: Format, API and dependency checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Format
+        run: dotnet format Egami.slnx --verify-no-changes
+      # The public API baseline (PublicAPI.*.txt) and the analyzers run as part of this build; warnings are errors.
+      - name: Build (analyzers and public API baseline)
+        run: dotnet build Egami.slnx -c Release
+      - name: No package references in src/
+        run: |
+          # Only build-time analyzers are allowed. Anything else would ship as a dependency.
+          allowed='Microsoft.CodeAnalysis.PublicApiAnalyzers'
+          status=0
+          for proj in $(find src -name '*.csproj'); do
+            for pkg in $(dotnet list "$proj" package --include-transitive --format json \
+                         | jq -r '.projects[].frameworks[]? | (.topLevelPackages // []) + (.transitivePackages // []) | .[] | select(.autoReferenced != "true") | .id'); do
+              if ! grep -qxF "$pkg" <<< "$allowed"; then
+                echo "::error file=$proj::Package reference '$pkg' is not allowed in src/"
+                status=1
+              fi
+            done
+          done
+          exit $status
+
+  aot-smoke:
+    name: Native AOT smoke app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      # Warnings are errors, so any trim or AOT warning fails the publish.
+      - run: dotnet publish tests/Egami.AotSmoke -c Release -r linux-x64 -o artifacts/aot
+      - run: ./artifacts/aot/Egami.AotSmoke

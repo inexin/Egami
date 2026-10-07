@@ -3,6 +3,7 @@
     <Project Path="src/Egami/Egami.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />
   </Folder>
 </Solution>
