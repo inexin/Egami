@@ -16,4 +16,8 @@
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Tests" />
+  </ItemGroup>
+
 </Project>
