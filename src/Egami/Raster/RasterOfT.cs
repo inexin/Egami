@@ -190,6 +190,12 @@ public sealed class Raster<TPixel> : Raster
         return new Raster<TTo>(frames, Metadata.Copy(), Context);
     }
 
+    private protected override void WriteWith(Formats.IFormatWriter writer, Stream output, Formats.WriterOptions options)
+    {
+        ThrowIfDisposed();
+        writer.Write(this, output, options);
+    }
+
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {

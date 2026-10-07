@@ -18,7 +18,7 @@ public delegate void RowAction<TPixel>(Span<TPixel> row, int y)
 /// A raster is not thread-safe. Several threads may read it at once, but nothing may read while another thread writes.
 /// Methods that return a new raster say so in their name (<c>Copy</c>, <c>As</c>); everything else works in place.
 /// </remarks>
-public abstract class Raster : IDisposable
+public abstract partial class Raster : IDisposable
 {
     private protected Raster(int width, int height, RasterMetadata metadata, EgamiContext context)
     {
@@ -46,21 +46,6 @@ public abstract class Raster : IDisposable
     /// <summary>Gets the context the raster allocates from.</summary>
     internal EgamiContext Context { get; }
 
-    /// <summary>
-    /// Creates a raster with one frame, with every byte zero (transparent black for types with alpha),
-    /// allocated from <see cref="EgamiContext.Default"/>.
-    /// </summary>
-    /// <typeparam name="TPixel">The pixel type.</typeparam>
-    /// <param name="width">The width in pixels, at least 1.</param>
-    /// <param name="height">The height in pixels, at least 1.</param>
-    /// <returns>The new raster. The caller must dispose it.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is less than 1.</exception>
-    public static Raster<TPixel> Create<TPixel>(int width, int height)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        return Create<TPixel>(width, height, (EgamiContext?)null);
-    }
-
     /// <summary>Creates a raster with one frame, with every byte zero (transparent black for types with alpha).</summary>
     /// <typeparam name="TPixel">The pixel type.</typeparam>
     /// <param name="width">The width in pixels, at least 1.</param>
@@ -68,24 +53,11 @@ public abstract class Raster : IDisposable
     /// <param name="context">The context to allocate from, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <returns>The new raster. The caller must dispose it.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is less than 1.</exception>
-    public static Raster<TPixel> Create<TPixel>(int width, int height, EgamiContext? context)
+    public static Raster<TPixel> Create<TPixel>(int width, int height, EgamiContext? context = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         context ??= EgamiContext.Default;
         return new Raster<TPixel>(PixelPlane.Allocate<TPixel>(width, height, context.Memory, ClearMode.Zero), new RasterMetadata(), context);
-    }
-
-    /// <summary>Creates a raster with one frame, filled with one color, allocated from <see cref="EgamiContext.Default"/>.</summary>
-    /// <typeparam name="TPixel">The pixel type.</typeparam>
-    /// <param name="width">The width in pixels, at least 1.</param>
-    /// <param name="height">The height in pixels, at least 1.</param>
-    /// <param name="fill">The color of every pixel.</param>
-    /// <returns>The new raster. The caller must dispose it.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is less than 1.</exception>
-    public static Raster<TPixel> Create<TPixel>(int width, int height, TPixel fill)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        return Create(width, height, fill, null);
     }
 
     /// <summary>Creates a raster with one frame, filled with one color.</summary>
@@ -96,7 +68,7 @@ public abstract class Raster : IDisposable
     /// <param name="context">The context to allocate from, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <returns>The new raster. The caller must dispose it.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is less than 1.</exception>
-    public static Raster<TPixel> Create<TPixel>(int width, int height, TPixel fill, EgamiContext? context)
+    public static Raster<TPixel> Create<TPixel>(int width, int height, TPixel fill, EgamiContext? context = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         context ??= EgamiContext.Default;
@@ -147,6 +119,9 @@ public abstract class Raster : IDisposable
     /// <summary>Implements <see cref="As{TTo}"/>.</summary>
     private protected abstract Raster<TTo> ConvertTo<TTo>()
         where TTo : unmanaged, IPixelType<TTo>;
+
+    /// <summary>Calls <paramref name="writer"/> with the typed raster.</summary>
+    private protected abstract void WriteWith(Formats.IFormatWriter writer, Stream output, Formats.WriterOptions options);
 
     /// <summary>Releases the frames' memory.</summary>
     /// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>

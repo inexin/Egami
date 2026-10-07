@@ -388,3 +388,8 @@ dotnet_naming_style.s_camelcase.required_suffix =
 dotnet_naming_style.s_camelcase.word_separator = 
 dotnet_naming_style.s_camelcase.capitalization = camel_case
 
+# Public API analyzer: optional parameters on several overloads are fine before 1.0, and the I/O API relies on them.
+# Revisit before the API is frozen.
+[*.cs]
+dotnet_diagnostic.RS0026.severity = none
+dotnet_diagnostic.RS0027.severity = none
