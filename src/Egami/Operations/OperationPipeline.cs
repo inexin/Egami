@@ -1,3 +1,4 @@
+using Egami.Operations.Geometry;
 using Egami.Pixels;
 
 namespace Egami.Operations;
@@ -51,7 +52,7 @@ internal static class OperationPipeline
                 Size size = plan.Sizes[i];
                 bool sameSize = size.Width == current.Width && size.Height == current.Height;
                 bool mayWriteCurrent = inPlace || ownsCurrent;
-                PixelPlane<TPixel> destination = sameSize && mayWriteCurrent ? current : Allocate<TPixel>(size, memory);
+                PixelPlane<TPixel> destination = sameSize && mayWriteCurrent && plan.Steps[i] is not INeedsNewPlane ? current : Allocate<TPixel>(size, memory);
                 try
                 {
                     plan.Steps[i].Run(new OperationInput<TPixel>(current, destination, context, frameIndex, cancellationToken));
