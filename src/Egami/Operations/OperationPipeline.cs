@@ -1,4 +1,5 @@
 using Egami.Operations.Geometry;
+using Egami.Operations.Resampling;
 using Egami.Pixels;
 
 namespace Egami.Operations;
@@ -16,7 +17,7 @@ internal static class OperationPipeline
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
         build(ops);
-        IReadOnlyList<IRasterOperation> steps = Planner.Plan(ops.Operations);
+        List<IRasterOperation> steps = Planner.Plan(ops.Operations);
         Size[] sizes = new Size[steps.Count];
         for (int i = 0; i < steps.Count; i++)
         {
@@ -52,7 +53,7 @@ internal static class OperationPipeline
                 Size size = plan.Sizes[i];
                 bool sameSize = size.Width == current.Width && size.Height == current.Height;
                 bool mayWriteCurrent = inPlace || ownsCurrent;
-                PixelPlane<TPixel> destination = sameSize && mayWriteCurrent && plan.Steps[i] is not INeedsNewPlane ? current : Allocate<TPixel>(size, memory);
+                PixelPlane<TPixel> destination = sameSize && mayWriteCurrent && !NeedsNewPlane(plan.Steps[i], size) ? current : Allocate<TPixel>(size, memory);
                 try
                 {
                     plan.Steps[i].Run(new OperationInput<TPixel>(current, destination, context, frameIndex, cancellationToken));
@@ -93,6 +94,11 @@ internal static class OperationPipeline
         }
     }
 
+    private static bool NeedsNewPlane(IRasterOperation step, Size size)
+    {
+        return step is INeedsNewPlane needs && needs.NeedsNewPlane(size);
+    }
+
     private static PixelPlane<TPixel> Allocate<TPixel>(Size size, BudgetedMemorySource memory)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -111,14 +117,27 @@ internal static class OperationPipeline
     }
 
     /// <summary>
-    /// Merges steps that can run as one. The skeleton keeps every step as it is; color matrices (task 6) and crop-then-resize
-    /// (task 3) will merge here.
+    /// Merges steps that can run as one: a Crop followed by a resize becomes one resize that reads only the crop rectangle.
+    /// Color matrices will merge here too.
     /// </summary>
     private static class Planner
     {
-        internal static IReadOnlyList<IRasterOperation> Plan(IReadOnlyList<IRasterOperation> steps)
+        internal static List<IRasterOperation> Plan(IReadOnlyList<IRasterOperation> steps)
         {
-            return [.. steps];
+            List<IRasterOperation> planned = new(steps.Count);
+            for (int i = 0; i < steps.Count; i++)
+            {
+                if (steps[i] is CropOperation crop && i + 1 < steps.Count && steps[i + 1] is ResizeOperation resize && !resize.HasCrop)
+                {
+                    planned.Add(resize.WithCrop(crop.Rect));
+                    i++;
+                    continue;
+                }
+
+                planned.Add(steps[i]);
+            }
+
+            return planned;
         }
     }
 }

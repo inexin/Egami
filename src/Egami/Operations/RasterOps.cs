@@ -1,4 +1,5 @@
 using Egami.Operations.Geometry;
+using Egami.Operations.Resampling;
 using Egami.Pixels;
 
 namespace Egami.Operations;
@@ -32,6 +33,68 @@ public sealed class RasterOps
         ArgumentNullException.ThrowIfNull(operation);
         _operations.Add(operation);
         return this;
+    }
+
+    /// <summary>
+    /// Resizes the image to <paramref name="width"/> × <paramref name="height"/>. Pass 0 for one dimension to keep the aspect ratio.
+    /// Resizing to the current size changes nothing. A <see cref="Crop(Rect)"/> just before a resize is merged into it, so only the
+    /// crop rectangle is read.
+    /// </summary>
+    /// <param name="width">The new width, or 0 to derive it from <paramref name="height"/>.</param>
+    /// <param name="height">The new height, or 0 to derive it from <paramref name="width"/>.</param>
+    /// <param name="filter">The resampling kernel. Defaults to <see cref="ResampleFilter.Bicubic"/>.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">A size is negative, or both are 0.</exception>
+    public RasterOps Resize(int width, int height, ResampleFilter filter = ResampleFilter.Bicubic, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(width);
+        ArgumentOutOfRangeException.ThrowIfNegative(height);
+        if (width == 0 && height == 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "At least one of width and height must be greater than 0.");
+        }
+
+        CheckFilter(filter, colorSpace);
+        return Add(new ResizeOperation(ResizeMode.Stretch, width, height, filter, colorSpace));
+    }
+
+    /// <summary>
+    /// Scales the image to fit inside <paramref name="width"/> × <paramref name="height"/> with its aspect ratio kept, so one side
+    /// matches the box and the other is no larger.
+    /// </summary>
+    /// <param name="width">The width of the box, at least 1.</param>
+    /// <param name="height">The height of the box, at least 1.</param>
+    /// <param name="filter">The resampling kernel. Defaults to <see cref="ResampleFilter.Bicubic"/>.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <param name="enlarge">Whether an image smaller than the box is enlarged. Pass <see langword="false"/> for thumbnails.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">A size is less than 1.</exception>
+    public RasterOps Fit(int width, int height, ResampleFilter filter = ResampleFilter.Bicubic, ColorSpace colorSpace = ColorSpace.Encoded, bool enlarge = true)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
+        CheckFilter(filter, colorSpace);
+        return Add(new ResizeOperation(ResizeMode.Fit, width, height, filter, colorSpace, enlarge: enlarge));
+    }
+
+    /// <summary>
+    /// Scales the image to cover <paramref name="width"/> × <paramref name="height"/> with its aspect ratio kept, keeping the part at
+    /// <paramref name="anchor"/>. Only the kept part is read; nothing is cropped first.
+    /// </summary>
+    /// <param name="width">The output width, at least 1.</param>
+    /// <param name="height">The output height, at least 1.</param>
+    /// <param name="anchor">Which part of the image to keep. Defaults to the center.</param>
+    /// <param name="filter">The resampling kernel. Defaults to <see cref="ResampleFilter.Bicubic"/>.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">A size is less than 1.</exception>
+    public RasterOps Fill(int width, int height, Anchor anchor = Anchor.Center, ResampleFilter filter = ResampleFilter.Bicubic, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
+        CheckFilter(filter, colorSpace);
+        return Add(new ResizeOperation(ResizeMode.Fill, width, height, filter, colorSpace, anchor));
     }
 
     /// <summary>Keeps one rectangle of the image. The pixels are copied exactly.</summary>
@@ -119,5 +182,18 @@ public sealed class RasterOps
         }
 
         return Add(new FillColorOperation(color, rect));
+    }
+
+    private static void CheckFilter(ResampleFilter filter, ColorSpace colorSpace)
+    {
+        if (!Enum.IsDefined(filter))
+        {
+            throw new ArgumentOutOfRangeException(nameof(filter), filter, null);
+        }
+
+        if (!Enum.IsDefined(colorSpace))
+        {
+            throw new ArgumentOutOfRangeException(nameof(colorSpace), colorSpace, null);
+        }
     }
 }

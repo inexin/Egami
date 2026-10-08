@@ -4,8 +4,12 @@ using Egami.Pixels;
 
 namespace Egami.Operations.Geometry;
 
-/// <summary>Marks a built-in operation that cannot write into the plane it reads, even when the size stays the same.</summary>
-internal interface INeedsNewPlane;
+/// <summary>A built-in operation that may be unable to write into the plane it reads, even when the size stays the same.</summary>
+internal interface INeedsNewPlane
+{
+    /// <summary>Returns whether the step needs a separate destination plane for an input of <paramref name="input"/>.</summary>
+    bool NeedsNewPlane(Size input);
+}
 
 /// <summary>Helpers shared by the built-in operations.</summary>
 internal static class OperationRows
@@ -32,6 +36,9 @@ internal static class OperationRows
 /// <summary>Keeps one rectangle of the image.</summary>
 internal sealed class CropOperation(Rect rect) : IRasterOperation
 {
+    /// <summary>Gets the rectangle kept.</summary>
+    internal Rect Rect => rect;
+
     public Size OutputSize(Size input)
     {
         if (!new Rect(0, 0, input.Width, input.Height).Contains(rect))
@@ -196,6 +203,11 @@ internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOpe
 internal sealed class RotateQuarterOperation(bool clockwise) : IRasterOperation, INeedsNewPlane
 {
     private const int Tile = GeometryKernels.Tile;
+
+    public bool NeedsNewPlane(Size input)
+    {
+        return true;
+    }
 
     public Size OutputSize(Size input)
     {

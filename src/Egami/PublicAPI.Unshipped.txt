@@ -291,6 +291,9 @@ Egami.Operations.Anchor.Right = 5 -> Egami.Operations.Anchor
 Egami.Operations.Anchor.Top = 2 -> Egami.Operations.Anchor
 Egami.Operations.Anchor.TopLeft = 1 -> Egami.Operations.Anchor
 Egami.Operations.Anchor.TopRight = 3 -> Egami.Operations.Anchor
+Egami.Operations.ColorSpace
+Egami.Operations.ColorSpace.Encoded = 0 -> Egami.Operations.ColorSpace
+Egami.Operations.ColorSpace.Linear = 1 -> Egami.Operations.ColorSpace
 Egami.Operations.IRasterOperation
 Egami.Operations.IRasterOperation.OutputSize(Egami.Size input) -> Egami.Size
 Egami.Operations.IRasterOperation.Run<TPixel>(Egami.Operations.OperationInput<TPixel>! input) -> void
@@ -306,10 +309,20 @@ Egami.Operations.RasterOps
 Egami.Operations.RasterOps.Add(Egami.Operations.IRasterOperation! operation) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(Egami.Rect rect) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(int x, int y, int width, int height) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Fill(int width, int height, Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FillColor(Egami.Pixels.Rgba8 color, Egami.Rect? rect = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded, bool enlarge = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Flip(bool horizontal, bool vertical) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Pad(int width, int height, Egami.Pixels.Rgba8 color = default(Egami.Pixels.Rgba8), Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Resize(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Rotate(float degrees) -> Egami.Operations.RasterOps!
+Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Bicubic = 0 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Bilinear = 3 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Box = 2 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Lanczos3 = 5 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Mitchell = 4 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Nearest = 1 -> Egami.Operations.ResampleFilter
 Egami.Operations.RowBandAction
 Egami.PixelPlane
 Egami.PixelPlane<TPixel>
