@@ -13,8 +13,14 @@ namespace Egami.Operations.Geometry;
 /// sampled with the filter's 2D kernel (the product of the 1D kernel in x and y, unstretched, since rotation keeps scale).
 /// Sampling is premultiplied, and taps that fall outside the source read the background, so the image edges are antialiased.
 /// </summary>
-internal sealed class RotateOperation(double degrees, ResampleFilter filter, Rgba8 background) : IRasterOperation, INeedsNewPlane
+internal sealed class RotateOperation(double degrees, ResampleFilter filter, Rgba8 background) : IRasterOperation, INeedsNewPlane, IUpdatesMetadata
 {
+    public void UpdateMetadata(Metadata.RasterMetadata metadata, Size input, Size output)
+    {
+        ExifUpkeep.Upright(metadata);
+        ExifUpkeep.Dimensions(metadata, output);
+    }
+
     /// <summary>
     /// Kernel weights are tabulated at this many positions per pixel. Rounding a sample position to 1/1024 pixel moves it by at most
     /// 1/2048, far below what 8 bits can show.

@@ -1,3 +1,4 @@
+using Egami.Metadata;
 using Egami.Operations.Color;
 using Egami.Operations.Geometry;
 using Egami.Operations.Resampling;
@@ -11,14 +12,14 @@ namespace Egami.Operations;
 /// </summary>
 internal static class OperationPipeline
 {
-    /// <summary>Records the chain from the caller's lambda and plans it.</summary>
+    /// <summary>Records the chain from the caller's lambda and plans it, for an image with <paramref name="metadata"/>.</summary>
     /// <returns>The planned steps and the size after each one.</returns>
-    internal static Plan Build(Action<RasterOps> build, Size size)
+    internal static Plan Build(Action<RasterOps> build, Size size, RasterMetadata? metadata = null)
     {
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
         build(ops);
-        List<IRasterOperation> steps = Planner.Plan(ops.Steps);
+        List<IRasterOperation> steps = Planner.Plan(ops.Steps, metadata?.Exif?.Orientation ?? ImageOrientation.Normal);
         Size[] sizes = new Size[steps.Count];
         for (int i = 0; i < steps.Count; i++)
         {
@@ -119,6 +120,16 @@ internal static class OperationPipeline
             }
         }
 
+        /// <summary>Applies each step's metadata changes (EXIF orientation, dimensions, thumbnail, density) in order.</summary>
+        internal void UpdateMetadata(RasterMetadata metadata, Size input)
+        {
+            for (int i = 0; i < Steps.Count; i++)
+            {
+                (Steps[i] as IUpdatesMetadata)?.UpdateMetadata(metadata, input, Sizes[i]);
+                input = Sizes[i];
+            }
+        }
+
         /// <summary>Gets the size after the last step, or <paramref name="input"/> for an empty chain.</summary>
         internal Size FinalSize(Size input)
         {
@@ -128,15 +139,36 @@ internal static class OperationPipeline
 
     /// <summary>
     /// Merges steps that can run as one: a Crop followed by a resize becomes one resize that reads only the crop rectangle, and
-    /// adjacent color matrices become one pass, multiplied together where no clamp falls between them.
+    /// adjacent color matrices become one pass, multiplied together where no clamp falls between them. AutoOrient becomes the
+    /// step its orientation needs; followed by a resize, the resize goes first, on the stored image, so the turn runs on the
+    /// small result.
     /// </summary>
     private static class Planner
     {
-        internal static List<IRasterOperation> Plan(IReadOnlyList<IRasterOperation> steps)
+        internal static List<IRasterOperation> Plan(IReadOnlyList<IRasterOperation> steps, ImageOrientation orientation)
         {
             List<IRasterOperation> planned = new(steps.Count);
             for (int i = 0; i < steps.Count; i++)
             {
+                if (steps[i] is AutoOrientOperation)
+                {
+                    IRasterOperation? turn = AutoOrientOperation.Orient(orientation);
+                    if (turn is not null && i + 1 < steps.Count && steps[i + 1] is ResizeOperation next && !next.HasCrop)
+                    {
+                        planned.Add(next.BeforeOrienting(orientation));
+                        planned.Add(turn);
+                        i++;
+                    }
+                    else if (turn is not null)
+                    {
+                        planned.Add(turn);
+                    }
+
+                    // Once turned, the image is upright for any later AutoOrient.
+                    orientation = ImageOrientation.Normal;
+                    continue;
+                }
+
                 if (steps[i] is CropOperation crop && i + 1 < steps.Count && steps[i + 1] is ResizeOperation resize && !resize.HasCrop)
                 {
                     planned.Add(resize.WithCrop(crop.Rect));

@@ -181,11 +181,23 @@ public sealed class RasterOps
         return turn switch
         {
             0f => this,
-            90f => Add(new RotateQuarterOperation(clockwise: true)),
+            90f => Add(RotateQuarterOperation.Clockwise),
             180f => Add(new FlipOperation(horizontal: true, vertical: true)),
-            270f => Add(new RotateQuarterOperation(clockwise: false)),
+            270f => Add(RotateQuarterOperation.CounterClockwise),
             _ => Add(new RotateOperation(turn, filter, background)),
         };
+    }
+
+    /// <summary>
+    /// Turns the image the way its EXIF orientation says, so it looks as the camera meant, and sets the orientation to Normal.
+    /// Each orientation is one exact pass (a flip, a quarter turn or a transpose); an image without EXIF, or already upright, is
+    /// left alone. Followed by <see cref="Resize"/>, <see cref="Fit"/> or <see cref="Fill"/>, the resize runs first on the
+    /// stored image and the small result is turned, which matches the other order to within rounding.
+    /// </summary>
+    /// <returns>This builder.</returns>
+    public RasterOps AutoOrient()
+    {
+        return Add(AutoOrientOperation.Instance);
     }
 
     /// <summary>Sets every pixel in <paramref name="rect"/>, or the whole image, to one color. Alpha is replaced, not blended.</summary>

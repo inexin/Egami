@@ -93,7 +93,7 @@ public sealed class Raster<TPixel> : Raster
     public new void Apply(Action<RasterOps> build, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        using OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
+        using OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height), Metadata);
         if (plan.Steps.Count == 0)
         {
             return;
@@ -112,6 +112,7 @@ public sealed class Raster<TPixel> : Raster
             }
         }
 
+        plan.UpdateMetadata(Metadata, new Size(Width, Height));
         Size size = plan.FinalSize(new Size(Width, Height));
         Width = size.Width;
         Height = size.Height;
@@ -130,7 +131,7 @@ public sealed class Raster<TPixel> : Raster
     public new Raster<TPixel> Derive(Action<RasterOps> build, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        using OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
+        using OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height), Metadata);
         if (plan.Steps.Count == 0)
         {
             return Copy();
@@ -156,7 +157,9 @@ public sealed class Raster<TPixel> : Raster
             throw;
         }
 
-        return new Raster<TPixel>(frames, Metadata.Copy(), Context);
+        RasterMetadata metadata = Metadata.Copy();
+        plan.UpdateMetadata(metadata, new Size(Width, Height));
+        return new Raster<TPixel>(frames, metadata, Context);
     }
 
     private protected override void ApplyCore(Action<RasterOps> build, CancellationToken cancellationToken)

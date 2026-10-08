@@ -484,6 +484,7 @@ Egami.Operations.OperationInput<TPixel>.IsInPlace.get -> bool
 Egami.Operations.OperationInput<TPixel>.Source.get -> Egami.PixelPlane<TPixel>!
 Egami.Operations.RasterOps
 Egami.Operations.RasterOps.Add(Egami.Operations.IRasterOperation! operation) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.AutoOrient() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Blur(float sigma, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.BoxBlur(int radius) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Brightness(float amount) -> Egami.Operations.RasterOps!

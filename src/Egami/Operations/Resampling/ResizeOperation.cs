@@ -25,14 +25,62 @@ internal enum ResizeMode
 /// </summary>
 internal sealed class ResizeOperation(
     ResizeMode mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null)
-    : IRasterOperation, INeedsNewPlane, IHoldsBuffers
+    : IRasterOperation, INeedsNewPlane, IHoldsBuffers, Geometry.IUpdatesMetadata
 {
     private Plan? _plan;
+
+    public void UpdateMetadata(Metadata.RasterMetadata metadata, Size input, Size output)
+    {
+        Geometry.ExifUpkeep.Dimensions(metadata, output);
+        Geometry.ExifUpkeep.DropThumbnail(metadata);
+    }
+
+    /// <summary>
+    /// Returns the resize to run on an image stored with <paramref name="orientation"/> before it is turned upright, so that
+    /// turning the result equals resizing the upright image: the target swaps for the orientations that swap the size, and
+    /// <see cref="Anchor"/> moves to where it lands in the stored image.
+    /// </summary>
+    internal ResizeOperation BeforeOrienting(Metadata.ImageOrientation orientation)
+    {
+        bool swaps = orientation >= Metadata.ImageOrientation.Transpose;
+        return new ResizeOperation(mode, swaps ? height : width, swaps ? width : height, filter, colorSpace, StoredAnchor(anchor, orientation), enlarge, crop);
+    }
 
     /// <summary>Returns this resize reading only <paramref name="rect"/> of its input, as a Crop before it would.</summary>
     internal ResizeOperation WithCrop(Rect rect)
     {
         return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, rect);
+    }
+
+    /// <summary>Maps an anchor in the upright image to the same point of the stored image.</summary>
+    private static Anchor StoredAnchor(Anchor anchor, Metadata.ImageOrientation orientation)
+    {
+        // Anchor as a point in [0, 1]², then through the inverse of the turn the orientation asks for.
+        int u = anchor switch { Anchor.TopLeft or Anchor.Left or Anchor.BottomLeft => 0, Anchor.TopRight or Anchor.Right or Anchor.BottomRight => 2, _ => 1 };
+        int v = anchor switch { Anchor.TopLeft or Anchor.Top or Anchor.TopRight => 0, Anchor.BottomLeft or Anchor.Bottom or Anchor.BottomRight => 2, _ => 1 };
+        (int su, int sv) = orientation switch
+        {
+            Metadata.ImageOrientation.FlipHorizontal => (2 - u, v),
+            Metadata.ImageOrientation.Rotate180 => (2 - u, 2 - v),
+            Metadata.ImageOrientation.FlipVertical => (u, 2 - v),
+            Metadata.ImageOrientation.Transpose => (v, u),
+            Metadata.ImageOrientation.Rotate90 => (v, 2 - u),
+            Metadata.ImageOrientation.Transverse => (2 - v, 2 - u),
+            Metadata.ImageOrientation.Rotate270 => (2 - v, u),
+            _ => (u, v),
+        };
+        return (su, sv) switch
+        {
+            (0, 0) => Anchor.TopLeft,
+            (1, 0) => Anchor.Top,
+            (2, 0) => Anchor.TopRight,
+            (0, 1) => Anchor.Left,
+            (2, 1) => Anchor.Right,
+            (0, 2) => Anchor.BottomLeft,
+            (1, 2) => Anchor.Bottom,
+            (2, 2) => Anchor.BottomRight,
+            _ => Anchor.Center,
+        };
     }
 
     /// <summary>Gets whether this resize already reads a sub-rectangle chosen by a merged Crop.</summary>
