@@ -128,7 +128,7 @@ internal static class OperationPipeline
 
     /// <summary>
     /// Merges steps that can run as one: a Crop followed by a resize becomes one resize that reads only the crop rectangle, and
-    /// adjacent color matrices multiply into one.
+    /// adjacent color matrices become one pass, multiplied together where no clamp falls between them.
     /// </summary>
     private static class Planner
     {
@@ -146,7 +146,7 @@ internal static class OperationPipeline
 
                 if (steps[i] is ColorMatrixOperation color && planned.Count > 0 && planned[^1] is ColorMatrixOperation previous)
                 {
-                    planned[^1] = new ColorMatrixOperation(previous.Matrix.Then(color.Matrix));
+                    planned[^1] = previous.Then(color);
                     continue;
                 }
 

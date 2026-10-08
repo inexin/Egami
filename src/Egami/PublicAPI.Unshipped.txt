@@ -313,6 +313,10 @@ Egami.Operations.EdgeMode.Clamp = 0 -> Egami.Operations.EdgeMode
 Egami.Operations.EdgeMode.Mirror = 1 -> Egami.Operations.EdgeMode
 Egami.Operations.EdgeMode.Transparent = 3 -> Egami.Operations.EdgeMode
 Egami.Operations.EdgeMode.Wrap = 2 -> Egami.Operations.EdgeMode
+Egami.Operations.FlipMode
+Egami.Operations.FlipMode.Both = 2 -> Egami.Operations.FlipMode
+Egami.Operations.FlipMode.Horizontal = 0 -> Egami.Operations.FlipMode
+Egami.Operations.FlipMode.Vertical = 1 -> Egami.Operations.FlipMode
 Egami.Operations.GrayscaleMode
 Egami.Operations.GrayscaleMode.Rec601 = 1 -> Egami.Operations.GrayscaleMode
 Egami.Operations.GrayscaleMode.Rec709 = 0 -> Egami.Operations.GrayscaleMode
@@ -341,7 +345,7 @@ Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, 
 Egami.Operations.RasterOps.Fill(int width, int height, Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FillColor(Egami.Pixels.Rgba8 color, Egami.Rect? rect = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded, bool enlarge = true) -> Egami.Operations.RasterOps!
-Egami.Operations.RasterOps.Flip(bool horizontal, bool vertical) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Flip(Egami.Operations.FlipMode mode) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Grayscale(Egami.Operations.GrayscaleMode mode = Egami.Operations.GrayscaleMode.Rec709, float amount = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.HueRotate(float degrees) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Invert(float amount = 1) -> Egami.Operations.RasterOps!

@@ -140,13 +140,19 @@ public sealed class RasterOps
         return Add(new PadOperation(width, height, color, anchor));
     }
 
-    /// <summary>Mirrors the image. Flipping both ways is the same as rotating by 180°.</summary>
-    /// <param name="horizontal">Whether to mirror left to right.</param>
-    /// <param name="vertical">Whether to mirror top to bottom.</param>
+    /// <summary>Mirrors the image. The pixels are moved exactly.</summary>
+    /// <param name="mode">Which way to mirror. <see cref="FlipMode.Both"/> is the same as rotating by 180°.</param>
     /// <returns>This builder.</returns>
-    public RasterOps Flip(bool horizontal, bool vertical)
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode"/> is not defined.</exception>
+    public RasterOps Flip(FlipMode mode)
     {
-        return horizontal || vertical ? Add(new FlipOperation(horizontal, vertical)) : this;
+        return mode switch
+        {
+            FlipMode.Horizontal => Add(new FlipOperation(horizontal: true, vertical: false)),
+            FlipMode.Vertical => Add(new FlipOperation(horizontal: false, vertical: true)),
+            FlipMode.Both => Add(new FlipOperation(horizontal: true, vertical: true)),
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
+        };
     }
 
     /// <summary>

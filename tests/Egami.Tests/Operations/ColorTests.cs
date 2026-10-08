@@ -69,6 +69,14 @@ public class ColorTests
         using OperationPipeline.Plan plan = OperationPipeline.Build(Chain, new Size(4, 4));
         Assert.Single(plan.Steps);
 
+        // Brightness, Saturation, HueRotate and Sepia can each push values past 1, so the chain clamps after them; Contrast 0.9
+        // cannot, so it fuses into Saturation.
+        Assert.Equal(5, ((ColorMatrixOperation)plan.Steps[0]).Stages.Count);
+        Assert.False(ColorMatrixOperation.CanClip(ColorMatrix.Contrast(0.9f)));
+        Assert.True(ColorMatrixOperation.CanClip(ColorMatrix.Contrast(1.1f)));
+        Assert.False(ColorMatrixOperation.CanClip(ColorMatrix.Grayscale()));
+        Assert.True(ColorMatrixOperation.CanClip(ColorMatrix.Sepia(0.5f)));
+
         // Mid-range values, so no step clips on its own and fusing changes only rounding.
         using Raster<Rgba8> raster = Noise(97, 31, low: 80, high: 170);
         using Raster<Rgba8> fused = raster.Derive(Chain, Ct);
@@ -96,6 +104,15 @@ public class ColorTests
         Vector4 actual = Apply(ab, v);
         Assert.True(Vector4.Distance(expected, actual) < 1e-6f);
         Assert.Equal(ColorMatrix.Identity, ColorMatrix.Identity.Then(ColorMatrix.Identity));
+        Assert.Equal(ColorMatrix.Identity, default);
+        Assert.Equal(ColorMatrix.Identity.GetHashCode(), default(ColorMatrix).GetHashCode());
+        Assert.Equal(1f, default(ColorMatrix)[2, 2]);
+        Assert.Equal(0.001f, new ColorMatrix([0.001f, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0])[0, 0]);
+        using (Raster<Rgba8> unchanged = Raster.Create(2, 2, new Rgba8(10, 20, 30, 40)))
+        {
+            unchanged.Apply(ops => ops.ColorMatrix(default), Ct);
+            Assert.Equal(new Rgba8(10, 20, 30, 40), unchanged.GetPixel(1, 1));
+        }
         Assert.Equal(a, a.Then(ColorMatrix.Identity));
         Assert.True(ColorMatrix.Brightness(2).Then(ColorMatrix.Opacity(0.5f)).IsPerChannel);
         Assert.False(ColorMatrix.Saturation(0.5f).IsPerChannel);
@@ -111,13 +128,25 @@ public class ColorTests
         random.NextBytes(bytes);
         foreach (ColorMatrix m in new[] { ColorMatrix.Brightness(1.3f).Then(ColorMatrix.Invert(0.3f)).Then(ColorMatrix.Opacity(0.6f)), ColorMatrix.HueRotate(77), ColorMatrix.Sepia() })
         {
-            Vector4[] columns = ColorKernels.MemoryOrderColumns(m, [0, 1, 2, 3]);
+            Vector4[][] columns = [ColorKernels.MemoryOrderColumns(m, [0, 1, 2, 3]), ColorKernels.MemoryOrderColumns(ColorMatrix.Contrast(0.9f), [0, 1, 2, 3])];
             byte[] scalar = new byte[bytes.Length];
             byte[] fast = new byte[bytes.Length];
             ColorKernels.Apply4Scalar(bytes, scalar, columns);
             ColorKernels.Apply4(bytes, fast, columns);
             Assert.Equal(scalar, fast);
-            if (m.IsPerChannel)
+            // Leading per-channel stages as float tables, then the matrix: vector and scalar paths agree too.
+            Vector4[] brightness = ColorKernels.MemoryOrderColumns(ColorMatrix.Brightness(1.3f), [0, 1, 2, 3]);
+            float[] prefix = ColorKernels.BuildFloatTables([brightness]);
+            byte[] prefixScalar = new byte[bytes.Length];
+            byte[] prefixFast = new byte[bytes.Length];
+            ColorKernels.Apply4Scalar(bytes, prefixScalar, columns, prefix);
+            ColorKernels.Apply4(bytes, prefixFast, columns, prefix);
+            Assert.Equal(prefixScalar, prefixFast);
+            byte[] staged = new byte[bytes.Length];
+            ColorKernels.Apply4Scalar(bytes, staged, [brightness, .. columns]);
+            Assert.Equal(staged, prefixFast);
+
+            if (m.IsPerChannel && ColorMatrix.Contrast(0.9f).IsPerChannel)
             {
                 byte[] table = new byte[bytes.Length];
                 ColorKernels.ApplyTables(bytes, table, ColorKernels.BuildTables(columns, 4), 4);

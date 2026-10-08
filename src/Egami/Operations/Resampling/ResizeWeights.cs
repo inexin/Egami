@@ -259,7 +259,7 @@ internal sealed class ResizeWeights : IDisposable
     /// <summary>
     /// Builds the weights for resizing the source span starting at <paramref name="offset"/> and <paramref name="extent"/> pixels long
     /// (both may be fractional) to <paramref name="size"/> output pixels. Taps outside <paramref name="low"/>..<paramref name="high"/>
-    /// are folded onto the nearest edge pixel.
+    /// are dropped and the rest renormalized, as ImageMagick and the reference library do, so edge pixels are not weighted twice.
     /// </summary>
     internal static ResizeWeights Build(ResampleFilter filter, int size, double offset, double extent, int low, int high)
     {
@@ -295,10 +295,10 @@ internal sealed class ResizeWeights : IDisposable
             int n = end - start + 1;
             buffer.Clear();
             double sum = 0;
-            for (int j = left; j <= right; j++)
+            for (int j = start; j <= end; j++)
             {
                 double w = ResampleKernels.Evaluate(filter, (j - center) / stretch);
-                buffer[Math.Clamp(j, low, high) - start] += w;
+                buffer[j - start] = w;
                 sum += w;
             }
 

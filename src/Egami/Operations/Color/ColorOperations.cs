@@ -1,8 +1,10 @@
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Operations.Geometry;
 using Egami.Pixels;
@@ -10,58 +12,106 @@ using Egami.Pixels;
 namespace Egami.Operations.Color;
 
 /// <summary>
-/// Applies a 4 × 5 color matrix to straight RGBA and clamps to 0..1. The planner multiplies adjacent matrices into one, so a chain
-/// of adjustments is one pass. Per-channel matrices on 8-bit byte-per-channel types run as lookup tables.
+/// Applies a chain of 4 × 5 color matrices to straight RGBA, clamping to 0..1 after each stage, in one pass. The planner multiplies
+/// adjacent matrices into one stage unless the earlier one can push a value out of 0..1, where the chain clamps as running the
+/// steps one by one would. Chains of per-channel stages on 8-bit byte-per-channel types run as lookup tables.
 /// </summary>
-internal sealed class ColorMatrixOperation(ColorMatrix matrix) : IRasterOperation
+internal sealed class ColorMatrixOperation : IRasterOperation
 {
-    /// <summary>Gets the matrix.</summary>
-    internal ColorMatrix Matrix => matrix;
+    private readonly ColorMatrix[] _stages;
+    private readonly int _count;
+
+    internal ColorMatrixOperation(ColorMatrix matrix)
+    {
+        _stages = [matrix];
+        _count = 1;
+    }
+
+    private ColorMatrixOperation(ColorMatrix[] stages, int count)
+    {
+        _stages = stages;
+        _count = count;
+    }
+
+    /// <summary>Gets the stages, each clamped after it runs.</summary>
+    internal IReadOnlyList<ColorMatrix> Stages => new ArraySegment<ColorMatrix>(_stages, 0, _count);
 
     public Size OutputSize(Size input)
     {
         return input;
     }
 
+    /// <summary>
+    /// Returns whether a matrix can map a color inside 0..1 to one outside. A matrix is affine, so it maps the unit cube onto the
+    /// convex hull of its 16 corners' images: checking the corners decides it.
+    /// </summary>
+    internal static bool CanClip(ColorMatrix matrix)
+    {
+        for (int corner = 0; corner < 16; corner++)
+        {
+            for (int row = 0; row < 4; row++)
+            {
+                float v = matrix[row, 4];
+                for (int c = 0; c < 4; c++)
+                {
+                    v += ((corner >> c) & 1) * matrix[row, c];
+                }
+
+                if (v < -1e-6f || v > 1 + 1e-6f)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Returns this chain followed by <paramref name="next"/>, fusing across stages that cannot clip.</summary>
+    internal ColorMatrixOperation Then(ColorMatrixOperation next)
+    {
+        // One array, sized for the worst case; merged stages leave its end unused rather than costing a second copy.
+        ColorMatrix[] stages = new ColorMatrix[_count + next._count];
+        Array.Copy(_stages, stages, _count);
+        int count = _count;
+        for (int i = 0; i < next._count; i++)
+        {
+            if (!CanClip(stages[count - 1]))
+            {
+                stages[count - 1] = stages[count - 1].Then(next._stages[i]);
+            }
+            else
+            {
+                stages[count++] = next._stages[i];
+            }
+        }
+
+        return new ColorMatrixOperation(stages, count);
+    }
+
     public void Run<TPixel>(OperationInput<TPixel> input)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        if (matrix == ColorMatrix.Identity)
+        bool identity = true;
+        for (int i = 0; i < _count; i++)
+        {
+            identity &= _stages[i] == ColorMatrix.Identity;
+        }
+
+        if (identity)
         {
             OperationRows.CopyIfSeparate(input);
             return;
         }
 
-        ReadOnlySpan<int> order = ByteChannelOrder<TPixel>();
-        if (!order.IsEmpty)
+        int[]? map = ByteChannelOrder<TPixel>();
+        if (map is not null)
         {
-            int[] map = order.ToArray();
-            Vector4[] columns = ColorKernels.MemoryOrderColumns(matrix, map);
-            byte[]? tables = matrix.IsPerChannel ? ColorKernels.BuildTables(columns, map.Length) : null;
-            input.ForEachBand((start, end) =>
-            {
-                for (int y = start; y < end; y++)
-                {
-                    ReadOnlySpan<byte> source = MemoryMarshal.AsBytes(input.Source.Row(y));
-                    Span<byte> destination = MemoryMarshal.AsBytes(input.Destination.Row(y));
-                    if (tables is not null)
-                    {
-                        ColorKernels.ApplyTables(source, destination, tables, map.Length);
-                    }
-                    else if (map.Length == 4)
-                    {
-                        ColorKernels.Apply4(source, destination, columns);
-                    }
-                    else
-                    {
-                        ColorKernels.Apply3Scalar(source, destination, columns);
-                    }
-                }
-            });
+            RunBytes(input, map);
             return;
         }
 
-        Vector4[] rgbaColumns = ColorKernels.MemoryOrderColumns(matrix, [0, 1, 2, 3]);
+        Vector4[][] rgbaStages = Columns(RgbaOrder);
         if (typeof(TPixel) == typeof(RgbaF32))
         {
             input.ForEachBand((start, end) =>
@@ -69,7 +119,7 @@ internal sealed class ColorMatrixOperation(ColorMatrix matrix) : IRasterOperatio
                 for (int y = start; y < end; y++)
                 {
                     ColorKernels.ApplyFloat(
-                        MemoryMarshal.Cast<TPixel, Vector4>(input.Source.Row(y)), MemoryMarshal.Cast<TPixel, Vector4>(input.Destination.Row(y)), rgbaColumns);
+                        MemoryMarshal.Cast<TPixel, Vector4>(input.Source.Row(y)), MemoryMarshal.Cast<TPixel, Vector4>(input.Destination.Row(y)), rgbaStages);
                 }
             });
             return;
@@ -86,7 +136,7 @@ internal sealed class ColorMatrixOperation(ColorMatrix matrix) : IRasterOperatio
                 {
                     PixelConvert.Convert<TPixel, RgbaF32>(input.Source.Row(y), row);
                     Span<Vector4> pixels = MemoryMarshal.Cast<RgbaF32, Vector4>(row);
-                    ColorKernels.ApplyFloat(pixels, pixels, rgbaColumns);
+                    ColorKernels.ApplyFloat(pixels, pixels, rgbaStages);
                     PixelConvert.Convert<RgbaF32, TPixel>(row, input.Destination.Row(y));
                 }
             }
@@ -97,24 +147,111 @@ internal sealed class ColorMatrixOperation(ColorMatrix matrix) : IRasterOperatio
         });
     }
 
+    private void RunBytes<TPixel>(OperationInput<TPixel> input, int[] map)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        int channels = map.Length;
+        Vector4[][] stages = Columns(channels == 4 ? map : map == RgbOrder ? RgbaOrder : BgrWithAlpha);
+        bool allPerChannel = true;
+        int prefix = -1;
+        for (int i = 0; i < _count; i++)
+        {
+            if (!_stages[i].IsPerChannel)
+            {
+                allPerChannel = false;
+                prefix = prefix < 0 ? i : prefix;
+            }
+        }
+
+        // A chain of per-channel stages is four byte tables. Otherwise its leading per-channel stages (Brightness, Contrast, Invert,
+        // Opacity) become float tables that replace the byte-to-float conversion, and only the stages after them run as matrices.
+        // Both come from the pool: they are the only sizable allocations of a call.
+        byte[]? tables = allPerChannel ? ArrayPool<byte>.Shared.Rent(channels * 256) : null;
+        float[]? prefixTables = !allPerChannel && prefix > 0 && channels == 4 ? ArrayPool<float>.Shared.Rent(4 * 256) : null;
+        try
+        {
+            if (tables is not null)
+            {
+                ColorKernels.BuildTables(stages, channels, tables);
+            }
+
+            if (prefixTables is not null)
+            {
+                ColorKernels.BuildFloatTables(stages.AsSpan(0, prefix), prefixTables);
+            }
+
+            Vector4[][] all = stages;
+            int skip = prefixTables is null ? 0 : prefix;
+            input.ForEachBand((start, end) =>
+            {
+                for (int y = start; y < end; y++)
+                {
+                    ReadOnlySpan<byte> source = MemoryMarshal.AsBytes(input.Source.Row(y));
+                    Span<byte> destination = MemoryMarshal.AsBytes(input.Destination.Row(y));
+                    if (tables is not null)
+                    {
+                        ColorKernels.ApplyTables(source, destination, tables, channels);
+                    }
+                    else if (channels == 4)
+                    {
+                        ColorKernels.Apply4(source, destination, all.AsSpan(skip), prefixTables);
+                    }
+                    else
+                    {
+                        ColorKernels.Apply3Scalar(source, destination, stages);
+                    }
+                }
+            });
+        }
+        finally
+        {
+            if (tables is not null)
+            {
+                ArrayPool<byte>.Shared.Return(tables);
+            }
+
+            if (prefixTables is not null)
+            {
+                ArrayPool<float>.Shared.Return(prefixTables);
+            }
+        }
+    }
+
+    private Vector4[][] Columns(int[] map)
+    {
+        Vector4[][] columns = new Vector4[_count][];
+        for (int i = 0; i < columns.Length; i++)
+        {
+            columns[i] = ColorKernels.MemoryOrderColumns(_stages[i], map);
+        }
+
+        return columns;
+    }
+
+    private static readonly int[] RgbaOrder = [0, 1, 2, 3];
+    private static readonly int[] BgraOrder = [2, 1, 0, 3];
+    private static readonly int[] RgbOrder = [0, 1, 2];
+    private static readonly int[] BgrOrder = [2, 1, 0];
+    private static readonly int[] BgrWithAlpha = [2, 1, 0, 3];
+
     /// <summary>
-    /// Gets, for types that store one byte per channel, which RGBA channel each memory byte holds; empty for other types.
+    /// Gets, for types that store one byte per channel, which RGBA channel each memory byte holds; null for other types.
     /// </summary>
-    private static ReadOnlySpan<int> ByteChannelOrder<TPixel>()
+    private static int[]? ByteChannelOrder<TPixel>()
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (TPixel.Layout.ChannelType != PixelChannelType.Unorm8)
         {
-            return [];
+            return null;
         }
 
         return TPixel.Layout.ChannelOrder switch
         {
-            PixelChannelOrder.Rgba => [0, 1, 2, 3],
-            PixelChannelOrder.Bgra => [2, 1, 0, 3],
-            PixelChannelOrder.Rgb => [0, 1, 2],
-            PixelChannelOrder.Bgr => [2, 1, 0],
-            _ => [],
+            PixelChannelOrder.Rgba => RgbaOrder,
+            PixelChannelOrder.Bgra => BgraOrder,
+            PixelChannelOrder.Rgb => RgbOrder,
+            PixelChannelOrder.Bgr => BgrOrder,
+            _ => null,
         };
     }
 }
@@ -169,13 +306,16 @@ internal sealed class LinearGrayscaleOperation(GrayscaleMode mode, float amount)
     }
 }
 
-/// <summary>The inner loops of the color matrix. Vector paths add in the same order as the scalar references.</summary>
+/// <summary>
+/// The inner loops of the color matrix. Each stage is five column vectors; every stage's result is clamped to 0..1 before the next
+/// one reads it. Vector paths add in the same order as the scalar references.
+/// </summary>
 internal static class ColorKernels
 {
     /// <summary>
     /// Returns the matrix as five column vectors in memory channel order: columns 0..3 weigh memory channels 0..3, column 4 is the
-    /// offset. <paramref name="map"/> gives the RGBA channel of each memory channel; with three channels alpha reads as 1, so its
-    /// weight folds into the offset.
+    /// offset. <paramref name="map"/> gives the RGBA channel of each of the four lanes; three-byte types pass alpha as lane 3,
+    /// which reads 1.
     /// </summary>
     internal static Vector4[] MemoryOrderColumns(ColorMatrix matrix, int[] map)
     {
@@ -185,10 +325,7 @@ internal static class ColorKernels
         {
             for (int row = 0; row < 4; row++)
             {
-                int outChannel = row < map.Length ? map[row] : 3;
-                int inChannel = col == 4 ? 4 : col < map.Length ? map[col] : -1;
-                float offset = col == 4 && map.Length == 3 ? matrix[outChannel, 3] : 0f;
-                c[row] = inChannel < 0 ? 0f : matrix[outChannel, inChannel] + offset;
+                c[row] = matrix[map[row], col == 4 ? 4 : map[col]];
             }
 
             columns[col] = new Vector4(c[0], c[1], c[2], c[3]);
@@ -197,17 +334,22 @@ internal static class ColorKernels
         return columns;
     }
 
-    /// <summary>Builds one 256-entry table per memory channel for a per-channel matrix.</summary>
-    internal static byte[] BuildTables(Vector4[] columns, int channels)
+    /// <summary>Builds one 256-entry table per memory channel for a chain of per-channel stages.</summary>
+    internal static byte[] BuildTables(ReadOnlySpan<Vector4[]> stages, int channels, byte[]? tables = null)
     {
-        byte[] tables = new byte[channels * 256];
+        tables ??= new byte[channels * 256];
         for (int ch = 0; ch < channels; ch++)
         {
             for (int v = 0; v < 256; v++)
             {
                 // The same arithmetic as the matrix path, with the zero weights left out.
                 float x = v * (1f / 255f);
-                tables[(ch * 256) + v] = ToByte((x * columns[ch][ch]) + columns[4][ch]);
+                foreach (Vector4[] columns in stages)
+                {
+                    x = Clamp01((x * columns[ch][ch]) + columns[4][ch]);
+                }
+
+                tables[(ch * 256) + v] = (byte)(int)((x * 255f) + 0.5f);
             }
         }
 
@@ -217,18 +359,26 @@ internal static class ColorKernels
     /// <summary>Maps every byte through its channel's table.</summary>
     internal static void ApplyTables(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<byte> tables, int channels)
     {
+        if (destination.Length < source.Length || tables.Length < channels * 256)
+        {
+            throw new ArgumentException("The destination or tables are too short.");
+        }
+
+        ref byte t = ref MemoryMarshal.GetReference(tables);
         if (channels == 4)
         {
-            ReadOnlySpan<byte> t0 = tables[..256];
-            ReadOnlySpan<byte> t1 = tables.Slice(256, 256);
-            ReadOnlySpan<byte> t2 = tables.Slice(512, 256);
-            ReadOnlySpan<byte> t3 = tables.Slice(768, 256);
-            for (int i = 0; i + 3 < source.Length; i += 4)
+            // A whole pixel per step: four lookups, one 32-bit store, no bounds checks (a byte index never leaves its table).
+            ReadOnlySpan<uint> src = MemoryMarshal.Cast<byte, uint>(source);
+            Span<uint> dst = MemoryMarshal.Cast<byte, uint>(destination);
+            ref uint s = ref MemoryMarshal.GetReference(src);
+            ref uint d = ref MemoryMarshal.GetReference(dst);
+            for (int i = 0; i < src.Length; i++)
             {
-                destination[i] = t0[source[i]];
-                destination[i + 1] = t1[source[i + 1]];
-                destination[i + 2] = t2[source[i + 2]];
-                destination[i + 3] = t3[source[i + 3]];
+                uint p = Unsafe.Add(ref s, i);
+                Unsafe.Add(ref d, i) = Unsafe.Add(ref t, (int)(p & 0xFF))
+                    | ((uint)Unsafe.Add(ref t, 256 + (int)((p >> 8) & 0xFF)) << 8)
+                    | ((uint)Unsafe.Add(ref t, 512 + (int)((p >> 16) & 0xFF)) << 16)
+                    | ((uint)Unsafe.Add(ref t, 768 + (int)(p >> 24)) << 24);
             }
 
             return;
@@ -236,99 +386,201 @@ internal static class ColorKernels
 
         for (int i = 0; i < source.Length; i++)
         {
-            destination[i] = tables[((i % channels) * 256) + source[i]];
+            destination[i] = Unsafe.Add(ref t, ((i % channels) * 256) + source[i]);
         }
     }
 
-    /// <summary>Applies the matrix to 4-byte pixels, one pixel per 128-bit vector.</summary>
-    internal static void Apply4(ReadOnlySpan<byte> source, Span<byte> destination, Vector4[] columns)
+    /// <summary>
+    /// Builds 256 floats per memory channel: each byte value run through per-channel stages, clamped after each, with the same
+    /// arithmetic as the matrix path.
+    /// </summary>
+    internal static float[] BuildFloatTables(ReadOnlySpan<Vector4[]> stages, float[]? tables = null)
     {
-        if (!Vector128.IsHardwareAccelerated)
+        tables ??= new float[4 * 256];
+        for (int ch = 0; ch < 4; ch++)
         {
-            Apply4Scalar(source, destination, columns);
-            return;
+            for (int v = 0; v < 256; v++)
+            {
+                float x = v * (1f / 255f);
+                foreach (Vector4[] columns in stages)
+                {
+                    x = Clamp01((x * columns[ch][ch]) + columns[4][ch]);
+                }
+
+                tables[(ch * 256) + v] = x;
+            }
         }
 
-        ReadOnlySpan<uint> src = MemoryMarshal.Cast<byte, uint>(source);
-        Span<uint> dst = MemoryMarshal.Cast<byte, uint>(destination);
-        Vector4 c0 = columns[0], c1 = columns[1], c2 = columns[2], c3 = columns[3], c4 = columns[4];
+        return tables;
+    }
+
+    /// <summary>
+    /// Applies the stages to 4-byte pixels, four pixels per step in two 256-bit vectors. With <paramref name="prefixTables"/>,
+    /// each byte first maps through its channel's float table (the chain's leading per-channel stages) instead of dividing by 255.
+    /// </summary>
+    internal static void Apply4(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<Vector4[]> stages, float[]? prefixTables = null)
+    {
         int i = 0;
-        if (Vector256.IsHardwareAccelerated && src.Length >= 4)
+        if (Vector256.IsHardwareAccelerated && source.Length >= 16)
         {
-            // Four pixels per step, two per 256-bit vector. Each channel is broadcast within its pixel's half, so every lane adds
-            // its five terms in the same order as the scalar reference.
-            Vector256<float> w0 = Both(c0), w1 = Both(c1), w2 = Both(c2), w3 = Both(c3), w4 = Both(c4);
+            // Each channel is broadcast within its pixel's half, so every lane adds its five terms in the scalar order.
+            Span<Vector256<float>> w = stackalloc Vector256<float>[stages.Length * 5];
+            for (int s = 0; s < stages.Length; s++)
+            {
+                for (int k = 0; k < 5; k++)
+                {
+                    w[(s * 5) + k] = Both(stages[s][k]);
+                }
+            }
+
             Vector256<float> scale = Vector256.Create(1f / 255f);
-            Vector256<int> xs = Vector256.Create(0, 0, 0, 0, 4, 4, 4, 4);
-            Vector256<int> ys = Vector256.Create(1, 1, 1, 1, 5, 5, 5, 5);
-            Vector256<int> zs = Vector256.Create(2, 2, 2, 2, 6, 6, 6, 6);
-            Vector256<int> ws = Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7);
-            ref byte s = ref MemoryMarshal.GetReference(source);
-            ref byte d = ref MemoryMarshal.GetReference(destination);
-            for (; i <= src.Length - 4; i += 4)
+            if (prefixTables is not null && prefixTables.Length < 4 * 256)
             {
-                (Vector256<ushort> lo, _) = Vector256.Widen(Vector256.Create(Vector128.LoadUnsafe(ref s, (nuint)(i * 4)), Vector128<byte>.Zero));
-                (Vector256<uint> a, Vector256<uint> b) = Vector256.Widen(lo);
-                Vector256<int> ra = Vector256.ConvertToInt32(Transform(Vector256.ConvertToSingle(a.AsInt32()) * scale));
-                Vector256<int> rb = Vector256.ConvertToInt32(Transform(Vector256.ConvertToSingle(b.AsInt32()) * scale));
+                throw new ArgumentException("The prefix tables are too short.");
+            }
+
+            ref float t = ref prefixTables is null ? ref Unsafe.NullRef<float>() : ref MemoryMarshal.GetArrayDataReference(prefixTables);
+            ref byte src = ref MemoryMarshal.GetReference(source);
+            ref byte dst = ref MemoryMarshal.GetReference(destination);
+            for (; i <= source.Length - 16; i += 16)
+            {
+                Vector256<float> fa, fb;
+                if (prefixTables is null)
+                {
+                    (Vector256<ushort> lo, _) = Vector256.Widen(Vector256.Create(Vector128.LoadUnsafe(ref src, (nuint)i), Vector128<byte>.Zero));
+                    (Vector256<uint> a, Vector256<uint> b) = Vector256.Widen(lo);
+                    fa = Vector256.ConvertToSingle(a.AsInt32()) * scale;
+                    fb = Vector256.ConvertToSingle(b.AsInt32()) * scale;
+                }
+                else
+                {
+                    fa = Lookup(ref t, ref Unsafe.Add(ref src, i));
+                    fb = Lookup(ref t, ref Unsafe.Add(ref src, i + 8));
+                }
+
+                Vector256<int> ra = Vector256.ConvertToInt32(Transform(fa, w));
+                Vector256<int> rb = Vector256.ConvertToInt32(Transform(fb, w));
                 Vector256<ushort> words = Vector256.Narrow(ra.AsUInt32(), rb.AsUInt32());
-                Vector256.Narrow(words, words).GetLower().StoreUnsafe(ref d, (nuint)(i * 4));
-            }
-
-            Vector256<float> Transform(Vector256<float> v)
-            {
-                Vector256<float> o = (w0 * Vector256.Shuffle(v, xs)) + (w1 * Vector256.Shuffle(v, ys)) + (w2 * Vector256.Shuffle(v, zs))
-                    + (w3 * Vector256.Shuffle(v, ws)) + w4;
-                return (Vector256.Min(Vector256.Max(o, Vector256<float>.Zero), Vector256<float>.One) * 255f) + Vector256.Create(0.5f);
+                Vector256.Narrow(words, words).GetLower().StoreUnsafe(ref dst, (nuint)i);
             }
         }
 
-        for (; i < src.Length; i++)
-        {
-            Vector128<uint> wide = Vector128.WidenLower(Vector128.WidenLower(Vector128.CreateScalarUnsafe(src[i]).AsByte()));
-            Vector4 v = (Vector128.ConvertToSingle(wide.AsInt32()) * (1f / 255f)).AsVector4();
-            Vector4 o = (c0 * v.X) + (c1 * v.Y) + (c2 * v.Z) + (c3 * v.W) + c4;
-            Vector128<int> rounded = Vector128.ConvertToInt32((Clamp01(o) * 255f).AsVector128() + Vector128.Create(0.5f));
-            Vector128<ushort> words = Vector128.Narrow(rounded.AsUInt32(), rounded.AsUInt32());
-            dst[i] = Vector128.Narrow(words, words).AsUInt32().ToScalar();
-        }
+        Apply4Scalar(source[i..], destination[i..], stages, prefixTables);
+    }
+
+    /// <summary>Reads two pixels' floats from the prefix tables: a byte index never leaves its 256-entry table.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> Lookup(ref float t, ref byte p)
+    {
+        return Vector256.Create(
+            Unsafe.Add(ref t, p), Unsafe.Add(ref t, 256 + Unsafe.Add(ref p, 1)), Unsafe.Add(ref t, 512 + Unsafe.Add(ref p, 2)), Unsafe.Add(ref t, 768 + Unsafe.Add(ref p, 3)),
+            Unsafe.Add(ref t, Unsafe.Add(ref p, 4)), Unsafe.Add(ref t, 256 + Unsafe.Add(ref p, 5)), Unsafe.Add(ref t, 512 + Unsafe.Add(ref p, 6)), Unsafe.Add(ref t, 768 + Unsafe.Add(ref p, 7)));
     }
 
     /// <summary>The reference for <see cref="Apply4"/>.</summary>
-    internal static void Apply4Scalar(ReadOnlySpan<byte> source, Span<byte> destination, Vector4[] columns)
+    internal static void Apply4Scalar(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<Vector4[]> stages, float[]? prefixTables = null)
     {
+        Span<float> v = stackalloc float[4];
+        Span<float> o = stackalloc float[4];
         for (int i = 0; i + 3 < source.Length; i += 4)
         {
-            float x = source[i] * (1f / 255f), y = source[i + 1] * (1f / 255f), z = source[i + 2] * (1f / 255f), w = source[i + 3] * (1f / 255f);
             for (int ch = 0; ch < 4; ch++)
             {
-                destination[i + ch] = ToByte((columns[0][ch] * x) + (columns[1][ch] * y) + (columns[2][ch] * z) + (columns[3][ch] * w) + columns[4][ch]);
+                v[ch] = prefixTables is null ? source[i + ch] * (1f / 255f) : prefixTables[(ch * 256) + source[i + ch]];
+            }
+
+            Transform(v, o, stages);
+            for (int ch = 0; ch < 4; ch++)
+            {
+                destination[i + ch] = (byte)(int)((v[ch] * 255f) + 0.5f);
             }
         }
     }
 
-    /// <summary>Applies the matrix to 3-byte pixels; alpha is already folded into the offset.</summary>
-    internal static void Apply3Scalar(ReadOnlySpan<byte> source, Span<byte> destination, Vector4[] columns)
+    /// <summary>Applies the stages to 3-byte pixels, with alpha reading 1.</summary>
+    internal static void Apply3Scalar(ReadOnlySpan<byte> source, Span<byte> destination, ReadOnlySpan<Vector4[]> stages)
     {
+        Span<float> v = stackalloc float[4];
+        Span<float> o = stackalloc float[4];
         for (int i = 0; i + 2 < source.Length; i += 3)
         {
-            float x = source[i] * (1f / 255f), y = source[i + 1] * (1f / 255f), z = source[i + 2] * (1f / 255f);
             for (int ch = 0; ch < 3; ch++)
             {
-                destination[i + ch] = ToByte((columns[0][ch] * x) + (columns[1][ch] * y) + (columns[2][ch] * z) + columns[4][ch]);
+                v[ch] = source[i + ch] * (1f / 255f);
+            }
+
+            v[3] = 1f;
+            Transform(v, o, stages);
+            for (int ch = 0; ch < 3; ch++)
+            {
+                destination[i + ch] = (byte)(int)((v[ch] * 255f) + 0.5f);
             }
         }
     }
 
-    /// <summary>Applies the matrix to float pixels in RGBA order, clamping to 0..1. Source and destination may be the same.</summary>
-    internal static void ApplyFloat(ReadOnlySpan<Vector4> source, Span<Vector4> destination, Vector4[] columns)
+    /// <summary>Applies the stages to float pixels in RGBA order. Source and destination may be the same.</summary>
+    internal static void ApplyFloat(ReadOnlySpan<Vector4> source, Span<Vector4> destination, Vector4[][] stages)
     {
-        Vector4 c0 = columns[0], c1 = columns[1], c2 = columns[2], c3 = columns[3], c4 = columns[4];
         for (int i = 0; i < source.Length; i++)
         {
             Vector4 v = source[i];
-            destination[i] = Clamp01((c0 * v.X) + (c1 * v.Y) + (c2 * v.Z) + (c3 * v.W) + c4);
+            foreach (Vector4[] c in stages)
+            {
+                v = Vector4.Min(Vector4.Max((c[0] * v.X) + (c[1] * v.Y) + (c[2] * v.Z) + (c[3] * v.W) + c[4], Vector4.Zero), Vector4.One);
+            }
+
+            destination[i] = v;
         }
+    }
+
+    /// <summary>Runs one pixel through every stage in place in <paramref name="v"/>, clamping after each.</summary>
+    private static void Transform(Span<float> v, Span<float> o, ReadOnlySpan<Vector4[]> stages)
+    {
+        foreach (Vector4[] c in stages)
+        {
+            for (int ch = 0; ch < 4; ch++)
+            {
+                o[ch] = Clamp01((c[0][ch] * v[0]) + (c[1][ch] * v[1]) + (c[2][ch] * v[2]) + (c[3][ch] * v[3]) + c[4][ch]);
+            }
+
+            o.CopyTo(v);
+        }
+    }
+
+    /// <summary>Runs two pixels through every stage, clamping after each, and scales the result to 0..255 plus the rounding half.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> Transform(Vector256<float> v, ReadOnlySpan<Vector256<float>> w)
+    {
+        for (int k = 0; k + 4 < w.Length; k += 5)
+        {
+            Vector256<float> o = (w[k] * Broadcast(v, 0)) + (w[k + 1] * Broadcast(v, 1)) + (w[k + 2] * Broadcast(v, 2))
+                + (w[k + 3] * Broadcast(v, 3)) + w[k + 4];
+            // The native min and max (minps, maxps) equal the scalar clamp for every finite value; the IEEE-exact versions cost
+            // several instructions each.
+            v = Vector256.MinNative(Vector256.MaxNative(o, Vector256<float>.Zero), Vector256<float>.One);
+        }
+
+        return (v * 255f) + Vector256.Create(0.5f);
+    }
+
+    /// <summary>Copies channel <paramref name="channel"/> of each pixel to all four lanes of that pixel's half.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector256<float> Broadcast(Vector256<float> v, [ConstantExpected(Min = 0, Max = 3)] byte channel)
+    {
+        if (Avx.IsSupported)
+        {
+            // vpermilps with an immediate shuffles within each 128-bit half, which is exactly one pixel.
+            return channel switch
+            {
+                0 => Avx.Permute(v, 0b00_00_00_00),
+                1 => Avx.Permute(v, 0b01_01_01_01),
+                2 => Avx.Permute(v, 0b10_10_10_10),
+                _ => Avx.Permute(v, 0b11_11_11_11),
+            };
+        }
+
+        int c = channel;
+        return Vector256.Shuffle(v, Vector256.Create(c, c, c, c, c + 4, c + 4, c + 4, c + 4));
     }
 
     private static Vector256<float> Both(Vector4 column)
@@ -338,15 +590,8 @@ internal static class ColorKernels
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte ToByte(float value)
+    private static float Clamp01(float value)
     {
-        float clamped = value > 0f ? (value < 1f ? value : 1f) : 0f;
-        return (byte)(int)((clamped * 255f) + 0.5f);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector4 Clamp01(Vector4 v)
-    {
-        return Vector4.Min(Vector4.Max(v, Vector4.Zero), Vector4.One);
+        return value > 0f ? (value < 1f ? value : 1f) : 0f;
     }
 }

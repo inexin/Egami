@@ -422,7 +422,7 @@ internal static class ResizeKernels
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<float> Premultiply(Vector256<float> v)
     {
-        Vector256<float> alpha = Vector256.Shuffle(v, Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7));
+        Vector256<float> alpha = Color.ColorKernels.Broadcast(v, 3);
         return v * Vector256.ConditionalSelect(AlphaLanes, Vector256<float>.One, alpha);
     }
 
@@ -447,7 +447,7 @@ internal static class ResizeKernels
 
         // Color divides by the unclamped alpha, so ringing that pushes alpha past 1 does not brighten the color. Lanes with zero
         // or negative alpha divide to NaN or infinity, but the select drops them.
-        Vector256<float> alpha = Vector256.Shuffle(v, Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7));
+        Vector256<float> alpha = Color.ColorKernels.Broadcast(v, 3);
         Vector256<float> color = Vector256.ConditionalSelect(Vector256.GreaterThan(alpha, Vector256<float>.Zero), Clamp01(v / alpha), Vector256<float>.Zero);
         return Vector256.ConditionalSelect(AlphaLanes, Clamp01(alpha), color);
     }
@@ -457,7 +457,8 @@ internal static class ResizeKernels
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<float> Clamp01(Vector256<float> v)
     {
-        return Vector256.Min(Vector256.Max(v, Vector256<float>.Zero), Vector256<float>.One);
+        // The native min and max equal the scalar clamp for finite values; NaN lanes are dropped by the callers' selects.
+        return Vector256.MinNative(Vector256.MaxNative(v, Vector256<float>.Zero), Vector256<float>.One);
     }
 
     private static float Clamp01(float v)

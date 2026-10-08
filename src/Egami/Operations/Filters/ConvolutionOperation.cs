@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
@@ -403,8 +404,8 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
 /// <summary>The inner loops of convolution. Vector paths add in the same order as the scalar references.</summary>
 internal static class ConvolutionKernels
 {
-    /// <summary>The output rows the vertical pass makes per read of the ring.</summary>
-    internal const int Block = 4;
+    /// <summary>The output rows the vertical pass makes per read of the ring: eight accumulators fit in the vector registers.</summary>
+    internal const int Block = 8;
 
     /// <summary>
     /// The vertical pass for <paramref name="count"/> (at most <see cref="Block"/>) consecutive output rows. Output j sums ring rows
@@ -433,46 +434,29 @@ internal static class ConvolutionKernels
 
             for (; i <= rowLength - Vector256<float>.Count; i += Vector256<float>.Count)
             {
-                Vector256<float> a0 = Vector256<float>.Zero, a1 = a0, a2 = a0, a3 = a0;
+                // One accumulator per output row, all in registers; output j takes ring row k with weight k − j.
+                Vector256<float> a0 = Vector256<float>.Zero, a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0, a6 = a0, a7 = a0;
                 for (int k = 0; k < rows.Length; k++)
                 {
                     Vector256<float> v = Vector256.LoadUnsafe(ref r, rows[k] + (nuint)i);
-                    if (k < taps)
-                    {
-                        a0 += v * weights[k];
-                    }
-
-                    if (count > 1 && (uint)(k - 1) < (uint)taps)
-                    {
-                        a1 += v * weights[k - 1];
-                    }
-
-                    if (count > 2 && (uint)(k - 2) < (uint)taps)
-                    {
-                        a2 += v * weights[k - 2];
-                    }
-
-                    if (count > 3 && (uint)(k - 3) < (uint)taps)
-                    {
-                        a3 += v * weights[k - 3];
-                    }
+                    AddTap(ref a0, v, weights, k, count, 0);
+                    AddTap(ref a1, v, weights, k, count, 1);
+                    AddTap(ref a2, v, weights, k, count, 2);
+                    AddTap(ref a3, v, weights, k, count, 3);
+                    AddTap(ref a4, v, weights, k, count, 4);
+                    AddTap(ref a5, v, weights, k, count, 5);
+                    AddTap(ref a6, v, weights, k, count, 6);
+                    AddTap(ref a7, v, weights, k, count, 7);
                 }
 
-                a0.StoreUnsafe(ref o, (nuint)i);
-                if (count > 1)
-                {
-                    a1.StoreUnsafe(ref o, (nuint)(rowLength + i));
-                }
-
-                if (count > 2)
-                {
-                    a2.StoreUnsafe(ref o, (nuint)((2 * rowLength) + i));
-                }
-
-                if (count > 3)
-                {
-                    a3.StoreUnsafe(ref o, (nuint)((3 * rowLength) + i));
-                }
+                Store(a0, ref o, rowLength, i, count, 0);
+                Store(a1, ref o, rowLength, i, count, 1);
+                Store(a2, ref o, rowLength, i, count, 2);
+                Store(a3, ref o, rowLength, i, count, 3);
+                Store(a4, ref o, rowLength, i, count, 4);
+                Store(a5, ref o, rowLength, i, count, 5);
+                Store(a6, ref o, rowLength, i, count, 6);
+                Store(a7, ref o, rowLength, i, count, 7);
             }
         }
 
@@ -487,9 +471,64 @@ internal static class ConvolutionKernels
     /// </summary>
     internal static void Correlate(ReadOnlySpan<float> source, ReadOnlySpan<float> weights, Span<float> destination)
     {
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated && source.Length >= destination.Length + ((weights.Length - 1) * 4))
+        {
+            // 64 outputs at a time in eight registers, every tap summed into them before they are stored: the row is written once
+            // instead of once per tap, which matters for wide kernels.
+            ref float s = ref MemoryMarshal.GetReference(source);
+            ref float d = ref MemoryMarshal.GetReference(destination);
+            for (; i <= destination.Length - 64; i += 64)
+            {
+                Vector256<float> a0 = Vector256<float>.Zero, a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0, a6 = a0, a7 = a0;
+                for (int k = 0; k < weights.Length; k++)
+                {
+                    nuint at = (nuint)(i + (k * 4));
+                    float w = weights[k];
+                    a0 += Vector256.LoadUnsafe(ref s, at) * w;
+                    a1 += Vector256.LoadUnsafe(ref s, at + 8) * w;
+                    a2 += Vector256.LoadUnsafe(ref s, at + 16) * w;
+                    a3 += Vector256.LoadUnsafe(ref s, at + 24) * w;
+                    a4 += Vector256.LoadUnsafe(ref s, at + 32) * w;
+                    a5 += Vector256.LoadUnsafe(ref s, at + 40) * w;
+                    a6 += Vector256.LoadUnsafe(ref s, at + 48) * w;
+                    a7 += Vector256.LoadUnsafe(ref s, at + 56) * w;
+                }
+
+                a0.StoreUnsafe(ref d, (nuint)i);
+                a1.StoreUnsafe(ref d, (nuint)(i + 8));
+                a2.StoreUnsafe(ref d, (nuint)(i + 16));
+                a3.StoreUnsafe(ref d, (nuint)(i + 24));
+                a4.StoreUnsafe(ref d, (nuint)(i + 32));
+                a5.StoreUnsafe(ref d, (nuint)(i + 40));
+                a6.StoreUnsafe(ref d, (nuint)(i + 48));
+                a7.StoreUnsafe(ref d, (nuint)(i + 56));
+            }
+        }
+
+        // The rest, tap by tap, in the same order per element.
+        Span<float> tail = destination[i..];
         for (int k = 0; k < weights.Length; k++)
         {
-            Accumulate(source.Slice(k * 4, destination.Length), weights[k], destination, k == 0);
+            Accumulate(source.Slice(i + (k * 4), tail.Length), weights[k], tail, k == 0);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void AddTap(ref Vector256<float> sum, Vector256<float> v, ReadOnlySpan<float> weights, int k, int count, int j)
+    {
+        if (j < count && (uint)(k - j) < (uint)weights.Length)
+        {
+            sum += v * weights[k - j];
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store(Vector256<float> sum, ref float outputs, int rowLength, int i, int count, int j)
+    {
+        if (j < count)
+        {
+            sum.StoreUnsafe(ref outputs, (nuint)((j * rowLength) + i));
         }
     }
 

@@ -7,7 +7,7 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET that loa
 - **Safe on untrusted files**: size limits are checked before allocating, and readers are fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
-> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer.
+> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations.
 
 ## Quick start
 
@@ -37,7 +37,7 @@ rgba.Save("opaque.png");
 ```
 
 Every raster owns its pixel memory, so dispose it when you are done. Methods that return a new raster say so in their name
-(`Copy`, `As<TPixel>`); everything else works in place.
+(`Copy`, `As<TPixel>`, `Derive`); everything else works in place.
 
 ### Reading a header only
 
@@ -79,6 +79,43 @@ image.Save(stream, PngFormat.Info, new PngWriterOptions
     CompressionLevel = 9,     // 0 (fastest) to 9 (smallest); 5 by default
 });
 ```
+
+### Operations
+
+Record a chain in a lambda: `Apply` changes the raster in place, `Derive` returns a new one and leaves the source untouched.
+Egami plans the chain first, so a bad argument throws before any pixel changes, a `Crop` before a resize reads only the crop,
+and adjacent color steps run as one pass. Each step runs in parallel bands of rows.
+
+```csharp
+using Egami.Operations;
+
+// A 256 × 256 thumbnail that covers the box, cropped around the center; the source is not touched.
+using Raster<Rgba8> thumb = photo.Derive(ops => ops.Fill(256, 256));
+
+// In place: shrink to fit 1600 × 1600 (never enlarging), straighten, and brighten a little.
+photo.Apply(ops => ops
+    .Fit(1600, 1600, enlarge: false)
+    .Rotate(-2.5f)
+    .Brightness(1.05f)
+    .Contrast(1.1f));
+
+// 800 pixels wide in linear light, sharpened, with a watermark at 80% opacity.
+photo.Apply(ops => ops
+    .Resize(800, 0, ResampleFilter.Lanczos3, ColorSpace.Linear)
+    .Sharpen(amount: 0.6f, sigma: 1)
+    .DrawImage(logo, new Point(20, 20), opacity: 0.8f));
+```
+
+| Group | Operations |
+| --- | --- |
+| Resize | `Resize` (0 for one side keeps the aspect ratio), `Fit`, `Fill`; filters Nearest, Box, Bilinear, Bicubic (default, Catmull-Rom), Mitchell, Lanczos3; gamma-encoded or linear light |
+| Geometry | `Crop`, `Pad`, `Flip`, `Rotate` (exact for multiples of 90°, resampled otherwise), `FillColor` |
+| Color | `Brightness`, `Contrast`, `Saturation`, `HueRotate`, `Sepia`, `Grayscale`, `Invert`, `Opacity`, `ColorMatrix` (W3C Filter Effects definitions) |
+| Filters | `Blur` (Gaussian), `BoxBlur`, `Sharpen` (unsharp mask), `Convolve` with any `ConvolutionKernel` and `EdgeMode` |
+| Compose | `DrawImage` (source-over, any pixel type, clipped to the overlap) |
+
+Pass a `CancellationToken` to stop between bands of rows. A step that needs a new plane checks `SafetyLimits.MaxTotalBytes`
+first. Your own operation implements `IRasterOperation` and joins a chain with `ops.Add(...)`.
 
 ### Pixel types
 

@@ -20,9 +20,15 @@ public enum GrayscaleMode
 /// each output channel is <c>m[row, 0] × R + m[row, 1] × G + m[row, 2] × B + m[row, 3] × A + m[row, 4]</c>, rows in R, G, B, A order,
 /// and results are clamped to 0..1. The factories follow the W3C Filter Effects definitions.
 /// </summary>
+/// <remarks>
+/// <c>default(ColorMatrix)</c> is <see cref="Identity"/>, so a matrix left unset changes nothing.
+/// </remarks>
 public readonly struct ColorMatrix : IEquatable<ColorMatrix>
 {
     private readonly Values _values;
+
+    /// <summary>False only for <c>default</c>, which reads as the identity.</summary>
+    private readonly bool _set;
 
     /// <summary>Creates a matrix from 20 values, row by row.</summary>
     /// <param name="values">Four rows of five: the R, G, B and A weights, then the offset.</param>
@@ -43,6 +49,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
         }
 
         values.CopyTo(_values);
+        _set = true;
     }
 
     /// <summary>Gets the matrix that changes nothing.</summary>
@@ -60,7 +67,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
         {
             ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)row, 3u, nameof(row));
             ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)column, 4u, nameof(column));
-            return _values[(row * 5) + column];
+            return Value((row * 5) + column);
         }
     }
 
@@ -73,7 +80,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
             {
                 for (int c = 0; c < 4; c++)
                 {
-                    if (r != c && _values[(r * 5) + c] != 0)
+                    if (r != c && Value((r * 5) + c) != 0)
                     {
                         return false;
                     }
@@ -206,7 +213,15 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <inheritdoc/>
     public bool Equals(ColorMatrix other)
     {
-        return ((ReadOnlySpan<float>)_values).SequenceEqual(other._values);
+        for (int i = 0; i < 20; i++)
+        {
+            if (Value(i) != other.Value(i))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <inheritdoc/>
@@ -219,9 +234,9 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     public override int GetHashCode()
     {
         HashCode hash = default;
-        foreach (float v in (ReadOnlySpan<float>)_values)
+        for (int i = 0; i < 20; i++)
         {
-            hash.Add(v);
+            hash.Add(Value(i));
         }
 
         return hash.ToHashCode();
@@ -259,6 +274,12 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     public static bool operator !=(ColorMatrix left, ColorMatrix right)
     {
         return !left.Equals(right);
+    }
+
+    /// <summary>Returns the value at flat index <paramref name="i"/>, row by row; an unset matrix reads as the identity.</summary>
+    private float Value(int i)
+    {
+        return _set ? _values[i] : i % 5 == i / 5 ? 1f : 0f;
     }
 
     /// <summary>Gets the luma weights of a mode.</summary>

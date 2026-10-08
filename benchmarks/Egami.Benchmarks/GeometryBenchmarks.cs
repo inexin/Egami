@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 
+using Egami.Operations;
 using Egami.Pixels;
 
 namespace Egami.Benchmarks;
@@ -44,13 +45,13 @@ public class GeometryBenchmarks
     [Benchmark]
     public void FlipHorizontal()
     {
-        _raster.Apply(ops => ops.Flip(true, false));
+        _raster.Apply(ops => ops.Flip(FlipMode.Horizontal));
     }
 
     [Benchmark]
     public void FlipVertical()
     {
-        _raster.Apply(ops => ops.Flip(false, true));
+        _raster.Apply(ops => ops.Flip(FlipMode.Vertical));
     }
 
     [Benchmark]
