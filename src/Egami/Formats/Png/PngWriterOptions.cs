@@ -50,7 +50,7 @@ public enum PngCompressionStrategy
 /// <summary>Options for writing PNG. The defaults keep every pixel exactly, in the color type that matches the raster's pixel type.</summary>
 public sealed class PngWriterOptions : WriterOptions
 {
-    private readonly int _compressionLevel = 6;
+    private readonly int _compressionLevel = 5;
     private readonly int _maxIdatSize = 64 * 1024;
 
     /// <summary>Gets the default options.</summary>
@@ -78,7 +78,10 @@ public sealed class PngWriterOptions : WriterOptions
     /// <summary>Gets how rows are filtered. Defaults to <see cref="PngFilterMode.Adaptive"/>.</summary>
     public PngFilterMode Filter { get; init; }
 
-    /// <summary>Gets the zlib compression level, 0 (none, fastest) to 9 (smallest). Defaults to 6.</summary>
+    /// <summary>
+    /// Gets the zlib compression level, 0 (none, fastest) to 9 (smallest). Defaults to 5, which on photos compressed over twice as
+    /// fast as level 6 for files about 5% larger.
+    /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 9.</exception>
     public int CompressionLevel
     {

@@ -142,6 +142,13 @@ public class PngWriterTests
     }
 
     [Fact]
+    public void DefaultCompressionLevelIsFive()
+    {
+        Assert.Equal(5, new PngWriterOptions().CompressionLevel);
+        Assert.Equal(5, PngWriterOptions.Default.CompressionLevel);
+    }
+
+    [Fact]
     public void LowerBitDepthRoundsToTheNearestValue()
     {
         using Raster<Gray8> original = Raster.Create(4, 1, new Gray8(100));
