@@ -315,7 +315,7 @@ Egami.Operations.RasterOps.Fit(int width, int height, Egami.Operations.ResampleF
 Egami.Operations.RasterOps.Flip(bool horizontal, bool vertical) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Pad(int width, int height, Egami.Pixels.Rgba8 color = default(Egami.Pixels.Rgba8), Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Resize(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
-Egami.Operations.RasterOps.Rotate(float degrees) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Rotate(float degrees, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8)) -> Egami.Operations.RasterOps!
 Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Bicubic = 0 -> Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Bilinear = 3 -> Egami.Operations.ResampleFilter

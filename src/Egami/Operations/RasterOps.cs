@@ -146,12 +146,23 @@ public sealed class RasterOps
         return horizontal || vertical ? Add(new FlipOperation(horizontal, vertical)) : this;
     }
 
-    /// <summary>Rotates the image clockwise by a multiple of 90°. The pixels are moved exactly, without resampling.</summary>
+    /// <summary>
+    /// Rotates the image clockwise. Multiples of 90° move pixels exactly; other angles resample onto a canvas the size of the
+    /// rotated bounding box, with the corners filled with <paramref name="background"/>.
+    /// </summary>
     /// <param name="degrees">The angle, clockwise. Negative angles turn counter-clockwise, so −90 equals 270.</param>
+    /// <param name="filter">The resampling kernel for angles that are not multiples of 90°. Defaults to <see cref="ResampleFilter.Bicubic"/>.</param>
+    /// <param name="background">The color of the canvas outside the rotated image. Defaults to transparent black.</param>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="degrees"/> is not a multiple of 90.</exception>
-    public RasterOps Rotate(float degrees)
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="degrees"/> is not finite, or <paramref name="filter"/> is not defined.</exception>
+    public RasterOps Rotate(float degrees, ResampleFilter filter = ResampleFilter.Bicubic, Rgba8 background = default)
     {
+        if (!float.IsFinite(degrees))
+        {
+            throw new ArgumentOutOfRangeException(nameof(degrees), degrees, "The angle must be finite.");
+        }
+
+        CheckFilter(filter, ColorSpace.Encoded);
         float turn = degrees % 360f;
         if (turn < 0)
         {
@@ -164,7 +175,7 @@ public sealed class RasterOps
             90f => Add(new RotateQuarterOperation(clockwise: true)),
             180f => Add(new FlipOperation(horizontal: true, vertical: true)),
             270f => Add(new RotateQuarterOperation(clockwise: false)),
-            _ => throw new ArgumentOutOfRangeException(nameof(degrees), degrees, "Only multiples of 90° are supported."),
+            _ => Add(new RotateOperation(turn, filter, background)),
         };
     }
 

@@ -9,6 +9,7 @@ namespace Egami.Benchmarks;
 public class GeometryBenchmarks
 {
     private Raster<Rgba8> _raster = null!;
+    private Raster<Rgba8> _hd = null!;
 
     [Params(1, 0)]
     public int Threads { get; set; }
@@ -23,12 +24,15 @@ public class GeometryBenchmarks
         {
             random.NextBytes(System.Runtime.InteropServices.MemoryMarshal.AsBytes(_raster.Row(y)));
         }
+
+        _hd = Raster.Create<Rgba8>(1920, 1080, Rgba8.White, context);
     }
 
     [GlobalCleanup]
     public void Cleanup()
     {
         _raster.Dispose();
+        _hd.Dispose();
     }
 
     [Benchmark]
@@ -53,5 +57,11 @@ public class GeometryBenchmarks
     public void Crop()
     {
         _raster.Derive(ops => ops.Crop(500, 500, 3000, 2000)).Dispose();
+    }
+
+    [Benchmark]
+    public void Rotate15()
+    {
+        _hd.Derive(ops => ops.Rotate(15)).Dispose();
     }
 }

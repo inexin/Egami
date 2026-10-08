@@ -347,14 +347,14 @@ internal static class ResizeKernels
     {
         for (int i = 0; i < destination.Length; i += 4)
         {
-            float a = opaque ? 1f : Math.Clamp(source[i + 3], 0f, 1f);
+            float raw = source[i + 3];
             for (int c = 0; c < 3; c++)
             {
-                float v = opaque ? source[i + c] : a > 0f ? source[i + c] / a : 0f;
+                float v = opaque ? source[i + c] : raw > 0f ? source[i + c] / raw : 0f;
                 destination[i + c] = (byte)(int)((Clamp01(v) * 255f) + 0.5f);
             }
 
-            destination[i + 3] = (byte)(int)((a * 255f) + 0.5f);
+            destination[i + 3] = (byte)(int)(((opaque ? 1f : Clamp01(raw)) * 255f) + 0.5f);
         }
     }
 
@@ -379,13 +379,13 @@ internal static class ResizeKernels
     {
         for (int i = from; i < pixels.Length; i += 4)
         {
-            float a = opaque ? 1f : Math.Clamp(pixels[i + 3], 0f, 1f);
+            float raw = pixels[i + 3];
             for (int c = 0; c < 3; c++)
             {
-                pixels[i + c] = Clamp01(opaque ? pixels[i + c] : a > 0f ? pixels[i + c] / a : 0f);
+                pixels[i + c] = Clamp01(opaque ? pixels[i + c] : raw > 0f ? pixels[i + c] / raw : 0f);
             }
 
-            pixels[i + 3] = a;
+            pixels[i + 3] = opaque ? 1f : Clamp01(raw);
         }
     }
 
@@ -445,10 +445,11 @@ internal static class ResizeKernels
             return Vector256.ConditionalSelect(AlphaLanes, Vector256<float>.One, Clamp01(v));
         }
 
-        // Lanes with zero alpha divide to NaN or infinity, but the select drops them.
-        Vector256<float> alpha = Clamp01(Vector256.Shuffle(v, Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7)));
+        // Color divides by the unclamped alpha, so ringing that pushes alpha past 1 does not brighten the color. Lanes with zero
+        // or negative alpha divide to NaN or infinity, but the select drops them.
+        Vector256<float> alpha = Vector256.Shuffle(v, Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7));
         Vector256<float> color = Vector256.ConditionalSelect(Vector256.GreaterThan(alpha, Vector256<float>.Zero), Clamp01(v / alpha), Vector256<float>.Zero);
-        return Vector256.ConditionalSelect(AlphaLanes, alpha, color);
+        return Vector256.ConditionalSelect(AlphaLanes, Clamp01(alpha), color);
     }
 
     private static Vector256<float> AlphaLanes => Vector256.Create(0, 0, 0, -1, 0, 0, 0, -1).AsSingle();

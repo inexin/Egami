@@ -67,7 +67,7 @@ public class GeometryTests
         Assert.Equal(original.Rotate(clockwise: true), Grid.Of(plus450));
         using Raster<Rgba8> none = raster.Derive(ops => ops.Rotate(360).Rotate(0).Flip(false, false), ct);
         Assert.Equal(original, Grid.Of(none));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new RasterOpsProbe().Ops.Rotate(45));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RasterOpsProbe().Ops.Rotate(float.NaN));
     }
 
     [Fact]
