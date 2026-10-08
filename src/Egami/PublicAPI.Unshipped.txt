@@ -281,6 +281,30 @@ Egami.Metadata.TextEntry.Language.init -> void
 Egami.Metadata.TextEntry.TextEntry(string! Key, string! Value, string? Language = null) -> void
 Egami.Metadata.TextEntry.Value.get -> string!
 Egami.Metadata.TextEntry.Value.init -> void
+Egami.Operations.Anchor
+Egami.Operations.Anchor.Bottom = 7 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.BottomLeft = 6 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.BottomRight = 8 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Center = 0 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Left = 4 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Right = 5 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Top = 2 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.TopLeft = 1 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.TopRight = 3 -> Egami.Operations.Anchor
+Egami.Operations.IRasterOperation
+Egami.Operations.IRasterOperation.OutputSize(Egami.Size input) -> Egami.Size
+Egami.Operations.IRasterOperation.Run<TPixel>(Egami.Operations.OperationInput<TPixel>! input) -> void
+Egami.Operations.OperationInput<TPixel>
+Egami.Operations.OperationInput<TPixel>.CancellationToken.get -> System.Threading.CancellationToken
+Egami.Operations.OperationInput<TPixel>.Context.get -> Egami.EgamiContext!
+Egami.Operations.OperationInput<TPixel>.Destination.get -> Egami.PixelPlane<TPixel>!
+Egami.Operations.OperationInput<TPixel>.ForEachBand(Egami.Operations.RowBandAction! action) -> void
+Egami.Operations.OperationInput<TPixel>.FrameIndex.get -> int
+Egami.Operations.OperationInput<TPixel>.IsInPlace.get -> bool
+Egami.Operations.OperationInput<TPixel>.Source.get -> Egami.PixelPlane<TPixel>!
+Egami.Operations.RasterOps
+Egami.Operations.RasterOps.Add(Egami.Operations.IRasterOperation! operation) -> Egami.Operations.RasterOps!
+Egami.Operations.RowBandAction
 Egami.PixelPlane
 Egami.PixelPlane<TPixel>
 Egami.PixelPlane<TPixel>.Dispose() -> void
@@ -406,6 +430,15 @@ Egami.Pixels.RgbaF32.RgbaF32() -> void
 Egami.Pixels.RgbaF32.RgbaF32(float r, float g, float b, float a) -> void
 Egami.Pixels.RgbaF32.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.RgbaF32.ToScaled() -> System.Numerics.Vector4
+Egami.Point
+Egami.Point.Deconstruct(out int X, out int Y) -> void
+Egami.Point.Equals(Egami.Point other) -> bool
+Egami.Point.Point() -> void
+Egami.Point.Point(int X, int Y) -> void
+Egami.Point.X.get -> int
+Egami.Point.X.init -> void
+Egami.Point.Y.get -> int
+Egami.Point.Y.init -> void
 Egami.PooledPixelMemorySource
 Egami.PooledPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
 Egami.PooledPixelMemorySource.MaxBlockBytes.get -> int
@@ -418,7 +451,9 @@ Egami.PooledPixelMemorySource.PoolThresholdBytes.init -> void
 Egami.PooledPixelMemorySource.RetainedBytes.get -> long
 Egami.PooledPixelMemorySource.Trim() -> void
 Egami.Raster
+Egami.Raster.Apply(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.As<TTo>() -> Egami.Raster<TTo>!
+Egami.Raster.Derive(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster!
 Egami.Raster.Dispose() -> void
 Egami.Raster.Height.get -> int
 Egami.Raster.Metadata.get -> Egami.Metadata.RasterMetadata!
@@ -430,17 +465,41 @@ Egami.Raster.SaveAsync(System.IO.Stream! stream, Egami.Formats.FormatInfo! forma
 Egami.Raster.SaveAsync(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Egami.Raster.Width.get -> int
 Egami.Raster<TPixel>
+Egami.Raster<TPixel>.Apply(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster<TPixel>.Copy() -> Egami.Raster<TPixel>!
 Egami.Raster<TPixel>.CopyPixelsFrom(System.ReadOnlySpan<byte> source) -> void
 Egami.Raster<TPixel>.CopyPixelsFrom(System.ReadOnlySpan<TPixel> source) -> void
 Egami.Raster<TPixel>.CopyPixelsTo(System.Span<byte> destination) -> void
 Egami.Raster<TPixel>.CopyPixelsTo(System.Span<TPixel> destination) -> void
+Egami.Raster<TPixel>.Derive(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<TPixel>!
 Egami.Raster<TPixel>.ForEachRow(Egami.RowAction<TPixel>! action) -> void
 Egami.Raster<TPixel>.Frames.get -> Egami.FrameList<TPixel>!
 Egami.Raster<TPixel>.GetPixel(int x, int y) -> TPixel
 Egami.Raster<TPixel>.Row(int y) -> System.Span<TPixel>
 Egami.Raster<TPixel>.SetPixel(int x, int y, TPixel value) -> void
 Egami.Raster<TPixel>.TryGetContiguous(out System.Span<TPixel> pixels) -> bool
+Egami.Rect
+Egami.Rect.Bottom.get -> int
+Egami.Rect.Contains(Egami.Point point) -> bool
+Egami.Rect.Contains(Egami.Rect other) -> bool
+Egami.Rect.Deconstruct(out int X, out int Y, out int Width, out int Height) -> void
+Egami.Rect.Equals(Egami.Rect other) -> bool
+Egami.Rect.Height.get -> int
+Egami.Rect.Height.init -> void
+Egami.Rect.Intersect(Egami.Rect other) -> Egami.Rect
+Egami.Rect.IsEmpty.get -> bool
+Egami.Rect.Position.get -> Egami.Point
+Egami.Rect.Rect() -> void
+Egami.Rect.Rect(Egami.Point position, Egami.Size size) -> void
+Egami.Rect.Rect(int X, int Y, int Width, int Height) -> void
+Egami.Rect.Right.get -> int
+Egami.Rect.Size.get -> Egami.Size
+Egami.Rect.Width.get -> int
+Egami.Rect.Width.init -> void
+Egami.Rect.X.get -> int
+Egami.Rect.X.init -> void
+Egami.Rect.Y.get -> int
+Egami.Rect.Y.init -> void
 Egami.RowAction<TPixel>
 Egami.SafetyLimits
 Egami.SafetyLimits.<Clone>$() -> Egami.SafetyLimits!
@@ -520,8 +579,10 @@ override Egami.Pixels.Rgba8.ToString() -> string!
 override Egami.Pixels.RgbaF32.Equals(object? obj) -> bool
 override Egami.Pixels.RgbaF32.GetHashCode() -> int
 override Egami.Pixels.RgbaF32.ToString() -> string!
+override Egami.Point.GetHashCode() -> int
 override Egami.Raster<TPixel>.FrameCount.get -> int
 override Egami.Raster<TPixel>.Layout.get -> Egami.Pixels.PixelLayoutInfo
+override Egami.Rect.GetHashCode() -> int
 override Egami.SafetyLimits.Equals(object? obj) -> bool
 override Egami.SafetyLimits.GetHashCode() -> int
 override Egami.SafetyLimits.ToString() -> string!
@@ -616,6 +677,8 @@ static Egami.Pixels.RgbaF32.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pi
 static Egami.Pixels.RgbaF32.Layout.get -> Egami.Pixels.PixelLayoutInfo
 static Egami.Pixels.RgbaF32.operator !=(Egami.Pixels.RgbaF32 left, Egami.Pixels.RgbaF32 right) -> bool
 static Egami.Pixels.RgbaF32.operator ==(Egami.Pixels.RgbaF32 left, Egami.Pixels.RgbaF32 right) -> bool
+static Egami.Point.operator !=(Egami.Point left, Egami.Point right) -> bool
+static Egami.Point.operator ==(Egami.Point left, Egami.Point right) -> bool
 static Egami.PooledPixelMemorySource.Shared.get -> Egami.PooledPixelMemorySource!
 static Egami.Raster.Create<TPixel>(int width, int height, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
 static Egami.Raster.Create<TPixel>(int width, int height, TPixel fill, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
@@ -635,16 +698,23 @@ static Egami.Raster.Probe(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? 
 static Egami.Raster.ProbeAsync(string! path, Egami.EgamiContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Formats.RasterInfo!>!
 static Egami.Raster.ProbeAsync(System.IO.Stream! stream, Egami.EgamiContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Formats.RasterInfo!>!
 static Egami.Raster.Wrap<TPixel>(System.Memory<TPixel> memory, int width, int height, int stride = 0, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
+static Egami.Rect.operator !=(Egami.Rect left, Egami.Rect right) -> bool
+static Egami.Rect.operator ==(Egami.Rect left, Egami.Rect right) -> bool
 static Egami.SafetyLimits.Default.get -> Egami.SafetyLimits!
 static Egami.SafetyLimits.operator !=(Egami.SafetyLimits? left, Egami.SafetyLimits? right) -> bool
 static Egami.SafetyLimits.operator ==(Egami.SafetyLimits? left, Egami.SafetyLimits? right) -> bool
 static Egami.Size.operator !=(Egami.Size left, Egami.Size right) -> bool
 static Egami.Size.operator ==(Egami.Size left, Egami.Size right) -> bool
 virtual Egami.Formats.SignatureMatcher.Invoke(System.ReadOnlySpan<byte> header) -> bool
+virtual Egami.Operations.RowBandAction.Invoke(int start, int end) -> void
 virtual Egami.RowAction<TPixel>.Invoke(System.Span<TPixel> row, int y) -> void
 ~override Egami.Metadata.Resolution.Equals(object obj) -> bool
 ~override Egami.Metadata.Resolution.ToString() -> string
 ~override Egami.Pixels.PixelLayoutInfo.Equals(object obj) -> bool
 ~override Egami.Pixels.PixelLayoutInfo.ToString() -> string
+~override Egami.Point.Equals(object obj) -> bool
+~override Egami.Point.ToString() -> string
+~override Egami.Rect.Equals(object obj) -> bool
+~override Egami.Rect.ToString() -> string
 ~override Egami.Size.Equals(object obj) -> bool
 ~override Egami.Size.ToString() -> string

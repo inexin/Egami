@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 
 using Egami.Metadata;
+using Egami.Operations;
 using Egami.Pixels;
 
 namespace Egami;
@@ -10,9 +11,6 @@ namespace Egami;
 public sealed class Raster<TPixel> : Raster
     where TPixel : unmanaged, IPixelType<TPixel>
 {
-    // Below this many pixels, ForEachRow runs on the calling thread.
-    private const int ParallelThreshold = 256 * 1024;
-
     private readonly List<Frame<TPixel>> _frames;
     private bool _disposed;
 
@@ -59,8 +57,9 @@ public sealed class Raster<TPixel> : Raster
     }
 
     /// <summary>
-    /// Calls <paramref name="action"/> once for every row of the first frame. Large rasters are processed on several threads,
-    /// up to the context's <see cref="EgamiContext.MaxParallelism"/>, so <paramref name="action"/> may run concurrently for different rows.
+    /// Calls <paramref name="action"/> once for every row of the first frame. Large rasters are processed in bands of rows on several
+    /// threads, up to the context's <see cref="EgamiContext.MaxParallelism"/>, so <paramref name="action"/> may run concurrently for
+    /// different rows.
     /// </summary>
     /// <param name="action">The work to do on each row.</param>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
@@ -69,18 +68,105 @@ public sealed class Raster<TPixel> : Raster
         ArgumentNullException.ThrowIfNull(action);
         ThrowIfDisposed();
         PixelPlane<TPixel> plane = _frames[0].Plane;
-        if (Context.MaxParallelism == 1 || (long)Width * Height < ParallelThreshold)
+        RowRunner.Run(Height, (long)Width * TPixel.Layout.BytesPerPixel, Context.MaxParallelism, (start, end) =>
         {
-            for (int y = 0; y < Height; y++)
+            for (int y = start; y < end; y++)
             {
                 action(plane.Row(y), y);
             }
+        }, CancellationToken.None);
+    }
 
+    /// <summary>
+    /// Runs a chain of operations on every frame, changing this raster in place. Steps that keep the size work on the existing
+    /// pixels; steps that change it get new pixel memory, and the old memory is returned at once.
+    /// </summary>
+    /// <param name="build">Records the chain, for example <c>ops =&gt; ops.Add(operation)</c>.</param>
+    /// <param name="cancellationToken">Cancels between steps and between bands of rows.</param>
+    /// <remarks>
+    /// Arguments are checked while the chain is recorded, before any pixel changes. If a step fails or the chain is cancelled
+    /// part way, the raster may be left partly changed. Spans from <see cref="Row"/> taken before a size change become invalid.
+    /// </remarks>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="LimitExceededException">A new plane would break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <exception cref="OperationCanceledException">The token was cancelled.</exception>
+    public new void Apply(Action<RasterOps> build, CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
+        if (plan.Steps.Count == 0)
+        {
             return;
         }
 
-        ParallelOptions options = new() { MaxDegreeOfParallelism = Context.MaxParallelism };
-        Parallel.For(0, Height, options, y => action(plane.Row(y), y));
+        BudgetedMemorySource memory = new(Context.Memory, Context.Limits.MaxTotalBytes);
+        for (int i = 0; i < _frames.Count; i++)
+        {
+            Frame<TPixel> frame = _frames[i];
+            PixelPlane<TPixel> result = OperationPipeline.RunFrame(plan, frame.Plane, inPlace: true, Context, memory, i, cancellationToken);
+            if (!ReferenceEquals(result, frame.Plane))
+            {
+                PixelPlane<TPixel> old = frame.Plane;
+                frame.Plane = result;
+                old.Dispose();
+            }
+        }
+
+        Size size = plan.FinalSize(new Size(Width, Height));
+        Width = size.Width;
+        Height = size.Height;
+    }
+
+    /// <summary>
+    /// Runs a chain of operations and returns the result as a new raster, leaving this one untouched. The first step reads this
+    /// raster directly, so no full-size copy is made first.
+    /// </summary>
+    /// <param name="build">Records the chain, for example <c>ops =&gt; ops.Add(operation)</c>.</param>
+    /// <param name="cancellationToken">Cancels between steps and between bands of rows.</param>
+    /// <returns>The new raster, with a copy of this raster's metadata. The caller must dispose it.</returns>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="LimitExceededException">A new plane would break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <exception cref="OperationCanceledException">The token was cancelled.</exception>
+    public new Raster<TPixel> Derive(Action<RasterOps> build, CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
+        if (plan.Steps.Count == 0)
+        {
+            return Copy();
+        }
+
+        BudgetedMemorySource memory = new(Context.Memory, Context.Limits.MaxTotalBytes);
+        List<Frame<TPixel>> frames = new(_frames.Count);
+        try
+        {
+            for (int i = 0; i < _frames.Count; i++)
+            {
+                PixelPlane<TPixel> result = OperationPipeline.RunFrame(plan, _frames[i].Plane, inPlace: false, Context, memory, i, cancellationToken);
+                frames.Add(new Frame<TPixel>(result, _frames[i].Metadata.Copy()));
+            }
+        }
+        catch
+        {
+            foreach (Frame<TPixel> frame in frames)
+            {
+                frame.Plane.Dispose();
+            }
+
+            throw;
+        }
+
+        return new Raster<TPixel>(frames, Metadata.Copy(), Context);
+    }
+
+    private protected override void ApplyCore(Action<RasterOps> build, CancellationToken cancellationToken)
+    {
+        Apply(build, cancellationToken);
+    }
+
+    private protected override Raster DeriveCore(Action<RasterOps> build, CancellationToken cancellationToken)
+    {
+        return Derive(build, cancellationToken);
     }
 
     /// <summary>Reads one pixel of the first frame. This is slow; use <see cref="Row"/> for bulk access.</summary>

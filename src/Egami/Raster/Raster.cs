@@ -1,4 +1,5 @@
 using Egami.Metadata;
+using Egami.Operations;
 using Egami.Pixels;
 
 namespace Egami;
@@ -115,6 +116,31 @@ public abstract partial class Raster : IDisposable
         Dispose(true);
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// Runs a chain of operations on every frame, changing this raster in place. See <see cref="Raster{TPixel}.Apply"/>.
+    /// </summary>
+    /// <param name="build">Records the chain.</param>
+    /// <param name="cancellationToken">Cancels between steps and between bands of rows.</param>
+    public void Apply(Action<RasterOps> build, CancellationToken cancellationToken = default)
+    {
+        ApplyCore(build, cancellationToken);
+    }
+
+    /// <summary>Runs a chain of operations and returns the result as a new raster. See <see cref="Raster{TPixel}.Derive"/>.</summary>
+    /// <param name="build">Records the chain.</param>
+    /// <param name="cancellationToken">Cancels between steps and between bands of rows.</param>
+    /// <returns>The new raster, in the same pixel type. The caller must dispose it.</returns>
+    public Raster Derive(Action<RasterOps> build, CancellationToken cancellationToken = default)
+    {
+        return DeriveCore(build, cancellationToken);
+    }
+
+    /// <summary>Implements <see cref="Apply"/>.</summary>
+    private protected abstract void ApplyCore(Action<RasterOps> build, CancellationToken cancellationToken);
+
+    /// <summary>Implements <see cref="Derive"/>.</summary>
+    private protected abstract Raster DeriveCore(Action<RasterOps> build, CancellationToken cancellationToken);
 
     /// <summary>Implements <see cref="As{TTo}"/>.</summary>
     private protected abstract Raster<TTo> ConvertTo<TTo>()
