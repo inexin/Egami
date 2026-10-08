@@ -84,6 +84,27 @@ jobs:
           done
           exit $status
 
+  libpng:
+    # Checks Egami's PNG reader and writer against libpng, the reference PNG library. libpng is a CI test tool only.
+    name: PNG against libpng
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Install libpng and pngcheck
+        run: sudo apt-get update && sudo apt-get install -y libpng-dev pngcheck
+      - name: Build the libpng decoder
+        run: gcc -O2 -Wall -Werror -o "$RUNNER_TEMP/pngdecode" tools/libpng-check/pngdecode.c -lpng
+      - run: dotnet build tests/Egami.Tests -c Release
+      - name: Compare with libpng
+        run: dotnet test tests/Egami.Tests -c Release --no-build --filter "FullyQualifiedName~LibpngTests"
+        env:
+          EGAMI_LIBPNG_DECODER: ${{ runner.temp }}/pngdecode
+          EGAMI_PNGCHECK: pngcheck
+          EGAMI_REQUIRE_LIBPNG: '1'
+
   aot-smoke:
     name: Native AOT smoke app
     runs-on: ubuntu-latest
