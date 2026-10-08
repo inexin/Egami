@@ -300,6 +300,19 @@ Egami.Operations.ColorMatrix.this[int row, int column].get -> float
 Egami.Operations.ColorSpace
 Egami.Operations.ColorSpace.Encoded = 0 -> Egami.Operations.ColorSpace
 Egami.Operations.ColorSpace.Linear = 1 -> Egami.Operations.ColorSpace
+Egami.Operations.ConvolutionKernel
+Egami.Operations.ConvolutionKernel.ConvolutionKernel(int width, int height, System.ReadOnlySpan<float> values, float divisor = 1, float offset = 0) -> void
+Egami.Operations.ConvolutionKernel.Divisor.get -> float
+Egami.Operations.ConvolutionKernel.Height.get -> int
+Egami.Operations.ConvolutionKernel.IsSeparable.get -> bool
+Egami.Operations.ConvolutionKernel.Offset.get -> float
+Egami.Operations.ConvolutionKernel.this[int x, int y].get -> float
+Egami.Operations.ConvolutionKernel.Width.get -> int
+Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Clamp = 0 -> Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Mirror = 1 -> Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Transparent = 3 -> Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Wrap = 2 -> Egami.Operations.EdgeMode
 Egami.Operations.GrayscaleMode
 Egami.Operations.GrayscaleMode.Rec601 = 1 -> Egami.Operations.GrayscaleMode
 Egami.Operations.GrayscaleMode.Rec709 = 0 -> Egami.Operations.GrayscaleMode
@@ -316,9 +329,12 @@ Egami.Operations.OperationInput<TPixel>.IsInPlace.get -> bool
 Egami.Operations.OperationInput<TPixel>.Source.get -> Egami.PixelPlane<TPixel>!
 Egami.Operations.RasterOps
 Egami.Operations.RasterOps.Add(Egami.Operations.IRasterOperation! operation) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Blur(float sigma, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.BoxBlur(int radius) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Brightness(float amount) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ColorMatrix(Egami.Operations.ColorMatrix matrix) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Contrast(float amount) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Convolve(Egami.Operations.ConvolutionKernel! kernel, Egami.Operations.EdgeMode edge = Egami.Operations.EdgeMode.Clamp, bool preserveAlpha = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(Egami.Rect rect) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(int x, int y, int width, int height) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Fill(int width, int height, Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
@@ -334,6 +350,7 @@ Egami.Operations.RasterOps.Resize(int width, int height, Egami.Operations.Resamp
 Egami.Operations.RasterOps.Rotate(float degrees, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8)) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Saturation(float amount) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Sepia(float amount = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Sharpen(float amount = 1, float sigma = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Bicubic = 0 -> Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Bilinear = 3 -> Egami.Operations.ResampleFilter
@@ -659,6 +676,7 @@ static Egami.Operations.ColorMatrix.operator !=(Egami.Operations.ColorMatrix lef
 static Egami.Operations.ColorMatrix.operator ==(Egami.Operations.ColorMatrix left, Egami.Operations.ColorMatrix right) -> bool
 static Egami.Operations.ColorMatrix.Saturation(float amount) -> Egami.Operations.ColorMatrix
 static Egami.Operations.ColorMatrix.Sepia(float amount = 1) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ConvolutionKernel.Separable(System.ReadOnlySpan<float> row, System.ReadOnlySpan<float> column, float divisor = 1, float offset = 0) -> Egami.Operations.ConvolutionKernel!
 static Egami.PixelPlane.Allocate<TPixel>(int width, int height, Egami.IPixelMemorySource! source, Egami.ClearMode clear = Egami.ClearMode.None) -> Egami.PixelPlane<TPixel>!
 static Egami.PixelPlane.Wrap<TPixel>(System.Memory<TPixel> memory, int width, int height, int stride = 0) -> Egami.PixelPlane<TPixel>!
 static Egami.Pixels.Bgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Bgr8

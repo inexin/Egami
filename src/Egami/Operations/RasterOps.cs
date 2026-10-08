@@ -1,4 +1,5 @@
 using Egami.Operations.Color;
+using Egami.Operations.Filters;
 using Egami.Operations.Geometry;
 using Egami.Operations.Resampling;
 using Egami.Pixels;
@@ -284,6 +285,125 @@ public sealed class RasterOps
     public RasterOps ColorMatrix(ColorMatrix matrix)
     {
         return Add(new ColorMatrixOperation(matrix));
+    }
+
+    /// <summary>
+    /// Blurs with a Gaussian of standard deviation <paramref name="sigma"/> pixels (radius ceil(3σ), weights normalized). Edges
+    /// repeat the edge pixel. Above σ = 20 it runs as three box blurs of matched width, within 3% of a true Gaussian and much faster.
+    /// </summary>
+    /// <param name="sigma">The standard deviation in pixels; 0 changes nothing.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="sigma"/> is negative or not finite.</exception>
+    public RasterOps Blur(float sigma, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        CheckSigma(sigma);
+        CheckFilter(ResampleFilter.Bicubic, colorSpace);
+        if (sigma == 0)
+        {
+            return this;
+        }
+
+        bool linear = colorSpace == ColorSpace.Linear;
+        if (sigma <= LargeSigma)
+        {
+            return Add(ConvolutionOperation.Gaussian(sigma, linear));
+        }
+
+        foreach (int radius in BoxRadii(sigma, 3))
+        {
+            Add(ConvolutionOperation.Box(radius, linear));
+        }
+
+        return this;
+    }
+
+    /// <summary>Replaces each pixel with the mean of the (2r + 1) square around it. Edges repeat the edge pixel.</summary>
+    /// <param name="radius">The radius in pixels; 0 changes nothing.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="radius"/> is negative or above 1000.</exception>
+    public RasterOps BoxBlur(int radius)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(radius);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(radius, 1000);
+        return radius == 0 ? this : Add(ConvolutionOperation.Box(radius, linear: false));
+    }
+
+    /// <summary>
+    /// Sharpens with an unsharp mask: <c>out = src + amount × (src − Blur(sigma))</c>.
+    /// </summary>
+    /// <param name="amount">How strongly to sharpen; 0 changes nothing. Defaults to 1.</param>
+    /// <param name="sigma">The blur radius that sets which details are sharpened, in pixels. Defaults to 1.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An argument is negative or not finite, or <paramref name="sigma"/> is 0 or above 20.</exception>
+    public RasterOps Sharpen(float amount = 1, float sigma = 1)
+    {
+        if (!(amount >= 0) || float.IsPositiveInfinity(amount))
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount), amount, "The amount must be finite and 0 or more.");
+        }
+
+        CheckSigma(sigma);
+        if (sigma == 0 || sigma > LargeSigma)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be above 0 and at most 20.");
+        }
+
+        return amount == 0 ? this : Add(ConvolutionOperation.Gaussian(sigma, linear: false, sharpen: amount));
+    }
+
+    /// <summary>
+    /// Convolves with a kernel, applied as laid out. Color and alpha are filtered together in premultiplied form unless
+    /// <paramref name="preserveAlpha"/> is set, which filters only the color and keeps each pixel's alpha, as edge-detect kernels need.
+    /// </summary>
+    /// <param name="kernel">The kernel. Separable kernels run as two 1D passes.</param>
+    /// <param name="edge">How taps past the border are read. Defaults to <see cref="EdgeMode.Clamp"/>.</param>
+    /// <param name="preserveAlpha">Whether to keep the source alpha and filter only red, green and blue.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="edge"/> is not defined.</exception>
+    public RasterOps Convolve(ConvolutionKernel kernel, EdgeMode edge = EdgeMode.Clamp, bool preserveAlpha = false)
+    {
+        ArgumentNullException.ThrowIfNull(kernel);
+        if (!Enum.IsDefined(edge))
+        {
+            throw new ArgumentOutOfRangeException(nameof(edge), edge, null);
+        }
+
+        return Add(ConvolutionOperation.FromKernel(kernel, edge, preserveAlpha));
+    }
+
+    /// <summary>Blurs with σ above this run as three box blurs.</summary>
+    internal const float LargeSigma = 20;
+
+    /// <summary>
+    /// Returns the radii of <paramref name="passes"/> box blurs whose combined variance matches a Gaussian of <paramref name="sigma"/>:
+    /// the first boxes have the odd width just under the ideal, the rest the next odd width.
+    /// </summary>
+    internal static int[] BoxRadii(float sigma, int passes)
+    {
+        double variance = 12.0 * sigma * sigma;
+        int lower = (int)Math.Floor(Math.Sqrt((variance / passes) + 1));
+        if (lower % 2 == 0)
+        {
+            lower--;
+        }
+
+        int narrow = (int)Math.Round((variance - (passes * lower * lower) - (4.0 * passes * lower) - (3.0 * passes)) / ((-4.0 * lower) - 4));
+        int[] radii = new int[passes];
+        for (int i = 0; i < passes; i++)
+        {
+            radii[i] = ((i < narrow ? lower : lower + 2) - 1) / 2;
+        }
+
+        return radii;
+    }
+
+    private static void CheckSigma(float sigma)
+    {
+        if (!(sigma >= 0) || sigma > 1000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be from 0 to 1000.");
+        }
     }
 
     private static void CheckFilter(ResampleFilter filter, ColorSpace colorSpace)
