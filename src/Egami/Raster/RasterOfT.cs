@@ -93,7 +93,7 @@ public sealed class Raster<TPixel> : Raster
     public new void Apply(Action<RasterOps> build, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
+        using OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
         if (plan.Steps.Count == 0)
         {
             return;
@@ -130,7 +130,7 @@ public sealed class Raster<TPixel> : Raster
     public new Raster<TPixel> Derive(Action<RasterOps> build, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
+        using OperationPipeline.Plan plan = OperationPipeline.Build(build, new Size(Width, Height));
         if (plan.Steps.Count == 0)
         {
             return Copy();

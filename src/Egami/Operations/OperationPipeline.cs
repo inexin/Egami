@@ -107,8 +107,17 @@ internal static class OperationPipeline
     }
 
     /// <summary>The planned steps and the frame size after each.</summary>
-    internal sealed record Plan(IReadOnlyList<IRasterOperation> Steps, Size[] Sizes)
+    internal sealed record Plan(IReadOnlyList<IRasterOperation> Steps, Size[] Sizes) : IDisposable
     {
+        /// <summary>Returns the pooled buffers the built-in steps kept for the chain.</summary>
+        public void Dispose()
+        {
+            foreach (IRasterOperation step in Steps)
+            {
+                (step as IHoldsBuffers)?.ReleaseBuffers();
+            }
+        }
+
         /// <summary>Gets the size after the last step, or <paramref name="input"/> for an empty chain.</summary>
         internal Size FinalSize(Size input)
         {

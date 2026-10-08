@@ -11,6 +11,13 @@ internal interface INeedsNewPlane
     bool NeedsNewPlane(Size input);
 }
 
+/// <summary>A built-in operation that keeps pooled buffers, such as weight tables, for the frames of one chain.</summary>
+internal interface IHoldsBuffers
+{
+    /// <summary>Returns the buffers once every frame has run.</summary>
+    void ReleaseBuffers();
+}
+
 /// <summary>Helpers shared by the built-in operations.</summary>
 internal static class OperationRows
 {

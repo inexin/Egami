@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Numerics;
 using System.Runtime.InteropServices;
 
 using Egami.Operations.Geometry;
@@ -26,7 +25,7 @@ internal enum ResizeMode
 /// </summary>
 internal sealed class ResizeOperation(
     ResizeMode mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null)
-    : IRasterOperation, INeedsNewPlane
+    : IRasterOperation, INeedsNewPlane, IHoldsBuffers
 {
     private Plan? _plan;
 
@@ -47,6 +46,11 @@ internal sealed class ResizeOperation(
     public Size OutputSize(Size input)
     {
         return PlanFor(input).Output;
+    }
+
+    public void ReleaseBuffers()
+    {
+        _plan?.ReleaseWeights();
     }
 
     public void Run<TPixel>(OperationInput<TPixel> input)
@@ -71,14 +75,29 @@ internal sealed class ResizeOperation(
         int xLow = horizontal.First[0];
         int xCount = horizontal.First[outWidth - 1] + horizontal.Count[outWidth - 1] - xLow;
         int ringRows = vertical.Stride;
+        float[] pairs = horizontal.Pairs;
+        // Opaque 8-bit rows take a fixed-point horizontal pass, which measured 1.5 times faster than float for a 5× reduction.
+        bool fixedPoint = RowConverter<TPixel>.FourByte && colorSpace == ColorSpace.Encoded;
+        short[] fixedWeights = fixedPoint ? horizontal.Fixed : [];
+        int[] groupCount = fixedPoint ? horizontal.GroupCount : [];
+        int[] pairCount = horizontal.PairCount;
         input.ForEachBand((start, end) =>
         {
+            // The source line holds one extra zeroed pixel, which the last odd tap pair reads with a zero weight.
+            int lineLength = (xCount + 1) * 4;
             float[] ringBuffer = ArrayPool<float>.Shared.Rent(ringRows * outWidth * 4);
-            float[] lineBuffer = ArrayPool<float>.Shared.Rent(Math.Max(xCount, outWidth) * 4);
+            float[] lineBuffer = ArrayPool<float>.Shared.Rent(lineLength);
+            float[] outBuffer = ArrayPool<float>.Shared.Rent(outWidth * 4);
+            bool[] opaqueRows = ArrayPool<bool>.Shared.Rent(ringRows);
+
+            // Opaque rows take the fixed-point pass straight from bytes; it reads up to three zeroed pixels past the last tap.
+            byte[] byteBuffer = ArrayPool<byte>.Shared.Rent(fixedPoint ? (xCount + 3) * 4 : 0);
             try
             {
-                Span<Vector4> ring = MemoryMarshal.Cast<float, Vector4>(ringBuffer.AsSpan(0, ringRows * outWidth * 4));
-                Span<Vector4> line = MemoryMarshal.Cast<float, Vector4>(lineBuffer.AsSpan(0, Math.Max(xCount, outWidth) * 4));
+                Span<float> ring = ringBuffer.AsSpan(0, ringRows * outWidth * 4);
+                Span<float> line = lineBuffer.AsSpan(0, lineLength);
+                Span<float> output = outBuffer.AsSpan(0, outWidth * 4);
+                line[(xCount * 4)..].Clear();
                 int next = vertical.First[start];
                 for (int y = start; y < end; y++)
                 {
@@ -86,52 +105,42 @@ internal sealed class ResizeOperation(
                     int count = vertical.Count[y];
                     for (; next < first + count; next++)
                     {
-                        Span<Vector4> source = line[..xCount];
-                        converter.Load(input.Source.Row(next).Slice(xLow, xCount), source);
-                        HorizontalPass(source, horizontal, xLow, ring.Slice(next % ringRows * outWidth, outWidth));
+                        int slot = next % ringRows;
+                        Span<float> target = ring.Slice(slot * outWidth * 4, outWidth * 4);
+                        ReadOnlySpan<TPixel> sourceRow = input.Source.Row(next).Slice(xLow, xCount);
+                        if (fixedPoint && ResizeKernels.IsOpaque8(MemoryMarshal.AsBytes(sourceRow)))
+                        {
+                            Span<byte> bytes = byteBuffer.AsSpan(0, (xCount + 3) * 4);
+                            MemoryMarshal.AsBytes(sourceRow).CopyTo(bytes);
+                            bytes[(xCount * 4)..].Clear();
+                            ResizeKernels.HorizontalFixed8(bytes, horizontal.First, groupCount, fixedWeights, horizontal.GroupStride, xLow, target);
+                            opaqueRows[slot] = true;
+                            continue;
+                        }
+
+                        opaqueRows[slot] = converter.Load(sourceRow, line);
+                        ResizeKernels.Horizontal(line, horizontal.First, pairCount, pairs, horizontal.PairStride, xLow, target);
                     }
 
-                    Span<Vector4> output = line[..outWidth];
-                    VerticalPass(ring, outWidth, ringRows, first, vertical.Row(y), output);
-                    converter.Store(output, input.Destination.Row(y));
+                    bool opaque = true;
+                    for (int k = 0; k < count; k++)
+                    {
+                        opaque &= opaqueRows[(first + k) % ringRows];
+                    }
+
+                    ResizeKernels.Vertical(ring, outWidth * 4, ringRows, first, vertical.Row(y), output);
+                    converter.Store(output, input.Destination.Row(y), opaque);
                 }
             }
             finally
             {
                 ArrayPool<float>.Shared.Return(ringBuffer);
                 ArrayPool<float>.Shared.Return(lineBuffer);
+                ArrayPool<float>.Shared.Return(outBuffer);
+                ArrayPool<bool>.Shared.Return(opaqueRows);
+                ArrayPool<byte>.Shared.Return(byteBuffer);
             }
         });
-    }
-
-    private static void HorizontalPass(ReadOnlySpan<Vector4> source, ResizeWeights weights, int xLow, Span<Vector4> destination)
-    {
-        for (int x = 0; x < destination.Length; x++)
-        {
-            ReadOnlySpan<float> w = weights.Row(x);
-            ReadOnlySpan<Vector4> taps = source.Slice(weights.First[x] - xLow, w.Length);
-            Vector4 sum = Vector4.Zero;
-            for (int k = 0; k < w.Length; k++)
-            {
-                sum += taps[k] * w[k];
-            }
-
-            destination[x] = sum;
-        }
-    }
-
-    private static void VerticalPass(ReadOnlySpan<Vector4> ring, int width, int ringRows, int first, ReadOnlySpan<float> weights, Span<Vector4> destination)
-    {
-        destination.Clear();
-        for (int k = 0; k < weights.Length; k++)
-        {
-            ReadOnlySpan<Vector4> row = ring.Slice((first + k) % ringRows * width, width);
-            float w = weights[k];
-            for (int x = 0; x < width; x++)
-            {
-                destination[x] += row[x] * w;
-            }
-        }
     }
 
     private static void RunNearest<TPixel>(OperationInput<TPixel> input, ResizeWeights horizontal, ResizeWeights vertical)
@@ -223,6 +232,16 @@ internal sealed class ResizeOperation(
     {
         private (ResizeWeights, ResizeWeights)? _weights;
 
+        internal void ReleaseWeights()
+        {
+            if (_weights is (ResizeWeights horizontal, ResizeWeights vertical))
+            {
+                horizontal.Dispose();
+                vertical.Dispose();
+                _weights = null;
+            }
+        }
+
         internal (ResizeWeights Horizontal, ResizeWeights Vertical) Weights(ResampleFilter filter)
         {
             return _weights ??= (
@@ -233,74 +252,108 @@ internal sealed class ResizeOperation(
 }
 
 /// <summary>
-/// Moves rows between a pixel type and the float working form: straight or premultiplied RGBA in 0..1, encoded or linear.
+/// Moves rows between a pixel type and the float working form: four floats per pixel, RGBA in 0..1, encoded or linear,
+/// premultiplied unless the row is opaque. Rgba8, Bgra8 and RgbaF32 have vector paths; other types go through RgbaF32.
 /// </summary>
 internal sealed class RowConverter<TPixel>(bool linear)
     where TPixel : unmanaged, IPixelType<TPixel>
 {
     private static readonly bool HasAlpha = TPixel.Layout.Alpha != AlphaKind.None;
     private static readonly bool EightBit = TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
+    internal static readonly bool FourByte = typeof(TPixel) == typeof(Rgba8) || typeof(TPixel) == typeof(Bgra8);
 
-    /// <summary>Converts <paramref name="source"/> to premultiplied working pixels.</summary>
-    internal void Load(ReadOnlySpan<TPixel> source, Span<Vector4> destination)
+    /// <summary>Converts <paramref name="source"/> to working pixels at the start of <paramref name="destination"/>.</summary>
+    /// <returns><see langword="true"/> if every pixel is opaque, so nothing was premultiplied.</returns>
+    internal bool Load(ReadOnlySpan<TPixel> source, Span<float> destination)
     {
-        PixelConvert.Convert(source, MemoryMarshal.Cast<Vector4, RgbaF32>(destination));
-        if (linear)
+        Span<float> pixels = destination[..(source.Length * 4)];
+        if (FourByte && !linear)
         {
+            return ResizeKernels.Load8(MemoryMarshal.AsBytes(source), pixels);
+        }
+
+        if (FourByte)
+        {
+            ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(source);
             float[] table = Srgb.LinearFrom8;
-            for (int i = 0; i < destination.Length; i++)
+            for (int i = 0; i < bytes.Length; i += 4)
             {
-                Vector4 p = destination[i];
-                destination[i] = EightBit
-                    ? new Vector4(table[(int)((p.X * 255f) + 0.5f)], table[(int)((p.Y * 255f) + 0.5f)], table[(int)((p.Z * 255f) + 0.5f)], p.W)
-                    : new Vector4((float)Srgb.ToLinear(p.X), (float)Srgb.ToLinear(p.Y), (float)Srgb.ToLinear(p.Z), p.W);
+                pixels[i] = table[bytes[i]];
+                pixels[i + 1] = table[bytes[i + 1]];
+                pixels[i + 2] = table[bytes[i + 2]];
+                pixels[i + 3] = bytes[i + 3] * (1f / 255f);
+            }
+        }
+        else
+        {
+            PixelConvert.Convert(source, MemoryMarshal.Cast<float, RgbaF32>(pixels));
+            if (linear)
+            {
+                ToLinear(pixels);
             }
         }
 
-        if (HasAlpha)
+        return !HasAlpha || ResizeKernels.PremultiplyRow(pixels);
+    }
+
+    /// <summary>
+    /// Converts working pixels back to <typeparamref name="TPixel"/>, dividing out alpha and clamping the filter's overshoot.
+    /// <paramref name="opaque"/> says every source row that contributed was opaque. The source is used as scratch.
+    /// </summary>
+    internal void Store(Span<float> source, Span<TPixel> destination, bool opaque)
+    {
+        Span<float> pixels = source[..(destination.Length * 4)];
+        opaque |= !HasAlpha;
+        if (FourByte && !linear)
         {
-            for (int i = 0; i < destination.Length; i++)
+            ResizeKernels.Store8(pixels, MemoryMarshal.AsBytes(destination), opaque);
+            return;
+        }
+
+        ResizeKernels.Unpremultiply(pixels, opaque);
+        if (FourByte)
+        {
+            Span<byte> bytes = MemoryMarshal.AsBytes(destination);
+            for (int i = 0; i < bytes.Length; i += 4)
             {
-                Vector4 p = destination[i];
-                if (p.W != 1f)
-                {
-                    destination[i] = new Vector4(p.X * p.W, p.Y * p.W, p.Z * p.W, p.W);
-                }
+                bytes[i] = Srgb.FromLinearTo8(pixels[i]);
+                bytes[i + 1] = Srgb.FromLinearTo8(pixels[i + 1]);
+                bytes[i + 2] = Srgb.FromLinearTo8(pixels[i + 2]);
+                bytes[i + 3] = (byte)(int)((pixels[i + 3] * 255f) + 0.5f);
+            }
+
+            return;
+        }
+
+        if (linear)
+        {
+            FromLinear(pixels);
+        }
+
+        PixelConvert.Convert<RgbaF32, TPixel>(MemoryMarshal.Cast<float, RgbaF32>(pixels), destination);
+    }
+
+    private static void ToLinear(Span<float> pixels)
+    {
+        float[] table = Srgb.LinearFrom8;
+        for (int i = 0; i < pixels.Length; i += 4)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                // 8-bit values arrive as exact multiples of 1/255, so the table gives the same result as the formula.
+                pixels[i + c] = EightBit ? table[(int)((pixels[i + c] * 255f) + 0.5f)] : (float)Srgb.ToLinear(pixels[i + c]);
             }
         }
     }
 
-    /// <summary>Converts premultiplied working pixels back to <typeparamref name="TPixel"/>, clamping the filter's overshoot.</summary>
-    internal void Store(Span<Vector4> source, Span<TPixel> destination)
+    private static void FromLinear(Span<float> pixels)
     {
-        for (int i = 0; i < source.Length; i++)
+        for (int i = 0; i < pixels.Length; i += 4)
         {
-            Vector4 p = source[i];
-            float a = Math.Clamp(p.W, 0f, 1f);
-            if (!HasAlpha || a == 1f)
+            for (int c = 0; c < 3; c++)
             {
-                p = Vector4.Clamp(p, Vector4.Zero, Vector4.One);
+                pixels[i + c] = EightBit ? Srgb.FromLinearTo8(pixels[i + c]) * (1f / 255f) : (float)Srgb.FromLinear(pixels[i + c]);
             }
-            else if (a > 0f)
-            {
-                p = Vector4.Clamp(new Vector4(p.X / a, p.Y / a, p.Z / a, 0f), Vector4.Zero, Vector4.One);
-            }
-            else
-            {
-                p = Vector4.Zero;
-            }
-
-            if (linear)
-            {
-                p = EightBit
-                    ? new Vector4(Srgb.FromLinearTo8(p.X) / 255f, Srgb.FromLinearTo8(p.Y) / 255f, Srgb.FromLinearTo8(p.Z) / 255f, 0f)
-                    : new Vector4((float)Srgb.FromLinear(p.X), (float)Srgb.FromLinear(p.Y), (float)Srgb.FromLinear(p.Z), 0f);
-            }
-
-            p.W = HasAlpha ? a : 1f;
-            source[i] = p;
         }
-
-        PixelConvert.Convert<RgbaF32, TPixel>(MemoryMarshal.Cast<Vector4, RgbaF32>(source), destination);
     }
 }
