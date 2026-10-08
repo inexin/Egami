@@ -18,9 +18,9 @@ internal static class FormatPipeline
         return Run(stream, context, (format, input) => Named(format.Reader!.Read<TPixel>(input, options), format), cancellationToken);
     }
 
-    internal static RasterInfo Probe(Stream stream, EgamiContext context, CancellationToken cancellationToken)
+    internal static RasterInfo Probe(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
-        return Run(stream, context, (format, input) => format.Reader!.ReadInfo(input, ReaderOptions.Default), cancellationToken);
+        return Run(stream, context, (format, input) => format.Reader!.ReadInfo(input, options), cancellationToken);
     }
 
     internal static void Save(Stream output, FormatInfo format, WriterOptions options, Action<IFormatWriter, Stream, WriterOptions> write)
@@ -89,7 +89,7 @@ internal static class FormatPipeline
     /// Reads only as much of the stream as the header needs: 64 KB first, doubling while the header runs past what has been read.
     /// A seekable stream ends just past the bytes the header used.
     /// </summary>
-    internal static async Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext context, CancellationToken cancellationToken)
+    internal static async Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
         long start = stream.CanSeek ? stream.Position : -1;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
@@ -109,7 +109,7 @@ internal static class FormatPipeline
                 using MemoryStream memory = new(buffer, 0, length, writable: false);
                 try
                 {
-                    RasterInfo info = Probe(memory, context, cancellationToken);
+                    RasterInfo info = Probe(memory, context, options, cancellationToken);
                     if (start >= 0)
                     {
                         stream.Position = start + memory.Position;

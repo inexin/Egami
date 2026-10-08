@@ -82,10 +82,10 @@ public sealed class FormatPipelineTests : IDisposable
         using Raster<Rgba8> typed = await Raster.LoadAsync<Rgba8>(new MemoryStream(File.ReadAllBytes(path)), Context, cancellationToken: TestContext.Current.CancellationToken);
         AssertSame(original, typed);
 
-        RasterInfo info = await Raster.ProbeAsync(path, Context, TestContext.Current.CancellationToken);
+        RasterInfo info = await Raster.ProbeAsync(path, Context, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(4, info.Height);
         stream.Position = 0;
-        Assert.Equal(5, (await Raster.ProbeAsync(stream, Context, TestContext.Current.CancellationToken)).Width);
+        Assert.Equal(5, (await Raster.ProbeAsync(stream, Context, cancellationToken: TestContext.Current.CancellationToken)).Width);
     }
 
     [Fact]
@@ -223,12 +223,12 @@ public sealed class FormatPipelineTests : IDisposable
     {
         FormatInfo other = TestFormat.Info with { Name = "Other", Matches = _ => false };
         EgamiContext context = EgamiContext.Default.WithFormat(TestFormat.Info).WithFormat(other);
-        Assert.Equal(["PNG", "EGTF", "Other"], context.Formats.Select(f => f.Name));
+        Assert.Equal(["PNG", "JPEG", "EGTF", "Other"], context.Formats.Select(f => f.Name));
 
         FormatInfo replacement = TestFormat.Info with { Name = "egtf", Extensions = ["x"] };
         context = context.WithFormat(replacement);
-        Assert.Equal(["PNG", "egtf", "Other"], context.Formats.Select(f => f.Name));
-        Assert.Equal(["PNG"], EgamiContext.Default.Formats.Select(f => f.Name));
+        Assert.Equal(["PNG", "JPEG", "egtf", "Other"], context.Formats.Select(f => f.Name));
+        Assert.Equal(["PNG", "JPEG"], EgamiContext.Default.Formats.Select(f => f.Name));
     }
 
     [Fact]

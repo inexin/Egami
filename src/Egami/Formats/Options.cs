@@ -72,4 +72,10 @@ public sealed record RasterInfo
 
     /// <summary>Gets an estimate of the bytes a full load in the natural pixel type would allocate, so large images can be rejected before decoding.</summary>
     public long EstimatedBytes { get; init; }
+
+    /// <summary>
+    /// Gets the EXIF orientation: how the stored pixels must be turned to show the image upright. Load returns the pixels as
+    /// stored; apply this with <c>AutoOrient</c>. <see cref="Metadata.ImageOrientation.Normal"/> when the file says nothing.
+    /// </summary>
+    public Metadata.ImageOrientation Orientation { get; init; } = Metadata.ImageOrientation.Normal;
 }

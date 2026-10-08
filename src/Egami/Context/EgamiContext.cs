@@ -20,7 +20,7 @@ public sealed record EgamiContext
     private readonly IPixelMemorySource _memory = PooledPixelMemorySource.Shared;
     private readonly int _maxParallelism = Environment.ProcessorCount;
     private readonly SafetyLimits _limits = SafetyLimits.Default;
-    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info];
+    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info];
 
     /// <summary>Gets the context used when a call passes none.</summary>
     public static EgamiContext Default { get; } = new();

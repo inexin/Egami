@@ -156,60 +156,80 @@ public abstract partial class Raster
     /// </summary>
     /// <param name="stream">The encoded image. A seekable stream ends just past the bytes read.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">
+    /// Reader options, or <see langword="null"/> for the defaults. <see cref="ReaderOptions.TargetSize"/> lowers the estimate for
+    /// formats that can decode at a smaller scale, and <see cref="ReaderOptions.Recovery"/> applies to the header.
+    /// </param>
     /// <returns>What the header says.</returns>
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
-    public static RasterInfo Probe(Stream stream, EgamiContext? context = null)
+    public static RasterInfo Probe(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
     {
-        return FormatPipeline.Probe(stream, context ?? EgamiContext.Default, CancellationToken.None);
+        return FormatPipeline.Probe(stream, context ?? EgamiContext.Default, options ?? ReaderOptions.Default, CancellationToken.None);
     }
 
-    /// <summary>Reads only the header of an image file. See <see cref="Probe(Stream, EgamiContext?)"/>.</summary>
+    /// <summary>Reads only the header of an image file. See <see cref="Probe(Stream, EgamiContext?, ReaderOptions?)"/>.</summary>
     /// <param name="path">The file path.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">
+    /// Reader options, or <see langword="null"/> for the defaults. <see cref="ReaderOptions.TargetSize"/> lowers the estimate for
+    /// formats that can decode at a smaller scale, and <see cref="ReaderOptions.Recovery"/> applies to the header.
+    /// </param>
     /// <returns>What the header says.</returns>
-    public static RasterInfo Probe(string path, EgamiContext? context = null)
+    public static RasterInfo Probe(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using FileStream stream = OpenRead(path);
-        return Probe(stream, context);
+        return Probe(stream, context, options);
     }
 
-    /// <summary>Reads only the header of an image in memory. See <see cref="Probe(Stream, EgamiContext?)"/>.</summary>
+    /// <summary>Reads only the header of an image in memory. See <see cref="Probe(Stream, EgamiContext?, ReaderOptions?)"/>.</summary>
     /// <param name="data">The encoded image.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">
+    /// Reader options, or <see langword="null"/> for the defaults. <see cref="ReaderOptions.TargetSize"/> lowers the estimate for
+    /// formats that can decode at a smaller scale, and <see cref="ReaderOptions.Recovery"/> applies to the header.
+    /// </param>
     /// <returns>What the header says.</returns>
-    public static RasterInfo Probe(ReadOnlyMemory<byte> data, EgamiContext? context = null)
+    public static RasterInfo Probe(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using MemoryStream stream = AsStream(data);
-        return Probe(stream, context);
+        return Probe(stream, context, options);
     }
 
     /// <summary>
     /// Reads the header asynchronously, reading only as much of the stream as the header needs (at least 64 KB, or all of it if
-    /// shorter). See <see cref="Probe(Stream, EgamiContext?)"/>.
+    /// shorter). See <see cref="Probe(Stream, EgamiContext?, ReaderOptions?)"/>.
     /// </summary>
     /// <param name="stream">The encoded image.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">
+    /// Reader options, or <see langword="null"/> for the defaults. <see cref="ReaderOptions.TargetSize"/> lowers the estimate for
+    /// formats that can decode at a smaller scale, and <see cref="ReaderOptions.Recovery"/> applies to the header.
+    /// </param>
     /// <param name="cancellationToken">Cancels reading.</param>
     /// <returns>What the header says.</returns>
-    public static Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext? context = null, CancellationToken cancellationToken = default)
+    public static Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
         context ??= EgamiContext.Default;
-        return FormatPipeline.ProbeAsync(stream, context, cancellationToken);
+        return FormatPipeline.ProbeAsync(stream, context, options ?? ReaderOptions.Default, cancellationToken);
     }
 
-    /// <summary>Reads the header of an image file asynchronously. See <see cref="Probe(Stream, EgamiContext?)"/>.</summary>
+    /// <summary>Reads the header of an image file asynchronously. See <see cref="Probe(Stream, EgamiContext?, ReaderOptions?)"/>.</summary>
     /// <param name="path">The file path.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">
+    /// Reader options, or <see langword="null"/> for the defaults. <see cref="ReaderOptions.TargetSize"/> lowers the estimate for
+    /// formats that can decode at a smaller scale, and <see cref="ReaderOptions.Recovery"/> applies to the header.
+    /// </param>
     /// <param name="cancellationToken">Cancels reading.</param>
     /// <returns>What the header says.</returns>
-    public static async Task<RasterInfo> ProbeAsync(string path, EgamiContext? context = null, CancellationToken cancellationToken = default)
+    public static async Task<RasterInfo> ProbeAsync(string path, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         FileStream stream = OpenRead(path, async: true);
         await using (stream.ConfigureAwait(false))
         {
-            return await ProbeAsync(stream, context, cancellationToken).ConfigureAwait(false);
+            return await ProbeAsync(stream, context, options, cancellationToken).ConfigureAwait(false);
         }
     }
 

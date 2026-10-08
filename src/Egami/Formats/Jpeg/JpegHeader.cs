@@ -1,0 +1,106 @@
+using Egami.Metadata;
+
+namespace Egami.Formats.Jpeg;
+
+/// <summary>JPEG marker codes (ITU-T T.81 table B.1), the byte after 0xFF.</summary>
+internal static class JpegMarker
+{
+    internal const byte Sof0 = 0xC0;
+    internal const byte Sof1 = 0xC1;
+    internal const byte Sof2 = 0xC2;
+    internal const byte Sof3 = 0xC3;
+    internal const byte Dht = 0xC4;
+    internal const byte Sof15 = 0xCF;
+    internal const byte Dac = 0xCC;
+    internal const byte Rst0 = 0xD0;
+    internal const byte Rst7 = 0xD7;
+    internal const byte Soi = 0xD8;
+    internal const byte Eoi = 0xD9;
+    internal const byte Sos = 0xDA;
+    internal const byte Dqt = 0xDB;
+    internal const byte Dnl = 0xDC;
+    internal const byte Dri = 0xDD;
+    internal const byte Dhp = 0xDE;
+    internal const byte Exp = 0xDF;
+    internal const byte App0 = 0xE0;
+    internal const byte App1 = 0xE1;
+    internal const byte App2 = 0xE2;
+    internal const byte App14 = 0xEE;
+    internal const byte App15 = 0xEF;
+    internal const byte Com = 0xFE;
+    internal const byte Tem = 0x01;
+
+    /// <summary>Returns whether a marker stands alone, with no length field after it.</summary>
+    internal static bool IsStandalone(byte marker)
+    {
+        return marker is Soi or Eoi or Tem or (>= Rst0 and <= Rst7);
+    }
+}
+
+/// <summary>One component of the frame, with its sampling factors and quantization table.</summary>
+internal sealed record JpegFrameComponent(int Id, int H, int V, int QuantTable);
+
+/// <summary>A Huffman table as stored: the count of codes of each length 1 to 16, and the symbols in code order.</summary>
+internal sealed record JpegHuffmanSpec(byte[] Counts, byte[] Symbols);
+
+/// <summary>One component of a scan and the Huffman tables it uses.</summary>
+internal sealed record JpegScanComponent(int ComponentIndex, int DcTable, int AcTable);
+
+/// <summary>A scan header: its components and the spectral selection and successive approximation bits.</summary>
+internal sealed record JpegScan(JpegScanComponent[] Components, int SpectralStart, int SpectralEnd, int ApproxHigh, int ApproxLow);
+
+/// <summary>Everything read from the segments before the first scan.</summary>
+internal sealed class JpegHeader
+{
+    /// <summary>Gets or sets the SOF marker that started the frame.</summary>
+    internal byte FrameMarker { get; set; }
+
+    internal int Width { get; set; }
+
+    internal int Height { get; set; }
+
+    internal JpegFrameComponent[] Components { get; set; } = [];
+
+    internal bool IsProgressive => FrameMarker == JpegMarker.Sof2;
+
+    internal int MaxH => Components.Max(c => c.H);
+
+    internal int MaxV => Components.Max(c => c.V);
+
+    /// <summary>Gets the quantization tables 0 to 3, in zigzag order as stored, or null where none was defined.</summary>
+    internal ushort[]?[] QuantTables { get; } = new ushort[]?[4];
+
+    internal JpegHuffmanSpec?[] DcTables { get; } = new JpegHuffmanSpec?[4];
+
+    internal JpegHuffmanSpec?[] AcTables { get; } = new JpegHuffmanSpec?[4];
+
+    internal int RestartInterval { get; set; }
+
+    /// <summary>Gets or sets the Adobe APP14 transform flag (0, 1 or 2), or -1 with no Adobe segment.</summary>
+    internal int AdobeTransform { get; set; } = -1;
+
+    internal bool HasJfif { get; set; }
+
+    /// <summary>Gets or sets the first scan's header, read when parsing stopped at it.</summary>
+    internal JpegScan? FirstScan { get; set; }
+
+    internal RasterMetadata Metadata { get; } = new() { FormatName = JpegFormat.Info.Name };
+
+    internal JpegDetails Details { get; } = new();
+
+    internal bool HasMetadata { get; set; }
+
+    /// <summary>Gets the color model, from the component count and the JFIF and Adobe segments, as libjpeg decides it.</summary>
+    internal JpegColorSpace ColorSpace => Components.Length switch
+    {
+        1 => JpegColorSpace.Gray,
+        3 => AdobeTransform == 0 || (AdobeTransform < 0 && !HasJfif && IsRgbIds()) ? JpegColorSpace.Rgb : JpegColorSpace.YCbCr,
+        _ => AdobeTransform == 2 ? JpegColorSpace.Ycck : JpegColorSpace.Cmyk,
+    };
+
+    /// <summary>Returns whether three components are labelled 'R', 'G', 'B', the convention for RGB files without an Adobe segment.</summary>
+    private bool IsRgbIds()
+    {
+        return Components[0].Id == 'R' && Components[1].Id == 'G' && Components[2].Id == 'B';
+    }
+}

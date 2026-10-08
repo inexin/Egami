@@ -9,7 +9,7 @@ namespace Egami.Formats;
 /// </summary>
 public interface IFormatReader
 {
-    /// <summary>Reads only the header: size, natural pixel layout and whatever else is cheap. <see cref="Raster.Probe(Stream, EgamiContext?)"/> stops here.</summary>
+    /// <summary>Reads only the header: size, natural pixel layout and whatever else is cheap. <see cref="Raster.Probe(Stream, EgamiContext?, ReaderOptions?)"/> stops here.</summary>
     /// <param name="input">The data, positioned at the start of the image.</param>
     /// <param name="options">How to read.</param>
     /// <returns>What the header says.</returns>

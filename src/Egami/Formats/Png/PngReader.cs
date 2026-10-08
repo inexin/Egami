@@ -42,6 +42,7 @@ internal sealed class PngReader : IFormatReader
             FrameCount = 1,
             HasMetadata = state.HasMetadata,
             EstimatedBytes = (long)state.Header.Width * state.Header.Height * layout.BytesPerPixel,
+            Orientation = ExifOrientation.Read(state.Metadata.Exif.Span),
         };
     }
 
