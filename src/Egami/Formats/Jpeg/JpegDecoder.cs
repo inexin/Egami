@@ -1,6 +1,9 @@
 using System.Buffers;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Pixels;
 
@@ -15,6 +18,15 @@ namespace Egami.Formats.Jpeg;
 internal sealed class JpegDecoder<TPixel> : IDisposable
     where TPixel : unmanaged, IPixelType<TPixel>
 {
+    /// <summary>Images with fewer pixels than this decode on one thread; the pipeline only pays off on large ones.</summary>
+    private const long ParallelPixels = 1 << 20;
+
+    /// <summary>Gets or sets whether a parallel decode uses the pipeline whatever the image size, so tests can run it on small files.</summary>
+    internal bool ForcePipeline { get; set; }
+
+    /// <summary>MCU rows of coefficients between the entropy decoder and the rest of the pipeline.</summary>
+    private const int PipelineSlots = 4;
+
     /// <summary>The most scans a file may have. Real progressive files have about 10; more only slows a hostile file down.</summary>
     internal const int MaxScans = 1000;
 
@@ -34,6 +46,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private readonly int _channels;
     private byte[] _rowBuffer;
     private byte[] _sampleBuffer;
+    private short[] _sums;
     private bool _warned;
 
     /// <summary>Creates a decoder whose output is the image scaled by 1/<paramref name="scale"/> (1, 2, 4 or 8).</summary>
@@ -79,6 +92,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         _rowBuffer = ArrayPool<byte>.Shared.Rent(header.Width * Math.Max(_channels, _components.Length));
         _sampleBuffer = ArrayPool<byte>.Shared.Rent(header.Width * _components.Length);
+        _sums = ArrayPool<short>.Shared.Rent(header.Width + 2);
     }
 
     /// <summary>Returns the output size of a dimension at 1/<paramref name="scale"/> scale, rounded up as libjpeg does.</summary>
@@ -160,6 +174,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _rowBuffer, null!));
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _sampleBuffer, null!));
+        ArrayPool<short>.Shared.Return(Interlocked.Exchange(ref _sums, null!));
     }
 
     /// <summary>Converts a quantization table from zigzag to natural order.</summary>
@@ -180,16 +195,49 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     }
 
     /// <summary>Decodes one block's coefficients into natural order (T.81 F.2.2).</summary>
-    private static void DecodeBlock(JpegBitReader reader, JpegHuffmanTable dc, JpegHuffmanTable ac, ref int predictor, Span<short> block)
+    /// <returns>Whether any AC coefficient is nonzero; a block without one is flat.</returns>
+    private static bool DecodeBlock(JpegBitReader reader, JpegHuffmanTable dc, JpegHuffmanTable ac, ref int predictor, Span<short> block)
     {
         block.Clear();
-        int s = dc.Decode(reader);
-        predictor += reader.ReceiveExtend(s & 15);
+        bool any = false;
+
+        // The bit buffer lives in locals for the block. Each symbol needs at most 16 bits of code and 15 of value, so one refill
+        // to more than 32 bits covers both.
+        reader.Load(out ulong bits, out int count);
+        if (count < 32)
+        {
+            reader.Refill(ref bits, ref count);
+        }
+
+        int s = dc.Decode(ref bits, ref count) & 15;
+        predictor += Receive(ref bits, ref count, s);
         block[0] = (short)predictor;
-        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
+        ref byte zigzag = ref MemoryMarshal.GetReference(JpegTables.ZigZag);
+        ref int fast = ref MemoryMarshal.GetArrayDataReference(ac.FastAc);
         for (int k = 1; k < 64; k++)
         {
-            int rs = ac.Decode(reader);
+            if (count < 32)
+            {
+                reader.Refill(ref bits, ref count);
+            }
+
+            int entry = Unsafe.Add(ref fast, (nint)(bits >> 55));
+            if (entry != 0)
+            {
+                int used = entry & 0xFF;
+                bits <<= used;
+                count -= used;
+                k += (entry >> 8) & 15;
+                if (k < 64)
+                {
+                    block[Unsafe.Add(ref zigzag, k)] = (short)(entry >> 16);
+                    any = true;
+                }
+
+                continue;
+            }
+
+            int rs = ac.Decode(ref bits, ref count);
             int r = rs >> 4;
             s = rs & 15;
             if (s == 0)
@@ -204,12 +252,31 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             }
 
             k += r;
-            int value = reader.ReceiveExtend(s);
+            int value = Receive(ref bits, ref count, s);
             if (k < 64)
             {
-                block[zigzag[k]] = (short)value;
+                block[Unsafe.Add(ref zigzag, k)] = (short)value;
+                any = true;
             }
         }
+
+        reader.Store(bits, count);
+        return any;
+    }
+
+    /// <summary>Takes <paramref name="size"/> bits (0 to 15) and extends them to a signed value (T.81 figure F.12).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Receive(ref ulong bits, ref int count, int size)
+    {
+        if (size == 0)
+        {
+            return 0;
+        }
+
+        int value = (int)(bits >> (64 - size));
+        bits <<= size;
+        count -= size;
+        return value - ((((value >> (size - 1)) & 1) - 1) & ((1 << size) - 1));
     }
 
     /// <summary>The first DC scan of a progressive file (T.81 G.1.2.1): the DC difference, scaled up by the point transform.</summary>
@@ -350,72 +417,209 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         }
     }
 
-    /// <summary>Decodes a sequential file whose first scan holds every component, one MCU row at a time.</summary>
+    /// <summary>
+    /// Decodes a sequential file whose first scan holds every component, one MCU row at a time: the entropy decoder fills a slot
+    /// of coefficients for a row, then the row is transformed into the strips and the rows above it are written out. With
+    /// <see cref="EgamiContext.MaxParallelism"/> above 1 and a large image, the two halves run on two threads with a few slots
+    /// between them, so the IDCT, upsampling and color conversion overlap the entropy decoding.
+    /// </summary>
     private void DecodeStreaming(EgamiInput input, JpegBitReader reader, JpegScan scan)
     {
-        JpegHuffmanTable[] dc = new JpegHuffmanTable[scan.Components.Length];
-        JpegHuffmanTable[] ac = new JpegHuffmanTable[scan.Components.Length];
-        Component[] order = new Component[scan.Components.Length];
-        for (int i = 0; i < scan.Components.Length; i++)
+        int count = scan.Components.Length;
+        JpegHuffmanTable[] dc = new JpegHuffmanTable[count];
+        JpegHuffmanTable[] ac = new JpegHuffmanTable[count];
+        Component[] order = new Component[count];
+        int[] firstBlock = new int[count];
+        int blocks = 0;
+        for (int i = 0; i < count; i++)
         {
             JpegScanComponent sc = scan.Components[i];
             order[i] = _components[sc.ComponentIndex];
             LatchQuant(sc.ComponentIndex);
             dc[i] = new JpegHuffmanTable(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
-            ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+            ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable), fastAc: true);
+            firstBlock[i] = blocks;
+            blocks += _mcusX * order[i].H * order[i].V;
         }
 
         reader.BeginScan();
-        Span<short> block = stackalloc short[64];
-        Span<int> predictors = stackalloc int[order.Length];
-        int restart = _header.RestartInterval;
-        int nextRestart = 0;
-        int mcu = 0;
-        bool ended = false;
-        for (int my = 0; my < _mcusY; my++)
+        EntropyState state = new(count);
+        // A scaled decode leaves too little work after the entropy decoder for a second thread to pay off.
+        bool parallel = input.Context.MaxParallelism > 1 && _mcusY >= 4 && (ForcePipeline || (_blockSize == 8 && (long)_header.Width * _header.Height >= ParallelPixels));
+        int slots = parallel ? PipelineSlots : 1;
+        short[] coefficients = ArrayPool<short>.Shared.Rent(slots * blocks * 64);
+        byte[] hasAc = ArrayPool<byte>.Shared.Rent(slots * blocks);
+        try
         {
-            input.CancellationToken.ThrowIfCancellationRequested();
-            for (int mx = 0; mx < _mcusX; mx++, mcu++)
+            RowSlot Slot(int my)
             {
-                if (restart > 0 && mcu > 0 && mcu % restart == 0 && !ended)
-                {
-                    ended = !RestartInterval(reader, ref nextRestart);
-                    predictors.Clear();
-                }
+                int slot = my % slots;
+                return new RowSlot(coefficients, slot * blocks * 64, hasAc, slot * blocks, firstBlock);
+            }
 
-                for (int i = 0; i < order.Length; i++)
+            if (!parallel)
+            {
+                for (int my = 0; my < _mcusY; my++)
                 {
-                    Component c = order[i];
-                    Span<byte> strip = c.Strip(my);
-                    for (int v = 0; v < c.V; v++)
+                    input.CancellationToken.ThrowIfCancellationRequested();
+                    DecodeRow(reader, dc, ac, order, state, Slot(my));
+                    TransformRow(my, order, Slot(my));
+                    if (my > 0)
                     {
-                        for (int h = 0; h < c.H; h++)
-                        {
-                            if (ended)
-                            {
-                                // After the data ends, the rest of the image is mid-gray: every coefficient 0.
-                                block.Clear();
-                            }
-                            else
-                            {
-                                DecodeBlock(reader, dc[i], ac[i], ref predictors[i], block);
-                            }
-
-                            c.Idct(block, strip[(((v * c.StripWidth) + (mx * c.H) + h) * c.BlockSize)..]);
-                        }
+                        EmitRows(my - 1);
                     }
                 }
 
-                ended = ended || EndedEarly(reader, "The image data ends early. The rest of the image is gray.");
+                EmitRows(_mcusY - 1);
+                return;
             }
 
-            if (my > 0)
+            using SemaphoreSlim free = new(slots);
+            using SemaphoreSlim filled = new(0);
+            bool stop = false;
+            Task consumer = Task.Factory.StartNew(
+                () =>
+                {
+                    try
+                    {
+                        for (int my = 0; my < _mcusY; my++)
+                        {
+                            filled.Wait();
+                            if (Volatile.Read(ref stop))
+                            {
+                                return;
+                            }
+
+                            TransformRow(my, order, Slot(my));
+                            if (my > 0)
+                            {
+                                EmitRows(my - 1);
+                            }
+
+                            free.Release();
+                        }
+
+                        EmitRows(_mcusY - 1);
+                    }
+                    catch
+                    {
+                        // Let the decoding side see the failure instead of waiting for a free slot forever.
+                        Volatile.Write(ref stop, true);
+                        free.Release();
+                        throw;
+                    }
+                },
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
+            try
             {
-                EmitRows(my - 1);
+                for (int my = 0; my < _mcusY; my++)
+                {
+                    input.CancellationToken.ThrowIfCancellationRequested();
+                    free.Wait();
+                    if (Volatile.Read(ref stop))
+                    {
+                        break;
+                    }
+
+                    DecodeRow(reader, dc, ac, order, state, Slot(my));
+                    filled.Release();
+                }
+            }
+            catch
+            {
+                Volatile.Write(ref stop, true);
+                filled.Release();
+                try
+                {
+                    consumer.Wait();
+                }
+                catch (AggregateException)
+                {
+                    // The decoding side's exception is the one to report.
+                }
+
+                throw;
+            }
+
+            consumer.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            ArrayPool<short>.Shared.Return(coefficients);
+            ArrayPool<byte>.Shared.Return(hasAc);
+        }
+    }
+
+    /// <summary>Entropy-decodes MCU row the next of the scan into <paramref name="slot"/>.</summary>
+    private void DecodeRow(JpegBitReader reader, JpegHuffmanTable[] dc, JpegHuffmanTable[] ac, Component[] order, EntropyState state, RowSlot slot)
+    {
+        int restart = _header.RestartInterval;
+        for (int mx = 0; mx < _mcusX; mx++, state.Mcu++)
+        {
+            if (restart > 0 && state.Mcu > 0 && state.Mcu % restart == 0 && !state.Ended)
+            {
+                int next = state.NextRestart;
+                state.Ended = !RestartInterval(reader, ref next);
+                state.NextRestart = next;
+                Array.Clear(state.Predictors);
+            }
+
+            for (int i = 0; i < order.Length; i++)
+            {
+                Component c = order[i];
+                int across = _mcusX * c.H;
+                for (int v = 0; v < c.V; v++)
+                {
+                    for (int h = 0; h < c.H; h++)
+                    {
+                        int b = slot.FirstBlock[i] + (v * across) + (mx * c.H) + h;
+                        Span<short> block = slot.Block(b);
+                        if (state.Ended)
+                        {
+                            // After the data ends, the rest of the image is mid-gray: every coefficient 0.
+                            block.Clear();
+                            slot.HasAc[slot.FlagStart + b] = 0;
+                        }
+                        else
+                        {
+                            slot.HasAc[slot.FlagStart + b] = DecodeBlock(reader, dc[i], ac[i], ref state.Predictors[i], block) ? (byte)1 : (byte)0;
+                        }
+                    }
+                }
+            }
+
+            state.Ended = state.Ended || EndedEarly(reader, "The image data ends early. The rest of the image is gray.");
+        }
+    }
+
+    /// <summary>Dequantizes and transforms the blocks of MCU row <paramref name="my"/> into the strips.</summary>
+    private void TransformRow(int my, Component[] order, RowSlot slot)
+    {
+        for (int i = 0; i < order.Length; i++)
+        {
+            Component c = order[i];
+            Span<byte> strip = c.Strip(my);
+            int across = _mcusX * c.H;
+            for (int v = 0; v < c.V; v++)
+            {
+                for (int bx = 0; bx < across; bx++)
+                {
+                    int b = slot.FirstBlock[i] + (v * across) + bx;
+                    Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
+                    Span<short> block = slot.Block(b);
+                    if (slot.HasAc[slot.FlagStart + b] == 0 && c.BlockSize == 8)
+                    {
+                        JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth);
+                    }
+                    else
+                    {
+                        c.Idct(block, target);
+                    }
+                }
             }
         }
-
-        EmitRows(_mcusY - 1);
     }
 
     /// <summary>
@@ -452,7 +656,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
             if (kind is 0 or 3 or 4)
             {
-                ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+                ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable), fastAc: kind == 0);
             }
         }
 
@@ -496,7 +700,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                             switch (kind)
                             {
                                 case 0:
-                                    DecodeBlock(reader, dc[i]!, ac[i]!, ref predictors[i], block);
+                                    _ = DecodeBlock(reader, dc[i]!, ac[i]!, ref predictors[i], block);
                                     break;
                                 case 1:
                                     DecodeDcFirst(reader, dc[i]!, ref predictors[i], block, al);
@@ -666,22 +870,24 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     {
         int first = my * _mcuRows;
         int last = Math.Min(_height, first + _mcuRows);
-        int width = _width;
-        Span<byte> samples = _sampleBuffer.AsSpan(0, width * _components.Length);
+        int count = _components.Length;
         for (int y = first; y < last; y++)
         {
-            for (int i = 0; i < _components.Length; i++)
-            {
-                Upsample(_components[i], y, samples.Slice(i * width, width));
-            }
-
-            WriteRow(y, samples, width);
+            ReadOnlySpan<byte> a = SampleRow(0, y);
+            ReadOnlySpan<byte> b = count > 1 ? SampleRow(1, y) : default;
+            ReadOnlySpan<byte> c = count > 2 ? SampleRow(2, y) : default;
+            ReadOnlySpan<byte> k = count > 3 ? SampleRow(3, y) : default;
+            WriteRow(y, a, b, c, k);
         }
     }
 
-    /// <summary>Produces one full-width row of a component for output row <paramref name="y"/>.</summary>
-    private void Upsample(Component c, int y, Span<byte> output)
+    /// <summary>
+    /// Returns one full-width row of component <paramref name="index"/> for output row <paramref name="y"/>: the strip row
+    /// itself when the component is not subsampled, else the row upsampled into a buffer.
+    /// </summary>
+    private ReadOnlySpan<byte> SampleRow(int index, int y)
     {
+        Component c = _components[index];
         int hr = c.HorizontalRatio;
         int vr = c.VerticalRatio;
         int width = _width;
@@ -689,150 +895,95 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         ReadOnlySpan<byte> cur = c.Row(row);
         if (hr == 1 && vr == 1)
         {
-            cur[..width].CopyTo(output);
-            return;
+            return cur[..width];
         }
+
+        Span<byte> output = _sampleBuffer.AsSpan(index * width, width);
 
         // libjpeg also replicates at 1/8 scale, where a block is one sample and there is nothing to interpolate within it.
         if (_fast || _blockSize == 1 || (hr != 1 && hr != 2) || (vr != 1 && vr != 2) || !c.WholeRatios)
         {
-            // Replicated samples: each component sample covers hr × vr output pixels.
-            if (hr == 1)
-            {
-                cur[..width].CopyTo(output);
-            }
-            else if (hr == 2)
-            {
-                for (int x = 0; x < width >> 1; x++)
-                {
-                    byte s = cur[x];
-                    output[2 * x] = s;
-                    output[(2 * x) + 1] = s;
-                }
-
-                if ((width & 1) != 0)
-                {
-                    output[width - 1] = cur[width >> 1];
-                }
-            }
-            else
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    output[x] = cur[x / hr];
-                }
-            }
-
-            return;
+            JpegUpsample.Replicate(cur, hr, output);
+            return output;
         }
 
         int n = c.Width;
+        Span<short> sums = _sums.AsSpan(0, n + 2);
         if (vr == 2)
         {
             // Triangle filter vertically: 3/4 of the nearer row, 1/4 of the next one out (replicated past the edges).
             bool upper = (y & 1) == 0;
-            int other = Math.Clamp(upper ? row - 1 : row + 1, 0, c.Height - 1);
-            ReadOnlySpan<byte> near = c.Row(other);
+            ReadOnlySpan<byte> near = c.Row(Math.Clamp(upper ? row - 1 : row + 1, 0, c.Height - 1));
             if (hr == 1)
             {
-                int bias = upper ? 1 : 2;
-                for (int x = 0; x < width; x++)
-                {
-                    output[x] = (byte)(((3 * cur[x]) + near[x] + bias) >> 2);
-                }
-
-                return;
+                JpegUpsample.Vertical(cur[..width], near[..width], output, upper ? 1 : 2);
+                return output;
             }
 
             // Both directions at once, on column sums, as libjpeg's h2v2 filter does.
-            int thisSum = (3 * cur[0]) + near[0];
-            if (n == 1)
-            {
-                output[0] = (byte)((thisSum * 4 + 8) >> 4);
-                if (width > 1)
-                {
-                    output[1] = (byte)((thisSum * 4 + 7) >> 4);
-                }
-
-                return;
-            }
-
-            int nextSum = (3 * cur[1]) + near[1];
-            output[0] = (byte)(((thisSum * 4) + 8) >> 4);
-            output[1] = (byte)(((thisSum * 3) + nextSum + 7) >> 4);
-            int lastSum = thisSum;
-            thisSum = nextSum;
-            for (int i = 1; i < n - 1; i++)
-            {
-                nextSum = (3 * cur[i + 1]) + near[i + 1];
-                Put(output, 2 * i, ((thisSum * 3) + lastSum + 8) >> 4);
-                Put(output, (2 * i) + 1, ((thisSum * 3) + nextSum + 7) >> 4);
-                lastSum = thisSum;
-                thisSum = nextSum;
-            }
-
-            Put(output, 2 * (n - 1), ((thisSum * 3) + lastSum + 8) >> 4);
-            Put(output, (2 * (n - 1)) + 1, ((thisSum * 4) + 7) >> 4);
-            return;
+            JpegUpsample.ColumnSums(cur, near, n, sums);
+            JpegUpsample.Double(sums, n, output, 8, 7, 4);
+            return output;
         }
 
         // Horizontal only (4:2:2): 3/4 of the sample and 1/4 of its neighbor on the side of the output pixel.
-        if (n == 1)
-        {
-            output[0] = cur[0];
-            if (width > 1)
-            {
-                output[1] = cur[0];
-            }
-
-            return;
-        }
-
-        output[0] = cur[0];
-        output[1] = (byte)(((cur[0] * 3) + cur[1] + 2) >> 2);
-        for (int i = 1; i < n - 1; i++)
-        {
-            Put(output, 2 * i, ((cur[i] * 3) + cur[i - 1] + 1) >> 2);
-            Put(output, (2 * i) + 1, ((cur[i] * 3) + cur[i + 1] + 2) >> 2);
-        }
-
-        Put(output, 2 * (n - 1), ((cur[n - 1] * 3) + cur[n - 2] + 1) >> 2);
-        Put(output, (2 * (n - 1)) + 1, cur[n - 1]);
-    }
-
-    /// <summary>Writes a byte if it falls inside the image; the last upsampled column of an odd width does not.</summary>
-    private static void Put(Span<byte> output, int x, int value)
-    {
-        if ((uint)x < (uint)output.Length)
-        {
-            output[x] = (byte)value;
-        }
+        JpegUpsample.Widen(cur, n, sums);
+        JpegUpsample.Double(sums, n, output, 1, 2, 2);
+        return output;
     }
 
     /// <summary>Converts one row of component samples to RGB or gray and stores it in the raster.</summary>
-    private void WriteRow(int y, ReadOnlySpan<byte> samples, int width)
+    private void WriteRow(int y, ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, ReadOnlySpan<byte> c, ReadOnlySpan<byte> k)
     {
         Span<TPixel> target = _raster.Row(y);
+        int width = _width;
         if (_channels == 1)
         {
-            ReadOnlySpan<byte> gray = samples[..width];
             if (typeof(TPixel) == typeof(Gray8))
             {
-                gray.CopyTo(MemoryMarshal.AsBytes(target));
+                a.CopyTo(MemoryMarshal.AsBytes(target));
             }
             else
             {
-                PixelConvert.Convert(MemoryMarshal.Cast<byte, Gray8>(gray), target);
+                PixelConvert.Convert(MemoryMarshal.Cast<byte, Gray8>(a), target);
             }
 
             return;
         }
 
         Span<byte> rgb = typeof(TPixel) == typeof(Rgb8) ? MemoryMarshal.AsBytes(target) : _rowBuffer.AsSpan(0, width * 3);
-        JpegColor.ToRgb(_header.Details.ColorSpace, samples, width, rgb);
+        JpegColor.ToRgb(_header.Details.ColorSpace, a, b, c, k, rgb);
         if (typeof(TPixel) != typeof(Rgb8))
         {
             PixelConvert.Convert(MemoryMarshal.Cast<byte, Rgb8>(rgb), target);
+        }
+    }
+
+    /// <summary>Where the entropy decoder is in the scan, carried from one MCU row to the next.</summary>
+    private sealed class EntropyState(int components)
+    {
+        internal int[] Predictors { get; } = new int[components];
+
+        internal int NextRestart { get; set; }
+
+        internal int Mcu { get; set; }
+
+        internal bool Ended { get; set; }
+    }
+
+    /// <summary>One MCU row of coefficients in the pipeline, with a flag per block saying whether it has AC terms.</summary>
+    private readonly struct RowSlot(short[] coefficients, int start, byte[] hasAc, int flagStart, int[] firstBlock)
+    {
+        internal byte[] HasAc => hasAc;
+
+        internal int FlagStart => flagStart;
+
+        /// <summary>Gets the index of each scan component's first block in the row.</summary>
+        internal int[] FirstBlock => firstBlock;
+
+        internal Span<short> Block(int index)
+        {
+            return coefficients.AsSpan(start + (index * 64), 64);
         }
     }
 
@@ -948,20 +1099,22 @@ internal static class JpegColor
     private const int ScaleBits = 16;
     private const int Half = 1 << (ScaleBits - 1);
 
-    private static readonly int[] CrToR = Table(1.40200, Half);
-    private static readonly int[] CbToB = Table(1.77200, Half);
-    private static readonly int[] CrToG = Table(-0.71414, 0, shift: false);
-    private static readonly int[] CbToG = Table(-0.34414, Half, shift: false);
+    private static readonly int CrToRFactor = Factor(1.40200);
+    private static readonly int CbToBFactor = Factor(1.77200);
+    private static readonly int CrToGFactor = Factor(-0.71414);
+    private static readonly int CbToGFactor = Factor(-0.34414);
+    private static readonly int[] CrToR = Table(CrToRFactor, Half);
+    private static readonly int[] CbToB = Table(CbToBFactor, Half);
+    private static readonly int[] CrToG = Table(CrToGFactor, 0, shift: false);
+    private static readonly int[] CbToG = Table(CbToGFactor, Half, shift: false);
 
     /// <summary>
-    /// Converts a row of planar component samples (component i at <c>samples[i * width..]</c>) to packed RGB. YCbCr uses the
+    /// Converts a row of planar component samples to packed RGB, as wide as <paramref name="rgb"/> holds. YCbCr uses the
     /// full-range BT.601 (JFIF) equations; CMYK and YCCK as Adobe stores them (inverted) use R = C × K / 255.
     /// </summary>
-    internal static void ToRgb(JpegColorSpace space, ReadOnlySpan<byte> samples, int width, Span<byte> rgb)
+    internal static void ToRgb(JpegColorSpace space, ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, ReadOnlySpan<byte> c, ReadOnlySpan<byte> k, Span<byte> rgb)
     {
-        ReadOnlySpan<byte> a = samples[..width];
-        ReadOnlySpan<byte> b = samples.Slice(width, width);
-        ReadOnlySpan<byte> c = samples.Slice(2 * width, width);
+        int width = rgb.Length / 3;
         switch (space)
         {
             case JpegColorSpace.Rgb:
@@ -974,7 +1127,6 @@ internal static class JpegColor
 
                 break;
             case JpegColorSpace.Cmyk or JpegColorSpace.Ycck:
-                ReadOnlySpan<byte> k = samples.Slice(3 * width, width);
                 for (int x = 0; x < width; x++)
                 {
                     int c0 = a[x], m0 = b[x], y0 = c[x];
@@ -996,21 +1148,110 @@ internal static class JpegColor
 
                 break;
             default:
-                for (int x = 0; x < width; x++)
-                {
-                    int y = a[x], cb = b[x], cr = c[x];
-                    rgb[3 * x] = Clamp(y + CrToR[cr]);
-                    rgb[(3 * x) + 1] = Clamp(y + ((CbToG[cb] + CrToG[cr]) >> ScaleBits));
-                    rgb[(3 * x) + 2] = Clamp(y + CbToB[cb]);
-                }
-
+                int done = Avx2.IsSupported ? YCbCrAvx2(a, b, c, rgb) : 0;
+                YCbCrScalar(a, b, c, rgb, done);
                 break;
         }
     }
 
-    private static int[] Table(double factor, int add, bool shift = true)
+    /// <summary>The scalar YCbCr conversion from pixel <paramref name="start"/> on.</summary>
+    internal static void YCbCrScalar(ReadOnlySpan<byte> luma, ReadOnlySpan<byte> blue, ReadOnlySpan<byte> red, Span<byte> rgb, int start)
     {
-        int f = (int)((factor * (1 << ScaleBits)) + (factor < 0 ? -0.5 : 0.5));
+        int width = rgb.Length / 3;
+        for (int x = start; x < width; x++)
+        {
+            int y = luma[x], cb = blue[x], cr = red[x];
+            rgb[3 * x] = Clamp(y + CrToR[cr]);
+            rgb[(3 * x) + 1] = Clamp(y + ((CbToG[cb] + CrToG[cr]) >> ScaleBits));
+            rgb[(3 * x) + 2] = Clamp(y + CbToB[cb]);
+        }
+    }
+
+    /// <summary>
+    /// Converts 16 pixels at a time with AVX2, computing the table entries in 32-bit lanes instead of looking them up, so the
+    /// bytes equal the scalar ones. Returns how many pixels it did.
+    /// </summary>
+    internal static int YCbCrAvx2(ReadOnlySpan<byte> luma, ReadOnlySpan<byte> blue, ReadOnlySpan<byte> red, Span<byte> rgb)
+    {
+        int width = rgb.Length / 3;
+        ref byte yRef = ref MemoryMarshal.GetReference(luma);
+        ref byte cbRef = ref MemoryMarshal.GetReference(blue);
+        ref byte crRef = ref MemoryMarshal.GetReference(red);
+        ref byte o = ref MemoryMarshal.GetReference(rgb);
+
+        // Within each 128-bit lane: bytes 0-7 red and 8-15 green of eight pixels, and blue in a second vector; the masks
+        // interleave them to 24 bytes, 16 from the first shuffle pair and 8 from the second.
+        Vector256<byte> rg0 = Lanes(0, 8, 255, 1, 9, 255, 2, 10, 255, 3, 11, 255, 4, 12, 255, 5);
+        Vector256<byte> b0 = Lanes(255, 255, 0, 255, 255, 1, 255, 255, 2, 255, 255, 3, 255, 255, 4, 255);
+        Vector256<byte> rg1 = Lanes(13, 255, 6, 14, 255, 7, 15, 255, 255, 255, 255, 255, 255, 255, 255, 255);
+        Vector256<byte> b1 = Lanes(255, 5, 255, 255, 6, 255, 255, 7, 255, 255, 255, 255, 255, 255, 255, 255);
+        int x = 0;
+        for (; x + 16 <= width && x + 16 <= luma.Length && x + 16 <= blue.Length && x + 16 <= red.Length; x += 16)
+        {
+            Vector256<short> r = Channel(ref yRef, ref cbRef, ref crRef, x, 0);
+            Vector256<short> g = Channel(ref yRef, ref cbRef, ref crRef, x, 1);
+            Vector256<short> bl = Channel(ref yRef, ref cbRef, ref crRef, x, 2);
+            Vector256<byte> redGreen = Avx2.PackUnsignedSaturate(r, g);
+            Vector256<byte> blues = Avx2.PackUnsignedSaturate(bl, bl);
+            Vector256<byte> first = Avx2.Shuffle(redGreen, rg0) | Avx2.Shuffle(blues, b0);
+            Vector256<byte> second = Avx2.Shuffle(redGreen, rg1) | Avx2.Shuffle(blues, b1);
+            ref byte at = ref Unsafe.Add(ref o, 3 * x);
+            first.GetLower().StoreUnsafe(ref at);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 16), second.AsUInt64().GetElement(0));
+            first.GetUpper().StoreUnsafe(ref at, 24);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 40), second.AsUInt64().GetElement(2));
+        }
+
+        return x;
+    }
+
+    /// <summary>One output channel (0 red, 1 green, 2 blue) of 16 pixels as shorts in pixel order, before the clamp.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Channel(ref byte luma, ref byte blue, ref byte red, int x, int channel)
+    {
+        Vector256<int> low = Channel8(ref luma, ref blue, ref red, x, channel);
+        Vector256<int> high = Channel8(ref luma, ref blue, ref red, x + 8, channel);
+
+        // The pack interleaves 128-bit lanes; the permute puts the pixels back in order.
+        return Avx2.Permute4x64(Avx2.PackSignedSaturate(low, high).AsInt64(), 0b11_01_10_00).AsInt16();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> Channel8(ref byte luma, ref byte blue, ref byte red, int x, int channel)
+    {
+        Vector256<int> y = Avx2.ConvertToVector256Int32(Vector64.LoadUnsafe(ref luma, (nuint)x).ToVector128Unsafe());
+        Vector256<int> offset = Vector256.Create(-128);
+        Vector256<int> half = Vector256.Create(Half);
+        if (channel == 0)
+        {
+            Vector256<int> cr = Avx2.ConvertToVector256Int32(Vector64.LoadUnsafe(ref red, (nuint)x).ToVector128Unsafe()) + offset;
+            return y + (((cr * Vector256.Create(CrToRFactor)) + half) >> ScaleBits);
+        }
+
+        if (channel == 2)
+        {
+            Vector256<int> cb = Avx2.ConvertToVector256Int32(Vector64.LoadUnsafe(ref blue, (nuint)x).ToVector128Unsafe()) + offset;
+            return y + (((cb * Vector256.Create(CbToBFactor)) + half) >> ScaleBits);
+        }
+
+        Vector256<int> b = Avx2.ConvertToVector256Int32(Vector64.LoadUnsafe(ref blue, (nuint)x).ToVector128Unsafe()) + offset;
+        Vector256<int> r = Avx2.ConvertToVector256Int32(Vector64.LoadUnsafe(ref red, (nuint)x).ToVector128Unsafe()) + offset;
+        return y + (((b * Vector256.Create(CbToGFactor)) + half + (r * Vector256.Create(CrToGFactor))) >> ScaleBits);
+    }
+
+    private static Vector256<byte> Lanes(params ReadOnlySpan<byte> mask)
+    {
+        Vector128<byte> lane = Vector128.Create(mask);
+        return Vector256.Create(lane, lane);
+    }
+
+    private static int Factor(double factor)
+    {
+        return (int)((factor * (1 << ScaleBits)) + (factor < 0 ? -0.5 : 0.5));
+    }
+
+    private static int[] Table(int f, int add, bool shift = true)
+    {
         int[] table = new int[256];
         for (int i = 0; i < 256; i++)
         {

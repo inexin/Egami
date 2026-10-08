@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
 namespace Egami.Formats.Jpeg;
@@ -111,6 +112,49 @@ internal sealed class JpegBitReader : IDisposable
         bool inOrder = Marker == 0xD0 + (expected & 7);
         Marker = 0;
         return inOrder;
+    }
+
+    /// <summary>Copies the bit buffer out, for a hot loop to keep in registers; <see cref="Store"/> puts it back.</summary>
+    internal void Load(out ulong bits, out int count)
+    {
+        bits = _bits;
+        count = _count;
+    }
+
+    /// <summary>Puts back a bit buffer taken with <see cref="Load"/>.</summary>
+    internal void Store(ulong bits, int count)
+    {
+        _bits = bits;
+        _count = count;
+    }
+
+    /// <summary>
+    /// Tops up a bit buffer held in registers to more than 32 bits. When the next 8 bytes hold no 0xFF (so no stuffing and no
+    /// marker) they are added in one step; otherwise byte by byte.
+    /// </summary>
+    internal void Refill(ref ulong bits, ref int count)
+    {
+        if (Marker == 0 && _length - _position >= 8)
+        {
+            ulong raw = BinaryPrimitives.ReadUInt64BigEndian(_chunk.AsSpan(_position, 8));
+            ulong inverted = ~raw;
+            if (((inverted - 0x0101010101010101UL) & ~inverted & 0x8080808080808080UL) == 0)
+            {
+                // Whole bytes that fit below the bits held; the buffer's unused low bits are zero.
+                int take = (64 - count) >> 3;
+                ulong kept = take == 8 ? raw : raw & ~(ulong.MaxValue >> (take * 8));
+                bits |= kept >> count;
+                count += take * 8;
+                _position += take;
+                return;
+            }
+        }
+
+        _bits = bits;
+        _count = count;
+        Fill();
+        bits = _bits;
+        count = _count;
     }
 
     /// <summary>Starts the entropy-coded data of a scan whose header has just been read.</summary>
@@ -287,7 +331,8 @@ internal sealed class JpegHuffmanTable
     private readonly int[] _valueOffset = new int[17];
     private readonly byte[] _symbols;
 
-    internal JpegHuffmanTable(JpegHuffmanSpec spec)
+    /// <summary>Builds the table; <paramref name="fastAc"/> also builds <see cref="FastAc"/>, which only sequential AC tables use.</summary>
+    internal JpegHuffmanTable(JpegHuffmanSpec spec, bool fastAc = false)
     {
         _symbols = spec.Symbols;
         int code = 0;
@@ -320,7 +365,28 @@ internal sealed class JpegHuffmanTable
         }
 
         _maxCode[17] = int.MaxValue;
+
+        // Where a code and its value bits fit in the lookahead together, the AC coefficient is decoded in one step.
+        FastAc = fastAc ? new int[1 << LookBits] : [];
+        for (int index = 0; index < FastAc.Length; index++)
+        {
+            int entry = _lookup[index];
+            int length = entry >> 8;
+            int size = entry & 15;
+            if (entry != 0 && size != 0 && length + size <= LookBits)
+            {
+                int raw = (index >> (LookBits - length - size)) & ((1 << size) - 1);
+                int value = raw < (1 << (size - 1)) ? raw - (1 << size) + 1 : raw;
+                FastAc[index] = (value << 16) | ((entry & 0xF0) << 4) | (length + size);
+            }
+        }
     }
+
+    /// <summary>
+    /// Gets the one-step AC lookup by the next 9 bits: the coefficient value in the top 16 bits, the zero run in bits 8 to 11 and
+    /// the bits used in the low byte, or 0 where the code or its value is longer.
+    /// </summary>
+    internal int[] FastAc { get; }
 
     /// <summary>Decodes one symbol. Codes longer than 16 bits (only in damaged data) decode as symbol 0.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -335,6 +401,41 @@ internal sealed class JpegHuffmanTable
         }
 
         return DecodeLong(reader);
+    }
+
+    /// <summary>Decodes one symbol from a bit buffer held in registers, which must hold at least 16 bits.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int Decode(ref ulong bits, ref int count)
+    {
+        int entry = _lookup[(int)(bits >> (64 - LookBits))];
+        if (entry != 0)
+        {
+            int length = entry >> 8;
+            bits <<= length;
+            count -= length;
+            return entry & 0xFF;
+        }
+
+        return DecodeLong(ref bits, ref count);
+    }
+
+    private int DecodeLong(ref ulong bits, ref int count)
+    {
+        for (int length = LookBits + 1; length <= 16; length++)
+        {
+            int code = (int)(bits >> (64 - length));
+            if (code <= _maxCode[length])
+            {
+                bits <<= length;
+                count -= length;
+                int index = code + _valueOffset[length];
+                return (uint)index < (uint)_symbols.Length ? _symbols[index] : 0;
+            }
+        }
+
+        bits <<= 16;
+        count -= 16;
+        return 0;
     }
 
     private int DecodeLong(JpegBitReader reader)

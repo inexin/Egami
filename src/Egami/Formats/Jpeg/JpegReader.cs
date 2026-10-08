@@ -44,7 +44,7 @@ internal sealed class JpegReader : IFormatReader
     }
 
     /// <summary>Decodes with libjpeg's default look, or replicated chroma when <see cref="JpegReaderOptions.FastUpsampling"/> says so.</summary>
-    internal static Raster<TPixel> Decode<TPixel>(EgamiInput input, JpegHeader header, ReaderOptions options, bool fastUpsampling = false)
+    internal static Raster<TPixel> Decode<TPixel>(EgamiInput input, JpegHeader header, ReaderOptions options, bool fastUpsampling = false, bool forcePipeline = false)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
@@ -53,7 +53,7 @@ internal sealed class JpegReader : IFormatReader
         try
         {
             header.Details.ScaleDenominator = scale;
-            using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling, scale))
+            using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling, scale) { ForcePipeline = forcePipeline })
             {
                 decoder.Decode(input);
             }

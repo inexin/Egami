@@ -141,6 +141,44 @@ public class JpegDecodeTests(ITestOutputHelper output)
         Assert.True(Raster.Probe(data, options: new ReaderOptions { TargetSize = new Size(40, 30) }).EstimatedBytes < Raster.Probe(data).EstimatedBytes / 32);
     }
 
+    [Theory]
+    [MemberData(nameof(Sequential))]
+    public void ThePipelineDecodesTheSameAsOneThread(string file)
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Images, file));
+        using Raster<Rgb8> serial = Raster.Load<Rgb8>(data, EgamiContext.Default with { MaxParallelism = 1 });
+        using MemoryStream stream = new(data);
+        using EgamiInput input = new(stream, EgamiContext.Default with { MaxParallelism = 4 }, TestContext.Current.CancellationToken);
+        JpegHeader header = JpegSegmentReader.ReadHeader(input, ReaderOptions.Default);
+        using Raster<Rgb8> pipelined = JpegReader.Decode<Rgb8>(input, header, ReaderOptions.Default, forcePipeline: true);
+        Assert.Equal(Bytes(serial), Bytes(pipelined));
+        Assert.Equal(serial.Metadata.Warnings, pipelined.Metadata.Warnings);
+    }
+
+    [Fact]
+    public void ThePipelineReportsDamageLikeOneThread()
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Images, "duck-420.jpg"));
+        byte[] half = data[..(data.Length / 2)];
+        foreach (RecoveryMode mode in (RecoveryMode[])[RecoveryMode.Lenient, RecoveryMode.Strict])
+        {
+            using MemoryStream stream = new(half);
+            using EgamiInput input = new(stream, EgamiContext.Default with { MaxParallelism = 4 }, TestContext.Current.CancellationToken);
+            ReaderOptions options = new() { Recovery = mode };
+            JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
+            if (mode == RecoveryMode.Strict)
+            {
+                Assert.Throws<CorruptDataException>(() => JpegReader.Decode<Rgb8>(input, header, options, forcePipeline: true));
+            }
+            else
+            {
+                using Raster<Rgb8> raster = JpegReader.Decode<Rgb8>(input, header, options, forcePipeline: true);
+                Assert.Single(raster.Metadata.Warnings);
+                Assert.Equal(new Rgb8(128, 128, 128), raster.GetPixel(raster.Width - 1, raster.Height - 1));
+            }
+        }
+    }
+
     [Fact]
     public void AnyPixelTypeMatchesTheNaturalDecode()
     {
