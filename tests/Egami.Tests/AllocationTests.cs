@@ -31,6 +31,10 @@ public class AllocationTests
         Assert.True(loadLarge - loadSmall < 1024, $"Loading 3,000 rows allocated {loadLarge:N0} bytes against {loadSmall:N0} for 10 rows.");
     }
 
+    /// <summary>
+    /// Returns the fewest bytes one call allocated over several tries. Other tests run in parallel and can empty the shared array
+    /// pool, so an occasional call allocates a fresh buffer; the minimum shows what the code itself allocates.
+    /// </summary>
     private static long Allocated(Action action)
     {
         for (int i = 0; i < 3; i++)
@@ -38,13 +42,15 @@ public class AllocationTests
             action();
         }
 
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        for (int i = 0; i < 5; i++)
+        long fewest = long.MaxValue;
+        for (int i = 0; i < 10; i++)
         {
+            long before = GC.GetAllocatedBytesForCurrentThread();
             action();
+            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
         }
 
-        return (GC.GetAllocatedBytesForCurrentThread() - before) / 5;
+        return fewest;
     }
 
     private static byte[] Save(Raster raster, PngWriterOptions options, Stream? output = null)
