@@ -1,3 +1,4 @@
+using Egami.Operations.Color;
 using Egami.Operations.Geometry;
 using Egami.Operations.Resampling;
 using Egami.Pixels;
@@ -23,7 +24,7 @@ public sealed class RasterOps
     }
 
     /// <summary>Gets the recorded steps, in order.</summary>
-    internal IReadOnlyList<IRasterOperation> Operations => _operations;
+    internal IReadOnlyList<IRasterOperation> Steps => _operations;
 
     /// <summary>Adds a step, such as a custom <see cref="IRasterOperation"/>.</summary>
     /// <param name="operation">The operation.</param>
@@ -193,6 +194,96 @@ public sealed class RasterOps
         }
 
         return Add(new FillColorOperation(color, rect));
+    }
+
+    /// <summary>Multiplies red, green and blue by <paramref name="amount"/>: 1 changes nothing, 0 gives black. See <see cref="Operations.ColorMatrix.Brightness"/>.</summary>
+    /// <param name="amount">The factor, 0 or more.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is negative or not finite.</exception>
+    public RasterOps Brightness(float amount)
+    {
+        return ColorMatrix(Operations.ColorMatrix.Brightness(amount));
+    }
+
+    /// <summary>Scales red, green and blue around mid-gray: 1 changes nothing, 0 gives flat gray. See <see cref="Operations.ColorMatrix.Contrast"/>.</summary>
+    /// <param name="amount">The factor, 0 or more.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is negative or not finite.</exception>
+    public RasterOps Contrast(float amount)
+    {
+        return ColorMatrix(Operations.ColorMatrix.Contrast(amount));
+    }
+
+    /// <summary>Mixes each color with its luma: 1 changes nothing, 0 gives gray, above 1 oversaturates. See <see cref="Operations.ColorMatrix.Saturation"/>.</summary>
+    /// <param name="amount">The factor, 0 or more.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is negative or not finite.</exception>
+    public RasterOps Saturation(float amount)
+    {
+        return ColorMatrix(Operations.ColorMatrix.Saturation(amount));
+    }
+
+    /// <summary>Rotates hue around the luma axis. See <see cref="Operations.ColorMatrix.HueRotate"/>.</summary>
+    /// <param name="degrees">The angle; 0 changes nothing.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="degrees"/> is not finite.</exception>
+    public RasterOps HueRotate(float degrees)
+    {
+        return ColorMatrix(Operations.ColorMatrix.HueRotate(degrees));
+    }
+
+    /// <summary>Tints toward sepia. See <see cref="Operations.ColorMatrix.Sepia"/>.</summary>
+    /// <param name="amount">0 changes nothing, 1 gives full sepia.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is outside 0..1.</exception>
+    public RasterOps Sepia(float amount = 1)
+    {
+        return ColorMatrix(Operations.ColorMatrix.Sepia(amount));
+    }
+
+    /// <summary>
+    /// Converts toward gray. By default the luma is taken from the stored, gamma-encoded values, as CSS filters do; pass
+    /// <see cref="ColorSpace.Linear"/> to weigh the colors in linear light, which keeps perceived brightness better.
+    /// </summary>
+    /// <param name="mode">The luma weights. Defaults to <see cref="GrayscaleMode.Rec709"/>.</param>
+    /// <param name="amount">0 changes nothing, 1 gives full gray.</param>
+    /// <param name="colorSpace">Where the luma is taken. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An argument is out of range.</exception>
+    public RasterOps Grayscale(GrayscaleMode mode = GrayscaleMode.Rec709, float amount = 1, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        ColorMatrix matrix = Operations.ColorMatrix.Grayscale(mode, amount);
+        CheckFilter(ResampleFilter.Bicubic, colorSpace);
+        return colorSpace == ColorSpace.Linear ? Add(new LinearGrayscaleOperation(mode, amount)) : ColorMatrix(matrix);
+    }
+
+    /// <summary>Replaces red, green and blue with 1 − value, blended by <paramref name="amount"/>. See <see cref="Operations.ColorMatrix.Invert"/>.</summary>
+    /// <param name="amount">0 changes nothing, 1 inverts fully.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is outside 0..1.</exception>
+    public RasterOps Invert(float amount = 1)
+    {
+        return ColorMatrix(Operations.ColorMatrix.Invert(amount));
+    }
+
+    /// <summary>Multiplies alpha by <paramref name="amount"/>. Has no effect on pixel types without alpha.</summary>
+    /// <param name="amount">0 makes the image transparent, 1 changes nothing.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is outside 0..1.</exception>
+    public RasterOps Opacity(float amount)
+    {
+        return ColorMatrix(Operations.ColorMatrix.Opacity(amount));
+    }
+
+    /// <summary>
+    /// Applies a color matrix to straight RGBA and clamps the result. Adjacent color steps are multiplied into one matrix before
+    /// anything runs, so the chain clamps once, at its end.
+    /// </summary>
+    /// <param name="matrix">The matrix.</param>
+    /// <returns>This builder.</returns>
+    public RasterOps ColorMatrix(ColorMatrix matrix)
+    {
+        return Add(new ColorMatrixOperation(matrix));
     }
 
     private static void CheckFilter(ResampleFilter filter, ColorSpace colorSpace)

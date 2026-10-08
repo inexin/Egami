@@ -1,3 +1,4 @@
+using Egami.Operations.Color;
 using Egami.Operations.Geometry;
 using Egami.Operations.Resampling;
 using Egami.Pixels;
@@ -17,7 +18,7 @@ internal static class OperationPipeline
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
         build(ops);
-        List<IRasterOperation> steps = Planner.Plan(ops.Operations);
+        List<IRasterOperation> steps = Planner.Plan(ops.Steps);
         Size[] sizes = new Size[steps.Count];
         for (int i = 0; i < steps.Count; i++)
         {
@@ -126,8 +127,8 @@ internal static class OperationPipeline
     }
 
     /// <summary>
-    /// Merges steps that can run as one: a Crop followed by a resize becomes one resize that reads only the crop rectangle.
-    /// Color matrices will merge here too.
+    /// Merges steps that can run as one: a Crop followed by a resize becomes one resize that reads only the crop rectangle, and
+    /// adjacent color matrices multiply into one.
     /// </summary>
     private static class Planner
     {
@@ -140,6 +141,12 @@ internal static class OperationPipeline
                 {
                     planned.Add(resize.WithCrop(crop.Rect));
                     i++;
+                    continue;
+                }
+
+                if (steps[i] is ColorMatrixOperation color && planned.Count > 0 && planned[^1] is ColorMatrixOperation previous)
+                {
+                    planned[^1] = new ColorMatrixOperation(previous.Matrix.Then(color.Matrix));
                     continue;
                 }
 
