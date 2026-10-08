@@ -818,7 +818,11 @@ internal sealed class PngReader : IFormatReader
 
                     ReadOnlySpan<byte> scanline = current.AsSpan(1, rowBytes);
                     Span<TPixel> row = raster.Row(y);
-                    if (natural is null)
+                    if (state.Unpacker.TryUnpackPalette(scanline, row))
+                    {
+                        // Palette rows go straight to the target type.
+                    }
+                    else if (natural is null)
                     {
                         unpack(state.Unpacker, scanline, MemoryMarshal.Cast<TPixel, TNatural>(row));
                     }
@@ -876,9 +880,12 @@ internal sealed class PngReader : IFormatReader
                             return false;
                         }
 
-                        unpack(state.Unpacker, current.AsSpan(1, rowBytes), natural.AsSpan(0, columns));
                         Span<TPixel> pixels = converted.AsSpan(0, columns);
-                        PixelConvert.Convert<TNatural, TPixel>(natural.AsSpan(0, columns), pixels);
+                        if (!state.Unpacker.TryUnpackPalette(current.AsSpan(1, rowBytes), pixels))
+                        {
+                            unpack(state.Unpacker, current.AsSpan(1, rowBytes), natural.AsSpan(0, columns));
+                            PixelConvert.Convert<TNatural, TPixel>(natural.AsSpan(0, columns), pixels);
+                        }
                         Span<TPixel> row = raster.Row(Adam7.YStart[pass] + (r * Adam7.YStep[pass]));
                         for (int i = 0; i < columns; i++)
                         {

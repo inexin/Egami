@@ -36,6 +36,9 @@ internal sealed class PngUnpacker
     /// <summary>Scratch space for palette indices expanded from 1, 2 and 4-bit rows.</summary>
     private byte[] _indices = [];
 
+    /// <summary>The palette converted to the pixel type being decoded into, built on first use.</summary>
+    private Array? _typedPalette;
+
     /// <param name="header">The image header.</param>
     /// <param name="palette">The palette with tRNS alpha applied, or empty.</param>
     /// <param name="transparency">The raw tRNS data for gray or RGB images, or empty.</param>
@@ -249,6 +252,36 @@ internal sealed class PngUnpacker
         int bit = index * depth;
         int shift = 8 - depth - (bit & 7);
         return (scanline[bit >> 3] >> shift) & ((1 << depth) - 1);
+    }
+
+    /// <summary>
+    /// For palette images, writes each pixel straight from a 256-entry palette already converted to <typeparamref name="TPixel"/>,
+    /// so decoding to any pixel type costs one table lookup per pixel, with no intermediate row or conversion pass.
+    /// </summary>
+    /// <returns><see langword="false"/> if the image has no palette.</returns>
+    internal bool TryUnpackPalette<TPixel>(ReadOnlySpan<byte> scanline, Span<TPixel> destination)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        if (_paletteRgba is null)
+        {
+            return false;
+        }
+
+        if (_typedPalette is not TPixel[] table)
+        {
+            table = new TPixel[256];
+            PixelConvert.Convert<Rgba8, TPixel>(_paletteRgba, table);
+            _typedPalette = table;
+        }
+
+        ReadOnlySpan<byte> indices = Indices(scanline, destination.Length);
+        ref TPixel entries = ref MemoryMarshal.GetArrayDataReference(table);
+        for (int x = 0; x < indices.Length; x++)
+        {
+            destination[x] = Unsafe.Add(ref entries, indices[x]);
+        }
+
+        return true;
     }
 
     /// <summary>Returns the palette indices of a row, expanded to one byte each, and counts any outside the palette.</summary>
