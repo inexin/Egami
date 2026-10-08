@@ -48,10 +48,12 @@ internal sealed class JpegReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
-        Raster<TPixel> raster = input.CreateRaster<TPixel>(header.Width, header.Height);
+        int scale = JpegSegmentReader.ScaleFor(header, options.TargetSize);
+        Raster<TPixel> raster = input.CreateRaster<TPixel>(JpegDecoder<TPixel>.ScaledSize(header.Width, scale), JpegDecoder<TPixel>.ScaledSize(header.Height, scale));
         try
         {
-            using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling))
+            header.Details.ScaleDenominator = scale;
+            using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling, scale))
             {
                 decoder.Decode(input);
             }

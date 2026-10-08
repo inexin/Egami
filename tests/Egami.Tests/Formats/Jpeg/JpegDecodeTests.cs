@@ -56,6 +56,91 @@ public class JpegDecodeTests(ITestOutputHelper output)
         Assert.Equal(Bytes(raster), Bytes(viaOptions));
     }
 
+    public static TheoryData<string, int> WithScaledReferences()
+    {
+        TheoryData<string, int> data = [];
+        foreach (JsonElement e in Manifest().Where(e => e.TryGetProperty("scaled", out _)))
+        {
+            foreach (JsonProperty scale in e.GetProperty("scaled").EnumerateObject())
+            {
+                data.Add(e.GetProperty("file").GetString()!, int.Parse(scale.Name, System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(WithScaledReferences))]
+    public void ScaledDecodeMatchesDjpegScale(string file, int scale)
+    {
+        JsonElement entry = Entry(file);
+        int width = (entry.GetProperty("width").GetInt32() + scale - 1) / scale;
+        int height = (entry.GetProperty("height").GetInt32() + scale - 1) / scale;
+
+        // The smallest size still at least the target: asking for exactly the 1/n size gives 1/n.
+        using Raster raster = Raster.Load(File.ReadAllBytes(Path.Combine(Images, file)), options: new ReaderOptions { TargetSize = new Size(width, height) });
+        Assert.Equal((width, height), (raster.Width, raster.Height));
+        Assert.Equal(scale, Assert.IsType<JpegDetails>(raster.Metadata.FormatDetails).ScaleDenominator);
+        AssertClose(entry, entry.GetProperty("scaled").GetProperty(scale.ToString(System.Globalization.CultureInfo.InvariantCulture)).GetString()!, Bytes(raster), $"{file} 1/{scale}");
+    }
+
+    [Theory]
+    [MemberData(nameof(Sequential))]
+    public void EveryFileDecodesAtEveryScale(string file)
+    {
+        // Files without djpeg references (other samplings, odd sizes, CMYK, restarts): each scale must look like the full decode
+        // averaged over n × n boxes.
+        byte[] data = File.ReadAllBytes(Path.Combine(Images, file));
+        using Raster<Rgb8> full = Raster.Load<Rgb8>(data);
+        foreach (int scale in (int[])[2, 4, 8])
+        {
+            int width = (full.Width + scale - 1) / scale;
+            int height = (full.Height + scale - 1) / scale;
+            using Raster<Rgb8> scaled = Raster.Load<Rgb8>(data, options: new ReaderOptions { TargetSize = new Size(width, height) });
+            Assert.Equal((width, height), (scaled.Width, scaled.Height));
+            Assert.Empty(scaled.Metadata.Warnings);
+            double sum = 0;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    (int r, int g, int b, int n) = (0, 0, 0, 0);
+                    for (int yy = y * scale; yy < Math.Min(full.Height, (y + 1) * scale); yy++)
+                    {
+                        for (int xx = x * scale; xx < Math.Min(full.Width, (x + 1) * scale); xx++)
+                        {
+                            Rgb8 p = full.GetPixel(xx, yy);
+                            (r, g, b, n) = (r + p.R, g + p.G, b + p.B, n + 1);
+                        }
+                    }
+
+                    Rgb8 q = scaled.GetPixel(x, y);
+                    sum += Math.Pow((r / (double)n) - q.R, 2) + Math.Pow((g / (double)n) - q.G, 2) + Math.Pow((b / (double)n) - q.B, 2);
+                }
+            }
+
+            double psnr = 10 * Math.Log10(255.0 * 255 / (sum / (width * height * 3)));
+            output.WriteLine($"{file} 1/{scale}: {psnr:F1} dB against the box average");
+            Assert.True(psnr >= 25, $"{file} 1/{scale}: {psnr:F1} dB");
+        }
+    }
+
+    [Fact]
+    public void TargetSizePicksTheSmallestScaleThatCovers()
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Images, "duck-420.jpg"));
+        using Raster full = Raster.Load(data);
+        Assert.Equal(1, Assert.IsType<JpegDetails>(full.Metadata.FormatDetails).ScaleDenominator);
+        using Raster half = Raster.Load(data, options: new ReaderOptions { TargetSize = new Size(100, 100) });
+        Assert.Equal((160, 120), (half.Width, half.Height));
+        using Raster eighth = Raster.Load(data, options: new ReaderOptions { TargetSize = new Size(1, 1) });
+        Assert.Equal((40, 30), (eighth.Width, eighth.Height));
+        using Raster wide = Raster.Load(data, options: new ReaderOptions { TargetSize = new Size(300, 10) });
+        Assert.Equal((320, 240), (wide.Width, wide.Height));
+        Assert.True(Raster.Probe(data, options: new ReaderOptions { TargetSize = new Size(40, 30) }).EstimatedBytes < Raster.Probe(data).EstimatedBytes / 32);
+    }
+
     [Fact]
     public void AnyPixelTypeMatchesTheNaturalDecode()
     {

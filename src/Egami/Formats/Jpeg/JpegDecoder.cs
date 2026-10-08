@@ -27,13 +27,17 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private readonly int _mcusX;
     private readonly int _mcusY;
     private readonly int _mcuRows;
+    private readonly int _blockSize;
+    private readonly int _width;
+    private readonly int _height;
     private readonly bool _fast;
     private readonly int _channels;
     private byte[] _rowBuffer;
     private byte[] _sampleBuffer;
     private bool _warned;
 
-    internal JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel> raster, bool fastUpsampling)
+    /// <summary>Creates a decoder whose output is the image scaled by 1/<paramref name="scale"/> (1, 2, 4 or 8).</summary>
+    internal JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel> raster, bool fastUpsampling, int scale = 1)
     {
         _header = header;
         _options = options;
@@ -46,7 +50,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         _maxV = single ? 1 : header.MaxV;
         _mcusX = (header.Width + (8 * _maxH) - 1) / (8 * _maxH);
         _mcusY = (header.Height + (8 * _maxV) - 1) / (8 * _maxV);
-        _mcuRows = 8 * _maxV;
+
+        // At 1/n scale a full-resolution block becomes 8/n samples a side.
+        _blockSize = 8 / scale;
+        _width = ScaledSize(header.Width, scale);
+        _height = ScaledSize(header.Height, scale);
+        _mcuRows = _blockSize * _maxV;
         _channels = single ? 1 : 3;
         _components = new Component[header.Components.Length];
         for (int i = 0; i < _components.Length; i++)
@@ -54,13 +63,28 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             JpegFrameComponent c = header.Components[i];
             int h = single ? 1 : c.H;
             int v = single ? 1 : c.V;
+
+            // Subsampled components are scaled up in the IDCT where they can be, a doubling at a time while it still divides
+            // evenly in both directions, so a scaled decode upsamples less or not at all; this is libjpeg's choice too.
+            int size = _blockSize;
+            while (size < 8 && (_maxH * _blockSize) % (h * size * 2) == 0 && (_maxV * _blockSize) % (v * size * 2) == 0)
+            {
+                size *= 2;
+            }
+
             _components[i] = new Component(
-                h, v, _mcusX * h * 8, v * 8,
-                (int)(((long)header.Width * h) + _maxH - 1) / _maxH, (int)(((long)header.Height * v) + _maxV - 1) / _maxV);
+                h, v, size, _maxH * _blockSize, _maxV * _blockSize, _mcusX * h * size,
+                (int)(((long)header.Width * h * size) + (_maxH * 8) - 1) / (_maxH * 8), (int)(((long)header.Height * v * size) + (_maxV * 8) - 1) / (_maxV * 8));
         }
 
         _rowBuffer = ArrayPool<byte>.Shared.Rent(header.Width * Math.Max(_channels, _components.Length));
         _sampleBuffer = ArrayPool<byte>.Shared.Rent(header.Width * _components.Length);
+    }
+
+    /// <summary>Returns the output size of a dimension at 1/<paramref name="scale"/> scale, rounded up as libjpeg does.</summary>
+    internal static int ScaledSize(int size, int scale)
+    {
+        return (size + scale - 1) / scale;
     }
 
     /// <summary>Decodes the image data from the first scan, whose header has just been read, to the end, filling the raster.</summary>
@@ -113,7 +137,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     int by = (my * c.V) + v;
                     for (int bx = 0; bx < _mcusX * c.H; bx++)
                     {
-                        JpegIdct.Transform(c.Block(bx, by), c.Quant!, strip[((v * 8 * c.StripWidth) + (bx * 8))..], c.StripWidth);
+                        c.Idct(c.Block(bx, by), strip[(((v * c.StripWidth) + bx) * c.BlockSize)..]);
                     }
                 }
             }
@@ -377,8 +401,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                                 DecodeBlock(reader, dc[i], ac[i], ref predictors[i], block);
                             }
 
-                            int x = ((mx * c.H) + h) * 8;
-                            JpegIdct.Transform(block, c.Quant!, strip[((v * 8 * c.StripWidth) + x)..], c.StripWidth);
+                            c.Idct(block, strip[(((v * c.StripWidth) + (mx * c.H) + h) * c.BlockSize)..]);
                         }
                     }
                 }
@@ -443,8 +466,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         // One component is coded non-interleaved: an MCU is one block, over the blocks the component really covers. Several are
         // interleaved in whole MCUs, padding blocks included.
         bool single = count == 1;
-        int unitsX = single ? (order[0].Width + 7) / 8 : _mcusX;
-        int unitsY = single ? (order[0].Height + 7) / 8 : _mcusY;
+        int unitsX = single ? NonInterleavedBlocks(_header.Width, order[0].H, _maxH) : _mcusX;
+        int unitsY = single ? NonInterleavedBlocks(_header.Height, order[0].V, _maxV) : _mcusY;
         for (int uy = 0; uy < unitsY; uy++)
         {
             for (int ux = 0; ux < unitsX; ux++, mcu++)
@@ -574,6 +597,13 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         }
     }
 
+    /// <summary>Returns the blocks a non-interleaved scan codes across a dimension: those the full-size component covers.</summary>
+    private static int NonInterleavedBlocks(int size, int factor, int max)
+    {
+        long samples = (((long)size * factor) + max - 1) / max;
+        return (int)((samples + 7) / 8);
+    }
+
     /// <summary>Uses the quantization table a component has when it first appears in a scan, as libjpeg does.</summary>
     private void LatchQuant(int index)
     {
@@ -635,8 +665,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private void EmitRows(int my)
     {
         int first = my * _mcuRows;
-        int last = Math.Min(_header.Height, first + _mcuRows);
-        int width = _header.Width;
+        int last = Math.Min(_height, first + _mcuRows);
+        int width = _width;
         Span<byte> samples = _sampleBuffer.AsSpan(0, width * _components.Length);
         for (int y = first; y < last; y++)
         {
@@ -652,9 +682,9 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// <summary>Produces one full-width row of a component for output row <paramref name="y"/>.</summary>
     private void Upsample(Component c, int y, Span<byte> output)
     {
-        int hr = _maxH / c.H;
-        int vr = _maxV / c.V;
-        int width = _header.Width;
+        int hr = c.HorizontalRatio;
+        int vr = c.VerticalRatio;
+        int width = _width;
         int row = y / vr;
         ReadOnlySpan<byte> cur = c.Row(row);
         if (hr == 1 && vr == 1)
@@ -663,7 +693,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             return;
         }
 
-        if (_fast || (hr != 1 && hr != 2) || (vr != 1 && vr != 2) || hr * c.H != _maxH || vr * c.V != _maxV)
+        // libjpeg also replicates at 1/8 scale, where a block is one sample and there is nothing to interpolate within it.
+        if (_fast || _blockSize == 1 || (hr != 1 && hr != 2) || (vr != 1 && vr != 2) || !c.WholeRatios)
         {
             // Replicated samples: each component sample covers hr × vr output pixels.
             if (hr == 1)
@@ -809,9 +840,10 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// One component's sampling, quantization table and the ring of three MCU-row strips of samples, plus, for a buffered decode,
     /// every coefficient in natural order, in chunks of whole block rows that each fit one memory block.
     /// </summary>
-    private sealed class Component(int h, int v, int stripWidth, int stripHeight, int width, int height) : IDisposable
+    private sealed class Component(int h, int v, int blockSize, int mcuWidth, int mcuHeight, int stripWidth, int width, int height) : IDisposable
     {
-        private byte[] _strips = ArrayPool<byte>.Shared.Rent(3 * stripWidth * stripHeight);
+        private readonly int _stripHeight = v * blockSize;
+        private byte[] _strips = ArrayPool<byte>.Shared.Rent(3 * stripWidth * v * blockSize);
         private IMemoryOwner<byte>?[] _chunks = [];
         private int _blocksX;
         private int _rowsPerChunk = 1;
@@ -825,6 +857,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         internal int StripWidth => stripWidth;
 
+        /// <summary>Gets the side of a block in samples after the IDCT: 8 at full scale, less in a scaled decode.</summary>
+        internal int BlockSize => blockSize;
+
+        /// <summary>Gets how many output pixels across one sample covers.</summary>
+        internal int HorizontalRatio => mcuWidth / (h * blockSize);
+
+        /// <summary>Gets how many output rows one sample row covers.</summary>
+        internal int VerticalRatio => mcuHeight / (v * blockSize);
+
+        /// <summary>Gets whether both ratios are whole numbers; odd sampling factors such as 3 can leave a remainder.</summary>
+        internal bool WholeRatios => mcuWidth % (h * blockSize) == 0 && mcuHeight % (v * blockSize) == 0;
+
         /// <summary>Gets the component's real width in samples, before MCU padding.</summary>
         internal int Width => width;
 
@@ -834,13 +878,33 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         /// <summary>Gets the strip that holds MCU row <paramref name="my"/>.</summary>
         internal Span<byte> Strip(int my)
         {
-            return _strips.AsSpan(my % 3 * stripWidth * stripHeight, stripWidth * stripHeight);
+            return _strips.AsSpan(my % 3 * stripWidth * _stripHeight, stripWidth * _stripHeight);
         }
 
         /// <summary>Gets sample row <paramref name="row"/>, which must be in one of the three strips held.</summary>
         internal ReadOnlySpan<byte> Row(int row)
         {
-            return Strip(row / stripHeight).Slice(row % stripHeight * stripWidth, stripWidth);
+            return Strip(row / _stripHeight).Slice(row % _stripHeight * stripWidth, stripWidth);
+        }
+
+        /// <summary>Dequantizes and transforms one block into <paramref name="target"/>, at this component's block size.</summary>
+        internal void Idct(ReadOnlySpan<short> block, Span<byte> target)
+        {
+            switch (blockSize)
+            {
+                case 8:
+                    JpegIdct.Transform(block, Quant, target, stripWidth);
+                    break;
+                case 4:
+                    JpegIdct.Transform4(block, Quant, target, stripWidth);
+                    break;
+                case 2:
+                    JpegIdct.Transform2(block, Quant, target, stripWidth);
+                    break;
+                default:
+                    JpegIdct.Transform1(block, Quant, target, stripWidth);
+                    break;
+            }
         }
 
         /// <summary>Allocates zeroed coefficients for <paramref name="blocksX"/> × <paramref name="blocksY"/> blocks, within the load's memory budget.</summary>

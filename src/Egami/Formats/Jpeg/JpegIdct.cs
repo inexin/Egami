@@ -143,6 +143,152 @@ internal static class JpegIdct
         o4 = tmp13 - a0;
     }
 
+    // Constants of the reduced transforms: averaged cosine terms scaled by 2^13.
+    private const int Fix0_211164243 = 1730;
+    private const int Fix0_509795579 = 4176;
+    private const int Fix0_601344887 = 4926;
+    private const int Fix0_720959822 = 5906;
+    private const int Fix0_850430095 = 6967;
+    private const int Fix1_061594337 = 8697;
+    private const int Fix1_272758580 = 10426;
+    private const int Fix1_451774981 = 11893;
+    private const int Fix2_172734803 = 17799;
+    private const int Fix3_624509785 = 29692;
+
+    /// <summary>
+    /// Transforms one block to 4×4 samples, for a 1/2-scale decode: the 8-point inverse DCT averaged over pairs of output samples,
+    /// which drops coefficient 4 of each direction (it averages to zero) and folds the odd terms into four constants. The scaling
+    /// and constants are those of libjpeg's reduced IDCT, so the result matches <c>djpeg -scale 1/2</c>.
+    /// </summary>
+    internal static void Transform4(ReadOnlySpan<short> coefficients, ReadOnlySpan<ushort> quant, Span<byte> output, int stride)
+    {
+        Span<int> work = stackalloc int[32];
+        coefficients = coefficients[..64];
+        quant = quant[..64];
+        for (int c = 0; c < 8; c++)
+        {
+            if (c == 4)
+            {
+                continue;
+            }
+
+            if (coefficients[8 + c] == 0 && coefficients[16 + c] == 0 && coefficients[24 + c] == 0
+                && coefficients[40 + c] == 0 && coefficients[48 + c] == 0 && coefficients[56 + c] == 0)
+            {
+                int dc = coefficients[c] * quant[c] << Pass1Bits;
+                work[c] = work[8 + c] = work[16 + c] = work[24 + c] = dc;
+                continue;
+            }
+
+            Reduced4(
+                coefficients[c] * quant[c], coefficients[8 + c] * quant[8 + c], coefficients[16 + c] * quant[16 + c], coefficients[24 + c] * quant[24 + c],
+                coefficients[40 + c] * quant[40 + c], coefficients[48 + c] * quant[48 + c], coefficients[56 + c] * quant[56 + c],
+                out int o0, out int o1, out int o2, out int o3);
+            int shift = ConstBits - Pass1Bits + 1;
+            work[c] = Descale(o0, shift);
+            work[8 + c] = Descale(o1, shift);
+            work[16 + c] = Descale(o2, shift);
+            work[24 + c] = Descale(o3, shift);
+        }
+
+        for (int r = 0; r < 4; r++)
+        {
+            Span<int> row = work.Slice(r * 8, 8);
+            Span<byte> target = output.Slice(r * stride, 4);
+            if (row[1] == 0 && row[2] == 0 && row[3] == 0 && row[5] == 0 && row[6] == 0 && row[7] == 0)
+            {
+                target.Fill(Clamp(Descale(row[0], Pass1Bits + 3)));
+                continue;
+            }
+
+            Reduced4(row[0], row[1], row[2], row[3], row[5], row[6], row[7], out int o0, out int o1, out int o2, out int o3);
+            int shift = ConstBits + Pass1Bits + 3 + 1;
+            target[0] = Clamp(Descale(o0, shift));
+            target[1] = Clamp(Descale(o1, shift));
+            target[2] = Clamp(Descale(o2, shift));
+            target[3] = Clamp(Descale(o3, shift));
+        }
+    }
+
+    /// <summary>
+    /// Transforms one block to 2×2 samples, for a 1/4-scale decode: the 8-point inverse DCT averaged over runs of four samples,
+    /// where only the DC and the odd coefficients remain, as in libjpeg's reduced IDCT (<c>djpeg -scale 1/4</c>).
+    /// </summary>
+    internal static void Transform2(ReadOnlySpan<short> coefficients, ReadOnlySpan<ushort> quant, Span<byte> output, int stride)
+    {
+        Span<int> work = stackalloc int[16];
+        coefficients = coefficients[..64];
+        quant = quant[..64];
+        for (int c = 0; c < 8; c++)
+        {
+            if (c is 2 or 4 or 6)
+            {
+                continue;
+            }
+
+            if (coefficients[8 + c] == 0 && coefficients[24 + c] == 0 && coefficients[40 + c] == 0 && coefficients[56 + c] == 0)
+            {
+                work[c] = work[8 + c] = coefficients[c] * quant[c] << Pass1Bits;
+                continue;
+            }
+
+            Reduced2(
+                coefficients[c] * quant[c], coefficients[8 + c] * quant[8 + c], coefficients[24 + c] * quant[24 + c],
+                coefficients[40 + c] * quant[40 + c], coefficients[56 + c] * quant[56 + c], out int o0, out int o1);
+            int shift = ConstBits - Pass1Bits + 2;
+            work[c] = Descale(o0, shift);
+            work[8 + c] = Descale(o1, shift);
+        }
+
+        for (int r = 0; r < 2; r++)
+        {
+            Span<int> row = work.Slice(r * 8, 8);
+            Span<byte> target = output.Slice(r * stride, 2);
+            if (row[1] == 0 && row[3] == 0 && row[5] == 0 && row[7] == 0)
+            {
+                target.Fill(Clamp(Descale(row[0], Pass1Bits + 3)));
+                continue;
+            }
+
+            Reduced2(row[0], row[1], row[3], row[5], row[7], out int o0, out int o1);
+            int shift = ConstBits + Pass1Bits + 3 + 2;
+            target[0] = Clamp(Descale(o0, shift));
+            target[1] = Clamp(Descale(o1, shift));
+        }
+    }
+
+    /// <summary>Transforms one block to its average, one sample, for a 1/8-scale decode.</summary>
+    internal static void Transform1(ReadOnlySpan<short> coefficients, ReadOnlySpan<ushort> quant, Span<byte> output, int stride)
+    {
+        _ = stride;
+        output[0] = Clamp(Descale(coefficients[0] * quant[0], 3));
+    }
+
+    /// <summary>One 1D pass of the 4-point reduced transform (inputs 0 to 7 without 4).</summary>
+    private static void Reduced4(int i0, int i1, int i2, int i3, int i5, int i6, int i7, out int o0, out int o1, out int o2, out int o3)
+    {
+        int tmp0 = i0 << (ConstBits + 1);
+        int tmp2 = (i2 * Fix1_847759065) - (i6 * Fix0_765366865);
+        int tmp10 = tmp0 + tmp2;
+        int tmp12 = tmp0 - tmp2;
+
+        int odd0 = (i7 * -Fix0_211164243) + (i5 * Fix1_451774981) + (i3 * -Fix2_172734803) + (i1 * Fix1_061594337);
+        int odd2 = (i7 * -Fix0_509795579) + (i5 * -Fix0_601344887) + (i3 * Fix0_899976223) + (i1 * Fix2_562915447);
+        o0 = tmp10 + odd2;
+        o3 = tmp10 - odd2;
+        o1 = tmp12 + odd0;
+        o2 = tmp12 - odd0;
+    }
+
+    /// <summary>One 1D pass of the 2-point reduced transform (inputs 0, 1, 3, 5 and 7).</summary>
+    private static void Reduced2(int i0, int i1, int i3, int i5, int i7, out int o0, out int o1)
+    {
+        int tmp10 = i0 << (ConstBits + 2);
+        int odd = (i7 * -Fix0_720959822) + (i5 * Fix0_850430095) + (i3 * -Fix1_272758580) + (i1 * Fix3_624509785);
+        o0 = tmp10 + odd;
+        o1 = tmp10 - odd;
+    }
+
     private static int Descale(int x, int n)
     {
         return (x + (1 << (n - 1))) >> n;
