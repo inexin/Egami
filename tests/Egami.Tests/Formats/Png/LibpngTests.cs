@@ -65,6 +65,9 @@ public sealed class LibpngTests : IDisposable
         List<string> failures = [];
         foreach (string source in Directory.GetFiles(Images, "*.png").Where(p => !Path.GetFileName(p).StartsWith('x')).Order(StringComparer.Ordinal))
         {
+            // pngcheck rejects a few valid PngSuite files outright (cm7n0g04 has a tIME year of 1970), and Egami copies such
+            // chunks unchanged, so pngcheck is only enforced on files written from sources it accepts.
+            bool sourcePassesPngcheck = Run(pngcheck, "-q", source).ExitCode == 0;
             using Raster original = Raster.Load(source, options: Strict);
             using Raster<Rgba16> expected = original.As<Rgba16>();
             foreach ((string name, PngWriterOptions options, bool lossless) in forms)
@@ -77,7 +80,7 @@ public sealed class LibpngTests : IDisposable
 
                 string label = $"{Path.GetFileName(source)} as {name}";
                 (int exit, string output) = Run(pngcheck, "-q", path);
-                if (exit != 0)
+                if (exit != 0 && sourcePassesPngcheck)
                 {
                     failures.Add($"{label}: pngcheck: {output.Trim()}");
                     continue;
