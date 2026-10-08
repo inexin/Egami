@@ -93,14 +93,6 @@ Egami.Formats.Png.PngCompressionStrategy.Default = 1 -> Egami.Formats.Png.PngCom
 Egami.Formats.Png.PngCompressionStrategy.Filtered = 2 -> Egami.Formats.Png.PngCompressionStrategy
 Egami.Formats.Png.PngCompressionStrategy.HuffmanOnly = 3 -> Egami.Formats.Png.PngCompressionStrategy
 Egami.Formats.Png.PngCompressionStrategy.RunLengthEncoding = 4 -> Egami.Formats.Png.PngCompressionStrategy
-Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFilterMode.Adaptive = 0 -> Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFilterMode.Average = 4 -> Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFilterMode.None = 1 -> Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFilterMode.Paeth = 5 -> Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFilterMode.Sub = 2 -> Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFilterMode.Up = 3 -> Egami.Formats.Png.PngFilterMode
-Egami.Formats.Png.PngFormat
 Egami.Formats.Png.PngDetails
 Egami.Formats.Png.PngDetails.BitDepth.get -> int
 Egami.Formats.Png.PngDetails.BitDepth.set -> void
@@ -127,6 +119,14 @@ Egami.Formats.Png.PngDetails.SrgbRenderingIntent.set -> void
 Egami.Formats.Png.PngDetails.TextSources.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngTextSource!>!
 Egami.Formats.Png.PngDetails.Transparency.get -> System.ReadOnlyMemory<byte>
 Egami.Formats.Png.PngDetails.Transparency.set -> void
+Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Adaptive = 0 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Average = 4 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.None = 1 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Paeth = 5 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Sub = 2 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Up = 3 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFormat
 Egami.Formats.Png.PngTextSource
 Egami.Formats.Png.PngTextSource.<Clone>$() -> Egami.Formats.Png.PngTextSource!
 Egami.Formats.Png.PngTextSource.ChunkType.get -> string!
@@ -410,9 +410,13 @@ Egami.PooledPixelMemorySource
 Egami.PooledPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
 Egami.PooledPixelMemorySource.MaxBlockBytes.get -> int
 Egami.PooledPixelMemorySource.MaxBlockBytes.init -> void
+Egami.PooledPixelMemorySource.MaxRetainedBytes.get -> long
+Egami.PooledPixelMemorySource.MaxRetainedBytes.init -> void
 Egami.PooledPixelMemorySource.PooledPixelMemorySource() -> void
 Egami.PooledPixelMemorySource.PoolThresholdBytes.get -> int
 Egami.PooledPixelMemorySource.PoolThresholdBytes.init -> void
+Egami.PooledPixelMemorySource.RetainedBytes.get -> long
+Egami.PooledPixelMemorySource.Trim() -> void
 Egami.Raster
 Egami.Raster.As<TTo>() -> Egami.Raster<TTo>!
 Egami.Raster.Dispose() -> void

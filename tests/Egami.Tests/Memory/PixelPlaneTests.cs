@@ -172,24 +172,67 @@ public class PixelPlaneTests
     [Fact]
     public void ForgottenUnmanagedBlocksAreFreedByTheFinalizer()
     {
-        long before = UnmanagedBlock.LiveBytes;
-        AllocateAndForget();
-        for (int i = 0; i < 10 && UnmanagedBlock.LiveBytes > before; i++)
+        PooledPixelMemorySource source = new() { PoolThresholdBytes = 0 };
+        AllocateAndForget(source);
+        Assert.True(source.Cache.LiveBytes > 0);
+        for (int i = 0; i < 10 && source.Cache.LiveBytes > 0; i++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
 
-        Assert.True(UnmanagedBlock.LiveBytes <= before, $"{UnmanagedBlock.LiveBytes - before} unmanaged bytes still allocated");
+        Assert.Equal(0, source.Cache.LiveBytes);
+        Assert.Equal(0, source.RetainedBytes);
 
-        static void AllocateAndForget()
+        static void AllocateAndForget(PooledPixelMemorySource source)
         {
-            PooledPixelMemorySource source = new() { PoolThresholdBytes = 0 };
             for (int i = 0; i < 10; i++)
             {
                 _ = PixelPlane.Allocate<Rgba8>(100, 100, source);
             }
         }
+    }
+
+    [Fact]
+    public unsafe void DisposedUnmanagedBlocksAreReusedForSimilarSizes()
+    {
+        PooledPixelMemorySource source = new() { PoolThresholdBytes = 0 };
+        nint first;
+        using (IMemoryOwner<byte> block = source.Allocate(3_000_000, ClearMode.None))
+        {
+            using MemoryHandle pin = block.Memory.Pin();
+            first = (nint)pin.Pointer;
+        }
+
+        Assert.Equal(4 * 1024 * 1024, source.RetainedBytes);
+        using (IMemoryOwner<byte> block = source.Allocate(4_000_000, ClearMode.Zero))
+        {
+            using MemoryHandle pin = block.Memory.Pin();
+            Assert.Equal(first, (nint)pin.Pointer);
+            Assert.Equal(4_000_000, block.Memory.Length);
+            Assert.True(block.Memory.Span.IndexOfAnyExcept((byte)0) < 0);
+            Assert.Equal(0, source.RetainedBytes);
+        }
+
+        source.Trim();
+        Assert.Equal(0, source.RetainedBytes);
+        Assert.Equal(0, source.Cache.LiveBytes);
+    }
+
+    [Fact]
+    public void RetentionIsCapped()
+    {
+        PooledPixelMemorySource source = new() { PoolThresholdBytes = 0, MaxRetainedBytes = 10 * 1024 * 1024 };
+        List<IMemoryOwner<byte>> blocks = [.. Enumerable.Range(0, 5).Select(_ => source.Allocate(3 * 1024 * 1024, ClearMode.None))];
+        blocks.ForEach(b => b.Dispose());
+        Assert.Equal(8 * 1024 * 1024, source.RetainedBytes);
+        Assert.Equal(8 * 1024 * 1024, source.Cache.LiveBytes);
+
+        PooledPixelMemorySource none = new() { PoolThresholdBytes = 0, MaxRetainedBytes = 0 };
+        none.Allocate(2 * 1024 * 1024, ClearMode.None).Dispose();
+        Assert.Equal(0, none.RetainedBytes);
+        Assert.Equal(0, none.Cache.LiveBytes);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new PooledPixelMemorySource { MaxRetainedBytes = -1 });
     }
 
     /// <summary>A memory source that records every allocation and counts blocks not yet returned.</summary>
