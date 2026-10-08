@@ -80,6 +80,29 @@ public class JpegEncodeTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void ParallelEncodingWritesTheSameFile()
+    {
+        // Over a megapixel, rows are transformed on several threads while the coder runs; the file must not change.
+        using Raster<Rgb8> serial = Raster.Create<Rgb8>(1201, 999, EgamiContext.Default with { MaxParallelism = 1 });
+        serial.ForEachRow((row, y) =>
+        {
+            for (int x = 0; x < row.Length; x++)
+            {
+                row[x] = new Rgb8((byte)(x ^ y), (byte)((x * 3) + y), (byte)(x * y >> 4));
+            }
+        });
+        foreach (JpegWriterOptions options in (JpegWriterOptions[])[new(), new() { OptimizeHuffman = true, Subsampling = ChromaSubsampling.Full }, new() { RestartInterval = 7 }])
+        {
+            byte[] one = Encode(serial, options);
+            using MemoryStream stream = new();
+            using Raster<Rgb8> wide = Raster.Create<Rgb8>(1201, 999, EgamiContext.Default with { MaxParallelism = 4 });
+            wide.CopyPixelsFrom(Bytes(serial).AsSpan());
+            wide.Save(stream, JpegFormat.Info, options);
+            Assert.Equal(one, stream.ToArray());
+        }
+    }
+
+    [Fact]
     public void GrayPixelsWriteOneComponent()
     {
         using Raster<Rgb8> rgb = Gradient(40, 30);

@@ -1,6 +1,8 @@
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Jpeg;
 
@@ -22,6 +24,7 @@ internal sealed class JpegHuffmanCodes
             {
                 _codes[symbols[k]] = (ushort)code;
                 _lengths[symbols[k]] = (byte)length;
+                Entries[symbols[k]] = (length << 16) | code;
             }
 
             code <<= 1;
@@ -48,6 +51,9 @@ internal sealed class JpegHuffmanCodes
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Code(int symbol) => _codes[symbol];
+
+    /// <summary>Gets each symbol's code in the low 16 bits and its length above them, for one lookup per symbol.</summary>
+    internal int[] Entries { get; } = new int[256];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Length(int symbol) => _lengths[symbol];
@@ -190,7 +196,7 @@ internal sealed class JpegBitWriter : IDisposable
         _output = output;
     }
 
-    /// <summary>Adds the low <paramref name="length"/> bits of <paramref name="value"/> (0 to 26 bits).</summary>
+    /// <summary>Adds the low <paramref name="length"/> bits of <paramref name="value"/> (0 to 31 bits).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Put(int value, int length)
     {
@@ -199,6 +205,48 @@ internal sealed class JpegBitWriter : IDisposable
         if (_count >= 32)
         {
             Drain();
+        }
+    }
+
+    /// <summary>Copies the bit buffer out, for a hot loop to keep in registers; <see cref="Store"/> puts it back.</summary>
+    internal void Load(out ulong bits, out int count)
+    {
+        bits = _bits;
+        count = _count;
+    }
+
+    /// <summary>Puts back a bit buffer taken with <see cref="Load"/>.</summary>
+    internal void Store(ulong bits, int count)
+    {
+        _bits = bits;
+        _count = count;
+    }
+
+    /// <summary>
+    /// Writes out the oldest 32 of the buffered bits (there must be at least 32): in one step when none of the four bytes is 0xFF,
+    /// else a byte at a time with the stuffed zeros.
+    /// </summary>
+    internal void Drain32(ref ulong bits, ref int count)
+    {
+        Reserve(8);
+        count -= 32;
+        uint word = (uint)(bits >> count);
+        uint inverted = ~word;
+        if (((inverted - 0x01010101u) & ~inverted & 0x80808080u) == 0)
+        {
+            BinaryPrimitives.WriteUInt32BigEndian(_buffer.AsSpan(_length, 4), word);
+            _length += 4;
+            return;
+        }
+
+        for (int shift = 24; shift >= 0; shift -= 8)
+        {
+            byte b = (byte)(word >> shift);
+            _buffer[_length++] = b;
+            if (b == 0xFF)
+            {
+                _buffer[_length++] = 0;
+            }
         }
     }
 
@@ -278,44 +326,63 @@ internal sealed class JpegBitWriter : IDisposable
 /// <summary>Huffman-codes quantized blocks (T.81 F.1.2), or only counts the symbols they would use, for optimized tables.</summary>
 internal static class JpegBlockCoder
 {
-    /// <summary>Writes one block in zigzag order, updating the DC predictor.</summary>
+    /// <summary>
+    /// Writes one block, stored in natural order, updating the DC predictor. A bit mask of the nonzero coefficients gives each zero run
+    /// directly, so zeros are never visited one by one; each code goes out with its value bits in one write, and the bit buffer
+    /// stays in locals for the block.
+    /// </summary>
     internal static void Encode(JpegBitWriter writer, ReadOnlySpan<short> block, ref int predictor, JpegHuffmanCodes dc, JpegHuffmanCodes ac)
     {
-        int diff = block[0] - predictor;
-        predictor = block[0];
+        block = block[..64];
+        ref short coefficients = ref MemoryMarshal.GetReference(block);
+        ref byte zigzag = ref MemoryMarshal.GetReference(JpegTables.ZigZag);
+        ref int acCodes = ref MemoryMarshal.GetArrayDataReference(ac.Entries);
+        writer.Load(out ulong bits, out int count);
+
+        int diff = coefficients - predictor;
+        predictor = coefficients;
         int size = Size(diff);
-        writer.Put(dc.Code(size), dc.Length(size));
-        if (size > 0)
-        {
-            writer.Put(diff < 0 ? diff - 1 : diff, size);
-        }
+        Emit(writer, ref bits, ref count, dc.Entries[size], size, diff);
 
-        int run = 0;
-        for (int k = 1; k < 64; k++)
+        ulong nonzero = JpegBlock.NonZeroZigZag(block) & ~1UL;
+        int last = 0;
+        while (nonzero != 0)
         {
-            int value = block[k];
-            if (value == 0)
-            {
-                run++;
-                continue;
-            }
-
+            int k = BitOperations.TrailingZeroCount(nonzero);
+            int run = k - last - 1;
             while (run > 15)
             {
-                writer.Put(ac.Code(0xF0), ac.Length(0xF0));
+                Emit(writer, ref bits, ref count, Unsafe.Add(ref acCodes, 0xF0), 0, 0);
                 run -= 16;
             }
 
+            int value = Unsafe.Add(ref coefficients, Unsafe.Add(ref zigzag, k));
             size = Size(value);
-            int symbol = (run << 4) | size;
-            writer.Put(ac.Code(symbol), ac.Length(symbol));
-            writer.Put(value < 0 ? value - 1 : value, size);
-            run = 0;
+            Emit(writer, ref bits, ref count, Unsafe.Add(ref acCodes, (run << 4) | size), size, value);
+            last = k;
+            nonzero &= nonzero - 1;
         }
 
-        if (run > 0)
+        if (last != 63)
         {
-            writer.Put(ac.Code(0x00), ac.Length(0x00));
+            Emit(writer, ref bits, ref count, acCodes, 0, 0);
+        }
+
+        writer.Store(bits, count);
+    }
+
+    /// <summary>Adds a code (from <see cref="JpegHuffmanCodes.Entries"/>) and the low <paramref name="size"/> bits of a value.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Emit(JpegBitWriter writer, ref ulong bits, ref int count, int entry, int size, int value)
+    {
+        // Negative values are written as value - 1 in their low bits (T.81 F.1.2.1).
+        int length = (entry >> 16) + size;
+        uint payload = ((uint)(entry & 0xFFFF) << size) | ((uint)(value - (int)((uint)value >> 31)) & ((1u << size) - 1));
+        bits = (bits << length) | payload;
+        count += length;
+        if (count >= 32)
+        {
+            writer.Drain32(ref bits, ref count);
         }
     }
 
@@ -325,27 +392,24 @@ internal static class JpegBlockCoder
         int diff = block[0] - predictor;
         predictor = block[0];
         dc[Size(diff)]++;
-        int run = 0;
-        for (int k = 1; k < 64; k++)
+        ulong nonzero = JpegBlock.NonZeroZigZag(block) & ~1UL;
+        int last = 0;
+        while (nonzero != 0)
         {
-            int value = block[k];
-            if (value == 0)
-            {
-                run++;
-                continue;
-            }
-
+            int k = BitOperations.TrailingZeroCount(nonzero);
+            int run = k - last - 1;
             while (run > 15)
             {
                 ac[0xF0]++;
                 run -= 16;
             }
 
-            ac[(run << 4) | Size(value)]++;
-            run = 0;
+            ac[(run << 4) | Size(block[JpegTables.ZigZag[k]])]++;
+            last = k;
+            nonzero &= nonzero - 1;
         }
 
-        if (run > 0)
+        if (last != 63)
         {
             ac[0x00]++;
         }

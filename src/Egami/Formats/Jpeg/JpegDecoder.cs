@@ -166,7 +166,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     {
                         Span<short> block = row.Slice(bx * 64, 64);
                         Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
-                        ulong nonzero = NonZero(block);
+                        ulong nonzero = JpegBlock.NonZero(block);
                         if (c.BlockSize == 8 && (nonzero & ~1UL) == 0)
                         {
                             JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth);
@@ -407,7 +407,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     {
         int p1 = 1 << al;
         int m1 = -1 << al;
-        ulong nonzero = NonZero(block);
+        ulong nonzero = JpegBlock.NonZero(block);
         int k = ss;
         if (eobRun == 0)
         {
@@ -505,35 +505,6 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         ulong upTo = last >= 63 ? ulong.MaxValue : (1UL << (last + 1)) - 1;
         return upTo & (ulong.MaxValue << first);
-    }
-
-    /// <summary>Returns a mask with bit k set where coefficient k of the 64 is nonzero.</summary>
-    internal static ulong NonZero(ReadOnlySpan<short> block)
-    {
-        block = block[..64];
-        if (Vector128.IsHardwareAccelerated)
-        {
-            ref short b = ref MemoryMarshal.GetReference(block);
-            ulong mask = 0;
-            for (int i = 0; i < 8; i++)
-            {
-                Vector128<short> v = Vector128.LoadUnsafe(ref b, (nuint)(i * 8));
-                mask |= (ulong)(~Vector128.Equals(v, Vector128<short>.Zero)).ExtractMostSignificantBits() << (i * 8);
-            }
-
-            return mask;
-        }
-
-        ulong scalar = 0;
-        for (int i = 0; i < 64; i++)
-        {
-            if (block[i] != 0)
-            {
-                scalar |= 1UL << i;
-            }
-        }
-
-        return scalar;
     }
 
     /// <summary>Takes one bit, refilling first if the buffer is empty.</summary>

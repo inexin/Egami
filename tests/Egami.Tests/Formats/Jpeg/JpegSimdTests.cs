@@ -31,6 +31,129 @@ public class JpegSimdTests
     }
 
     [Fact]
+    public void ForwardDctVectorEqualsScalar()
+    {
+        Assert.SkipUnless(Avx2.IsSupported, "AVX2 is not available.");
+        Random random = new(5);
+        byte[] samples = new byte[8 * 13];
+        short[] scalar = new short[64];
+        short[] vector = new short[64];
+        foreach (int quality in (int[])[1, 10, 50, 75, 90, 100])
+        {
+            int factor = quality < 50 ? 5000 / quality : 200 - (2 * quality);
+            int[] divisors = [.. Enumerable.Range(0, 64).Select(i => Math.Clamp(((JpegTables.LumaQuant[i] * factor) + 50) / 100, 1, 255) * 8)];
+            float[] reciprocals = JpegFdct.Reciprocals(divisors);
+            for (int trial = 0; trial < 3000; trial++)
+            {
+                switch (trial % 3)
+                {
+                    case 0:
+                        random.NextBytes(samples);
+                        break;
+                    case 1:
+                        Array.Fill(samples, (byte)(trial % 2 == 0 ? 0 : 255));
+                        samples[random.Next(samples.Length)] = (byte)random.Next(256);
+                        break;
+                    default:
+                        for (int i = 0; i < samples.Length; i++)
+                        {
+                            samples[i] = (byte)((i % 13 < 4) ^ (i / 13 % 2 == 0) ? 255 : 0);
+                        }
+
+                        break;
+                }
+
+                JpegFdct.Forward(samples, 13, divisors, scalar);
+                JpegFdct.ForwardAvx2(samples, 13, divisors, reciprocals, vector);
+                Assert.Equal(scalar, vector);
+            }
+        }
+    }
+
+    [Fact]
+    public void QuantizationIsExactForEveryValueAndDivisor()
+    {
+        Assert.SkipUnless(Avx2.IsSupported, "AVX2 is not available.");
+        short[] block = new short[64];
+        short[] vector = new short[64];
+        byte[] samples = new byte[64];
+
+        // Through the whole transform is slow; instead every divisor of a baseline table against every coefficient the DCT gives,
+        // via a table of that divisor and a flat block whose DC sweeps the range.
+        for (int q = 1; q <= 255; q++)
+        {
+            int[] divisors = Enumerable.Repeat(q * 8, 64).ToArray();
+            float[] reciprocals = JpegFdct.Reciprocals(divisors);
+            for (int level = 0; level < 256; level++)
+            {
+                Array.Fill(samples, (byte)level);
+                JpegFdct.Forward(samples, 8, divisors, block);
+                JpegFdct.ForwardAvx2(samples, 8, divisors, reciprocals, vector);
+                Assert.Equal(block, vector);
+            }
+
+            for (int value = -8192; value <= 8192; value++)
+            {
+                Assert.Equal(JpegFdct.Quantize(value, q * 8), JpegFdct.QuantizeVectorForTest(value, q * 8));
+            }
+        }
+    }
+
+    [Fact]
+    public void EncoderColorAndDownsamplingVectorEqualsScalar()
+    {
+        Assert.SkipUnless(Avx2.IsSupported, "AVX2 is not available.");
+        Random random = new(9);
+        foreach (int width in (int[])[1, 15, 16, 17, 31, 32, 33, 100, 1000])
+        {
+            byte[] rgb = new byte[width * 3];
+            random.NextBytes(rgb);
+            byte[][] scalar = [new byte[width], new byte[width], new byte[width]];
+            byte[][] vector = [new byte[width], new byte[width], new byte[width]];
+            JpegEncodeKernels.YCbCrScalar(rgb, scalar[0], scalar[1], scalar[2], 0);
+            JpegEncodeKernels.YCbCr(rgb, vector[0], vector[1], vector[2]);
+            Assert.Equal(scalar, vector);
+            byte[] luma = new byte[width];
+            JpegEncodeKernels.Luma(rgb, luma);
+            Assert.Equal(scalar[0], luma);
+
+            byte[] row0 = new byte[width * 2], row1 = new byte[width * 2];
+            random.NextBytes(row0);
+            random.NextBytes(row1);
+            foreach (bool twoRows in (bool[])[true, false])
+            {
+                byte[] expected = new byte[width], actual = new byte[width];
+                JpegEncodeKernels.DownsampleScalar(row0, row1, twoRows, expected, 0);
+                JpegEncodeKernels.Downsample(row0, row1, twoRows, actual);
+                Assert.Equal(expected, actual);
+            }
+        }
+    }
+
+    [Fact]
+    public void ZigZagNonzeroMaskMatchesTheOrder()
+    {
+        Random random = new(13);
+        short[] block = new short[64];
+        for (int trial = 0; trial < 2000; trial++)
+        {
+            Array.Clear(block);
+            for (int n = random.Next(0, 64); n > 0; n--)
+            {
+                block[random.Next(64)] = (short)random.Next(-3, 4);
+            }
+
+            ulong expected = 0;
+            for (int k = 0; k < 64; k++)
+            {
+                expected |= block[JpegTables.ZigZag[k]] != 0 ? 1UL << k : 0;
+            }
+
+            Assert.Equal(expected, JpegBlock.NonZeroZigZag(block));
+        }
+    }
+
+    [Fact]
     public void DcFillEqualsTheTransform()
     {
         short[] block = new short[64];

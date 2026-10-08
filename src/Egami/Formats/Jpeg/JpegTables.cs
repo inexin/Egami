@@ -1,3 +1,7 @@
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>Fixed tables from ITU-T T.81.</summary>
@@ -84,4 +88,106 @@ internal static class JpegTables
         99, 99, 99, 99, 99, 99, 99, 99,
         99, 99, 99, 99, 99, 99, 99, 99,
     ];
+}
+
+/// <summary>Helpers on blocks of 64 coefficients.</summary>
+internal static class JpegBlock
+{
+    /// <summary>Returns a mask with bit k set where coefficient k of the 64 is nonzero.</summary>
+    internal static ulong NonZero(ReadOnlySpan<short> block)
+    {
+        block = block[..64];
+        if (Vector128.IsHardwareAccelerated)
+        {
+            ref short b = ref MemoryMarshal.GetReference(block);
+            ulong mask = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector128<short> v = Vector128.LoadUnsafe(ref b, (nuint)(i * 8));
+                mask |= (ulong)(~Vector128.Equals(v, Vector128<short>.Zero)).ExtractMostSignificantBits() << (i * 8);
+            }
+
+            return mask;
+        }
+
+        ulong scalar = 0;
+        for (int i = 0; i < 64; i++)
+        {
+            if (block[i] != 0)
+            {
+                scalar |= 1UL << i;
+            }
+        }
+
+        return scalar;
+    }
+
+    // For each output byte k of a 32-byte half of the zigzag order: which byte of 16-byte source lane j holds natural index
+    // ZigZag[k], or 0x80 (zero) when another lane does. Four masks per half, one per source lane.
+    private static readonly Vector256<byte>[] ZigZagShuffles = BuildZigZagShuffles();
+
+    /// <summary>
+    /// Returns a mask with bit k set where coefficient k in zigzag order is nonzero, for a block stored in natural order. With
+    /// AVX2 the compare results are moved into zigzag order with byte shuffles, sixteen bytes per source lane.
+    /// </summary>
+    internal static ulong NonZeroZigZag(ReadOnlySpan<short> natural)
+    {
+        natural = natural[..64];
+        if (!Avx2.IsSupported)
+        {
+            ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
+            ulong scalar = 0;
+            for (int k = 0; k < 64; k++)
+            {
+                if (natural[zigzag[k]] != 0)
+                {
+                    scalar |= 1UL << k;
+                }
+            }
+
+            return scalar;
+        }
+
+        ref short b = ref MemoryMarshal.GetReference(natural);
+        Vector256<short> zero = Vector256<short>.Zero;
+        Vector256<short> m0 = ~Vector256.Equals(Vector256.LoadUnsafe(ref b, 0), zero);
+        Vector256<short> m1 = ~Vector256.Equals(Vector256.LoadUnsafe(ref b, 16), zero);
+        Vector256<short> m2 = ~Vector256.Equals(Vector256.LoadUnsafe(ref b, 32), zero);
+        Vector256<short> m3 = ~Vector256.Equals(Vector256.LoadUnsafe(ref b, 48), zero);
+
+        // Bytes of natural indices 0-31 and 32-63, in order (the pack interleaves 64-bit groups; the permute puts them back).
+        Vector256<byte> low = Avx2.Permute4x64(Avx2.PackSignedSaturate(m0, m1).AsInt64(), 0b11_01_10_00).AsByte();
+        Vector256<byte> high = Avx2.Permute4x64(Avx2.PackSignedSaturate(m2, m3).AsInt64(), 0b11_01_10_00).AsByte();
+
+        // Each source lane in both halves of a vector, so one shuffle can pick from it into any output byte.
+        Vector256<byte> s0 = Avx2.Permute2x128(low, low, 0x00);
+        Vector256<byte> s1 = Avx2.Permute2x128(low, low, 0x11);
+        Vector256<byte> s2 = Avx2.Permute2x128(high, high, 0x00);
+        Vector256<byte> s3 = Avx2.Permute2x128(high, high, 0x11);
+        Vector256<byte>[] masks = ZigZagShuffles;
+        Vector256<byte> first = Avx2.Shuffle(s0, masks[0]) | Avx2.Shuffle(s1, masks[1]) | Avx2.Shuffle(s2, masks[2]) | Avx2.Shuffle(s3, masks[3]);
+        Vector256<byte> second = Avx2.Shuffle(s0, masks[4]) | Avx2.Shuffle(s1, masks[5]) | Avx2.Shuffle(s2, masks[6]) | Avx2.Shuffle(s3, masks[7]);
+        return (uint)Avx2.MoveMask(first) | ((ulong)(uint)Avx2.MoveMask(second) << 32);
+    }
+
+    private static Vector256<byte>[] BuildZigZagShuffles()
+    {
+        Vector256<byte>[] masks = new Vector256<byte>[8];
+        Span<byte> bytes = stackalloc byte[32];
+        for (int half = 0; half < 2; half++)
+        {
+            for (int lane = 0; lane < 4; lane++)
+            {
+                for (int k = 0; k < 32; k++)
+                {
+                    int n = JpegTables.ZigZag[(half * 32) + k];
+                    bytes[k] = n / 16 == lane ? (byte)(n % 16) : (byte)0x80;
+                }
+
+                masks[(half * 4) + lane] = Vector256.Create((ReadOnlySpan<byte>)bytes);
+            }
+        }
+
+        return masks;
+    }
 }

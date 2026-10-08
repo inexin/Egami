@@ -1,5 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 using Egami.Metadata;
@@ -16,20 +18,6 @@ namespace Egami.Formats.Jpeg;
 internal sealed class JpegWriter : IFormatWriter
 {
     internal static readonly JpegWriter Instance = new();
-
-    private const int ScaleBits = 16;
-    private const int Half = 1 << (ScaleBits - 1);
-    private const int CbCrOffset = 128 << ScaleBits;
-
-    // libjpeg's fixed-point RGB to YCbCr coefficients (JFIF, full range BT.601).
-    private static readonly int RY = Fix(0.29900);
-    private static readonly int GY = Fix(0.58700);
-    private static readonly int BY = Fix(0.11400);
-    private static readonly int RCb = -Fix(0.16874);
-    private static readonly int GCb = -Fix(0.33126);
-    private static readonly int BCbRCr = Fix(0.5);
-    private static readonly int GCr = -Fix(0.41869);
-    private static readonly int BCr = -Fix(0.08131);
 
     private static ReadOnlySpan<byte> JfifId => "JFIF\0"u8;
 
@@ -66,9 +54,6 @@ internal sealed class JpegWriter : IFormatWriter
         writer.Marker(JpegMarker.Eoi);
         writer.Flush();
     }
-
-    /// <summary>Returns a coefficient scaled by 2^16 and rounded, as libjpeg's FIX does.</summary>
-    private static int Fix(double value) => (int)((value * (1 << ScaleBits)) + 0.5);
 
     private static void Segment(JpegBitWriter writer, byte marker, ReadOnlySpan<byte> payload)
     {
@@ -227,11 +212,14 @@ internal sealed class JpegWriter : IFormatWriter
         private readonly int _mcusY;
         private readonly int _paddedWidth;
         private readonly Plane[] _planes;
+        private readonly Workspace _main;
+        private readonly System.Collections.Concurrent.ConcurrentBag<Workspace> _workspaces = [];
+        private readonly bool _parallel;
         private readonly int[][] _divisors;
+        private readonly float[][] _reciprocals;
         private readonly ushort[][] _quant;
         private readonly JpegHuffmanCodes[] _dc;
         private readonly JpegHuffmanCodes[] _ac;
-        private byte[] _pixels;
 
         internal Encoder(Raster<TPixel> raster, JpegWriterOptions options)
         {
@@ -254,19 +242,19 @@ internal sealed class JpegWriter : IFormatWriter
                 ? [Scale(JpegTables.LumaQuant, options.Quality)]
                 : [Scale(JpegTables.LumaQuant, options.Quality), Scale(JpegTables.ChromaQuant, options.Quality)];
             _divisors = [.. _quant.Select(q => q.Select(v => v * 8).ToArray())];
+            _reciprocals = [.. _divisors.Select(d => JpegFdct.Reciprocals(d))];
             _dc = _gray ? [JpegHuffmanCodes.DcLuma] : [JpegHuffmanCodes.DcLuma, JpegHuffmanCodes.DcChroma];
             _ac = _gray ? [JpegHuffmanCodes.AcLuma] : [JpegHuffmanCodes.AcLuma, JpegHuffmanCodes.AcChroma];
 
-            // Luma at the full padded size; chroma averaged down. Real blocks per component follow libjpeg's component sizes.
-            _planes = _gray
-                ? [new Plane(1, 1, 0, _paddedWidth, 8, _width, _height, _maxH, _maxV)]
-                : [
-                    new Plane(_maxH, _maxV, 0, _paddedWidth, 8 * _maxV, _width, _height, _maxH, _maxV),
-                    new Plane(1, 1, 1, _paddedWidth / _maxH, 8, _width, _height, _maxH, _maxV),
-                    new Plane(1, 1, 1, _paddedWidth / _maxH, 8, _width, _height, _maxH, _maxV),
-                ];
-            _pixels = ArrayPool<byte>.Shared.Rent(_paddedWidth * 8 * _maxV * (_gray ? 1 : 3));
+            _main = CreateWorkspace();
+            _planes = _main.Planes;
+
+            // Large images transform MCU rows on several threads while this one Huffman-codes the rows before them.
+            _parallel = raster.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1;
         }
+
+        /// <summary>Images with fewer pixels than this are encoded on one thread.</summary>
+        private const long ParallelPixels = 1 << 20;
 
         /// <summary>DQT, SOF0, DHT and DRI, laid out as libjpeg does: one table per segment.</summary>
         internal void WriteHeaders(JpegBitWriter writer)
@@ -305,15 +293,19 @@ internal sealed class JpegWriter : IFormatWriter
             if (_options.OptimizeHuffman)
             {
                 stored = [];
+                for (int my = 0; my < _mcusY; my++)
+                {
+                    stored.Add(ArrayPool<short>.Shared.Rent(BlocksPerRow() * 64));
+                }
+
+                Transform(0, _mcusY, [.. stored]);
                 long[][] dcCounts = [new long[256], new long[256]];
                 long[][] acCounts = [new long[256], new long[256]];
                 int[] predictors = new int[_planes.Length];
                 int mcu = 0;
                 for (int my = 0; my < _mcusY; my++)
                 {
-                    short[] row = ArrayPool<short>.Shared.Rent(BlocksPerRow() * 64);
-                    stored.Add(row);
-                    TransformRow(my, row);
+                    short[] row = stored[my];
                     int b = 0;
                     for (int mx = 0; mx < _mcusX; mx++, mcu++)
                     {
@@ -364,39 +356,66 @@ internal sealed class JpegWriter : IFormatWriter
             sos[^2] = 63;
             Segment(writer, JpegMarker.Sos, sos);
 
-            short[] current = stored is null ? ArrayPool<short>.Shared.Rent(BlocksPerRow() * 64) : [];
+            // Without stored rows, two batches of MCU rows alternate: one being transformed while the other is coded.
+            int batch = stored is not null ? _mcusY : _parallel ? Math.Max(2, 2 * _raster.Context.MaxParallelism) : 1;
+            short[][] ready = stored is not null ? [.. stored] : Rent(Math.Min(batch, _mcusY));
+            short[][] spare = stored is not null || !_parallel ? [] : Rent(Math.Min(batch, _mcusY));
+            Task? pending = null;
             try
             {
+                if (stored is null)
+                {
+                    Transform(0, Math.Min(batch, _mcusY), ready);
+                }
+
                 int[] predictors = new int[_planes.Length];
                 int mcu = 0;
                 int restart = 0;
-                for (int my = 0; my < _mcusY; my++)
+                for (int start = 0; start < _mcusY; start += batch)
                 {
-                    short[] row = stored is null ? current : stored[my];
-                    if (stored is null)
+                    int next = start + batch;
+                    pending = null;
+                    if (stored is null && next < _mcusY)
                     {
-                        TransformRow(my, row);
+                        short[][] target = _parallel ? spare : ready;
+                        int end = Math.Min(next + batch, _mcusY);
+                        pending = _parallel ? Task.Run(() => Transform(next, end, target)) : null;
                     }
 
-                    int b = 0;
-                    for (int mx = 0; mx < _mcusX; mx++, mcu++)
+                    for (int my = start; my < Math.Min(start + batch, _mcusY); my++)
                     {
-                        if (RestartDue(mcu))
+                        short[] row = ready[my - start];
+                        int b = 0;
+                        for (int mx = 0; mx < _mcusX; mx++, mcu++)
                         {
-                            writer.Align();
-                            writer.Marker((byte)(JpegMarker.Rst0 + restart));
-                            restart = (restart + 1) & 7;
-                            Array.Clear(predictors);
-                        }
-
-                        for (int i = 0; i < _planes.Length; i++)
-                        {
-                            int t = _planes[i].Table;
-                            for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
+                            if (RestartDue(mcu))
                             {
-                                JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], _dc[t], _ac[t]);
+                                writer.Align();
+                                writer.Marker((byte)(JpegMarker.Rst0 + restart));
+                                restart = (restart + 1) & 7;
+                                Array.Clear(predictors);
+                            }
+
+                            for (int i = 0; i < _planes.Length; i++)
+                            {
+                                int t = _planes[i].Table;
+                                for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
+                                {
+                                    JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], _dc[t], _ac[t]);
+                                }
                             }
                         }
+                    }
+
+                    if (pending is not null)
+                    {
+                        pending.GetAwaiter().GetResult();
+                        pending = null;
+                        (ready, spare) = (spare, ready);
+                    }
+                    else if (stored is null && next < _mcusY)
+                    {
+                        Transform(next, Math.Min(next + batch, _mcusY), ready);
                     }
                 }
 
@@ -404,26 +423,29 @@ internal sealed class JpegWriter : IFormatWriter
             }
             finally
             {
-                if (stored is null)
+                // If coding failed while the next batch was being transformed, that work must finish before its rows go back.
+                try
                 {
-                    ArrayPool<short>.Shared.Return(current);
+                    pending?.Wait();
                 }
-                else
+                catch (AggregateException)
                 {
-                    foreach (short[] row in stored)
-                    {
-                        ArrayPool<short>.Shared.Return(row);
-                    }
+                    // The coding failure is the one to report.
+                }
+
+                foreach (short[] row in ready.Concat(spare))
+                {
+                    ArrayPool<short>.Shared.Return(row);
                 }
             }
         }
 
         public void Dispose()
         {
-            ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _pixels, null!));
-            foreach (Plane plane in _planes)
+            _main.Dispose();
+            while (_workspaces.TryTake(out Workspace? workspace))
             {
-                plane.Dispose();
+                workspace.Dispose();
             }
         }
 
@@ -440,18 +462,57 @@ internal sealed class JpegWriter : IFormatWriter
 
         private int BlocksPerRow() => _mcusX * _planes.Sum(p => p.BlocksPerMcu);
 
-        /// <summary>Converts MCU row <paramref name="my"/> and codes its blocks into <paramref name="blocks"/>, in MCU order, zigzag.</summary>
-        private void TransformRow(int my, short[] blocks)
+        private short[][] Rent(int rows) => [.. Enumerable.Range(0, rows).Select(_ => ArrayPool<short>.Shared.Rent(BlocksPerRow() * 64))];
+
+        /// <summary>Planes and conversion buffers for one thread: luma at the padded width, chroma averaged down.</summary>
+        private Workspace CreateWorkspace()
+        {
+            Plane[] planes = _gray
+                ? [new Plane(1, 1, 0, _paddedWidth, 8, _width, _height, _maxH, _maxV)]
+                : [
+                    new Plane(_maxH, _maxV, 0, _paddedWidth, 8 * _maxV, _width, _height, _maxH, _maxV),
+                    new Plane(1, 1, 1, _paddedWidth / _maxH, 8, _width, _height, _maxH, _maxV),
+                    new Plane(1, 1, 1, _paddedWidth / _maxH, 8, _width, _height, _maxH, _maxV),
+                ];
+            return new Workspace(planes, _width, _paddedWidth * 8 * _maxV);
+        }
+
+        /// <summary>Transforms MCU rows <paramref name="from"/> to <paramref name="to"/> into <paramref name="rows"/>, on several threads when allowed.</summary>
+        private void Transform(int from, int to, short[][] rows)
+        {
+            if (!_parallel)
+            {
+                for (int my = from; my < to; my++)
+                {
+                    TransformRow(my, rows[my - from], _main);
+                }
+
+                return;
+            }
+
+            // Workspaces are kept for the whole image rather than made for each batch.
+            ParallelOptions options = new() { MaxDegreeOfParallelism = _raster.Context.MaxParallelism };
+            Parallel.For(from, to, options, () => _workspaces.TryTake(out Workspace? kept) ? kept : CreateWorkspace(), (my, _, workspace) =>
+            {
+                TransformRow(my, rows[my - from], workspace);
+                return workspace;
+            }, _workspaces.Add);
+        }
+        /// <summary>Converts MCU row <paramref name="my"/> and codes its blocks into <paramref name="blocks"/>, in MCU order, each in natural order.</summary>
+        private void TransformRow(int my, short[] blocks, Workspace workspace)
         {
             int rows = 8 * _maxV;
-            ConvertRows(my * rows, rows);
+            ConvertRows(my * rows, rows, workspace);
+            Plane[] planes = workspace.Planes;
+            bool vector = Avx2.IsSupported;
             int b = 0;
             for (int mx = 0; mx < _mcusX; mx++)
             {
-                for (int i = 0; i < _planes.Length; i++)
+                for (int i = 0; i < planes.Length; i++)
                 {
-                    Plane p = _planes[i];
+                    Plane p = planes[i];
                     int[] divisors = _divisors[p.Table];
+                    float[] reciprocals = _reciprocals[p.Table];
                     for (int v = 0; v < p.V; v++)
                     {
                         for (int h = 0; h < p.H; h++, b++)
@@ -461,11 +522,14 @@ internal sealed class JpegWriter : IFormatWriter
                             int by = (my * p.V) + v;
                             if (bx < p.BlocksWide && by < p.BlocksHigh)
                             {
-                                JpegFdct.Forward(p.Samples.AsSpan((v * 8 * p.Stride) + (bx * 8)), p.Stride, divisors, block);
-                                for (int k = 1; k < 64; k++)
+                                ReadOnlySpan<byte> samples = p.Samples.AsSpan((v * 8 * p.Stride) + (bx * 8));
+                                if (vector)
                                 {
-                                    // Baseline AC tables code at most 10 bits of magnitude.
-                                    block[k] = Math.Clamp(block[k], (short)-1023, (short)1023);
+                                    JpegFdct.ForwardAvx2(samples, p.Stride, divisors, reciprocals, block);
+                                }
+                                else
+                                {
+                                    JpegFdct.Forward(samples, p.Stride, divisors, block);
                                 }
                             }
                             else
@@ -484,113 +548,68 @@ internal sealed class JpegWriter : IFormatWriter
         /// Converts image rows <paramref name="first"/> to <paramref name="first"/> + <paramref name="count"/> into the component
         /// planes, repeating the last row and column of the image to fill whole MCUs, and averages chroma down.
         /// </summary>
-        private void ConvertRows(int first, int count)
+        private void ConvertRows(int first, int count, Workspace workspace)
         {
-            int channels = _gray ? 1 : 3;
-            Span<byte> pixels = _pixels.AsSpan(0, _paddedWidth * count * channels);
-            Span<Rgba8> rgba = _options.Background is null ? default : new Rgba8[_width];
+            Plane[] planes = workspace.Planes;
+            Plane luma = planes[0];
+            bool subsampled = !_gray && (_maxH > 1 || _maxV > 1);
             for (int r = 0; r < count; r++)
             {
                 int y = Math.Min(first + r, _height - 1);
-                Span<byte> target = pixels.Slice(r * _paddedWidth * channels, _paddedWidth * channels);
-                ReadOnlySpan<TPixel> source = _raster.Row(y);
-                if (_options.Background is Rgba8 background)
+                Span<byte> lumaRow = luma.Samples.AsSpan(r * luma.Stride, _paddedWidth);
+                if (_gray && _options.Background is null && TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha)
                 {
-                    PixelConvert.Convert(source, rgba);
-                    Composite(rgba, background);
+                    PixelConvert.Convert<TPixel, Gray8>(_raster.Row(y), MemoryMarshal.Cast<byte, Gray8>(lumaRow[.._width]));
+                    lumaRow[_width..].Fill(lumaRow[_width - 1]);
+                    continue;
                 }
 
+                ReadOnlySpan<byte> rgb = RgbRow(y, workspace);
                 if (_gray)
                 {
-                    GrayRow(source, rgba, target);
+                    JpegEncodeKernels.Luma(rgb, lumaRow[.._width]);
+                    lumaRow[_width..].Fill(lumaRow[_width - 1]);
+                    continue;
                 }
-                else
-                {
-                    Span<Rgb8> rgb = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, Rgb8>(target);
-                    if (_options.Background is not null)
-                    {
-                        PixelConvert.Convert<Rgba8, Rgb8>(rgba, rgb[.._width]);
-                    }
-                    else
-                    {
-                        PixelConvert.Convert(source, rgb[.._width]);
-                    }
 
-                    rgb[_width..].Fill(rgb[_width - 1]);
-                }
+                // Chroma goes straight to its plane at full sampling, or to full-size rows to be averaged down.
+                Span<byte> cb = subsampled ? workspace.FullCb.AsSpan(r * _paddedWidth, _paddedWidth) : planes[1].Samples.AsSpan(r * planes[1].Stride, _paddedWidth);
+                Span<byte> cr = subsampled ? workspace.FullCr.AsSpan(r * _paddedWidth, _paddedWidth) : planes[2].Samples.AsSpan(r * planes[2].Stride, _paddedWidth);
+                JpegEncodeKernels.YCbCr(rgb, lumaRow[.._width], cb[.._width], cr[.._width]);
+                lumaRow[_width..].Fill(lumaRow[_width - 1]);
+                cb[_width..].Fill(cb[_width - 1]);
+                cr[_width..].Fill(cr[_width - 1]);
             }
 
-            if (_gray)
+            if (subsampled)
             {
-                Plane plane = _planes[0];
-                for (int r = 0; r < count; r++)
-                {
-                    pixels.Slice(r * _paddedWidth, _paddedWidth).CopyTo(plane.Samples.AsSpan(r * plane.Stride));
-                }
-
-                return;
-            }
-
-            // Color conversion to the luma plane and full-size chroma rows, then chroma averaged down.
-            Plane luma = _planes[0];
-            Plane cb = _planes[1];
-            Plane cr = _planes[2];
-            byte[] fullCb = ArrayPool<byte>.Shared.Rent(_paddedWidth * count);
-            byte[] fullCr = ArrayPool<byte>.Shared.Rent(_paddedWidth * count);
-            try
-            {
-                for (int r = 0; r < count; r++)
-                {
-                    ReadOnlySpan<byte> rgb = pixels.Slice(r * _paddedWidth * 3, _paddedWidth * 3);
-                    Span<byte> y = luma.Samples.AsSpan(r * luma.Stride, _paddedWidth);
-                    Span<byte> b = fullCb.AsSpan(r * _paddedWidth, _paddedWidth);
-                    Span<byte> c = fullCr.AsSpan(r * _paddedWidth, _paddedWidth);
-                    for (int x = 0; x < _paddedWidth; x++)
-                    {
-                        int red = rgb[3 * x], green = rgb[(3 * x) + 1], blue = rgb[(3 * x) + 2];
-                        y[x] = (byte)(((RY * red) + (GY * green) + (BY * blue) + Half) >> ScaleBits);
-                        b[x] = (byte)(((RCb * red) + (GCb * green) + (BCbRCr * blue) + CbCrOffset + Half - 1) >> ScaleBits);
-                        c[x] = (byte)(((BCbRCr * red) + (GCr * green) + (BCr * blue) + CbCrOffset + Half - 1) >> ScaleBits);
-                    }
-                }
-
-                Downsample(fullCb, first, count, cb);
-                Downsample(fullCr, first, count, cr);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(fullCb);
-                ArrayPool<byte>.Shared.Return(fullCr);
+                Downsample(workspace.FullCb, first, count, planes[1]);
+                Downsample(workspace.FullCr, first, count, planes[2]);
             }
         }
 
-        /// <summary>Gray from a row: copied from gray pixels, else luma from RGB with the same coefficients as YCbCr.</summary>
-        private void GrayRow(ReadOnlySpan<TPixel> source, ReadOnlySpan<Rgba8> composited, Span<byte> target)
+        /// <summary>Returns row <paramref name="y"/> as packed RGB bytes: the raster's own row when it is Rgb8, else a converted copy.</summary>
+        private ReadOnlySpan<byte> RgbRow(int y, Workspace workspace)
         {
-            if (_options.Background is null && TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha)
+            byte[] converted = workspace.Rgb;
+            ReadOnlySpan<TPixel> source = _raster.Row(y);
+            if (_options.Background is Rgba8 background)
             {
-                PixelConvert.Convert(source, System.Runtime.InteropServices.MemoryMarshal.Cast<byte, Gray8>(target[.._width]));
-            }
-            else
-            {
-                Rgba8[] buffer = new Rgba8[_width];
-                if (_options.Background is null)
-                {
-                    PixelConvert.Convert(source, buffer.AsSpan());
-                }
-                else
-                {
-                    composited.CopyTo(buffer);
-                }
-
-                for (int x = 0; x < _width; x++)
-                {
-                    Rgba8 p = buffer[x];
-                    target[x] = (byte)(((RY * p.R) + (GY * p.G) + (BY * p.B) + Half) >> ScaleBits);
-                }
+                Span<Rgba8> rgba = MemoryMarshal.Cast<byte, Rgba8>(workspace.Rgba.AsSpan(0, _width * 4));
+                PixelConvert.Convert(source, rgba);
+                Composite(rgba, background);
+                Span<Rgb8> composited = MemoryMarshal.Cast<byte, Rgb8>(converted.AsSpan(0, _width * 3));
+                PixelConvert.Convert<Rgba8, Rgb8>(rgba, composited);
+                return converted.AsSpan(0, _width * 3);
             }
 
-            target[_width.._paddedWidth].Fill(target[_width - 1]);
+            if (typeof(TPixel) == typeof(Rgb8))
+            {
+                return MemoryMarshal.AsBytes(source);
+            }
+
+            PixelConvert.Convert(source, MemoryMarshal.Cast<byte, Rgb8>(converted.AsSpan(0, _width * 3)));
+            return converted.AsSpan(0, _width * 3);
         }
 
         /// <summary>
@@ -599,9 +618,8 @@ internal sealed class JpegWriter : IFormatWriter
         /// </summary>
         private void Downsample(byte[] full, int first, int rows, Plane plane)
         {
-            int factorX = _maxH;
             int factorY = _maxV;
-            int width = _paddedWidth / factorX;
+            int width = _paddedWidth / _maxH;
             int last = ((_height + factorY - 1) / factorY) - 1 - (first / factorY);
             for (int r = 0; r < rows / factorY; r++)
             {
@@ -613,25 +631,8 @@ internal sealed class JpegWriter : IFormatWriter
                 }
 
                 ReadOnlySpan<byte> row0 = full.AsSpan(r * factorY * _paddedWidth, _paddedWidth);
-                if (factorX == 1)
-                {
-                    row0[..width].CopyTo(output);
-                }
-                else if (factorY == 1)
-                {
-                    for (int x = 0, bias = 0; x < width; x++, bias ^= 1)
-                    {
-                        output[x] = (byte)((row0[2 * x] + row0[(2 * x) + 1] + bias) >> 1);
-                    }
-                }
-                else
-                {
-                    ReadOnlySpan<byte> row1 = full.AsSpan(((r * 2) + 1) * _paddedWidth, _paddedWidth);
-                    for (int x = 0, bias = 1; x < width; x++, bias ^= 3)
-                    {
-                        output[x] = (byte)((row0[2 * x] + row0[(2 * x) + 1] + row1[2 * x] + row1[(2 * x) + 1] + bias) >> 2);
-                    }
-                }
+                ReadOnlySpan<byte> row1 = factorY == 2 ? full.AsSpan(((r * 2) + 1) * _paddedWidth, _paddedWidth) : row0;
+                JpegEncodeKernels.Downsample(row0, row1, factorY == 2, output);
             }
         }
 
@@ -649,6 +650,43 @@ internal sealed class JpegWriter : IFormatWriter
                     (byte)(((p.B * a) + (background.B * inverse) + 127) / 255),
                     255);
             }
+        }
+    }
+
+    /// <summary>One thread's planes and row buffers for converting MCU rows.</summary>
+    private sealed class Workspace : IDisposable
+    {
+        internal Workspace(Plane[] planes, int width, int fullChroma)
+        {
+            Planes = planes;
+            Rgb = ArrayPool<byte>.Shared.Rent(width * 3);
+            Rgba = ArrayPool<byte>.Shared.Rent(width * 4);
+            FullCb = ArrayPool<byte>.Shared.Rent(fullChroma);
+            FullCr = ArrayPool<byte>.Shared.Rent(fullChroma);
+        }
+
+        internal Plane[] Planes { get; }
+
+        internal byte[] Rgb { get; private set; }
+
+        internal byte[] Rgba { get; private set; }
+
+        internal byte[] FullCb { get; private set; }
+
+        internal byte[] FullCr { get; private set; }
+
+        public void Dispose()
+        {
+            foreach (Plane plane in Planes)
+            {
+                plane.Dispose();
+            }
+
+            ArrayPool<byte>.Shared.Return(Rgb);
+            ArrayPool<byte>.Shared.Return(Rgba);
+            ArrayPool<byte>.Shared.Return(FullCb);
+            ArrayPool<byte>.Shared.Return(FullCr);
+            (Rgb, Rgba, FullCb, FullCr) = ([], [], [], []);
         }
     }
 

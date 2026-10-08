@@ -130,6 +130,7 @@ internal static class JpegIdct
     /// including its shortcuts for columns and rows with only a DC term (as lane selects), so the result is identical for every
     /// input, even coefficients that overflow.
     /// </summary>
+    [SkipLocalsInit]
     internal static void TransformAvx2(ReadOnlySpan<short> coefficients, ReadOnlySpan<ushort> quant, Span<byte> output, int stride)
     {
         coefficients = coefficients[..64];
