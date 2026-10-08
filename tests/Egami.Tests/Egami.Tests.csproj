@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../images/**/*" LinkBase="images" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../reference/**/*" LinkBase="reference" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
   </ItemGroup>
 

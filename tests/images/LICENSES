@@ -1,0 +1,10 @@
+Test image licenses
+===================
+
+pngsuite/
+  PngSuite 2017-07-19 by Willem van Schaik, http://www.schaik.com/pngsuite/
+  "Permission to use, copy, modify and distribute these images for any purpose and without fee is hereby granted."
+  The full notice is in pngsuite/PngSuite.LICENSE.
+
+../reference/pngsuite/
+  Reference decodes of the PngSuite images, made by tools/make-png-references.py with Pillow. Same license as PngSuite.
