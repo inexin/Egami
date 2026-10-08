@@ -66,12 +66,19 @@ Egami.Formats.IFormatReader.Read<TPixel>(Egami.Formats.EgamiInput! input, Egami.
 Egami.Formats.IFormatReader.ReadInfo(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Formats.RasterInfo!
 Egami.Formats.IFormatWriter
 Egami.Formats.IFormatWriter.Write<TPixel>(Egami.Raster<TPixel>! raster, System.IO.Stream! output, Egami.Formats.WriterOptions! options) -> void
+Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Full = 2 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Half = 0 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.HalfWidth = 1 -> Egami.Formats.Jpeg.ChromaSubsampling
 Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.Cmyk = 3 -> Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.Gray = 0 -> Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.Rgb = 2 -> Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.YCbCr = 1 -> Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.Ycck = 4 -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegColorType.Auto = 0 -> Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegColorType.Gray = 1 -> Egami.Formats.Jpeg.JpegColorType
 Egami.Formats.Jpeg.JpegComponent
 Egami.Formats.Jpeg.JpegComponent.<Clone>$() -> Egami.Formats.Jpeg.JpegComponent!
 Egami.Formats.Jpeg.JpegComponent.Deconstruct(out int Id, out int HorizontalSampling, out int VerticalSampling) -> void
@@ -104,6 +111,20 @@ Egami.Formats.Jpeg.JpegReaderOptions.Equals(Egami.Formats.Jpeg.JpegReaderOptions
 Egami.Formats.Jpeg.JpegReaderOptions.FastUpsampling.get -> bool
 Egami.Formats.Jpeg.JpegReaderOptions.FastUpsampling.init -> void
 Egami.Formats.Jpeg.JpegReaderOptions.JpegReaderOptions() -> void
+Egami.Formats.Jpeg.JpegWriterOptions
+Egami.Formats.Jpeg.JpegWriterOptions.Background.get -> Egami.Pixels.Rgba8?
+Egami.Formats.Jpeg.JpegWriterOptions.Background.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.ColorType.get -> Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegWriterOptions.ColorType.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.JpegWriterOptions() -> void
+Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman.get -> bool
+Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Quality.get -> int
+Egami.Formats.Jpeg.JpegWriterOptions.Quality.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.RestartInterval.get -> int
+Egami.Formats.Jpeg.JpegWriterOptions.RestartInterval.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Subsampling.get -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.JpegWriterOptions.Subsampling.init -> void
 Egami.Formats.Png.PngChunk
 Egami.Formats.Png.PngChunk.<Clone>$() -> Egami.Formats.Png.PngChunk!
 Egami.Formats.Png.PngChunk.Data.get -> System.ReadOnlyMemory<byte>
@@ -716,6 +737,7 @@ static Egami.Formats.Jpeg.JpegComponent.operator ==(Egami.Formats.Jpeg.JpegCompo
 static Egami.Formats.Jpeg.JpegFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jpeg.JpegReaderOptions.operator !=(Egami.Formats.Jpeg.JpegReaderOptions? left, Egami.Formats.Jpeg.JpegReaderOptions? right) -> bool
 static Egami.Formats.Jpeg.JpegReaderOptions.operator ==(Egami.Formats.Jpeg.JpegReaderOptions? left, Egami.Formats.Jpeg.JpegReaderOptions? right) -> bool
+static Egami.Formats.Jpeg.JpegWriterOptions.Default.get -> Egami.Formats.Jpeg.JpegWriterOptions!
 static Egami.Formats.Png.PngChunk.operator !=(Egami.Formats.Png.PngChunk? left, Egami.Formats.Png.PngChunk? right) -> bool
 static Egami.Formats.Png.PngChunk.operator ==(Egami.Formats.Png.PngChunk? left, Egami.Formats.Png.PngChunk? right) -> bool
 static Egami.Formats.Png.PngFormat.Info.get -> Egami.Formats.FormatInfo!

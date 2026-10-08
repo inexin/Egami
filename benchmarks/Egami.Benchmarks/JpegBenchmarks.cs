@@ -89,3 +89,40 @@ internal static class BenchFiles
             : throw new FileNotFoundException($"{path} is missing. Run python tools/make-jpeg-bench-files.py first.", path);
     }
 }
+
+/// <summary>The JPEG design's encode scenarios: the 4000 × 3000 benchmark photo as Rgb8, at quality 75 4:2:0 with the standard tables and at quality 90 4:4:4 with optimized tables.</summary>
+[MemoryDiagnoser]
+public class JpegEncodeBenchmarks
+{
+    private static readonly JpegWriterOptions Standard = new() { Quality = 75 };
+    private static readonly JpegWriterOptions Optimized = new() { Quality = 90, Subsampling = ChromaSubsampling.Full, OptimizeHuffman = true };
+
+    private Raster<Rgb8> _photo = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        using Raster<Rgba8> photo = BenchImages.Photo(4000, 3000);
+        _photo = photo.As<Rgb8>();
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _photo.Dispose();
+    }
+
+    [Benchmark(Baseline = true)]
+    public int Quality75Half()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, Standard);
+        return _photo.Width;
+    }
+
+    [Benchmark]
+    public int Quality90FullOptimized()
+    {
+        _photo.Save(Stream.Null, JpegFormat.Info, Optimized);
+        return _photo.Width;
+    }
+}

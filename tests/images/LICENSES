@@ -36,3 +36,5 @@ jpeg/testorig.jpg, jpeg/testimgint.jpg, jpeg/testimgari.jpg, jpeg/testorig12.jpg
 ../reference/jpeg/
   Decodes of the files above by libjpeg-turbo's djpeg (and jpegtran for the upright orientation references), Pillow's reading of
   the EXIF blocks, and manifest.json, made by tools/make-jpeg-references.py. Same licenses as the files they come from.
+  encode/ holds the encoder sources (the duck and egret above, reduced or cropped, as PNG) and cjpeg's encodes of them;
+  public domain, as their sources.

@@ -15,6 +15,7 @@ References (tests/reference/jpeg), all from libjpeg-turbo's djpeg with its defau
   <file>.fast.*.gz                    djpeg -nosmooth (replicated chroma), for FastUpsampling
   orient-<n>.rgb8.gz                  the orientation-n file turned upright by jpegtran (lossless), then decoded
   <file>.exif.json                    Pillow's reading of the EXIF block
+  encode/<source>.png, encode/*.jpg  encoder sources and what cjpeg makes of them (listed under "encodes")
   manifest.json                       what each file is and which references it has
 
 CMYK files are decoded by Pillow (which undoes Adobe's inverted storage) and converted with R = (255 - C)(255 - K) / 255, the plain
@@ -286,11 +287,61 @@ def inside():
         entries.append({"file": name, "unsupported": reason, "note": "libjpeg-turbo test image"})
 
     dedupe(entries)
+    encodes = encode_references(work, duck, duck_gray)
     version = subprocess.run(["cjpeg", "-version"], capture_output=True, text=True).stderr.strip()
     with open(os.path.join(TARGET, "manifest.json"), "w", newline="\n") as f:
-        json.dump({"tools": f"{version}; Pillow {__import__('PIL').__version__}; {IMAGE}", "files": entries}, f, indent=1)
+        json.dump({"tools": f"{version}; Pillow {__import__('PIL').__version__}; {IMAGE}", "files": entries, "encodes": encodes}, f, indent=1)
         f.write("\n")
     print(f"Wrote {len(entries)} corpus files.")
+
+
+def encode_references(work, duck, duck_gray):
+    """
+    Encoder references (tests/reference/jpeg/encode): each source as a lossless PNG, and what cjpeg makes of it at the settings
+    the encoder tests use. The tests encode the PNG with Egami at the same settings and compare file size and PSNR.
+    """
+    from PIL import Image
+
+    target = os.path.join(TARGET, "encode")
+    os.makedirs(target, exist_ok=True)
+    sources = {"duck": duck, "duck-gray": duck_gray}
+    for w, h in ((1, 1), (17, 9), (33, 1), (31, 17)):
+        sources[f"odd-{w}x{h}"] = os.path.join(work, f"odd-{w}x{h}.ppm")
+    for name, path in sources.items():
+        with Image.open(path) as im:
+            im.save(os.path.join(target, f"{name}.png"))
+
+    # (output, source, quality, subsampling (cjpeg -sample), optimize, restart interval in MCUs, gray output)
+    cases = [
+        ("duck-q75.jpg", "duck", 75, "2x2", False, 0, False),
+        ("duck-q90-422.jpg", "duck", 90, "2x1", False, 0, False),
+        ("duck-q50-444.jpg", "duck", 50, "1x1", False, 0, False),
+        ("duck-q100-444.jpg", "duck", 100, "1x1", False, 0, False),
+        ("duck-q10.jpg", "duck", 10, "2x2", False, 0, False),
+        ("duck-q95-optimized.jpg", "duck", 95, "2x2", True, 0, False),
+        ("duck-q75-444-optimized.jpg", "duck", 75, "1x1", True, 0, False),
+        ("duck-q75-restart.jpg", "duck", 75, "2x2", False, 3, False),
+        ("duck-q80-grayscale.jpg", "duck", 80, "2x2", False, 0, True),
+        ("duck-gray-q85.jpg", "duck-gray", 85, "1x1", False, 0, False),
+        ("duck-gray-q85-optimized.jpg", "duck-gray", 85, "1x1", True, 0, False),
+    ]
+    for w, h in ((1, 1), (17, 9), (33, 1), (31, 17)):
+        cases.append((f"odd-{w}x{h}-q90.jpg", f"odd-{w}x{h}", 90, "2x2", False, 0, False))
+        cases.append((f"odd-{w}x{h}-q90-422.jpg", f"odd-{w}x{h}", 90, "2x1", False, 0, False))
+
+    encodes = []
+    for out, source, quality, sample, optimize, restart, gray in cases:
+        args = ["-quality", str(quality), "-sample", sample]
+        if optimize:
+            args.append("-optimize")
+        if restart:
+            args += ["-restart", f"{restart}B"]
+        if gray:
+            args.append("-grayscale")
+        run("cjpeg", "-dct", "int", *args, "-outfile", os.path.join(target, out), sources[source])
+        encodes.append({"file": f"encode/{out}", "source": f"encode/{source}.png", "quality": quality, "sampling": sample,
+                        "optimize": optimize, "restart": restart, "gray": gray, "size": os.path.getsize(os.path.join(target, out))})
+    return encodes
 
 
 def main():
