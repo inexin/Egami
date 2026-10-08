@@ -142,6 +142,13 @@ public abstract partial class Raster : IDisposable
     /// <summary>Implements <see cref="Derive"/>.</summary>
     private protected abstract Raster DeriveCore(Action<RasterOps> build, CancellationToken cancellationToken);
 
+    /// <summary>Converts part of row <paramref name="y"/> of the first frame, from column <paramref name="x"/>, into <paramref name="destination"/>.</summary>
+    internal abstract void ReadRow<TTo>(int y, int x, Span<TTo> destination)
+        where TTo : unmanaged, IPixelType<TTo>;
+
+    /// <summary>Returns whether one of this raster's frames is <paramref name="plane"/>.</summary>
+    internal abstract bool HasPlane(object plane);
+
     /// <summary>Implements <see cref="As{TTo}"/>.</summary>
     private protected abstract Raster<TTo> ConvertTo<TTo>()
         where TTo : unmanaged, IPixelType<TTo>;

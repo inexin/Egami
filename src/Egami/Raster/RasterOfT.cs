@@ -247,6 +247,25 @@ public sealed class Raster<TPixel> : Raster
         return As<TPixel>();
     }
 
+    internal override void ReadRow<TTo>(int y, int x, Span<TTo> destination)
+    {
+        ThrowIfDisposed();
+        PixelConvert.Convert<TPixel, TTo>(_frames[0].Plane.Row(y).Slice(x, destination.Length), destination);
+    }
+
+    internal override bool HasPlane(object plane)
+    {
+        foreach (Frame<TPixel> frame in _frames)
+        {
+            if (ReferenceEquals(frame.Plane, plane))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private protected override Raster<TTo> ConvertTo<TTo>()
     {
         ThrowIfDisposed();

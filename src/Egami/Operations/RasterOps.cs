@@ -1,4 +1,5 @@
 using Egami.Operations.Color;
+using Egami.Operations.Compose;
 using Egami.Operations.Filters;
 using Egami.Operations.Geometry;
 using Egami.Operations.Resampling;
@@ -370,6 +371,27 @@ public sealed class RasterOps
         }
 
         return Add(ConvolutionOperation.FromKernel(kernel, edge, preserveAlpha));
+    }
+
+    /// <summary>
+    /// Draws <paramref name="image"/> onto this raster with its top-left corner at <paramref name="position"/>, using source-over
+    /// blending (the normal way a layer covers what is under it). The image may sit partly or wholly outside; only the overlap
+    /// changes. Its first frame is drawn onto every frame, and it may be any pixel type.
+    /// </summary>
+    /// <param name="image">The image to draw. It must stay undisposed until the chain has run.</param>
+    /// <param name="position">Where its top-left corner goes; may be negative.</param>
+    /// <param name="opacity">Multiplies the image's alpha: 1 draws it as it is, 0 draws nothing.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="opacity"/> is outside 0..1.</exception>
+    public RasterOps DrawImage(Raster image, Point position, float opacity = 1)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        if (!(opacity >= 0 && opacity <= 1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(opacity), opacity, "Opacity must be from 0 to 1.");
+        }
+
+        return Add(new DrawImageOperation(image, position, opacity));
     }
 
     /// <summary>Blurs with σ above this run as three box blurs.</summary>

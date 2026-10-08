@@ -337,6 +337,7 @@ Egami.Operations.RasterOps.Contrast(float amount) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Convolve(Egami.Operations.ConvolutionKernel! kernel, Egami.Operations.EdgeMode edge = Egami.Operations.EdgeMode.Clamp, bool preserveAlpha = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(Egami.Rect rect) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(int x, int y, int width, int height) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, float opacity = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Fill(int width, int height, Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FillColor(Egami.Pixels.Rgba8 color, Egami.Rect? rect = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded, bool enlarge = true) -> Egami.Operations.RasterOps!
