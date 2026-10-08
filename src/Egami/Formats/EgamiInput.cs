@@ -188,6 +188,9 @@ public sealed class EgamiInput : IDisposable
         return new Raster<TPixel>(plane, new RasterMetadata { FormatName = FormatName }, Context);
     }
 
+    /// <summary>The memory source of this load, which counts against <see cref="SafetyLimits.MaxTotalBytes"/> with the raster.</summary>
+    internal BudgetedMemorySource Memory => _memory;
+
     /// <summary>Creates a <see cref="CorruptDataException"/> for this format.</summary>
     /// <param name="offset">The byte offset of the problem, or -1 if unknown.</param>
     /// <param name="problem">What is wrong, as a sentence.</param>

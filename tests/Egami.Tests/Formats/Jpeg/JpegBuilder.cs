@@ -132,6 +132,12 @@ internal sealed class JpegBuilder : IDisposable
         return _bytes.ToArray();
     }
 
+    /// <summary>The bytes so far, as they are.</summary>
+    internal byte[] ToArray()
+    {
+        return _bytes.ToArray();
+    }
+
     public void Dispose()
     {
         _bytes.Dispose();

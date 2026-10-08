@@ -19,7 +19,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
 
     public static TheoryData<string> Sequential()
     {
-        return [.. Manifest().Where(e => !e.TryGetProperty("unsupported", out _) && !e.GetProperty("progressive").GetBoolean()).Select(e => e.GetProperty("file").GetString()!)];
+        return [.. Manifest().Where(e => !e.TryGetProperty("unsupported", out _)).Select(e => e.GetProperty("file").GetString()!)];
     }
 
     public static TheoryData<string> WithFastReference()
@@ -119,6 +119,70 @@ public class JpegDecodeTests(ITestOutputHelper output)
 
         using Raster<Rgb8> damaged = Raster.Load<Rgb8>(data);
         Assert.Equal(clean.Row(clean.Height - 1).ToArray(), damaged.Row(damaged.Height - 1).ToArray());
+    }
+
+    [Fact]
+    public void TruncatedProgressiveKeepsTheScansSoFar()
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Images, "duck-progressive.jpg"));
+        using Raster<Rgb8> full = Raster.Load<Rgb8>(data);
+        byte[] cut = data[..(data.Length * 2 / 3)];
+        using Raster<Rgb8> raster = Raster.Load<Rgb8>(cut);
+        Assert.Single(raster.Metadata.Warnings);
+
+        // The early scans cover the whole image, so even the bottom row is close to the full decode, not gray.
+        int x = raster.Width / 2;
+        int y = raster.Height - 1;
+        Rgb8 a = full.GetPixel(x, y);
+        Rgb8 b = raster.GetPixel(x, y);
+        Assert.InRange(Math.Abs(a.R - b.R) + Math.Abs(a.G - b.G) + Math.Abs(a.B - b.B), 0, 60);
+        Assert.Throws<CorruptDataException>(() => Raster.Load<Rgb8>(cut, options: new ReaderOptions { Recovery = RecoveryMode.Strict }));
+    }
+
+    [Fact]
+    public void ProgressiveCoefficientsCountAgainstTheMemoryLimit()
+    {
+        // The raster alone fits in 300 KB; the progressive file's coefficients (another 230 KB) do not, the baseline file needs none.
+        EgamiContext tight = EgamiContext.Default with { Limits = new SafetyLimits { MaxTotalBytes = 300_000 } };
+        using Raster<Rgb8> baseline = Raster.Load<Rgb8>(File.ReadAllBytes(Path.Combine(Images, "duck-420.jpg")), tight);
+        Assert.Throws<LimitExceededException>(() => Raster.Load<Rgb8>(File.ReadAllBytes(Path.Combine(Images, "duck-progressive.jpg")), tight));
+        Assert.True(Raster.Probe(File.ReadAllBytes(Path.Combine(Images, "duck-progressive.jpg"))).EstimatedBytes > 300_000);
+    }
+
+    [Fact]
+    public void TheScanCountIsLimited()
+    {
+        using (Raster<Gray8> most = DcOnlyFile(JpegDecoder<Gray8>.MaxScans))
+        {
+            Assert.Equal(new Gray8(128), most.GetPixel(3, 3));
+        }
+
+        System.Diagnostics.Stopwatch time = System.Diagnostics.Stopwatch.StartNew();
+        CorruptDataException e = Assert.Throws<CorruptDataException>(() => DcOnlyFile(JpegDecoder<Gray8>.MaxScans + 1));
+        Assert.Contains("1,000 scans", e.Message, StringComparison.Ordinal);
+        Assert.True(time.Elapsed < TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void BadProgressionThrows()
+    {
+        // An AC band in a scan of several components is not allowed (T.81 G.1.1.1.1).
+        using JpegBuilder builder = new JpegBuilder().Quant(0, 75).Frame(0xC2, 8, 8, 8, (1, 1, 1), (2, 1, 1), (3, 1, 1)).Huffman(0, 0).Huffman(1, 0);
+        builder.Segment(0xDA, [2, 1, 0, 2, 0, 1, 5, 0]).Raw(0x00, 0xFF, 0xD9);
+        Assert.Throws<CorruptDataException>(() => Raster.Load(builder.ToArray()));
+    }
+
+    /// <summary>An 8×8 gray progressive file: a DC scan, then DC refinement scans up to <paramref name="scans"/> in all, each one byte.</summary>
+    private static Raster<Gray8> DcOnlyFile(int scans)
+    {
+        using JpegBuilder builder = new JpegBuilder().Quant(0, 75).Frame(0xC2, 8, 8, 8, (1, 1, 1)).Huffman(0, 0);
+        builder.Segment(0xDA, [1, 1, 0, 0, 0, 0]).Raw(0x00);
+        for (int i = 1; i < scans; i++)
+        {
+            builder.Segment(0xDA, [1, 1, 0, 0, 0, 0x10]).Raw(0x00);
+        }
+
+        return Raster.Load<Gray8>(builder.Raw(0xFF, 0xD9).ToArray());
     }
 
     [Fact]

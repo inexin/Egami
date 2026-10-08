@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 using Egami.Pixels;
@@ -6,13 +7,17 @@ using Egami.Pixels;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
-/// Decodes a sequential (baseline or extended) Huffman-coded JPEG one MCU row at a time: entropy decoding, dequantization and IDCT
-/// into a strip of samples per component, then upsampling and color conversion of the rows above into the raster. Only three MCU
-/// rows of samples per component are held, so memory is the raster plus a few rows.
+/// Decodes a Huffman-coded JPEG. A sequential file whose first scan holds every component is decoded one MCU row at a time:
+/// entropy decoding, dequantization and IDCT into a strip of samples per component, then upsampling and color conversion of the
+/// rows above into the raster, so memory is the raster plus a few rows. Progressive files and sequential files with a scan per
+/// component are decoded into a buffer of every coefficient first, scan by scan, and converted the same way after the last scan.
 /// </summary>
 internal sealed class JpegDecoder<TPixel> : IDisposable
     where TPixel : unmanaged, IPixelType<TPixel>
 {
+    /// <summary>The most scans a file may have. Real progressive files have about 10; more only slows a hostile file down.</summary>
+    internal const int MaxScans = 1000;
+
     private readonly JpegHeader _header;
     private readonly ReaderOptions _options;
     private readonly Raster<TPixel> _raster;
@@ -49,10 +54,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             JpegFrameComponent c = header.Components[i];
             int h = single ? 1 : c.H;
             int v = single ? 1 : c.V;
-            ushort[] quant = header.QuantTables[c.QuantTable]
-                ?? throw new CorruptDataException(JpegFormat.Info.Name, -1, $"Component {c.Id} uses quantization table {c.QuantTable}, which is missing.");
             _components[i] = new Component(
-                h, v, Natural(quant), _mcusX * h * 8, v * 8,
+                h, v, _mcusX * h * 8, v * 8,
                 (int)(((long)header.Width * h) + _maxH - 1) / _maxH, (int)(((long)header.Height * v) + _maxV - 1) / _maxV);
         }
 
@@ -60,80 +63,58 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         _sampleBuffer = ArrayPool<byte>.Shared.Rent(header.Width * _components.Length);
     }
 
-    /// <summary>Decodes the scan whose header has just been read, filling the raster.</summary>
-    internal void DecodeScan(EgamiInput input, JpegScan scan)
+    /// <summary>Decodes the image data from the first scan, whose header has just been read, to the end, filling the raster.</summary>
+    internal void Decode(EgamiInput input)
     {
-        if (scan.Components.Length != _components.Length)
-        {
-            throw new UnsupportedFormatException("Baseline JPEG with one scan per component (non-interleaved) is not supported yet.");
-        }
-
-        JpegHuffmanTable[] dc = new JpegHuffmanTable[scan.Components.Length];
-        JpegHuffmanTable[] ac = new JpegHuffmanTable[scan.Components.Length];
-        Component[] order = new Component[scan.Components.Length];
-        for (int i = 0; i < scan.Components.Length; i++)
-        {
-            JpegScanComponent sc = scan.Components[i];
-            order[i] = _components[sc.ComponentIndex];
-            dc[i] = new JpegHuffmanTable(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
-            ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
-        }
-
         using JpegBitReader reader = new(input);
-        Span<short> block = stackalloc short[64];
-        Span<int> predictors = stackalloc int[order.Length];
-        int restart = _header.RestartInterval;
-        int nextRestart = 0;
-        int mcu = 0;
-        bool ended = false;
+        JpegScan scan = _header.FirstScan!;
+        if (!_header.IsProgressive && scan.Components.Length == _components.Length)
+        {
+            DecodeStreaming(input, reader, scan);
+            return;
+        }
+
+        foreach (Component c in _components)
+        {
+            c.AllocateCoefficients(input.Memory, _mcusX * c.H, _mcusY * c.V);
+        }
+
+        int scans = 0;
+        while (true)
+        {
+            if (++scans > MaxScans)
+            {
+                throw new CorruptDataException(JpegFormat.Info.Name, -1, string.Create(CultureInfo.InvariantCulture, $"The file has more than {MaxScans:N0} scans."));
+            }
+
+            input.CancellationToken.ThrowIfCancellationRequested();
+            if (!DecodeBufferedScan(reader, scan) || NextScan(input, reader) is not JpegScan next)
+            {
+                break;
+            }
+
+            scan = next;
+        }
+
+        for (int i = 0; i < _components.Length; i++)
+        {
+            // A component no scan reached is all zeros, mid-gray, and still needs a table.
+            LatchQuant(i);
+        }
+
         for (int my = 0; my < _mcusY; my++)
         {
             input.CancellationToken.ThrowIfCancellationRequested();
-            for (int mx = 0; mx < _mcusX; mx++, mcu++)
+            foreach (Component c in _components)
             {
-                if (restart > 0 && mcu > 0 && mcu % restart == 0 && !ended)
+                Span<byte> strip = c.Strip(my);
+                for (int v = 0; v < c.V; v++)
                 {
-                    if (!reader.Restart(nextRestart))
+                    int by = (my * c.V) + v;
+                    for (int bx = 0; bx < _mcusX * c.H; bx++)
                     {
-                        Problem("A restart marker is missing or out of order; the data was resynchronized at the next one.");
-                        // An out-of-order restart marker was consumed and decoding resumes; any other marker ends the data.
-                        ended = reader.Marker != 0;
+                        JpegIdct.Transform(c.Block(bx, by), c.Quant!, strip[((v * 8 * c.StripWidth) + (bx * 8))..], c.StripWidth);
                     }
-
-                    nextRestart = reader.LastRestart >= 0 ? reader.LastRestart + 1 : nextRestart + 1;
-                    predictors.Clear();
-                }
-
-                for (int i = 0; i < order.Length; i++)
-                {
-                    Component c = order[i];
-                    Span<byte> strip = c.Strip(my);
-                    for (int v = 0; v < c.V; v++)
-                    {
-                        for (int h = 0; h < c.H; h++)
-                        {
-                            if (ended)
-                            {
-                                // After the data ends, the rest of the image is mid-gray: every coefficient 0.
-                                block.Clear();
-                            }
-                            else
-                            {
-                                DecodeBlock(reader, dc[i], ac[i], ref predictors[i], block);
-                            }
-
-                            int x = ((mx * c.H) + h) * 8;
-                            JpegIdct.Transform(block, c.Quant, strip[((v * 8 * c.StripWidth) + x)..], c.StripWidth);
-                        }
-                    }
-                }
-
-                // Running into a restart marker early only loses the rest of this interval; any other marker or the end of the
-                // file ends the data.
-                if (!ended && reader.PastEnd && !reader.AtRestartMarker)
-                {
-                    ended = true;
-                    Problem("The image data ends early. The rest of the image is gray.");
                 }
             }
 
@@ -205,6 +186,435 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 block[zigzag[k]] = (short)value;
             }
         }
+    }
+
+    /// <summary>The first DC scan of a progressive file (T.81 G.1.2.1): the DC difference, scaled up by the point transform.</summary>
+    private static void DecodeDcFirst(JpegBitReader reader, JpegHuffmanTable dc, ref int predictor, Span<short> block, int al)
+    {
+        int s = dc.Decode(reader);
+        predictor += reader.ReceiveExtend(s & 15);
+        block[0] = (short)(predictor << al);
+    }
+
+    /// <summary>A DC refinement scan: one more bit of the DC coefficient.</summary>
+    private static void DecodeDcRefine(JpegBitReader reader, Span<short> block, int al)
+    {
+        if (reader.Read(1) != 0)
+        {
+            block[0] |= (short)(1 << al);
+        }
+    }
+
+    /// <summary>The first scan of an AC band (T.81 G.1.2.2), with end-of-band runs that span blocks.</summary>
+    private static void DecodeAcFirst(JpegBitReader reader, JpegHuffmanTable ac, ref int eobRun, Span<short> block, int ss, int se, int al)
+    {
+        if (eobRun > 0)
+        {
+            eobRun--;
+            return;
+        }
+
+        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
+        for (int k = ss; k <= se; k++)
+        {
+            int rs = ac.Decode(reader);
+            int r = rs >> 4;
+            int s = rs & 15;
+            if (s != 0)
+            {
+                k += r;
+                int value = reader.ReceiveExtend(s);
+                if (k <= se)
+                {
+                    block[zigzag[k]] = (short)(value << al);
+                }
+            }
+            else if (r == 15)
+            {
+                k += 15;
+            }
+            else
+            {
+                // EOBn: this block and 2^r + extra bits - 1 more end here.
+                eobRun = (1 << r) - 1;
+                if (r > 0)
+                {
+                    eobRun += reader.Read(r);
+                }
+
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// An AC refinement scan (T.81 G.1.2.3): one correction bit for each coefficient already nonzero, and new coefficients of
+    /// magnitude one placed by runs that count only the coefficients still zero.
+    /// </summary>
+    private static void DecodeAcRefine(JpegBitReader reader, JpegHuffmanTable ac, ref int eobRun, Span<short> block, int ss, int se, int al)
+    {
+        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
+        int p1 = 1 << al;
+        int m1 = -1 << al;
+        int k = ss;
+        if (eobRun == 0)
+        {
+            for (; k <= se; k++)
+            {
+                int rs = ac.Decode(reader);
+                int r = rs >> 4;
+                int s = rs & 15;
+                if (s != 0)
+                {
+                    // The size is always 1 here; the next bit is the sign.
+                    s = reader.Read(1) != 0 ? p1 : m1;
+                }
+                else if (r != 15)
+                {
+                    eobRun = 1 << r;
+                    if (r > 0)
+                    {
+                        eobRun += reader.Read(r);
+                    }
+
+                    break;
+                }
+
+                // Skip r zero coefficients, correcting the nonzero ones passed; the new coefficient goes in the next zero one.
+                for (; k <= se; k++)
+                {
+                    ref short coefficient = ref block[zigzag[k]];
+                    if (coefficient != 0)
+                    {
+                        Refine(reader, ref coefficient, p1, m1);
+                    }
+                    else if (--r < 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (s != 0 && k <= 63)
+                {
+                    block[zigzag[k]] = (short)s;
+                }
+            }
+        }
+
+        if (eobRun > 0)
+        {
+            // The band ends in this block: only the corrections of the nonzero coefficients remain.
+            for (; k <= se; k++)
+            {
+                ref short coefficient = ref block[zigzag[k]];
+                if (coefficient != 0)
+                {
+                    Refine(reader, ref coefficient, p1, m1);
+                }
+            }
+
+            eobRun--;
+        }
+    }
+
+    /// <summary>Applies a correction bit: adds the new bit to the magnitude unless it is there already.</summary>
+    private static void Refine(JpegBitReader reader, ref short coefficient, int p1, int m1)
+    {
+        if (reader.Read(1) != 0 && (coefficient & p1) == 0)
+        {
+            coefficient = (short)(coefficient + (coefficient >= 0 ? p1 : m1));
+        }
+    }
+
+    /// <summary>Decodes a sequential file whose first scan holds every component, one MCU row at a time.</summary>
+    private void DecodeStreaming(EgamiInput input, JpegBitReader reader, JpegScan scan)
+    {
+        JpegHuffmanTable[] dc = new JpegHuffmanTable[scan.Components.Length];
+        JpegHuffmanTable[] ac = new JpegHuffmanTable[scan.Components.Length];
+        Component[] order = new Component[scan.Components.Length];
+        for (int i = 0; i < scan.Components.Length; i++)
+        {
+            JpegScanComponent sc = scan.Components[i];
+            order[i] = _components[sc.ComponentIndex];
+            LatchQuant(sc.ComponentIndex);
+            dc[i] = new JpegHuffmanTable(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+            ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+        }
+
+        reader.BeginScan();
+        Span<short> block = stackalloc short[64];
+        Span<int> predictors = stackalloc int[order.Length];
+        int restart = _header.RestartInterval;
+        int nextRestart = 0;
+        int mcu = 0;
+        bool ended = false;
+        for (int my = 0; my < _mcusY; my++)
+        {
+            input.CancellationToken.ThrowIfCancellationRequested();
+            for (int mx = 0; mx < _mcusX; mx++, mcu++)
+            {
+                if (restart > 0 && mcu > 0 && mcu % restart == 0 && !ended)
+                {
+                    ended = !RestartInterval(reader, ref nextRestart);
+                    predictors.Clear();
+                }
+
+                for (int i = 0; i < order.Length; i++)
+                {
+                    Component c = order[i];
+                    Span<byte> strip = c.Strip(my);
+                    for (int v = 0; v < c.V; v++)
+                    {
+                        for (int h = 0; h < c.H; h++)
+                        {
+                            if (ended)
+                            {
+                                // After the data ends, the rest of the image is mid-gray: every coefficient 0.
+                                block.Clear();
+                            }
+                            else
+                            {
+                                DecodeBlock(reader, dc[i], ac[i], ref predictors[i], block);
+                            }
+
+                            int x = ((mx * c.H) + h) * 8;
+                            JpegIdct.Transform(block, c.Quant!, strip[((v * 8 * c.StripWidth) + x)..], c.StripWidth);
+                        }
+                    }
+                }
+
+                ended = ended || EndedEarly(reader, "The image data ends early. The rest of the image is gray.");
+            }
+
+            if (my > 0)
+            {
+                EmitRows(my - 1);
+            }
+        }
+
+        EmitRows(_mcusY - 1);
+    }
+
+    /// <summary>
+    /// Decodes one scan into the coefficient buffer. Returns false if the data ended early, so no scan can follow; the coefficients
+    /// so far are kept, as libjpeg does.
+    /// </summary>
+    private bool DecodeBufferedScan(JpegBitReader reader, JpegScan scan)
+    {
+        int count = scan.Components.Length;
+        int ss = scan.SpectralStart;
+        int se = scan.SpectralEnd;
+        int ah = scan.ApproxHigh;
+        int al = scan.ApproxLow;
+        bool progressive = _header.IsProgressive;
+        if (progressive && ((ss == 0 && se != 0) || (ss > 0 && count != 1) || (ah != 0 && al != ah - 1)))
+        {
+            throw new CorruptDataException(JpegFormat.Info.Name, -1, $"A progressive scan has an invalid band ({ss} to {se}) or bit position ({ah}, {al}).");
+        }
+
+        // Which kind of scan: 0 sequential, 1 DC first, 2 DC refine, 3 AC first, 4 AC refine.
+        int kind = !progressive ? 0 : ss == 0 ? (ah == 0 ? 1 : 2) : (ah == 0 ? 3 : 4);
+        JpegHuffmanTable?[] dc = new JpegHuffmanTable?[count];
+        JpegHuffmanTable?[] ac = new JpegHuffmanTable?[count];
+        Component[] order = new Component[count];
+        for (int i = 0; i < count; i++)
+        {
+            JpegScanComponent sc = scan.Components[i];
+            order[i] = _components[sc.ComponentIndex];
+            LatchQuant(sc.ComponentIndex);
+            if (kind is 0 or 1)
+            {
+                dc[i] = new JpegHuffmanTable(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+            }
+
+            if (kind is 0 or 3 or 4)
+            {
+                ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+            }
+        }
+
+        reader.BeginScan();
+        Span<int> predictors = stackalloc int[count];
+        int eobRun = 0;
+        int restart = _header.RestartInterval;
+        int nextRestart = 0;
+        int mcu = 0;
+
+        // One component is coded non-interleaved: an MCU is one block, over the blocks the component really covers. Several are
+        // interleaved in whole MCUs, padding blocks included.
+        bool single = count == 1;
+        int unitsX = single ? (order[0].Width + 7) / 8 : _mcusX;
+        int unitsY = single ? (order[0].Height + 7) / 8 : _mcusY;
+        for (int uy = 0; uy < unitsY; uy++)
+        {
+            for (int ux = 0; ux < unitsX; ux++, mcu++)
+            {
+                if (restart > 0 && mcu > 0 && mcu % restart == 0)
+                {
+                    if (!RestartInterval(reader, ref nextRestart))
+                    {
+                        return false;
+                    }
+
+                    predictors.Clear();
+                    eobRun = 0;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    Component c = order[i];
+                    int blocksX = single ? 1 : c.H;
+                    int blocksY = single ? 1 : c.V;
+                    for (int v = 0; v < blocksY; v++)
+                    {
+                        for (int h = 0; h < blocksX; h++)
+                        {
+                            Span<short> block = single ? c.Block(ux, uy) : c.Block((ux * c.H) + h, (uy * c.V) + v);
+                            switch (kind)
+                            {
+                                case 0:
+                                    DecodeBlock(reader, dc[i]!, ac[i]!, ref predictors[i], block);
+                                    break;
+                                case 1:
+                                    DecodeDcFirst(reader, dc[i]!, ref predictors[i], block, al);
+                                    break;
+                                case 2:
+                                    DecodeDcRefine(reader, block, al);
+                                    break;
+                                case 3:
+                                    DecodeAcFirst(reader, ac[i]!, ref eobRun, block, ss, se, al);
+                                    break;
+                                default:
+                                    DecodeAcRefine(reader, ac[i]!, ref eobRun, block, ss, se, al);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                if (EndedEarly(reader, "The image data ends early. The scans so far were decoded; the rest of the image has less detail or is gray."))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Reads the segments after a scan up to the next scan header and returns it, or null at the end of the image. Tables and the
+    /// restart interval may change between scans; anything else is skipped.
+    /// </summary>
+    private JpegScan? NextScan(EgamiInput input, JpegBitReader reader)
+    {
+        int marker = reader.EndScan();
+        while (true)
+        {
+            if (marker == JpegBitReader.EndOfFile)
+            {
+                Problem("The file ends before its end-of-image marker; the scans so far were decoded.");
+                return null;
+            }
+
+            if (marker == JpegMarker.Eoi)
+            {
+                return null;
+            }
+
+            if (!JpegMarker.IsStandalone((byte)marker))
+            {
+                int high = reader.ReadSegmentByte();
+                int low = reader.ReadSegmentByte();
+                int length = (high << 8) + low - 2;
+                if (low < 0 || length < 0)
+                {
+                    Problem("A segment between scans is cut off or has an invalid length.");
+                    return null;
+                }
+
+                byte[] payload = new byte[length];
+                for (int i = 0; i < length; i++)
+                {
+                    int b = reader.ReadSegmentByte();
+                    if (b < 0)
+                    {
+                        Problem("A segment between scans is cut off.");
+                        return null;
+                    }
+
+                    payload[i] = (byte)b;
+                }
+
+                switch (marker)
+                {
+                    case JpegMarker.Sos:
+                        return JpegSegmentReader.ParseScan(input, _header, payload, -1);
+                    case JpegMarker.Dht:
+                        JpegSegmentReader.ReadHuffmanTables(input, _header, payload, -1);
+                        break;
+                    case JpegMarker.Dqt:
+                        JpegSegmentReader.ReadQuantTables(input, _header, payload, -1);
+                        break;
+                    case JpegMarker.Dri:
+                        _header.RestartInterval = payload.Length >= 2 ? (payload[0] << 8) | payload[1] : throw input.Corrupt(-1, "The restart interval segment is too short.");
+                        break;
+                    case JpegMarker.Dnl:
+                        break;
+                    case >= JpegMarker.Sof0 and <= JpegMarker.Sof15 when marker is not (JpegMarker.Dht or JpegMarker.Dac or 0xC8):
+                        throw input.Corrupt(-1, "The file has more than one frame header (SOF).");
+                }
+            }
+
+            marker = reader.NextMarker(out bool junk);
+            if (junk)
+            {
+                Problem("There are stray bytes between segments after a scan; they were skipped.");
+            }
+        }
+    }
+
+    /// <summary>Uses the quantization table a component has when it first appears in a scan, as libjpeg does.</summary>
+    private void LatchQuant(int index)
+    {
+        Component c = _components[index];
+        if (c.Quant is null)
+        {
+            int slot = _header.Components[index].QuantTable;
+            ushort[] quant = _header.QuantTables[slot]
+                ?? throw new CorruptDataException(JpegFormat.Info.Name, -1, $"Component {_header.Components[index].Id} uses quantization table {slot}, which is missing.");
+            c.Quant = Natural(quant);
+        }
+    }
+
+    /// <summary>Handles a restart interval boundary. Returns false if the data ended instead.</summary>
+    private bool RestartInterval(JpegBitReader reader, ref int nextRestart)
+    {
+        bool ended = false;
+        if (!reader.Restart(nextRestart))
+        {
+            Problem("A restart marker is missing or out of order; the data was resynchronized at the next one.");
+            // An out-of-order restart marker was consumed and decoding resumes; any other marker ends the data.
+            ended = reader.Marker != 0;
+        }
+
+        nextRestart = reader.LastRestart >= 0 ? reader.LastRestart + 1 : nextRestart + 1;
+        return !ended;
+    }
+
+    /// <summary>
+    /// Returns whether the data ran out within the MCU just decoded. Running into a restart marker early only loses the rest of
+    /// its interval; any other marker or the end of the file ends the data.
+    /// </summary>
+    private bool EndedEarly(JpegBitReader reader, string message)
+    {
+        if (reader.PastEnd && !reader.AtRestartMarker)
+        {
+            Problem(message);
+            return true;
+        }
+
+        return false;
     }
 
     private void Problem(string message)
@@ -395,16 +805,23 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         }
     }
 
-    /// <summary>One component's sampling, quantization table and the ring of three MCU-row strips of samples.</summary>
-    private sealed class Component(int h, int v, ushort[] quant, int stripWidth, int stripHeight, int width, int height) : IDisposable
+    /// <summary>
+    /// One component's sampling, quantization table and the ring of three MCU-row strips of samples, plus, for a buffered decode,
+    /// every coefficient in natural order, in chunks of whole block rows that each fit one memory block.
+    /// </summary>
+    private sealed class Component(int h, int v, int stripWidth, int stripHeight, int width, int height) : IDisposable
     {
         private byte[] _strips = ArrayPool<byte>.Shared.Rent(3 * stripWidth * stripHeight);
+        private IMemoryOwner<byte>?[] _chunks = [];
+        private int _blocksX;
+        private int _rowsPerChunk = 1;
 
         internal int H => h;
 
         internal int V => v;
 
-        internal ushort[] Quant => quant;
+        /// <summary>Gets or sets the quantization table in natural order, fixed when the component first appears in a scan.</summary>
+        internal ushort[]? Quant { get; set; }
 
         internal int StripWidth => stripWidth;
 
@@ -426,9 +843,37 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             return Strip(row / stripHeight).Slice(row % stripHeight * stripWidth, stripWidth);
         }
 
+        /// <summary>Allocates zeroed coefficients for <paramref name="blocksX"/> × <paramref name="blocksY"/> blocks, within the load's memory budget.</summary>
+        internal void AllocateCoefficients(BudgetedMemorySource memory, int blocksX, int blocksY)
+        {
+            int rowBytes = blocksX * 64 * sizeof(short);
+            memory.Check((long)rowBytes * blocksY);
+            _blocksX = blocksX;
+            _rowsPerChunk = Math.Clamp(memory.MaxBlockBytes / rowBytes, 1, blocksY);
+            _chunks = new IMemoryOwner<byte>?[(blocksY + _rowsPerChunk - 1) / _rowsPerChunk];
+            for (int i = 0; i < _chunks.Length; i++)
+            {
+                int rows = Math.Min(_rowsPerChunk, blocksY - (i * _rowsPerChunk));
+                _chunks[i] = memory.Allocate(rows * rowBytes, ClearMode.Zero);
+            }
+        }
+
+        /// <summary>Gets the 64 coefficients of block (<paramref name="bx"/>, <paramref name="by"/>).</summary>
+        internal Span<short> Block(int bx, int by)
+        {
+            Span<short> chunk = MemoryMarshal.Cast<byte, short>(_chunks[by / _rowsPerChunk]!.Memory.Span);
+            return chunk.Slice((((by % _rowsPerChunk) * _blocksX) + bx) * 64, 64);
+        }
+
         public void Dispose()
         {
             ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _strips, null!));
+            foreach (IMemoryOwner<byte>? chunk in _chunks)
+            {
+                chunk?.Dispose();
+            }
+
+            _chunks = [];
         }
     }
 }

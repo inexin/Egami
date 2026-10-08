@@ -48,17 +48,12 @@ internal sealed class JpegReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
-        if (header.IsProgressive)
-        {
-            throw new UnsupportedFormatException("Decoding progressive JPEG is not available yet.");
-        }
-
         Raster<TPixel> raster = input.CreateRaster<TPixel>(header.Width, header.Height);
         try
         {
             using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling))
             {
-                decoder.DecodeScan(input, header.FirstScan!);
+                decoder.Decode(input);
             }
 
             CopyMetadata(header, raster.Metadata);

@@ -106,15 +106,15 @@ internal static class JpegSegmentReader
     }
 
     /// <summary>
-    /// Returns the bytes a full load needs: the output raster, plus for a progressive file every coefficient (2 bytes each, over the
-    /// blocks of whole MCUs), which a progressive decode holds until its last scan.
+    /// Returns the bytes a full load needs: the output raster, plus for a progressive file, or a sequential one with a scan per
+    /// component, every coefficient (2 bytes each, over the blocks of whole MCUs), which the decoder holds until its last scan.
     /// </summary>
     internal static long EstimateBytes(JpegHeader header, int scale)
     {
         long width = (header.Width + scale - 1) / scale;
         long height = (header.Height + scale - 1) / scale;
         long bytes = width * height * Layout(header).BytesPerPixel;
-        if (header.IsProgressive)
+        if (header.IsProgressive || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length))
         {
             long mcusX = (header.Width + (8 * header.MaxH) - 1) / (8 * header.MaxH);
             long mcusY = (header.Height + (8 * header.MaxV) - 1) / (8 * header.MaxV);

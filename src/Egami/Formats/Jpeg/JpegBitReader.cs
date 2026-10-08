@@ -100,6 +100,92 @@ internal sealed class JpegBitReader : IDisposable
         _bits = 0;
         _count = 0;
         _padding = 0;
+        FindMarker();
+        if (!AtRestartMarker)
+        {
+            return false;
+        }
+
+        // Any restart marker resumes the data; a different number means intervals were lost, which the caller reports.
+        LastRestart = Marker - 0xD0;
+        bool inOrder = Marker == 0xD0 + (expected & 7);
+        Marker = 0;
+        return inOrder;
+    }
+
+    /// <summary>Starts the entropy-coded data of a scan whose header has just been read.</summary>
+    internal void BeginScan()
+    {
+        _bits = 0;
+        _count = 0;
+        _padding = 0;
+        Marker = 0;
+        LastRestart = -1;
+    }
+
+    /// <summary>
+    /// Ends a scan: drops the bits left and reads on to the marker after its data, passing over restart markers and any bytes
+    /// the scan did not use. Returns that marker, or <see cref="EndOfFile"/>.
+    /// </summary>
+    internal int EndScan()
+    {
+        _bits = 0;
+        _count = 0;
+        _padding = 0;
+        while (true)
+        {
+            FindMarker();
+            if (!AtRestartMarker)
+            {
+                return Marker;
+            }
+
+            Marker = 0;
+        }
+    }
+
+    /// <summary>
+    /// Reads the next marker between segments, skipping fill bytes. Returns it, or <see cref="EndOfFile"/>; <paramref name="junk"/>
+    /// says whether other bytes came first, which a strict read reports.
+    /// </summary>
+    internal int NextMarker(out bool junk)
+    {
+        junk = false;
+        Marker = 0;
+        while (Marker == 0)
+        {
+            int b = NextByte();
+            if (b < 0)
+            {
+                Marker = EndOfFile;
+            }
+            else if (b != 0xFF || ReadMarkerByte())
+            {
+                junk = true;
+            }
+        }
+
+        return Marker;
+    }
+
+    /// <summary>Reads one byte of a segment between scans, or returns -1 at the end of the file.</summary>
+    internal int ReadSegmentByte()
+    {
+        return NextByte();
+    }
+
+    public void Dispose()
+    {
+        byte[] chunk = Interlocked.Exchange(ref _chunk, null!);
+        if (chunk is not null)
+        {
+            ArrayPool<byte>.Shared.Return(chunk);
+        }
+    }
+
+    /// <summary>Skips data bytes until a marker, unless one has stopped the data already.</summary>
+    private void FindMarker()
+    {
         while (Marker == 0)
         {
             int b = NextByte();
@@ -113,26 +199,6 @@ internal sealed class JpegBitReader : IDisposable
             {
                 ReadMarkerByte();
             }
-        }
-
-        if (!AtRestartMarker)
-        {
-            return false;
-        }
-
-        // Any restart marker resumes the data; a different number means intervals were lost, which the caller reports.
-        LastRestart = Marker - 0xD0;
-        bool inOrder = Marker == 0xD0 + (expected & 7);
-        Marker = 0;
-        return inOrder;
-    }
-
-    public void Dispose()
-    {
-        byte[] chunk = Interlocked.Exchange(ref _chunk, null!);
-        if (chunk is not null)
-        {
-            ArrayPool<byte>.Shared.Return(chunk);
         }
     }
 
