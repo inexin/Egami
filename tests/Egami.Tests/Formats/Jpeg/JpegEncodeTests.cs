@@ -160,7 +160,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
         image.Metadata.Text.Add(new TextEntry("Title", "not a comment"));
 
         using Raster back = Raster.Load(Encode(image, JpegWriterOptions.Default));
-        Assert.Equal(source.Exif.ToArray(), back.Metadata.Exif.ToArray());
+        Assert.Equal(source.Exif!.ToBytes().ToArray(), back.Metadata.Exif!.ToBytes().ToArray());
         Assert.Equal(icc, back.Metadata.IccProfile.ToArray());
         Assert.Equal(ColorSpaceHint.EmbeddedIcc, back.Metadata.ColorSpace);
         Assert.Equal(image.Metadata.Xmp.ToArray(), back.Metadata.Xmp.ToArray());
@@ -179,7 +179,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
         Assert.Equal(longXmp, Encoding.UTF8.GetString(Assert.IsType<JpegDetails>(again.Metadata.FormatDetails).ExtendedXmp.Span));
 
         using Raster stripped = Raster.Load(Encode(image, new JpegWriterOptions { StripMetadata = true }));
-        Assert.True(stripped.Metadata.Exif.IsEmpty && stripped.Metadata.IccProfile.IsEmpty && stripped.Metadata.Xmp.IsEmpty);
+        Assert.True(stripped.Metadata.Exif is null && stripped.Metadata.IccProfile.IsEmpty && stripped.Metadata.Xmp.IsEmpty);
         Assert.Null(stripped.Metadata.Resolution);
         Assert.Empty(stripped.Metadata.Text);
     }

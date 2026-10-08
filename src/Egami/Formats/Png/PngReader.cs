@@ -42,7 +42,7 @@ internal sealed class PngReader : IFormatReader
             FrameCount = 1,
             HasMetadata = state.HasMetadata,
             EstimatedBytes = (long)state.Header.Width * state.Header.Height * layout.BytesPerPixel,
-            Orientation = ExifOrientation.Read(state.Metadata.Exif.Span),
+            Orientation = state.Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
         };
     }
 
@@ -319,7 +319,7 @@ internal sealed class PngReader : IFormatReader
                 ReadInternationalText(state, data);
                 break;
             case PngChunkType.Exif:
-                metadata.Exif = data;
+                metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(data, state.Input.Limits.MaxMetadataBytes, metadata.Warnings);
                 break;
             default:
                 png.OtherChunks.Add(new PngChunk(PngChunkType.Name(type), data, state.Position));

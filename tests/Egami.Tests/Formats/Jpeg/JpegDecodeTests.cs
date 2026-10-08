@@ -210,7 +210,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
     public void MetadataComesWithThePixels()
     {
         using Raster raster = Raster.Load(File.ReadAllBytes(Path.Combine(Images, "exif-tags.jpg")));
-        Assert.False(raster.Metadata.Exif.IsEmpty);
+        Assert.NotNull(raster.Metadata.Exif);
         JpegDetails details = Assert.IsType<JpegDetails>(raster.Metadata.FormatDetails);
         Assert.Equal(JpegColorSpace.YCbCr, details.ColorSpace);
         Assert.Equal(90, details.EstimatedQuality);

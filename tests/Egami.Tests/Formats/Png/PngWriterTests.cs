@@ -204,7 +204,7 @@ public class PngWriterTests
         builder.ChunksBeforeImageData.Add(("zTXt", [.. "Comment"u8, 0, 0, .. PngBuilder.Compress("zipped"u8.ToArray())]));
         builder.ChunksBeforeImageData.Add(("bKGD", [3]));
         builder.ChunksAfterImageData.Add(("iTXt", [.. "Author"u8, 0, 0, 0, .. "nb"u8, 0, 0, .. "Ødegård"u8]));
-        builder.ChunksAfterImageData.Add(("eXIf", [0x4D, 0x4D, 0, 42]));
+        builder.ChunksAfterImageData.Add(("eXIf", [0x4D, 0x4D, 0, 42, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0]));
         builder.ChunksAfterImageData.Add(("tIME", [7, 234, 10, 8, 3, 0, 0]));
         builder.ChunksAfterImageData.Add(("prVu", [1, 2]));
 
@@ -223,7 +223,7 @@ public class PngWriterTests
         Assert.Equal(a.Text, b.Text);
         Assert.Equal(a.Resolution, b.Resolution);
         Assert.Equal(a.IccProfile.ToArray(), b.IccProfile.ToArray());
-        Assert.Equal(a.Exif.ToArray(), b.Exif.ToArray());
+        Assert.Equal(a.Exif!.ToBytes().ToArray(), b.Exif!.ToBytes().ToArray());
         PngDetails pa = (PngDetails)a.FormatDetails!;
         PngDetails pb = (PngDetails)b.FormatDetails!;
         Assert.Equal(pa.Gamma, pb.Gamma);

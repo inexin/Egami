@@ -288,9 +288,9 @@ internal sealed class PngWriter : IFormatWriter
             }
         }
 
-        if (!metadata.Exif.IsEmpty)
+        if (metadata.Exif is not null)
         {
-            WriteChunk(output, PngChunkType.Exif, metadata.Exif.Span);
+            WriteChunk(output, PngChunkType.Exif, metadata.Exif.ToBytes().Span);
         }
 
         for (int i = 0; i < metadata.Text.Count; i++)

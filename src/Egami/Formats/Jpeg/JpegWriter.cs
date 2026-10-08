@@ -93,11 +93,22 @@ internal sealed class JpegWriter : IFormatWriter
     /// <summary>EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large) and comments, in that order.</summary>
     private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata)
     {
-        // An EXIF block too large for one segment cannot be written; it is left out.
-        ReadOnlySpan<byte> exif = metadata.Exif.Span;
-        if (!exif.IsEmpty && exif.Length <= ushort.MaxValue - 2 - ExifId.Length)
+        // An EXIF block too large for one segment loses its thumbnail first; if it is still too large it is left out.
+        if (metadata.Exif is ExifData exifData)
         {
-            Segment(writer, JpegMarker.App1, ExifId, exif);
+            int max = ushort.MaxValue - 2 - ExifId.Length;
+            ReadOnlyMemory<byte> exif = exifData.ToBytes();
+            if (exif.Length > max)
+            {
+                ExifData smaller = exifData.Copy();
+                smaller.RemoveThumbnail();
+                exif = smaller.ToBytes();
+            }
+
+            if (exif.Length <= max)
+            {
+                Segment(writer, JpegMarker.App1, ExifId, exif.Span);
+            }
         }
 
         ReadOnlySpan<byte> icc = metadata.IccProfile.Span;

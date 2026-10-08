@@ -27,7 +27,7 @@ internal sealed class JpegReader : IFormatReader
             FrameCount = 1,
             HasMetadata = header.HasMetadata,
             EstimatedBytes = JpegSegmentReader.EstimateBytes(header, scale),
-            Orientation = ExifOrientation.Read(header.Metadata.Exif.Span),
+            Orientation = header.Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
         };
     }
 

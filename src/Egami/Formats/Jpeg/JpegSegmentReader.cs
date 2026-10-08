@@ -467,9 +467,9 @@ internal static class JpegSegmentReader
         if (payload.StartsWith(ExifId))
         {
             // The first EXIF segment wins; a second one is usually a broken copy.
-            if (header.Metadata.Exif.IsEmpty)
+            if (header.Metadata.Exif is null)
             {
-                header.Metadata.Exif = payload[ExifId.Length..].ToArray();
+                header.Metadata.Exif = ParseExif(payload[ExifId.Length..], maxBytes, header.Metadata.Warnings);
                 header.HasMetadata = true;
             }
         }
@@ -502,6 +502,18 @@ internal static class JpegSegmentReader
                 header.HasMetadata = true;
             }
         }
+    }
+
+    /// <summary>Parses an EXIF block, reporting damage as a warning; the pixels still load.</summary>
+    internal static ExifData ParseExif(ReadOnlySpan<byte> tiff, long maxBytes, IList<string> warnings)
+    {
+        ExifData exif = ExifData.Parse(tiff, maxBytes);
+        foreach (string warning in exif.Warnings)
+        {
+            warnings.Add(warning + " The EXIF block is kept as it was.");
+        }
+
+        return exif;
     }
 
     private static void ReadIcc(JpegHeader header, ReadOnlySpan<byte> payload, Dictionary<int, byte[]> chunks, ref int count)

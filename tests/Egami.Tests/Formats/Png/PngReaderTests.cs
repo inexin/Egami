@@ -104,7 +104,7 @@ public class PngReaderTests
         builder.ChunksBeforeImageData.Add(("zTXt", [.. "Comment"u8, 0, 0, .. PngBuilder.Compress(Encoding.Latin1.GetBytes("compressed text"))]));
         builder.ChunksBeforeImageData.Add(("bKGD", [0, 1, 0, 2, 0, 3]));
         builder.ChunksAfterImageData.Add(("iTXt", [.. "Author"u8, 0, 1, 0, .. "nb"u8, 0, .. "Forfatter"u8, 0, .. PngBuilder.Compress("Lars Ødegård"u8.ToArray())]));
-        builder.ChunksAfterImageData.Add(("eXIf", [0x4D, 0x4D, 0, 42]));
+        builder.ChunksAfterImageData.Add(("eXIf", [0x4D, 0x4D, 0, 42, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0]));
         builder.ChunksAfterImageData.Add(("prVT", [9, 9]));   // unknown, not safe to copy: dropped
         builder.ChunksAfterImageData.Add(("prVu", [7]));      // unknown, safe to copy: kept
 
@@ -123,7 +123,7 @@ public class PngReaderTests
             [new TextEntry("Title", "Café"), new TextEntry("Comment", "compressed text"), new TextEntry("Author", "Lars Ødegård", "nb")],
             metadata.Text);
         Assert.Equal(["tEXt", "zTXt", "iTXt"], png.TextSources.Select(s => s.ChunkType));
-        Assert.Equal([0x4D, 0x4D, 0, 42], metadata.Exif.ToArray());
+        Assert.Equal([0x4D, 0x4D, 0, 42, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0], metadata.Exif!.ToBytes().ToArray());
         Assert.Equal(["bKGD", "prVu"], png.OtherChunks.Select(c => c.Type));
         Assert.Equal(PngChunkPosition.BeforePalette, png.OtherChunks[0].Position);
         Assert.Equal(PngChunkPosition.AfterImageData, png.OtherChunks[1].Position);

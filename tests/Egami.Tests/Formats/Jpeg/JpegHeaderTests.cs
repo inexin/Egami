@@ -66,15 +66,15 @@ public class JpegHeaderTests
     [Fact]
     public void BadOrientationsReadAsNormal()
     {
-        Assert.Equal(ImageOrientation.Normal, ExifOrientation.Read([]));
-        Assert.Equal(ImageOrientation.Normal, ExifOrientation.Read("MM\0\x2A\0\0\0\x08"u8));
-        Assert.Equal(ImageOrientation.Normal, ExifOrientation.Read("XX\0\x2A\0\0\0\x08\0\0"u8));
+        Assert.Equal(ImageOrientation.Normal, ExifData.Parse([]).Orientation);
+        Assert.Equal(ImageOrientation.Normal, ExifData.Parse("MM\0\x2A\0\0\0\x08"u8).Orientation);
+        Assert.Equal(ImageOrientation.Normal, ExifData.Parse("XX\0\x2A\0\0\0\x08\0\0"u8).Orientation);
         byte[] file = JpegBuilder.Baseline(30, 20, Ycc420).ExifOrientation(9, false).Scan(1, 2, 3);
         Assert.Equal(ImageOrientation.Normal, Raster.Probe(file).Orientation);
 
         // The offset to IFD0 points past the end.
         byte[] far = [.. "MM\0\x2A"u8, 0x7F, 0, 0, 0];
-        Assert.Equal(ImageOrientation.Normal, ExifOrientation.Read(far));
+        Assert.Equal(ImageOrientation.Normal, ExifData.Parse(far).Orientation);
     }
 
     [Theory]

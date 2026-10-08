@@ -78,8 +78,11 @@ public sealed class RasterMetadata
     /// <summary>Gets or sets the physical pixel density, if known.</summary>
     public Resolution? Resolution { get; set; }
 
-    /// <summary>Gets or sets the raw EXIF block, without any format-specific header. Empty if none.</summary>
-    public ReadOnlyMemory<byte> Exif { get; set; }
+    /// <summary>
+    /// Gets or sets the EXIF block, parsed, or <see langword="null"/> if the file had none. Unedited, it is written back byte for
+    /// byte.
+    /// </summary>
+    public ExifData? Exif { get; set; }
 
     /// <summary>Gets or sets the embedded ICC profile. Egami keeps and writes it back but does not apply it. Empty if none.</summary>
     public ReadOnlyMemory<byte> IccProfile { get; set; }
@@ -115,7 +118,7 @@ public sealed class RasterMetadata
         RasterMetadata copy = new()
         {
             Resolution = Resolution,
-            Exif = Exif.ToArray(),
+            Exif = Exif?.Copy(),
             IccProfile = IccProfile.ToArray(),
             Xmp = Xmp.ToArray(),
             ColorSpace = ColorSpace,

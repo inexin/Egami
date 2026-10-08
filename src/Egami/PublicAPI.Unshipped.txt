@@ -272,6 +272,77 @@ Egami.Metadata.ColorSpaceHint.Gamma = 3 -> Egami.Metadata.ColorSpaceHint
 Egami.Metadata.ColorSpaceHint.Linear = 2 -> Egami.Metadata.ColorSpaceHint
 Egami.Metadata.ColorSpaceHint.Srgb = 1 -> Egami.Metadata.ColorSpaceHint
 Egami.Metadata.ColorSpaceHint.Unknown = 0 -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ExifData
+Egami.Metadata.ExifData.CameraMake.get -> string?
+Egami.Metadata.ExifData.CameraModel.get -> string?
+Egami.Metadata.ExifData.Copy() -> Egami.Metadata.ExifData!
+Egami.Metadata.ExifData.DateTaken.get -> System.DateTime?
+Egami.Metadata.ExifData.Entries.get -> System.Collections.Generic.IReadOnlyList<Egami.Metadata.ExifEntry!>!
+Egami.Metadata.ExifData.ExifData() -> void
+Egami.Metadata.ExifData.IsBigEndian.get -> bool
+Egami.Metadata.ExifData.IsDamaged.get -> bool
+Egami.Metadata.ExifData.Location.get -> Egami.Metadata.GeoPosition?
+Egami.Metadata.ExifData.Orientation.get -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ExifData.Orientation.set -> void
+Egami.Metadata.ExifData.Remove(Egami.Metadata.ExifKey key) -> bool
+Egami.Metadata.ExifData.RemoveThumbnail() -> bool
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, Egami.Metadata.ExifType type, System.ReadOnlySpan<byte> value) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, params System.ReadOnlySpan<Egami.Metadata.ExifFraction> values) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, string! value) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, uint value) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, ushort value) -> void
+Egami.Metadata.ExifData.Thumbnail.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.ExifData.ToBytes() -> System.ReadOnlyMemory<byte>
+Egami.Metadata.ExifData.TryGet(Egami.Metadata.ExifKey key, out Egami.Metadata.ExifEntry? entry) -> bool
+Egami.Metadata.ExifData.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.ExifEntry
+Egami.Metadata.ExifEntry.AsDouble(int index = 0) -> double
+Egami.Metadata.ExifEntry.AsFraction(int index = 0) -> Egami.Metadata.ExifFraction
+Egami.Metadata.ExifEntry.AsInteger(int index = 0) -> long
+Egami.Metadata.ExifEntry.AsString() -> string!
+Egami.Metadata.ExifEntry.Count.get -> int
+Egami.Metadata.ExifEntry.IsBigEndian.get -> bool
+Egami.Metadata.ExifEntry.Key.get -> Egami.Metadata.ExifKey
+Egami.Metadata.ExifEntry.RawValue.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.ExifEntry.Type.get -> Egami.Metadata.ExifType
+Egami.Metadata.ExifFraction
+Egami.Metadata.ExifFraction.Deconstruct(out long Numerator, out long Denominator) -> void
+Egami.Metadata.ExifFraction.Denominator.get -> long
+Egami.Metadata.ExifFraction.Denominator.init -> void
+Egami.Metadata.ExifFraction.Equals(Egami.Metadata.ExifFraction other) -> bool
+Egami.Metadata.ExifFraction.ExifFraction() -> void
+Egami.Metadata.ExifFraction.ExifFraction(long Numerator, long Denominator) -> void
+Egami.Metadata.ExifFraction.Numerator.get -> long
+Egami.Metadata.ExifFraction.Numerator.init -> void
+Egami.Metadata.ExifFraction.ToDouble() -> double
+Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Exif = 1 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Gps = 2 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Interoperability = 3 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Primary = 0 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Thumbnail = 4 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifKey
+Egami.Metadata.ExifKey.Deconstruct(out ushort Tag, out Egami.Metadata.ExifIfd Ifd) -> void
+Egami.Metadata.ExifKey.Equals(Egami.Metadata.ExifKey other) -> bool
+Egami.Metadata.ExifKey.ExifKey() -> void
+Egami.Metadata.ExifKey.ExifKey(ushort Tag, Egami.Metadata.ExifIfd Ifd) -> void
+Egami.Metadata.ExifKey.Ifd.get -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifKey.Ifd.init -> void
+Egami.Metadata.ExifKey.Tag.get -> ushort
+Egami.Metadata.ExifKey.Tag.init -> void
+Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Ascii = 2 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Byte = 1 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Double = 12 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Float = 11 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Long = 4 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Rational = 5 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SByte = 6 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Short = 3 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SLong = 9 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SRational = 10 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SShort = 8 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Undefined = 7 -> Egami.Metadata.ExifType
 Egami.Metadata.FormatDetails
 Egami.Metadata.FormatDetails.FormatDetails() -> void
 Egami.Metadata.FrameBlend
@@ -290,6 +361,17 @@ Egami.Metadata.FrameMetadata.Delay.set -> void
 Egami.Metadata.FrameMetadata.Disposal.get -> Egami.Metadata.FrameDisposal
 Egami.Metadata.FrameMetadata.Disposal.set -> void
 Egami.Metadata.FrameMetadata.FrameMetadata() -> void
+Egami.Metadata.GeoPosition
+Egami.Metadata.GeoPosition.Altitude.get -> double?
+Egami.Metadata.GeoPosition.Altitude.init -> void
+Egami.Metadata.GeoPosition.Deconstruct(out double Latitude, out double Longitude, out double? Altitude) -> void
+Egami.Metadata.GeoPosition.Equals(Egami.Metadata.GeoPosition other) -> bool
+Egami.Metadata.GeoPosition.GeoPosition() -> void
+Egami.Metadata.GeoPosition.GeoPosition(double Latitude, double Longitude, double? Altitude) -> void
+Egami.Metadata.GeoPosition.Latitude.get -> double
+Egami.Metadata.GeoPosition.Latitude.init -> void
+Egami.Metadata.GeoPosition.Longitude.get -> double
+Egami.Metadata.GeoPosition.Longitude.init -> void
 Egami.Metadata.ImageOrientation
 Egami.Metadata.ImageOrientation.FlipHorizontal = 2 -> Egami.Metadata.ImageOrientation
 Egami.Metadata.ImageOrientation.FlipVertical = 4 -> Egami.Metadata.ImageOrientation
@@ -303,7 +385,7 @@ Egami.Metadata.RasterMetadata
 Egami.Metadata.RasterMetadata.ColorSpace.get -> Egami.Metadata.ColorSpaceHint
 Egami.Metadata.RasterMetadata.ColorSpace.set -> void
 Egami.Metadata.RasterMetadata.Copy() -> Egami.Metadata.RasterMetadata!
-Egami.Metadata.RasterMetadata.Exif.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.RasterMetadata.Exif.get -> Egami.Metadata.ExifData?
 Egami.Metadata.RasterMetadata.Exif.set -> void
 Egami.Metadata.RasterMetadata.FormatDetails.get -> Egami.Metadata.FormatDetails?
 Egami.Metadata.RasterMetadata.FormatDetails.set -> void
@@ -683,6 +765,12 @@ override Egami.Formats.RasterInfo.ToString() -> string!
 override Egami.Formats.ReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.ReaderOptions.GetHashCode() -> int
 override Egami.Formats.ReaderOptions.ToString() -> string!
+override Egami.Metadata.ExifEntry.ToString() -> string!
+override Egami.Metadata.ExifFraction.GetHashCode() -> int
+override Egami.Metadata.ExifFraction.ToString() -> string!
+override Egami.Metadata.ExifKey.GetHashCode() -> int
+override Egami.Metadata.ExifKey.ToString() -> string!
+override Egami.Metadata.GeoPosition.GetHashCode() -> int
 override Egami.Metadata.Resolution.GetHashCode() -> int
 override Egami.Metadata.TextEntry.Equals(object? obj) -> bool
 override Egami.Metadata.TextEntry.GetHashCode() -> int
@@ -750,6 +838,13 @@ static Egami.Formats.ReaderOptions.Default.get -> Egami.Formats.ReaderOptions!
 static Egami.Formats.ReaderOptions.operator !=(Egami.Formats.ReaderOptions? left, Egami.Formats.ReaderOptions? right) -> bool
 static Egami.Formats.ReaderOptions.operator ==(Egami.Formats.ReaderOptions? left, Egami.Formats.ReaderOptions? right) -> bool
 static Egami.Formats.WriterOptions.Default.get -> Egami.Formats.WriterOptions!
+static Egami.Metadata.ExifData.Parse(System.ReadOnlySpan<byte> tiff) -> Egami.Metadata.ExifData!
+static Egami.Metadata.ExifFraction.operator !=(Egami.Metadata.ExifFraction left, Egami.Metadata.ExifFraction right) -> bool
+static Egami.Metadata.ExifFraction.operator ==(Egami.Metadata.ExifFraction left, Egami.Metadata.ExifFraction right) -> bool
+static Egami.Metadata.ExifKey.operator !=(Egami.Metadata.ExifKey left, Egami.Metadata.ExifKey right) -> bool
+static Egami.Metadata.ExifKey.operator ==(Egami.Metadata.ExifKey left, Egami.Metadata.ExifKey right) -> bool
+static Egami.Metadata.GeoPosition.operator !=(Egami.Metadata.GeoPosition left, Egami.Metadata.GeoPosition right) -> bool
+static Egami.Metadata.GeoPosition.operator ==(Egami.Metadata.GeoPosition left, Egami.Metadata.GeoPosition right) -> bool
 static Egami.Metadata.Resolution.operator !=(Egami.Metadata.Resolution left, Egami.Metadata.Resolution right) -> bool
 static Egami.Metadata.Resolution.operator ==(Egami.Metadata.Resolution left, Egami.Metadata.Resolution right) -> bool
 static Egami.Metadata.TextEntry.operator !=(Egami.Metadata.TextEntry? left, Egami.Metadata.TextEntry? right) -> bool
@@ -863,6 +958,45 @@ static Egami.SafetyLimits.operator !=(Egami.SafetyLimits? left, Egami.SafetyLimi
 static Egami.SafetyLimits.operator ==(Egami.SafetyLimits? left, Egami.SafetyLimits? right) -> bool
 static Egami.Size.operator !=(Egami.Size left, Egami.Size right) -> bool
 static Egami.Size.operator ==(Egami.Size left, Egami.Size right) -> bool
+static readonly Egami.Metadata.ExifKey.Artist -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ColorSpace -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Copyright -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.DateTime -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.DateTimeDigitized -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.DateTimeOriginal -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExifInfo -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExifVersion -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExposureBias -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExposureProgram -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExposureTime -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Flash -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.FNumber -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.FocalLength -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.FocalLengthIn35mmFilm -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsAltitude -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsAltitudeRef -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsInfo -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLatitude -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLatitudeRef -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLongitude -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLongitudeRef -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ImageDescription -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.IsoSpeed -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.LensMake -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.LensModel -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Make -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.MakerNote -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.MeteringMode -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Model -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.OffsetTimeOriginal -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Orientation -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.PixelXDimension -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.PixelYDimension -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ResolutionUnit -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Software -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.UserComment -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XResolution -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.YResolution -> Egami.Metadata.ExifKey
 virtual Egami.Formats.ReaderOptions.<Clone>$() -> Egami.Formats.ReaderOptions!
 virtual Egami.Formats.ReaderOptions.EqualityContract.get -> System.Type!
 virtual Egami.Formats.ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
@@ -870,6 +1004,10 @@ virtual Egami.Formats.ReaderOptions.PrintMembers(System.Text.StringBuilder! buil
 virtual Egami.Formats.SignatureMatcher.Invoke(System.ReadOnlySpan<byte> header) -> bool
 virtual Egami.Operations.RowBandAction.Invoke(int start, int end) -> void
 virtual Egami.RowAction<TPixel>.Invoke(System.Span<TPixel> row, int y) -> void
+~override Egami.Metadata.ExifFraction.Equals(object obj) -> bool
+~override Egami.Metadata.ExifKey.Equals(object obj) -> bool
+~override Egami.Metadata.GeoPosition.Equals(object obj) -> bool
+~override Egami.Metadata.GeoPosition.ToString() -> string
 ~override Egami.Metadata.Resolution.Equals(object obj) -> bool
 ~override Egami.Metadata.Resolution.ToString() -> string
 ~override Egami.Pixels.PixelLayoutInfo.Equals(object obj) -> bool
