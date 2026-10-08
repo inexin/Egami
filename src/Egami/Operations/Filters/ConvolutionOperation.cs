@@ -131,9 +131,11 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
     {
         int height = input.Source.Height;
 
-        // Bands are whole groups of ry rows, at least 16 groups each, so the 2ry rows a band re-reads above and below stay a small
-        // share of its work however large the kernel.
-        int group = Math.Max(1, _ry);
+        // Each band re-reads 2ry rows above and below it, so bands should be tall; but every thread needs one. Bands are whole
+        // groups of rows, at least 16 groups each (RowRunner's minimum): groups of up to ry rows, small enough that there is a band
+        // per thread.
+        int threads = Math.Max(1, input.Context.MaxParallelism);
+        int group = Math.Clamp((height + (16 * threads) - 1) / (16 * threads), 1, Math.Max(1, _ry));
         long rowBytes = (long)input.Source.Width * TPixel.Layout.BytesPerPixel;
         RowRunner.Run((height + group - 1) / group, rowBytes * group, input.Context.MaxParallelism, (start, end) =>
         {
@@ -152,6 +154,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
         private readonly int _height;
         private readonly int _ringRows;
         private readonly int _ringLength;
+        private readonly int _block;
 
         internal Band(ConvolutionOperation op, OperationInput<TPixel> input)
         {
@@ -162,8 +165,9 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
             _height = input.Source.Height;
 
             // Separable and box rings hold filtered rows; the full-kernel ring holds padded source rows. Box keeps one extra row,
-            // the one its running sum subtracts.
-            _ringRows = (2 * op._ry) + 1 + (op._box ? 1 : 0);
+            // the one its running sum subtracts; separable keeps the rows for a block of outputs.
+            _block = op._column is not null ? ConvolutionKernels.Block : 1;
+            _ringRows = (2 * op._ry) + _block + (op._box ? 1 : 0);
             _ringLength = (op._full is null ? _width : _width + (2 * op._rx)) * 4;
         }
 
@@ -173,7 +177,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
             int rowFloats = _width * 4;
             float[] ringBuffer = ArrayPool<float>.Shared.Rent(_ringRows * _ringLength);
             float[] lineBuffer = ArrayPool<float>.Shared.Rent(padded);
-            float[] outBuffer = ArrayPool<float>.Shared.Rent(rowFloats);
+            float[] outBuffer = ArrayPool<float>.Shared.Rent(rowFloats * _block);
             float[] centerBuffer = ArrayPool<float>.Shared.Rent(rowFloats);
             float[] sumBuffer = ArrayPool<float>.Shared.Rent(_op._box ? rowFloats : 0);
             bool[] opaque = ArrayPool<bool>.Shared.Rent(_ringRows);
@@ -181,14 +185,15 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
             {
                 Span<float> ring = ringBuffer.AsSpan(0, _ringRows * _ringLength);
                 Span<float> line = lineBuffer.AsSpan(0, padded);
-                Span<float> output = outBuffer.AsSpan(0, rowFloats);
+                Span<float> outputs = outBuffer.AsSpan(0, rowFloats * _block);
                 Span<float> center = centerBuffer.AsSpan(0, rowFloats);
                 Span<float> sums = sumBuffer.AsSpan(0, _op._box ? rowFloats : 0);
                 int ry = _op._ry;
                 int next = start - ry;
-                for (int y = start; y < end; y++)
+                for (int y0 = start; y0 < end; y0 += _block)
                 {
-                    for (; next <= y + ry; next++)
+                    int count = Math.Min(_block, end - y0);
+                    for (; next <= y0 + count - 1 + ry; next++)
                     {
                         int slot = Slot(next);
                         opaque[slot] = LoadPadded(next, line);
@@ -207,27 +212,33 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
                         }
                     }
 
-                    bool allOpaque = _op._edge != EdgeMode.Transparent && !_op._preserveAlpha;
-                    for (int v = y - ry; v <= y + ry && allOpaque; v++)
+                    if (_op._column is not null)
                     {
-                        allOpaque &= opaque[Slot(v)];
+                        ConvolutionKernels.VerticalBlock(ring, rowFloats, _ringRows, Slot(y0 - ry), _op._column, outputs, count);
                     }
 
-                    if (_op._box)
+                    for (int j = 0; j < count; j++)
                     {
-                        BoxColumn(ring, sums, y, y == start, output);
-                    }
-                    else if (_op._full is not null)
-                    {
-                        FullRow(ring, y, output);
-                    }
-                    else
-                    {
-                        ResizeKernels.Vertical(ring, rowFloats, _ringRows, Slot(y - ry), _op._column, output);
-                    }
+                        int y = y0 + j;
+                        Span<float> output = outputs.Slice(j * rowFloats, rowFloats);
+                        bool allOpaque = _op._edge != EdgeMode.Transparent && !_op._preserveAlpha;
+                        for (int v = y - ry; v <= y + ry && allOpaque; v++)
+                        {
+                            allOpaque &= opaque[Slot(v)];
+                        }
 
-                    Finish(y, output, center, ref allOpaque);
-                    _converter.Store(output, _input.Destination.Row(y), allOpaque);
+                        if (_op._box)
+                        {
+                            BoxColumn(ring, sums, y, y == start, output);
+                        }
+                        else if (_op._full is not null)
+                        {
+                            FullRow(ring, y, output);
+                        }
+
+                        Finish(y, output, center, ref allOpaque);
+                        _converter.Store(output, _input.Destination.Row(y), allOpaque);
+                    }
                 }
             }
             finally
@@ -392,6 +403,85 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
 /// <summary>The inner loops of convolution. Vector paths add in the same order as the scalar references.</summary>
 internal static class ConvolutionKernels
 {
+    /// <summary>The output rows the vertical pass makes per read of the ring.</summary>
+    internal const int Block = 4;
+
+    /// <summary>
+    /// The vertical pass for <paramref name="count"/> (at most <see cref="Block"/>) consecutive output rows. Output j sums ring rows
+    /// <c>first + j + k</c> (mod <paramref name="ringRows"/>) times <c>weights[k]</c>, from k = 0 up, as
+    /// <see cref="ResizeKernels.VerticalScalar"/> does; each ring row is read once for the whole block, which cuts memory traffic
+    /// for tall kernels by the block size. <paramref name="outputs"/> holds the rows one after another.
+    /// </summary>
+    internal static void VerticalBlock(ReadOnlySpan<float> ring, int rowLength, int ringRows, int first, ReadOnlySpan<float> weights, Span<float> outputs, int count)
+    {
+        int taps = weights.Length;
+        if (ring.Length < rowLength * ringRows || outputs.Length < rowLength * count || count < 1 || count > Block || taps + count - 1 > ringRows)
+        {
+            throw new ArgumentException("The ring or outputs are too short.");
+        }
+
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            ref float r = ref MemoryMarshal.GetReference(ring);
+            ref float o = ref MemoryMarshal.GetReference(outputs);
+            Span<nuint> rows = stackalloc nuint[taps + count - 1];
+            for (int k = 0; k < rows.Length; k++)
+            {
+                rows[k] = (nuint)((first + k) % ringRows * rowLength);
+            }
+
+            for (; i <= rowLength - Vector256<float>.Count; i += Vector256<float>.Count)
+            {
+                Vector256<float> a0 = Vector256<float>.Zero, a1 = a0, a2 = a0, a3 = a0;
+                for (int k = 0; k < rows.Length; k++)
+                {
+                    Vector256<float> v = Vector256.LoadUnsafe(ref r, rows[k] + (nuint)i);
+                    if (k < taps)
+                    {
+                        a0 += v * weights[k];
+                    }
+
+                    if (count > 1 && (uint)(k - 1) < (uint)taps)
+                    {
+                        a1 += v * weights[k - 1];
+                    }
+
+                    if (count > 2 && (uint)(k - 2) < (uint)taps)
+                    {
+                        a2 += v * weights[k - 2];
+                    }
+
+                    if (count > 3 && (uint)(k - 3) < (uint)taps)
+                    {
+                        a3 += v * weights[k - 3];
+                    }
+                }
+
+                a0.StoreUnsafe(ref o, (nuint)i);
+                if (count > 1)
+                {
+                    a1.StoreUnsafe(ref o, (nuint)(rowLength + i));
+                }
+
+                if (count > 2)
+                {
+                    a2.StoreUnsafe(ref o, (nuint)((2 * rowLength) + i));
+                }
+
+                if (count > 3)
+                {
+                    a3.StoreUnsafe(ref o, (nuint)((3 * rowLength) + i));
+                }
+            }
+        }
+
+        for (int j = 0; j < count; j++)
+        {
+            ResizeKernels.VerticalScalar(ring, rowLength, ringRows, (first + j) % ringRows, weights, outputs.Slice(j * rowLength, rowLength), i);
+        }
+    }
+
     /// <summary>
     /// Correlates a padded row with 1D weights: <c>destination[i] = Σ weights[k] × source[i + 4k]</c>, summed from k = 0 up.
     /// </summary>

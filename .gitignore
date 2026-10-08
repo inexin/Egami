@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Downloads and scratch files for tools/make-op-references.py
+.cache/

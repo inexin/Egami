@@ -290,7 +290,8 @@ public sealed class RasterOps
 
     /// <summary>
     /// Blurs with a Gaussian of standard deviation <paramref name="sigma"/> pixels (radius ceil(3σ), weights normalized). Edges
-    /// repeat the edge pixel. Above σ = 20 it runs as three box blurs of matched width, within 3% of a true Gaussian and much faster.
+    /// repeat the edge pixel. Above σ = 100, where a true Gaussian needs over 600 taps a pass, it runs as three box blurs of
+    /// matched width, whose variance is within 3% of the Gaussian's.
     /// </summary>
     /// <param name="sigma">The standard deviation in pixels; 0 changes nothing.</param>
     /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
@@ -336,7 +337,7 @@ public sealed class RasterOps
     /// <param name="amount">How strongly to sharpen; 0 changes nothing. Defaults to 1.</param>
     /// <param name="sigma">The blur radius that sets which details are sharpened, in pixels. Defaults to 1.</param>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">An argument is negative or not finite, or <paramref name="sigma"/> is 0 or above 20.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">An argument is negative or not finite, or <paramref name="sigma"/> is 0 or above 100.</exception>
     public RasterOps Sharpen(float amount = 1, float sigma = 1)
     {
         if (!(amount >= 0) || float.IsPositiveInfinity(amount))
@@ -347,7 +348,7 @@ public sealed class RasterOps
         CheckSigma(sigma);
         if (sigma == 0 || sigma > LargeSigma)
         {
-            throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be above 0 and at most 20.");
+            throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be above 0 and at most 100.");
         }
 
         return amount == 0 ? this : Add(ConvolutionOperation.Gaussian(sigma, linear: false, sharpen: amount));
@@ -395,7 +396,7 @@ public sealed class RasterOps
     }
 
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
-    internal const float LargeSigma = 20;
+    internal const float LargeSigma = 100;
 
     /// <summary>
     /// Returns the radii of <paramref name="passes"/> box blurs whose combined variance matches a Gaussian of <paramref name="sigma"/>:

@@ -22,11 +22,16 @@ internal static class ResampleKernels
     /// <summary>Evaluates the kernel at distance <paramref name="x"/>.</summary>
     internal static double Evaluate(ResampleFilter filter, double x)
     {
+        if (filter == ResampleFilter.Box)
+        {
+            // Half-open, (−0.5, 0.5], so a source pixel exactly on the boundary between two outputs counts once, for the one on
+            // its left, as ImageMagick and other libraries do.
+            return x > -0.5 && x <= 0.5 ? 1 : 0;
+        }
+
         x = Math.Abs(x);
         switch (filter)
         {
-            case ResampleFilter.Box:
-                return x < 0.5 ? 1 : x == 0.5 ? 0.5 : 0;
             case ResampleFilter.Bilinear:
                 return x < 1 ? 1 - x : 0;
             case ResampleFilter.Bicubic:

@@ -1,0 +1,55 @@
+# Version: ImageMagick 7.1.1-32 Q16-HDRI x86_64 22207 https://imagemagick.org, in alpine:3.20. Lines: <input>.<case> <width> <height> <ImageMagick arguments>
+shapes.down-nearest 64 48 -filter Point -resize 64x48!
+shapes.down-box 64 48 -filter Box -resize 64x48!
+shapes.down-bilinear 64 48 -filter Triangle -resize 64x48!
+shapes.down-bicubic 64 48 -filter Catrom -resize 64x48!
+shapes.down-mitchell 64 48 -filter Mitchell -resize 64x48!
+shapes.down-lanczos3 64 48 -filter Lanczos -resize 64x48!
+shapes.down-bicubic-linear 64 48 -colorspace RGB -filter Catrom -resize 64x48! -colorspace sRGB
+shapes.up-bicubic 300 225 -filter Catrom -resize 300x225!
+shapes.up-lanczos3 300 225 -filter Lanczos -resize 300x225!
+shapes.rotate-15 232 197 \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=232x197+0+0 +distort SRT 100.0,75.0,1,15,116.0,98.5 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=232x197+0+0 +distort SRT 100.0,75.0,1,15,116.0,98.5 \) -delete 0 -alpha off -compose CopyOpacity -composite
+shapes.rotate-n33 249 235 \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=249x235+0+0 +distort SRT 100.0,75.0,1,-33,124.5,117.5 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=249x235+0+0 +distort SRT 100.0,75.0,1,-33,124.5,117.5 \) -delete 0 -alpha off -compose CopyOpacity -composite
+shapes.blur-2 200 150 -gaussian-blur 0x2
+shapes.sharpen 200 150 -unsharp 0x1+1+0
+shapes.blur-25 200 150 -gaussian-blur 0x25
+zone.down-nearest 64 48 -filter Point -resize 64x48!
+zone.down-box 64 48 -filter Box -resize 64x48!
+zone.down-bilinear 64 48 -filter Triangle -resize 64x48!
+zone.down-bicubic 64 48 -filter Catrom -resize 64x48!
+zone.down-mitchell 64 48 -filter Mitchell -resize 64x48!
+zone.down-lanczos3 64 48 -filter Lanczos -resize 64x48!
+zone.down-bicubic-linear 64 48 -colorspace RGB -filter Catrom -resize 64x48! -colorspace sRGB
+zone.up-bicubic 300 225 -filter Catrom -resize 300x225!
+zone.up-lanczos3 300 225 -filter Lanczos -resize 300x225!
+zone.rotate-15 232 197 \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=232x197+0+0 +distort SRT 100.0,75.0,1,15,116.0,98.5 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=232x197+0+0 +distort SRT 100.0,75.0,1,15,116.0,98.5 \) -delete 0 -alpha off -compose CopyOpacity -composite
+zone.rotate-n33 249 235 \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=249x235+0+0 +distort SRT 100.0,75.0,1,-33,124.5,117.5 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=249x235+0+0 +distort SRT 100.0,75.0,1,-33,124.5,117.5 \) -delete 0 -alpha off -compose CopyOpacity -composite
+zone.blur-2 200 150 -gaussian-blur 0x2
+zone.sharpen 200 150 -unsharp 0x1+1+0
+zone.blur-25 200 150 -gaussian-blur 0x25
+duck.down-nearest 160 120 -filter Point -resize 160x120!
+duck.down-box 160 120 -filter Box -resize 160x120!
+duck.down-bilinear 160 120 -filter Triangle -resize 160x120!
+duck.down-bicubic 160 120 -filter Catrom -resize 160x120!
+duck.down-mitchell 160 120 -filter Mitchell -resize 160x120!
+duck.down-lanczos3 160 120 -filter Lanczos -resize 160x120!
+duck.down-bicubic-linear 160 120 -colorspace RGB -filter Catrom -resize 160x120! -colorspace sRGB
+duck.up-bicubic 360 270 -crop 240x180+200+150 +repage -filter Catrom -resize 360x270!
+duck.up-lanczos3 360 270 -crop 240x180+200+150 +repage -filter Lanczos -resize 360x270!
+duck.rotate-15 278 236 -crop 240x180+200+150 +repage \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=278x236+0+0 +distort SRT 120.0,90.0,1,15,139.0,118.0 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=278x236+0+0 +distort SRT 120.0,90.0,1,15,139.0,118.0 \) -delete 0 -alpha off -compose CopyOpacity -composite
+duck.rotate-n33 299 282 -crop 240x180+200+150 +repage \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=299x282+0+0 +distort SRT 120.0,90.0,1,-33,149.5,141.0 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=299x282+0+0 +distort SRT 120.0,90.0,1,-33,149.5,141.0 \) -delete 0 -alpha off -compose CopyOpacity -composite
+duck.blur-2 240 180 -crop 240x180+200+150 +repage -gaussian-blur 0x2
+duck.sharpen 240 180 -crop 240x180+200+150 +repage -unsharp 0x1+1+0
+egret.down-nearest 120 160 -filter Point -resize 120x160!
+egret.down-box 120 160 -filter Box -resize 120x160!
+egret.down-bilinear 120 160 -filter Triangle -resize 120x160!
+egret.down-bicubic 120 160 -filter Catrom -resize 120x160!
+egret.down-mitchell 120 160 -filter Mitchell -resize 120x160!
+egret.down-lanczos3 120 160 -filter Lanczos -resize 120x160!
+egret.down-bicubic-linear 120 160 -colorspace RGB -filter Catrom -resize 120x160! -colorspace sRGB
+egret.up-bicubic 270 360 -crop 180x240+150+200 +repage -filter Catrom -resize 270x360!
+egret.up-lanczos3 270 360 -crop 180x240+150+200 +repage -filter Lanczos -resize 270x360!
+egret.rotate-15 236 278 -crop 180x240+150+200 +repage \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=236x278+0+0 +distort SRT 90.0,120.0,1,15,118.0,139.0 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=236x278+0+0 +distort SRT 90.0,120.0,1,15,118.0,139.0 \) -delete 0 -alpha off -compose CopyOpacity -composite
+egret.rotate-n33 282 299 -crop 180x240+150+200 +repage \( +clone -background black -alpha remove -alpha off -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=282x299+0+0 +distort SRT 90.0,120.0,1,-33,141.0,149.5 \) \( -clone 0 -alpha extract -virtual-pixel black -interpolate Catrom -filter Point -define distort:viewport=282x299+0+0 +distort SRT 90.0,120.0,1,-33,141.0,149.5 \) -delete 0 -alpha off -compose CopyOpacity -composite
+egret.blur-2 180 240 -crop 180x240+150+200 +repage -gaussian-blur 0x2
+egret.sharpen 180 240 -crop 180x240+150+200 +repage -unsharp 0x1+1+0

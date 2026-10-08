@@ -136,18 +136,19 @@ public class ConvolutionTests
     [Fact]
     public void LargeBlursApproximateTheGaussian()
     {
-        foreach (float sigma in new[] { 20.5f, 25f, 60f })
+        foreach (float sigma in new[] { 100.5f, 120f, 600f })
         {
             int[] radii = RasterOps.BoxRadii(sigma, 3);
             double variance = radii.Sum(r => (((2.0 * r) + 1) * ((2.0 * r) + 1) - 1) / 12);
             Assert.InRange(Math.Sqrt(variance) / sigma, 0.97, 1.03);
         }
 
-        using Raster<Rgba8> raster = Smooth(160, 120);
-        using Raster<Rgba8> boxes = raster.Derive(ops => ops.Blur(25), Ct);
-        float[] g = ConvolutionOperation.GaussianWeights(25);
-        using Raster<Rgba8> exact = raster.Derive(ops => ops.Convolve(ConvolutionKernel.Separable(g, g)), Ct);
-        Assert.True(Psnr(exact, boxes) > 40, $"PSNR {Psnr(exact, boxes):F1}");
+        // Three boxes only approximate the Gaussian: about 33 dB here, and 36 dB at σ 25 on hard alpha edges, where the true
+        // kernel scores 47 dB against ImageMagick. So they take over only at σ 100, where the true kernel gets too slow.
+        using Raster<Rgba8> raster = Smooth(400, 300);
+        using Raster<Rgba8> boxes = raster.Derive(ops => ops.Blur(120), Ct);
+        using Raster<Rgba8> exact = raster.Derive(ops => ops.Add(ConvolutionOperation.Gaussian(120, linear: false)), Ct);
+        Assert.True(Psnr(exact, boxes) > 30, $"PSNR {Psnr(exact, boxes):F1}");
     }
 
     [Fact]
@@ -165,6 +166,34 @@ public class ConvolutionTests
             ConvolutionKernels.Accumulate(source, -1.5f, fast, first: true);
             ConvolutionKernels.AccumulateScalar(source, -1.5f, scalar, first: true);
             Assert.Equal(scalar, fast);
+        }
+    }
+
+    [Fact]
+    public void VerticalBlockMatchesScalar()
+    {
+        Random random = new(6);
+        foreach (int rowLength in new[] { 4, 12, 40, 1004 })
+        {
+            foreach (int taps in new[] { 1, 3, 13, 151 })
+            {
+                int ringRows = taps + ConvolutionKernels.Block + 2;
+                float[] ring = [.. Enumerable.Range(0, ringRows * rowLength).Select(_ => random.NextSingle())];
+                float[] weights = [.. Enumerable.Range(0, taps).Select(_ => random.NextSingle() - 0.3f)];
+                for (int count = 1; count <= ConvolutionKernels.Block; count++)
+                {
+                    float[] block = new float[count * rowLength];
+                    ConvolutionKernels.VerticalBlock(ring, rowLength, ringRows, ringRows - 3, weights, block, count);
+                    for (int j = 0; j < count; j++)
+                    {
+                        float[] scalar = new float[rowLength];
+                        Egami.Operations.Resampling.ResizeKernels.VerticalScalar(ring, rowLength, ringRows, (ringRows - 3 + j) % ringRows, weights, scalar);
+
+                        // Equal as values: the block starts its sums from +0, so a −0 product can come out as +0.
+                        Assert.Equal(scalar, block.AsSpan(j * rowLength, rowLength).ToArray());
+                    }
+                }
+            }
         }
     }
 
