@@ -1,0 +1,36 @@
+name: Benchmarks
+
+# Runs the Egami benchmarks and keeps the reports as an artifact. Shared runners are noisy, so these numbers show
+# trends; before-and-after numbers for a pull request come from running the benchmarks on one quiet machine.
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: Benchmark filter, for example *PngDecode*
+        default: '*'
+  push:
+    branches: [main]
+    paths: ['src/**', 'benchmarks/**']
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Run
+        run: dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --filter "$FILTER" --job short --exporters github json --artifacts artifacts/benchmarks
+        env:
+          FILTER: ${{ inputs.filter || '*' }}
+      - name: Summary
+        run: cat artifacts/benchmarks/results/*-report-github.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks
+          path: artifacts/benchmarks/results
