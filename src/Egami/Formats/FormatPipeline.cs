@@ -85,6 +85,58 @@ internal static class FormatPipeline
         }
     }
 
+    /// <summary>
+    /// Reads only as much of the stream as the header needs: 64 KB first, doubling while the header runs past what has been read.
+    /// A seekable stream ends just past the bytes the header used.
+    /// </summary>
+    internal static async Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext context, CancellationToken cancellationToken)
+    {
+        long start = stream.CanSeek ? stream.Position : -1;
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
+        int length = 0;
+        bool ended = false;
+        try
+        {
+            while (true)
+            {
+                while (!ended && length < buffer.Length)
+                {
+                    int n = await stream.ReadAsync(buffer.AsMemory(length), cancellationToken).ConfigureAwait(false);
+                    ended = n == 0;
+                    length += n;
+                }
+
+                using MemoryStream memory = new(buffer, 0, length, writable: false);
+                try
+                {
+                    RasterInfo info = Probe(memory, context, cancellationToken);
+                    if (start >= 0)
+                    {
+                        stream.Position = start + memory.Position;
+                    }
+
+                    return info;
+                }
+                catch (CorruptDataException e) when (e.IsTruncation && !ended)
+                {
+                    if (buffer.Length >= Math.Min(context.Limits.MaxTotalBytes, Array.MaxLength / 2))
+                    {
+                        throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), context.Limits.MaxTotalBytes, buffer.Length * 2L);
+                    }
+
+                    byte[] larger = ArrayPool<byte>.Shared.Rent(buffer.Length * 2);
+                    buffer.AsSpan(0, length).CopyTo(larger);
+                    ArrayPool<byte>.Shared.Return(buffer);
+                    buffer = larger;
+                }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
     /// <summary>Runs <paramref name="read"/> on a stream that was read ahead into memory, then puts a seekable stream just past the image.</summary>
     internal static async Task<T> RunBufferedAsync<T>(Stream stream, EgamiContext context, Func<Stream, T> read, CancellationToken cancellationToken)
     {

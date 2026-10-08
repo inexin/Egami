@@ -154,6 +154,40 @@ public class PngReaderTests
     }
 
     [Fact]
+    public async Task ProbeAsyncReadsOnlyWhatTheHeaderNeeds()
+    {
+        // A large ICC profile before the image data forces more than the first 64 KB to be read.
+        PngBuilder builder = Build(PngColorType.Rgb, 8, false, false, 300, 200, seed: 21);
+        byte[] icc = new byte[200_000];
+        new Random(5).NextBytes(icc);
+        builder.ChunksBeforePalette.Add(("iCCP", [.. "Big"u8, 0, 0, .. PngBuilder.Compress(icc)]));
+        byte[] file = builder.Build();
+
+        using CountingReadStream stream = new(file);
+        RasterInfo info = await Raster.ProbeAsync(stream, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(300, info.Width);
+        Assert.True(info.HasMetadata);
+        Assert.True(stream.BytesRead < file.Length, $"read {stream.BytesRead} of {file.Length} bytes");
+
+        using CountingReadStream small = new(Build(PngColorType.Gray, 8, false, false, 2000, 2000, seed: 22).Build());
+        Assert.Equal(2000, (await Raster.ProbeAsync(small, cancellationToken: TestContext.Current.CancellationToken)).Height);
+        Assert.Equal(64 * 1024, small.BytesRead);
+    }
+
+    private sealed class CountingReadStream(byte[] data) : MemoryStream(data, writable: false)
+    {
+        public long BytesRead { get; private set; }
+
+        // MemoryStream's span overloads call back into Read(byte[], int, int) for derived types, so only that one counts.
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int n = base.Read(buffer, offset, count);
+            BytesRead += n;
+            return n;
+        }
+    }
+
+    [Fact]
     public void ReadMetadataFalseSkipsMetadata()
     {
         PngBuilder builder = Build(PngColorType.Gray, 8, false, false, 2, 2, seed: 4);

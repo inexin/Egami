@@ -87,7 +87,7 @@ internal sealed class PngReader : IFormatReader
         {
             if (!chunks.TryReadHeader(out uint length, out uint type))
             {
-                throw input.Corrupt(input.Position, "The file ends before any image data (IDAT).");
+                throw new CorruptDataException(PngFormat.Info.Name, input.Position, "The file ends before any image data (IDAT).") { IsTruncation = true };
             }
 
             if (type == PngChunkType.Idat)

@@ -184,7 +184,10 @@ public abstract partial class Raster
         return Probe(stream, context);
     }
 
-    /// <summary>Reads the encoded image asynchronously, then reads its header. See <see cref="Probe(Stream, EgamiContext?)"/>.</summary>
+    /// <summary>
+    /// Reads the header asynchronously, reading only as much of the stream as the header needs (at least 64 KB, or all of it if
+    /// shorter). See <see cref="Probe(Stream, EgamiContext?)"/>.
+    /// </summary>
     /// <param name="stream">The encoded image.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
     /// <param name="cancellationToken">Cancels reading.</param>
@@ -193,7 +196,7 @@ public abstract partial class Raster
     {
         ArgumentNullException.ThrowIfNull(stream);
         context ??= EgamiContext.Default;
-        return FormatPipeline.RunBufferedAsync(stream, context, s => FormatPipeline.Probe(s, context, cancellationToken), cancellationToken);
+        return FormatPipeline.ProbeAsync(stream, context, cancellationToken);
     }
 
     /// <summary>Reads the header of an image file asynchronously. See <see cref="Probe(Stream, EgamiContext?)"/>.</summary>
@@ -260,10 +263,9 @@ public abstract partial class Raster
     {
         ArgumentNullException.ThrowIfNull(stream);
         cancellationToken.ThrowIfCancellationRequested();
-        using MemoryStream buffer = new();
+        using PooledBufferStream buffer = new();
         Save(buffer, format, options);
-        buffer.Position = 0;
-        await buffer.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+        await stream.WriteAsync(buffer.Written, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Encodes the raster in the named format and writes it asynchronously.</summary>
