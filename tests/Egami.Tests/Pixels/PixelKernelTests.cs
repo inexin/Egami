@@ -40,6 +40,7 @@ public class PixelKernelTests
         (typeof(GrayAlpha8), typeof(Rgba8)), (typeof(GrayAlpha8), typeof(Bgra8)),
         (typeof(Rgba8), typeof(Rgba16)), (typeof(Gray8), typeof(Gray16)),
         (typeof(Rgba16), typeof(Rgba8)), (typeof(Gray16), typeof(Gray8)),
+        (typeof(Rgba8), typeof(Gray8)), (typeof(Bgra8), typeof(Gray8)), (typeof(Rgb8), typeof(Gray8)), (typeof(Bgr8), typeof(Gray8)),
     ];
 
     [Theory]

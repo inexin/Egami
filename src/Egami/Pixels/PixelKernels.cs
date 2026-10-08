@@ -98,6 +98,12 @@ internal static class PixelKernels
             return Shuffle(src, dst, 16, 32, GrayAlphaTo4, default) / 2;
         }
 
+        // RGB to gray: Rec. 709 luma per pixel, in a tight loop over the bytes.
+        if (typeof(TTo) == typeof(Gray8) && (typeof(TFrom) == typeof(Rgba8) || typeof(TFrom) == typeof(Bgra8) || typeof(TFrom) == typeof(Rgb8) || typeof(TFrom) == typeof(Bgr8)))
+        {
+            return ToGray8(src, dst, TFrom.Layout);
+        }
+
         // 8 and 16 bits.
         if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(Rgba16)) || (typeof(TFrom) == typeof(Gray8) && typeof(TTo) == typeof(Gray16)))
         {
@@ -110,6 +116,19 @@ internal static class PixelKernels
         }
 
         return 0;
+    }
+
+    /// <summary>Converts 8-bit RGB pixels in any of the four layouts to gray. Not SIMD, but free of per-pixel calls and bounds checks.</summary>
+    /// <returns>The number of pixels converted.</returns>
+    private static int ToGray8(ReadOnlySpan<byte> source, Span<byte> destination, PixelLayoutInfo layout)
+    {
+        int size = layout.BytesPerPixel;
+        bool bgr = layout.ChannelOrder is PixelChannelOrder.Bgra or PixelChannelOrder.Bgr;
+        int red = bgr ? 2 : 0;
+        int blue = bgr ? 0 : 2;
+        int count = source.Length / size;
+        Luma.Row(source, destination[..count], size, red, blue);
+        return count;
     }
 
     /// <summary>Returns <see langword="true"/> if <see cref="Convert"/> has a kernel for the pair.</summary>

@@ -28,7 +28,10 @@ public enum PngFilterMode
 /// <summary>The Deflate strategy for the image data.</summary>
 public enum PngCompressionStrategy
 {
-    /// <summary><see cref="Filtered"/> when rows are filtered, otherwise <see cref="Default"/>.</summary>
+    /// <summary>
+    /// The strategy Egami picks. Currently <see cref="Default"/>: in Egami's benchmarks with the runtime's zlib, <see cref="Filtered"/>
+    /// was never smaller and was larger at level 9.
+    /// </summary>
     Automatic,
 
     /// <summary>zlib's default strategy.</summary>

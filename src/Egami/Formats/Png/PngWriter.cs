@@ -148,7 +148,7 @@ internal sealed class PngWriter : IFormatWriter
         PngFilterMode mode = options.Filter == PngFilterMode.Adaptive && lowDepthOrPalette ? PngFilterMode.None : options.Filter;
         ZLibCompressionStrategy strategy = options.CompressionStrategy switch
         {
-            PngCompressionStrategy.Automatic => mode == PngFilterMode.None ? ZLibCompressionStrategy.Default : ZLibCompressionStrategy.Filtered,
+            PngCompressionStrategy.Automatic => ZLibCompressionStrategy.Default,
             PngCompressionStrategy.Filtered => ZLibCompressionStrategy.Filtered,
             PngCompressionStrategy.HuffmanOnly => ZLibCompressionStrategy.HuffmanOnly,
             PngCompressionStrategy.RunLengthEncoding => ZLibCompressionStrategy.RunLengthEncoding,
