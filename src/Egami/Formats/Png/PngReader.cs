@@ -796,6 +796,46 @@ internal sealed class PngReader : IFormatReader
         /// <returns><see langword="true"/> if every row was read; <see langword="false"/> if the data ended early in lenient mode.</returns>
         public bool DecodeSequential()
         {
+            return typeof(TNatural) == typeof(TPixel) && state.Unpacker.ScanlineIsNatural ? DecodeInPlace() : DecodeThroughBuffers();
+        }
+
+        /// <summary>
+        /// When the file's bytes are exactly the requested pixels, each scanline is inflated and unfiltered straight in its raster
+        /// row, using the row above as the previous scanline, so no pixel byte is copied after decompression.
+        /// </summary>
+        private bool DecodeInPlace()
+        {
+            int rowBytes = (int)_header.RowBytes(_header.Width);
+            byte[] zero = ArrayPool<byte>.Shared.Rent(rowBytes);
+            Span<byte> filter = stackalloc byte[1];
+            try
+            {
+                zero.AsSpan(0, rowBytes).Clear();
+                for (int y = 0; y < _header.Height; y++)
+                {
+                    Span<byte> row = MemoryMarshal.AsBytes(raster.Row(y));
+                    ReadOnlySpan<byte> above = y == 0 ? zero.AsSpan(0, rowBytes) : MemoryMarshal.AsBytes(raster.Row(y - 1));
+                    if (!ReadScanline(filter, row, above, y))
+                    {
+                        for (int rest = y; rest < _header.Height; rest++)
+                        {
+                            raster.Row(rest).Clear();
+                        }
+
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(zero);
+            }
+        }
+
+        private bool DecodeThroughBuffers()
+        {
             int width = _header.Width;
             int rowBytes = (int)_header.RowBytes(width);
             byte[] current = ArrayPool<byte>.Shared.Rent(rowBytes + 1);
@@ -825,6 +865,11 @@ internal sealed class PngReader : IFormatReader
                     else if (natural is null)
                     {
                         unpack(state.Unpacker, scanline, MemoryMarshal.Cast<TPixel, TNatural>(row));
+                    }
+                    else if (state.Unpacker.ScanlineIsNatural)
+                    {
+                        // The scanline already holds natural pixels: convert from it directly.
+                        PixelConvert.Convert<TNatural, TPixel>(MemoryMarshal.Cast<byte, TNatural>(scanline)[..width], row);
                     }
                     else
                     {
@@ -907,29 +952,34 @@ internal sealed class PngReader : IFormatReader
             }
         }
 
-        /// <summary>Reads one filter byte and scanline and reverses the filter.</summary>
+        /// <summary>Reads one filter byte and scanline into <paramref name="line"/> and reverses the filter.</summary>
         /// <returns><see langword="false"/> if the data ended first in lenient mode.</returns>
         private bool ReadScanline(Span<byte> line, ReadOnlySpan<byte> previous, int index)
         {
-            state.Input.CancellationToken.ThrowIfCancellationRequested();
-            int read = inflated.Read(line);
-            string? problem = inflated.Problem;
+            return ReadScanline(line[..1], line[1..], previous, index);
+        }
 
-            if (read < line.Length)
+        /// <summary>Reads the filter byte into <paramref name="filter"/> and the scanline into <paramref name="row"/>, then reverses the filter.</summary>
+        /// <returns><see langword="false"/> if the data ended first in lenient mode.</returns>
+        private bool ReadScanline(Span<byte> filter, Span<byte> row, ReadOnlySpan<byte> previous, int index)
+        {
+            state.Input.CancellationToken.ThrowIfCancellationRequested();
+            int read = inflated.Read(filter);
+            read += read == 1 ? inflated.Read(row) : 0;
+            if (read < 1 + row.Length)
             {
+                string? problem = inflated.Problem;
                 state.Chunks.Recoverable(state.Input.Position, (problem ?? "The image data ends early.") + $" Decoded {index} of the scanlines; the rest are transparent black.");
                 return false;
             }
 
-            Adler = Adler32.Update(Adler, line);
-            byte filter = line[0];
-            if (filter > PngFilter.Paeth)
+            Adler = Adler32.Update(Adler32.Update(Adler, filter), row);
+            if (filter[0] > PngFilter.Paeth)
             {
-                throw state.Input.Corrupt(state.Input.Position, $"Scanline {index} has filter type {filter}; only 0 to 4 exist.");
+                throw state.Input.Corrupt(state.Input.Position, $"Scanline {index} has filter type {filter[0]}; only 0 to 4 exist.");
             }
 
-            Span<byte> row = line[1..];
-            PngFilterSimd.Unfilter(filter, row, previous, _header.FilterStride);
+            PngFilterSimd.Unfilter(filter[0], row, previous, _header.FilterStride);
             return true;
         }
     }

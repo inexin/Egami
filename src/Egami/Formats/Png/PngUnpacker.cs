@@ -76,6 +76,13 @@ internal sealed class PngUnpacker
     /// <summary>Gets the natural pixel type.</summary>
     internal PngNaturalType Natural { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether a reconstructed scanline's bytes are already the natural pixels: 8-bit gray, gray-alpha, RGB
+    /// or RGBA with no transparency key. Such rows need no unpacking.
+    /// </summary>
+    internal bool ScanlineIsNatural => _header.BitDepth == 8 && !_hasKey
+        && _header.ColorType is PngColorType.Gray or PngColorType.GrayAlpha or PngColorType.Rgb or PngColorType.Rgba;
+
     /// <summary>Gets the number of palette indices seen that were outside the palette.</summary>
     internal int BadIndices { get; private set; }
 

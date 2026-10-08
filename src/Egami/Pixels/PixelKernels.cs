@@ -64,12 +64,12 @@ internal static class PixelKernels
 
         if ((typeof(TFrom) == typeof(Rgb8) && typeof(TTo) == typeof(Rgba8)) || (typeof(TFrom) == typeof(Bgr8) && typeof(TTo) == typeof(Bgra8)))
         {
-            return Shuffle(src, dst, 12, 16, [Expand3To4], OpaqueAlpha) / 3;
+            return Expand3To4Bytes(src, dst, Expand3To4, vectorBits) / 3;
         }
 
         if ((typeof(TFrom) == typeof(Rgb8) && typeof(TTo) == typeof(Bgra8)) || (typeof(TFrom) == typeof(Bgr8) && typeof(TTo) == typeof(Rgba8)))
         {
-            return Shuffle(src, dst, 12, 16, [Expand3To4Swap], OpaqueAlpha) / 3;
+            return Expand3To4Bytes(src, dst, Expand3To4Swap, vectorBits) / 3;
         }
 
         if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(Rgb8)) || (typeof(TFrom) == typeof(Bgra8) && typeof(TTo) == typeof(Bgr8)))
@@ -166,6 +166,42 @@ internal static class PixelKernels
         }
 
         return s;
+    }
+
+    /// <summary>
+    /// Expands three-byte pixels to four with opaque alpha, 16 pixels per step: with AVX2, a cross-lane permute puts 12 source bytes in
+    /// each 128-bit lane so one byte shuffle handles 8 pixels; otherwise four unaligned 16-byte loads at 12-byte steps.
+    /// </summary>
+    /// <returns>The number of source bytes converted.</returns>
+    private static int Expand3To4Bytes(ReadOnlySpan<byte> source, Span<byte> destination, Vector128<byte> mask, int vectorBits)
+    {
+        ref byte src = ref MemoryMarshal.GetReference(source);
+        ref byte dst = ref MemoryMarshal.GetReference(destination);
+        int s = 0;
+        int d = 0;
+        if (vectorBits >= 256 && Avx2.IsSupported)
+        {
+            Vector256<int> spread = Vector256.Create(0, 1, 2, 2, 3, 4, 5, 5);
+            Vector256<byte> mask256 = Vector256.Create(mask, mask);
+            Vector256<byte> alpha = Vector256.Create(OpaqueAlpha, OpaqueAlpha);
+            for (; s + 56 <= source.Length && d + 64 <= destination.Length; s += 48, d += 64)
+            {
+                Vector256<byte> a = Avx2.PermuteVar8x32(Vector256.LoadUnsafe(ref src, (nuint)s).AsInt32(), spread).AsByte();
+                Vector256<byte> b = Avx2.PermuteVar8x32(Vector256.LoadUnsafe(ref src, (nuint)(s + 24)).AsInt32(), spread).AsByte();
+                (Avx2.Shuffle(a, mask256) | alpha).StoreUnsafe(ref dst, (nuint)d);
+                (Avx2.Shuffle(b, mask256) | alpha).StoreUnsafe(ref dst, (nuint)(d + 32));
+            }
+        }
+
+        for (; s + 52 <= source.Length && d + 64 <= destination.Length; s += 48, d += 64)
+        {
+            (ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)s), mask) | OpaqueAlpha).StoreUnsafe(ref dst, (nuint)d);
+            (ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)(s + 12)), mask) | OpaqueAlpha).StoreUnsafe(ref dst, (nuint)(d + 16));
+            (ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)(s + 24)), mask) | OpaqueAlpha).StoreUnsafe(ref dst, (nuint)(d + 32));
+            (ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)(s + 36)), mask) | OpaqueAlpha).StoreUnsafe(ref dst, (nuint)(d + 48));
+        }
+
+        return s + Shuffle(source[s..], destination[d..], 12, 16, [mask], OpaqueAlpha);
     }
 
     /// <summary>Swaps red and blue in four-byte pixels.</summary>
