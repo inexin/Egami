@@ -12,5 +12,6 @@ public static class PngFormat
         SignatureLength = 8,
         Matches = PngReader.Matches,
         Reader = PngReader.Instance,
+        Writer = PngWriter.Instance,
     };
 }

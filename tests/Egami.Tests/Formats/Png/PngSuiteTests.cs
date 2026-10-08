@@ -74,6 +74,24 @@ public class PngSuiteTests
         }
     }
 
+    /// <summary>Every valid file, written back with default options and with Reduce, decodes to the same pixels.</summary>
+    [Theory]
+    [MemberData(nameof(ValidFiles))]
+    public void ValidFileRoundTripsThroughTheWriter(string name)
+    {
+        using Raster original = Raster.Load(Path.Combine(Images, name), options: Strict);
+        using Raster<Rgba16> expected = original.As<Rgba16>();
+        foreach (Egami.Formats.Png.PngWriterOptions options in new[] { new Egami.Formats.Png.PngWriterOptions(), new Egami.Formats.Png.PngWriterOptions { Reduce = true } })
+        {
+            byte[] file = PngWriterTests.Save(original, options);
+            using Raster<Rgba16> actual = Raster.Load<Rgba16>(file, options: Strict);
+            for (int y = 0; y < expected.Height; y++)
+            {
+                Assert.Equal(expected.Row(y).ToArray(), actual.Row(y).ToArray());
+            }
+        }
+    }
+
     [Theory]
     [MemberData(nameof(BrokenFiles))]
     public void BrokenFileFailsInStrictMode(string name)
