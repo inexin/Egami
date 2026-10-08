@@ -165,6 +165,7 @@ internal sealed class PngWriter : IFormatWriter
         try
         {
             previous.AsSpan(0, rowBytes).Clear();
+            Span<byte> filterByte = stackalloc byte[1];
             using IdatChunkStream idat = new(output, options.MaxIdatSize);
             using (ZLibStream zlib = new(idat, new ZLibCompressionOptions { CompressionLevel = options.CompressionLevel, CompressionStrategy = strategy }, leaveOpen: true))
             {
@@ -201,7 +202,9 @@ internal sealed class PngWriter : IFormatWriter
                         chosen = destination;
                     }
 
-                    zlib.WriteByte(filter);
+                    // Stream.WriteByte allocates a one-byte array on every call, so the filter byte goes through a span.
+                    filterByte[0] = filter;
+                    zlib.Write(filterByte);
                     zlib.Write(chosen);
                     (current, previous) = (previous, current);
                 }
@@ -571,7 +574,7 @@ internal sealed class PngWriter : IFormatWriter
                     Convert<Gray8, byte>(row).CopyTo(scanline);
                     break;
                 case (PngColorType.Gray, int depth):
-                    PackLow(Convert<Gray8, byte>(row), scanline, depth, v => (v * ((1 << depth) - 1) + 127) / 255);
+                    PackLow(Convert<Gray8, byte>(row), scanline, depth);
                     break;
                 case (PngColorType.GrayAlpha, 8):
                     Convert<GrayAlpha8, byte>(row).CopyTo(scanline);
@@ -639,13 +642,15 @@ internal sealed class PngWriter : IFormatWriter
             }
         }
 
-        private static void PackLow(ReadOnlySpan<byte> samples, Span<byte> scanline, int depth, Func<int, int> quantize)
+        /// <summary>Packs 8-bit gray samples at 1, 2 or 4 bits, rounding each to the nearest value the depth holds.</summary>
+        private static void PackLow(ReadOnlySpan<byte> samples, Span<byte> scanline, int depth)
         {
+            int max = (1 << depth) - 1;
             scanline.Clear();
             for (int x = 0; x < samples.Length; x++)
             {
                 int bit = x * depth;
-                scanline[bit >> 3] |= (byte)(quantize(samples[x]) << (8 - depth - (bit & 7)));
+                scanline[bit >> 3] |= (byte)((((samples[x] * max) + 127) / 255) << (8 - depth - (bit & 7)));
             }
         }
 

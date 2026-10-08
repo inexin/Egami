@@ -112,14 +112,14 @@ internal sealed class PngChunkReader(EgamiInput input, bool strict, IList<string
     {
         byte[] data = new byte[length];
         input.ReadExactly(data);
-        uint crc = Crc32.Update(Crc32.Update(0, TypeBytes(type)), data);
+        uint crc = Crc32.Update(CrcOfType(type), data);
         return CheckCrc(type, crc, PngChunkType.IsCritical(type)) ? data : null;
     }
 
     /// <summary>Skips a chunk's data, still checking its CRC.</summary>
     internal void Skip(uint type, uint length)
     {
-        uint crc = Crc32.Update(0, TypeBytes(type));
+        uint crc = CrcOfType(type);
         Span<byte> buffer = stackalloc byte[4096];
         while (length > 0)
         {
@@ -164,10 +164,11 @@ internal sealed class PngChunkReader(EgamiInput input, bool strict, IList<string
         warnings.Add(problem);
     }
 
-    private static byte[] TypeBytes(uint type)
+    /// <summary>Returns the CRC of a chunk's four type bytes, where every chunk CRC starts.</summary>
+    private static uint CrcOfType(uint type)
     {
-        byte[] bytes = new byte[4];
+        Span<byte> bytes = stackalloc byte[4];
         BinaryPrimitives.WriteUInt32BigEndian(bytes, type);
-        return bytes;
+        return Crc32.Update(0, bytes);
     }
 }
