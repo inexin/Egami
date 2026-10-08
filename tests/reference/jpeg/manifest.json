@@ -1,0 +1,486 @@
+{
+ "tools": "libjpeg-turbo version 3.0.3 (build 20240509); Pillow 10.3.0; alpine:3.20",
+ "files": [
+  {
+   "file": "duck-420.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-420.rgb8.gz",
+   "scaled": {
+    "2": "duck-420.s2.rgb8.gz",
+    "4": "duck-420.s4.rgb8.gz",
+    "8": "duck-420.s8.rgb8.gz"
+   },
+   "fast": "duck-420.fast.rgb8.gz"
+  },
+  {
+   "file": "duck-422.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x1,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-422.rgb8.gz",
+   "fast": "duck-422.fast.rgb8.gz"
+  },
+  {
+   "file": "duck-444.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "1x1,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-444.rgb8.gz",
+   "scaled": {
+    "2": "duck-444.s2.rgb8.gz",
+    "4": "duck-444.s4.rgb8.gz",
+    "8": "duck-444.s8.rgb8.gz"
+   }
+  },
+  {
+   "file": "duck-440.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "1x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-440.rgb8.gz",
+   "fast": "duck-440.fast.rgb8.gz"
+  },
+  {
+   "file": "duck-411.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "4x1,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-411.rgb8.gz",
+   "fast": "duck-411.rgb8.gz"
+  },
+  {
+   "file": "duck-gray.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 1,
+   "sampling": "1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "Gray",
+   "reference": "duck-gray.gray8.gz",
+   "scaled": {
+    "2": "duck-gray.s2.gray8.gz",
+    "4": "duck-gray.s4.gray8.gz",
+    "8": "duck-gray.s8.gray8.gz"
+   }
+  },
+  {
+   "file": "duck-progressive.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-420.rgb8.gz",
+   "scaled": {
+    "2": "duck-420.s2.rgb8.gz",
+    "4": "duck-420.s4.rgb8.gz",
+    "8": "duck-420.s8.rgb8.gz"
+   }
+  },
+  {
+   "file": "duck-progressive-444.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "1x1,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-444.rgb8.gz"
+  },
+  {
+   "file": "duck-progressive-gray.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 1,
+   "sampling": "1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "Gray",
+   "reference": "duck-gray.gray8.gz"
+  },
+  {
+   "file": "duck-restart-rows.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-420.rgb8.gz"
+  },
+  {
+   "file": "duck-restart-blocks.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-420.rgb8.gz"
+  },
+  {
+   "file": "duck-progressive-restart.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-420.rgb8.gz"
+  },
+  {
+   "file": "duck-optimized.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-420.rgb8.gz"
+  },
+  {
+   "file": "duck-q50.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-q50.rgb8.gz"
+  },
+  {
+   "file": "duck-q100.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "1x1,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "duck-q100.rgb8.gz"
+  },
+  {
+   "file": "egret-420.jpg",
+   "width": 240,
+   "height": 320,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "egret-420.rgb8.gz",
+   "scaled": {
+    "2": "egret-420.s2.rgb8.gz",
+    "4": "egret-420.s4.rgb8.gz",
+    "8": "egret-420.s8.rgb8.gz"
+   }
+  },
+  {
+   "file": "odd-1x1.jpg",
+   "width": 1,
+   "height": 1,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-1x1.rgb8.gz"
+  },
+  {
+   "file": "odd-1x1-progressive.jpg",
+   "width": 1,
+   "height": 1,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-1x1.rgb8.gz"
+  },
+  {
+   "file": "odd-17x9.jpg",
+   "width": 17,
+   "height": 9,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-17x9.rgb8.gz"
+  },
+  {
+   "file": "odd-17x9-progressive.jpg",
+   "width": 17,
+   "height": 9,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-17x9.rgb8.gz"
+  },
+  {
+   "file": "odd-33x1.jpg",
+   "width": 33,
+   "height": 1,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-33x1.rgb8.gz"
+  },
+  {
+   "file": "odd-33x1-progressive.jpg",
+   "width": 33,
+   "height": 1,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-33x1.rgb8.gz"
+  },
+  {
+   "file": "odd-1x33.jpg",
+   "width": 1,
+   "height": 33,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-1x33.rgb8.gz"
+  },
+  {
+   "file": "odd-1x33-progressive.jpg",
+   "width": 1,
+   "height": 33,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-1x33.rgb8.gz"
+  },
+  {
+   "file": "odd-31x17.jpg",
+   "width": 31,
+   "height": 17,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-31x17.rgb8.gz"
+  },
+  {
+   "file": "odd-31x17-progressive.jpg",
+   "width": 31,
+   "height": 17,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": true,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "odd-31x17.rgb8.gz"
+  },
+  {
+   "file": "duck-cmyk.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "1x1,1x1,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "Cmyk",
+   "reference": "duck-cmyk.rgb8.gz",
+   "note": "Decoded by Pillow, converted with R = (255 - C)(255 - K) / 255"
+  },
+  {
+   "file": "exif-orientation-1.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-1.jpg.exif.json"
+  },
+  {
+   "file": "exif-orientation-2.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 2,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-2.jpg.exif.json",
+   "upright": "orient-2.rgb8.gz"
+  },
+  {
+   "file": "exif-orientation-3.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 3,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-3.jpg.exif.json",
+   "upright": "orient-3.rgb8.gz"
+  },
+  {
+   "file": "exif-orientation-4.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 4,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-4.jpg.exif.json",
+   "upright": "orient-4.rgb8.gz"
+  },
+  {
+   "file": "exif-orientation-5.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 5,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-5.jpg.exif.json",
+   "upright": "orient-5.rgb8.gz"
+  },
+  {
+   "file": "exif-orientation-6.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 6,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-6.jpg.exif.json",
+   "upright": "orient-6.rgb8.gz"
+  },
+  {
+   "file": "exif-orientation-7.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 7,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-7.jpg.exif.json",
+   "upright": "orient-7.rgb8.gz"
+  },
+  {
+   "file": "exif-orientation-8.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 8,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-orientation-8.jpg.exif.json",
+   "upright": "orient-8.rgb8.gz"
+  },
+  {
+   "file": "exif-tags.jpg",
+   "width": 320,
+   "height": 240,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "exif-orientation-1.rgb8.gz",
+   "exif": "exif-tags.jpg.exif.json"
+  },
+  {
+   "file": "testorig.jpg",
+   "width": 227,
+   "height": 149,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "testorig.rgb8.gz",
+   "scaled": {
+    "2": "testorig.s2.rgb8.gz",
+    "4": "testorig.s4.rgb8.gz",
+    "8": "testorig.s8.rgb8.gz"
+   },
+   "note": "libjpeg-turbo test image"
+  },
+  {
+   "file": "testimgint.jpg",
+   "width": 227,
+   "height": 149,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "testimgint.rgb8.gz",
+   "note": "libjpeg-turbo test image"
+  },
+  {
+   "file": "testimgari.jpg",
+   "unsupported": "Arithmetic",
+   "note": "libjpeg-turbo test image"
+  },
+  {
+   "file": "testorig12.jpg",
+   "unsupported": "12-bit",
+   "note": "libjpeg-turbo test image"
+  }
+ ]
+}

@@ -23,3 +23,16 @@ ops/shapes.png, ops/zone.png
 ../reference/ops/
   ImageMagick outputs for the operation tests, made by tools/make-op-references.py from the images above. Same licenses as
   their inputs.
+
+jpeg/duck-*.jpg, jpeg/egret-*.jpg, jpeg/odd-*.jpg, jpeg/exif-*.jpg
+  Made by tools/make-jpeg-references.py from ops/duck.png and ops/egret.png above (libjpeg-turbo's cjpeg, or Pillow for the
+  CMYK and EXIF files). Public domain, as their sources.
+
+jpeg/testorig.jpg, jpeg/testimgint.jpg, jpeg/testimgari.jpg, jpeg/testorig12.jpg
+  Test images from libjpeg-turbo 3.1.4 (https://github.com/libjpeg-turbo/libjpeg-turbo/tree/3.1.4/testimages), copyright the
+  Independent JPEG Group, under the IJG license; its text is in jpeg/README.ijg, included unaltered as that license asks.
+  These files are test data only: Egami contains no IJG code.
+
+../reference/jpeg/
+  Decodes of the files above by libjpeg-turbo's djpeg (and jpegtran for the upright orientation references), Pillow's reading of
+  the EXIF blocks, and manifest.json, made by tools/make-jpeg-references.py. Same licenses as the files they come from.
