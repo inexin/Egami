@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Egami.Pixels;
@@ -26,6 +27,15 @@ internal sealed class PngUnpacker
     private readonly ushort _keyG;
     private readonly ushort _keyB;
 
+    /// <summary>Gets the palette as 256 RGB entries, out-of-range indices black, or null for non-palette images.</summary>
+    private readonly Rgb8[]? _paletteRgb;
+
+    /// <summary>The palette as 256 RGBA entries, out-of-range indices opaque black, or null for non-palette images.</summary>
+    private readonly Rgba8[]? _paletteRgba;
+
+    /// <summary>Scratch space for palette indices expanded from 1, 2 and 4-bit rows.</summary>
+    private byte[] _indices = [];
+
     /// <param name="header">The image header.</param>
     /// <param name="palette">The palette with tRNS alpha applied, or empty.</param>
     /// <param name="transparency">The raw tRNS data for gray or RGB images, or empty.</param>
@@ -47,6 +57,17 @@ internal sealed class PngUnpacker
         }
 
         Natural = NaturalType(header, hasTransparency: _hasKey || (palette.Length > 0 && Array.Exists(palette, p => p.A != 255)));
+        if (header.ColorType == PngColorType.Palette)
+        {
+            _paletteRgba = new Rgba8[256];
+            _paletteRgb = new Rgb8[256];
+            for (int i = 0; i < 256; i++)
+            {
+                Rgba8 c = i < palette.Length ? palette[i] : Rgba8.Black;
+                _paletteRgba[i] = c;
+                _paletteRgb[i] = new Rgb8(c.R, c.G, c.B);
+            }
+        }
     }
 
     /// <summary>Gets the natural pixel type.</summary>
@@ -105,11 +126,7 @@ internal sealed class PngUnpacker
             return;
         }
 
-        int scale = 255 / ((1 << depth) - 1);
-        for (int x = 0; x < destination.Length; x++)
-        {
-            destination[x] = new Gray8((byte)(Sample(scanline, x, depth) * scale));
-        }
+        Expand(scanline, MemoryMarshal.AsBytes(destination), depth, scaled: true);
     }
 
     internal void Unpack(ReadOnlySpan<byte> scanline, Span<GrayAlpha8> destination)
@@ -132,10 +149,7 @@ internal sealed class PngUnpacker
 
     internal static void Unpack(ReadOnlySpan<byte> scanline, Span<Gray16> destination)
     {
-        for (int x = 0; x < destination.Length; x++)
-        {
-            destination[x] = new Gray16(BinaryPrimitives.ReadUInt16BigEndian(scanline[(x * 2)..]));
-        }
+        BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<byte, ushort>(scanline[..(destination.Length * 2)]), MemoryMarshal.Cast<Gray16, ushort>(destination));
     }
 
     internal void Unpack(ReadOnlySpan<byte> scanline, Span<Rgb8> destination)
@@ -146,10 +160,11 @@ internal sealed class PngUnpacker
             return;
         }
 
-        for (int x = 0; x < destination.Length; x++)
+        ReadOnlySpan<byte> indices = Indices(scanline, destination.Length);
+        Rgb8[] palette = _paletteRgb!;
+        for (int x = 0; x < indices.Length; x++)
         {
-            Rgba8 c = PaletteEntry(Sample(scanline, x, _header.BitDepth));
-            destination[x] = new Rgb8(c.R, c.G, c.B);
+            destination[x] = palette[indices[x]];
         }
     }
 
@@ -172,9 +187,11 @@ internal sealed class PngUnpacker
 
                 break;
             default:
-                for (int x = 0; x < destination.Length; x++)
+                ReadOnlySpan<byte> indices = Indices(scanline, destination.Length);
+                Rgba8[] palette = _paletteRgba!;
+                for (int x = 0; x < indices.Length; x++)
                 {
-                    destination[x] = PaletteEntry(Sample(scanline, x, _header.BitDepth));
+                    destination[x] = palette[indices[x]];
                 }
 
                 break;
@@ -186,16 +203,7 @@ internal sealed class PngUnpacker
         switch (_header.ColorType)
         {
             case PngColorType.Rgba:
-                for (int x = 0; x < destination.Length; x++)
-                {
-                    ReadOnlySpan<byte> p = scanline[(x * 8)..];
-                    destination[x] = new Rgba16(
-                        BinaryPrimitives.ReadUInt16BigEndian(p),
-                        BinaryPrimitives.ReadUInt16BigEndian(p[2..]),
-                        BinaryPrimitives.ReadUInt16BigEndian(p[4..]),
-                        BinaryPrimitives.ReadUInt16BigEndian(p[6..]));
-                }
-
+                BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<byte, ushort>(scanline[..(destination.Length * 8)]), MemoryMarshal.Cast<Rgba16, ushort>(destination));
                 break;
             case PngColorType.Rgb:
                 for (int x = 0; x < destination.Length; x++)
@@ -243,14 +251,112 @@ internal sealed class PngUnpacker
         return (scanline[bit >> 3] >> shift) & ((1 << depth) - 1);
     }
 
-    private Rgba8 PaletteEntry(int index)
+    /// <summary>Returns the palette indices of a row, expanded to one byte each, and counts any outside the palette.</summary>
+    private ReadOnlySpan<byte> Indices(ReadOnlySpan<byte> scanline, int width)
     {
-        if ((uint)index < (uint)_palette.Length)
+        ReadOnlySpan<byte> indices;
+        if (_header.BitDepth == 8)
         {
-            return _palette[index];
+            indices = scanline[..width];
+        }
+        else
+        {
+            if (_indices.Length < width)
+            {
+                _indices = new byte[width];
+            }
+
+            Expand(scanline, _indices.AsSpan(0, width), _header.BitDepth, scaled: false);
+            indices = _indices.AsSpan(0, width);
         }
 
-        BadIndices++;
-        return Rgba8.Black;
+        // Indices outside the palette decode as black and are reported.
+        if (_palette.Length < 1 << _header.BitDepth && indices.IndexOfAnyExceptInRange((byte)0, (byte)(_palette.Length - 1)) >= 0)
+        {
+            BadIndices += indices.Length - CountInRange(indices, _palette.Length);
+        }
+
+        return indices;
+    }
+
+    private static int CountInRange(ReadOnlySpan<byte> indices, int length)
+    {
+        int count = 0;
+        foreach (byte index in indices)
+        {
+            if (index < length)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Expands samples packed at 1, 2 or 4 bits into one byte each, a whole source byte at a time through a lookup table.
+    /// With <paramref name="scaled"/>, values are scaled to 0..255 (× 255, 85 or 17); otherwise they are raw indices.
+    /// </summary>
+    private static void Expand(ReadOnlySpan<byte> scanline, Span<byte> destination, int depth, bool scaled)
+    {
+        int perByte = 8 / depth;
+        ulong[] table = ExpandTables.Get(depth, scaled);
+        int full = destination.Length / perByte;
+        ref byte d = ref MemoryMarshal.GetReference(destination);
+        for (int i = 0; i < full; i++)
+        {
+            ulong expanded = table[scanline[i]];
+            switch (perByte)
+            {
+                case 8:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, i * 8), expanded);
+                    break;
+                case 4:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, i * 4), (uint)expanded);
+                    break;
+                default:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref d, i * 2), (ushort)expanded);
+                    break;
+            }
+        }
+
+        int scale = scaled ? 255 / ((1 << depth) - 1) : 1;
+        for (int x = full * perByte; x < destination.Length; x++)
+        {
+            destination[x] = (byte)(Sample(scanline, x, depth) * scale);
+        }
+    }
+
+    /// <summary>For each depth, 256 entries giving the samples of one packed byte as consecutive bytes, first sample lowest.</summary>
+    private static class ExpandTables
+    {
+        private static readonly ulong[][] Raw = [Build(1, false), Build(2, false), Build(4, false)];
+        private static readonly ulong[][] Scaled = [Build(1, true), Build(2, true), Build(4, true)];
+
+        internal static ulong[] Get(int depth, bool scaled)
+        {
+            int index = depth == 1 ? 0 : depth == 2 ? 1 : 2;
+            return scaled ? Scaled[index] : Raw[index];
+        }
+
+        private static ulong[] Build(int depth, bool scaled)
+        {
+            int perByte = 8 / depth;
+            int max = (1 << depth) - 1;
+            ulong[] table = new ulong[256];
+            for (int b = 0; b < 256; b++)
+            {
+                ulong value = 0;
+                for (int k = 0; k < perByte; k++)
+                {
+                    int sample = (b >> (8 - depth - (k * depth))) & max;
+                    value |= (ulong)(scaled ? sample * (255 / max) : sample) << (8 * k);
+                }
+
+                table[b] = value;
+            }
+
+            return table;
+        }
     }
 }
