@@ -939,7 +939,7 @@ internal sealed class PngReader : IFormatReader
             }
 
             Span<byte> row = line[1..];
-            PngFilter.Unfilter(filter, row, previous, _header.FilterStride);
+            PngFilterSimd.Unfilter(filter, row, previous, _header.FilterStride);
             return true;
         }
     }
