@@ -80,7 +80,7 @@ internal sealed class PngReader : IFormatReader
         RasterMetadata metadata = new() { FormatName = PngFormat.Info.Name };
         PngChunkReader chunks = new(input, options.Recovery == RecoveryMode.Strict, metadata.Warnings);
         PngHeader header = ReadHeader(chunks);
-        PngMetadata png = new() { ColorType = header.ColorType, BitDepth = header.BitDepth, Interlaced = header.Interlaced };
+        PngDetails png = new() { ColorType = header.ColorType, BitDepth = header.BitDepth, Interlaced = header.Interlaced };
         State state = new(input, options, chunks, header, metadata, png);
 
         while (true)
@@ -263,7 +263,7 @@ internal sealed class PngReader : IFormatReader
     private static void ReadMetadataChunk(State state, uint type, byte[] data)
     {
         RasterMetadata metadata = state.Metadata;
-        PngMetadata png = state.Png;
+        PngDetails png = state.Png;
         switch (type)
         {
             case PngChunkType.Gama:
@@ -704,7 +704,7 @@ internal sealed class PngReader : IFormatReader
     private static void CopyMetadata(State state, RasterMetadata target)
     {
         RasterMetadata source = state.Metadata;
-        PngMetadata png = state.Png;
+        PngDetails png = state.Png;
         target.FormatName = PngFormat.Info.Name;
         target.FormatDetails = png;
         target.Resolution = source.Resolution;
@@ -746,7 +746,7 @@ internal sealed class PngReader : IFormatReader
     }
 
     /// <summary>Everything the reader learns while going through the file.</summary>
-    private sealed class State(EgamiInput input, ReaderOptions options, PngChunkReader chunks, PngHeader header, RasterMetadata metadata, PngMetadata png)
+    private sealed class State(EgamiInput input, ReaderOptions options, PngChunkReader chunks, PngHeader header, RasterMetadata metadata, PngDetails png)
     {
         public EgamiInput Input { get; } = input;
 
@@ -758,7 +758,7 @@ internal sealed class PngReader : IFormatReader
 
         public RasterMetadata Metadata { get; } = metadata;
 
-        public PngMetadata Png { get; } = png;
+        public PngDetails Png { get; } = png;
 
         public HashSet<uint> Seen { get; } = [];
 

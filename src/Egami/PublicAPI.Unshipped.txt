@@ -101,32 +101,32 @@ Egami.Formats.Png.PngFilterMode.Paeth = 5 -> Egami.Formats.Png.PngFilterMode
 Egami.Formats.Png.PngFilterMode.Sub = 2 -> Egami.Formats.Png.PngFilterMode
 Egami.Formats.Png.PngFilterMode.Up = 3 -> Egami.Formats.Png.PngFilterMode
 Egami.Formats.Png.PngFormat
-Egami.Formats.Png.PngMetadata
-Egami.Formats.Png.PngMetadata.BitDepth.get -> int
-Egami.Formats.Png.PngMetadata.BitDepth.set -> void
-Egami.Formats.Png.PngMetadata.Chromaticities.get -> System.ReadOnlyMemory<byte>
-Egami.Formats.Png.PngMetadata.Chromaticities.set -> void
-Egami.Formats.Png.PngMetadata.CodingIndependentCodePoints.get -> System.ReadOnlyMemory<byte>
-Egami.Formats.Png.PngMetadata.CodingIndependentCodePoints.set -> void
-Egami.Formats.Png.PngMetadata.ColorType.get -> Egami.Formats.Png.PngColorType
-Egami.Formats.Png.PngMetadata.ColorType.set -> void
-Egami.Formats.Png.PngMetadata.Gamma.get -> uint?
-Egami.Formats.Png.PngMetadata.Gamma.set -> void
-Egami.Formats.Png.PngMetadata.IccProfileName.get -> string?
-Egami.Formats.Png.PngMetadata.IccProfileName.set -> void
-Egami.Formats.Png.PngMetadata.Interlaced.get -> bool
-Egami.Formats.Png.PngMetadata.Interlaced.set -> void
-Egami.Formats.Png.PngMetadata.OtherChunks.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngChunk!>!
-Egami.Formats.Png.PngMetadata.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgba8>
-Egami.Formats.Png.PngMetadata.Palette.set -> void
-Egami.Formats.Png.PngMetadata.PngMetadata() -> void
-Egami.Formats.Png.PngMetadata.ResolutionHasUnit.get -> bool?
-Egami.Formats.Png.PngMetadata.ResolutionHasUnit.set -> void
-Egami.Formats.Png.PngMetadata.SrgbRenderingIntent.get -> byte?
-Egami.Formats.Png.PngMetadata.SrgbRenderingIntent.set -> void
-Egami.Formats.Png.PngMetadata.TextSources.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngTextSource!>!
-Egami.Formats.Png.PngMetadata.Transparency.get -> System.ReadOnlyMemory<byte>
-Egami.Formats.Png.PngMetadata.Transparency.set -> void
+Egami.Formats.Png.PngDetails
+Egami.Formats.Png.PngDetails.BitDepth.get -> int
+Egami.Formats.Png.PngDetails.BitDepth.set -> void
+Egami.Formats.Png.PngDetails.Chromaticities.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngDetails.Chromaticities.set -> void
+Egami.Formats.Png.PngDetails.CodingIndependentCodePoints.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngDetails.CodingIndependentCodePoints.set -> void
+Egami.Formats.Png.PngDetails.ColorType.get -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngDetails.ColorType.set -> void
+Egami.Formats.Png.PngDetails.Gamma.get -> uint?
+Egami.Formats.Png.PngDetails.Gamma.set -> void
+Egami.Formats.Png.PngDetails.IccProfileName.get -> string?
+Egami.Formats.Png.PngDetails.IccProfileName.set -> void
+Egami.Formats.Png.PngDetails.Interlaced.get -> bool
+Egami.Formats.Png.PngDetails.Interlaced.set -> void
+Egami.Formats.Png.PngDetails.OtherChunks.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngChunk!>!
+Egami.Formats.Png.PngDetails.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgba8>
+Egami.Formats.Png.PngDetails.Palette.set -> void
+Egami.Formats.Png.PngDetails.PngDetails() -> void
+Egami.Formats.Png.PngDetails.ResolutionHasUnit.get -> bool?
+Egami.Formats.Png.PngDetails.ResolutionHasUnit.set -> void
+Egami.Formats.Png.PngDetails.SrgbRenderingIntent.get -> byte?
+Egami.Formats.Png.PngDetails.SrgbRenderingIntent.set -> void
+Egami.Formats.Png.PngDetails.TextSources.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngTextSource!>!
+Egami.Formats.Png.PngDetails.Transparency.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngDetails.Transparency.set -> void
 Egami.Formats.Png.PngTextSource
 Egami.Formats.Png.PngTextSource.<Clone>$() -> Egami.Formats.Png.PngTextSource!
 Egami.Formats.Png.PngTextSource.ChunkType.get -> string!
@@ -474,7 +474,7 @@ override Egami.Formats.FormatInfo.ToString() -> string!
 override Egami.Formats.Png.PngChunk.Equals(object? obj) -> bool
 override Egami.Formats.Png.PngChunk.GetHashCode() -> int
 override Egami.Formats.Png.PngChunk.ToString() -> string!
-override Egami.Formats.Png.PngMetadata.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Png.PngDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Png.PngTextSource.Equals(object? obj) -> bool
 override Egami.Formats.Png.PngTextSource.GetHashCode() -> int
 override Egami.Formats.Png.PngTextSource.ToString() -> string!

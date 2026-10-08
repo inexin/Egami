@@ -28,7 +28,7 @@ internal sealed class PngWriter : IFormatWriter
         Plan plan = PlanOutput(raster, png);
         PngHeader header = new(raster.Width, raster.Height, plan.BitDepth, plan.ColorType, Interlaced: false);
         bool strip = png.StripMetadata;
-        PngMetadata? original = raster.Metadata.FormatDetails as PngMetadata;
+        PngDetails? original = raster.Metadata.FormatDetails as PngDetails;
         bool sameFormat = original is not null && original.ColorType == plan.ColorType && original.BitDepth == plan.BitDepth
             && (plan.ColorType != PngColorType.Palette || original.Palette.Span.SequenceEqual(plan.Palette));
 
@@ -130,7 +130,7 @@ internal sealed class PngWriter : IFormatWriter
     /// <summary>Returns the palette the raster was read with, if it was a palette PNG.</summary>
     private static Rgba8[]? OriginalPalette(Raster raster)
     {
-        return raster.Metadata.FormatDetails is PngMetadata { ColorType: PngColorType.Palette } png && !png.Palette.IsEmpty ? png.Palette.ToArray() : null;
+        return raster.Metadata.FormatDetails is PngDetails { ColorType: PngColorType.Palette } png && !png.Palette.IsEmpty ? png.Palette.ToArray() : null;
     }
 
     private static void Validate(PngColorType colorType, int bitDepth)
@@ -222,7 +222,7 @@ internal sealed class PngWriter : IFormatWriter
     }
 
     /// <summary>Writes cICP, then iCCP or sRGB, then gAMA and cHRM (section 5.6 orders them before PLTE).</summary>
-    private static void WriteColorChunks(Stream output, RasterMetadata metadata, PngMetadata? original)
+    private static void WriteColorChunks(Stream output, RasterMetadata metadata, PngDetails? original)
     {
         if (original is not null && original.CodingIndependentCodePoints.Length == 4)
         {
@@ -267,7 +267,7 @@ internal sealed class PngWriter : IFormatWriter
     }
 
     /// <summary>Writes pHYs, eXIf and the text chunks.</summary>
-    private static void WriteMetadataChunks(Stream output, RasterMetadata metadata, PngMetadata? original)
+    private static void WriteMetadataChunks(Stream output, RasterMetadata metadata, PngDetails? original)
     {
         if (metadata.Resolution is Resolution resolution)
         {
@@ -327,7 +327,7 @@ internal sealed class PngWriter : IFormatWriter
     /// Writes kept chunks from one position group. Safe-to-copy chunks are always written; the others only when the color type,
     /// bit depth and palette are unchanged, as the specification's copy rules require (section 14.2).
     /// </summary>
-    private static void WriteKeptChunks(Stream output, PngMetadata? original, PngChunkPosition position, bool sameFormat)
+    private static void WriteKeptChunks(Stream output, PngDetails? original, PngChunkPosition position, bool sameFormat)
     {
         if (original is null)
         {

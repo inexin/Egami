@@ -7,7 +7,100 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET that loa
 - **Safe on untrusted files**: size limits are checked before allocating, and readers are fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
-> **Status:** early development. Nothing is published to NuGet yet. The first milestone is the core types plus a PNG reader and writer.
+> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer.
+
+## Quick start
+
+```csharp
+using Egami;
+using Egami.Pixels;
+
+// Load in the pixel type that best fits the file (for example Rgb8 or Gray16)...
+using Raster image = Raster.Load("photo.png");
+Console.WriteLine($"{image.Width} × {image.Height}, {image.Layout.ChannelOrder}");
+
+// ...or decode straight into the type you want.
+using Raster<Rgba8> rgba = Raster.Load<Rgba8>("photo.png");
+
+// Pixels are accessed a row at a time.
+for (int y = 0; y < rgba.Height; y++)
+{
+    Span<Rgba8> row = rgba.Row(y);
+    for (int x = 0; x < row.Length; x++)
+    {
+        row[x].A = 255;
+    }
+}
+
+// The format is chosen from the extension.
+rgba.Save("opaque.png");
+```
+
+Every raster owns its pixel memory, so dispose it when you are done. Methods that return a new raster say so in their name
+(`Copy`, `As<TPixel>`); everything else works in place.
+
+### Reading a header only
+
+`Raster.Probe` reads the size, pixel layout and an estimate of the memory a full load needs, without decoding pixels, so a
+server can reject an image before loading it.
+
+```csharp
+RasterInfo info = Raster.Probe(stream);
+bool tooLarge = info.EstimatedBytes > 100_000_000;
+```
+
+### Limits for untrusted files
+
+`EgamiContext` holds every setting that is not specific to one call. It is immutable; change it with `with`.
+
+```csharp
+EgamiContext context = EgamiContext.Default with
+{
+    Limits = SafetyLimits.Default with { MaxPixels = 50_000_000 },
+    MaxParallelism = 4,
+};
+
+using Raster image = await Raster.LoadAsync(upload, context, cancellationToken: token);
+```
+
+A breached limit throws `LimitExceededException` before any pixel memory is allocated. Damaged data throws
+`CorruptDataException` with the byte offset, and an unknown format throws `UnsupportedFormatException`; all three derive from
+`EgamiException`. By default a reader recovers what it can from a truncated file and lists the problem in
+`image.Metadata.Warnings`; pass `new ReaderOptions { Recovery = RecoveryMode.Strict }` to fail instead.
+
+### Writing PNG
+
+```csharp
+using Egami.Formats.Png;
+
+image.Save(stream, PngFormat.Info, new PngWriterOptions
+{
+    Reduce = true,            // smallest exact form: drops alpha, uses gray or a palette when nothing is lost
+    CompressionLevel = 9,     // 0 (fastest) to 9 (smallest); 5 by default
+});
+```
+
+### Pixel types
+
+| Type | Channels | Typical use |
+| --- | --- | --- |
+| `Rgba8`, `Bgra8` | 8-bit color with alpha | Default working type, interop with Windows and GPU buffers |
+| `Rgb8`, `Bgr8` | 8-bit color | Photos without alpha |
+| `Gray8`, `Gray16`, `GrayAlpha8` | Gray | Grayscale images |
+| `Rgba16` | 16-bit color with alpha | 16-bit PNG |
+| `RgbaF32` | 32-bit float color with alpha | High-precision processing |
+
+Convert between them with `raster.As<TPixel>()` for a whole raster, or `PixelConvert.Convert` for a span. Pixel values are
+sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linear light.
+
+### Formats
+
+| Format | Read | Write |
+| --- | --- | --- |
+| PNG | All color types and bit depths, interlaced, transparency, metadata | All color types and bit depths, adaptive filtering |
+
+Custom formats plug in through `FormatInfo`, `IFormatReader` and `IFormatWriter`, registered with
+`EgamiContext.Default.WithFormat(...)`.
 
 ## Building
 
@@ -18,12 +111,19 @@ dotnet build Egami.slnx
 dotnet test Egami.slnx
 ```
 
+Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --filter "*"`.
+
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
 | `src/Egami/` | The library, the only shipped project |
-| `tests/Egami.Tests/` | Unit, conformance and round-trip tests (xUnit) |
+| `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
+| `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
+| `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
+| `tests/images/`, `tests/reference/` | PngSuite and its reference decodes, with licenses |
+| `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
+| `tools/` | Scripts that regenerate references and the public API baseline, and the libpng checker used in CI |
 
 ## Contributing
 

@@ -28,7 +28,7 @@ public sealed record PngChunk(string Type, ReadOnlyMemory<byte> Data, PngChunkPo
 public sealed record PngTextSource(string ChunkType, bool Compressed);
 
 /// <summary>Details only PNG has, kept in <see cref="RasterMetadata.FormatDetails"/> so a PNG can be written back as it was.</summary>
-public sealed class PngMetadata : FormatDetails
+public sealed class PngDetails : FormatDetails
 {
     /// <summary>Gets or sets the original color type.</summary>
     public PngColorType ColorType { get; set; }
@@ -72,7 +72,7 @@ public sealed class PngMetadata : FormatDetails
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
-        PngMetadata copy = new()
+        PngDetails copy = new()
         {
             ColorType = ColorType,
             BitDepth = BitDepth,

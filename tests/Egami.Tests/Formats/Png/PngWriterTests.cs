@@ -224,8 +224,8 @@ public class PngWriterTests
         Assert.Equal(a.Resolution, b.Resolution);
         Assert.Equal(a.IccProfile.ToArray(), b.IccProfile.ToArray());
         Assert.Equal(a.Exif.ToArray(), b.Exif.ToArray());
-        PngMetadata pa = (PngMetadata)a.FormatDetails!;
-        PngMetadata pb = (PngMetadata)b.FormatDetails!;
+        PngDetails pa = (PngDetails)a.FormatDetails!;
+        PngDetails pb = (PngDetails)b.FormatDetails!;
         Assert.Equal(pa.Gamma, pb.Gamma);
         Assert.Equal(pa.IccProfileName, pb.IccProfileName);
         Assert.Equal(pa.TextSources, pb.TextSources);

@@ -110,7 +110,7 @@ public class PngReaderTests
 
         using Raster raster = Raster.Load(builder.Build(), options: Strict);
         RasterMetadata metadata = raster.Metadata;
-        PngMetadata png = Assert.IsType<PngMetadata>(metadata.FormatDetails);
+        PngDetails png = Assert.IsType<PngDetails>(metadata.FormatDetails);
 
         Assert.Equal("PNG", metadata.FormatName);
         Assert.Equal(icc, metadata.IccProfile.ToArray());
@@ -328,7 +328,7 @@ public class PngReaderTests
 
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster raster = Raster.Load(file);
-        Assert.Null(((PngMetadata)raster.Metadata.FormatDetails!).Gamma);
+        Assert.Null(((PngDetails)raster.Metadata.FormatDetails!).Gamma);
         Assert.Contains(raster.Metadata.Warnings, w => w.Contains("gAMA", StringComparison.Ordinal));
     }
 
