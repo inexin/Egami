@@ -38,6 +38,9 @@ internal sealed class JpegBitReader : IDisposable
     /// <summary>Gets whether decoding has used padding bits past the end of the real data.</summary>
     internal bool PastEnd => _padding > 0 && _count < _padding;
 
+    /// <summary>Gets whether a bit buffer held outside, with <paramref name="count"/> bits left, has used padding past the data.</summary>
+    internal bool PastEndWith(int count) => _padding > 0 && count < _padding;
+
     /// <summary>Gets whether the data stopped at a restart marker (RST0 to RST7), so it can resume at the next interval.</summary>
     internal bool AtRestartMarker => Marker is >= 0xD0 and <= 0xD7;
 
@@ -232,6 +235,9 @@ internal sealed class JpegBitReader : IDisposable
     {
         while (Marker == 0)
         {
+            // Jump to the next 0xFF in the buffered bytes; only it can start a marker.
+            int next = _chunk.AsSpan(_position, _length - _position).IndexOf((byte)0xFF);
+            _position = next < 0 ? _length : _position + next;
             int b = NextByte();
             if (b < 0)
             {
@@ -322,18 +328,20 @@ internal sealed class JpegBitReader : IDisposable
 /// A Huffman table ready for decoding (T.81 annex C and F.2.2.3): a 9-bit lookahead table that resolves most codes in one step,
 /// and the canonical code ranges per length for the rest.
 /// </summary>
-internal sealed class JpegHuffmanTable
+internal sealed class JpegHuffmanTable : IDisposable
 {
     private const int LookBits = 9;
 
-    private readonly ushort[] _lookup = new ushort[1 << LookBits];
-    private readonly int[] _maxCode = new int[18];
-    private readonly int[] _valueOffset = new int[17];
+    // Pooled: a progressive file often defines new tables for every scan.
+    private readonly ushort[] _lookup = ArrayPool<ushort>.Shared.Rent(1 << LookBits);
+    private readonly int[] _maxCode = ArrayPool<int>.Shared.Rent(18);
+    private readonly int[] _valueOffset = ArrayPool<int>.Shared.Rent(17);
     private readonly byte[] _symbols;
+    private int[]? _fastAc;
 
-    /// <summary>Builds the table; <paramref name="fastAc"/> also builds <see cref="FastAc"/>, which only sequential AC tables use.</summary>
-    internal JpegHuffmanTable(JpegHuffmanSpec spec, bool fastAc = false)
+    internal JpegHuffmanTable(JpegHuffmanSpec spec)
     {
+        Array.Clear(_lookup, 0, 1 << LookBits);
         _symbols = spec.Symbols;
         int code = 0;
         int k = 0;
@@ -365,10 +373,32 @@ internal sealed class JpegHuffmanTable
         }
 
         _maxCode[17] = int.MaxValue;
+    }
 
+    /// <summary>
+    /// Gets the one-step AC lookup by the next 9 bits: the coefficient value in the top 16 bits, the zero run in bits 8 to 11 and
+    /// the bits used in the low byte, or 0 where the code or its value is longer. Built on first use, since DC tables never need it.
+    /// </summary>
+    internal int[] FastAc => _fastAc ??= BuildFastAc();
+
+    public void Dispose()
+    {
+        ArrayPool<ushort>.Shared.Return(_lookup);
+        ArrayPool<int>.Shared.Return(_maxCode);
+        ArrayPool<int>.Shared.Return(_valueOffset);
+        if (_fastAc is not null)
+        {
+            ArrayPool<int>.Shared.Return(_fastAc);
+            _fastAc = null;
+        }
+    }
+
+    private int[] BuildFastAc()
+    {
         // Where a code and its value bits fit in the lookahead together, the AC coefficient is decoded in one step.
-        FastAc = fastAc ? new int[1 << LookBits] : [];
-        for (int index = 0; index < FastAc.Length; index++)
+        int[] fast = ArrayPool<int>.Shared.Rent(1 << LookBits);
+        Array.Clear(fast, 0, 1 << LookBits);
+        for (int index = 0; index < 1 << LookBits; index++)
         {
             int entry = _lookup[index];
             int length = entry >> 8;
@@ -377,16 +407,12 @@ internal sealed class JpegHuffmanTable
             {
                 int raw = (index >> (LookBits - length - size)) & ((1 << size) - 1);
                 int value = raw < (1 << (size - 1)) ? raw - (1 << size) + 1 : raw;
-                FastAc[index] = (value << 16) | ((entry & 0xF0) << 4) | (length + size);
+                fast[index] = (value << 16) | ((entry & 0xF0) << 4) | (length + size);
             }
         }
-    }
 
-    /// <summary>
-    /// Gets the one-step AC lookup by the next 9 bits: the coefficient value in the top 16 bits, the zero run in bits 8 to 11 and
-    /// the bits used in the low byte, or 0 where the code or its value is longer.
-    /// </summary>
-    internal int[] FastAc { get; }
+        return fast;
+    }
 
     /// <summary>Decodes one symbol. Codes longer than 16 bits (only in damaged data) decode as symbol 0.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -47,6 +48,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private byte[] _rowBuffer;
     private byte[] _sampleBuffer;
     private short[] _sums;
+    private readonly List<(JpegHuffmanSpec Spec, JpegHuffmanTable Table)> _tables = [];
     private bool _warned;
 
     /// <summary>Creates a decoder whose output is the image scaled by 1/<paramref name="scale"/> (1, 2, 4 or 8).</summary>
@@ -126,7 +128,15 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             }
 
             input.CancellationToken.ThrowIfCancellationRequested();
-            if (!DecodeBufferedScan(reader, scan) || NextScan(input, reader) is not JpegScan next)
+
+            // At 1/8 scale a block is its DC term alone, so a progressive AC scan of such a component is skipped unread.
+            bool skip = _header.IsProgressive && scan.SpectralStart > 0 && _components[scan.Components[0].ComponentIndex].BlockSize == 1;
+            if (skip)
+            {
+                reader.BeginScan();
+            }
+
+            if ((!skip && !DecodeBufferedScan(reader, scan)) || NextScan(input, reader) is not JpegScan next)
             {
                 break;
             }
@@ -140,6 +150,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             LatchQuant(i);
         }
 
+        Span<short> natural = stackalloc short[64];
+
         for (int my = 0; my < _mcusY; my++)
         {
             input.CancellationToken.ThrowIfCancellationRequested();
@@ -149,9 +161,27 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 for (int v = 0; v < c.V; v++)
                 {
                     int by = (my * c.V) + v;
+                    Span<short> row = c.BlockRow(by);
                     for (int bx = 0; bx < _mcusX * c.H; bx++)
                     {
-                        c.Idct(c.Block(bx, by), strip[(((v * c.StripWidth) + bx) * c.BlockSize)..]);
+                        Span<short> block = row.Slice(bx * 64, 64);
+                        Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
+                        ulong nonzero = NonZero(block);
+                        if (c.BlockSize == 8 && (nonzero & ~1UL) == 0)
+                        {
+                            JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth);
+                            continue;
+                        }
+
+                        // Back to natural order, visiting only the nonzero coefficients.
+                        natural.Clear();
+                        for (; nonzero != 0; nonzero &= nonzero - 1)
+                        {
+                            int z = BitOperations.TrailingZeroCount(nonzero);
+                            natural[JpegTables.ZigZag[z]] = block[z];
+                        }
+
+                        c.Idct(natural, target);
                     }
                 }
             }
@@ -171,6 +201,13 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         {
             c.Dispose();
         }
+
+        foreach ((_, JpegHuffmanTable table) in _tables)
+        {
+            table.Dispose();
+        }
+
+        _tables.Clear();
 
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _rowBuffer, null!));
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _sampleBuffer, null!));
@@ -280,24 +317,31 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     }
 
     /// <summary>The first DC scan of a progressive file (T.81 G.1.2.1): the DC difference, scaled up by the point transform.</summary>
-    private static void DecodeDcFirst(JpegBitReader reader, JpegHuffmanTable dc, ref int predictor, Span<short> block, int al)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void DecodeDcFirst(JpegBitReader reader, ref ulong bits, ref int count, JpegHuffmanTable dc, ref int predictor, Span<short> block, int al)
     {
-        int s = dc.Decode(reader);
-        predictor += reader.ReceiveExtend(s & 15);
+        if (count < 32)
+        {
+            reader.Refill(ref bits, ref count);
+        }
+
+        int s = dc.Decode(ref bits, ref count) & 15;
+        predictor += Receive(ref bits, ref count, s);
         block[0] = (short)(predictor << al);
     }
 
     /// <summary>A DC refinement scan: one more bit of the DC coefficient.</summary>
-    private static void DecodeDcRefine(JpegBitReader reader, Span<short> block, int al)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void DecodeDcRefine(JpegBitReader reader, ref ulong bits, ref int count, Span<short> block, int al)
     {
-        if (reader.Read(1) != 0)
+        if (TakeBit(reader, ref bits, ref count))
         {
             block[0] |= (short)(1 << al);
         }
     }
 
     /// <summary>The first scan of an AC band (T.81 G.1.2.2), with end-of-band runs that span blocks.</summary>
-    private static void DecodeAcFirst(JpegBitReader reader, JpegHuffmanTable ac, ref int eobRun, Span<short> block, int ss, int se, int al)
+    private static void DecodeAcFirst(JpegBitReader reader, ref ulong bits, ref int count, JpegHuffmanTable ac, ref int eobRun, Span<short> block, int ss, int se, int al)
     {
         if (eobRun > 0)
         {
@@ -305,19 +349,40 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             return;
         }
 
-        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
+        ref int fast = ref MemoryMarshal.GetArrayDataReference(ac.FastAc);
         for (int k = ss; k <= se; k++)
         {
-            int rs = ac.Decode(reader);
+            if (count < 32)
+            {
+                reader.Refill(ref bits, ref count);
+            }
+
+            // Most coefficients: the code and value together in the one-step lookup.
+            int entry = Unsafe.Add(ref fast, (nint)(bits >> 55));
+            if (entry != 0)
+            {
+                int used = entry & 0xFF;
+                bits <<= used;
+                count -= used;
+                k += (entry >> 8) & 15;
+                if (k <= se)
+                {
+                    block[k] = (short)((entry >> 16) << al);
+                }
+
+                continue;
+            }
+
+            int rs = ac.Decode(ref bits, ref count);
             int r = rs >> 4;
             int s = rs & 15;
             if (s != 0)
             {
                 k += r;
-                int value = reader.ReceiveExtend(s);
+                int value = Receive(ref bits, ref count, s);
                 if (k <= se)
                 {
-                    block[zigzag[k]] = (short)(value << al);
+                    block[k] = (short)(value << al);
                 }
             }
             else if (r == 15)
@@ -327,12 +392,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             else
             {
                 // EOBn: this block and 2^r + extra bits - 1 more end here.
-                eobRun = (1 << r) - 1;
-                if (r > 0)
-                {
-                    eobRun += reader.Read(r);
-                }
-
+                eobRun = (1 << r) - 1 + Take(ref bits, ref count, r);
                 break;
             }
         }
@@ -340,81 +400,170 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
     /// <summary>
     /// An AC refinement scan (T.81 G.1.2.3): one correction bit for each coefficient already nonzero, and new coefficients of
-    /// magnitude one placed by runs that count only the coefficients still zero.
+    /// magnitude one placed by runs that count only the coefficients still zero. The block is in zigzag order, and a bit mask of
+    /// its nonzero coefficients finds the next zero, and the nonzero ones passed on the way, without visiting each position.
     /// </summary>
-    private static void DecodeAcRefine(JpegBitReader reader, JpegHuffmanTable ac, ref int eobRun, Span<short> block, int ss, int se, int al)
+    private static void DecodeAcRefine(JpegBitReader reader, ref ulong bits, ref int count, JpegHuffmanTable ac, ref int eobRun, Span<short> block, int ss, int se, int al)
     {
-        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
         int p1 = 1 << al;
         int m1 = -1 << al;
+        ulong nonzero = NonZero(block);
         int k = ss;
         if (eobRun == 0)
         {
-            for (; k <= se; k++)
+            while (k <= se)
             {
-                int rs = ac.Decode(reader);
+                if (count < 32)
+                {
+                    reader.Refill(ref bits, ref count);
+                }
+
+                int rs = ac.Decode(ref bits, ref count);
                 int r = rs >> 4;
                 int s = rs & 15;
+                int value = 0;
                 if (s != 0)
                 {
                     // The size is always 1 here; the next bit is the sign.
-                    s = reader.Read(1) != 0 ? p1 : m1;
+                    value = Take(ref bits, ref count, 1) != 0 ? p1 : m1;
                 }
                 else if (r != 15)
                 {
-                    eobRun = 1 << r;
-                    if (r > 0)
-                    {
-                        eobRun += reader.Read(r);
-                    }
-
+                    eobRun = (1 << r) + Take(ref bits, ref count, r);
                     break;
                 }
 
-                // Skip r zero coefficients, correcting the nonzero ones passed; the new coefficient goes in the next zero one.
-                for (; k <= se; k++)
+                // The run ends at the (r + 1)th zero coefficient from k (for ZRL, the 16th), or past the band if there are fewer.
+                ulong zeros = ~nonzero & Range(k, se);
+                for (int z = 0; z < r && zeros != 0; z++)
                 {
-                    ref short coefficient = ref block[zigzag[k]];
-                    if (coefficient != 0)
-                    {
-                        Refine(reader, ref coefficient, p1, m1);
-                    }
-                    else if (--r < 0)
-                    {
-                        break;
-                    }
+                    zeros &= zeros - 1;
                 }
 
-                if (s != 0 && k <= 63)
+                int end = zeros == 0 ? se + 1 : BitOperations.TrailingZeroCount(zeros);
+                RefineAll(reader, ref bits, ref count, block, nonzero & Range(k, end - 1), p1, m1);
+                k = end;
+                if (value != 0 && k <= 63)
                 {
-                    block[zigzag[k]] = (short)s;
+                    block[k] = (short)value;
+                    nonzero |= 1UL << k;
                 }
+
+                k++;
             }
         }
 
         if (eobRun > 0)
         {
             // The band ends in this block: only the corrections of the nonzero coefficients remain.
-            for (; k <= se; k++)
+            if (k <= se)
             {
-                ref short coefficient = ref block[zigzag[k]];
-                if (coefficient != 0)
-                {
-                    Refine(reader, ref coefficient, p1, m1);
-                }
+                RefineAll(reader, ref bits, ref count, block, nonzero & Range(k, se), p1, m1);
             }
 
             eobRun--;
         }
     }
 
-    /// <summary>Applies a correction bit: adds the new bit to the magnitude unless it is there already.</summary>
-    private static void Refine(JpegBitReader reader, ref short coefficient, int p1, int m1)
+    /// <summary>Applies a correction bit to each coefficient in <paramref name="positions"/>, in order, taking up to 32 bits at once.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void RefineAll(JpegBitReader reader, ref ulong bits, ref int count, Span<short> block, ulong positions, int p1, int m1)
     {
-        if (reader.Read(1) != 0 && (coefficient & p1) == 0)
+        while (positions != 0)
         {
-            coefficient = (short)(coefficient + (coefficient >= 0 ? p1 : m1));
+            if (count < 32)
+            {
+                reader.Refill(ref bits, ref count);
+            }
+
+            int n = Math.Min(BitOperations.PopCount(positions), 32);
+            ulong taken = bits;
+            bits <<= n;
+            count -= n;
+            for (int t = 0; t < n; t++)
+            {
+                ref short coefficient = ref block[BitOperations.TrailingZeroCount(positions)];
+                if ((long)taken < 0 && (coefficient & p1) == 0)
+                {
+                    coefficient = (short)(coefficient + (coefficient >= 0 ? p1 : m1));
+                }
+
+                taken <<= 1;
+                positions &= positions - 1;
+            }
         }
+    }
+
+    /// <summary>Returns the bits <paramref name="first"/> to <paramref name="last"/> inclusive, or none if <paramref name="last"/> is smaller.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ulong Range(int first, int last)
+    {
+        if (last < first)
+        {
+            return 0;
+        }
+
+        ulong upTo = last >= 63 ? ulong.MaxValue : (1UL << (last + 1)) - 1;
+        return upTo & (ulong.MaxValue << first);
+    }
+
+    /// <summary>Returns a mask with bit k set where coefficient k of the 64 is nonzero.</summary>
+    internal static ulong NonZero(ReadOnlySpan<short> block)
+    {
+        block = block[..64];
+        if (Vector128.IsHardwareAccelerated)
+        {
+            ref short b = ref MemoryMarshal.GetReference(block);
+            ulong mask = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector128<short> v = Vector128.LoadUnsafe(ref b, (nuint)(i * 8));
+                mask |= (ulong)(~Vector128.Equals(v, Vector128<short>.Zero)).ExtractMostSignificantBits() << (i * 8);
+            }
+
+            return mask;
+        }
+
+        ulong scalar = 0;
+        for (int i = 0; i < 64; i++)
+        {
+            if (block[i] != 0)
+            {
+                scalar |= 1UL << i;
+            }
+        }
+
+        return scalar;
+    }
+
+    /// <summary>Takes one bit, refilling first if the buffer is empty.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TakeBit(JpegBitReader reader, ref ulong bits, ref int count)
+    {
+        if (count < 1)
+        {
+            reader.Refill(ref bits, ref count);
+        }
+
+        bool bit = (long)bits < 0;
+        bits <<= 1;
+        count--;
+        return bit;
+    }
+
+    /// <summary>Takes <paramref name="n"/> bits (0 to 16) as an unsigned number; the buffer must hold them.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Take(ref ulong bits, ref int count, int n)
+    {
+        if (n == 0)
+        {
+            return 0;
+        }
+
+        int value = (int)(bits >> (64 - n));
+        bits <<= n;
+        count -= n;
+        return value;
     }
 
     /// <summary>
@@ -436,8 +585,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             JpegScanComponent sc = scan.Components[i];
             order[i] = _components[sc.ComponentIndex];
             LatchQuant(sc.ComponentIndex);
-            dc[i] = new JpegHuffmanTable(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
-            ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable), fastAc: true);
+            dc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+            ac[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
             firstBlock[i] = blocks;
             blocks += _mcusX * order[i].H * order[i].V;
         }
@@ -651,17 +800,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             LatchQuant(sc.ComponentIndex);
             if (kind is 0 or 1)
             {
-                dc[i] = new JpegHuffmanTable(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+                dc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
             }
 
             if (kind is 0 or 3 or 4)
             {
-                ac[i] = new JpegHuffmanTable(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable), fastAc: kind == 0);
+                ac[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
             }
         }
 
         reader.BeginScan();
         Span<int> predictors = stackalloc int[count];
+        Span<short> natural = stackalloc short[64];
         int eobRun = 0;
         int restart = _header.RestartInterval;
         int nextRestart = 0;
@@ -672,17 +822,23 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         bool single = count == 1;
         int unitsX = single ? NonInterleavedBlocks(_header.Width, order[0].H, _maxH) : _mcusX;
         int unitsY = single ? NonInterleavedBlocks(_header.Height, order[0].V, _maxV) : _mcusY;
+        const string Ended = "The image data ends early. The scans so far were decoded; the rest of the image has less detail or is gray.";
+        reader.Load(out ulong bits, out int available);
         for (int uy = 0; uy < unitsY; uy++)
         {
+            // A non-interleaved scan walks one block row of its component.
+            Span<short> row = single ? order[0].BlockRow(uy) : default;
             for (int ux = 0; ux < unitsX; ux++, mcu++)
             {
                 if (restart > 0 && mcu > 0 && mcu % restart == 0)
                 {
+                    reader.Store(bits, available);
                     if (!RestartInterval(reader, ref nextRestart))
                     {
                         return false;
                     }
 
+                    reader.Load(out bits, out available);
                     predictors.Clear();
                     eobRun = 0;
                 }
@@ -696,36 +852,46 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     {
                         for (int h = 0; h < blocksX; h++)
                         {
-                            Span<short> block = single ? c.Block(ux, uy) : c.Block((ux * c.H) + h, (uy * c.V) + v);
+                            Span<short> block = single ? row.Slice(ux * 64, 64) : c.Block((ux * c.H) + h, (uy * c.V) + v);
                             switch (kind)
                             {
                                 case 0:
-                                    _ = DecodeBlock(reader, dc[i]!, ac[i]!, ref predictors[i], block);
+                                    reader.Store(bits, available);
+                                    _ = DecodeBlock(reader, dc[i]!, ac[i]!, ref predictors[i], natural);
+                                    reader.Load(out bits, out available);
+                                    for (int z = 0; z < 64; z++)
+                                    {
+                                        block[z] = natural[JpegTables.ZigZag[z]];
+                                    }
+
                                     break;
                                 case 1:
-                                    DecodeDcFirst(reader, dc[i]!, ref predictors[i], block, al);
+                                    DecodeDcFirst(reader, ref bits, ref available, dc[i]!, ref predictors[i], block, al);
                                     break;
                                 case 2:
-                                    DecodeDcRefine(reader, block, al);
+                                    DecodeDcRefine(reader, ref bits, ref available, block, al);
                                     break;
                                 case 3:
-                                    DecodeAcFirst(reader, ac[i]!, ref eobRun, block, ss, se, al);
+                                    DecodeAcFirst(reader, ref bits, ref available, ac[i]!, ref eobRun, block, ss, se, al);
                                     break;
                                 default:
-                                    DecodeAcRefine(reader, ac[i]!, ref eobRun, block, ss, se, al);
+                                    DecodeAcRefine(reader, ref bits, ref available, ac[i]!, ref eobRun, block, ss, se, al);
                                     break;
                             }
                         }
                     }
                 }
 
-                if (EndedEarly(reader, "The image data ends early. The scans so far were decoded; the rest of the image has less detail or is gray."))
+                if (reader.PastEndWith(available) && !reader.AtRestartMarker)
                 {
+                    reader.Store(bits, available);
+                    Problem(Ended);
                     return false;
                 }
             }
         }
 
+        reader.Store(bits, available);
         return true;
     }
 
@@ -806,6 +972,22 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     {
         long samples = (((long)size * factor) + max - 1) / max;
         return (int)((samples + 7) / 8);
+    }
+
+    /// <summary>Returns the decoding table for a table definition, built once however many scans use it.</summary>
+    private JpegHuffmanTable Table(JpegHuffmanSpec spec)
+    {
+        foreach ((JpegHuffmanSpec known, JpegHuffmanTable table) in _tables)
+        {
+            if (ReferenceEquals(known, spec))
+            {
+                return table;
+            }
+        }
+
+        JpegHuffmanTable built = new(spec);
+        _tables.Add((spec, built));
+        return built;
     }
 
     /// <summary>Uses the quantization table a component has when it first appears in a scan, as libjpeg does.</summary>
@@ -989,13 +1171,14 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
     /// <summary>
     /// One component's sampling, quantization table and the ring of three MCU-row strips of samples, plus, for a buffered decode,
-    /// every coefficient in natural order, in chunks of whole block rows that each fit one memory block.
+    /// every coefficient in zigzag order, in chunks of whole block rows that each fit one memory block.
     /// </summary>
-    private sealed class Component(int h, int v, int blockSize, int mcuWidth, int mcuHeight, int stripWidth, int width, int height) : IDisposable
+    private sealed unsafe class Component(int h, int v, int blockSize, int mcuWidth, int mcuHeight, int stripWidth, int width, int height) : IDisposable
     {
         private readonly int _stripHeight = v * blockSize;
         private byte[] _strips = ArrayPool<byte>.Shared.Rent(3 * stripWidth * v * blockSize);
         private IMemoryOwner<byte>?[] _chunks = [];
+        private MemoryHandle[] _pins = [];
         private int _blocksX;
         private int _rowsPerChunk = 1;
 
@@ -1066,28 +1249,55 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             _blocksX = blocksX;
             _rowsPerChunk = Math.Clamp(memory.MaxBlockBytes / rowBytes, 1, blocksY);
             _chunks = new IMemoryOwner<byte>?[(blocksY + _rowsPerChunk - 1) / _rowsPerChunk];
+            _pins = new MemoryHandle[_chunks.Length];
             for (int i = 0; i < _chunks.Length; i++)
             {
                 int rows = Math.Min(_rowsPerChunk, blocksY - (i * _rowsPerChunk));
                 _chunks[i] = memory.Allocate(rows * rowBytes, ClearMode.Zero);
+
+                // Pinned for the whole decode, so a block is a pointer away; getting a span from the memory per block was a tenth
+                // of a progressive decode.
+                _pins[i] = _chunks[i]!.Memory.Pin();
             }
+        }
+
+        /// <summary>Gets the coefficients of block row <paramref name="by"/>, 64 per block.</summary>
+        internal Span<short> BlockRow(int by)
+        {
+            return new Span<short>(CoefficientRow(by), _blocksX * 64);
         }
 
         /// <summary>Gets the 64 coefficients of block (<paramref name="bx"/>, <paramref name="by"/>).</summary>
         internal Span<short> Block(int bx, int by)
         {
-            Span<short> chunk = MemoryMarshal.Cast<byte, short>(_chunks[by / _rowsPerChunk]!.Memory.Span);
-            return chunk.Slice((((by % _rowsPerChunk) * _blocksX) + bx) * 64, 64);
+            if ((uint)bx >= (uint)_blocksX)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bx));
+            }
+
+            return new Span<short>(CoefficientRow(by) + (bx * 64), 64);
+        }
+
+        private short* CoefficientRow(int by)
+        {
+            // The pins array bounds-checks the row's chunk.
+            return (short*)_pins[by / _rowsPerChunk].Pointer + ((long)(by % _rowsPerChunk) * _blocksX * 64);
         }
 
         public void Dispose()
         {
             ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _strips, null!));
+            foreach (MemoryHandle pin in _pins)
+            {
+                pin.Dispose();
+            }
+
             foreach (IMemoryOwner<byte>? chunk in _chunks)
             {
                 chunk?.Dispose();
             }
 
+            _pins = [];
             _chunks = [];
         }
     }
