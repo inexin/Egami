@@ -244,13 +244,6 @@ public class JpegHeaderTests
         Assert.Throws<CorruptDataException>(() => Read(JpegBuilder.Baseline(8, 8, Ycc420).Segment(0xDB, [0x05, 1]).Scan(1)));
     }
 
-    [Fact]
-    public void LoadIsNotAvailableYet()
-    {
-        byte[] file = JpegBuilder.Baseline(8, 8, (1, 1, 1)).Scan(1);
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(file));
-    }
-
     private static JpegHeader Read(byte[] file, ReaderOptions? options = null, EgamiContext? context = null)
     {
         using MemoryStream stream = new(file);

@@ -34,19 +34,62 @@ internal sealed class JpegReader : IFormatReader
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        JpegSegmentReader.ReadHeader(input, options);
-        throw NotYet();
+        return Decode<TPixel>(input, JpegSegmentReader.ReadHeader(input, options), options);
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
-        JpegSegmentReader.ReadHeader(input, options);
-        throw NotYet();
+        JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
+        return header.Components.Length == 1 ? Decode<Gray8>(input, header, options) : Decode<Rgb8>(input, header, options);
     }
 
-    /// <summary>Pixel decoding is built in the next tasks of Phase 1.3; until then only Probe reads JPEG.</summary>
-    private static UnsupportedFormatException NotYet()
+    /// <summary>Decodes with libjpeg's default look, or replicated chroma when <see cref="JpegReaderOptions.FastUpsampling"/> says so.</summary>
+    internal static Raster<TPixel> Decode<TPixel>(EgamiInput input, JpegHeader header, ReaderOptions options, bool fastUpsampling = false)
+        where TPixel : unmanaged, IPixelType<TPixel>
     {
-        return new UnsupportedFormatException("Decoding JPEG pixels is not available yet; Raster.Probe reads JPEG headers.");
+        fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
+        if (header.IsProgressive)
+        {
+            throw new UnsupportedFormatException("Decoding progressive JPEG is not available yet.");
+        }
+
+        Raster<TPixel> raster = input.CreateRaster<TPixel>(header.Width, header.Height);
+        try
+        {
+            using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling))
+            {
+                decoder.DecodeScan(input, header.FirstScan!);
+            }
+
+            CopyMetadata(header, raster.Metadata);
+            return raster;
+        }
+        catch
+        {
+            raster.Dispose();
+            throw;
+        }
+    }
+
+    private static void CopyMetadata(JpegHeader header, RasterMetadata target)
+    {
+        RasterMetadata source = header.Metadata;
+        target.FormatName = JpegFormat.Info.Name;
+        target.FormatDetails = header.Details;
+        target.Resolution = source.Resolution;
+        target.Exif = source.Exif;
+        target.Xmp = source.Xmp;
+        target.IccProfile = source.IccProfile;
+        target.ColorSpace = source.ColorSpace == ColorSpaceHint.Unknown ? ColorSpaceHint.Srgb : source.ColorSpace;
+        foreach (TextEntry entry in source.Text)
+        {
+            target.Text.Add(entry);
+        }
+
+        // Header warnings come first; the decoder added its own to the target already.
+        for (int i = source.Warnings.Count - 1; i >= 0; i--)
+        {
+            target.Warnings.Insert(0, source.Warnings[i]);
+        }
     }
 }

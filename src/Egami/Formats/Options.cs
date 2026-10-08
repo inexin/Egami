@@ -15,8 +15,8 @@ public enum RecoveryMode
     Strict,
 }
 
-/// <summary>Options for reading. The defaults read everything leniently.</summary>
-public sealed record ReaderOptions
+/// <summary>Options for reading. The defaults read everything leniently. Formats with options of their own derive from it, such as JpegReaderOptions.</summary>
+public record ReaderOptions
 {
     /// <summary>Gets the default options.</summary>
     public static ReaderOptions Default { get; } = new();
