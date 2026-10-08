@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
+    <Project Path="tests/Egami.Fuzz/Egami.Fuzz.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />
   </Folder>
 </Solution>

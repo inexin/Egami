@@ -1,0 +1,76 @@
+name: Fuzz
+
+# Nightly fuzzing of each reader with SharpFuzz and AFL++, 30 minutes per target.
+# Crashes and hangs are uploaded as artifacts and filed as an issue.
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: Minutes per target
+        default: '30'
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: Fuzz ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: png, seeds: "tests/images/pngsuite/*.png" }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Install AFL++ and SharpFuzz
+        run: |
+          sudo apt-get update && sudo apt-get install -y afl++
+          dotnet tool install --global SharpFuzz.CommandLine
+      - name: Build and instrument
+        run: |
+          dotnet publish tests/Egami.Fuzz -c Release -o out/fuzz
+          sharpfuzz out/fuzz/Egami.dll
+      - name: Fuzz
+        env:
+          AFL_SKIP_BIN_CHECK: '1'
+          AFL_NO_UI: '1'
+          AFL_SKIP_CPUFREQ: '1'
+          AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: '1'
+          MINUTES: ${{ inputs.minutes || '30' }}
+        run: |
+          mkdir -p findings
+          mkdir -p seeds && cp ${{ matrix.seeds }} seeds/
+          afl-fuzz -V $((MINUTES * 60)) -i seeds -o findings -t 5000 -m none -- out/fuzz/Egami.Fuzz ${{ matrix.target }}
+      - name: Collect crashes and hangs
+        id: results
+        run: |
+          mkdir -p results
+          find findings -path '*/crashes/id*' -exec cp {} results/ \;
+          find findings -path '*/hangs/id*' -exec sh -c 'cp "$1" "results/hang-$(basename "$1")"' _ {} \;
+          count=$(ls results | wc -l)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Crashes and hangs: $count" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: steps.results.outputs.count != '0'
+        with:
+          name: fuzz-${{ matrix.target }}
+          path: results
+      - name: File an issue
+        if: steps.results.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COUNT: ${{ steps.results.outputs.count }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create \
+            --title "Fuzzing found $COUNT crash or hang input(s) in the ${{ matrix.target }} reader" \
+            --body "The nightly fuzz run found $COUNT input(s). Download the fuzz-${{ matrix.target }} artifact from $RUN_URL, reproduce with \`dotnet run --project tests/Egami.Fuzz -c Release -- ${{ matrix.target }} <file>\`, and add each as a regression test."
