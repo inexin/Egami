@@ -553,10 +553,11 @@ internal sealed class PngReader : IFormatReader
             if (ReadZlibHeader(state, idat))
             {
                 using DeflateStream deflate = new(idat, CompressionMode.Decompress, leaveOpen: true);
-                RowDecoder<TNatural, TPixel> rows = new(state, raster, deflate, unpack);
+                using InflatedReader inflated = new(deflate, (int)header.RowBytes(header.Width) + 1);
+                RowDecoder<TNatural, TPixel> rows = new(state, raster, inflated, unpack);
                 complete = header.Interlaced ? rows.DecodeInterlaced() : rows.DecodeSequential();
                 adler = rows.Adler;
-                checkAdler = complete && IsEndOfImageData(state, deflate);
+                checkAdler = complete && IsEndOfImageData(state, inflated);
             }
             else
             {
@@ -624,21 +625,20 @@ internal sealed class PngReader : IFormatReader
 
     /// <summary>Checks that the compressed data ends right after the last scanline.</summary>
     /// <returns><see langword="true"/> if it does, so the Adler-32 checksum can be compared.</returns>
-    private static bool IsEndOfImageData(State state, DeflateStream deflate)
+    private static bool IsEndOfImageData(State state, InflatedReader inflated)
     {
-        Span<byte> extra = stackalloc byte[1];
-        try
+        if (inflated.AtEnd())
         {
-            if (deflate.Read(extra) == 0)
-            {
-                return true;
-            }
-
-            state.Metadata.Warnings.Add("The image data has extra bytes after the last row. They were ignored.");
+            return true;
         }
-        catch (InvalidDataException e)
+
+        if (inflated.Problem is string problem)
         {
-            state.Chunks.Recoverable(state.Input.Position, $"The compressed image data is damaged after the last row ({e.Message}).");
+            state.Chunks.Recoverable(state.Input.Position, problem + " The damage is after the last row.");
+        }
+        else
+        {
+            state.Metadata.Warnings.Add("The image data has extra bytes after the last row. They were ignored.");
         }
 
         return false;
@@ -784,7 +784,7 @@ internal sealed class PngReader : IFormatReader
     }
 
     /// <summary>Reads scanlines from the inflated stream, unfilters them and writes pixels into the raster.</summary>
-    private sealed class RowDecoder<TNatural, TPixel>(State state, Raster<TPixel> raster, Stream zlib, UnpackRow<TNatural> unpack)
+    private sealed class RowDecoder<TNatural, TPixel>(State state, Raster<TPixel> raster, InflatedReader inflated, UnpackRow<TNatural> unpack)
         where TNatural : unmanaged, IPixelType<TNatural>
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -905,25 +905,8 @@ internal sealed class PngReader : IFormatReader
         private bool ReadScanline(Span<byte> line, ReadOnlySpan<byte> previous, int index)
         {
             state.Input.CancellationToken.ThrowIfCancellationRequested();
-            int read = 0;
-            string? problem = null;
-            try
-            {
-                while (read < line.Length)
-                {
-                    int n = zlib.Read(line[read..]);
-                    if (n == 0)
-                    {
-                        break;
-                    }
-
-                    read += n;
-                }
-            }
-            catch (InvalidDataException e)
-            {
-                problem = $"The compressed image data is damaged ({e.Message}).";
-            }
+            int read = inflated.Read(line);
+            string? problem = inflated.Problem;
 
             if (read < line.Length)
             {

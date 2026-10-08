@@ -55,6 +55,10 @@ internal sealed unsafe class UnmanagedBlock : MemoryManager<byte>
 }
 
 /// <summary>Owns one 64-byte-aligned unmanaged allocation and frees it on dispose or, failing that, on finalization.</summary>
+/// <remarks>
+/// It deliberately does not call <see cref="GC.AddMemoryPressure"/>: reporting a large image's memory made the runtime run a full
+/// (gen 2) collection on nearly every load. Rasters are meant to be disposed; the finalizer is only a safety net.
+/// </remarks>
 internal sealed unsafe class AlignedMemoryHandle : SafeHandle
 {
     private const int Alignment = 64;
@@ -77,7 +81,6 @@ internal sealed unsafe class AlignedMemoryHandle : SafeHandle
     {
         AlignedMemoryHandle result = new(length);
         result.SetHandle((nint)NativeMemory.AlignedAlloc((nuint)Math.Max(length, 1), Alignment));
-        GC.AddMemoryPressure(Math.Max(length, 1));
         Interlocked.Add(ref s_liveBytes, length);
         return result;
     }
@@ -85,7 +88,6 @@ internal sealed unsafe class AlignedMemoryHandle : SafeHandle
     protected override bool ReleaseHandle()
     {
         NativeMemory.AlignedFree((void*)handle);
-        GC.RemoveMemoryPressure(Math.Max(_length, 1));
         Interlocked.Add(ref s_liveBytes, -_length);
         return true;
     }
