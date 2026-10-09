@@ -137,7 +137,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
         // per thread.
         int threads = Math.Max(1, input.Context.MaxParallelism);
         int group = Math.Clamp((height + (16 * threads) - 1) / (16 * threads), 1, Math.Max(1, _ry));
-        long rowBytes = (long)input.Source.Width * TPixel.Layout.BytesPerPixel;
+        long rowBytes = (long)input.Source.Width * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
         // One band object for the call: it holds only settings, and each band's buffers are rented inside Run, so threads share it.
         Band<TPixel> band = new(this, input);
         RowRunner.Run((height + group - 1) / group, rowBytes * group, input.Context.MaxParallelism, (start, end) =>

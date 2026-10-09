@@ -114,7 +114,7 @@ internal static class JpegSegmentReader
         long width = (header.Width + scale - 1) / scale;
         long height = (header.Height + scale - 1) / scale;
         long bytes = width * height * Layout(header).BytesPerPixel;
-        if (header.IsProgressive || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length))
+        if (header.Progressive || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length))
         {
             long mcusX = (header.Width + (8 * header.MaxH) - 1) / (8 * header.MaxH);
             long mcusY = (header.Height + (8 * header.MaxV) - 1) / (8 * header.MaxV);
@@ -313,7 +313,7 @@ internal static class JpegSegmentReader
         header.Width = width;
         header.Height = height;
         header.Components = components;
-        header.Details.IsProgressive = marker == JpegMarker.Sof2;
+        header.Details.Progressive = marker == JpegMarker.Sof2;
         foreach (JpegFrameComponent component in components)
         {
             header.Details.Components.Add(new JpegComponent(component.Id, component.H, component.V));
@@ -365,7 +365,7 @@ internal static class JpegSegmentReader
 
         ReadOnlySpan<byte> tail = payload.Slice(1 + (2 * count), 3);
         JpegScan scan = new(components, tail[0], tail[1], tail[2] >> 4, tail[2] & 15);
-        if (!header.IsProgressive && (scan.SpectralStart != 0 || scan.SpectralEnd != 63 || scan.ApproxHigh != 0 || scan.ApproxLow != 0))
+        if (!header.Progressive && (scan.SpectralStart != 0 || scan.SpectralEnd != 63 || scan.ApproxHigh != 0 || scan.ApproxLow != 0))
         {
             // Sequential files must code all 64 coefficients; libjpeg only warns, so a lenient read would accept it.
             scan = scan with { SpectralStart = 0, SpectralEnd = 63, ApproxHigh = 0, ApproxLow = 0 };
@@ -469,7 +469,7 @@ internal static class JpegSegmentReader
             // The first EXIF segment wins; a second one is usually a broken copy.
             if (header.Metadata.Exif is null)
             {
-                header.Metadata.Exif = ParseExif(payload[ExifId.Length..], maxBytes, header.Metadata.Warnings);
+                header.Metadata.Exif = ParseExif(payload[ExifId.Length..], maxBytes, header.Metadata.WarningList);
                 header.HasMetadata = true;
             }
         }
@@ -489,7 +489,7 @@ internal static class JpegSegmentReader
                 // The packet's stated size is allocated up front, so it must fit the metadata budget first.
                 if (total > maxBytes)
                 {
-                    header.Metadata.Warnings.Add($"The extended XMP packet says it is {total:N0} bytes, over the metadata limit. It was dropped.");
+                    header.Metadata.WarningList.Add($"The extended XMP packet says it is {total:N0} bytes, over the metadata limit. It was dropped.");
                     return;
                 }
 
@@ -555,7 +555,7 @@ internal static class JpegSegmentReader
             }
             else
             {
-                header.Metadata.Warnings.Add($"The ICC profile has {iccChunks.Count} of its {iccCount} parts. It was dropped.");
+                header.Metadata.WarningList.Add($"The ICC profile has {iccChunks.Count} of its {iccCount} parts. It was dropped.");
             }
         }
 
@@ -567,7 +567,7 @@ internal static class JpegSegmentReader
             }
             else
             {
-                header.Metadata.Warnings.Add("The extended XMP packet is missing parts. It was dropped.");
+                header.Metadata.WarningList.Add("The extended XMP packet is missing parts. It was dropped.");
             }
         }
 

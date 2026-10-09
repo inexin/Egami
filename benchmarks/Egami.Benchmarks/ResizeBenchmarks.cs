@@ -53,7 +53,7 @@ public class ResizeBenchmarks
     [Benchmark]
     public void Fill256()
     {
-        _large.Derive(ops => ops.Fill(256, 256)).Dispose();
+        _large.Derive(ops => ops.Cover(256, 256)).Dispose();
     }
 
     private static Raster<Rgba8> Noise(int width, int height, EgamiContext context)

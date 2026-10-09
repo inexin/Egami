@@ -82,8 +82,8 @@ public class AutoOrientTests(ITestOutputHelper output)
         foreach ((string name, Action<RasterOps> resize) in ((string, Action<RasterOps>)[])[
             ("fit", ops => ops.Fit(100, 90)),
             ("stretch", ops => ops.Resize(77, 51)),
-            ("fill top", ops => ops.Fill(90, 60, Anchor.Top)),
-            ("fill bottom right", ops => ops.Fill(50, 70, Anchor.BottomRight))])
+            ("fill top", ops => ops.Cover(90, 60, Anchor.Top)),
+            ("fill bottom right", ops => ops.Cover(50, 70, Anchor.BottomRight))])
         {
             using Raster<Rgb8> planned = source.Derive(ops => { ops.AutoOrient(); resize(ops); }, TestContext.Current.CancellationToken);
             using Raster<Rgb8> turned = source.Derive(ops => ops.AutoOrient(), TestContext.Current.CancellationToken);
@@ -135,7 +135,7 @@ public class AutoOrientTests(ITestOutputHelper output)
         Assert.True(resized.Metadata.Exif!.Thumbnail.IsEmpty);
         Assert.True(resized.Metadata.Exif.TryGet(ExifKey.PixelXDimension, out ExifEntry? x) && x.Type == ExifType.Short);
 
-        using Raster<Rgb8> flipped = raster.Derive(ops => ops.Flip(FlipMode.Horizontal), TestContext.Current.CancellationToken);
+        using Raster<Rgb8> flipped = raster.Derive(ops => ops.FlipHorizontal(), TestContext.Current.CancellationToken);
         Assert.Equal(ImageOrientation.Normal, flipped.Metadata.Exif!.Orientation);
 
         using Raster<Rgb8> quarter = raster.Derive(ops => ops.Rotate(90), TestContext.Current.CancellationToken);
@@ -166,7 +166,7 @@ public class AutoOrientTests(ITestOutputHelper output)
             {
                 row[x] = new Rgba8((byte)x, (byte)y, 7, 255);
             }
-        });
+        }, TestContext.Current.CancellationToken);
         foreach ((ImageOrientation orientation, Func<int, int, (int, int)> source) in ((ImageOrientation, Func<int, int, (int, int)>)[])[
             (ImageOrientation.Transpose, (x, y) => (y, x)),
             (ImageOrientation.Transverse, (x, y) => (36 - y, 20 - x))])

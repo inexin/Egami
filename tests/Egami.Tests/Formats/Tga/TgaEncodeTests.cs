@@ -38,7 +38,7 @@ public class TgaEncodeTests
 
         foreach (bool rle in new[] { true, false })
         {
-            byte[] data = Save(source, new TgaWriterOptions { Bits = TgaBits.Indexed8, Rle = rle });
+            byte[] data = Save(source, new TgaWriterOptions { PixelFormat = TgaPixelFormat.Indexed8, Rle = rle });
             Assert.Equal(rle ? 9 : 1, data[2]);
             Assert.Equal(32, data[7]);
             using Raster<Rgba8> back = Raster.Load<Rgba8>(data);

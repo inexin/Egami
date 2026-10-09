@@ -42,9 +42,9 @@ public class JpegCorpusTests
         Assert.Equal((ImageOrientation)Int(entry, "orientation"), info.Orientation);
 
         using MemoryStream stream = new(data);
-        using EgamiInput input = new(stream, EgamiContext.Default, TestContext.Current.CancellationToken);
+        EgamiInput input = new(stream, EgamiContext.Default, TestContext.Current.CancellationToken);
         JpegHeader header = JpegSegmentReader.ReadHeader(input, ReaderOptions.Default);
-        Assert.Equal(entry.GetProperty("progressive").GetBoolean(), header.Details.IsProgressive);
+        Assert.Equal(entry.GetProperty("progressive").GetBoolean(), header.Details.Progressive);
         Assert.Equal(entry.GetProperty("sampling").GetString(), string.Join(',', header.Details.Components.Select(c => $"{c.HorizontalSampling}x{c.VerticalSampling}")));
         Assert.Equal(Enum.Parse<JpegColorSpace>(entry.GetProperty("colorSpace").GetString()!), header.Details.ColorSpace);
     }

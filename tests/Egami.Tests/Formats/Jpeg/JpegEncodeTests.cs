@@ -90,7 +90,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
             {
                 row[x] = new Rgb8((byte)(x ^ y), (byte)((x * 3) + y), (byte)(x * y >> 4));
             }
-        });
+        }, TestContext.Current.CancellationToken);
         foreach (JpegWriterOptions options in (JpegWriterOptions[])[new(), new() { OptimizeHuffman = true, Subsampling = ChromaSubsampling.Subsample444 }, new() { RestartInterval = 7 }])
         {
             byte[] one = Encode(serial, options);
@@ -134,7 +134,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
     public void AlphaIsIgnoredUnlessABackgroundIsSet()
     {
         using Raster<Rgba8> image = Raster.Create<Rgba8>(16, 16);
-        image.ForEachRow((row, y) => row.Fill(new Rgba8(200, 40, 40, 0)));
+        image.ForEachRow((row, y) => row.Fill(new Rgba8(200, 40, 40, 0)), TestContext.Current.CancellationToken);
         using Raster<Rgb8> ignored = Raster.Load<Rgb8>(Encode(image, new JpegWriterOptions { Quality = 100, Subsampling = ChromaSubsampling.Subsample444 }));
         Assert.InRange(ignored.GetPixel(8, 8).R, 195, 205);
 
@@ -224,7 +224,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
                 // Smooth at every size, so chroma subsampling loses little even on tiny images.
                 row[x] = new Rgb8((byte)(40 + (x * 2)), (byte)(60 + (y * 2)), (byte)(200 - x - y));
             }
-        });
+        }, TestContext.Current.CancellationToken);
         return raster;
     }
 

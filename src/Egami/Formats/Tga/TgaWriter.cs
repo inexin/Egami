@@ -32,11 +32,11 @@ internal sealed class TgaWriter : IFormatWriter
         }
 
         PixelLayoutInfo layout = TPixel.Layout;
-        TgaBits bits = tga.Bits;
-        if (bits == TgaBits.Auto)
+        TgaPixelFormat bits = tga.PixelFormat;
+        if (bits == TgaPixelFormat.Auto)
         {
             bool opaque = !layout.HasAlpha || IsOpaque(raster);
-            bits = layout.ChannelOrder == PixelChannelOrder.Gray ? TgaBits.Gray8 : opaque ? TgaBits.Bgr24 : TgaBits.Bgra32;
+            bits = layout.ChannelOrder == PixelChannelOrder.Gray ? TgaPixelFormat.Gray8 : opaque ? TgaPixelFormat.Bgr24 : TgaPixelFormat.Bgra32;
         }
 
         BuiltPalette? palette = null;
@@ -44,14 +44,14 @@ internal sealed class TgaWriter : IFormatWriter
         try
         {
             int mapEntry = 0;
-            if (bits == TgaBits.Indexed8)
+            if (bits == TgaPixelFormat.Indexed8)
             {
                 (palette, indices) = MapToPalette(raster, tga.Palette);
                 mapEntry = palette.Colors.Any(c => c.A != 255) ? 32 : 24;
             }
 
-            bool alpha = bits == TgaBits.Bgra32 || mapEntry == 32;
-            int bpp = bits switch { TgaBits.Gray8 or TgaBits.Indexed8 => 1, TgaBits.Bgr24 => 3, _ => 4 };
+            bool alpha = bits == TgaPixelFormat.Bgra32 || mapEntry == 32;
+            int bpp = bits switch { TgaPixelFormat.Gray8 or TgaPixelFormat.Indexed8 => 1, TgaPixelFormat.Bgr24 => 3, _ => 4 };
             ReadOnlySpan<byte> imageId = !tga.StripMetadata && raster.Metadata.FormatDetails is TgaDetails details ? details.ImageId.Span : default;
             imageId = imageId[..Math.Min(imageId.Length, 255)];
 
@@ -61,13 +61,13 @@ internal sealed class TgaWriter : IFormatWriter
             header.Clear();
             header[0] = (byte)imageId.Length;
             header[1] = (byte)(palette is null ? 0 : 1);
-            header[2] = (byte)((bits switch { TgaBits.Gray8 => 3, TgaBits.Indexed8 => 1, _ => 2 }) + (tga.Rle ? 8 : 0));
+            header[2] = (byte)((bits switch { TgaPixelFormat.Gray8 => 3, TgaPixelFormat.Indexed8 => 1, _ => 2 }) + (tga.Rle ? 8 : 0));
             BinaryPrimitives.WriteUInt16LittleEndian(header[5..], (ushort)(palette?.Colors.Length ?? 0));
             header[7] = (byte)mapEntry;
             BinaryPrimitives.WriteUInt16LittleEndian(header[12..], (ushort)width);
             BinaryPrimitives.WriteUInt16LittleEndian(header[14..], (ushort)height);
             header[16] = (byte)(bpp * 8);
-            header[17] = (byte)(bits == TgaBits.Bgra32 ? 8 : mapEntry == 32 ? 8 : 0);
+            header[17] = (byte)(bits == TgaPixelFormat.Bgra32 ? 8 : mapEntry == 32 ? 8 : 0);
             writer.Advance(TgaReader.HeaderLength);
             position += TgaReader.HeaderLength;
             Put(writer, imageId, ref position);
@@ -101,13 +101,13 @@ internal sealed class TgaWriter : IFormatWriter
                     Span<byte> pixels = row.AsSpan(0, width * bpp);
                     switch (bits)
                     {
-                        case TgaBits.Gray8:
+                        case TgaPixelFormat.Gray8:
                             PixelConvert.Convert<TPixel, Gray8>(raster.Row(y), MemoryMarshal.Cast<byte, Gray8>(pixels));
                             break;
-                        case TgaBits.Indexed8:
+                        case TgaPixelFormat.Indexed8:
                             indices.AsSpan(y * width, width).CopyTo(pixels);
                             break;
-                        case TgaBits.Bgr24:
+                        case TgaPixelFormat.Bgr24:
                             PixelConvert.Convert<TPixel, Bgr8>(raster.Row(y), MemoryMarshal.Cast<byte, Bgr8>(pixels));
                             break;
                         default:

@@ -6,7 +6,7 @@ using System.Text;
 namespace Egami.Operations;
 
 /// <summary>The luma weights a grayscale conversion uses.</summary>
-public enum GrayscaleMode
+public enum LumaWeights
 {
     /// <summary>Rec. 709 (sRGB) weights: 0.2126 red, 0.7152 green, 0.0722 blue. The default.</summary>
     Rec709,
@@ -94,6 +94,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Multiplies red, green and blue by <paramref name="amount"/>. 1 changes nothing, 0 gives black.</summary>
     /// <param name="amount">The factor, 0 or more.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is negative or not finite.</exception>
     public static ColorMatrix Brightness(float amount)
     {
         CheckAtLeastZero(amount);
@@ -103,6 +104,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Scales red, green and blue around 0.5 by <paramref name="amount"/>. 1 changes nothing, 0 gives flat gray.</summary>
     /// <param name="amount">The factor, 0 or more.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is negative or not finite.</exception>
     public static ColorMatrix Contrast(float amount)
     {
         CheckAtLeastZero(amount);
@@ -112,6 +114,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Replaces red, green and blue with <c>1 − value</c>, blended by <paramref name="amount"/>.</summary>
     /// <param name="amount">0 changes nothing, 1 inverts fully.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is outside 0 to 1.</exception>
     public static ColorMatrix Invert(float amount = 1)
     {
         CheckUnit(amount);
@@ -122,6 +125,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Multiplies alpha by <paramref name="amount"/>.</summary>
     /// <param name="amount">0 makes the image transparent, 1 changes nothing.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is outside 0 to 1.</exception>
     public static ColorMatrix Opacity(float amount)
     {
         CheckUnit(amount);
@@ -131,6 +135,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Mixes each color with its luma, using the W3C Filter Effects weights (0.213, 0.715, 0.072).</summary>
     /// <param name="amount">1 changes nothing, 0 gives gray, above 1 oversaturates.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is negative or not finite.</exception>
     public static ColorMatrix Saturation(float amount)
     {
         CheckAtLeastZero(amount);
@@ -141,16 +146,18 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <param name="mode">The luma weights.</param>
     /// <param name="amount">0 changes nothing, 1 gives full gray.</param>
     /// <returns>The matrix.</returns>
-    public static ColorMatrix Grayscale(GrayscaleMode mode = GrayscaleMode.Rec709, float amount = 1)
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode"/> is not defined, or <paramref name="amount"/> is outside 0 to 1.</exception>
+    public static ColorMatrix Grayscale(LumaWeights mode = LumaWeights.Rec709, float amount = 1)
     {
         CheckUnit(amount);
-        (float r, float g, float b) = LumaWeights(mode);
+        (float r, float g, float b) = Weights(mode);
         return LumaMix(r, g, b, 1 - amount);
     }
 
     /// <summary>Tints toward sepia with the W3C Filter Effects sepia matrix.</summary>
     /// <param name="amount">0 changes nothing, 1 gives full sepia.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="amount"/> is outside 0 to 1.</exception>
     public static ColorMatrix Sepia(float amount = 1)
     {
         CheckUnit(amount);
@@ -167,6 +174,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Rotates hue around the luma axis with the W3C Filter Effects matrix.</summary>
     /// <param name="degrees">The angle; 0 and 360 change nothing.</param>
     /// <returns>The matrix.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="degrees"/> is not finite.</exception>
     public static ColorMatrix HueRotate(float degrees)
     {
         if (!float.IsFinite(degrees))
@@ -189,6 +197,7 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     /// <summary>Returns the matrix that applies this one and then <paramref name="next"/>, without clamping in between.</summary>
     /// <param name="next">The matrix applied second.</param>
     /// <returns>The combined matrix.</returns>
+    /// <exception cref="ArgumentException">The product has a value that is not finite.</exception>
     public ColorMatrix Then(ColorMatrix next)
     {
         Span<float> result = stackalloc float[20];
@@ -283,12 +292,12 @@ public readonly struct ColorMatrix : IEquatable<ColorMatrix>
     }
 
     /// <summary>Gets the luma weights of a mode.</summary>
-    internal static (float R, float G, float B) LumaWeights(GrayscaleMode mode)
+    internal static (float R, float G, float B) Weights(LumaWeights mode)
     {
         return mode switch
         {
-            GrayscaleMode.Rec709 => (0.2126f, 0.7152f, 0.0722f),
-            GrayscaleMode.Rec601 => (0.299f, 0.587f, 0.114f),
+            LumaWeights.Rec709 => (0.2126f, 0.7152f, 0.0722f),
+            LumaWeights.Rec601 => (0.299f, 0.587f, 0.114f),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
         };
     }

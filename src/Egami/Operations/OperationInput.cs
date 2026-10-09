@@ -51,5 +51,5 @@ public sealed class OperationInput<TPixel>
         RowRunner.Run(Destination.Height, (long)Destination.Width * PixelSize, Context.MaxParallelism, action, CancellationToken);
     }
 
-    private static int PixelSize => TPixel.Layout.BytesPerPixel;
+    private static int PixelSize => System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
 }

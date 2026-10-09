@@ -272,7 +272,7 @@ internal sealed class QoiReader : IFormatReader
                 throw input.Corrupt(input.Position, problem);
             }
 
-            raster.Metadata.Warnings.Add(problem);
+            raster.Metadata.WarningList.Add(problem);
         }
         finally
         {
@@ -313,7 +313,7 @@ internal sealed class QoiReader : IFormatReader
             raster.Row(rest).Clear();
         }
 
-        raster.Metadata.Warnings.Add($"The file ends after {y} of {raster.Height} rows; the rest is left transparent black.");
+        raster.Metadata.WarningList.Add($"The file ends after {y} of {raster.Height} rows; the rest is left transparent black.");
     }
 
     private readonly record struct Header(uint Width, uint Height, int Channels, bool Linear);

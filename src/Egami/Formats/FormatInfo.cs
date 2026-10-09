@@ -12,6 +12,8 @@ public delegate bool SignatureMatcher(ReadOnlySpan<byte> header);
 /// <remarks>Instances are immutable and safe to share across threads. Register custom formats with <see cref="EgamiContext.WithFormat"/>.</remarks>
 public sealed record FormatInfo
 {
+    private readonly int _signatureLength;
+
     /// <summary>Gets the short name, such as "PNG". Names are matched without regard to case.</summary>
     public required string Name { get; init; }
 
@@ -22,7 +24,12 @@ public sealed record FormatInfo
     public IReadOnlyList<string> Extensions { get; init; } = [];
 
     /// <summary>Gets how many leading bytes <see cref="Matches"/> needs.</summary>
-    public required int SignatureLength { get; init; }
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 65,536.</exception>
+    public required int SignatureLength
+    {
+        get => _signatureLength;
+        init => _signatureLength = value is >= 0 and <= 64 * 1024 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "A signature is 0 to 65,536 bytes.");
+    }
 
     /// <summary>Gets the function that recognizes the format from its first bytes. File extensions are never used for detection.</summary>
     public required SignatureMatcher Matches { get; init; }

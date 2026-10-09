@@ -61,7 +61,7 @@ internal sealed class JpegHeader
 
     internal JpegFrameComponent[] Components { get; set; } = [];
 
-    internal bool IsProgressive => FrameMarker == JpegMarker.Sof2;
+    internal bool Progressive => FrameMarker == JpegMarker.Sof2;
 
     internal int MaxH => Components.Max(c => c.H);
 

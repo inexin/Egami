@@ -113,7 +113,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     {
         using JpegBitReader reader = new(input);
         JpegScan scan = _header.FirstScan!;
-        if (!_header.IsProgressive && scan.Components.Length == _components.Length)
+        if (!_header.Progressive && scan.Components.Length == _components.Length)
         {
             DecodeStreaming(input, reader, scan);
             return;
@@ -135,7 +135,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             input.CancellationToken.ThrowIfCancellationRequested();
 
             // At 1/8 scale a block is its DC term alone, so a progressive AC scan of such a component is skipped unread.
-            bool skip = _header.IsProgressive && scan.SpectralStart > 0 && _components[scan.Components[0].ComponentIndex].BlockSize == 1;
+            bool skip = _header.Progressive && scan.SpectralStart > 0 && _components[scan.Components[0].ComponentIndex].BlockSize == 1;
             if (skip)
             {
                 reader.BeginScan();
@@ -758,7 +758,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         int se = scan.SpectralEnd;
         int ah = scan.ApproxHigh;
         int al = scan.ApproxLow;
-        bool progressive = _header.IsProgressive;
+        bool progressive = _header.Progressive;
         if (progressive && ((ss == 0 && se != 0) || (ss > 0 && count != 1) || (ah != 0 && al != ah - 1)))
         {
             throw new CorruptDataException(JpegFormat.Info.Name, -1, $"A progressive scan has an invalid band ({ss} to {se}) or bit position ({ah}, {al}).");
@@ -1018,7 +1018,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         if (!_warned)
         {
-            _raster.Metadata.Warnings.Add(message);
+            _raster.Metadata.WarningList.Add(message);
             _warned = true;
         }
     }

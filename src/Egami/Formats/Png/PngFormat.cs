@@ -3,7 +3,7 @@ namespace Egami.Formats.Png;
 /// <summary>The PNG format, registered in <see cref="EgamiContext.Default"/>.</summary>
 public static class PngFormat
 {
-    /// <summary>Gets the format description.</summary>
+    /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>
     public static FormatInfo Info { get; } = new()
     {
         Name = "PNG",

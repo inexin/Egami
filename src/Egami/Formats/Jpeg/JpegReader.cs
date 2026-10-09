@@ -17,7 +17,7 @@ internal sealed class JpegReader : IFormatReader
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
         JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
-        int scale = JpegSegmentReader.ScaleFor(header, options.TargetSize);
+        int scale = JpegSegmentReader.ScaleFor(header, options.MinimumSize);
         return new RasterInfo
         {
             Format = JpegFormat.Info,
@@ -48,7 +48,7 @@ internal sealed class JpegReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
-        int scale = JpegSegmentReader.ScaleFor(header, options.TargetSize);
+        int scale = JpegSegmentReader.ScaleFor(header, options.MinimumSize);
         Raster<TPixel> raster = input.CreateRaster<TPixel>(JpegDecoder<TPixel>.ScaledSize(header.Width, scale), JpegDecoder<TPixel>.ScaledSize(header.Height, scale));
         try
         {
@@ -86,7 +86,7 @@ internal sealed class JpegReader : IFormatReader
         // Header warnings come first; the decoder added its own to the target already.
         for (int i = source.Warnings.Count - 1; i >= 0; i--)
         {
-            target.Warnings.Insert(0, source.Warnings[i]);
+            target.WarningList.Insert(0, source.Warnings[i]);
         }
     }
 }

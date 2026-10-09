@@ -31,7 +31,7 @@ public sealed record JpegComponent(int Id, int HorizontalSampling, int VerticalS
 public sealed class JpegDetails : FormatDetails
 {
     /// <summary>Gets or sets whether the file is progressive rather than baseline (sequential).</summary>
-    public bool IsProgressive { get; set; }
+    public bool Progressive { get; set; }
 
     /// <summary>Gets or sets the color model the components are stored in.</summary>
     public JpegColorSpace ColorSpace { get; set; }
@@ -62,7 +62,7 @@ public sealed class JpegDetails : FormatDetails
     {
         JpegDetails copy = new()
         {
-            IsProgressive = IsProgressive,
+            Progressive = Progressive,
             ColorSpace = ColorSpace,
             RestartInterval = RestartInterval,
             EstimatedQuality = EstimatedQuality,

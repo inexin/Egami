@@ -11,9 +11,12 @@ namespace Egami.Formats;
 /// It also carries the context, limits and cancellation token for the load, and is the only way a reader allocates pixel memory.
 /// </summary>
 /// <remarks>Readers never call the stream directly. Egami never disposes the caller's stream.</remarks>
-public sealed class EgamiInput : IDisposable
+public sealed class EgamiInput
 {
     private const int BufferSize = 64 * 1024;
+
+    /// <summary>Reads at least this large skip the buffer when it is empty.</summary>
+    private const int DirectReadBytes = 4 * 1024;
 
     private readonly Stream _stream;
     private readonly BudgetedMemorySource _memory;
@@ -55,6 +58,7 @@ public sealed class EgamiInput : IDisposable
     /// </summary>
     /// <param name="count">How many bytes to look at, at most 64 KB.</param>
     /// <returns>The upcoming bytes.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is negative or above 64 KB.</exception>
     public ReadOnlySpan<byte> Peek(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
@@ -71,6 +75,21 @@ public sealed class EgamiInput : IDisposable
         int total = 0;
         while (total < destination.Length)
         {
+            if (_start == _end && destination.Length - total >= DirectReadBytes)
+            {
+                // A large read with nothing buffered goes straight from the stream into the destination: one copy, not two.
+                CancellationToken.ThrowIfCancellationRequested();
+                int read = _stream.Read(destination[total..]);
+                if (read == 0)
+                {
+                    break;
+                }
+
+                _position += read;
+                total += read;
+                continue;
+            }
+
             if (_start == _end && !Fill(1))
             {
                 break;
@@ -185,9 +204,80 @@ public sealed class EgamiInput : IDisposable
         }
 
         Limits.CheckFrameSize(width, height);
-        _memory.Check(width * height * TPixel.Layout.BytesPerPixel);
+        _memory.Check(width * height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
         PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>((int)width, (int)height, _memory, clear);
         return new Raster<TPixel>(plane, new RasterMetadata { FormatName = FormatName }, Context);
+    }
+
+    /// <summary>
+    /// Appends a new frame the raster's size to a raster this load created with <see cref="CreateRaster"/>, for readers of animated
+    /// formats. The frame counts against <see cref="SafetyLimits.MaxFrames"/> and the load's memory budget. Unless
+    /// <paramref name="clear"/> asks for it, its pixels are not cleared.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type.</typeparam>
+    /// <param name="raster">The raster being read.</param>
+    /// <param name="clear">Whether to zero the pixels first.</param>
+    /// <returns>The new frame, last in <see cref="Raster{TPixel}.Frames"/>.</returns>
+    /// <exception cref="LimitExceededException">The frame count or the memory budget would be exceeded.</exception>
+    public Frame<TPixel> AddFrame<TPixel>(Raster<TPixel> raster, ClearMode clear = ClearMode.None)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        ArgumentNullException.ThrowIfNull(raster);
+        Limits.CheckFrameCount(raster.FrameCount + 1L);
+        _memory.Check((long)raster.Width * raster.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+        PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(raster.Width, raster.Height, _memory, clear);
+        Frame<TPixel> frame = new(plane, new FrameMetadata());
+        raster.Frames.AddOwned(frame);
+        return frame;
+    }
+
+    /// <summary>
+    /// Rents scratch memory (a canvas row, a previous frame, a decompression buffer) counted against the load's memory budget
+    /// with the raster. Dispose it when done.
+    /// </summary>
+    /// <param name="byteLength">The size in bytes.</param>
+    /// <param name="clear">Whether to zero it.</param>
+    /// <returns>The memory.</returns>
+    /// <exception cref="LimitExceededException">The memory budget would be exceeded.</exception>
+    public IMemoryOwner<byte> RentScratch(int byteLength, ClearMode clear = ClearMode.None)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(byteLength);
+        return _memory.Allocate(byteLength, clear);
+    }
+
+    /// <summary>Checks that <paramref name="bytes"/> more would fit the load's memory budget, without allocating.</summary>
+    /// <param name="bytes">The bytes about to be needed.</param>
+    /// <exception cref="LimitExceededException">They would not fit.</exception>
+    public void CheckMemory(long bytes)
+    {
+        _memory.Check(bytes);
+    }
+
+    /// <summary>Checks a frame count against <see cref="SafetyLimits.MaxFrames"/>.</summary>
+    /// <param name="frames">The frames the file says it has, or will have.</param>
+    /// <exception cref="LimitExceededException">There are too many.</exception>
+    public void CheckFrameCount(long frames)
+    {
+        Limits.CheckFrameCount(frames);
+    }
+
+    /// <summary>Checks a metadata size against <see cref="SafetyLimits.MaxMetadataBytes"/>.</summary>
+    /// <param name="bytes">The metadata bytes kept so far, or about to be read.</param>
+    /// <exception cref="LimitExceededException">They are too many.</exception>
+    public void CheckMetadataBytes(long bytes)
+    {
+        Limits.CheckMetadataBytes(bytes);
+    }
+
+    /// <summary>Notes a problem a lenient read recovered from in the raster's <see cref="RasterMetadata.Warnings"/>.</summary>
+    /// <param name="raster">The raster being read.</param>
+    /// <param name="warning">What was wrong and what the reader did, as a sentence.</param>
+    public void Warn(Raster raster, string warning)
+    {
+        ArgumentNullException.ThrowIfNull(raster);
+        ArgumentException.ThrowIfNullOrEmpty(warning);
+        ObjectDisposedException.ThrowIf(_buffer is null, this);
+        raster.Metadata.WarningList.Add(warning);
     }
 
     /// <summary>Gets the length of the data from the start of the image, or <see langword="null"/> if the stream cannot seek.</summary>
@@ -229,7 +319,7 @@ public sealed class EgamiInput : IDisposable
     }
 
     /// <summary>Returns the buffer to the pool. Leaves the stream open.</summary>
-    public void Dispose()
+    internal void Dispose()
     {
         byte[]? buffer = Interlocked.Exchange(ref _buffer, null);
         if (buffer is not null)

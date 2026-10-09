@@ -286,7 +286,7 @@ internal sealed class TgaReader : IFormatReader
         metadata.FormatDetails = details;
         foreach (string warning in header.Warnings)
         {
-            metadata.Warnings.Add(warning);
+            metadata.WarningList.Add(warning);
         }
 
         if (header.Extension is not byte[] e || !options.ReadMetadata)
@@ -315,8 +315,8 @@ internal sealed class TgaReader : IFormatReader
             details.Timestamp = new DateTime(year, month, day, hour, minute, second, DateTimeKind.Unspecified);
         }
 
-        details.JobName = Field(e.AsSpan(379, 41));
-        details.Software = Field(e.AsSpan(426, 41));
+        details.JobName = NullIfEmpty(Field(e.AsSpan(379, 41)));
+        details.Software = NullIfEmpty(Field(e.AsSpan(426, 41)));
         int aspectX = BinaryPrimitives.ReadUInt16LittleEndian(e.AsSpan(474)), aspectY = BinaryPrimitives.ReadUInt16LittleEndian(e.AsSpan(476));
         details.PixelAspectRatio = aspectX > 0 && aspectY > 0 ? (double)aspectX / aspectY : null;
         int gammaNumerator = BinaryPrimitives.ReadUInt16LittleEndian(e.AsSpan(478)), gammaDenominator = BinaryPrimitives.ReadUInt16LittleEndian(e.AsSpan(480));
@@ -325,6 +325,11 @@ internal sealed class TgaReader : IFormatReader
             metadata.ColorSpace = ColorSpaceHint.Gamma;
             metadata.Gamma = (double)gammaNumerator / gammaDenominator;
         }
+    }
+
+    private static string? NullIfEmpty(string text)
+    {
+        return text.Length == 0 ? null : text;
     }
 
     /// <summary>Reads a zero-terminated ASCII field, trimmed of trailing spaces.</summary>
@@ -409,7 +414,7 @@ internal sealed class TgaReader : IFormatReader
             GrayAlpha8[] gray = ArrayPool<GrayAlpha8>.Shared.Rent(width);
             Span<byte> packet = stackalloc byte[4];
             bool direct = !header.Gray && !header.Mapped && !header.RightToLeft
-                && ((header.Depth == 32 && typeof(TPixel) == typeof(Bgra8)) || (header.Depth == 24 && typeof(TPixel) == typeof(Bgr8)));
+                && ((header.Depth == 32 && (typeof(TPixel) == typeof(Bgra8) || typeof(TPixel) == typeof(Rgba8))) || (header.Depth == 24 && typeof(TPixel) == typeof(Bgr8)));
             int row = 0;
             try
             {
@@ -441,6 +446,11 @@ internal sealed class TgaReader : IFormatReader
                             {
                                 Unpremultiply(pixels);
                             }
+
+                            if (typeof(TPixel) == typeof(Rgba8))
+                            {
+                                SwapRedBlue(MemoryMarshal.Cast<byte, uint>(into));
+                            }
                         }
 
                         continue;
@@ -467,6 +477,11 @@ internal sealed class TgaReader : IFormatReader
                         }
 
                         PixelConvert.Convert<GrayAlpha8, TPixel>(pixels, target);
+                    }
+                    else if (header.Depth == 32 && !header.Mapped && header.UsesAlpha && header.AlphaType != TgaAlphaType.Premultiplied && !header.RightToLeft)
+                    {
+                        // Straight 32-bit BGRA: convert from the stored bytes without a copy.
+                        PixelConvert.Convert<Bgra8, TPixel>(MemoryMarshal.Cast<byte, Bgra8>(stored), target);
                     }
                     else
                     {
@@ -557,6 +572,30 @@ internal sealed class TgaReader : IFormatReader
             finally
             {
                 ArrayPool<Bgra8>.Shared.Return(buffer);
+            }
+        }
+
+        /// <summary>Turns packed BGRA into RGBA in place.</summary>
+        private static void SwapRedBlue(Span<uint> pixels)
+        {
+            int x = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                Span<Vector256<uint>> vectors = MemoryMarshal.Cast<uint, Vector256<uint>>(pixels);
+                Vector256<uint> keep = Vector256.Create(0xFF00_FF00u);
+                Vector256<uint> low = Vector256.Create(0xFFu);
+                foreach (ref Vector256<uint> v in vectors)
+                {
+                    v = (v & keep) | ((v >> 16) & low) | ((v & low) << 16);
+                }
+
+                x = vectors.Length * Vector256<uint>.Count;
+            }
+
+            for (; x < pixels.Length; x++)
+            {
+                uint p = pixels[x];
+                pixels[x] = (p & 0xFF00_FF00) | ((p >> 16) & 0xFF) | ((p & 0xFF) << 16);
             }
         }
 

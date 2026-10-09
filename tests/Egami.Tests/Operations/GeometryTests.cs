@@ -49,9 +49,9 @@ public class GeometryTests
 
         raster.Apply(ops => ops.Rotate(90).Rotate(90).Rotate(90).Rotate(90), ct);
         Assert.Equal(original, Grid.Of(raster));
-        raster.Apply(ops => ops.Flip(FlipMode.Horizontal).Flip(FlipMode.Horizontal).Flip(FlipMode.Vertical).Flip(FlipMode.Vertical), ct);
+        raster.Apply(ops => ops.FlipHorizontal().FlipHorizontal().FlipVertical().FlipVertical(), ct);
         Assert.Equal(original, Grid.Of(raster));
-        raster.Apply(ops => ops.Rotate(90).Rotate(-90).Rotate(180).Flip(FlipMode.Both), ct);
+        raster.Apply(ops => ops.Rotate(90).Rotate(-90).Rotate(180).FlipHorizontal().FlipVertical(), ct);
         Assert.Equal(original, Grid.Of(raster));
     }
 
@@ -68,7 +68,6 @@ public class GeometryTests
         using Raster<Rgba8> none = raster.Derive(ops => ops.Rotate(360).Rotate(0), ct);
         Assert.Equal(original, Grid.Of(none));
         Assert.Throws<ArgumentOutOfRangeException>(() => new RasterOpsProbe().Ops.Rotate(float.NaN));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new RasterOpsProbe().Ops.Flip((FlipMode)3));
     }
 
     [Fact]
@@ -78,10 +77,10 @@ public class GeometryTests
         Grid original = Grid.Of(raster);
         CancellationToken ct = TestContext.Current.CancellationToken;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.Flip(FlipMode.Horizontal).Crop(15, 0, 6, 10), ct));
-        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.Flip(FlipMode.Horizontal).Crop(-1, 0, 5, 5), ct));
+        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.FlipHorizontal().Crop(15, 0, 6, 10), ct));
+        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.FlipHorizontal().Crop(-1, 0, 5, 5), ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.Crop(0, 0, 0, 5), ct));
-        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.Flip(FlipMode.Horizontal).Pad(19, 30), ct));
+        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.FlipHorizontal().Pad(19, 30), ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Apply(ops => ops.Pad(0, 30), ct));
 
         // The rectangle is checked against the size at that step: after a 90° turn the image is 10 × 20.
@@ -120,7 +119,7 @@ public class GeometryTests
         EgamiContext one = EgamiContext.Default with { MaxParallelism = 1 };
         using Raster<Rgba8> a = Pattern<Rgba8>(1000, 700, EgamiContext.Default);
         using Raster<Rgba8> b = Pattern<Rgba8>(1000, 700, one);
-        static void Chain(RasterOps ops) => ops.Rotate(90).Flip(FlipMode.Both).Pad(800, 1100, Rgba8.Blue, Anchor.BottomRight).Crop(13, 17, 600, 900).Rotate(270).Flip(FlipMode.Vertical);
+        static void Chain(RasterOps ops) => ops.Rotate(90).FlipHorizontal().FlipVertical().Pad(800, 1100, Rgba8.Blue, Anchor.BottomRight).Crop(13, 17, 600, 900).Rotate(270).FlipVertical();
         a.Apply(Chain, ct);
         b.Apply(Chain, ct);
         Assert.Equal(Grid.Of(b), Grid.Of(a));
@@ -193,15 +192,15 @@ public class GeometryTests
                 ("crop", ops => ops.Crop(crop), g.Crop(crop)),
                 ("pad", ops => ops.Pad(width + 5, height + 3, color, Anchor.TopRight), g.Pad(width + 5, height + 3, fill, new Point(5, 0))),
                 ("pad center", ops => ops.Pad(width + 4, height + 7, color), g.Pad(width + 4, height + 7, fill, new Point(2, 3))),
-                ("flip h", ops => ops.Flip(FlipMode.Horizontal), g.FlipHorizontal()),
-                ("flip v", ops => ops.Flip(FlipMode.Vertical), g.FlipVertical()),
-                ("flip both", ops => ops.Flip(FlipMode.Both), g.FlipHorizontal().FlipVertical()),
+                ("flip h", ops => ops.FlipHorizontal(), g.FlipHorizontal()),
+                ("flip v", ops => ops.FlipVertical(), g.FlipVertical()),
+                ("flip both", ops => ops.FlipHorizontal().FlipVertical(), g.FlipHorizontal().FlipVertical()),
                 ("rotate 90", ops => ops.Rotate(90), g.Rotate(clockwise: true)),
                 ("rotate 180", ops => ops.Rotate(180), g.FlipHorizontal().FlipVertical()),
                 ("rotate 270", ops => ops.Rotate(270), g.Rotate(clockwise: false)),
                 ("fill", ops => ops.FillColor(color), g.Fill(new Rect(0, 0, width, height), fill)),
                 ("fill rect", ops => ops.FillColor(color, area), g.Fill(area, fill)),
-                ("chain", ops => ops.Rotate(90).Crop(0, 0, height, Math.Max(1, width - 1)).Flip(FlipMode.Horizontal),
+                ("chain", ops => ops.Rotate(90).Crop(0, 0, height, Math.Max(1, width - 1)).FlipHorizontal(),
                     g.Rotate(clockwise: true).Crop(new Rect(0, 0, height, Math.Max(1, width - 1))).FlipHorizontal()),
             ];
 

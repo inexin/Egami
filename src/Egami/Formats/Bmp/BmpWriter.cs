@@ -23,14 +23,14 @@ internal sealed class BmpWriter : IFormatWriter
         ArgumentNullException.ThrowIfNull(raster);
         ArgumentNullException.ThrowIfNull(output);
         BmpWriterOptions bmp = options as BmpWriterOptions ?? new BmpWriterOptions { StripMetadata = options.StripMetadata };
-        BmpBits layout = bmp.Bits != BmpBits.Auto ? bmp.Bits : !TPixel.Layout.HasAlpha || IsOpaque(raster) ? BmpBits.Bgr24 : BmpBits.Bgra32;
+        BmpPixelFormat layout = bmp.PixelFormat != BmpPixelFormat.Auto ? bmp.PixelFormat : !TPixel.Layout.HasAlpha || IsOpaque(raster) ? BmpPixelFormat.Bgr24 : BmpPixelFormat.Bgra32;
         int bits = layout switch
         {
-            BmpBits.Indexed1 => 1,
-            BmpBits.Indexed2 => 2,
-            BmpBits.Indexed4 => 4,
-            BmpBits.Indexed8 => 8,
-            BmpBits.Bgr24 => 24,
+            BmpPixelFormat.Indexed1 => 1,
+            BmpPixelFormat.Indexed2 => 2,
+            BmpPixelFormat.Indexed4 => 4,
+            BmpPixelFormat.Indexed8 => 8,
+            BmpPixelFormat.Bgr24 => 24,
             _ => 32,
         };
 
@@ -39,7 +39,7 @@ internal sealed class BmpWriter : IFormatWriter
         long stride = (((long)width * bits) + 31) / 32 * 4;
         long imageSize = stride * height;
         ReadOnlyMemory<byte> profile = bmp.StripMetadata ? default : raster.Metadata.IccProfile;
-        int headerSize = !profile.IsEmpty ? 124 : layout == BmpBits.Bgra32 ? 108 : 40;
+        int headerSize = !profile.IsEmpty ? 124 : layout == BmpPixelFormat.Bgra32 ? 108 : 40;
 
         BuiltPalette? palette = null;
         byte[]? indices = null;
@@ -71,7 +71,7 @@ internal sealed class BmpWriter : IFormatWriter
             BinaryPrimitives.WriteInt32LittleEndian(info[8..], height);
             BinaryPrimitives.WriteUInt16LittleEndian(info[12..], 1);
             BinaryPrimitives.WriteUInt16LittleEndian(info[14..], (ushort)bits);
-            BinaryPrimitives.WriteUInt32LittleEndian(info[16..], layout == BmpBits.Bgra32 ? 3u : 0u);
+            BinaryPrimitives.WriteUInt32LittleEndian(info[16..], layout == BmpPixelFormat.Bgra32 ? 3u : 0u);
             BinaryPrimitives.WriteUInt32LittleEndian(info[20..], (uint)imageSize);
             (int xppm, int yppm) = PixelsPerMeter(raster.Metadata.Resolution);
             BinaryPrimitives.WriteInt32LittleEndian(info[24..], xppm);
@@ -79,7 +79,7 @@ internal sealed class BmpWriter : IFormatWriter
             BinaryPrimitives.WriteUInt32LittleEndian(info[32..], (uint)(palette?.Colors.Length ?? 0));
             if (headerSize >= 108)
             {
-                if (layout == BmpBits.Bgra32)
+                if (layout == BmpPixelFormat.Bgra32)
                 {
                     BinaryPrimitives.WriteUInt32LittleEndian(info[40..], 0x00FF_0000);
                     BinaryPrimitives.WriteUInt32LittleEndian(info[44..], 0x0000_FF00);

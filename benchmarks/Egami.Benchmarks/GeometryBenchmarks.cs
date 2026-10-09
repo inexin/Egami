@@ -45,13 +45,13 @@ public class GeometryBenchmarks
     [Benchmark]
     public void FlipHorizontal()
     {
-        _raster.Apply(ops => ops.Flip(FlipMode.Horizontal));
+        _raster.Apply(ops => ops.FlipHorizontal());
     }
 
     [Benchmark]
     public void FlipVertical()
     {
-        _raster.Apply(ops => ops.Flip(FlipMode.Vertical));
+        _raster.Apply(ops => ops.FlipVertical());
     }
 
     [Benchmark]

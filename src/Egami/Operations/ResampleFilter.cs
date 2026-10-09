@@ -22,7 +22,7 @@ public enum ResampleFilter
     Lanczos3,
 }
 
-/// <summary>The space in which resampling blends colors.</summary>
+/// <summary>The color space in which resizing, blurs and grayscale blend colors: the stored sRGB-encoded values, or linear light.</summary>
 public enum ColorSpace
 {
     /// <summary>

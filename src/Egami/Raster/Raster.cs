@@ -84,7 +84,8 @@ public abstract partial class Raster : IDisposable
 
     /// <summary>
     /// Creates a raster over memory the caller owns, without copying. The raster never frees the memory,
-    /// and the caller must keep it alive while the raster is used.
+    /// and the caller must keep it alive while the raster is used. An operation that changes the size gives the raster new memory
+    /// of its own, so it stops showing the caller's. <see cref="SafetyLimits"/> are not applied to wrapped memory.
     /// </summary>
     /// <typeparam name="TPixel">The pixel type.</typeparam>
     /// <param name="memory">The pixels, row by row.</param>
@@ -98,6 +99,27 @@ public abstract partial class Raster : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         return new Raster<TPixel>(PixelPlane.Wrap(memory, width, height, stride), new RasterMetadata(), context ?? EgamiContext.Default);
+    }
+
+    /// <summary>
+    /// Creates a raster over bytes with any row stride, such as a frame from a video decoder whose rows are padded to an alignment,
+    /// without copying. When <paramref name="owner"/> is given, disposing the raster disposes it, so the memory goes back to whoever
+    /// lent it; otherwise the caller keeps the memory alive while the raster is used. An operation that changes the size gives the
+    /// raster new memory of its own, and the wrapped memory is released then.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type.</typeparam>
+    /// <param name="memory">The pixels, row by row.</param>
+    /// <param name="width">The width in pixels, at least 1.</param>
+    /// <param name="height">The height in pixels, at least 1.</param>
+    /// <param name="byteStride">The distance between the starts of consecutive rows, in bytes. 0 means rows are packed.</param>
+    /// <param name="owner">What to dispose when the raster lets go of the memory, or <see langword="null"/>.</param>
+    /// <param name="context">The context for later allocations, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <returns>The raster.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">A size is out of range, the stride is shorter than a row, or <paramref name="memory"/> is too short.</exception>
+    public static Raster<TPixel> Wrap<TPixel>(Memory<byte> memory, int width, int height, int byteStride, IDisposable? owner = null, EgamiContext? context = null)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        return new Raster<TPixel>(PixelPlane.Wrap<TPixel>(memory, width, height, byteStride, owner), new RasterMetadata(), context ?? EgamiContext.Default);
     }
 
     /// <summary>Returns a new raster with every frame converted to <typeparamref name="TTo"/>. See <see cref="PixelConvert.Convert"/>.</summary>
@@ -122,6 +144,12 @@ public abstract partial class Raster : IDisposable
     /// </summary>
     /// <param name="build">Records the chain.</param>
     /// <param name="cancellationToken">Cancels between steps and between bands of rows.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="build"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">A step would make the size less than 1.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A crop, pad or fill rectangle does not fit the image when the chain runs.</exception>
+    /// <exception cref="LimitExceededException">The pixels the chain needs would break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     public void Apply(Action<RasterOps> build, CancellationToken cancellationToken = default)
     {
         ApplyCore(build, cancellationToken);
@@ -131,6 +159,12 @@ public abstract partial class Raster : IDisposable
     /// <param name="build">Records the chain.</param>
     /// <param name="cancellationToken">Cancels between steps and between bands of rows.</param>
     /// <returns>The new raster, in the same pixel type. The caller must dispose it.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="build"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">A step would make the size less than 1.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A crop, pad or fill rectangle does not fit the image when the chain runs.</exception>
+    /// <exception cref="LimitExceededException">The pixels the chain needs would break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     public Raster Derive(Action<RasterOps> build, CancellationToken cancellationToken = default)
     {
         return DeriveCore(build, cancellationToken);

@@ -244,7 +244,7 @@ internal sealed class GifReader : IFormatReader
             _input.Limits.CheckFrameSize(Width, Height);
             byte packed = header[10];
             _details.BackgroundIndex = header[11];
-            _details.PixelAspectRatio = header[12];
+            _details.PixelAspectRatio = header[12] == 0 ? null : (header[12] + 15) / 64.0;
             if ((packed & 0x80) != 0)
             {
                 _global = ReadPalette(packed & 7);
@@ -345,7 +345,7 @@ internal sealed class GifReader : IFormatReader
                 if (length >= 3 && data[0] == 1)
                 {
                     int repeats = data[1] | (data[2] << 8);
-                    _details.RepeatCount = repeats;
+                    _details.RepetitionCount = repeats;
                     Metadata.LoopCount = repeats == 0 ? 0 : repeats + 1;
                 }
 
@@ -479,7 +479,7 @@ internal sealed class GifReader : IFormatReader
 
             if (index >= first && index < end)
             {
-                long frameBytes = (long)Width * Height * TPixel.Layout.BytesPerPixel;
+                long frameBytes = (long)Width * Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
                 _input.Memory.Check(frameBytes);
                 PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(Width, Height, _input.Memory);
                 _canvas.CopyTo(plane);
@@ -489,7 +489,7 @@ internal sealed class GifReader : IFormatReader
                     Disposal = disposal,
                     Blend = FrameBlend.Over,
                     Bounds = new Rect(left, top, width, height),
-                    FormatDetails = new GifFrameDetails { LocalPalette = local, TransparentIndex = transparent >= 0 ? transparent : null, IsInterlaced = interlaced },
+                    FormatDetails = new GifFrameDetails { LocalPalette = local, TransparentIndex = transparent >= 0 ? transparent : null, Interlaced = interlaced },
                 };
                 _frames.Add(new Frame<TPixel>(plane, metadata));
             }
@@ -620,7 +620,7 @@ internal sealed class GifReader : IFormatReader
                 throw _input.Corrupt(at, message);
             }
 
-            Metadata.Warnings.Add(message);
+            Metadata.WarningList.Add(message);
         }
 
         private static string DecodeText(ReadOnlySpan<byte> bytes)

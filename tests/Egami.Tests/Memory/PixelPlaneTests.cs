@@ -53,7 +53,8 @@ public class PixelPlaneTests
     {
         // 10 pixels × 4 bytes = 40 bytes per row; 100-byte blocks hold 2 rows.
         CountingSource source = new(maxBlockBytes: 100);
-        using PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(10, 7, source);
+        PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(10, 7, source);
+        using PlaneScope<Rgba8> planeScope = new(plane);
         Assert.Equal([80, 80, 80, 40], source.Allocations);
         Assert.False(plane.TryGetContiguous(out Span<Rgba8> flat));
         Assert.True(flat.IsEmpty);
@@ -75,14 +76,16 @@ public class PixelPlaneTests
     public void ARowLargerThanABlockStillGetsOneBlock()
     {
         CountingSource source = new(maxBlockBytes: 10);
-        using PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(5, 3, source);
+        PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(5, 3, source);
+        using PlaneScope<Rgba8> planeScope = new(plane);
         Assert.Equal([20, 20, 20], source.Allocations);
     }
 
     [Fact]
     public void SmallPlanesAreOneContiguousBlock()
     {
-        using PixelPlane<Gray16> plane = PixelPlane.Allocate<Gray16>(3, 2, PooledPixelMemorySource.Shared, ClearMode.Zero);
+        PixelPlane<Gray16> plane = PixelPlane.Allocate<Gray16>(3, 2, PooledPixelMemorySource.Shared, ClearMode.Zero);
+        using PlaneScope<Gray16> planeScope = new(plane);
         Assert.True(plane.TryGetContiguous(out Span<Gray16> pixels));
         Assert.Equal(6, pixels.Length);
         pixels[4] = new Gray16(1234);
@@ -123,7 +126,8 @@ public class PixelPlaneTests
     [InlineData(3)]
     public void RowOutsideThePlaneThrows(int y)
     {
-        using PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(2, 3, PooledPixelMemorySource.Shared);
+        PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(2, 3, PooledPixelMemorySource.Shared);
+        using PlaneScope<Rgba8> planeScope = new(plane);
         Assert.Throws<ArgumentOutOfRangeException>(() => plane.Row(y));
     }
 
@@ -148,7 +152,8 @@ public class PixelPlaneTests
     public void WrappedPlanesUseTheCallersMemoryAndStride()
     {
         Rgba8[] pixels = new Rgba8[11];
-        using (PixelPlane<Rgba8> plane = PixelPlane.Wrap<Rgba8>(pixels, width: 3, height: 3, stride: 4))
+        PixelPlane<Rgba8> plane = PixelPlane.Wrap<Rgba8>(pixels, width: 3, height: 3, stride: 4);
+        using (new PlaneScope<Rgba8>(plane))
         {
             Assert.False(plane.OwnsMemory);
             Assert.False(plane.TryGetContiguous(out _));
@@ -157,7 +162,8 @@ public class PixelPlaneTests
 
         Assert.Equal(Rgba8.Red, pixels[8]);
 
-        using PixelPlane<Rgba8> tight = PixelPlane.Wrap<Rgba8>(pixels, width: 5, height: 2);
+        PixelPlane<Rgba8> tight = PixelPlane.Wrap<Rgba8>(pixels, width: 5, height: 2);
+        using PlaneScope<Rgba8> tightScope = new(tight);
         Assert.True(tight.TryGetContiguous(out Span<Rgba8> flat));
         Assert.Equal(10, flat.Length);
     }

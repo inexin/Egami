@@ -80,7 +80,7 @@ public class ApngDecodeTests(ITestOutputHelper output)
         Assert.Equal(delays[skip..], raster.Frames.Select(f => (int)Math.Round(f.Metadata.Delay.TotalMilliseconds)));
         Assert.Equal(entry.GetProperty("loop").GetInt32(), raster.Metadata.LoopCount);
         PngDetails details = Assert.IsType<PngDetails>(raster.Metadata.FormatDetails);
-        Assert.True(details.IsAnimated);
+        Assert.True(details.Animated);
         Assert.Equal(skip == 0, details.DefaultImageIsFrame);
         Assert.DoesNotContain(details.OtherChunks, c => c.Type is "acTL" or "fcTL" or "fdAT");
     }

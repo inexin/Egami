@@ -157,7 +157,7 @@ public class PipelineTests
     {
         using Raster<Gray8> raster = Raster.Create<Gray8>(300, 5000);
         int[] visits = new int[raster.Height];
-        raster.ForEachRow((_, y) => Interlocked.Increment(ref visits[y]));
+        raster.ForEachRow((_, y) => Interlocked.Increment(ref visits[y]), TestContext.Current.CancellationToken);
         Assert.All(visits, v => Assert.Equal(1, v));
     }
 
@@ -215,7 +215,7 @@ public class PipelineTests
             {
                 row[x] = new Rgba8((byte)(x * 3), (byte)(y * 5), (byte)(x + y), 255);
             }
-        });
+        }, TestContext.Current.CancellationToken);
         return raster;
     }
 

@@ -485,7 +485,7 @@ internal sealed class GifWriter : IFormatWriter
             int bits = _global?.Bits ?? 1;
             header[10] = (byte)(_global is null ? 0 : 0x80 | ((bits - 1) << 4) | (bits - 1));
             header[11] = _global is not null && details is not null && details.BackgroundIndex < _global.Colors.Length ? details.BackgroundIndex : (byte)0;
-            header[12] = details?.PixelAspectRatio ?? 0;
+            header[12] = details?.PixelAspectRatio is double ratio and > 0 ? (byte)Math.Clamp(Math.Round((ratio * 64) - 15), 1, 255) : (byte)0;
             _buffer.Advance(13);
             if (_global is not null)
             {
@@ -512,14 +512,14 @@ internal sealed class GifWriter : IFormatWriter
         private void WriteLoop(GifDetails? details)
         {
             int plays = _raster.Metadata.LoopCount;
-            if (plays == 1 && details?.RepeatCount is null)
+            if (plays == 1 && details?.RepetitionCount is null)
             {
                 // One play is what a file without the block means.
                 return;
             }
 
             int repeats = plays == 0 ? 0 : Math.Min(plays - 1, ushort.MaxValue);
-            if (details?.RepeatCount is int raw && (raw == 0 ? 0 : raw + 1) == plays)
+            if (details?.RepetitionCount is int raw && (raw == 0 ? 0 : raw + 1) == plays)
             {
                 repeats = raw;
             }

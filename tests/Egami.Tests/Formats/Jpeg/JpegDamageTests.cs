@@ -31,7 +31,7 @@ public class JpegDamageTests
         Random random = new(file.GetHashCode(StringComparison.Ordinal));
         foreach (byte[] damaged in Damage(data, random))
         {
-            foreach (ReaderOptions options in (ReaderOptions[])[new() { Recovery = RecoveryMode.Lenient }, new() { Recovery = RecoveryMode.Strict }, new() { TargetSize = new Size(8, 8) }])
+            foreach (ReaderOptions options in (ReaderOptions[])[new() { Recovery = RecoveryMode.Lenient }, new() { Recovery = RecoveryMode.Strict }, new() { MinimumSize = new Size(8, 8) }])
             {
                 Stopwatch clock = Stopwatch.StartNew();
                 try

@@ -120,13 +120,17 @@ public sealed class PixelMemoryUsage
 }
 
 /// <summary>Describes a pixel memory block that was collected without being disposed.</summary>
-/// <param name="bytes">The size of the block.</param>
-/// <param name="stackTrace">Where it was allocated, when <see cref="PixelMemoryUsage.CaptureStackTraces"/> was on.</param>
-public sealed class PixelMemoryLeakEventArgs(long bytes, string? stackTrace) : EventArgs
+public sealed class PixelMemoryLeakEventArgs : EventArgs
 {
+    internal PixelMemoryLeakEventArgs(long bytes, string? stackTrace)
+    {
+        Bytes = bytes;
+        StackTrace = stackTrace;
+    }
+
     /// <summary>Gets the size of the block in bytes.</summary>
-    public long Bytes { get; } = bytes;
+    public long Bytes { get; }
 
     /// <summary>Gets the stack trace of the allocation, or <see langword="null"/> if stack traces were not captured.</summary>
-    public string? StackTrace { get; } = stackTrace;
+    public string? StackTrace { get; }
 }

@@ -76,7 +76,7 @@ public class ApngEncodeTests(ITestOutputHelper output)
         using Raster source = Raster.Load(AnimCorpus.Read("apng/pan-rgb.png"));
         using Raster again = Raster.Load(Save(source, new PngWriterOptions { FirstFrameOnly = true }));
         Assert.Equal(1, again.FrameCount);
-        Assert.False(((PngDetails)again.Metadata.FormatDetails!).IsAnimated);
+        Assert.False(((PngDetails)again.Metadata.FormatDetails!).Animated);
     }
 
     [Theory]

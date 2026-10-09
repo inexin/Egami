@@ -6,6 +6,9 @@ namespace Egami.Metadata;
 /// </summary>
 public enum ImageOrientation
 {
+    /// <summary>Not a valid EXIF value; treated as <see cref="Normal"/>. Readers report <see cref="Normal"/> when a file says nothing.</summary>
+    Unknown = 0,
+
     /// <summary>Stored upright (EXIF 1). Also used when a file says nothing.</summary>
     Normal = 1,
 

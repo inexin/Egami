@@ -1,5 +1,7 @@
 using System.Buffers;
 
+using Egami.Tests.Memory;
+
 namespace Egami.Tests;
 
 public class ContextTests
@@ -91,7 +93,7 @@ public class ContextTests
     public void BudgetAppliesToWholePlanes()
     {
         BudgetedMemorySource budget = new(PooledPixelMemorySource.Shared, maxTotalBytes: 4 * 100 * 100);
-        using (PixelPlane<Egami.Pixels.Rgba8> plane = PixelPlane.Allocate<Egami.Pixels.Rgba8>(100, 100, budget))
+        using (new PlaneScope<Egami.Pixels.Rgba8>(PixelPlane.Allocate<Egami.Pixels.Rgba8>(100, 100, budget)))
         {
             Assert.Throws<LimitExceededException>(() => PixelPlane.Allocate<Egami.Pixels.Gray8>(1, 1, budget));
         }

@@ -34,7 +34,7 @@ public record ReaderOptions
     /// Gets the smallest size the caller needs, or <see langword="null"/> for full size. Formats that can decode at a reduced scale,
     /// such as JPEG, may return a smaller image that is still at least this big. Others ignore it.
     /// </summary>
-    public Size? TargetSize { get; init; }
+    public Size? MinimumSize { get; init; }
 }
 
 /// <summary>

@@ -96,7 +96,7 @@ internal sealed class BmpReader : IFormatReader
         {
             if (raster.Width != header.Width || raster.Height != header.Height)
             {
-                raster.Metadata.Warnings.Add($"The embedded image is {raster.Width}×{raster.Height}; the BMP header says {header.Width}×{header.Height}.");
+                raster.Metadata.WarningList.Add($"The embedded image is {raster.Width}×{raster.Height}; the BMP header says {header.Width}×{header.Height}.");
             }
 
             raster.Metadata.FormatName = BmpFormat.Info.Name;
@@ -301,12 +301,12 @@ internal sealed class BmpReader : IFormatReader
             count = (int)room;
         }
 
-        byte[] bytes = new byte[count * entrySize];
+        Span<byte> bytes = stackalloc byte[count * entrySize];
         input.ReadExactly(bytes);
-        header.Palette = new Bgr8[count];
+        header.Palette = new Rgb8[count];
         for (int i = 0; i < count; i++)
         {
-            header.Palette[i] = new Bgr8(bytes[i * entrySize], bytes[(i * entrySize) + 1], bytes[(i * entrySize) + 2]);
+            header.Palette[i] = new Rgb8(bytes[(i * entrySize) + 2], bytes[(i * entrySize) + 1], bytes[i * entrySize]);
         }
     }
 
@@ -337,7 +337,7 @@ internal sealed class BmpReader : IFormatReader
             BitsPerPixel = header.Bits,
             Compression = header.Compression,
             TopDown = header.TopDown,
-            Palette = header.Palette.Select(c => new Rgb8(c.R, c.G, c.B)).ToArray(),
+            Palette = header.Palette,
             Masks = header.Masks,
             ColorSpaceType = header.ColorSpaceType,
             Calibration = header.Calibration,
@@ -345,7 +345,7 @@ internal sealed class BmpReader : IFormatReader
         };
         foreach (string warning in header.Warnings)
         {
-            metadata.Warnings.Add(warning);
+            metadata.WarningList.Add(warning);
         }
 
         if (header.Resolution is Resolution resolution)
@@ -370,7 +370,7 @@ internal sealed class BmpReader : IFormatReader
             catch (CorruptDataException)
             {
                 header.Profile = null;
-                metadata.Warnings.Add("The file ends before the embedded ICC profile; it was dropped.");
+                metadata.WarningList.Add("The file ends before the embedded ICC profile; it was dropped.");
             }
         }
 
@@ -381,7 +381,7 @@ internal sealed class BmpReader : IFormatReader
         }
         else if (header.ColorSpaceType == SpaceLinked)
         {
-            metadata.Warnings.Add("The color profile is linked by file name; it was not opened.");
+            metadata.WarningList.Add("The color profile is linked by file name; it was not opened.");
         }
         else if (header.ColorSpaceType is SpaceSrgb or SpaceWindows)
         {
@@ -430,7 +430,7 @@ internal sealed class BmpReader : IFormatReader
             raster.Row(header.RowOf(i)).Clear();
         }
 
-        raster.Metadata.Warnings.Add($"{e.Message} The {header.Height - fileRow} rows not decoded are left black.");
+        raster.Metadata.WarningList.Add($"{e.Message} The {header.Height - fileRow} rows not decoded are left black.");
     }
 
     /// <summary>What the headers say.</summary>
@@ -455,7 +455,7 @@ internal sealed class BmpReader : IFormatReader
         /// <summary>Gets or sets whether a 32-bit file's alpha byte is used only when it is not 0 in every pixel.</summary>
         public bool AlphaUnlessAllZero { get; set; }
 
-        public Bgr8[] Palette { get; set; } = [];
+        public Rgb8[] Palette { get; set; } = [];
 
         public Resolution? Resolution { get; set; }
 
@@ -615,7 +615,7 @@ internal sealed class BmpReader : IFormatReader
 
                 if (pastPalette)
                 {
-                    raster.Metadata.Warnings.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
+                    raster.Metadata.WarningList.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
                 }
 
                 if (header.Bits == 32 && header.AlphaUnlessAllZero && !anyAlpha && TPixel.Layout.HasAlpha)
@@ -631,6 +631,10 @@ internal sealed class BmpReader : IFormatReader
             {
                 ArrayPool<byte>.Shared.Return(row);
                 ArrayPool<Bgra8>.Shared.Return(natural);
+                if (_table is not null)
+                {
+                    ArrayPool<uint>.Shared.Return(_table);
+                }
             }
         }
 
@@ -699,10 +703,10 @@ internal sealed class BmpReader : IFormatReader
         {
             if (_table is null)
             {
-                _table = new uint[256];
+                _table = ArrayPool<uint>.Shared.Rent(256);
                 for (int i = 0; i < 256; i++)
                 {
-                    Bgr8 c = i < header.Palette.Length ? header.Palette[i] : default;
+                    Rgb8 c = i < header.Palette.Length ? header.Palette[i] : default;
                     _table[i] = c.B | ((uint)c.G << 8) | ((uint)c.R << 16) | 0xFF00_0000;
                 }
             }
@@ -790,12 +794,12 @@ internal sealed class BmpReader : IFormatReader
 
                 if (_clipped)
                 {
-                    raster.Metadata.Warnings.Add("Some runs go past the end of a row; the extra pixels were dropped.");
+                    raster.Metadata.WarningList.Add("Some runs go past the end of a row; the extra pixels were dropped.");
                 }
 
                 if (_pastPalette)
                 {
-                    raster.Metadata.Warnings.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
+                    raster.Metadata.WarningList.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
                 }
             }
             catch (CorruptDataException e)
@@ -882,7 +886,8 @@ internal sealed class BmpReader : IFormatReader
         {
             if (index < header.Palette.Length)
             {
-                return header.Palette[index];
+                Rgb8 c = header.Palette[index];
+                return new Bgr8(c.B, c.G, c.R);
             }
 
             _pastPalette = true;

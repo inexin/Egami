@@ -104,7 +104,7 @@ internal static class OperationPipeline
     private static PixelPlane<TPixel> Allocate<TPixel>(Size size, BudgetedMemorySource memory)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        memory.Check((long)size.Width * size.Height * TPixel.Layout.BytesPerPixel);
+        memory.Check((long)size.Width * size.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
         return PixelPlane.Allocate<TPixel>(size.Width, size.Height, memory);
     }
 
@@ -125,13 +125,39 @@ internal static class OperationPipeline
         {
             for (int i = 0; i < Steps.Count; i++)
             {
-                (Steps[i] as IUpdatesMetadata)?.UpdateMetadata(metadata, input, Sizes[i]);
+                if (Steps[i] is IUpdatesMetadata updates)
+                {
+                    updates.UpdateMetadata(metadata, input, Sizes[i]);
+                }
+                else if (Sizes[i] != input)
+                {
+                    // A custom step that changes the size: the EXIF dimensions follow it and the thumbnail no longer matches.
+                    Geometry.ExifUpkeep.Dimensions(metadata, Sizes[i]);
+                    Geometry.ExifUpkeep.DropThumbnail(metadata);
+                }
+
                 input = Sizes[i];
             }
         }
 
-        /// <summary>Gets whether a step moves pixels (resize, crop, pad, rotate, flip), so frames lose where they were stored.</summary>
-        internal bool ChangesGeometry => Steps.Any(step => step is IUpdatesMetadata);
+        /// <summary>
+        /// Gets whether a step moves pixels (resize, crop, pad, rotate, flip, or a custom step that changes the size), so frames
+        /// lose where they were stored.
+        /// </summary>
+        internal bool ChangesGeometry(Size input)
+        {
+            for (int i = 0; i < Steps.Count; i++)
+            {
+                if (Steps[i] is IUpdatesMetadata || Sizes[i] != input)
+                {
+                    return true;
+                }
+
+                input = Sizes[i];
+            }
+
+            return false;
+        }
 
         /// <summary>Gets the size after the last step, or <paramref name="input"/> for an empty chain.</summary>
         internal Size FinalSize(Size input)

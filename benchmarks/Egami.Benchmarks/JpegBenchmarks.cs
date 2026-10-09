@@ -18,8 +18,8 @@ namespace Egami.Benchmarks;
 public class JpegDecodeBenchmarks
 {
     private static readonly JpegReaderOptions Fast = new() { FastUpsampling = true };
-    private static readonly ReaderOptions Quarter = new() { TargetSize = new Size(1000, 750) };
-    private static readonly ReaderOptions Eighth = new() { TargetSize = new Size(500, 375) };
+    private static readonly ReaderOptions Quarter = new() { MinimumSize = new Size(1000, 750) };
+    private static readonly ReaderOptions Eighth = new() { MinimumSize = new Size(500, 375) };
 
     private byte[] _file = [];
     private EgamiContext _context = EgamiContext.Default;
@@ -138,7 +138,7 @@ public class JpegEncodeBenchmarks
 public class JpegScenarioBenchmarks
 {
     private static readonly JpegWriterOptions Quality80 = new() { Quality = 80 };
-    private static readonly ReaderOptions Thumbnail = new() { TargetSize = new Size(256, 256) };
+    private static readonly ReaderOptions Thumbnail = new() { MinimumSize = new Size(256, 256) };
 
     private byte[][] _files = [];
     private byte[][] _exif = [];
@@ -152,7 +152,7 @@ public class JpegScenarioBenchmarks
     public void Setup()
     {
         _files = [.. Enumerable.Range(0, CameraFiles.Count).Select(i => BenchFiles.Jpeg($"camera-{i:00}.jpg"))];
-        _exif = [.. _files.Select(f => Raster.Load(f, options: new ReaderOptions { TargetSize = new Size(1, 1) }).Metadata.Exif!.ToBytes().ToArray())];
+        _exif = [.. _files.Select(f => Raster.Load(f, options: new ReaderOptions { MinimumSize = new Size(1, 1) }).Metadata.Exif!.ToBytes().ToArray())];
         _oriented = BenchFiles.Jpeg("photo-orientation-6.jpg");
         _context = EgamiContext.Default with { MaxParallelism = Threads == 0 ? Environment.ProcessorCount : Threads };
     }

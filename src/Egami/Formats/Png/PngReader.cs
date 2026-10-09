@@ -33,7 +33,7 @@ internal sealed class PngReader : IFormatReader
     {
         State state = ReadUpToImageData(input, options);
         PngNaturalType natural = state.Unpacker.Natural;
-        bool animated = state.IsAnimated;
+        bool animated = state.Animated;
         PixelLayoutInfo layout = animated ? (state.Header.BitDepth == 16 ? Rgba16.Layout : Rgba8.Layout) : PngUnpacker.Layout(natural);
         long frameBytes = (long)state.Header.Width * state.Header.Height * layout.BytesPerPixel;
         int frames = animated ? state.AnimationFrames : 1;
@@ -47,7 +47,7 @@ internal sealed class PngReader : IFormatReader
             HasMetadata = state.HasMetadata,
             EstimatedBytes = animated ? (frameBytes * frames) + frameBytes : frameBytes,
             Orientation = state.Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
-            LoopCount = state.Png.IsAnimated ? state.Plays : null,
+            LoopCount = state.Png.Animated ? state.Plays : null,
         };
     }
 
@@ -55,7 +55,7 @@ internal sealed class PngReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         State state = ReadUpToImageData(input, options);
-        if (state.IsAnimated)
+        if (state.Animated)
         {
             return state.Header.BitDepth == 16 ? ReadAnimation<Rgba16, TPixel>(state) : ReadAnimation<Rgba8, TPixel>(state);
         }
@@ -66,7 +66,7 @@ internal sealed class PngReader : IFormatReader
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
         State state = ReadUpToImageData(input, options);
-        if (state.IsAnimated)
+        if (state.Animated)
         {
             return state.Header.BitDepth == 16 ? ReadAnimation<Rgba16, Rgba16>(state) : ReadAnimation<Rgba8, Rgba8>(state);
         }
@@ -94,7 +94,7 @@ internal sealed class PngReader : IFormatReader
         }
 
         RasterMetadata metadata = new() { FormatName = PngFormat.Info.Name };
-        PngChunkReader chunks = new(input, options.Recovery == RecoveryMode.Strict, metadata.Warnings);
+        PngChunkReader chunks = new(input, options.Recovery == RecoveryMode.Strict, metadata.WarningList);
         PngHeader header = ReadHeader(chunks);
         PngDetails png = new() { ColorType = header.ColorType, BitDepth = header.BitDepth, Interlaced = header.Interlaced };
         State state = new(input, options, chunks, header, metadata, png);
@@ -118,7 +118,7 @@ internal sealed class PngReader : IFormatReader
                 continue;
             }
 
-            if (type == PngChunkType.Fctl && state.Png.IsAnimated && state.FirstControl is null)
+            if (type == PngChunkType.Fctl && state.Png.Animated && state.FirstControl is null)
             {
                 state.FirstControl = ReadFrameControl(state, length);
                 continue;
@@ -137,7 +137,7 @@ internal sealed class PngReader : IFormatReader
         }
 
         state.Unpacker = new PngUnpacker(header, state.Palette, state.Transparency);
-        state.Png.DefaultImageIsFrame = !state.Png.IsAnimated || state.FirstControl is not null;
+        state.Png.DefaultImageIsFrame = !state.Png.Animated || state.FirstControl is not null;
         return state;
     }
 
@@ -158,7 +158,7 @@ internal sealed class PngReader : IFormatReader
             return;
         }
 
-        if (state.Png.IsAnimated)
+        if (state.Png.Animated)
         {
             chunks.Recoverable(offset, "A second acTL chunk appears. It was ignored.");
             return;
@@ -168,12 +168,12 @@ internal sealed class PngReader : IFormatReader
         uint plays = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(4));
         if (frames == 0 || frames > int.MaxValue || plays > int.MaxValue)
         {
-            state.Metadata.Warnings.Add($"The acTL chunk says {frames} frames; the file is read as a still PNG.");
+            state.Metadata.WarningList.Add($"The acTL chunk says {frames} frames; the file is read as a still PNG.");
             return;
         }
 
         state.Input.Limits.CheckFrameCount(frames);
-        state.Png.IsAnimated = true;
+        state.Png.Animated = true;
         state.AnimationFrames = (int)frames;
         state.Plays = (int)plays;
     }
@@ -388,7 +388,7 @@ internal sealed class PngReader : IFormatReader
         {
             case PngChunkType.Gama:
                 Expect(data, 4);
-                png.Gamma = BinaryPrimitives.ReadUInt32BigEndian(data);
+                png.FileGamma = BinaryPrimitives.ReadUInt32BigEndian(data);
                 break;
             case PngChunkType.Chrm:
                 Expect(data, 32);
@@ -438,7 +438,7 @@ internal sealed class PngReader : IFormatReader
                 ReadInternationalText(state, data);
                 break;
             case PngChunkType.Exif:
-                metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(data, state.Input.Limits.MaxMetadataBytes, metadata.Warnings);
+                metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(data, state.Input.Limits.MaxMetadataBytes, metadata.WarningList);
                 break;
             default:
                 png.OtherChunks.Add(new PngChunk(PngChunkType.Name(type), data, state.Position));
@@ -829,7 +829,7 @@ internal sealed class PngReader : IFormatReader
         }
         catch (CorruptDataException e) when (state.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation && frames.Count > 0)
         {
-            state.Metadata.Warnings.Add("The file ends inside the animation; the frames before that are kept.");
+            state.Metadata.WarningList.Add("The file ends inside the animation; the frames before that are kept.");
         }
         catch
         {
@@ -881,7 +881,7 @@ internal sealed class PngReader : IFormatReader
         bool complete = !data.Truncated && !data.OutOfSequence;
         if (data.OutOfSequence)
         {
-            state.Metadata.Warnings.Add($"Frame {index}'s data is out of sequence; the animation ends before it.");
+            state.Metadata.WarningList.Add($"Frame {index}'s data is out of sequence; the animation ends before it.");
             return false;
         }
 
@@ -908,7 +908,7 @@ internal sealed class PngReader : IFormatReader
 
         if (index >= first && index < end)
         {
-            input.Memory.Check((long)canvas.Width * canvas.Height * TPixel.Layout.BytesPerPixel);
+            input.Memory.Check((long)canvas.Width * canvas.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
             PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(canvas.Width, canvas.Height, input.Memory);
             canvas.CopyTo(plane);
             frames.Add(new Frame<TPixel>(plane, new FrameMetadata { Delay = control.Delay, Disposal = control.Disposal, Blend = control.Blend, Bounds = bounds }));
@@ -986,7 +986,7 @@ internal sealed class PngReader : IFormatReader
         }
         else
         {
-            state.Metadata.Warnings.Add("The image data has extra bytes after the last row. They were ignored.");
+            state.Metadata.WarningList.Add("The image data has extra bytes after the last row. They were ignored.");
         }
 
         return false;
@@ -1001,7 +1001,7 @@ internal sealed class PngReader : IFormatReader
         }
         catch (CorruptDataException e) when (state.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation)
         {
-            state.Metadata.Warnings.Add("The file ends inside a chunk after the image data. That chunk was ignored.");
+            state.Metadata.WarningList.Add("The file ends inside a chunk after the image data. That chunk was ignored.");
         }
         catch
         {
@@ -1065,7 +1065,7 @@ internal sealed class PngReader : IFormatReader
 
         foreach (string warning in source.Warnings)
         {
-            target.Warnings.Add(warning);
+            target.WarningList.Add(warning);
         }
 
         // Precedence from the specification: cICP, then iCCP, then sRGB, then gAMA.
@@ -1086,7 +1086,7 @@ internal sealed class PngReader : IFormatReader
         {
             target.ColorSpace = ColorSpaceHint.Srgb;
         }
-        else if (png.Gamma is uint gamma and > 0)
+        else if (png.FileGamma is uint gamma and > 0)
         {
             target.ColorSpace = gamma == 100_000 ? ColorSpaceHint.Linear : ColorSpaceHint.Gamma;
             target.Gamma = 100_000.0 / gamma;
@@ -1131,7 +1131,7 @@ internal sealed class PngReader : IFormatReader
         public (uint Length, uint Type)? NextChunk { get; set; }
 
         /// <summary>Gets whether the file is read as an animation: an APNG of more than one frame, or whose frame is not IDAT.</summary>
-        public bool IsAnimated => Png.IsAnimated && (AnimationFrames > 1 || FirstControl is null);
+        public bool Animated => Png.Animated && (AnimationFrames > 1 || FirstControl is null);
 
         public int AnimationFrames { get; set; }
 

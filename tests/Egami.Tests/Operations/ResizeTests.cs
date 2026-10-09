@@ -151,14 +151,14 @@ public class ResizeTests
         Assert.Equal(new Size(400, 300), SizeOf(raster, ops => ops.Fit(1000, 1000, enlarge: false)));
         Assert.Equal(new Size(1000, 750), SizeOf(raster, ops => ops.Fit(1000, 1000)));
         Assert.Equal(new Size(100, 75), SizeOf(raster, ops => ops.Fit(100, 1000, enlarge: false)));
-        Assert.Equal(new Size(256, 256), SizeOf(raster, ops => ops.Fill(256, 256)));
+        Assert.Equal(new Size(256, 256), SizeOf(raster, ops => ops.Cover(256, 256)));
         Assert.Equal(new Size(1, 1), SizeOf(raster, ops => ops.Resize(1, 0).Resize(0, 1)));
         Assert.Equal(new Size(50, 1), SizeOf(raster, ops => ops.Crop(0, 0, 400, 1).Resize(50, 0)));
 
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Resize(0, 0), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Resize(-1, 5), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Fit(0, 5), Ct));
-        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Fill(5, 0), Ct));
+        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Cover(5, 0), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Resize(5, 5, (ResampleFilter)99), Ct));
         Assert.Throws<ArgumentOutOfRangeException>(() => raster.Derive(ops => ops.Crop(390, 0, 20, 20).Resize(5, 5), Ct));
     }
@@ -170,7 +170,7 @@ public class ResizeTests
         using Raster<Rgba8> before = raster.Copy();
         foreach (ResampleFilter filter in Filters)
         {
-            raster.Apply(ops => ops.Resize(31, 17, filter).Fit(31, 17, filter).Fill(31, 17, Anchor.Left, filter), Ct);
+            raster.Apply(ops => ops.Resize(31, 17, filter).Fit(31, 17, filter).Cover(31, 17, Anchor.Left, filter), Ct);
             AssertEqual(before, raster, 0);
         }
     }
@@ -194,12 +194,12 @@ public class ResizeTests
         using Raster<Rgba8> raster = Noise<Rgba8>(200, 100, EgamiContext.Default);
         foreach ((Anchor anchor, int x) in new[] { (Anchor.Center, 50), (Anchor.Left, 0), (Anchor.BottomRight, 100) })
         {
-            using Raster<Rgba8> filled = raster.Derive(ops => ops.Fill(100, 100, anchor), Ct);
+            using Raster<Rgba8> filled = raster.Derive(ops => ops.Cover(100, 100, anchor), Ct);
             using Raster<Rgba8> cropped = raster.Derive(ops => ops.Crop(x, 0, 100, 100), Ct);
             AssertEqual(cropped, filled, 0);
         }
 
-        using Raster<Rgba8> small = raster.Derive(ops => ops.Fill(50, 50, Anchor.Right), Ct);
+        using Raster<Rgba8> small = raster.Derive(ops => ops.Cover(50, 50, Anchor.Right), Ct);
         // Fill reads past the kept area's edge where the image continues, like resizing everything and then cropping.
         using Raster<Rgba8> expected = raster.Derive(ops => ops.Resize(100, 50).Crop(50, 0, 50, 50), Ct);
         AssertEqual(expected, small, 1);
@@ -251,8 +251,8 @@ public class ResizeTests
             using Raster<Rgba8> ra = a.Derive(ops => ops.Resize(ow, oh, ResampleFilter.Lanczos3), Ct);
             using Raster<Rgba8> rb = b.Derive(ops => ops.Resize(ow, oh, ResampleFilter.Lanczos3), Ct);
             AssertEqual(ra, rb, 0);
-            a.Apply(ops => ops.Fill(ow, oh, Anchor.Bottom, ResampleFilter.Mitchell, ColorSpace.Linear), Ct);
-            b.Apply(ops => ops.Fill(ow, oh, Anchor.Bottom, ResampleFilter.Mitchell, ColorSpace.Linear), Ct);
+            a.Apply(ops => ops.Cover(ow, oh, Anchor.Bottom, ResampleFilter.Mitchell, ColorSpace.Linear), Ct);
+            b.Apply(ops => ops.Cover(ow, oh, Anchor.Bottom, ResampleFilter.Mitchell, ColorSpace.Linear), Ct);
             AssertEqual(a, b, 0);
         }
     }

@@ -125,7 +125,7 @@ public class RasterTests
         {
             Interlocked.Increment(ref visits[y]);
             row.Fill(new Gray16((ushort)y));
-        });
+        }, TestContext.Current.CancellationToken);
 
         Assert.All(visits, v => Assert.Equal(1, v));
         Assert.Equal(999, raster.GetPixel(599, 999).L);
@@ -140,7 +140,7 @@ public class RasterTests
         Assert.Throws<ObjectDisposedException>(() => raster.Row(0));
         Assert.Throws<ObjectDisposedException>(() => raster.GetPixel(0, 0));
         Assert.Throws<ObjectDisposedException>(() => raster.Copy());
-        Assert.Throws<ObjectDisposedException>(() => raster.ForEachRow((_, _) => { }));
+        Assert.Throws<ObjectDisposedException>(() => raster.ForEachRow((_, _) => { }, TestContext.Current.CancellationToken));
         Assert.Throws<ObjectDisposedException>(() => raster.TryGetContiguous(out _));
     }
 

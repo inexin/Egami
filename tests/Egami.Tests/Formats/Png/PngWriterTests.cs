@@ -132,7 +132,7 @@ public class PngWriterTests
             {
                 return new Rgba16((ushort)(v * 257), (ushort)(v * 257), (ushort)(v * 257), 65535);
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
         byte[] file = Save(original, new PngWriterOptions { Reduce = true });
         Assert.Equal((byte)colorType, file[25]);
@@ -233,7 +233,7 @@ public class PngWriterTests
         Assert.Equal(a.Exif!.ToBytes().ToArray(), b.Exif!.ToBytes().ToArray());
         PngDetails pa = (PngDetails)a.FormatDetails!;
         PngDetails pb = (PngDetails)b.FormatDetails!;
-        Assert.Equal(pa.Gamma, pb.Gamma);
+        Assert.Equal(pa.FileGamma, pb.FileGamma);
         Assert.Equal(pa.IccProfileName, pb.IccProfileName);
         Assert.Equal(pa.TextSources, pb.TextSources);
         Assert.Equal(pa.OtherChunks.Select(c => (c.Type, c.Position, Convert.ToHexString(c.Data.Span))), pb.OtherChunks.Select(c => (c.Type, c.Position, Convert.ToHexString(c.Data.Span))));

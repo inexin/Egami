@@ -14,11 +14,13 @@ public enum DitherMode
 }
 
 /// <summary>
-/// How formats with at most 256 colors (GIF, and PNG with a palette) build their palette when an image has more colors than fit.
+/// How formats with at most 256 colors (GIF, PNG with a palette, and indexed BMP and TGA) build their palette when an image has more colors than fit.
 /// Images with few enough colors always keep them exactly, without dithering.
 /// </summary>
 public sealed record PaletteOptions
 {
+    private readonly DitherMode _dither;
+
     private readonly int _maxColors = 256;
 
     /// <summary>Gets the default options: 256 colors, Floyd–Steinberg dithering, alpha threshold 128.</summary>
@@ -38,7 +40,12 @@ public sealed record PaletteOptions
     }
 
     /// <summary>Gets how mapping error is spread. Defaults to <see cref="DitherMode.FloydSteinberg"/>.</summary>
-    public DitherMode Dither { get; init; }
+    /// <exception cref="ArgumentOutOfRangeException">The value is not a defined <see cref="DitherMode"/>.</exception>
+    public DitherMode Dither
+    {
+        get => _dither;
+        init => _dither = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The dither mode is not defined.");
+    }
 
     /// <summary>
     /// Gets the alpha below which a pixel is transparent, for formats whose transparency is on or off (GIF). Defaults to 128.

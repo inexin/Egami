@@ -29,13 +29,13 @@ public enum PngFilterMode
 public enum PngCompressionStrategy
 {
     /// <summary>
-    /// The strategy Egami picks. Currently <see cref="Default"/>: in Egami's benchmarks with the runtime's zlib, <see cref="Filtered"/>
+    /// The strategy Egami picks. Currently <see cref="Standard"/>: in Egami's benchmarks with the runtime's zlib, <see cref="Filtered"/>
     /// was never smaller and was larger at level 9.
     /// </summary>
-    Automatic,
+    Auto,
 
     /// <summary>zlib's default strategy.</summary>
-    Default,
+    Standard,
 
     /// <summary>Tuned for filtered data: favors Huffman coding over string matching.</summary>
     Filtered,
@@ -50,6 +50,8 @@ public enum PngCompressionStrategy
 /// <summary>Options for writing PNG. The defaults keep every pixel exactly, in the color type that matches the raster's pixel type.</summary>
 public sealed class PngWriterOptions : WriterOptions
 {
+    private readonly int? _bitDepth;
+
     private readonly int _compressionLevel = 5;
     private readonly int _maxIdatSize = 64 * 1024;
 
@@ -79,7 +81,12 @@ public sealed class PngWriterOptions : WriterOptions
     /// Gets the bit depth to write, or <see langword="null"/> for the color type's natural depth.
     /// Lower depths than the image holds round each value to the nearest one the depth can store.
     /// </summary>
-    public int? BitDepth { get; init; }
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 1, 2, 4, 8 or 16.</exception>
+    public int? BitDepth
+    {
+        get => _bitDepth;
+        init => _bitDepth = value is null or 1 or 2 or 4 or 8 or 16 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "PNG bit depths are 1, 2, 4, 8 and 16.");
+    }
 
     /// <summary>
     /// Gets a value indicating whether to scan the image first and write the smallest exact form: no alpha when every pixel is opaque,
@@ -107,12 +114,12 @@ public sealed class PngWriterOptions : WriterOptions
         }
     }
 
-    /// <summary>Gets the Deflate strategy. Defaults to <see cref="PngCompressionStrategy.Automatic"/>.</summary>
+    /// <summary>Gets the Deflate strategy. Defaults to <see cref="PngCompressionStrategy.Auto"/>.</summary>
     public PngCompressionStrategy CompressionStrategy { get; init; }
 
     /// <summary>Gets the largest IDAT chunk, in bytes. Defaults to 65,536.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is less than 1.</exception>
-    public int MaxIdatSize
+    internal int MaxIdatSize
     {
         get => _maxIdatSize;
         init

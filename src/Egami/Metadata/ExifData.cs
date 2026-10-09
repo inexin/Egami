@@ -53,11 +53,14 @@ public sealed class ExifData
     public ReadOnlyMemory<byte> Thumbnail { get; private set; }
 
     /// <summary>Gets or sets the orientation (IFD0 0x0112). Missing or out-of-range values read as <see cref="ImageOrientation.Normal"/>.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value set is not one of the EXIF values 1 to 8.</exception>
     public ImageOrientation Orientation
     {
         get => TryGet(ExifKey.Orientation, out ExifEntry? entry) && entry.Type is ExifType.Short or ExifType.Long && entry.Count > 0
             && entry.AsInteger() is >= 1 and <= 8 and long value ? (ImageOrientation)value : ImageOrientation.Normal;
-        set => Set(ExifKey.Orientation, (ushort)value);
+        set => Set(ExifKey.Orientation, value is >= ImageOrientation.Normal and <= ImageOrientation.Rotate270
+            ? (ushort)value
+            : throw new ArgumentOutOfRangeException(nameof(value), value, "The orientation must be one of the EXIF values 1 to 8."));
     }
 
     /// <summary>Gets when the photo was taken: <see cref="ExifKey.DateTimeOriginal"/>, else <see cref="ExifKey.DateTime"/>, or <see langword="null"/>.</summary>
@@ -94,10 +97,14 @@ public sealed class ExifData
         }
     }
 
-    /// <summary>Reads an EXIF block: a TIFF header and its IFDs, without the "Exif\0\0" prefix JPEG puts before it. Never throws.</summary>
+    /// <summary>
+    /// Reads an EXIF block: a TIFF header and its IFDs, without the "Exif\0\0" prefix JPEG puts before it. Never throws: values past
+    /// <see cref="SafetyLimits.MaxMetadataBytes"/> in all are dropped and the block is marked damaged.
+    /// </summary>
     /// <param name="tiff">The block.</param>
+    /// <param name="limits">The limits whose <see cref="SafetyLimits.MaxMetadataBytes"/> caps the values copied. Defaults to <see cref="SafetyLimits.Default"/>.</param>
     /// <returns>The parsed block; <see cref="IsDamaged"/> says whether it was all readable.</returns>
-    public static ExifData Parse(ReadOnlySpan<byte> tiff) => Parse(tiff, int.MaxValue);
+    public static ExifData Parse(ReadOnlySpan<byte> tiff, SafetyLimits? limits = null) => Parse(tiff, (limits ?? SafetyLimits.Default).MaxMetadataBytes);
 
     /// <summary>Returns the entry for <paramref name="key"/>, if the block has it.</summary>
     /// <param name="key">The tag and IFD.</param>

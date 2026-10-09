@@ -162,12 +162,19 @@ internal static class FormatPipeline
     private static T Run<T>(Stream stream, EgamiContext context, Func<FormatInfo, EgamiInput, T> read, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        using EgamiInput input = new(stream, context, cancellationToken);
-        FormatInfo format = Detect(input, context);
-        input.SetFormat(format);
-        T result = read(format, input);
-        input.ReturnUnreadBytes();
-        return result;
+        EgamiInput input = new(stream, context, cancellationToken);
+        try
+        {
+            FormatInfo format = Detect(input, context);
+            input.SetFormat(format);
+            T result = read(format, input);
+            input.ReturnUnreadBytes();
+            return result;
+        }
+        finally
+        {
+            input.Dispose();
+        }
     }
 
     private static FormatInfo Detect(EgamiInput input, EgamiContext context)

@@ -68,7 +68,7 @@ public class GifDecodeTests(ITestOutputHelper output)
         JsonElement loop = entry.GetProperty("loop");
         int expected = loop.ValueKind == JsonValueKind.Null ? 1 : loop.GetInt32() == 0 ? 0 : loop.GetInt32() + 1;
         Assert.Equal(expected, raster.Metadata.LoopCount);
-        Assert.Equal(loop.ValueKind == JsonValueKind.Null ? null : loop.GetInt32(), ((GifDetails)raster.Metadata.FormatDetails!).RepeatCount);
+        Assert.Equal(loop.ValueKind == JsonValueKind.Null ? null : loop.GetInt32(), ((GifDetails)raster.Metadata.FormatDetails!).RepetitionCount);
     }
 
     [Fact]
@@ -118,10 +118,10 @@ public class GifDecodeTests(ITestOutputHelper output)
         Assert.Equal(new Rect(4, 6, 16, 12), frame.Metadata.Bounds);
         Assert.Equal(FrameDisposal.RestorePrevious, frame.Metadata.Disposal);
         GifFrameDetails details = Assert.IsType<GifFrameDetails>(frame.Metadata.FormatDetails);
-        Assert.False(details.IsInterlaced);
+        Assert.False(details.Interlaced);
 
         using Raster<Rgba8> interlaced = Raster.Load<Rgba8>(AnimCorpus.Read("gif/interlaced.gif"));
-        Assert.True(Assert.IsType<GifFrameDetails>(interlaced.Frames[0].Metadata.FormatDetails).IsInterlaced);
+        Assert.True(Assert.IsType<GifFrameDetails>(interlaced.Frames[0].Metadata.FormatDetails).Interlaced);
     }
 
     [Fact]

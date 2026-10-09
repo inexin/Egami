@@ -86,7 +86,7 @@ public sealed class ConvolutionKernel
     public float Offset { get; }
 
     /// <summary>Gets whether the kernel was built from a row and a column, so it runs as two 1D passes.</summary>
-    public bool IsSeparable => Row is not null;
+    internal bool IsSeparable => Row is not null;
 
     /// <summary>Gets the row weights of a separable kernel.</summary>
     internal float[]? Row { get; }

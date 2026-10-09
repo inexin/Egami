@@ -7,7 +7,7 @@ using Egami.Pixels;
 namespace Egami.Operations.Resampling;
 
 /// <summary>How a resize turns the requested box into an output size and a source area.</summary>
-internal enum ResizeMode
+internal enum ResizeKind
 {
     /// <summary>Exactly the requested size; a 0 dimension keeps the aspect ratio.</summary>
     Stretch,
@@ -16,7 +16,7 @@ internal enum ResizeMode
     Fit,
 
     /// <summary>Covers the box with the aspect ratio kept, keeping the part at the anchor.</summary>
-    Fill,
+    Cover,
 }
 
 /// <summary>
@@ -24,7 +24,7 @@ internal enum ResizeMode
 /// full-size intermediate exists. The source can be a sub-rectangle, which is how Fill and a Crop followed by a resize run.
 /// </summary>
 internal sealed class ResizeOperation(
-    ResizeMode mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null)
+    ResizeKind mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null)
     : IRasterOperation, INeedsNewPlane, IHoldsBuffers, Geometry.IUpdatesMetadata
 {
     private Plan? _plan;
@@ -231,12 +231,12 @@ internal sealed class ResizeOperation(
         double sh = ah;
         switch (mode)
         {
-            case ResizeMode.Stretch:
+            case ResizeKind.Stretch:
                 output = new Size(
                     width > 0 ? width : Math.Max(1, (int)Math.Round(aw * height / ah)),
                     height > 0 ? height : Math.Max(1, (int)Math.Round(ah * width / aw)));
                 break;
-            case ResizeMode.Fit:
+            case ResizeKind.Fit:
                 double fit = Math.Min(width / aw, height / ah);
                 output = !enlarge && fit >= 1
                     ? area.Size

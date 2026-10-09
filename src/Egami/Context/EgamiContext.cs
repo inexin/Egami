@@ -22,13 +22,34 @@ public sealed record EgamiContext
     private readonly SafetyLimits _limits = SafetyLimits.Default;
     private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info, Egami.Formats.Tga.TgaFormat.Info];
 
-    /// <summary>Gets the context used when a call passes none.</summary>
-    public static EgamiContext Default { get; } = new();
+    private static EgamiContext? s_default;
+
+    /// <summary>
+    /// Gets the context used when a call passes none. The first read fixes it: <see cref="SetDefault"/> works only before that.
+    /// </summary>
+    public static EgamiContext Default => Volatile.Read(ref s_default) ?? Interlocked.CompareExchange(ref s_default, new EgamiContext(), null) ?? s_default!;
+
+    /// <summary>
+    /// Replaces <see cref="Default"/>, once, at startup, so that format plugins, memory sources and limits apply to every call that
+    /// passes no context.
+    /// </summary>
+    /// <param name="context">The context to use as the default.</param>
+    /// <exception cref="InvalidOperationException"><see cref="Default"/> was already read or set.</exception>
+    public static void SetDefault(EgamiContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (Interlocked.CompareExchange(ref s_default, context, null) is not null)
+        {
+            throw new InvalidOperationException("EgamiContext.Default was already read or set. Call SetDefault once, at startup, before any other Egami call.");
+        }
+    }
 
     /// <summary>Gets the source of all pixel memory. Defaults to <see cref="PooledPixelMemorySource.Shared"/>.</summary>
+    /// <exception cref="ArgumentNullException">The value set is <see langword="null"/>.</exception>
     public IPixelMemorySource Memory { get => _memory; init => _memory = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets the most threads one operation may use. 1 means fully sequential. Defaults to the processor count.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value set is less than 1.</exception>
     public int MaxParallelism
     {
         get => _maxParallelism;
@@ -40,6 +61,7 @@ public sealed record EgamiContext
     }
 
     /// <summary>Gets the safety limits applied when reading. Defaults to <see cref="SafetyLimits.Default"/>.</summary>
+    /// <exception cref="ArgumentNullException">The value set is <see langword="null"/>.</exception>
     public SafetyLimits Limits { get => _limits; init => _limits = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, BMP, QOI, PNM and TGA.</summary>

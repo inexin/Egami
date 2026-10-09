@@ -109,7 +109,10 @@ public sealed class RasterMetadata
     public IList<TextEntry> Text { get; } = [];
 
     /// <summary>Gets the problems a lenient read recovered from, such as a bad checksum after valid pixel data.</summary>
-    public IList<string> Warnings { get; } = [];
+    public IReadOnlyList<string> Warnings => WarningList;
+
+    /// <summary>Gets the warnings for readers to add to; outside readers use <see cref="Formats.EgamiInput.Warn"/>.</summary>
+    internal List<string> WarningList { get; } = [];
 
     /// <summary>Returns a deep copy.</summary>
     /// <returns>The copy.</returns>
@@ -134,7 +137,7 @@ public sealed class RasterMetadata
 
         foreach (string warning in Warnings)
         {
-            copy.Warnings.Add(warning);
+            copy.WarningList.Add(warning);
         }
 
         return copy;

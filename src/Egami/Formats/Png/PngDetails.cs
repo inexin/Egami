@@ -46,7 +46,7 @@ public sealed class PngDetails : FormatDetails
     public ReadOnlyMemory<byte> Transparency { get; set; }
 
     /// <summary>Gets or sets the gAMA value as stored: the file gamma times 100,000.</summary>
-    public uint? Gamma { get; set; }
+    public uint? FileGamma { get; set; }
 
     /// <summary>Gets or sets the raw cHRM data (32 bytes). Empty if the file had none.</summary>
     public ReadOnlyMemory<byte> Chromaticities { get; set; }
@@ -64,7 +64,7 @@ public sealed class PngDetails : FormatDetails
     public bool? ResolutionHasUnit { get; set; }
 
     /// <summary>Gets or sets whether the file is an APNG (has a valid acTL chunk).</summary>
-    public bool IsAnimated { get; set; }
+    public bool Animated { get; set; }
 
     /// <summary>
     /// Gets or sets whether an APNG's default image (IDAT) is its first frame. When it is not, it is a still for viewers without
@@ -88,13 +88,13 @@ public sealed class PngDetails : FormatDetails
             Interlaced = Interlaced,
             Palette = Palette.ToArray(),
             Transparency = Transparency.ToArray(),
-            Gamma = Gamma,
+            FileGamma = FileGamma,
             Chromaticities = Chromaticities.ToArray(),
             SrgbRenderingIntent = SrgbRenderingIntent,
             CodingIndependentCodePoints = CodingIndependentCodePoints.ToArray(),
             IccProfileName = IccProfileName,
             ResolutionHasUnit = ResolutionHasUnit,
-            IsAnimated = IsAnimated,
+            Animated = Animated,
             DefaultImageIsFrame = DefaultImageIsFrame,
         };
         foreach (PngTextSource source in TextSources)

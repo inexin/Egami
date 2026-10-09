@@ -121,7 +121,7 @@ public class FrameTests
         anim.Apply(ops => ops.Brightness(1.1f), TestContext.Current.CancellationToken);
         Assert.All(anim.Frames, f => Assert.NotNull(f.Metadata.Bounds));
 
-        using Raster<Rgba8> flipped = anim.Derive(ops => ops.Flip(FlipMode.Horizontal), TestContext.Current.CancellationToken);
+        using Raster<Rgba8> flipped = anim.Derive(ops => ops.FlipHorizontal(), TestContext.Current.CancellationToken);
         Assert.All(flipped.Frames, f => Assert.Null(f.Metadata.Bounds));
         Assert.All(anim.Frames, f => Assert.NotNull(f.Metadata.Bounds));
 

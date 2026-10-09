@@ -257,7 +257,7 @@ internal sealed class ColorMatrixOperation : IRasterOperation
 }
 
 /// <summary>Converts toward gray in linear light: decode, take the luma, mix, encode.</summary>
-internal sealed class LinearGrayscaleOperation(GrayscaleMode mode, float amount) : IRasterOperation
+internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount) : IRasterOperation
 {
     public Size OutputSize(Size input)
     {
@@ -267,7 +267,7 @@ internal sealed class LinearGrayscaleOperation(GrayscaleMode mode, float amount)
     public void Run<TPixel>(OperationInput<TPixel> input)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        (float wr, float wg, float wb) = ColorMatrix.LumaWeights(mode);
+        (float wr, float wg, float wb) = ColorMatrix.Weights(mode);
         bool eightBit = TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
         float[] toLinear = Srgb.LinearFrom8;
         input.ForEachBand((start, end) =>

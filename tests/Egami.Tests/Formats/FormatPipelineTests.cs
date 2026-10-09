@@ -236,7 +236,7 @@ public sealed class FormatPipelineTests : IDisposable
     public void EgamiInputHelpersReadExactly()
     {
         byte[] data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-        using EgamiInput input = new(new NonSeekableStream(data), EgamiContext.Default, CancellationToken.None);
+        EgamiInput input = new(new NonSeekableStream(data), EgamiContext.Default, CancellationToken.None);
         Assert.Equal([1, 2, 3], input.Peek(3).ToArray());
         Assert.Equal(0, input.Position);
         Assert.Equal(0x0102, input.ReadUInt16BigEndian());

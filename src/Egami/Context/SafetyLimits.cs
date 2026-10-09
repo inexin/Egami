@@ -4,7 +4,10 @@ namespace Egami;
 /// Limits that protect against hostile or broken files. Readers check sizes from the header before allocating any pixel memory.
 /// The defaults let normal photos and screenshots through. Change them with a <c>with</c> expression.
 /// </summary>
-/// <remarks>Limits apply to reading. Writers and operations check only <see cref="MaxTotalBytes"/>.</remarks>
+/// <remarks>
+/// Limits apply to reading. Operations (<c>Apply</c>, <c>Derive</c>) and adding frames check <see cref="MaxTotalBytes"/> too;
+/// writers check nothing. Every limit must be at least 1; setting a smaller value throws <see cref="ArgumentOutOfRangeException"/>.
+/// </remarks>
 public sealed record SafetyLimits
 {
     private readonly int _maxWidth = 65_535;
@@ -29,7 +32,10 @@ public sealed record SafetyLimits
     /// <summary>Gets the largest number of frames. Defaults to 10,000.</summary>
     public int MaxFrames { get => _maxFrames; init => _maxFrames = Positive(value); }
 
-    /// <summary>Gets the most memory, in bytes, that one load may hold at once, counting all frames and temporary buffers. Defaults to 2 GB.</summary>
+    /// <summary>
+    /// Gets the most memory, in bytes, that one load or one chain of operations may hold at once, counting all frames and temporary
+    /// buffers. Defaults to 2 GB.
+    /// </summary>
     public long MaxTotalBytes { get => _maxTotalBytes; init => _maxTotalBytes = Positive(value); }
 
     /// <summary>Gets the largest total size, in bytes, of metadata such as EXIF, ICC, XMP and text. Defaults to 16 MB.</summary>

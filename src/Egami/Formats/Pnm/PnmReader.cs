@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 
 using Egami.Metadata;
@@ -122,7 +123,7 @@ internal sealed class PnmReader : IFormatReader
 
             foreach (string warning in header.Warnings)
             {
-                metadata.Warnings.Add(warning);
+                metadata.WarningList.Add(warning);
             }
 
             new Decoder<TPixel>(input, header, raster, options.Recovery == RecoveryMode.Strict).Run();
@@ -405,6 +406,8 @@ internal sealed class PnmReader : IFormatReader
             ushort[] wide = header.Wide ? ArrayPool<ushort>.Shared.Rent(_samples) : [];
             Rgba16[] expanded = header.Wide && header.Depth > 1 ? ArrayPool<Rgba16>.Shared.Rent(width) : [];
             byte[] lut = !header.Wide && !header.Bitmap && header.MaxValue != 255 ? ScaleTable(header.MaxValue) : [];
+            // Binary 8-bit samples at maxval 255 are already the natural type's bytes: read them straight into its rows.
+            bool direct = !header.Wide && !header.Plain && !header.Bitmap && lut.Length == 0 && TPixel.Layout == LayoutOf(header.Natural);
             int y = 0;
             try
             {
@@ -417,7 +420,17 @@ internal sealed class PnmReader : IFormatReader
                         Span<ushort> samples = wide.AsSpan(0, _samples);
                         if (header.Depth == 1)
                         {
-                            PixelConvert.Convert<Gray16, TPixel>(MemoryMarshal.Cast<ushort, Gray16>(samples), raster.Row(y));
+                            if (TPixel.Layout.ChannelType == PixelChannelType.Unorm8)
+                            {
+                                // Narrow to 8 bits first, then take the fast 8-bit conversions.
+                                Span<byte> narrow = bytes.AsSpan(0, width);
+                                Narrow(samples, narrow);
+                                PixelConvert.Convert<Gray8, TPixel>(MemoryMarshal.Cast<byte, Gray8>(narrow), raster.Row(y));
+                            }
+                            else
+                            {
+                                PixelConvert.Convert<Gray16, TPixel>(MemoryMarshal.Cast<ushort, Gray16>(samples), raster.Row(y));
+                            }
                         }
                         else
                         {
@@ -429,7 +442,7 @@ internal sealed class PnmReader : IFormatReader
                     }
 
                     Span<byte> row = bytes.AsSpan(0, _samples);
-                    if (header.Natural == Natural.Gray8 && typeof(TPixel) == typeof(Gray8) && !header.Plain && !header.Bitmap && lut.Length == 0)
+                    if (direct)
                     {
                         input.ReadExactly(MemoryMarshal.AsBytes(raster.Row(y)));
                         continue;
@@ -456,7 +469,7 @@ internal sealed class PnmReader : IFormatReader
                 _text?.Finish();
                 if (_clamped)
                 {
-                    raster.Metadata.Warnings.Add($"Some samples are above the maxval {header.MaxValue}; they were clamped.");
+                    raster.Metadata.WarningList.Add($"Some samples are above the maxval {header.MaxValue}; they were clamped.");
                 }
 
                 ReadOnlySpan<byte> rest = input.Peek(4096);
@@ -464,7 +477,7 @@ internal sealed class PnmReader : IFormatReader
                 {
                     if (!IsSpace(b))
                     {
-                        raster.Metadata.Warnings.Add("More data follows the image; only the first image is read.");
+                        raster.Metadata.WarningList.Add("More data follows the image; only the first image is read.");
                         break;
                     }
                 }
@@ -476,7 +489,7 @@ internal sealed class PnmReader : IFormatReader
                     raster.Row(rest).Clear();
                 }
 
-                raster.Metadata.Warnings.Add($"{e.Message} The {header.Height - y} rows from row {y} are left black.");
+                raster.Metadata.WarningList.Add($"{e.Message} The {header.Height - y} rows from row {y} are left black.");
             }
             finally
             {
@@ -492,6 +505,29 @@ internal sealed class PnmReader : IFormatReader
                 {
                     ArrayPool<Rgba16>.Shared.Return(expanded);
                 }
+            }
+        }
+
+        /// <summary>Narrows 16-bit samples to the nearest 8-bit value, as Gray16 to Gray8 does: (v × 255 + 32895) >> 16.</summary>
+        private static void Narrow(ReadOnlySpan<ushort> samples, Span<byte> output)
+        {
+            int x = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                Vector256<uint> scale = Vector256.Create(255u);
+                Vector256<uint> round = Vector256.Create(32895u);
+                for (; x <= samples.Length - Vector256<ushort>.Count; x += Vector256<ushort>.Count)
+                {
+                    (Vector256<uint> lower, Vector256<uint> upper) = Vector256.Widen(Vector256.Create(samples.Slice(x, Vector256<ushort>.Count)));
+                    Vector256<ushort> narrowed = Vector256.Narrow(((lower * scale) + round) >> 16, ((upper * scale) + round) >> 16);
+                    Vector128<byte> bytes = Vector128.Narrow(narrowed.GetLower(), narrowed.GetUpper());
+                    bytes.CopyTo(output.Slice(x, Vector128<byte>.Count));
+                }
+            }
+
+            for (; x < samples.Length; x++)
+            {
+                output[x] = (byte)(((samples[x] * 255) + 32895) >> 16);
             }
         }
 

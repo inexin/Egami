@@ -21,7 +21,7 @@ public static class QoiFormat
 /// <summary>Details only QOI has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
 public sealed class QoiDetails : FormatDetails
 {
-    /// <summary>Gets or sets the channel count from the header: 3 (RGB) or 4 (RGBA).</summary>
+    /// <summary>Gets or sets the channel count from the header: 3 (RGB) or 4 (RGBA). Defaults to 4.</summary>
     public int Channels { get; set; } = 4;
 
     /// <summary>Gets or sets whether the header says every channel is linear (colorspace 1) rather than sRGB with linear alpha (0).</summary>

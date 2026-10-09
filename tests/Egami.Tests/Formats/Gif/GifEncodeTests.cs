@@ -170,7 +170,7 @@ public class GifEncodeTests(ITestOutputHelper output)
         anim.Metadata.LoopCount = plays;
         using Raster<Rgba8> again = Raster.Load<Rgba8>(Save(anim, GifWriterOptions.Default));
         Assert.Equal(plays, again.Metadata.LoopCount);
-        Assert.Equal(repeats, ((GifDetails)again.Metadata.FormatDetails!).RepeatCount);
+        Assert.Equal(repeats, ((GifDetails)again.Metadata.FormatDetails!).RepetitionCount);
     }
 
     [Fact]

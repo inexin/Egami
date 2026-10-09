@@ -62,19 +62,21 @@ public sealed class Raster<TPixel> : Raster
     /// different rows.
     /// </summary>
     /// <param name="action">The work to do on each row.</param>
+    /// <param name="cancellationToken">Cancels between bands of rows.</param>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
-    public void ForEachRow(RowAction<TPixel> action)
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public void ForEachRow(RowAction<TPixel> action, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(action);
         ThrowIfDisposed();
         PixelPlane<TPixel> plane = _frames[0].Plane;
-        RowRunner.Run(Height, (long)Width * TPixel.Layout.BytesPerPixel, Context.MaxParallelism, (start, end) =>
+        RowRunner.Run(Height, (long)Width * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>(), Context.MaxParallelism, (start, end) =>
         {
             for (int y = start; y < end; y++)
             {
                 action(plane.Row(y), y);
             }
-        }, CancellationToken.None);
+        }, cancellationToken);
     }
 
     /// <summary>
@@ -113,7 +115,7 @@ public sealed class Raster<TPixel> : Raster
         }
 
         plan.UpdateMetadata(Metadata, new Size(Width, Height));
-        if (plan.ChangesGeometry)
+        if (plan.ChangesGeometry(new Size(Width, Height)))
         {
             ClearStoredLayout(_frames);
         }
@@ -164,7 +166,7 @@ public sealed class Raster<TPixel> : Raster
 
         RasterMetadata metadata = Metadata.Copy();
         plan.UpdateMetadata(metadata, new Size(Width, Height));
-        if (plan.ChangesGeometry)
+        if (plan.ChangesGeometry(new Size(Width, Height)))
         {
             ClearStoredLayout(frames);
         }

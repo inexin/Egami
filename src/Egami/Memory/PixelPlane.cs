@@ -8,19 +8,23 @@ namespace Egami;
 
 /// <summary>
 /// A width × height grid of pixels, stored row by row. A row is always one contiguous span, but the plane as a whole
-/// may be split into several blocks of whole rows. A plane that allocated its memory must be disposed.
+/// may be split into several blocks of whole rows. Planes belong to the raster or operation that hands them out, which
+/// returns their memory; user code reads and writes them but never frees them.
 /// </summary>
 /// <remarks>
-/// Spans returned by <see cref="Row"/> and <see cref="TryGetContiguous"/> point into the plane's memory.
-/// Do not use them after the plane is disposed.
+/// Spans returned by <see cref="Row"/> and <see cref="TryGetContiguous"/> point into the plane's memory. Do not keep them after the
+/// raster is disposed, or after an operation that changes its size, which gives the frame a new plane.
 /// </remarks>
 /// <typeparam name="TPixel">The pixel type.</typeparam>
-public sealed class PixelPlane<TPixel> : IDisposable
+public sealed class PixelPlane<TPixel>
     where TPixel : unmanaged, IPixelType<TPixel>
 {
     private readonly int _rowsPerBlock;
     private readonly int _stride;
     private readonly Memory<TPixel> _wrapped;
+    private readonly Memory<byte> _wrappedBytes;
+    private readonly int _byteStride;
+    private IDisposable? _owner;
     private IMemoryOwner<byte>[]? _blocks;
     private bool _disposed;
 
@@ -42,6 +46,16 @@ public sealed class PixelPlane<TPixel> : IDisposable
         _wrapped = memory;
     }
 
+    internal PixelPlane(Memory<byte> memory, int width, int height, int byteStride, IDisposable? owner)
+    {
+        Width = width;
+        Height = height;
+        _byteStride = byteStride;
+        _rowsPerBlock = height;
+        _wrappedBytes = memory;
+        _owner = owner;
+    }
+
     /// <summary>Gets the width in pixels.</summary>
     public int Width { get; }
 
@@ -49,7 +63,7 @@ public sealed class PixelPlane<TPixel> : IDisposable
     public int Height { get; }
 
     /// <summary>Gets a value indicating whether the plane owns its memory and frees it on dispose.</summary>
-    public bool OwnsMemory => _wrapped.IsEmpty;
+    internal bool OwnsMemory => _wrapped.IsEmpty && _wrappedBytes.IsEmpty;
 
     /// <summary>Returns one row of pixels.</summary>
     /// <param name="y">The row index, 0 to <see cref="Height"/> - 1.</param>
@@ -66,7 +80,9 @@ public sealed class PixelPlane<TPixel> : IDisposable
         if (!OwnsMemory)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            return _wrapped.Span.Slice(y * _stride, Width);
+            return _wrappedBytes.IsEmpty
+                ? _wrapped.Span.Slice(y * _stride, Width)
+                : MemoryMarshal.Cast<byte, TPixel>(_wrappedBytes.Span.Slice(y * _byteStride, Width * Unsafe.SizeOf<TPixel>()));
         }
 
         IMemoryOwner<byte>[] blocks = _blocks ?? throw new ObjectDisposedException(GetType().FullName);
@@ -84,6 +100,14 @@ public sealed class PixelPlane<TPixel> : IDisposable
         if (!OwnsMemory)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            if (!_wrappedBytes.IsEmpty)
+            {
+                int rowBytes = Width * Unsafe.SizeOf<TPixel>();
+                bool packed = _byteStride == rowBytes || Height == 1;
+                pixels = packed ? MemoryMarshal.Cast<byte, TPixel>(_wrappedBytes.Span[..(rowBytes * Height)]) : default;
+                return packed;
+            }
+
             bool contiguous = _stride == Width || Height == 1;
             pixels = contiguous ? _wrapped.Span[..(Width * Height)] : default;
             return contiguous;
@@ -101,9 +125,10 @@ public sealed class PixelPlane<TPixel> : IDisposable
     }
 
     /// <summary>Returns the plane's memory to its source. Wrapped memory is left alone. Calling it again does nothing.</summary>
-    public void Dispose()
+    internal void Dispose()
     {
         _disposed = true;
+        Interlocked.Exchange(ref _owner, null)?.Dispose();
         IMemoryOwner<byte>[]? blocks = Interlocked.Exchange(ref _blocks, null);
         if (blocks is not null)
         {
@@ -121,7 +146,7 @@ public sealed class PixelPlane<TPixel> : IDisposable
 }
 
 /// <summary>Creates <see cref="PixelPlane{TPixel}"/> instances.</summary>
-public static class PixelPlane
+internal static class PixelPlane
 {
     /// <summary>Allocates a plane from <paramref name="source"/>.</summary>
     /// <param name="width">The width in pixels, at least 1.</param>
@@ -131,7 +156,7 @@ public static class PixelPlane
     /// <typeparam name="TPixel">The pixel type.</typeparam>
     /// <returns>The new plane. The caller must dispose it.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is less than 1, or a row is larger than 2 GB.</exception>
-    public static PixelPlane<TPixel> Allocate<TPixel>(int width, int height, IPixelMemorySource source, ClearMode clear = ClearMode.None)
+    internal static PixelPlane<TPixel> Allocate<TPixel>(int width, int height, IPixelMemorySource source, ClearMode clear = ClearMode.None)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
@@ -183,7 +208,7 @@ public static class PixelPlane
     /// <typeparam name="TPixel">The pixel type.</typeparam>
     /// <returns>The plane.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A size is out of range, or <paramref name="memory"/> is too short.</exception>
-    public static PixelPlane<TPixel> Wrap<TPixel>(Memory<TPixel> memory, int width, int height, int stride = 0)
+    internal static PixelPlane<TPixel> Wrap<TPixel>(Memory<TPixel> memory, int width, int height, int stride = 0)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
@@ -201,5 +226,27 @@ public static class PixelPlane
         }
 
         return new PixelPlane<TPixel>(memory, width, height, stride);
+    }
+
+    /// <summary>Creates a plane over bytes with any row stride, such as a decoder's frame, optionally owning what holds them.</summary>
+    internal static PixelPlane<TPixel> Wrap<TPixel>(Memory<byte> memory, int width, int height, int byteStride, IDisposable? owner)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
+        long rowBytes = (long)width * Unsafe.SizeOf<TPixel>();
+        if (byteStride == 0)
+        {
+            byteStride = (int)Math.Min(rowBytes, int.MaxValue);
+        }
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(byteStride, rowBytes, nameof(byteStride));
+        long needed = ((long)(height - 1) * byteStride) + rowBytes;
+        if (memory.Length < needed)
+        {
+            throw new ArgumentOutOfRangeException(nameof(memory), memory.Length, $"The memory holds {memory.Length} bytes but a {width}×{height} plane with a {byteStride}-byte stride needs {needed}.");
+        }
+
+        return new PixelPlane<TPixel>(memory, width, height, byteStride, owner);
     }
 }

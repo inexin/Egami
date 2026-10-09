@@ -18,8 +18,9 @@ public sealed class UnsupportedFormatException : EgamiException
 {
     /// <summary>Initializes a new instance of the <see cref="UnsupportedFormatException"/> class.</summary>
     /// <param name="message">The message.</param>
-    public UnsupportedFormatException(string message)
-        : base(message)
+    /// <param name="innerException">The exception that caused this one, if any.</param>
+    public UnsupportedFormatException(string message, Exception? innerException = null)
+        : base(message, innerException)
     {
     }
 }

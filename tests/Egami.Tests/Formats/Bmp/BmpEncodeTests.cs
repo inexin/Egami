@@ -46,11 +46,11 @@ public class BmpEncodeTests
     }
 
     [Theory]
-    [InlineData(BmpBits.Indexed1, 2)]
-    [InlineData(BmpBits.Indexed2, 4)]
-    [InlineData(BmpBits.Indexed4, 16)]
-    [InlineData(BmpBits.Indexed8, 256)]
-    public void PalettesKeepFewColorsExactly(BmpBits bits, int colors)
+    [InlineData(BmpPixelFormat.Indexed1, 2)]
+    [InlineData(BmpPixelFormat.Indexed2, 4)]
+    [InlineData(BmpPixelFormat.Indexed4, 16)]
+    [InlineData(BmpPixelFormat.Indexed8, 256)]
+    public void PalettesKeepFewColorsExactly(BmpPixelFormat bits, int colors)
     {
         Random random = new(colors);
         Rgb8[] palette = [.. Enumerable.Range(0, colors).Select(_ => new Rgb8((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256))).Distinct()];
@@ -64,9 +64,9 @@ public class BmpEncodeTests
             }
         }
 
-        byte[] data = Save(source, new BmpWriterOptions { Bits = bits });
+        byte[] data = Save(source, new BmpWriterOptions { PixelFormat = bits });
         using Raster raster = Raster.Load(data);
-        Assert.Equal(bits switch { BmpBits.Indexed1 => 1, BmpBits.Indexed2 => 2, BmpBits.Indexed4 => 4, _ => 8 }, ((BmpDetails)raster.Metadata.FormatDetails!).BitsPerPixel);
+        Assert.Equal(bits switch { BmpPixelFormat.Indexed1 => 1, BmpPixelFormat.Indexed2 => 2, BmpPixelFormat.Indexed4 => 4, _ => 8 }, ((BmpDetails)raster.Metadata.FormatDetails!).BitsPerPixel);
         using Raster<Rgb8> back = Raster.Load<Rgb8>(data);
         Assert.Equal(Bytes(source), Bytes(back));
     }
@@ -75,7 +75,7 @@ public class BmpEncodeTests
     public void ManyColorsAreQuantized()
     {
         using Raster<Rgba8> source = Random<Rgba8>(64, 64);
-        byte[] data = Save(source, new BmpWriterOptions { Bits = BmpBits.Indexed4, Palette = new PaletteOptions { Dither = DitherMode.None } });
+        byte[] data = Save(source, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4, Palette = new PaletteOptions { Dither = DitherMode.None } });
         using Raster<Rgba8> back = Raster.Load<Rgba8>(data);
         HashSet<Rgba8> colors = [];
         for (int y = 0; y < back.Height; y++)
@@ -91,11 +91,11 @@ public class BmpEncodeTests
     public void ForcedLayoutsDropOrAddAlpha()
     {
         using Raster<Rgba8> translucent = Raster.Create<Rgba8>(3, 3, new Rgba8(10, 20, 30, 40));
-        using Raster<Rgba8> dropped = Raster.Load<Rgba8>(Save(translucent, new BmpWriterOptions { Bits = BmpBits.Bgr24 }));
+        using Raster<Rgba8> dropped = Raster.Load<Rgba8>(Save(translucent, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Bgr24 }));
         Assert.Equal(new Rgba8(10, 20, 30, 255), dropped.Row(0)[0]);
 
         using Raster<Rgb8> opaque = Raster.Create<Rgb8>(3, 3, new Rgb8(1, 2, 3));
-        byte[] data = Save(opaque, new BmpWriterOptions { Bits = BmpBits.Bgra32 });
+        byte[] data = Save(opaque, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Bgra32 });
         Assert.Equal(32, BinaryPrimitives.ReadUInt16LittleEndian(data.AsSpan(28)));
         using Raster<Rgba8> back = Raster.Load<Rgba8>(data);
         Assert.Equal(new Rgba8(1, 2, 3, 255), back.Row(2)[2]);

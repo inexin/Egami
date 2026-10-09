@@ -28,7 +28,7 @@ public class ColorTests
                 "hue" => ops.HueRotate(120),
                 "sepia" => ops.Sepia(0.8f),
                 "grayscale" => ops.Grayscale(),
-                "grayscale601" => ops.Grayscale(GrayscaleMode.Rec601, 0.5f),
+                "grayscale601" => ops.Grayscale(LumaWeights.Rec601, 0.5f),
                 "invert" => ops.Invert(),
                 _ => ops.Opacity(0.25f),
             }, Ct);
@@ -208,7 +208,7 @@ public class ColorTests
         Assert.Throws<ArgumentOutOfRangeException>(() => ColorMatrix.Sepia(1.5f));
         Assert.Throws<ArgumentOutOfRangeException>(() => ColorMatrix.Invert(-0.1f));
         Assert.Throws<ArgumentOutOfRangeException>(() => ColorMatrix.Opacity(2));
-        Assert.Throws<ArgumentOutOfRangeException>(() => ColorMatrix.Grayscale((GrayscaleMode)7));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ColorMatrix.Grayscale((LumaWeights)7));
         Assert.Throws<ArgumentOutOfRangeException>(() => ColorMatrix.HueRotate(float.NaN));
         Assert.Throws<ArgumentException>(() => new ColorMatrix(new float[19]));
         Assert.Throws<ArgumentException>(() => new ColorMatrix([.. new float[19], float.NaN]));

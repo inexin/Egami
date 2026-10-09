@@ -46,7 +46,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
     {
         JsonElement entry = Entry(file);
         using MemoryStream stream = new(File.ReadAllBytes(Path.Combine(Images, file)));
-        using EgamiInput input = new(stream, EgamiContext.Default, TestContext.Current.CancellationToken);
+        EgamiInput input = new(stream, EgamiContext.Default, TestContext.Current.CancellationToken);
         JpegHeader header = JpegSegmentReader.ReadHeader(input, ReaderOptions.Default);
         using Raster<Rgb8> raster = JpegReader.Decode<Rgb8>(input, header, ReaderOptions.Default, fastUpsampling: true);
         AssertClose(entry, entry.GetProperty("fast").GetString()!, Bytes(raster), file + " fast");
@@ -79,7 +79,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
         int height = (entry.GetProperty("height").GetInt32() + scale - 1) / scale;
 
         // The smallest size still at least the target: asking for exactly the 1/n size gives 1/n.
-        using Raster raster = Raster.Load(File.ReadAllBytes(Path.Combine(Images, file)), options: new ReaderOptions { TargetSize = new Size(width, height) });
+        using Raster raster = Raster.Load(File.ReadAllBytes(Path.Combine(Images, file)), options: new ReaderOptions { MinimumSize = new Size(width, height) });
         Assert.Equal((width, height), (raster.Width, raster.Height));
         Assert.Equal(scale, Assert.IsType<JpegDetails>(raster.Metadata.FormatDetails).ScaleDenominator);
         AssertClose(entry, entry.GetProperty("scaled").GetProperty(scale.ToString(System.Globalization.CultureInfo.InvariantCulture)).GetString()!, Bytes(raster), $"{file} 1/{scale}");
@@ -97,7 +97,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
         {
             int width = (full.Width + scale - 1) / scale;
             int height = (full.Height + scale - 1) / scale;
-            using Raster<Rgb8> scaled = Raster.Load<Rgb8>(data, options: new ReaderOptions { TargetSize = new Size(width, height) });
+            using Raster<Rgb8> scaled = Raster.Load<Rgb8>(data, options: new ReaderOptions { MinimumSize = new Size(width, height) });
             Assert.Equal((width, height), (scaled.Width, scaled.Height));
             Assert.Empty(scaled.Metadata.Warnings);
             double sum = 0;
@@ -132,13 +132,13 @@ public class JpegDecodeTests(ITestOutputHelper output)
         byte[] data = File.ReadAllBytes(Path.Combine(Images, "duck-420.jpg"));
         using Raster full = Raster.Load(data);
         Assert.Equal(1, Assert.IsType<JpegDetails>(full.Metadata.FormatDetails).ScaleDenominator);
-        using Raster half = Raster.Load(data, options: new ReaderOptions { TargetSize = new Size(100, 100) });
+        using Raster half = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(100, 100) });
         Assert.Equal((160, 120), (half.Width, half.Height));
-        using Raster eighth = Raster.Load(data, options: new ReaderOptions { TargetSize = new Size(1, 1) });
+        using Raster eighth = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(1, 1) });
         Assert.Equal((40, 30), (eighth.Width, eighth.Height));
-        using Raster wide = Raster.Load(data, options: new ReaderOptions { TargetSize = new Size(300, 10) });
+        using Raster wide = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(300, 10) });
         Assert.Equal((320, 240), (wide.Width, wide.Height));
-        Assert.True(Raster.Probe(data, options: new ReaderOptions { TargetSize = new Size(40, 30) }).EstimatedBytes < Raster.Probe(data).EstimatedBytes / 32);
+        Assert.True(Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(40, 30) }).EstimatedBytes < Raster.Probe(data).EstimatedBytes / 32);
     }
 
     [Theory]
@@ -148,7 +148,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
         byte[] data = File.ReadAllBytes(Path.Combine(Images, file));
         using Raster<Rgb8> serial = Raster.Load<Rgb8>(data, EgamiContext.Default with { MaxParallelism = 1 });
         using MemoryStream stream = new(data);
-        using EgamiInput input = new(stream, EgamiContext.Default with { MaxParallelism = 4 }, TestContext.Current.CancellationToken);
+        EgamiInput input = new(stream, EgamiContext.Default with { MaxParallelism = 4 }, TestContext.Current.CancellationToken);
         JpegHeader header = JpegSegmentReader.ReadHeader(input, ReaderOptions.Default);
         using Raster<Rgb8> pipelined = JpegReader.Decode<Rgb8>(input, header, ReaderOptions.Default, forcePipeline: true);
         Assert.Equal(Bytes(serial), Bytes(pipelined));
@@ -163,7 +163,7 @@ public class JpegDecodeTests(ITestOutputHelper output)
         foreach (RecoveryMode mode in (RecoveryMode[])[RecoveryMode.Lenient, RecoveryMode.Strict])
         {
             using MemoryStream stream = new(half);
-            using EgamiInput input = new(stream, EgamiContext.Default with { MaxParallelism = 4 }, TestContext.Current.CancellationToken);
+            EgamiInput input = new(stream, EgamiContext.Default with { MaxParallelism = 4 }, TestContext.Current.CancellationToken);
             ReaderOptions options = new() { Recovery = mode };
             JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
             if (mode == RecoveryMode.Strict)

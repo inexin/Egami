@@ -95,8 +95,8 @@ static void LoadJpeg(Stream stream)
         new() { Recovery = RecoveryMode.Lenient },
         new() { Recovery = RecoveryMode.Strict },
         new JpegReaderOptions { FastUpsampling = true },
-        new() { TargetSize = new Size(1, 1) },
-        new() { TargetSize = new Size(64, 64) },
+        new() { MinimumSize = new Size(1, 1) },
+        new() { MinimumSize = new Size(64, 64) },
     })
     {
         try

@@ -43,8 +43,8 @@ public class JpegHeaderTests
     public void TargetSizePicksTheScaleForTheEstimate()
     {
         byte[] file = JpegBuilder.Baseline(4000, 3000, Ycc420).Scan(1, 2, 3);
-        RasterInfo eighth = Raster.Probe(file, options: new ReaderOptions { TargetSize = new Size(500, 375) });
-        RasterInfo quarter = Raster.Probe(file, options: new ReaderOptions { TargetSize = new Size(501, 375) });
+        RasterInfo eighth = Raster.Probe(file, options: new ReaderOptions { MinimumSize = new Size(500, 375) });
+        RasterInfo quarter = Raster.Probe(file, options: new ReaderOptions { MinimumSize = new Size(501, 375) });
         Assert.Equal(500L * 375 * 3, eighth.EstimatedBytes);
         Assert.Equal(1000L * 750 * 3, quarter.EstimatedBytes);
 
@@ -219,7 +219,7 @@ public class JpegHeaderTests
             byte[] file = new JpegBuilder().Quant(0, quality).Frame(0xC2, 8, 64, 48, Ycc420).Segment(0xDD, [0, 4]).Scan(1);
             JpegHeader header = Read(file);
             Assert.Equal(quality, header.Details.EstimatedQuality);
-            Assert.True(header.Details.IsProgressive);
+            Assert.True(header.Details.Progressive);
             Assert.Equal(4, header.Details.RestartInterval);
             Assert.Equal([new JpegComponent(1, 2, 2), new JpegComponent(2, 1, 1), new JpegComponent(3, 1, 1)], header.Details.Components);
         }
@@ -247,7 +247,7 @@ public class JpegHeaderTests
     private static JpegHeader Read(byte[] file, ReaderOptions? options = null, EgamiContext? context = null)
     {
         using MemoryStream stream = new(file);
-        using EgamiInput input = new(stream, context ?? EgamiContext.Default, TestContext.Current.CancellationToken);
+        EgamiInput input = new(stream, context ?? EgamiContext.Default, TestContext.Current.CancellationToken);
         return JpegSegmentReader.ReadHeader(input, options ?? ReaderOptions.Default);
     }
 }

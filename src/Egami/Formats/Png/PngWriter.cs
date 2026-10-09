@@ -429,7 +429,7 @@ internal sealed class PngWriter : IFormatWriter
         PngFilterMode mode = options.Filter == PngFilterMode.Adaptive && lowDepthOrPalette ? PngFilterMode.None : options.Filter;
         ZLibCompressionStrategy strategy = options.CompressionStrategy switch
         {
-            PngCompressionStrategy.Automatic => ZLibCompressionStrategy.Default,
+            PngCompressionStrategy.Auto => ZLibCompressionStrategy.Default,
             PngCompressionStrategy.Filtered => ZLibCompressionStrategy.Filtered,
             PngCompressionStrategy.HuffmanOnly => ZLibCompressionStrategy.HuffmanOnly,
             PngCompressionStrategy.RunLengthEncoding => ZLibCompressionStrategy.RunLengthEncoding,
@@ -523,7 +523,7 @@ internal sealed class PngWriter : IFormatWriter
             WriteChunk(output, PngChunkType.Srgb, [0]);
         }
 
-        uint? gamma = original?.Gamma;
+        uint? gamma = original?.FileGamma;
         if (gamma is null && metadata.ColorSpace == ColorSpaceHint.Linear)
         {
             gamma = 100_000;

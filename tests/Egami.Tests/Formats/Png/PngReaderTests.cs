@@ -116,7 +116,7 @@ public class PngReaderTests
         Assert.Equal(icc, metadata.IccProfile.ToArray());
         Assert.Equal("Test profile", png.IccProfileName);
         Assert.Equal(ColorSpaceHint.EmbeddedIcc, metadata.ColorSpace);
-        Assert.Equal(45455u, png.Gamma);
+        Assert.Equal(45455u, png.FileGamma);
         Assert.Equal(new Resolution(3780, 3780, ResolutionUnit.PerMeter), metadata.Resolution);
         Assert.Equal(96.012, metadata.Resolution!.Value.ToPerInch().X, 3);
         Assert.Equal(
@@ -328,7 +328,7 @@ public class PngReaderTests
 
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster raster = Raster.Load(file);
-        Assert.Null(((PngDetails)raster.Metadata.FormatDetails!).Gamma);
+        Assert.Null(((PngDetails)raster.Metadata.FormatDetails!).FileGamma);
         Assert.Contains(raster.Metadata.Warnings, w => w.Contains("gAMA", StringComparison.Ordinal));
     }
 

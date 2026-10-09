@@ -33,17 +33,17 @@ public class WriterInteropFiles
 
         Write(directory!, "bmp-24.bmp", rgb, BmpFormat.Info, BmpWriterOptions.Default);
         Write(directory!, "bmp-32.bmp", rgba, BmpFormat.Info, BmpWriterOptions.Default);
-        Write(directory!, "bmp-1.bmp", two, BmpFormat.Info, new BmpWriterOptions { Bits = BmpBits.Indexed1 });
-        Write(directory!, "bmp-2.bmp", few, BmpFormat.Info, new BmpWriterOptions { Bits = BmpBits.Indexed2 });
-        Write(directory!, "bmp-4.bmp", rgb, BmpFormat.Info, new BmpWriterOptions { Bits = BmpBits.Indexed4 });
-        Write(directory!, "bmp-8.bmp", rgb, BmpFormat.Info, new BmpWriterOptions { Bits = BmpBits.Indexed8 });
+        Write(directory!, "bmp-1.bmp", two, BmpFormat.Info, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed1 });
+        Write(directory!, "bmp-2.bmp", few, BmpFormat.Info, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed2 });
+        Write(directory!, "bmp-4.bmp", rgb, BmpFormat.Info, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4 });
+        Write(directory!, "bmp-8.bmp", rgb, BmpFormat.Info, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed8 });
         Write(directory!, "tga-24-rle.tga", rgb, TgaFormat.Info, TgaWriterOptions.Default);
         Write(directory!, "tga-24-raw.tga", rgb, TgaFormat.Info, new TgaWriterOptions { Rle = false });
         Write(directory!, "tga-32-rle.tga", rgba, TgaFormat.Info, TgaWriterOptions.Default);
         Write(directory!, "tga-32-raw.tga", rgba, TgaFormat.Info, new TgaWriterOptions { Rle = false });
         Write(directory!, "tga-gray-rle.tga", gray, TgaFormat.Info, TgaWriterOptions.Default);
-        Write(directory!, "tga-pal-rle.tga", rgb, TgaFormat.Info, new TgaWriterOptions { Bits = TgaBits.Indexed8 });
-        Write(directory!, "tga-pal-raw.tga", rgb, TgaFormat.Info, new TgaWriterOptions { Bits = TgaBits.Indexed8, Rle = false });
+        Write(directory!, "tga-pal-rle.tga", rgb, TgaFormat.Info, new TgaWriterOptions { PixelFormat = TgaPixelFormat.Indexed8 });
+        Write(directory!, "tga-pal-raw.tga", rgb, TgaFormat.Info, new TgaWriterOptions { PixelFormat = TgaPixelFormat.Indexed8, Rle = false });
         Write(directory!, "qoi-3.qoi", rgb, QoiFormat.Info, QoiWriterOptions.Default);
         Write(directory!, "qoi-4.qoi", rgba, QoiFormat.Info, QoiWriterOptions.Default);
         foreach (bool plain in new[] { false, true })

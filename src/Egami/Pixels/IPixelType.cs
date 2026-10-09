@@ -3,8 +3,10 @@ using System.Numerics;
 namespace Egami.Pixels;
 
 /// <summary>
-/// A pixel type: an unmanaged struct whose memory is exactly its channels, in the order its name gives.
-/// Channel values are sRGB-encoded and alpha is straight (not premultiplied).
+/// A pixel type: an unmanaged struct holding one pixel. The conversions (<c>ToScaled</c>, <c>FromScaled</c>, <c>ToRgba8</c>,
+/// <c>FromRgba8</c>) always use sRGB-encoded values with straight (not premultiplied) alpha; <see cref="Layout"/> says how the pixel
+/// is stored, so Egami can take faster paths for layouts it knows. Types from outside Egami may use any layout, with
+/// <see cref="PixelChannelOrder.Other"/> for ones Egami does not know.
 /// </summary>
 /// <typeparam name="TSelf">The pixel type itself.</typeparam>
 public interface IPixelType<TSelf> : IEquatable<TSelf>

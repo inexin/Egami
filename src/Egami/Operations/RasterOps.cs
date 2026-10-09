@@ -31,6 +31,7 @@ public sealed class RasterOps
     /// <summary>Adds a step, such as a custom <see cref="IRasterOperation"/>.</summary>
     /// <param name="operation">The operation.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="operation"/> is <see langword="null"/>.</exception>
     public RasterOps Add(IRasterOperation operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
@@ -59,7 +60,7 @@ public sealed class RasterOps
         }
 
         CheckFilter(filter, colorSpace);
-        return Add(new ResizeOperation(ResizeMode.Stretch, width, height, filter, colorSpace));
+        return Add(new ResizeOperation(ResizeKind.Stretch, width, height, filter, colorSpace));
     }
 
     /// <summary>
@@ -78,7 +79,7 @@ public sealed class RasterOps
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
         CheckFilter(filter, colorSpace);
-        return Add(new ResizeOperation(ResizeMode.Fit, width, height, filter, colorSpace, enlarge: enlarge));
+        return Add(new ResizeOperation(ResizeKind.Fit, width, height, filter, colorSpace, enlarge: enlarge));
     }
 
     /// <summary>
@@ -91,13 +92,14 @@ public sealed class RasterOps
     /// <param name="filter">The resampling kernel. Defaults to <see cref="ResampleFilter.Bicubic"/>.</param>
     /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">A size is less than 1.</exception>
-    public RasterOps Fill(int width, int height, Anchor anchor = Anchor.Center, ResampleFilter filter = ResampleFilter.Bicubic, ColorSpace colorSpace = ColorSpace.Encoded)
+    /// <exception cref="ArgumentOutOfRangeException">A size is less than 1, or an enum value is not defined.</exception>
+    public RasterOps Cover(int width, int height, Anchor anchor = Anchor.Center, ResampleFilter filter = ResampleFilter.Bicubic, ColorSpace colorSpace = ColorSpace.Encoded)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
+        CheckAnchor(anchor);
         CheckFilter(filter, colorSpace);
-        return Add(new ResizeOperation(ResizeMode.Fill, width, height, filter, colorSpace, anchor));
+        return Add(new ResizeOperation(ResizeKind.Cover, width, height, filter, colorSpace, anchor));
     }
 
     /// <summary>Keeps one rectangle of the image. The pixels are copied exactly.</summary>
@@ -125,34 +127,37 @@ public sealed class RasterOps
 
     /// <summary>
     /// Enlarges the canvas to <paramref name="width"/> × <paramref name="height"/>, placing the image at <paramref name="anchor"/>
-    /// and filling the new area with <paramref name="color"/>.
+    /// and filling the new area with <paramref name="background"/>.
     /// </summary>
     /// <param name="width">The new width, at least the image's width.</param>
     /// <param name="height">The new height, at least the image's height.</param>
-    /// <param name="color">The color of the new area. Defaults to transparent black.</param>
+    /// <param name="background">The color of the new area. Defaults to transparent black.</param>
     /// <param name="anchor">Where the image sits on the new canvas. Defaults to the center, rounding toward the top left.</param>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">A size is less than 1, or smaller than the image when the chain runs; use <see cref="Crop(Rect)"/> to shrink.</exception>
-    public RasterOps Pad(int width, int height, Rgba8 color = default, Anchor anchor = Anchor.Center)
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A size is less than 1, or smaller than the image when the chain runs (use <see cref="Crop(Rect)"/> to shrink), or
+    /// <paramref name="anchor"/> is not defined.
+    /// </exception>
+    public RasterOps Pad(int width, int height, Rgba8 background = default, Anchor anchor = Anchor.Center)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
-        return Add(new PadOperation(width, height, color, anchor));
+        CheckAnchor(anchor);
+        return Add(new PadOperation(width, height, background, anchor));
     }
 
-    /// <summary>Mirrors the image. The pixels are moved exactly.</summary>
-    /// <param name="mode">Which way to mirror. <see cref="FlipMode.Both"/> is the same as rotating by 180°.</param>
+    /// <summary>Mirrors the image left to right. The pixels are moved exactly.</summary>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode"/> is not defined.</exception>
-    public RasterOps Flip(FlipMode mode)
+    public RasterOps FlipHorizontal()
     {
-        return mode switch
-        {
-            FlipMode.Horizontal => Add(new FlipOperation(horizontal: true, vertical: false)),
-            FlipMode.Vertical => Add(new FlipOperation(horizontal: false, vertical: true)),
-            FlipMode.Both => Add(new FlipOperation(horizontal: true, vertical: true)),
-            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
-        };
+        return Add(new FlipOperation(horizontal: true, vertical: false));
+    }
+
+    /// <summary>Mirrors the image top to bottom. The pixels are moved exactly. Both flips together equal rotating by 180°.</summary>
+    /// <returns>This builder.</returns>
+    public RasterOps FlipVertical()
+    {
+        return Add(new FlipOperation(horizontal: false, vertical: true));
     }
 
     /// <summary>
@@ -191,7 +196,7 @@ public sealed class RasterOps
     /// <summary>
     /// Turns the image the way its EXIF orientation says, so it looks as the camera meant, and sets the orientation to Normal.
     /// Each orientation is one exact pass (a flip, a quarter turn or a transpose); an image without EXIF, or already upright, is
-    /// left alone. Followed by <see cref="Resize"/>, <see cref="Fit"/> or <see cref="Fill"/>, the resize runs first on the
+    /// left alone. Followed by <see cref="Resize"/>, <see cref="Fit"/> or <see cref="Cover"/>, the resize runs first on the
     /// stored image and the small result is turned, which matches the other order to within rounding.
     /// </summary>
     /// <returns>This builder.</returns>
@@ -265,12 +270,12 @@ public sealed class RasterOps
     /// Converts toward gray. By default the luma is taken from the stored, gamma-encoded values, as CSS filters do; pass
     /// <see cref="ColorSpace.Linear"/> to weigh the colors in linear light, which keeps perceived brightness better.
     /// </summary>
-    /// <param name="mode">The luma weights. Defaults to <see cref="GrayscaleMode.Rec709"/>.</param>
+    /// <param name="mode">The luma weights. Defaults to <see cref="LumaWeights.Rec709"/>.</param>
     /// <param name="amount">0 changes nothing, 1 gives full gray.</param>
     /// <param name="colorSpace">Where the luma is taken. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An argument is out of range.</exception>
-    public RasterOps Grayscale(GrayscaleMode mode = GrayscaleMode.Rec709, float amount = 1, ColorSpace colorSpace = ColorSpace.Encoded)
+    public RasterOps Grayscale(LumaWeights mode = LumaWeights.Rec709, float amount = 1, ColorSpace colorSpace = ColorSpace.Encoded)
     {
         ColorMatrix matrix = Operations.ColorMatrix.Grayscale(mode, amount);
         CheckFilter(ResampleFilter.Bicubic, colorSpace);
@@ -381,6 +386,7 @@ public sealed class RasterOps
     /// <param name="preserveAlpha">Whether to keep the source alpha and filter only red, green and blue.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="edge"/> is not defined.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is <see langword="null"/>.</exception>
     public RasterOps Convolve(ConvolutionKernel kernel, EdgeMode edge = EdgeMode.Clamp, bool preserveAlpha = false)
     {
         ArgumentNullException.ThrowIfNull(kernel);
@@ -402,6 +408,8 @@ public sealed class RasterOps
     /// <param name="opacity">Multiplies the image's alpha: 1 draws it as it is, 0 draws nothing.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="opacity"/> is outside 0..1.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
+    /// <remarks>Drawing a raster onto itself reads from a copy of it, made when the step runs.</remarks>
     public RasterOps DrawImage(Raster image, Point position, float opacity = 1)
     {
         ArgumentNullException.ThrowIfNull(image);
@@ -426,6 +434,7 @@ public sealed class RasterOps
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="sourceArea"/> does not overlap the image, or <paramref name="opacity"/> is outside 0..1.
     /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
     public RasterOps DrawImage(Raster image, Rect sourceArea, Point position, float opacity = 1)
     {
         ArgumentNullException.ThrowIfNull(image);
@@ -476,6 +485,14 @@ public sealed class RasterOps
         if (!(sigma >= 0) || sigma > 1000)
         {
             throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be from 0 to 1000.");
+        }
+    }
+
+    private static void CheckAnchor(Anchor anchor)
+    {
+        if (!Enum.IsDefined(anchor))
+        {
+            throw new ArgumentOutOfRangeException(nameof(anchor), anchor, "The anchor is not defined.");
         }
     }
 

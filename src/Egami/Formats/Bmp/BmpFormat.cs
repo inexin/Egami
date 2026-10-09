@@ -51,7 +51,7 @@ public enum BmpCompression
 /// <summary>Details only BMP has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
 public sealed class BmpDetails : FormatDetails
 {
-    /// <summary>Gets or sets the size of the info header: 12, 16, 40, 52, 56, 64, 108 or 124.</summary>
+    /// <summary>Gets or sets the size of the info header: 12, 16, 40, 52, 56, 64, 108 or 124. Defaults to 40.</summary>
     public int HeaderSize { get; set; } = 40;
 
     /// <summary>Gets or sets the bits a pixel: 1, 2, 4, 8, 16, 24 or 32 (0 for embedded JPEG or PNG).</summary>
@@ -67,16 +67,16 @@ public sealed class BmpDetails : FormatDetails
     public ReadOnlyMemory<Rgb8> Palette { get; set; }
 
     /// <summary>Gets or sets the red, green, blue and alpha masks the pixels were read with, or zeros where there were none.</summary>
-    public (uint Red, uint Green, uint Blue, uint Alpha) Masks { get; set; }
+    internal (uint Red, uint Green, uint Blue, uint Alpha) Masks { get; set; }
 
     /// <summary>Gets or sets the V4 or V5 color space type as stored, such as 0x73524742 ("sRGB"), or 0 when absent.</summary>
-    public uint ColorSpaceType { get; set; }
+    internal uint ColorSpaceType { get; set; }
 
     /// <summary>Gets or sets the V4 or V5 endpoints and gamma values as stored (48 bytes). Empty if the header had none.</summary>
-    public ReadOnlyMemory<byte> Calibration { get; set; }
+    internal ReadOnlyMemory<byte> Calibration { get; set; }
 
     /// <summary>Gets or sets the V5 rendering intent, or 0 when absent.</summary>
-    public uint RenderingIntent { get; set; }
+    internal uint RenderingIntent { get; set; }
 
     /// <inheritdoc/>
     public override FormatDetails Copy()
@@ -97,7 +97,7 @@ public sealed class BmpDetails : FormatDetails
 }
 
 /// <summary>The pixel layout a BMP is written with.</summary>
-public enum BmpBits
+public enum BmpPixelFormat
 {
     /// <summary>24-bit when every pixel is opaque, else 32-bit with alpha.</summary>
     Auto,
@@ -114,7 +114,7 @@ public enum BmpBits
     /// <summary>A palette of up to 256 colors.</summary>
     Indexed8,
 
-    /// <summary>24-bit blue, green and red; alpha is dropped.</summary>
+    /// <summary>24-bit blue, green and red. Alpha is dropped, not blended onto a background.</summary>
     Bgr24,
 
     /// <summary>32-bit blue, green, red and alpha, with a V4 header and bit-field masks.</summary>
@@ -127,12 +127,13 @@ public sealed class BmpWriterOptions : WriterOptions
     /// <summary>Gets the default options.</summary>
     public static new BmpWriterOptions Default { get; } = new();
 
-    /// <summary>Gets the pixel layout. Defaults to <see cref="BmpBits.Auto"/>.</summary>
-    public BmpBits Bits { get; init; }
+    /// <summary>Gets the pixel layout. Defaults to <see cref="BmpPixelFormat.Auto"/>.</summary>
+    public BmpPixelFormat PixelFormat { get; init; }
 
     /// <summary>
     /// Gets how a palette is built for the indexed layouts when the image has more colors than fit: the color limit (capped at
     /// the layout's) and dithering. Alpha is dropped first, since BMP palettes are opaque.
     /// </summary>
+    /// <remarks>Defaults to <see cref="PaletteOptions.Default"/>: up to 256 colors, Floyd–Steinberg dithering.</remarks>
     public PaletteOptions Palette { get; init; } = PaletteOptions.Default;
 }

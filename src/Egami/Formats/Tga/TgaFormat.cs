@@ -81,11 +81,11 @@ public sealed class TgaDetails : FormatDetails
     /// <summary>Gets or sets the date and time from the extension area, or <see langword="null"/> if absent or invalid.</summary>
     public DateTime? Timestamp { get; set; }
 
-    /// <summary>Gets or sets the job name from the extension area. Empty if absent.</summary>
-    public string JobName { get; set; } = string.Empty;
+    /// <summary>Gets or sets the job name from the extension area. <see langword="null"/> if absent.</summary>
+    public string? JobName { get; set; }
 
-    /// <summary>Gets or sets the software ID from the extension area. Empty if absent.</summary>
-    public string Software { get; set; } = string.Empty;
+    /// <summary>Gets or sets the software ID from the extension area. <see langword="null"/> if absent.</summary>
+    public string? Software { get; set; }
 
     /// <summary>Gets or sets the pixel aspect ratio (width over height) from the extension area, or <see langword="null"/> if absent.</summary>
     public double? PixelAspectRatio { get; set; }
@@ -110,7 +110,7 @@ public sealed class TgaDetails : FormatDetails
 }
 
 /// <summary>The pixel layout a TGA is written with.</summary>
-public enum TgaBits
+public enum TgaPixelFormat
 {
     /// <summary>8-bit gray for gray types without alpha, 24-bit when every pixel is opaque, else 32-bit with alpha.</summary>
     Auto,
@@ -121,7 +121,7 @@ public enum TgaBits
     /// <summary>8-bit indices into a color map of up to 256 colors, with alpha in the map when the image has any.</summary>
     Indexed8,
 
-    /// <summary>24-bit blue, green and red; alpha is dropped.</summary>
+    /// <summary>24-bit blue, green and red. Alpha is dropped, not blended onto a background.</summary>
     Bgr24,
 
     /// <summary>32-bit blue, green, red and alpha.</summary>
@@ -137,9 +137,10 @@ public sealed class TgaWriterOptions : WriterOptions
     /// <summary>Gets whether to run-length encode the pixels. Defaults to <see langword="true"/>.</summary>
     public bool Rle { get; init; } = true;
 
-    /// <summary>Gets the pixel layout. Defaults to <see cref="TgaBits.Auto"/>.</summary>
-    public TgaBits Bits { get; init; }
+    /// <summary>Gets the pixel layout. Defaults to <see cref="TgaPixelFormat.Auto"/>.</summary>
+    public TgaPixelFormat PixelFormat { get; init; }
 
-    /// <summary>Gets how the color map is built for <see cref="TgaBits.Indexed8"/> when the image has more than 256 colors.</summary>
+    /// <summary>Gets how the color map is built for <see cref="TgaPixelFormat.Indexed8"/> when the image has more than 256 colors.</summary>
+    /// <remarks>Defaults to <see cref="PaletteOptions.Default"/>: up to 256 colors, Floyd–Steinberg dithering.</remarks>
     public PaletteOptions Palette { get; init; } = PaletteOptions.Default;
 }

@@ -86,7 +86,7 @@ public sealed class FrameList<TPixel> : IReadOnlyList<Frame<TPixel>>
                 nameof(frame));
         }
 
-        long frameBytes = (long)_owner.Width * _owner.Height * TPixel.Layout.BytesPerPixel;
+        long frameBytes = (long)_owner.Width * _owner.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
         long total = frameBytes * (_frames.Count + 1);
         long max = _owner.Context.Limits.MaxTotalBytes;
         if (total > max)
@@ -103,6 +103,12 @@ public sealed class FrameList<TPixel> : IReadOnlyList<Frame<TPixel>>
         Frame<TPixel> copy = new(plane, frame.Metadata.Copy());
         _frames.Insert(index, copy);
         return copy;
+    }
+
+    /// <summary>Appends a frame the list's raster now owns, without copying (readers building an animation).</summary>
+    internal void AddOwned(Frame<TPixel> frame)
+    {
+        _frames.Add(frame);
     }
 
     /// <summary>Removes the frame at <paramref name="index"/> and returns its memory.</summary>

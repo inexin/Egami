@@ -26,7 +26,7 @@ public class FuzzRegressionTests
     public void JpegInputsLoadOrFailCleanly(string file)
     {
         byte[] data = File.ReadAllBytes(Path.Combine(Fuzz, "jpeg", file));
-        foreach (ReaderOptions options in (ReaderOptions[])[new() { Recovery = RecoveryMode.Lenient }, new() { Recovery = RecoveryMode.Strict }, new JpegReaderOptions { FastUpsampling = true }, new() { TargetSize = new Size(1, 1) }])
+        foreach (ReaderOptions options in (ReaderOptions[])[new() { Recovery = RecoveryMode.Lenient }, new() { Recovery = RecoveryMode.Strict }, new JpegReaderOptions { FastUpsampling = true }, new() { MinimumSize = new Size(1, 1) }])
         {
             try
             {

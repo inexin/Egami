@@ -23,7 +23,7 @@ public sealed class PooledPixelMemorySource : IPixelMemorySource
 
     /// <summary>Gets the largest block, in bytes, served from the array pool. Larger blocks use unmanaged memory. Defaults to 1 MB.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
-    public int PoolThresholdBytes
+    internal int PoolThresholdBytes
     {
         get => _poolThresholdBytes;
         init => _poolThresholdBytes = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The threshold must not be negative.");

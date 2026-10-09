@@ -220,7 +220,7 @@ internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOpe
         PixelPlane<TPixel> source = input.Source;
         PixelPlane<TPixel> destination = input.Destination;
         int height = source.Height;
-        long rowBytes = (long)source.Width * TPixel.Layout.BytesPerPixel;
+        long rowBytes = (long)source.Width * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
         if (!input.IsInPlace)
         {
             input.ForEachBand((start, end) =>
@@ -338,7 +338,7 @@ internal sealed class RotateQuarterOperation(bool fromLastRow, bool reversed) : 
         PixelPlane<TPixel> destination = input.Destination;
         int width = destination.Width;
         int height = destination.Height;
-        long tileRowBytes = (long)Tile * width * TPixel.Layout.BytesPerPixel;
+        long tileRowBytes = (long)Tile * width * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
 
         // Bands are counted in rows of tiles, so no tile straddles two bands.
         RowRunner.Run((height + Tile - 1) / Tile, tileRowBytes, input.Context.MaxParallelism, (start, end) =>
