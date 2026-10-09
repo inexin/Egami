@@ -45,3 +45,11 @@ fuzz/exif-seeds/
 
 fuzz/jpeg/, fuzz/exif/
   Inputs the fuzzers found, mutated from the corpus files above; kept as regression tests. Same licenses as their sources.
+
+gif/*.gif, apng/*.png
+  Made by tools/make-anim-references.py (Pillow and ImageMagick) from ops/duck.png and ops/egret.png above, or from generated
+  shapes. Public domain, as their sources.
+
+../reference/anim/
+  Every frame of the files above as Pillow and ImageMagick composite them, and manifest.json, made by
+  tools/make-anim-references.py. Public domain, as the files they come from.

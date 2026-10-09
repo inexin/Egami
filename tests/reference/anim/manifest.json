@@ -1,0 +1,763 @@
+{
+ "apng/default-image.png": {
+  "delays": [
+   0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 4,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 4,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/gray-alpha.png": {
+  "delays": [
+   100.0,
+   100.0,
+   100.0,
+   100.0
+  ],
+  "frames": 4,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 4,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/gray.png": {
+  "delays": [
+   100.0,
+   100.0,
+   100.0,
+   100.0
+  ],
+  "frames": 4,
+  "height": 72,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 4,
+    "tool": "pillow"
+   }
+  ],
+  "width": 96
+ },
+ "apng/pan-rgb.png": {
+  "delays": [
+   40.0,
+   50.0,
+   60.0,
+   70.0,
+   80.0,
+   90.0,
+   100.0,
+   33.0
+  ],
+  "frames": 8,
+  "height": 72,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 8,
+    "tool": "pillow"
+   }
+  ],
+  "width": 96
+ },
+ "apng/sprite-over-background.png": {
+  "delays": [
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 2,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/sprite-over-none.png": {
+  "delays": [
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 2,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/sprite-over-previous.png": {
+  "delays": [
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 2,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/sprite-source-background.png": {
+  "delays": [
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 2,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/sprite-source-none.png": {
+  "delays": [
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 2,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "apng/sprite-source-previous.png": {
+  "delays": [
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0,
+   70.0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 2,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-128.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-16.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-2.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-32.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-4.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-64.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/colors-8.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/comment.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/egret-256.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 320,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 240
+ },
+ "gif/gif87a.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 60,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 80
+ },
+ "gif/interlaced.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 72,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 96
+ },
+ "gif/loop-3.gif": {
+  "delays": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 3,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/no-netscape.gif": {
+  "delays": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/page-dispose-background.gif": {
+  "delays": [
+   100,
+   100,
+   100,
+   100,
+   100
+  ],
+  "frames": 5,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 5,
+    "tool": "pillow"
+   },
+   {
+    "frames": 5,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/page-dispose-none.gif": {
+  "delays": [
+   100,
+   100,
+   100,
+   100,
+   100
+  ],
+  "frames": 5,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 5,
+    "tool": "pillow"
+   },
+   {
+    "frames": 5,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/page-dispose-previous.gif": {
+  "delays": [
+   100,
+   100,
+   100,
+   100,
+   100
+  ],
+  "frames": 5,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 5,
+    "tool": "pillow"
+   },
+   {
+    "frames": 5,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/pan-global.gif": {
+  "delays": [
+   50,
+   50,
+   50,
+   50,
+   50,
+   50,
+   50,
+   50
+  ],
+  "frames": 8,
+  "height": 72,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 8,
+    "tool": "pillow"
+   },
+   {
+    "frames": 8,
+    "tool": "magick"
+   }
+  ],
+  "width": 96
+ },
+ "gif/pan-local.gif": {
+  "delays": [
+   40,
+   60,
+   80,
+   100,
+   120,
+   140,
+   160,
+   180
+  ],
+  "frames": 8,
+  "height": 72,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 8,
+    "tool": "pillow"
+   },
+   {
+    "frames": 8,
+    "tool": "magick"
+   }
+  ],
+  "width": 96
+ },
+ "gif/pan-optimized.gif": {
+  "delays": [
+   80,
+   80,
+   80,
+   80,
+   80,
+   80,
+   80,
+   80
+  ],
+  "frames": 8,
+  "height": 72,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 8,
+    "tool": "pillow"
+   },
+   {
+    "frames": 8,
+    "tool": "magick"
+   }
+  ],
+  "width": 96
+ },
+ "gif/sprite-dispose0.gif": {
+  "delays": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/sprite-dispose1.gif": {
+  "delays": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/sprite-dispose2.gif": {
+  "delays": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/sprite-dispose3.gif": {
+  "delays": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/transparent-background.gif": {
+  "delays": [
+   100,
+   100,
+   100,
+   100
+  ],
+  "frames": 4,
+  "height": 32,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 4,
+    "tool": "pillow"
+   },
+   {
+    "frames": 4,
+    "tool": "magick"
+   }
+  ],
+  "width": 48
+ },
+ "gif/transparent-still.gif": {
+  "delays": [
+   0
+  ],
+  "frames": 1,
+  "height": 48,
+  "loop": null,
+  "references": [
+   {
+    "frames": 1,
+    "tool": "pillow"
+   },
+   {
+    "frames": 1,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ },
+ "gif/zero-delay.gif": {
+  "delays": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "frames": 6,
+  "height": 48,
+  "loop": 0,
+  "references": [
+   {
+    "frames": 6,
+    "tool": "pillow"
+   },
+   {
+    "frames": 6,
+    "tool": "magick"
+   }
+  ],
+  "width": 64
+ }
+}
