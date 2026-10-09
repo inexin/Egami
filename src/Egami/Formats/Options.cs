@@ -78,4 +78,10 @@ public sealed record RasterInfo
     /// stored; apply this with <c>AutoOrient</c>. <see cref="Metadata.ImageOrientation.Normal"/> when the file says nothing.
     /// </summary>
     public Metadata.ImageOrientation Orientation { get; init; } = Metadata.ImageOrientation.Normal;
+
+    /// <summary>
+    /// Gets how many times an animation plays (0 for forever), as <see cref="Metadata.RasterMetadata.LoopCount"/> would say, or
+    /// <see langword="null"/> for formats without animation.
+    /// </summary>
+    public int? LoopCount { get; init; }
 }

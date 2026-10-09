@@ -60,6 +60,37 @@ Egami.Formats.FormatInfo.SignatureLength.get -> int
 Egami.Formats.FormatInfo.SignatureLength.init -> void
 Egami.Formats.FormatInfo.Writer.get -> Egami.Formats.IFormatWriter?
 Egami.Formats.FormatInfo.Writer.init -> void
+Egami.Formats.Gif.GifApplicationExtension
+Egami.Formats.Gif.GifApplicationExtension.<Clone>$() -> Egami.Formats.Gif.GifApplicationExtension!
+Egami.Formats.Gif.GifApplicationExtension.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Gif.GifApplicationExtension.Data.init -> void
+Egami.Formats.Gif.GifApplicationExtension.Deconstruct(out string! Identifier, out System.ReadOnlyMemory<byte> Data) -> void
+Egami.Formats.Gif.GifApplicationExtension.Equals(Egami.Formats.Gif.GifApplicationExtension? other) -> bool
+Egami.Formats.Gif.GifApplicationExtension.GifApplicationExtension(string! Identifier, System.ReadOnlyMemory<byte> Data) -> void
+Egami.Formats.Gif.GifApplicationExtension.Identifier.get -> string!
+Egami.Formats.Gif.GifApplicationExtension.Identifier.init -> void
+Egami.Formats.Gif.GifDetails
+Egami.Formats.Gif.GifDetails.BackgroundIndex.get -> byte
+Egami.Formats.Gif.GifDetails.BackgroundIndex.set -> void
+Egami.Formats.Gif.GifDetails.GifDetails() -> void
+Egami.Formats.Gif.GifDetails.GlobalPalette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Gif.GifDetails.GlobalPalette.set -> void
+Egami.Formats.Gif.GifDetails.OtherExtensions.get -> System.Collections.Generic.IList<Egami.Formats.Gif.GifApplicationExtension!>!
+Egami.Formats.Gif.GifDetails.PixelAspectRatio.get -> byte
+Egami.Formats.Gif.GifDetails.PixelAspectRatio.set -> void
+Egami.Formats.Gif.GifDetails.RepeatCount.get -> int?
+Egami.Formats.Gif.GifDetails.RepeatCount.set -> void
+Egami.Formats.Gif.GifDetails.Version.get -> string!
+Egami.Formats.Gif.GifDetails.Version.set -> void
+Egami.Formats.Gif.GifFormat
+Egami.Formats.Gif.GifFrameDetails
+Egami.Formats.Gif.GifFrameDetails.GifFrameDetails() -> void
+Egami.Formats.Gif.GifFrameDetails.IsInterlaced.get -> bool
+Egami.Formats.Gif.GifFrameDetails.IsInterlaced.set -> void
+Egami.Formats.Gif.GifFrameDetails.LocalPalette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Gif.GifFrameDetails.LocalPalette.set -> void
+Egami.Formats.Gif.GifFrameDetails.TransparentIndex.get -> int?
+Egami.Formats.Gif.GifFrameDetails.TransparentIndex.set -> void
 Egami.Formats.IFormatReader
 Egami.Formats.IFormatReader.Read(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Raster!
 Egami.Formats.IFormatReader.Read<TPixel>(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Raster<TPixel>!
@@ -226,6 +257,8 @@ Egami.Formats.RasterInfo.Height.get -> int
 Egami.Formats.RasterInfo.Height.init -> void
 Egami.Formats.RasterInfo.Layout.get -> Egami.Pixels.PixelLayoutInfo
 Egami.Formats.RasterInfo.Layout.init -> void
+Egami.Formats.RasterInfo.LoopCount.get -> int?
+Egami.Formats.RasterInfo.LoopCount.init -> void
 Egami.Formats.RasterInfo.Orientation.get -> Egami.Metadata.ImageOrientation
 Egami.Formats.RasterInfo.Orientation.init -> void
 Egami.Formats.RasterInfo.RasterInfo() -> void
@@ -754,6 +787,11 @@ override Egami.EgamiContext.ToString() -> string!
 override Egami.Formats.FormatInfo.Equals(object? obj) -> bool
 override Egami.Formats.FormatInfo.GetHashCode() -> int
 override Egami.Formats.FormatInfo.ToString() -> string!
+override Egami.Formats.Gif.GifApplicationExtension.Equals(object? obj) -> bool
+override Egami.Formats.Gif.GifApplicationExtension.GetHashCode() -> int
+override Egami.Formats.Gif.GifApplicationExtension.ToString() -> string!
+override Egami.Formats.Gif.GifDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Gif.GifFrameDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Jpeg.JpegComponent.Equals(object? obj) -> bool
 override Egami.Formats.Jpeg.JpegComponent.GetHashCode() -> int
 override Egami.Formats.Jpeg.JpegComponent.ToString() -> string!
@@ -830,6 +868,9 @@ static Egami.EgamiContext.operator !=(Egami.EgamiContext? left, Egami.EgamiConte
 static Egami.EgamiContext.operator ==(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
 static Egami.Formats.FormatInfo.operator !=(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
 static Egami.Formats.FormatInfo.operator ==(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
+static Egami.Formats.Gif.GifApplicationExtension.operator !=(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool
+static Egami.Formats.Gif.GifApplicationExtension.operator ==(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool
+static Egami.Formats.Gif.GifFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jpeg.JpegComponent.operator !=(Egami.Formats.Jpeg.JpegComponent? left, Egami.Formats.Jpeg.JpegComponent? right) -> bool
 static Egami.Formats.Jpeg.JpegComponent.operator ==(Egami.Formats.Jpeg.JpegComponent? left, Egami.Formats.Jpeg.JpegComponent? right) -> bool
 static Egami.Formats.Jpeg.JpegFormat.Info.get -> Egami.Formats.FormatInfo!
