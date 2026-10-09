@@ -24,6 +24,36 @@ Egami.EgamiContext.Memory.init -> void
 Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo! format) -> Egami.EgamiContext!
 Egami.EgamiException
 Egami.EgamiException.EgamiException(string! message, System.Exception? innerException = null) -> void
+Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.AlphaBitfields = 5 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Bitfields = 4 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Jpeg = 6 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.None = 0 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Png = 7 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Rle24 = 3 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Rle4 = 2 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Rle8 = 1 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpDetails
+Egami.Formats.Bmp.BmpDetails.BitsPerPixel.get -> int
+Egami.Formats.Bmp.BmpDetails.BitsPerPixel.set -> void
+Egami.Formats.Bmp.BmpDetails.BmpDetails() -> void
+Egami.Formats.Bmp.BmpDetails.Calibration.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Bmp.BmpDetails.Calibration.set -> void
+Egami.Formats.Bmp.BmpDetails.ColorSpaceType.get -> uint
+Egami.Formats.Bmp.BmpDetails.ColorSpaceType.set -> void
+Egami.Formats.Bmp.BmpDetails.Compression.get -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpDetails.Compression.set -> void
+Egami.Formats.Bmp.BmpDetails.HeaderSize.get -> int
+Egami.Formats.Bmp.BmpDetails.HeaderSize.set -> void
+Egami.Formats.Bmp.BmpDetails.Masks.get -> (uint Red, uint Green, uint Blue, uint Alpha)
+Egami.Formats.Bmp.BmpDetails.Masks.set -> void
+Egami.Formats.Bmp.BmpDetails.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Bmp.BmpDetails.Palette.set -> void
+Egami.Formats.Bmp.BmpDetails.RenderingIntent.get -> uint
+Egami.Formats.Bmp.BmpDetails.RenderingIntent.set -> void
+Egami.Formats.Bmp.BmpDetails.TopDown.get -> bool
+Egami.Formats.Bmp.BmpDetails.TopDown.set -> void
+Egami.Formats.Bmp.BmpFormat
 Egami.Formats.EgamiInput
 Egami.Formats.EgamiInput.CancellationToken.get -> System.Threading.CancellationToken
 Egami.Formats.EgamiInput.Context.get -> Egami.EgamiContext!
@@ -852,6 +882,7 @@ Egami.UnsupportedFormatException.UnsupportedFormatException(string! message) -> 
 override Egami.EgamiContext.Equals(object? obj) -> bool
 override Egami.EgamiContext.GetHashCode() -> int
 override Egami.EgamiContext.ToString() -> string!
+override Egami.Formats.Bmp.BmpDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.FormatInfo.Equals(object? obj) -> bool
 override Egami.Formats.FormatInfo.GetHashCode() -> int
 override Egami.Formats.FormatInfo.ToString() -> string!
@@ -939,6 +970,7 @@ override sealed Egami.Formats.Jpeg.JpegReaderOptions.Equals(Egami.Formats.Reader
 static Egami.EgamiContext.Default.get -> Egami.EgamiContext!
 static Egami.EgamiContext.operator !=(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
 static Egami.EgamiContext.operator ==(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
+static Egami.Formats.Bmp.BmpFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.FormatInfo.operator !=(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
 static Egami.Formats.FormatInfo.operator ==(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
 static Egami.Formats.Gif.GifApplicationExtension.operator !=(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool

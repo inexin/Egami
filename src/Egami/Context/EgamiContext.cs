@@ -20,7 +20,7 @@ public sealed record EgamiContext
     private readonly IPixelMemorySource _memory = PooledPixelMemorySource.Shared;
     private readonly int _maxParallelism = Environment.ProcessorCount;
     private readonly SafetyLimits _limits = SafetyLimits.Default;
-    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info];
+    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info];
 
     /// <summary>Gets the context used when a call passes none.</summary>
     public static EgamiContext Default { get; } = new();
@@ -42,7 +42,7 @@ public sealed record EgamiContext
     /// <summary>Gets the safety limits applied when reading. Defaults to <see cref="SafetyLimits.Default"/>.</summary>
     public SafetyLimits Limits { get => _limits; init => _limits = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, QOI and PNM.</summary>
+    /// <summary>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, BMP, QOI and PNM.</summary>
     public IReadOnlyList<FormatInfo> Formats
     {
         get => _formats;
