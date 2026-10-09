@@ -91,6 +91,18 @@ Egami.Formats.Gif.GifFrameDetails.LocalPalette.get -> System.ReadOnlyMemory<Egam
 Egami.Formats.Gif.GifFrameDetails.LocalPalette.set -> void
 Egami.Formats.Gif.GifFrameDetails.TransparentIndex.get -> int?
 Egami.Formats.Gif.GifFrameDetails.TransparentIndex.set -> void
+Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifPaletteScope.Auto = 0 -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifPaletteScope.Global = 1 -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifPaletteScope.PerFrame = 2 -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifWriterOptions
+Egami.Formats.Gif.GifWriterOptions.GifWriterOptions() -> void
+Egami.Formats.Gif.GifWriterOptions.OptimizeFrames.get -> bool
+Egami.Formats.Gif.GifWriterOptions.OptimizeFrames.init -> void
+Egami.Formats.Gif.GifWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Gif.GifWriterOptions.Palette.init -> void
+Egami.Formats.Gif.GifWriterOptions.PaletteScope.get -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifWriterOptions.PaletteScope.init -> void
 Egami.Formats.IFormatReader
 Egami.Formats.IFormatReader.Read(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Raster!
 Egami.Formats.IFormatReader.Read<TPixel>(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Raster<TPixel>!
@@ -892,6 +904,7 @@ static Egami.Formats.FormatInfo.operator ==(Egami.Formats.FormatInfo? left, Egam
 static Egami.Formats.Gif.GifApplicationExtension.operator !=(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool
 static Egami.Formats.Gif.GifApplicationExtension.operator ==(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool
 static Egami.Formats.Gif.GifFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Gif.GifWriterOptions.Default.get -> Egami.Formats.Gif.GifWriterOptions!
 static Egami.Formats.Jpeg.JpegComponent.operator !=(Egami.Formats.Jpeg.JpegComponent? left, Egami.Formats.Jpeg.JpegComponent? right) -> bool
 static Egami.Formats.Jpeg.JpegComponent.operator ==(Egami.Formats.Jpeg.JpegComponent? left, Egami.Formats.Jpeg.JpegComponent? right) -> bool
 static Egami.Formats.Jpeg.JpegFormat.Info.get -> Egami.Formats.FormatInfo!

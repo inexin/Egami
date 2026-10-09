@@ -272,7 +272,12 @@ internal static class PaletteBuilder
     /// Builds a palette for the pixels <paramref name="rows"/> gives (each call adds one row, index 0 to <paramref name="rowCount"/> − 1).
     /// With binary alpha (GIF), transparent pixels get one entry at the end; otherwise alpha is kept in the colors (palette PNG).
     /// </summary>
-    internal static BuiltPalette Build(int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, PaletteOptions options, bool binaryAlpha)
+    /// <param name="rowCount">How many rows there are.</param>
+    /// <param name="rows">Returns row y.</param>
+    /// <param name="options">The color limit and transparency threshold.</param>
+    /// <param name="binaryAlpha">Whether transparency is on or off (GIF) rather than kept in the colors.</param>
+    /// <param name="reserve">Entries a quantized palette leaves free (an exact one uses every entry it needs).</param>
+    internal static BuiltPalette Build(int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, PaletteOptions options, bool binaryAlpha, int reserve = 0)
     {
         ExactColors exact = new(options.MaxColors, binaryAlpha, options.AlphaThreshold);
         for (int y = 0; y < rowCount && !exact.Overflowed; y++)
@@ -317,7 +322,7 @@ internal static class PaletteBuilder
             }
         }
 
-        Rgba8[] built = wu.Build(options.MaxColors - (anyTransparent ? 1 : 0));
+        Rgba8[] built = wu.Build(Math.Max(2, options.MaxColors - reserve - (anyTransparent ? 1 : 0)));
         if (anyTransparent)
         {
             built = [.. built, default];

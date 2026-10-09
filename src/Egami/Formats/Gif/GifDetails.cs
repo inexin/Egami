@@ -15,6 +15,7 @@ public static class GifFormat
         SignatureLength = 6,
         Matches = GifReader.Matches,
         Reader = GifReader.Instance,
+        Writer = GifWriter.Instance,
     };
 }
 
