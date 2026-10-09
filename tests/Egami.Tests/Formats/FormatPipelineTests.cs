@@ -223,7 +223,7 @@ public sealed class FormatPipelineTests : IDisposable
     {
         FormatInfo other = TestFormat.Info with { Name = "Other", Matches = _ => false };
         EgamiContext context = EgamiContext.Default.WithFormat(TestFormat.Info).WithFormat(other);
-        string[] builtIn = ["PNG", "JPEG", "GIF", "QOI"];
+        string[] builtIn = ["PNG", "JPEG", "GIF", "QOI", "PNM"];
         Assert.Equal([.. builtIn, "EGTF", "Other"], context.Formats.Select(f => f.Name));
 
         FormatInfo replacement = TestFormat.Info with { Name = "egtf", Extensions = ["x"] };

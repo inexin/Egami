@@ -262,6 +262,29 @@ Egami.Formats.Png.PngWriterOptions.Palette.init -> void
 Egami.Formats.Png.PngWriterOptions.PngWriterOptions() -> void
 Egami.Formats.Png.PngWriterOptions.Reduce.get -> bool
 Egami.Formats.Png.PngWriterOptions.Reduce.init -> void
+Egami.Formats.Pnm.PnmDetails
+Egami.Formats.Pnm.PnmDetails.Kind.get -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmDetails.Kind.set -> void
+Egami.Formats.Pnm.PnmDetails.MaxValue.get -> int
+Egami.Formats.Pnm.PnmDetails.MaxValue.set -> void
+Egami.Formats.Pnm.PnmDetails.PlainText.get -> bool
+Egami.Formats.Pnm.PnmDetails.PlainText.set -> void
+Egami.Formats.Pnm.PnmDetails.PnmDetails() -> void
+Egami.Formats.Pnm.PnmDetails.TupleType.get -> string?
+Egami.Formats.Pnm.PnmDetails.TupleType.set -> void
+Egami.Formats.Pnm.PnmFormat
+Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Auto = 0 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Bitmap = 1 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Graymap = 2 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Pam = 4 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Pixmap = 3 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmWriterOptions
+Egami.Formats.Pnm.PnmWriterOptions.Kind.get -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmWriterOptions.Kind.init -> void
+Egami.Formats.Pnm.PnmWriterOptions.PlainText.get -> bool
+Egami.Formats.Pnm.PnmWriterOptions.PlainText.init -> void
+Egami.Formats.Pnm.PnmWriterOptions.PnmWriterOptions() -> void
 Egami.Formats.Qoi.QoiDetails
 Egami.Formats.Qoi.QoiDetails.Channels.get -> int
 Egami.Formats.Qoi.QoiDetails.Channels.set -> void
@@ -852,6 +875,7 @@ override Egami.Formats.Png.PngDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Png.PngTextSource.Equals(object? obj) -> bool
 override Egami.Formats.Png.PngTextSource.GetHashCode() -> int
 override Egami.Formats.Png.PngTextSource.ToString() -> string!
+override Egami.Formats.Pnm.PnmDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Qoi.QoiDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.RasterInfo.Equals(object? obj) -> bool
 override Egami.Formats.RasterInfo.GetHashCode() -> int
@@ -933,6 +957,8 @@ static Egami.Formats.Png.PngFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Png.PngTextSource.operator !=(Egami.Formats.Png.PngTextSource? left, Egami.Formats.Png.PngTextSource? right) -> bool
 static Egami.Formats.Png.PngTextSource.operator ==(Egami.Formats.Png.PngTextSource? left, Egami.Formats.Png.PngTextSource? right) -> bool
 static Egami.Formats.Png.PngWriterOptions.Default.get -> Egami.Formats.Png.PngWriterOptions!
+static Egami.Formats.Pnm.PnmFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Pnm.PnmWriterOptions.Default.get -> Egami.Formats.Pnm.PnmWriterOptions!
 static Egami.Formats.Qoi.QoiFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Qoi.QoiWriterOptions.Default.get -> Egami.Formats.Qoi.QoiWriterOptions!
 static Egami.Formats.RasterInfo.operator !=(Egami.Formats.RasterInfo? left, Egami.Formats.RasterInfo? right) -> bool
