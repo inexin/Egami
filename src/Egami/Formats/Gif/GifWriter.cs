@@ -108,7 +108,6 @@ internal sealed class GifWriter : IFormatWriter
             _lzw.Dispose();
             _buffer?.Dispose();
             _globalMapper?.Dispose();
-            _global?.ReturnBoxTags();
         }
 
         internal void Write(Stream output)
@@ -131,7 +130,7 @@ internal sealed class GifWriter : IFormatWriter
             if (global)
             {
                 _global = WithTransparentSlot(BuildPalette(0, frames, palette, reserve), optimize);
-                _globalMapper = new PaletteMapper(_global.Colors, _global.TransparentIndex, withAlpha: false, palette.AlphaThreshold, _global.BoxTags);
+                _globalMapper = new PaletteMapper(_global.Colors, _global.TransparentIndex, withAlpha: false, palette.AlphaThreshold);
             }
 
             WriteHeader(details);
@@ -266,7 +265,7 @@ internal sealed class GifWriter : IFormatWriter
             BuiltPalette palette = _global ?? WithTransparentSlot(BuildPalette(index, region, options, reserve), optimize);
             byte[] indices = ArrayPool<byte>.Shared.Rent(_pixels);
             byte[] mapped = ArrayPool<byte>.Shared.Rent(region.Width * region.Height);
-            PaletteMapper mapper = _globalMapper ?? new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold, palette.BoxTags);
+            PaletteMapper mapper = _globalMapper ?? new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold);
             try
             {
                 FrameMapper.Map(region.Width, region.Height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(source.Row(region.Y + y).Slice(region.X, region.Width), row), palette, mapper, _options.Palette.Dither, mapped.AsSpan(0, region.Width * region.Height));
@@ -284,7 +283,7 @@ internal sealed class GifWriter : IFormatWriter
                 }
             }
 
-            return new Frame(index, palette, indices, source.Metadata.Delay, region, ownsPalette: _global is null);
+            return new Frame(index, palette, indices, source.Metadata.Delay, region);
         }
 
         /// <summary>Maps a frame again over the whole screen.</summary>
@@ -630,7 +629,7 @@ internal sealed class GifWriter : IFormatWriter
         }
 
         /// <summary>A frame mapped to its palette.</summary>
-        private sealed class Frame(int index, BuiltPalette palette, byte[] indices, TimeSpan delay, Rect region, bool ownsPalette) : IDisposable
+        private sealed class Frame(int index, BuiltPalette palette, byte[] indices, TimeSpan delay, Rect region) : IDisposable
         {
             internal int Index => index;
 
@@ -646,10 +645,6 @@ internal sealed class GifWriter : IFormatWriter
             public void Dispose()
             {
                 ArrayPool<byte>.Shared.Return(indices);
-                if (ownsPalette)
-                {
-                    palette.ReturnBoxTags();
-                }
             }
         }
     }

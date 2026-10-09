@@ -84,19 +84,16 @@ public class GifEncodeTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData(DitherMode.None, false, 34.0)]
-    [InlineData(DitherMode.FloydSteinberg, false, 32.0)]
-    [InlineData(DitherMode.Ordered, false, 33.0)]
-    [InlineData(DitherMode.None, true, 34.0)]
-    [InlineData(DitherMode.FloydSteinberg, true, 31.0)]
-    [InlineData(DitherMode.Ordered, true, 32.0)]
-    public void PhotosAreQuantizedToTheirPalette(DitherMode dither, bool fast, double floor)
+    [InlineData(DitherMode.None, 34.0)]
+    [InlineData(DitherMode.FloydSteinberg, 32.0)]
+    [InlineData(DitherMode.Ordered, 33.0)]
+    public void PhotosAreQuantizedToTheirPalette(DitherMode dither, double floor)
     {
         using Raster<Rgb8> photo = Raster.Load<Rgb8>(Path.Combine(AnimCorpus.Images, "ops", "duck.png"));
-        byte[] written = Save(photo, new GifWriterOptions { Palette = new PaletteOptions { Dither = dither, FastMapping = fast } });
+        byte[] written = Save(photo, new GifWriterOptions { Palette = new PaletteOptions { Dither = dither } });
         using Raster<Rgb8> again = Raster.Load<Rgb8>(written);
         double psnr = Psnr(photo, again);
-        output.WriteLine($"{dither}{(fast ? " fast" : string.Empty)}: {written.Length:N0} bytes, {psnr:F2} dB");
+        output.WriteLine($"{dither}: {written.Length:N0} bytes, {psnr:F2} dB");
         Assert.True(psnr >= floor, $"{psnr:F2} dB");
     }
 
