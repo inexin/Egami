@@ -42,7 +42,7 @@ public class JpegSimdTests
         {
             int factor = quality < 50 ? 5000 / quality : 200 - (2 * quality);
             int[] divisors = [.. Enumerable.Range(0, 64).Select(i => Math.Clamp(((JpegTables.LumaQuant[i] * factor) + 50) / 100, 1, 255) * 8)];
-            float[] reciprocals = JpegFdct.Reciprocals(divisors);
+            ushort[] reciprocals = JpegFdct.Reciprocals(divisors);
             for (int trial = 0; trial < 3000; trial++)
             {
                 switch (trial % 3)
@@ -64,7 +64,7 @@ public class JpegSimdTests
                 }
 
                 JpegFdct.Forward(samples, 13, divisors, scalar);
-                JpegFdct.ForwardAvx2(samples, 13, divisors, reciprocals, vector);
+                JpegFdct.ForwardAvx2(samples, 13, reciprocals, vector);
                 Assert.Equal(scalar, vector);
             }
         }
@@ -83,18 +83,18 @@ public class JpegSimdTests
         for (int q = 1; q <= 255; q++)
         {
             int[] divisors = Enumerable.Repeat(q * 8, 64).ToArray();
-            float[] reciprocals = JpegFdct.Reciprocals(divisors);
+            ushort[] reciprocals = JpegFdct.Reciprocals(divisors);
             for (int level = 0; level < 256; level++)
             {
                 Array.Fill(samples, (byte)level);
                 JpegFdct.Forward(samples, 8, divisors, block);
-                JpegFdct.ForwardAvx2(samples, 8, divisors, reciprocals, vector);
+                JpegFdct.ForwardAvx2(samples, 8, reciprocals, vector);
                 Assert.Equal(block, vector);
             }
 
             for (int value = -8192; value <= 8192; value++)
             {
-                Assert.Equal(JpegFdct.Quantize(value, q * 8), JpegFdct.QuantizeVectorForTest(value, q * 8));
+                Assert.Equal(Math.Clamp(JpegFdct.Quantize(value, q * 8), -1023, 1023), JpegFdct.QuantizeVectorForTest(value, q * 8));
             }
         }
     }

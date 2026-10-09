@@ -86,11 +86,10 @@ internal static class JpegFdct
     /// scalar code, and quantization by a float reciprocal corrected by one step to the exact quotient. The output is identical.
     /// </summary>
     [SkipLocalsInit]
-    internal static void ForwardAvx2(ReadOnlySpan<byte> samples, int stride, ReadOnlySpan<int> divisors, ReadOnlySpan<float> reciprocals, Span<short> output)
+    internal static void ForwardAvx2(ReadOnlySpan<byte> samples, int stride, ReadOnlySpan<ushort> reciprocals, Span<short> output)
     {
         _ = samples.Slice(7 * stride, 8);
-        divisors = divisors[..64];
-        reciprocals = reciprocals[..64];
+        reciprocals = reciprocals[..192];
         output = output[..64];
         ref byte s = ref MemoryMarshal.GetReference(samples);
         Vector256<int> center = Vector256.Create(128);
@@ -123,59 +122,92 @@ internal static class JpegFdct
         const int Shift2 = ConstBits + Pass1Bits;
         Vector256<int> round2 = Vector256.Create(1 << (Shift2 - 1));
         Vector256<int> roundDc = Vector256.Create(1 << (Pass1Bits - 1));
-        Quantize((e0 + roundDc) >> Pass1Bits, divisors, reciprocals, output, 0);
-        Quantize((o1 + round2) >> Shift2, divisors, reciprocals, output, 8);
-        Quantize((o2 + round2) >> Shift2, divisors, reciprocals, output, 16);
-        Quantize((o3 + round2) >> Shift2, divisors, reciprocals, output, 24);
-        Quantize((e4 + roundDc) >> Pass1Bits, divisors, reciprocals, output, 32);
-        Quantize((o5 + round2) >> Shift2, divisors, reciprocals, output, 40);
-        Quantize((o6 + round2) >> Shift2, divisors, reciprocals, output, 48);
-        Quantize((o7 + round2) >> Shift2, divisors, reciprocals, output, 56);
+        // Rows in natural order, two to a vector of 16-bit lanes (the pack interleaves 64-bit groups; the permute puts them back).
+        ref ushort table = ref MemoryMarshal.GetReference(reciprocals);
+        ref short target = ref MemoryMarshal.GetReference(output);
+        Quantize(Pack((e0 + roundDc) >> Pass1Bits, (o1 + round2) >> Shift2), ref table, 0).StoreUnsafe(ref target, 0);
+        Quantize(Pack((o2 + round2) >> Shift2, (o3 + round2) >> Shift2), ref table, 16).StoreUnsafe(ref target, 16);
+        Quantize(Pack((e4 + roundDc) >> Pass1Bits, (o5 + round2) >> Shift2), ref table, 32).StoreUnsafe(ref target, 32);
+        Quantize(Pack((o6 + round2) >> Shift2, (o7 + round2) >> Shift2), ref table, 48).StoreUnsafe(ref target, 48);
+
+        // The DC is not limited to 10 bits; restore it from the unclamped result.
+        output[0] = (short)Quantize(((e0 + roundDc) >> Pass1Bits).ToScalar(), reciprocals);
     }
 
-    /// <summary>Runs the vector quantization on one value, so tests can check it against <see cref="Quantize(int, int)"/>.</summary>
+    /// <summary>Runs the vector quantization (AC coefficients, limited to 10 bits) on one value, for tests.</summary>
     internal static int QuantizeVectorForTest(int value, int divisor)
     {
-        int[] divisors = Enumerable.Repeat(divisor, 8).ToArray();
-        Span<short> output = stackalloc short[8];
-        Quantize(Vector256.Create(value), divisors, Reciprocals([.. Enumerable.Repeat(divisor, 64)]).AsSpan(0, 8), output, 0);
-        return output[0];
-    }
-
-    /// <summary>Returns the reciprocal of each divisor, for <see cref="ForwardAvx2"/>.</summary>
-    internal static float[] Reciprocals(ReadOnlySpan<int> divisors)
-    {
-        float[] reciprocals = new float[64];
-        for (int i = 0; i < 64; i++)
-        {
-            reciprocals[i] = 1f / divisors[i];
-        }
-
-        return reciprocals;
+        ushort[] table = Reciprocals([.. Enumerable.Repeat(divisor, 64)]);
+        return Quantize(Vector256.Create((short)value), ref table[0], 0).ToScalar();
     }
 
     /// <summary>
-    /// Quantizes eight coefficients as <see cref="Quantize(int, int)"/> does: the float estimate of the quotient is off by at most
-    /// one for these ranges, and the remainder says which way.
+    /// Returns, for each divisor (natural order), the three 16-bit factors <see cref="ForwardAvx2"/> quantizes with: a reciprocal
+    /// at 0, a correction at 64 and a scale at 128. Adding the correction to the magnitude, then keeping the high halves of the
+    /// products with the reciprocal and the scale, divides with rounding exactly as <see cref="Quantize(int, int)"/> does for
+    /// every magnitude the DCT gives (the tests check all of them); this is the reciprocal scheme of libjpeg-turbo's SIMD code.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Quantize(Vector256<int> values, ReadOnlySpan<int> divisors, ReadOnlySpan<float> reciprocals, Span<short> output, int at)
+    internal static ushort[] Reciprocals(ReadOnlySpan<int> divisors)
     {
-        Vector256<int> divisor = Vector256.Create(divisors.Slice(at, 8));
-        Vector256<int> magnitude = Vector256.Abs(values) + (divisor >> 1);
-        Vector256<int> quotient = Vector256.ConvertToInt32(Vector256.ConvertToSingle(magnitude) * Vector256.Create(reciprocals.Slice(at, 8)));
-        Vector256<int> remainder = magnitude - (quotient * divisor);
+        ushort[] table = new ushort[192];
+        for (int i = 0; i < 64; i++)
+        {
+            int divisor = divisors[i];
+            int r = 16 + (31 - System.Numerics.BitOperations.LeadingZeroCount((uint)divisor));
+            long reciprocal = (1L << r) / divisor;
+            long fraction = (1L << r) % divisor;
+            int correction = divisor / 2;
+            if (fraction == 0)
+            {
+                // A power of two: the reciprocal would need 17 bits.
+                reciprocal >>= 1;
+                r--;
+            }
+            else if (fraction <= divisor / 2)
+            {
+                correction++;
+            }
+            else
+            {
+                reciprocal++;
+            }
 
-        // Comparisons give -1 for true: subtracting adds one when the remainder is too big, adding takes one off when negative.
-        quotient = quotient - Vector256.GreaterThanOrEqual(remainder, divisor) + Vector256.LessThan(remainder, Vector256<int>.Zero);
-        Vector256<int> negative = Vector256.LessThan(values, Vector256<int>.Zero);
-        quotient = (quotient ^ negative) - negative;
+            table[i] = (ushort)reciprocal;
+            table[64 + i] = (ushort)correction;
+            table[128 + i] = (ushort)(1 << (32 - r));
+        }
 
-        // Baseline AC tables code at most 10 bits of magnitude; the DC (lane 0 of the first row) is not limited.
-        Vector256<int> clamped = Vector256.Min(Vector256.Max(quotient, Vector256.Create(-1023)), Vector256.Create(1023));
-        quotient = at == 0 ? Vector256.ConditionalSelect(Vector256.Create(-1, 0, 0, 0, 0, 0, 0, 0), quotient, clamped) : clamped;
-        Vector256<short> packed = Avx2.PackSignedSaturate(quotient, quotient);
-        Vector128.Create(packed.GetLower().GetLower(), packed.GetUpper().GetLower()).CopyTo(output.Slice(at, 8));
+        return table;
+    }
+
+    /// <summary>Quantizes 16 coefficients with the factors at <paramref name="at"/> of the table, limiting them to 10 bits.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Quantize(Vector256<short> values, ref ushort table, int at)
+    {
+        Vector256<short> sign = values >> 15;
+        Vector256<ushort> magnitude = Vector256.Abs(values).AsUInt16() + Vector256.LoadUnsafe(ref table, (nuint)(64 + at));
+        magnitude = Avx2.MultiplyHigh(magnitude, Vector256.LoadUnsafe(ref table, (nuint)at));
+        magnitude = Avx2.MultiplyHigh(magnitude, Vector256.LoadUnsafe(ref table, (nuint)(128 + at)));
+        Vector256<short> quotient = (magnitude.AsInt16() ^ sign) - sign;
+
+        // Baseline AC tables code at most 10 bits of magnitude.
+        return Vector256.Min(Vector256.Max(quotient, Vector256.Create((short)-1023)), Vector256.Create((short)1023));
+    }
+
+    /// <summary>The DC with the same factors, unlimited, for the one coefficient the vector path clamps but must not.</summary>
+    private static int Quantize(int value, ReadOnlySpan<ushort> table)
+    {
+        uint magnitude = (uint)Math.Abs(value) + table[64];
+        magnitude = (magnitude * table[0]) >> 16;
+        magnitude = (magnitude * table[128]) >> 16;
+        return value < 0 ? -(int)magnitude : (int)magnitude;
+    }
+
+    /// <summary>Two rows of 32-bit lanes as one vector of 16-bit lanes, in order.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Pack(Vector256<int> first, Vector256<int> second)
+    {
+        return Avx2.Permute4x64(Avx2.PackSignedSaturate(first, second).AsInt64(), 0b11_01_10_00).AsInt16();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

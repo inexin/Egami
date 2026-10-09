@@ -227,7 +227,7 @@ internal sealed class JpegWriter : IFormatWriter
         private readonly System.Collections.Concurrent.ConcurrentBag<Workspace> _workspaces = [];
         private readonly bool _parallel;
         private readonly int[][] _divisors;
-        private readonly float[][] _reciprocals;
+        private readonly ushort[][] _reciprocals;
         private readonly ushort[][] _quant;
         private readonly JpegHuffmanCodes[] _dc;
         private readonly JpegHuffmanCodes[] _ac;
@@ -523,7 +523,7 @@ internal sealed class JpegWriter : IFormatWriter
                 {
                     Plane p = planes[i];
                     int[] divisors = _divisors[p.Table];
-                    float[] reciprocals = _reciprocals[p.Table];
+                    ushort[] reciprocals = _reciprocals[p.Table];
                     for (int v = 0; v < p.V; v++)
                     {
                         for (int h = 0; h < p.H; h++, b++)
@@ -536,7 +536,7 @@ internal sealed class JpegWriter : IFormatWriter
                                 ReadOnlySpan<byte> samples = p.Samples.AsSpan((v * 8 * p.Stride) + (bx * 8));
                                 if (vector)
                                 {
-                                    JpegFdct.ForwardAvx2(samples, p.Stride, divisors, reciprocals, block);
+                                    JpegFdct.ForwardAvx2(samples, p.Stride, reciprocals, block);
                                 }
                                 else
                                 {
