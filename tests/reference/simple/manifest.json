@@ -395,7 +395,8 @@
   "references": [
    "expected",
    "pillow",
-   "magick"
+   "magick",
+   "qoiconv"
   ],
   "width": 40
  },
@@ -404,7 +405,8 @@
   "references": [
    "expected",
    "pillow",
-   "magick"
+   "magick",
+   "qoiconv"
   ],
   "width": 20
  },
@@ -412,7 +414,17 @@
   "height": 48,
   "references": [
    "pillow",
-   "magick"
+   "magick",
+   "qoiconv"
+  ],
+  "width": 64
+ },
+ "qoi/rgb-qoiconv.qoi": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "qoiconv"
   ],
   "width": 64
  },
@@ -420,7 +432,17 @@
   "height": 48,
   "references": [
    "pillow",
-   "magick"
+   "magick",
+   "qoiconv"
+  ],
+  "width": 64
+ },
+ "qoi/rgba-qoiconv.qoi": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "qoiconv"
   ],
   "width": 64
  },
@@ -428,7 +450,8 @@
   "height": 64,
   "references": [
    "pillow",
-   "magick"
+   "magick",
+   "qoiconv"
   ],
   "width": 96
  },

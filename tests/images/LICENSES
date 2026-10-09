@@ -55,7 +55,8 @@ gif/*.gif, apng/*.png
   tools/make-anim-references.py. Public domain, as the files they come from.
 
 bmp/, tga/, qoi/, pnm/
-  Made by tools/make-simple-references.py (Pillow, ImageMagick and Netpbm, or written byte by byte by the script) from
+  Made by tools/make-simple-references.py (Pillow, ImageMagick, Netpbm and qoiconv built from the MIT-licensed qoi.h, or
+  written byte by byte by the script) from
   ops/duck.png above, reduced, or from generated shapes and patterns. Public domain, as their sources.
 
 ../reference/simple/

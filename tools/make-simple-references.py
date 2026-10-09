@@ -364,7 +364,7 @@ def handmade_tgas():
             a = alpha[y * w + x]
             pr, pg, pb = (round(v * a / 255) for v in (r, g, b))
             row += bytes((pb, pg, pr, a))
-            want_pre += bytes((round(v * 255 / a) if a else 0 for v in (pr, pg, pb))) + bytes((a,))
+            want_pre += bytes((min(255, (v * 510 + a) // (2 * a)) if a else 0 for v in (pr, pg, pb))) + bytes((a,))
         premul_rows.append(bytes(row))
     body = tga_header(2, w, h, 32, 8) + b"".join(reversed(premul_rows))
     save_expected("tga", "footer-alpha-premultiplied.tga", body + tga_extension(alpha_type=4) + tga_footer(len(body)), w, h, want_pre)
@@ -482,7 +482,7 @@ def handmade_pnms():
     # Maxval 1000 for a graymap: values scaled with round(v * 255 / 1000).
     vals = [0, 1, 500, 999, 1000, 250]
     data = b"P5\n3 2\n1000\n" + b"".join(struct.pack(">H", v) for v in vals)
-    want = b"".join(bytes((round(v * 255 / 1000),) * 3) + b"\xff" for v in vals)
+    want = b"".join(bytes(((v * 510 + 1000) // 2000,) * 3) + b"\xff" for v in vals)
     save_expected("pnm", "maxval-1000.pgm", data, 3, 2, want)
 
 
