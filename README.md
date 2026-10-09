@@ -272,11 +272,12 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --fi
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
 | `tests/Egami.DocSamples/` | The code the docs show, compiled and run with the tests |
+| `samples/` | One small console app per guide; `dotnet run --project samples/Formats` |
 | `tests/Egami.OutsideTests/` | Plugins written with only the public API: a pixel type, a memory source, operations, formats |
 | `tests/images/`, `tests/reference/` | PngSuite, the JPEG, GIF, APNG, BMP, TGA, QOI and PNM corpora and their reference decodes, with licenses |
 | `docs/` | The documentation site (DocFX): guides, cookbook, API reference |
 | `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
-| `tools/` | Scripts that regenerate references and the public API baseline, and the libpng checker used in CI |
+| `tools/` | Scripts that regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |
 
 ## Contributing
 

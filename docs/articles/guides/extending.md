@@ -52,3 +52,25 @@ only through its own `ToScaled` and `FromScaled`.
 `Raster.Wrap` puts a raster over memory you own, without copying: a `Memory<TPixel>` with a stride in pixels, or a `Memory<byte>`
 with a stride in bytes, such as a video frame whose rows are padded. Pass an `IDisposable` owner to have the raster release the
 memory when it is disposed.
+
+## Rows and planes
+
+For a one-off pass over pixels, `ForEachRow` runs a lambda on each row in parallel; no operation class needed.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#row-action)]
+
+Each frame's pixels are a `PixelPlane<TPixel>`: rows of `Span<TPixel>`, and the whole frame as one span when it is stored in one
+block.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#pixel-plane)]
+
+`RasterOps` records each step of a chain; built-in steps and your own mix freely.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#raster-ops)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#row-band-operation)]
+
+## Run it
+
+[`samples/Extending`](https://github.com/inexin/Egami/tree/main/samples/Extending) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Extending` writes its results to `./output`.

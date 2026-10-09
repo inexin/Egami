@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 namespace Egami.Pixels;
 
 /// <summary>A pixel with one 16-bit luminance channel and no alpha.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-types"/>
+/// </example>
 [StructLayout(LayoutKind.Sequential)]
 public struct Gray16 : IPixelType<Gray16>
 {

@@ -11,6 +11,9 @@ namespace Egami;
 /// Unmanaged blocks are kept after use, up to <see cref="MaxRetainedBytes"/>, and reused by later allocations of a similar size,
 /// because memory fresh from the operating system is slow the first time it is written. <see cref="Trim"/> frees what is kept.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="memory-source"/>
+/// </example>
 public sealed class PooledPixelMemorySource : IPixelMemorySource
 {
     private readonly int _poolThresholdBytes = 1024 * 1024;

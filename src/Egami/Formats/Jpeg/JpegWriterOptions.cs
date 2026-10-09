@@ -3,6 +3,9 @@ using Egami.Pixels;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>How the chroma (Cb and Cr) components are sampled relative to luma.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="jpeg-write"/>
+/// </example>
 public enum ChromaSubsampling
 {
     /// <summary>4:2:0: half the width and half the height. The usual choice for photos.</summary>
@@ -16,6 +19,9 @@ public enum ChromaSubsampling
 }
 
 /// <summary>Which components a JPEG is written with.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="jpeg-details"/>
+/// </example>
 public enum JpegColorType
 {
     /// <summary>Gray for gray pixel types, YCbCr for everything else.</summary>
@@ -29,6 +35,9 @@ public enum JpegColorType
 /// Options for writing JPEG. The defaults are libjpeg-turbo's <c>cjpeg</c> defaults: quality 75, 4:2:0 and the standard Huffman
 /// tables of T.81 Annex K, so files compare one to one.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="jpeg-details"/>
+/// </example>
 public sealed class JpegWriterOptions : WriterOptions
 {
     private readonly int _quality = 75;

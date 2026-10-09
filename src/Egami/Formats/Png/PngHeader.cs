@@ -1,6 +1,9 @@
 namespace Egami.Formats.Png;
 
 /// <summary>A PNG color type (PNG specification, section 11.2.1).</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="png-writer"/>
+/// </example>
 public enum PngColorType : byte
 {
     /// <summary>Grayscale.</summary>

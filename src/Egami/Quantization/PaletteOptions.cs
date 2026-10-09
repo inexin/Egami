@@ -1,6 +1,9 @@
 namespace Egami.Quantization;
 
 /// <summary>How the error of mapping pixels to a palette is spread.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="gif"/>
+/// </example>
 public enum DitherMode
 {
     /// <summary>Floyd–Steinberg error diffusion: the smoothest gradients; frames of an animation dither one row after another.</summary>
@@ -17,6 +20,9 @@ public enum DitherMode
 /// How formats with at most 256 colors (GIF, PNG with a palette, and indexed BMP and TGA) build their palette when an image has more colors than fit.
 /// Images with few enough colors always keep them exactly, without dithering.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="gif"/>
+/// </example>
 public sealed record PaletteOptions
 {
     private readonly DitherMode _dither;

@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    One small console app per guide. Run one with dotnet run with the project path, such as samples/Formats; it reads the bundled public-domain images
+    and writes its results to ./output (or the folder given as the first argument). tests/Egami.DocSamples runs every one.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/Egami/Egami.csproj" />
+    <Compile Include="$(MSBuildThisFileDirectory)SampleRunner.cs" Link="SampleRunner.cs" />
+    <None Include="$(MSBuildThisFileDirectory)../tests/images/ops/duck.png" Link="images/duck.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(MSBuildThisFileDirectory)../tests/images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(MSBuildThisFileDirectory)../tests/images/jpeg/exif-orientation-6.jpg" Link="images/sideways.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(MSBuildThisFileDirectory)../tests/images/jpeg/duck-420.jpg" Link="images/duck.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(MSBuildThisFileDirectory)../tests/images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

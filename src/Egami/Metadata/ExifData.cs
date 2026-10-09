@@ -10,6 +10,9 @@ namespace Egami.Metadata;
 /// with its thumbnail, with typed getters for the common ones. An unedited block writes back byte for byte; after an edit it is
 /// laid out again, keeping the maker note at its old offset when it fits, since maker notes often hold offsets of their own.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-values"/>
+/// </example>
 public sealed class ExifData
 {
     private const ushort ExifPointer = 0x8769;
@@ -104,6 +107,9 @@ public sealed class ExifData
     /// <param name="tiff">The block.</param>
     /// <param name="limits">The limits whose <see cref="SafetyLimits.MaxMetadataBytes"/> caps the values copied. Defaults to <see cref="SafetyLimits.Default"/>.</param>
     /// <returns>The parsed block; <see cref="IsDamaged"/> says whether it was all readable.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-parse"/>
+    /// </example>
     public static ExifData Parse(ReadOnlySpan<byte> tiff, SafetyLimits? limits = null) => Parse(tiff, (limits ?? SafetyLimits.Default).MaxMetadataBytes);
 
     /// <summary>Returns the entry for <paramref name="key"/>, if the block has it.</summary>

@@ -3,6 +3,9 @@ namespace Egami.Metadata;
 /// <summary>An EXIF tag: its number and the IFD it lives in. The named keys cover the tags most programs read and write.</summary>
 /// <param name="Tag">The tag number.</param>
 /// <param name="Ifd">The IFD the tag is in.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="exif"/>
+/// </example>
 public readonly record struct ExifKey(ushort Tag, ExifIfd Ifd)
 {
     /// <summary>A title or description of the image (IFD0 0x010E).</summary>

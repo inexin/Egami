@@ -8,6 +8,9 @@ namespace Egami;
 /// Limits apply to reading. Operations (<c>Apply</c>, <c>Derive</c>) and adding frames check <see cref="MaxTotalBytes"/> too;
 /// writers check nothing. Every limit must be at least 1; setting a smaller value throws <see cref="ArgumentOutOfRangeException"/>.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/MemoryAndSecurity.cs" region="untrusted"/>
+/// </example>
 public sealed record SafetyLimits
 {
     private readonly int _maxWidth = 65_535;

@@ -8,6 +8,9 @@ using Egami.Quantization;
 namespace Egami.Formats.Gif;
 
 /// <summary>Where an animated GIF's palettes come from.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="gif"/>
+/// </example>
 public enum GifPaletteScope
 {
     /// <summary>One global table when all frames together have few enough colors, else a table per frame.</summary>
@@ -21,6 +24,9 @@ public enum GifPaletteScope
 }
 
 /// <summary>Options for writing GIF.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="gif"/>
+/// </example>
 public sealed class GifWriterOptions : WriterOptions
 {
     /// <summary>Gets the default options.</summary>

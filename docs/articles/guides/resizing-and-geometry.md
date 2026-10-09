@@ -50,3 +50,8 @@ embedded thumbnail, which no longer matches.
 [!code-csharp[](../../../tests/Egami.DocSamples/Geometry.cs#planning)]
 
 Animations: every step runs on every frame. See the [animation guide](animation.md).
+
+## Run it
+
+[`samples/Geometry`](https://github.com/inexin/Egami/tree/main/samples/Geometry) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Geometry` writes its results to `./output`.

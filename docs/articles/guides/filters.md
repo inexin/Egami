@@ -18,3 +18,8 @@
 
 Blurs work on premultiplied values internally, so transparent pixels do not bleed their color into opaque ones.
 `preserveAlpha: true` keeps the alpha channel as it was, for effects that should only change color.
+
+## Run it
+
+[`samples/Filters`](https://github.com/inexin/Egami/tree/main/samples/Filters) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Filters` writes its results to `./output`.

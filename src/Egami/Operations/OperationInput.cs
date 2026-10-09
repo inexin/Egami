@@ -5,10 +5,16 @@ namespace Egami.Operations;
 /// <summary>Processes a band of rows: rows <paramref name="start"/> (inclusive) to <paramref name="end"/> (exclusive).</summary>
 /// <param name="start">The first row.</param>
 /// <param name="end">The row just past the last one.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="row-band-operation"/>
+/// </example>
 public delegate void RowBandAction(int start, int end);
 
 /// <summary>Everything an operation gets for one frame.</summary>
 /// <typeparam name="TPixel">The pixel type.</typeparam>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-operation"/>
+/// </example>
 public sealed class OperationInput<TPixel>
     where TPixel : unmanaged, IPixelType<TPixel>
 {

@@ -15,3 +15,8 @@
 
 The area is clipped to the image; an area that does not overlap it throws `ArgumentOutOfRangeException`. Drawing an area costs
 the same as drawing an image of that size.
+
+## Run it
+
+[`samples/Compositing`](https://github.com/inexin/Egami/tree/main/samples/Compositing) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Compositing` writes its results to `./output`.

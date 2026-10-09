@@ -4,6 +4,9 @@ namespace Egami.Metadata;
 /// How stored pixels must be turned to show the image upright: the EXIF Orientation tag (274). The value says which way the camera
 /// was held; <c>AutoOrient</c> applies it.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Geometry.cs" region="auto-orient"/>
+/// </example>
 public enum ImageOrientation
 {
     /// <summary>Not a valid EXIF value; treated as <see cref="Normal"/>. Readers report <see cref="Normal"/> when a file says nothing.</summary>

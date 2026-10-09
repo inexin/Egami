@@ -4,6 +4,9 @@ using Egami.Pixels;
 namespace Egami.Formats.Gif;
 
 /// <summary>The GIF format, registered in <see cref="EgamiContext.Default"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="gif"/>
+/// </example>
 public static class GifFormat
 {
     /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>
@@ -22,9 +25,15 @@ public static class GifFormat
 /// <summary>An application extension block kept unchanged for round trips.</summary>
 /// <param name="Identifier">The 8-character application identifier and 3-character authentication code, such as "NETSCAPE2.0".</param>
 /// <param name="Data">The data of its sub-blocks, joined.</param>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="gif-details"/>
+/// </example>
 public sealed record GifApplicationExtension(string Identifier, ReadOnlyMemory<byte> Data);
 
 /// <summary>Details only GIF has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="gif-details"/>
+/// </example>
 public sealed class GifDetails : FormatDetails
 {
     /// <summary>Gets or sets the version from the header: "87a" or "89a". Defaults to "89a", which the writer always writes.</summary>
@@ -72,6 +81,9 @@ public sealed class GifDetails : FormatDetails
 }
 
 /// <summary>Details of one GIF frame, kept in <see cref="FrameMetadata.FormatDetails"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="gif-details"/>
+/// </example>
 public sealed class GifFrameDetails : FormatDetails
 {
     /// <summary>Gets or sets the frame's own color table. Empty if it used the global one.</summary>

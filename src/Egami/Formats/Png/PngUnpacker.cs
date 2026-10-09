@@ -39,6 +39,7 @@ internal sealed class PngUnpacker
     /// <summary>The palette converted to the pixel type being decoded into, built on first use.</summary>
     private Array? _typedPalette;
 
+    /// <summary>Creates an unpacker for one image header.</summary>
     /// <param name="header">The image header.</param>
     /// <param name="palette">The palette with tRNS alpha applied, or empty.</param>
     /// <param name="transparency">The raw tRNS data for gray or RGB images, or empty.</param>

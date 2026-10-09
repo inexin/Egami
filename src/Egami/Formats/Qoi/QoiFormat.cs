@@ -3,6 +3,9 @@ using Egami.Metadata;
 namespace Egami.Formats.Qoi;
 
 /// <summary>The QOI format, registered in <see cref="EgamiContext.Default"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public static class QoiFormat
 {
     /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>
@@ -19,6 +22,9 @@ public static class QoiFormat
 }
 
 /// <summary>Details only QOI has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public sealed class QoiDetails : FormatDetails
 {
     /// <summary>Gets or sets the channel count from the header: 3 (RGB) or 4 (RGBA). Defaults to 4.</summary>
@@ -35,6 +41,9 @@ public sealed class QoiDetails : FormatDetails
 }
 
 /// <summary>Options for writing QOI.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Formats.cs" region="qoi"/>
+/// </example>
 public sealed class QoiWriterOptions : WriterOptions
 {
     /// <summary>Gets the default options.</summary>

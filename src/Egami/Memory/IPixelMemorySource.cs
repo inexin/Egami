@@ -3,6 +3,9 @@ using System.Buffers;
 namespace Egami;
 
 /// <summary>Says whether new pixel memory is cleared.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="counting-source"/>
+/// </example>
 public enum ClearMode
 {
     /// <summary>Leave whatever the memory held. Use this when every pixel will be written anyway.</summary>
@@ -16,6 +19,9 @@ public enum ClearMode
 /// Supplies the memory behind every <see cref="PixelPlane{TPixel}"/>. Implement it to control where pixel memory comes from.
 /// Implementations must be thread-safe.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="counting-source"/>
+/// </example>
 public interface IPixelMemorySource
 {
     /// <summary>

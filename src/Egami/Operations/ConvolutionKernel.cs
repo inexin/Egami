@@ -1,6 +1,9 @@
 namespace Egami.Operations;
 
 /// <summary>How a convolution reads taps that fall past the image border.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Effects.cs" region="filters"/>
+/// </example>
 public enum EdgeMode
 {
     /// <summary>Repeats the edge pixel. The default.</summary>
@@ -21,6 +24,9 @@ public enum EdgeMode
 /// pixel up and to the left of the center). The sum is divided by <see cref="Divisor"/> and <see cref="Offset"/> is added to the
 /// color channels.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Effects.cs" region="filters"/>
+/// </example>
 public sealed class ConvolutionKernel
 {
     private readonly float[] _values;

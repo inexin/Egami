@@ -1,6 +1,9 @@
 namespace Egami.Formats.Png;
 
 /// <summary>The PNG format, registered in <see cref="EgamiContext.Default"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public static class PngFormat
 {
     /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>

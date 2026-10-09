@@ -7,6 +7,9 @@ namespace Egami;
 
 /// <summary>One frame of a raster: a pixel plane the size of the raster plus per-frame metadata.</summary>
 /// <typeparam name="TPixel">The pixel type.</typeparam>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="frame-list"/>
+/// </example>
 public sealed class Frame<TPixel>
     where TPixel : unmanaged, IPixelType<TPixel>
 {
@@ -36,6 +39,9 @@ public sealed class Frame<TPixel>
 /// so a frame belongs to one raster only.
 /// </summary>
 /// <typeparam name="TPixel">The pixel type.</typeparam>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="frame-list"/>
+/// </example>
 public sealed class FrameList<TPixel> : IReadOnlyList<Frame<TPixel>>
     where TPixel : unmanaged, IPixelType<TPixel>
 {

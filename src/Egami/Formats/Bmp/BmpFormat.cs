@@ -5,6 +5,9 @@ using Egami.Quantization;
 namespace Egami.Formats.Bmp;
 
 /// <summary>The BMP format, registered in <see cref="EgamiContext.Default"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public static class BmpFormat
 {
     /// <summary>Gets the format's registration: name, MIME types, extensions, signature, reader and writer.</summary>
@@ -21,6 +24,9 @@ public static class BmpFormat
 }
 
 /// <summary>How a BMP's pixels are stored.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public enum BmpCompression
 {
     /// <summary>Uncompressed, with the default channel layout for the bit depth.</summary>
@@ -49,6 +55,9 @@ public enum BmpCompression
 }
 
 /// <summary>Details only BMP has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public sealed class BmpDetails : FormatDetails
 {
     /// <summary>Gets or sets the size of the info header: 12, 16, 40, 52, 56, 64, 108 or 124. Defaults to 40.</summary>
@@ -97,6 +106,9 @@ public sealed class BmpDetails : FormatDetails
 }
 
 /// <summary>The pixel layout a BMP is written with.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Formats.cs" region="bmp"/>
+/// </example>
 public enum BmpPixelFormat
 {
     /// <summary>24-bit when every pixel is opaque, else 32-bit with alpha.</summary>
@@ -122,6 +134,9 @@ public enum BmpPixelFormat
 }
 
 /// <summary>Options for writing BMP.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Formats.cs" region="bmp"/>
+/// </example>
 public sealed class BmpWriterOptions : WriterOptions
 {
     /// <summary>Gets the default options.</summary>

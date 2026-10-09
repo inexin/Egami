@@ -4,6 +4,9 @@ using System.Text;
 namespace Egami.Metadata;
 
 /// <summary>The image file directories (IFDs) an EXIF block holds its tags in.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-values"/>
+/// </example>
 public enum ExifIfd
 {
     /// <summary>IFD0: the main image (camera make and model, orientation, resolution, date).</summary>
@@ -23,6 +26,9 @@ public enum ExifIfd
 }
 
 /// <summary>The TIFF data types EXIF values are stored as.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-values"/>
+/// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "These are the TIFF specification's type names.")]
 public enum ExifType
 {
@@ -66,6 +72,9 @@ public enum ExifType
 /// <summary>A rational EXIF value, such as an exposure time of 1/250 or an aperture of 28/10.</summary>
 /// <param name="Numerator">The numerator.</param>
 /// <param name="Denominator">The denominator; 0 in damaged or "unknown" values.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-values"/>
+/// </example>
 public readonly record struct ExifFraction(long Numerator, long Denominator)
 {
     /// <summary>Returns the value as a number, or NaN when the denominator is 0.</summary>
@@ -80,9 +89,15 @@ public readonly record struct ExifFraction(long Numerator, long Denominator)
 /// <param name="Latitude">Degrees north, negative for south.</param>
 /// <param name="Longitude">Degrees east, negative for west.</param>
 /// <param name="Altitude">Meters above sea level, negative below it, or <see langword="null"/> when the block has none.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-values"/>
+/// </example>
 public readonly record struct GeoPosition(double Latitude, double Longitude, double? Altitude);
 
 /// <summary>One EXIF value: its tag, TIFF type and raw bytes, with accessors that read them as text, integers or fractions.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="exif"/>
+/// </example>
 public sealed class ExifEntry
 {
     private readonly byte[] _value;

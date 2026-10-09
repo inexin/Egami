@@ -1,6 +1,9 @@
 namespace Egami.Operations;
 
 /// <summary>Where an image sits inside a larger area, or which part of it is kept when it is cut down.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Geometry.cs" region="crop-pad-rotate"/>
+/// </example>
 public enum Anchor
 {
     /// <summary>The center.</summary>

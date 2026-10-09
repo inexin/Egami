@@ -4,6 +4,9 @@ using Egami.Pixels;
 namespace Egami.Formats.Png;
 
 /// <summary>Where a kept chunk sat in the file, so it can be written back in the same place.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="png-writer"/>
+/// </example>
 public enum PngChunkPosition
 {
     /// <summary>After IHDR, before PLTE.</summary>
@@ -20,14 +23,23 @@ public enum PngChunkPosition
 /// <param name="Type">The four-letter chunk type, such as "bKGD".</param>
 /// <param name="Data">The chunk data.</param>
 /// <param name="Position">Where the chunk sat.</param>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="png-writer"/>
+/// </example>
 public sealed record PngChunk(string Type, ReadOnlyMemory<byte> Data, PngChunkPosition Position);
 
 /// <summary>Which chunk a text entry came from.</summary>
 /// <param name="ChunkType">"tEXt", "zTXt" or "iTXt".</param>
 /// <param name="Compressed">Whether the text was compressed.</param>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public sealed record PngTextSource(string ChunkType, bool Compressed);
 
 /// <summary>Details only PNG has, kept in <see cref="RasterMetadata.FormatDetails"/> so a PNG can be written back as it was.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public sealed class PngDetails : FormatDetails
 {
     /// <summary>Gets or sets the original color type.</summary>

@@ -32,6 +32,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
+    <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
+    <ProjectReference Include="..\..\samples\Color\Color.csproj" />
+    <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />
+    <ProjectReference Include="..\..\samples\Extending\Extending.csproj" />
+    <ProjectReference Include="..\..\samples\Filters\Filters.csproj" />
+    <ProjectReference Include="..\..\samples\Formats\Formats.csproj" />
+    <ProjectReference Include="..\..\samples\Geometry\Geometry.csproj" />
+    <ProjectReference Include="..\..\samples\Jpeg\Jpeg.csproj" />
+    <ProjectReference Include="..\..\samples\MemoryAndThreading\MemoryAndThreading.csproj" />
+    <ProjectReference Include="..\..\samples\Metadata\Metadata.csproj" />
+    <ProjectReference Include="..\..\samples\Security\Security.csproj" />
   </ItemGroup>
 
 </Project>

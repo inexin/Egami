@@ -8,6 +8,9 @@ namespace Egami;
 
 /// <summary>An image whose pixels are of type <typeparamref name="TPixel"/>. Pixel access is by row span.</summary>
 /// <typeparam name="TPixel">The pixel type.</typeparam>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="pixel-types"/>
+/// </example>
 public sealed class Raster<TPixel> : Raster
     where TPixel : unmanaged, IPixelType<TPixel>
 {

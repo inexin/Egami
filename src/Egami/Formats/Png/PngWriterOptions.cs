@@ -1,6 +1,9 @@
 namespace Egami.Formats.Png;
 
 /// <summary>How the PNG writer filters scanlines before compression (PNG specification, section 12.7).</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="png-writer"/>
+/// </example>
 public enum PngFilterMode
 {
     /// <summary>
@@ -26,6 +29,9 @@ public enum PngFilterMode
 }
 
 /// <summary>The Deflate strategy for the image data.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="png-writer"/>
+/// </example>
 public enum PngCompressionStrategy
 {
     /// <summary>
@@ -48,6 +54,9 @@ public enum PngCompressionStrategy
 }
 
 /// <summary>Options for writing PNG. The defaults keep every pixel exactly, in the color type that matches the raster's pixel type.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="png-writer"/>
+/// </example>
 public sealed class PngWriterOptions : WriterOptions
 {
     private readonly int? _bitDepth;

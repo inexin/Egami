@@ -31,3 +31,16 @@ You can plug in your own source through `EgamiContext.Memory` by implementing `I
 `LiveBlocks` and `LiveBytes` are always counted, at the cost of one atomic addition per allocation. `TrackLeaks` gives each new
 block a small finalizable tracker, so turn it on only while you look; `CaptureStackTraces` makes allocations much slower still.
 `LeakDetected` runs on the finalizer thread.
+
+## Your own memory source
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#memory-source)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#counting-source)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#leak-detected)]
+
+## Run it
+
+[`samples/MemoryAndThreading`](https://github.com/inexin/Egami/tree/main/samples/MemoryAndThreading) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/MemoryAndThreading` writes its results to `./output`.

@@ -9,6 +9,9 @@ namespace Egami.Pixels;
 /// <see cref="PixelChannelOrder.Other"/> for ones Egami does not know.
 /// </summary>
 /// <typeparam name="TSelf">The pixel type itself.</typeparam>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-format"/>
+/// </example>
 public interface IPixelType<TSelf> : IEquatable<TSelf>
     where TSelf : unmanaged, IPixelType<TSelf>
 {

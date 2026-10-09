@@ -3,6 +3,9 @@ namespace Egami;
 /// <summary>A position in pixels. X grows to the right and Y downward; the top-left pixel is (0, 0).</summary>
 /// <param name="X">The column.</param>
 /// <param name="Y">The row.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Effects.cs" region="draw-image"/>
+/// </example>
 public readonly record struct Point(int X, int Y);
 
 /// <summary>A rectangle of pixels: the top-left corner and a size.</summary>
@@ -10,6 +13,9 @@ public readonly record struct Point(int X, int Y);
 /// <param name="Y">The top row.</param>
 /// <param name="Width">The width, at least 0.</param>
 /// <param name="Height">The height, at least 0.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Effects.cs" region="draw-image-area"/>
+/// </example>
 public readonly record struct Rect(int X, int Y, int Width, int Height)
 {
     /// <summary>Initializes a new instance of the <see cref="Rect"/> struct from a corner and a size.</summary>

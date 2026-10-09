@@ -1,6 +1,9 @@
 namespace Egami.Metadata;
 
 /// <summary>The unit of a <see cref="Resolution"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="metadata"/>
+/// </example>
 public enum ResolutionUnit
 {
     /// <summary>No unit: the values only give the pixel aspect ratio.</summary>
@@ -20,6 +23,9 @@ public enum ResolutionUnit
 /// <param name="X">Horizontal density.</param>
 /// <param name="Y">Vertical density.</param>
 /// <param name="Unit">The unit of both values.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="metadata"/>
+/// </example>
 public readonly record struct Resolution(double X, double Y, ResolutionUnit Unit)
 {
     /// <summary>Returns the same density in pixels per inch. A resolution with no unit is returned unchanged.</summary>
@@ -37,6 +43,9 @@ public readonly record struct Resolution(double X, double Y, ResolutionUnit Unit
 }
 
 /// <summary>What the raster's pixel values mean, as far as the file said.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="color-space-hint"/>
+/// </example>
 public enum ColorSpaceHint
 {
     /// <summary>The file did not say. Egami treats the pixels as sRGB.</summary>
@@ -59,9 +68,15 @@ public enum ColorSpaceHint
 /// <param name="Key">The keyword, such as "Title" or "Comment".</param>
 /// <param name="Value">The text.</param>
 /// <param name="Language">The language tag, if the format gives one.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="metadata"/>
+/// </example>
 public sealed record TextEntry(string Key, string Value, string? Language = null);
 
 /// <summary>Format-specific details the reader found, such as the original color type or palette. Each format derives its own.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public abstract class FormatDetails
 {
     /// <summary>Returns a deep copy.</summary>
@@ -73,6 +88,9 @@ public abstract class FormatDetails
 /// Metadata that belongs to the whole raster. It is kept apart from the pixels and survives operations unless an operation makes it wrong.
 /// Metadata problems never fail a load: broken blocks are kept as bytes and noted in <see cref="Warnings"/>.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="metadata"/>
+/// </example>
 public sealed class RasterMetadata
 {
     /// <summary>Gets or sets the physical pixel density, if known.</summary>

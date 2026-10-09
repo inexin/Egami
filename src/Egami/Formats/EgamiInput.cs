@@ -11,6 +11,9 @@ namespace Egami.Formats;
 /// It also carries the context, limits and cancellation token for the load, and is the only way a reader allocates pixel memory.
 /// </summary>
 /// <remarks>Readers never call the stream directly. Egami never disposes the caller's stream.</remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-format"/>
+/// </example>
 public sealed class EgamiInput
 {
     private const int BufferSize = 64 * 1024;

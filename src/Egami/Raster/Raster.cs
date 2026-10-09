@@ -8,6 +8,9 @@ namespace Egami;
 /// <typeparam name="TPixel">The pixel type.</typeparam>
 /// <param name="row">The row's pixels. Valid only during the call.</param>
 /// <param name="y">The row index.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="row-action"/>
+/// </example>
 public delegate void RowAction<TPixel>(Span<TPixel> row, int y)
     where TPixel : unmanaged, IPixelType<TPixel>;
 
@@ -19,6 +22,9 @@ public delegate void RowAction<TPixel>(Span<TPixel> row, int y)
 /// A raster is not thread-safe. Several threads may read it at once, but nothing may read while another thread writes.
 /// Methods that return a new raster say so in their name (<c>Copy</c>, <c>As</c>); everything else works in place.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="load-edit-save"/>
+/// </example>
 public abstract partial class Raster : IDisposable
 {
     private protected Raster(int width, int height, RasterMetadata metadata, EgamiContext context)

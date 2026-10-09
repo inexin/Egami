@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 namespace Egami.Pixels;
 
 /// <summary>A pixel with 8-bit blue, green, red and straight alpha channels, in that order.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-types"/>
+/// </example>
 [StructLayout(LayoutKind.Sequential)]
 public struct Bgra8 : IPixelType<Bgra8>
 {

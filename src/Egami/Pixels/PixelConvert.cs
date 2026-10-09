@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 namespace Egami.Pixels;
 
 /// <summary>Converts spans of pixels from one pixel type to another.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-types"/>
+/// </example>
 public static class PixelConvert
 {
     /// <summary>

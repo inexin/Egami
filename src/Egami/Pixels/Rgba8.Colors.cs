@@ -3,6 +3,9 @@ using System.Globalization;
 namespace Egami.Pixels;
 
 /// <content>Hex strings and named colors.</content>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="pixel-types"/>
+/// </example>
 public partial struct Rgba8
 {
     /// <summary>Gets fully transparent black.</summary>

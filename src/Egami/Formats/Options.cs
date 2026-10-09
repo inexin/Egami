@@ -3,6 +3,9 @@ using Egami.Pixels;
 namespace Egami.Formats;
 
 /// <summary>How a reader handles damaged data.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/MemoryAndSecurity.cs" region="untrusted"/>
+/// </example>
 public enum RecoveryMode
 {
     /// <summary>
@@ -16,6 +19,9 @@ public enum RecoveryMode
 }
 
 /// <summary>Options for reading. The defaults read everything leniently. Formats with options of their own derive from it, such as JpegReaderOptions.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/AnimationAndMetadata.cs" region="scaled-decode"/>
+/// </example>
 public record ReaderOptions
 {
     /// <summary>Gets the default options.</summary>
@@ -40,6 +46,9 @@ public record ReaderOptions
 /// <summary>
 /// Options for writing. Each format has a subclass with its own settings; writers given this base class use their defaults.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-format"/>
+/// </example>
 public class WriterOptions
 {
     /// <summary>Gets the default options.</summary>
@@ -50,6 +59,9 @@ public class WriterOptions
 }
 
 /// <summary>What a file's header says, read without decoding pixels.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-format"/>
+/// </example>
 public sealed record RasterInfo
 {
     /// <summary>Gets the format.</summary>

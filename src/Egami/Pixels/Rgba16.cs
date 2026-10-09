@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 namespace Egami.Pixels;
 
 /// <summary>A pixel with 16-bit red, green, blue and straight alpha channels, in that order.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-types"/>
+/// </example>
 [StructLayout(LayoutKind.Sequential)]
 public struct Rgba16 : IPixelType<Rgba16>
 {

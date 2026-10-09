@@ -18,6 +18,9 @@ public abstract partial class Raster
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="load-edit-save"/>
+    /// </example>
     public static Raster Load(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
     {
         return FormatPipeline.Load(stream, context ?? EgamiContext.Default, options ?? ReaderOptions.Default, CancellationToken.None);
@@ -34,6 +37,9 @@ public abstract partial class Raster
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="load-edit-save"/>
+    /// </example>
     public static Raster Load(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using FileStream stream = OpenRead(path);
@@ -48,6 +54,9 @@ public abstract partial class Raster
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="load-edit-save"/>
+    /// </example>
     public static Raster Load(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using MemoryStream stream = AsStream(data);
@@ -67,6 +76,9 @@ public abstract partial class Raster
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="pixel-types"/>
+    /// </example>
     public static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -85,6 +97,9 @@ public abstract partial class Raster
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="pixel-types"/>
+    /// </example>
     public static Raster<TPixel> Load<TPixel>(string path, EgamiContext? context = null, ReaderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -101,6 +116,9 @@ public abstract partial class Raster
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="pixel-types"/>
+    /// </example>
     public static Raster<TPixel> Load<TPixel>(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -122,6 +140,9 @@ public abstract partial class Raster
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public static Task<Raster> LoadAsync(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -143,6 +164,9 @@ public abstract partial class Raster
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public static async Task<Raster> LoadAsync(string path, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         FileStream stream = OpenRead(path, async: true);
@@ -164,6 +188,9 @@ public abstract partial class Raster
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public static Task<Raster<TPixel>> LoadAsync<TPixel>(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -187,6 +214,9 @@ public abstract partial class Raster
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public static async Task<Raster<TPixel>> LoadAsync<TPixel>(string path, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -212,6 +242,9 @@ public abstract partial class Raster
     /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The header breaks a safety limit, such as the metadata size.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Cookbook.cs" region="read-size"/>
+    /// </example>
     public static RasterInfo Probe(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
     {
         return FormatPipeline.Probe(stream, context ?? EgamiContext.Default, options ?? ReaderOptions.Default, CancellationToken.None);
@@ -231,6 +264,9 @@ public abstract partial class Raster
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Cookbook.cs" region="read-size"/>
+    /// </example>
     public static RasterInfo Probe(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using FileStream stream = OpenRead(path);
@@ -248,6 +284,9 @@ public abstract partial class Raster
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The header breaks a safety limit, such as the metadata size.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Cookbook.cs" region="read-size"/>
+    /// </example>
     public static RasterInfo Probe(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using MemoryStream stream = AsStream(data);
@@ -271,6 +310,9 @@ public abstract partial class Raster
     /// <exception cref="LimitExceededException">The header breaks a safety limit, such as the metadata size.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="probe-async"/>
+    /// </example>
     public static Task<RasterInfo> ProbeAsync(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -294,6 +336,9 @@ public abstract partial class Raster
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="probe-async"/>
+    /// </example>
     public static async Task<RasterInfo> ProbeAsync(string path, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         FileStream stream = OpenRead(path, async: true);
@@ -310,6 +355,9 @@ public abstract partial class Raster
     /// <exception cref="UnsupportedFormatException">The format has no writer.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Formats.cs" region="png"/>
+    /// </example>
     public void Save(Stream stream, FormatInfo format, WriterOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -324,6 +372,9 @@ public abstract partial class Raster
     /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Formats.cs" region="png"/>
+    /// </example>
     public void Save(Stream stream, string formatNameOrExtension, WriterOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(formatNameOrExtension);
@@ -340,6 +391,9 @@ public abstract partial class Raster
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="IOException">The file cannot be written.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Formats.cs" region="png"/>
+    /// </example>
     public void Save(string path, WriterOptions? options = null)
     {
         FormatInfo format = FormatPipeline.FormatForPath(Context, path);
@@ -359,6 +413,9 @@ public abstract partial class Raster
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public async Task SaveAsync(Stream stream, FormatInfo format, WriterOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -378,6 +435,9 @@ public abstract partial class Raster
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public Task SaveAsync(Stream stream, string formatNameOrExtension, WriterOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(formatNameOrExtension);
@@ -394,6 +454,9 @@ public abstract partial class Raster
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="IOException">The file cannot be written.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/GettingStarted.cs" region="async"/>
+    /// </example>
     public async Task SaveAsync(string path, WriterOptions? options = null, CancellationToken cancellationToken = default)
     {
         FormatInfo format = FormatPipeline.FormatForPath(Context, path);

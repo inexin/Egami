@@ -35,3 +35,15 @@ and `AutoOrient` applies it; see [resizing and geometry](resizing-and-geometry.m
 
 EXIF, XMP (including extended XMP) and ICC profiles are read and written back. A JPEG saved again is re-encoded: pixels lose a
 little each time, so keep a lossless master if you edit repeatedly.
+
+## Details
+
+The components, color space and estimated quality are in `JpegDetails`. `JpegReaderOptions.FastUpsampling` trades a little chroma
+sharpness for speed; `JpegColorType.Gray` writes one channel.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#jpeg-details)]
+
+## Run it
+
+[`samples/Jpeg`](https://github.com/inexin/Egami/tree/main/samples/Jpeg) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Jpeg` writes its results to `./output`.

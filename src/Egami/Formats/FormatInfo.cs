@@ -6,10 +6,16 @@ namespace Egami.Formats;
 /// It is shorter only if the data itself is shorter.
 /// </param>
 /// <returns><see langword="true"/> if the data looks like this format.</returns>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public delegate bool SignatureMatcher(ReadOnlySpan<byte> header);
 
 /// <summary>Describes a file format: its names, how to recognize it, and its reader and writer.</summary>
 /// <remarks>Instances are immutable and safe to share across threads. Register custom formats with <see cref="EgamiContext.WithFormat"/>.</remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public sealed record FormatInfo
 {
     private readonly int _signatureLength;

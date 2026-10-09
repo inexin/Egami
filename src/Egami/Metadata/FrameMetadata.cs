@@ -1,6 +1,9 @@
 namespace Egami.Metadata;
 
 /// <summary>What happens to a frame's area before the next frame is drawn.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="frame-list"/>
+/// </example>
 public enum FrameDisposal
 {
     /// <summary>Leave the frame in place.</summary>
@@ -14,6 +17,9 @@ public enum FrameDisposal
 }
 
 /// <summary>How a frame is combined with what is already on the canvas.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="frame-list"/>
+/// </example>
 public enum FrameBlend
 {
     /// <summary>Replace the pixels.</summary>
@@ -24,6 +30,9 @@ public enum FrameBlend
 }
 
 /// <summary>Metadata that belongs to one frame.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="frame-metadata"/>
+/// </example>
 public sealed class FrameMetadata
 {
     /// <summary>Gets or sets how long the frame is shown in an animation.</summary>

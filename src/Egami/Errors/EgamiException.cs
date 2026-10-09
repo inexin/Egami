@@ -2,6 +2,9 @@ namespace Egami;
 
 /// <summary>The base class of every exception Egami throws for problems with image data or limits.</summary>
 /// <remarks>Mistakes in arguments throw the standard <see cref="ArgumentException"/> types instead.</remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/MemoryAndSecurity.cs" region="untrusted"/>
+/// </example>
 public abstract class EgamiException : Exception
 {
     /// <summary>Initializes a new instance of the <see cref="EgamiException"/> class.</summary>
@@ -14,6 +17,9 @@ public abstract class EgamiException : Exception
 }
 
 /// <summary>Thrown when no registered format matches the data, or the matching format cannot read or write.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/MemoryAndSecurity.cs" region="untrusted"/>
+/// </example>
 public sealed class UnsupportedFormatException : EgamiException
 {
     /// <summary>Initializes a new instance of the <see cref="UnsupportedFormatException"/> class.</summary>
@@ -28,6 +34,9 @@ public sealed class UnsupportedFormatException : EgamiException
 /// <summary>
 /// Thrown when data matches a format but breaks its rules, such as a bad checksum, a truncated stream or an invalid table.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/MemoryAndSecurity.cs" region="untrusted"/>
+/// </example>
 public sealed class CorruptDataException : EgamiException
 {
     /// <summary>Initializes a new instance of the <see cref="CorruptDataException"/> class.</summary>
@@ -53,6 +62,9 @@ public sealed class CorruptDataException : EgamiException
 }
 
 /// <summary>Thrown when a <see cref="SafetyLimits"/> limit is exceeded.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/MemoryAndSecurity.cs" region="untrusted"/>
+/// </example>
 public sealed class LimitExceededException : EgamiException
 {
     /// <summary>Initializes a new instance of the <see cref="LimitExceededException"/> class.</summary>

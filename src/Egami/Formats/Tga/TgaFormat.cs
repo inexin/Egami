@@ -7,6 +7,9 @@ namespace Egami.Formats.Tga;
 /// The TGA (Truevision Targa) format, registered in <see cref="EgamiContext.Default"/>. TGA has no signature, so it is detected
 /// last and only when the whole 18-byte header is consistent.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public static class TgaFormat
 {
     /// <summary>Gets the format's registration: name, MIME type, extensions, signature check, reader and writer.</summary>
@@ -23,6 +26,9 @@ public static class TgaFormat
 }
 
 /// <summary>Where a TGA's first stored pixel goes.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="tga-writer"/>
+/// </example>
 public enum TgaOrigin
 {
     /// <summary>Rows go from the bottom up, pixels left to right. The default and the most widely read.</summary>
@@ -39,6 +45,9 @@ public enum TgaOrigin
 }
 
 /// <summary>The TGA 2.0 alpha type from the extension area.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="tga-writer"/>
+/// </example>
 public enum TgaAlphaType
 {
     /// <summary>No alpha data.</summary>
@@ -58,6 +67,9 @@ public enum TgaAlphaType
 }
 
 /// <summary>Details only TGA has, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public sealed class TgaDetails : FormatDetails
 {
     /// <summary>Gets or sets the image type from the header: 1, 2 or 3, or 9, 10 or 11 when run-length encoded.</summary>
@@ -110,6 +122,9 @@ public sealed class TgaDetails : FormatDetails
 }
 
 /// <summary>The pixel layout a TGA is written with.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="tga-writer"/>
+/// </example>
 public enum TgaPixelFormat
 {
     /// <summary>8-bit gray for gray types without alpha, 24-bit when every pixel is opaque, else 32-bit with alpha.</summary>
@@ -129,6 +144,9 @@ public enum TgaPixelFormat
 }
 
 /// <summary>Options for writing TGA.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="tga-writer"/>
+/// </example>
 public sealed class TgaWriterOptions : WriterOptions
 {
     /// <summary>Gets the default options.</summary>

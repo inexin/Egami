@@ -3,6 +3,9 @@ using Egami.Metadata;
 namespace Egami.Formats.Pnm;
 
 /// <summary>The Netpbm formats PBM, PGM, PPM and PAM as one format, registered in <see cref="EgamiContext.Default"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
+/// </example>
 public static class PnmFormat
 {
     /// <summary>Gets the format's registration: name, MIME types, extensions, signature, reader and writer.</summary>
@@ -19,6 +22,9 @@ public static class PnmFormat
 }
 
 /// <summary>Which Netpbm variant a file is, or which one to write.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Formats.cs" region="pnm"/>
+/// </example>
 public enum PnmKind
 {
     /// <summary>When writing: PGM for gray pixel types, PPM for other types without alpha, PAM for types with alpha.</summary>
@@ -38,6 +44,9 @@ public enum PnmKind
 }
 
 /// <summary>Details only Netpbm files have, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-details"/>
+/// </example>
 public sealed class PnmDetails : FormatDetails
 {
     /// <summary>Gets or sets the variant.</summary>
@@ -60,6 +69,9 @@ public sealed class PnmDetails : FormatDetails
 }
 
 /// <summary>Options for writing PBM, PGM, PPM or PAM.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Formats.cs" region="pnm"/>
+/// </example>
 public sealed class PnmWriterOptions : WriterOptions
 {
     /// <summary>Gets the default options.</summary>

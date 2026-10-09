@@ -7,6 +7,9 @@ namespace Egami.Operations;
 /// <see cref="RasterOps.Add"/>.
 /// </summary>
 /// <remarks>Implementations must be stateless or immutable: one instance runs on every frame and may run on several threads.</remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Extending.cs" region="custom-operation"/>
+/// </example>
 public interface IRasterOperation
 {
     /// <summary>Returns the frame size after this operation, so the pipeline can plan memory before any pixel changes.</summary>

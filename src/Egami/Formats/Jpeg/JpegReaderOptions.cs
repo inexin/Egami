@@ -1,6 +1,9 @@
 namespace Egami.Formats.Jpeg;
 
 /// <summary>Options for reading JPEG, on top of the general <see cref="ReaderOptions"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="jpeg-details"/>
+/// </example>
 public sealed record JpegReaderOptions : ReaderOptions
 {
     /// <summary>Gets the default options.</summary>

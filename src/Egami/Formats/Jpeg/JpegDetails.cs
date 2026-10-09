@@ -3,6 +3,9 @@ using Egami.Metadata;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>The color model a JPEG's components are stored in.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="jpeg-details"/>
+/// </example>
 public enum JpegColorSpace
 {
     /// <summary>One component of luma.</summary>
@@ -25,9 +28,15 @@ public enum JpegColorSpace
 /// <param name="Id">The component identifier from the frame header.</param>
 /// <param name="HorizontalSampling">The horizontal sampling factor, 1 to 4.</param>
 /// <param name="VerticalSampling">The vertical sampling factor, 1 to 4.</param>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="jpeg-details"/>
+/// </example>
 public sealed record JpegComponent(int Id, int HorizontalSampling, int VerticalSampling);
 
 /// <summary>Facts about a decoded JPEG that have no general home in <see cref="RasterMetadata"/>. Read-only facts; not written.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="jpeg-details"/>
+/// </example>
 public sealed class JpegDetails : FormatDetails
 {
     /// <summary>Gets or sets whether the file is progressive rather than baseline (sequential).</summary>

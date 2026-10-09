@@ -28,3 +28,8 @@ Adjacent color steps are multiplied together and run as one pass over the pixels
 `Grayscale` takes a `ColorSpace`: `Encoded` (the default) weighs the stored sRGB values as most software does; `Linear` weighs
 light, which keeps the perceived brightness of saturated colors. Converting a color raster to `Gray8` with `As<Gray8>()` uses
 Rec. 709 luma in linear light.
+
+## Run it
+
+[`samples/Color`](https://github.com/inexin/Egami/tree/main/samples/Color) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Color` writes its results to `./output`.

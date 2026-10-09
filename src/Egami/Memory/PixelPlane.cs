@@ -16,6 +16,9 @@ namespace Egami;
 /// raster is disposed, or after an operation that changes its size, which gives the frame a new plane.
 /// </remarks>
 /// <typeparam name="TPixel">The pixel type.</typeparam>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-plane"/>
+/// </example>
 public sealed class PixelPlane<TPixel>
     where TPixel : unmanaged, IPixelType<TPixel>
 {

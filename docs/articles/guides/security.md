@@ -34,3 +34,8 @@ finding.
 ## Reporting a vulnerability
 
 Please report security issues privately, as [SECURITY.md](https://github.com/inexin/Egami/blob/main/SECURITY.md) describes.
+
+## Run it
+
+[`samples/Security`](https://github.com/inexin/Egami/tree/main/samples/Security) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Security` writes its results to `./output`.

@@ -36,3 +36,23 @@ its own, capped by `SafetyLimits.MaxMetadataBytes`.
 ## Removing metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]
+
+## Typed EXIF values
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#exif-values)]
+
+EXIF stored somewhere else, such as a database, parses on its own:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#exif-parse)]
+
+## Color space
+
+`RasterMetadata.ColorSpace` says what the file declared about its colors. Egami keeps the declaration and the profile bytes;
+it does not convert between color spaces.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#color-space-hint)]
+
+## Run it
+
+[`samples/Metadata`](https://github.com/inexin/Egami/tree/main/samples/Metadata) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Metadata` writes its results to `./output`.

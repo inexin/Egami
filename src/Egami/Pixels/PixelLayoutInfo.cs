@@ -3,6 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace Egami.Pixels;
 
 /// <summary>The order in which a pixel type stores its channels.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-layout"/>
+/// </example>
 public enum PixelChannelOrder
 {
     /// <summary>
@@ -31,6 +34,9 @@ public enum PixelChannelOrder
 }
 
 /// <summary>The storage type of every channel in a pixel type.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-layout"/>
+/// </example>
 [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "Float32 names the channel encoding, as in GPU format names.")]
 public enum PixelChannelType
 {
@@ -48,6 +54,9 @@ public enum PixelChannelType
 }
 
 /// <summary>How a pixel type stores alpha.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-layout"/>
+/// </example>
 public enum AlphaKind
 {
     /// <summary>The type has no alpha channel. Every pixel is opaque.</summary>
@@ -61,6 +70,9 @@ public enum AlphaKind
 /// <param name="ChannelOrder">The order of the channels in memory.</param>
 /// <param name="ChannelType">The storage type shared by every channel.</param>
 /// <param name="Alpha">How alpha is stored, if at all.</param>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="pixel-layout"/>
+/// </example>
 public readonly record struct PixelLayoutInfo(PixelChannelOrder ChannelOrder, PixelChannelType ChannelType, AlphaKind Alpha)
 {
     /// <summary>Gets the number of channels, including alpha; 0 for <see cref="PixelChannelOrder.Other"/>.</summary>

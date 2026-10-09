@@ -26,6 +26,7 @@ internal sealed class ExactColors
     private readonly bool _binaryAlpha;
     private readonly byte _threshold;
 
+    /// <summary>Creates an empty collector.</summary>
     /// <param name="limit">The most colors to keep, at most 256.</param>
     /// <param name="binaryAlpha">Whether every pixel below <paramref name="threshold"/> alpha is one transparent color and the rest opaque.</param>
     /// <param name="threshold">The alpha below which a pixel is transparent, when <paramref name="binaryAlpha"/> is set.</param>
@@ -169,6 +170,7 @@ internal sealed class PaletteMapper : IDisposable
     private readonly ulong[] _filled;
     private readonly int _cacheLength;
 
+    /// <summary>Creates a mapper to the given palette.</summary>
     /// <param name="palette">The palette; a transparent entry, if any, is at <paramref name="transparentIndex"/>.</param>
     /// <param name="transparentIndex">The index pixels below <paramref name="threshold"/> alpha take, or -1 (binary alpha only).</param>
     /// <param name="withAlpha">Whether alpha takes part in the distance (palette PNG); otherwise alpha is on or off.</param>

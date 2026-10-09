@@ -120,6 +120,9 @@ public sealed class PixelMemoryUsage
 }
 
 /// <summary>Describes a pixel memory block that was collected without being disposed.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="leak-detected"/>
+/// </example>
 public sealed class PixelMemoryLeakEventArgs : EventArgs
 {
     internal PixelMemoryLeakEventArgs(long bytes, string? stackTrace)

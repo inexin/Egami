@@ -89,3 +89,26 @@ Writers never change the raster. When a format cannot hold something, it is left
 - **Metadata**: every writer keeps what its format can carry; `StripMetadata = true` on any writer options drops it all.
 
 See the [API reference](../../api/Egami.Formats.yml) for every option.
+
+## What the file said
+
+Every reader fills `RasterMetadata.FormatDetails` with the header's own terms: `PngDetails`, `JpegDetails`, `GifDetails`,
+`BmpDetails`, `TgaDetails`, `QoiDetails` or `PnmDetails`. A writer of the same format uses them to keep what it can, and ignores
+another format's details.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#format-details)]
+
+More PNG and TGA writer settings:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#png-writer)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#tga-writer)]
+
+Each format is described by a `FormatInfo`: its name, extensions, MIME types, and how to recognize it from its first bytes.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#format-info)]
+
+## Run it
+
+[`samples/Formats`](https://github.com/inexin/Egami/tree/main/samples/Formats) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Formats` writes its results to `./output`.

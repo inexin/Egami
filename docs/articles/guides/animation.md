@@ -34,3 +34,21 @@ quantizer, dithered with Floyd–Steinberg by default. GIF transparency is on or
 
 APNG keeps full color and partial alpha, so nothing is quantized; frames blend with `Over` when that stores less. Set
 `PngWriterOptions.FirstFrameOnly` to write a still PNG from an animation.
+
+## Frame by frame
+
+`Raster<TPixel>.Frames` is a `FrameList<TPixel>`: index, add, insert, move and remove frames. Each frame's `FrameMetadata` holds
+its delay, how it is disposed (`FrameDisposal`) and blended (`FrameBlend`) when written as APNG, and the area that changed.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#frame-list)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#frame-metadata)]
+
+GIF files keep their palettes, version and application extensions in `GifDetails`, and each frame's in `GifFrameDetails`:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#gif-details)]
+
+## Run it
+
+[`samples/Animation`](https://github.com/inexin/Egami/tree/main/samples/Animation) is a console app that does what this guide shows on the bundled
+images: `dotnet run --project samples/Animation` writes its results to `./output`.

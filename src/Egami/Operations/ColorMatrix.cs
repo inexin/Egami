@@ -6,6 +6,9 @@ using System.Text;
 namespace Egami.Operations;
 
 /// <summary>The luma weights a grayscale conversion uses.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Effects.cs" region="color"/>
+/// </example>
 public enum LumaWeights
 {
     /// <summary>Rec. 709 (sRGB) weights: 0.2126 red, 0.7152 green, 0.0722 blue. The default.</summary>
@@ -23,6 +26,9 @@ public enum LumaWeights
 /// <remarks>
 /// <c>default(ColorMatrix)</c> is <see cref="Identity"/>, so a matrix left unset changes nothing.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Effects.cs" region="color-matrix"/>
+/// </example>
 public readonly struct ColorMatrix : IEquatable<ColorMatrix>
 {
     private readonly Values _values;

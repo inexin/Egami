@@ -1,6 +1,9 @@
 namespace Egami.Operations;
 
 /// <summary>The kernel a resize or rotation uses to blend source pixels.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Geometry.cs" region="filters"/>
+/// </example>
 public enum ResampleFilter
 {
     /// <summary>Keys cubic with a = −0.5 (Catmull-Rom): sharp, with slight ringing at hard edges. The default.</summary>
@@ -23,6 +26,9 @@ public enum ResampleFilter
 }
 
 /// <summary>The color space in which resizing, blurs and grayscale blend colors: the stored sRGB-encoded values, or linear light.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Geometry.cs" region="filters"/>
+/// </example>
 public enum ColorSpace
 {
     /// <summary>

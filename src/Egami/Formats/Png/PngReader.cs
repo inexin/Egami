@@ -1180,6 +1180,7 @@ internal sealed class PngReader : IFormatReader
         /// <summary>Gets the Adler-32 checksum of every byte decoded so far.</summary>
         public uint Adler { get; private set; } = 1;
 
+        /// <summary>Decodes the rows top to bottom, unfiltering each into the raster as it arrives.</summary>
         /// <returns><see langword="true"/> if every row was read; <see langword="false"/> if the data ended early in lenient mode.</returns>
         public bool DecodeSequential()
         {
@@ -1280,6 +1281,7 @@ internal sealed class PngReader : IFormatReader
             }
         }
 
+        /// <summary>Decodes the seven Adam7 passes, scattering each pass row into the raster.</summary>
         /// <returns><see langword="true"/> if every row of every pass was read.</returns>
         public bool DecodeInterlaced()
         {
