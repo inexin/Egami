@@ -218,6 +218,18 @@ public sealed class ExifData
         return removed;
     }
 
+    /// <summary>Sets the IFD1 thumbnail, a JPEG file, for tools that build test and benchmark files.</summary>
+    internal void SetThumbnail(ReadOnlyMemory<byte> jpeg)
+    {
+        Thumbnail = jpeg.ToArray();
+        if (!TryGet(new ExifKey(0x0103, ExifIfd.Thumbnail), out _))
+        {
+            Set(new ExifKey(0x0103, ExifIfd.Thumbnail), (ushort)6);
+        }
+
+        _edited = true;
+    }
+
     /// <summary>Removes the thumbnail and the rest of IFD1, as operations do once the image no longer matches it.</summary>
     /// <returns>Whether there was one.</returns>
     public bool RemoveThumbnail()

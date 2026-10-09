@@ -217,6 +217,50 @@ public class JpegDecodeTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void QualityEstimateMatchesASearchOfEveryQuality()
+    {
+        // Every IJG table, each with small changes, and random tables.
+        Random random = new(12);
+        ushort[] table = new ushort[64];
+        for (int round = 0; round < 3000; round++)
+        {
+            int quality = (round % 100) + 1;
+            int factor = quality < 50 ? 5000 / quality : 200 - (2 * quality);
+            for (int k = 0; k < 64; k++)
+            {
+                int ijg = Math.Clamp(((Natural(k) * factor) + 50) / 100, 1, 255);
+                table[k] = (ushort)(round < 100 ? ijg : round < 2000 ? Math.Clamp(ijg + random.Next(-3, 4), 1, 255) : random.Next(1, 256));
+            }
+
+            Assert.Equal(Search(table), JpegSegmentReader.EstimateQuality(table));
+        }
+
+        static int Natural(int k) => JpegTables.LumaQuant[JpegTables.ZigZag[k]];
+
+        static int Search(ushort[] table)
+        {
+            int best = 0;
+            long bestError = long.MaxValue;
+            for (int quality = 1; quality <= 100; quality++)
+            {
+                int factor = quality < 50 ? 5000 / quality : 200 - (2 * quality);
+                long error = 0;
+                for (int k = 0; k < 64; k++)
+                {
+                    error += Math.Abs(table[k] - Math.Clamp(((Natural(k) * factor) + 50) / 100, 1, 255));
+                }
+
+                if (error < bestError)
+                {
+                    (best, bestError) = (quality, error);
+                }
+            }
+
+            return best;
+        }
+    }
+
+    [Fact]
     public void TruncatedDataIsGrayInLenientModeAndThrowsInStrict()
     {
         byte[] data = File.ReadAllBytes(Path.Combine(Images, "duck-420.jpg"));

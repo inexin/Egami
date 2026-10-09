@@ -6,6 +6,8 @@ The JPEG design's decode scenarios need the 4000 x 3000 benchmark photo as JPEG 
   photo-444.jpg          quality 90, 4:4:4
   photo-progressive.jpg  quality 90, 4:2:0, progressive
   photo-gray.jpg         quality 90, one component
+  camera-00..49.jpg      photo-420.jpg with a camera-like EXIF block (the probe and EXIF scenarios' stand-ins)
+  photo-orientation-6.jpg  photo-420.jpg tagged with orientation 6 (the thumbnail scenario)
 
 The photo itself is BenchImages.Photo, written by the benchmark project as PNG and converted to PPM by Pillow for cjpeg.
 
@@ -40,6 +42,8 @@ def main():
     subprocess.run(["docker", "run", "--rm", "-v", f"{os.path.abspath(TARGET)}:/work", IMAGE, "sh", "-c", script], check=True)
     for name in FILES:
         print(f"{name}: {os.path.getsize(os.path.join(TARGET, name)):,} bytes")
+    subprocess.run(["dotnet", "run", "-c", "Release", "--project", "benchmarks/Egami.Benchmarks", "--", "--write-camera-files", TARGET], check=True)
+    print("camera-00..49.jpg and photo-orientation-6.jpg written.")
 
 
 if __name__ == "__main__":

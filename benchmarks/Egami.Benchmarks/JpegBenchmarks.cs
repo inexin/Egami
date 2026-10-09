@@ -3,6 +3,7 @@ using BenchmarkDotNet.Configs;
 
 using Egami.Formats;
 using Egami.Formats.Jpeg;
+using Egami.Metadata;
 using Egami.Pixels;
 
 namespace Egami.Benchmarks;
@@ -124,5 +125,76 @@ public class JpegEncodeBenchmarks
     {
         _photo.Save(Stream.Null, JpegFormat.Info, Optimized);
         return _photo.Width;
+    }
+}
+
+/// <summary>
+/// The JPEG design's probe, EXIF and thumbnail scenarios, on the stand-in camera files from tools/make-jpeg-bench-files.py:
+/// probing 50 files; parsing their EXIF blocks, reading 10 typed tags, editing one and writing the block back; and the
+/// thumbnail pipeline (load at a target size, AutoOrient, Fit 256 × 256, save at quality 80) on the photo tagged with
+/// orientation 6.
+/// </summary>
+[MemoryDiagnoser]
+public class JpegScenarioBenchmarks
+{
+    private static readonly JpegWriterOptions Quality80 = new() { Quality = 80 };
+    private static readonly ReaderOptions Thumbnail = new() { TargetSize = new Size(256, 256) };
+
+    private byte[][] _files = [];
+    private byte[][] _exif = [];
+    private byte[] _oriented = [];
+    private EgamiContext _context = EgamiContext.Default;
+
+    [Params(1, 0)]
+    public int Threads { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _files = [.. Enumerable.Range(0, CameraFiles.Count).Select(i => BenchFiles.Jpeg($"camera-{i:00}.jpg"))];
+        _exif = [.. _files.Select(f => Raster.Load(f, options: new ReaderOptions { TargetSize = new Size(1, 1) }).Metadata.Exif!.ToBytes().ToArray())];
+        _oriented = BenchFiles.Jpeg("photo-orientation-6.jpg");
+        _context = EgamiContext.Default with { MaxParallelism = Threads == 0 ? Environment.ProcessorCount : Threads };
+    }
+
+    [Benchmark]
+    public int Probe50()
+    {
+        int width = 0;
+        foreach (byte[] file in _files)
+        {
+            width += Raster.Probe(file, _context).Width;
+        }
+
+        return width;
+    }
+
+    [Benchmark]
+    public int Exif50()
+    {
+        int length = 0;
+        foreach (byte[] block in _exif)
+        {
+            ExifData exif = ExifData.Parse(block);
+            _ = (exif.Orientation, exif.DateTaken, exif.CameraMake, exif.CameraModel, exif.Location);
+            foreach (ExifKey key in (ExifKey[])[ExifKey.ExposureTime, ExifKey.FNumber, ExifKey.IsoSpeed, ExifKey.FocalLength, ExifKey.LensModel])
+            {
+                exif.TryGet(key, out _);
+            }
+
+            exif.Set(ExifKey.Software, "Egami");
+            length += exif.ToBytes().Length;
+        }
+
+        return length;
+    }
+
+    [Benchmark]
+    public int ThumbnailPipeline()
+    {
+        using Raster raster = Raster.Load(_oriented, _context, Thumbnail);
+        raster.Apply(ops => ops.AutoOrient().Fit(256, 256));
+        raster.Save(Stream.Null, JpegFormat.Info, Quality80);
+        return raster.Width;
     }
 }

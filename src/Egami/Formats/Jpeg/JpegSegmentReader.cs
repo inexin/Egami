@@ -574,30 +574,52 @@ internal static class JpegSegmentReader
         header.Metadata.FormatDetails = header.Details;
     }
 
+    /// <summary>The sum of the example luminance table's entries, <see cref="JpegTables.LumaQuant"/>.</summary>
+    private const long LumaQuantSum = 3688;
+
     /// <summary>
     /// Estimates the IJG quality from the luma quantization table: the quality whose scaled Annex K table (T.81 table K.1) is
     /// closest. Only meaningful for files made with the IJG formula, which most are.
     /// </summary>
     private static int? EstimateQuality(JpegHeader header)
     {
-        if (header.Components.Length == 0 || header.QuantTables[header.Components[0].QuantTable] is not ushort[] table)
+        return header.Components.Length == 0 || header.QuantTables[header.Components[0].QuantTable] is not ushort[] table
+            ? null
+            : EstimateQuality(table);
+    }
+
+    /// <summary>Returns the IJG quality whose scaled table K.1 is closest to <paramref name="table"/> (zigzag order), the lowest on a tie.</summary>
+    internal static int EstimateQuality(ReadOnlySpan<ushort> table)
+    {
+        // The quality whose overall scale matches the table's is tried first, so the rest mostly stop after a few entries.
+        long sum = 0;
+        for (int k = 0; k < 64; k++)
         {
-            return null;
+            sum += table[k];
         }
 
+        int scale = (int)Math.Clamp((sum * 100) / LumaQuantSum, 1, 5000);
+        int guess = Math.Clamp(scale <= 100 ? (200 - scale) / 2 : 5000 / scale, 1, 100);
         int best = 0;
         long bestError = long.MaxValue;
-        for (int quality = 1; quality <= 100; quality++)
+        for (int i = 0; i <= 100; i++)
         {
+            int quality = i == 0 ? guess : i;
+            if (i == guess)
+            {
+                continue;
+            }
+
             int factor = quality < 50 ? 5000 / quality : 200 - (2 * quality);
             long error = 0;
-            for (int k = 0; k < 64; k++)
+            for (int k = 0; k < 64 && error <= bestError; k++)
             {
                 int expected = Math.Clamp(((JpegTables.LumaQuant[JpegTables.ZigZag[k]] * factor) + 50) / 100, 1, 255);
                 error += Math.Abs(table[k] - expected);
             }
 
-            if (error < bestError)
+            // Ties go to the lowest quality, as a search in order would.
+            if (error < bestError || (error == bestError && quality < best))
             {
                 bestError = error;
                 best = quality;

@@ -14,4 +14,11 @@ if (args is ["--write-photo", string path])
     return;
 }
 
+// Write the camera stand-ins and the thumbnail file, for tools/make-jpeg-bench-files.py: -- --write-camera-files <dir>
+if (args is ["--write-camera-files", string directory])
+{
+    CameraFiles.Write(directory, BenchFiles.Jpeg("photo-420.jpg"));
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
