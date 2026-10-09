@@ -50,12 +50,16 @@ internal static class JpegIdct
     /// Fills the output of a block with only a DC term, <paramref name="dc"/> after dequantization: what <see cref="Transform"/>
     /// gives for it, through the same shortcuts and the same integer steps, without the transform.
     /// </summary>
-    internal static void FillDc(int dc, Span<byte> output, int stride)
+    /// <remarks>
+    /// The 4×4 and 2×2 reduced transforms take the same shortcuts with the same arithmetic, so a flat block of
+    /// <paramref name="size"/> 4 or 2 gets the same value; the 1×1 transform rounds differently and is not filled here.
+    /// </remarks>
+    internal static void FillDc(int dc, Span<byte> output, int stride, int size = 8)
     {
         byte value = Clamp(Descale(dc << Pass1Bits, Pass1Bits + 3));
-        for (int r = 0; r < 8; r++)
+        for (int r = 0; r < size; r++)
         {
-            output.Slice(r * stride, 8).Fill(value);
+            output.Slice(r * stride, size).Fill(value);
         }
     }
 

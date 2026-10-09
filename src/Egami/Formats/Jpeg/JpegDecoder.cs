@@ -172,9 +172,9 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                         Span<short> block = row.Slice(bx * 64, 64);
                         Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
                         ulong nonzero = JpegBlock.NonZero(block);
-                        if (c.BlockSize == 8 && (nonzero & ~1UL) == 0)
+                        if (c.BlockSize > 1 && (nonzero & ~1UL) == 0)
                         {
-                            JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth);
+                            JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth, c.BlockSize);
                             continue;
                         }
 
@@ -734,9 +734,9 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     int b = slot.FirstBlock[i] + (v * across) + bx;
                     Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
                     Span<short> block = slot.Block(b);
-                    if (slot.HasAc[slot.FlagStart + b] == 0 && c.BlockSize == 8)
+                    if (slot.HasAc[slot.FlagStart + b] == 0 && c.BlockSize > 1)
                     {
-                        JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth);
+                        JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth, c.BlockSize);
                     }
                     else
                     {

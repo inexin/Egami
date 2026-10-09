@@ -168,6 +168,18 @@ public class JpegSimdTests
                 JpegIdct.TransformScalar(block, quant, transformed, 8);
                 JpegIdct.FillDc(dc * q, filled, 8);
                 Assert.Equal(transformed, filled);
+
+                // The reduced transforms take the same shortcuts.
+                Array.Clear(transformed);
+                Array.Clear(filled);
+                JpegIdct.Transform4(block, quant, transformed, 8);
+                JpegIdct.FillDc(dc * q, filled, 8, 4);
+                Assert.Equal(transformed, filled);
+                Array.Clear(transformed);
+                Array.Clear(filled);
+                JpegIdct.Transform2(block, quant, transformed, 8);
+                JpegIdct.FillDc(dc * q, filled, 8, 2);
+                Assert.Equal(transformed, filled);
             }
         }
     }
