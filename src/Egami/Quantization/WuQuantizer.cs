@@ -191,22 +191,27 @@ internal sealed class WuQuantizer : IDisposable
     /// <summary>Turns the histogram into cumulative moments: each cell holds the totals of every cell at or below it.</summary>
     private void Accumulate()
     {
+        // Along dimension d, cells one stride apart are neighbors: each block of side × stride cells is a run in which every cell
+        // after the first stride adds the cell one stride before it. No division per cell, and the inner loops are contiguous.
         for (int d = 0; d < _dimensions; d++)
         {
             int stride = _strides[d];
-            for (int i = 0; i < _cells; i++)
-            {
-                if ((i / stride) % _side == 0)
-                {
-                    continue;
-                }
+            int block = stride * _side;
+            PrefixRuns(_weight.AsSpan(0, _cells), block, stride);
+            PrefixRuns(_squares.AsSpan(0, _cells), block, stride);
+            PrefixRuns(_sums.AsSpan(0, _cells * _dimensions), block * _dimensions, stride * _dimensions);
+        }
+    }
 
-                _weight[i] += _weight[i - stride];
-                _squares[i] += _squares[i - stride];
-                for (int c = 0; c < _dimensions; c++)
-                {
-                    _sums[(i * _dimensions) + c] += _sums[((i - stride) * _dimensions) + c];
-                }
+    private static void PrefixRuns<T>(Span<T> data, int block, int offset)
+        where T : struct, System.Numerics.IAdditionOperators<T, T, T>
+    {
+        for (int start = 0; start < data.Length; start += block)
+        {
+            Span<T> run = data.Slice(start, block);
+            for (int j = offset; j < block; j++)
+            {
+                run[j] += run[j - offset];
             }
         }
     }
@@ -229,41 +234,19 @@ internal sealed class WuQuantizer : IDisposable
 
     private long Weight(Box box)
     {
-        long total = 0;
-        for (int corner = 0; corner < 1 << _dimensions; corner++)
-        {
-            int index = Corner(box, corner, out int sign);
-            total += sign * _weight[index];
-        }
-
-        return total;
+        Span<long> sums = stackalloc long[4];
+        return Moments(box, sums, out _);
     }
 
     private void Sums(Box box, Span<long> sums)
     {
-        sums.Clear();
-        for (int corner = 0; corner < 1 << _dimensions; corner++)
-        {
-            int index = Corner(box, corner, out int sign);
-            for (int c = 0; c < _dimensions; c++)
-            {
-                sums[c] += sign * _sums[(index * _dimensions) + c];
-            }
-        }
+        Moments(box, sums, out _);
     }
 
     private double Variance(Box box)
     {
-        double squares = 0;
-        for (int corner = 0; corner < 1 << _dimensions; corner++)
-        {
-            int index = Corner(box, corner, out int sign);
-            squares += sign * _squares[index];
-        }
-
         Span<long> sums = stackalloc long[4];
-        Sums(box, sums);
-        double weight = Weight(box);
+        double weight = Moments(box, sums, out double squares);
         double total = 0;
         for (int c = 0; c < _dimensions; c++)
         {
@@ -271,6 +254,31 @@ internal sealed class WuQuantizer : IDisposable
         }
 
         return squares - (total / weight);
+    }
+
+    /// <summary>
+    /// Returns a box's pixel count, and its per-channel sums and sum of squares, from the 2^D corners of the cumulative moments,
+    /// each corner's cell found once for all of them. The squares are whole numbers well inside a double's exact range, so the
+    /// order of the additions cannot change the result.
+    /// </summary>
+    private long Moments(Box box, Span<long> sums, out double squares)
+    {
+        sums[.._dimensions].Clear();
+        long weight = 0;
+        squares = 0;
+        for (int corner = 0; corner < 1 << _dimensions; corner++)
+        {
+            int index = Corner(box, corner, out int sign);
+            weight += sign * _weight[index];
+            squares += sign * _squares[index];
+            int at = index * _dimensions;
+            for (int c = 0; c < _dimensions; c++)
+            {
+                sums[c] += sign * _sums[at + c];
+            }
+        }
+
+        return weight;
     }
 
     private long Cells(Box box)
@@ -287,9 +295,8 @@ internal sealed class WuQuantizer : IDisposable
     /// <summary>Splits <paramref name="box"/> where the variance falls most; it keeps the lower part and the upper goes to <paramref name="upper"/>.</summary>
     private bool Cut(Box box, out Box upper)
     {
-        long wholeWeight = Weight(box);
         Span<long> whole = stackalloc long[4];
-        Sums(box, whole);
+        long wholeWeight = Moments(box, whole, out _);
         double best = -1;
         int bestDimension = -1;
         int bestCut = -1;
