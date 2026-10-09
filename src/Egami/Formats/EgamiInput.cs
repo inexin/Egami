@@ -17,6 +17,7 @@ public sealed class EgamiInput : IDisposable
 
     private readonly Stream _stream;
     private readonly BudgetedMemorySource _memory;
+    private readonly long _origin;
     private byte[]? _buffer;
     private int _start;
     private int _end;
@@ -29,6 +30,7 @@ public sealed class EgamiInput : IDisposable
         Context = context;
         CancellationToken = cancellationToken;
         _memory = new BudgetedMemorySource(context.Memory, context.Limits.MaxTotalBytes);
+        _origin = stream.CanSeek ? stream.Position : -1;
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
     }
 
@@ -186,6 +188,32 @@ public sealed class EgamiInput : IDisposable
         _memory.Check(width * height * TPixel.Layout.BytesPerPixel);
         PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>((int)width, (int)height, _memory, clear);
         return new Raster<TPixel>(plane, new RasterMetadata { FormatName = FormatName }, Context);
+    }
+
+    /// <summary>Gets the length of the data from the start of the image, or <see langword="null"/> if the stream cannot seek.</summary>
+    internal long? Length => _origin >= 0 ? _stream.Length - _origin : null;
+
+    /// <summary>
+    /// Reads bytes at <paramref name="offset"/> from the start of the image without moving the read position, for formats that
+    /// keep a footer at the end. Returns <see langword="false"/> if the stream cannot seek or the bytes are not all there.
+    /// </summary>
+    internal bool TryReadAt(long offset, Span<byte> destination)
+    {
+        if (_origin < 0 || offset < 0)
+        {
+            return false;
+        }
+
+        long saved = _stream.Position;
+        try
+        {
+            _stream.Position = _origin + offset;
+            return _stream.ReadAtLeast(destination, destination.Length, throwOnEndOfStream: false) == destination.Length;
+        }
+        finally
+        {
+            _stream.Position = saved;
+        }
     }
 
     /// <summary>The memory source of this load, which counts against <see cref="SafetyLimits.MaxTotalBytes"/> with the raster.</summary>
