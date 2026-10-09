@@ -97,7 +97,7 @@ public class PaletteTests(ITestOutputHelper output)
     [InlineData(17, false)]
     [InlineData(256, false)]
     [InlineData(100, true)]
-    public void VectorSearchEqualsScalar(int colors, bool withAlpha)
+    public void FastSearchesEqualTheFullScalarSearch(int colors, bool withAlpha)
     {
         // Duplicated entries make ties, which both must break toward the lower index.
         Random random = new(colors);

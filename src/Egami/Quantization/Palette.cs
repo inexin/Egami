@@ -151,7 +151,8 @@ internal sealed class PaletteMapper : IDisposable
     private readonly int _transparent;
     private readonly bool _withAlpha;
     private readonly byte _threshold;
-    private readonly short[] _cache;
+    private readonly byte[] _cache;
+    private readonly ulong[] _filled;
     private readonly int _cacheLength;
 
     /// <param name="palette">The palette; a transparent entry, if any, is at <paramref name="transparentIndex"/>.</param>
@@ -165,8 +166,11 @@ internal sealed class PaletteMapper : IDisposable
         _withAlpha = withAlpha;
         _threshold = threshold;
         _cacheLength = withAlpha ? 1 << 20 : 1 << 18;
-        _cache = ArrayPool<short>.Shared.Rent(_cacheLength);
-        _cache.AsSpan(0, _cacheLength).Fill(-1);
+        // An index per cell (palettes have at most 256 entries), and a bit per cell saying whether it is known yet: half the
+        // memory of 16-bit entries with a "not yet" value, so more of the table stays in cache while dithering jumps around it.
+        _cache = ArrayPool<byte>.Shared.Rent(_cacheLength);
+        _filled = ArrayPool<ulong>.Shared.Rent(_cacheLength / 64);
+        _filled.AsSpan(0, _cacheLength / 64).Clear();
 
         // The palette by channel, padded to whole vectors with entries too far away to win; the transparent entry is one of those
         // too, since it is never the nearest color.
@@ -199,6 +203,7 @@ internal sealed class PaletteMapper : IDisposable
     }
 
     private readonly short[] _pairs;
+
 
     /// <summary>A channel value for padding entries: farther from any color than any real entry can be.</summary>
     private const int FarAway = 10_000;
@@ -236,8 +241,7 @@ internal sealed class PaletteMapper : IDisposable
             key = ((pixel.R >> 2) << 12) | ((pixel.G >> 2) << 6) | (pixel.B >> 2);
         }
 
-        int index = _cache[key];
-        return index >= 0 ? index : Fill(key);
+        return (Volatile.Read(ref _filled[key >> 6]) & (1UL << key)) != 0 ? _cache[key] : Fill(key);
     }
 
     /// <summary>Returns the index nearest to <paramref name="pixel"/> itself, without the lookup table (for dithering's exact colors).</summary>
@@ -375,7 +379,8 @@ internal sealed class PaletteMapper : IDisposable
 
     public void Dispose()
     {
-        ArrayPool<short>.Shared.Return(_cache);
+        ArrayPool<byte>.Shared.Return(_cache);
+        ArrayPool<ulong>.Shared.Return(_filled);
     }
 
     private int Fill(int key)
@@ -384,9 +389,11 @@ internal sealed class PaletteMapper : IDisposable
             ? new Rgba8((byte)(((key >> 15) << 3) | 4), (byte)((((key >> 10) & 31) << 3) | 4), (byte)((((key >> 5) & 31) << 3) | 4), (byte)(((key & 31) << 3) | 4))
             : new Rgba8((byte)(((key >> 12) << 2) | 2), (byte)((((key >> 6) & 63) << 2) | 2), (byte)(((key & 63) << 2) | 2), 255);
         int index = Nearest(center);
-        _cache[key] = (short)index;
+        _cache[key] = (byte)index;
+        Interlocked.Or(ref _filled[key >> 6], 1UL << key);
         return index;
     }
+
 }
 
 /// <summary>A palette ready for mapping: its colors, which index (if any) is transparent, and whether it holds every color exactly.</summary>
