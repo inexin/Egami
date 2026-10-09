@@ -294,24 +294,57 @@ internal sealed class WuQuantizer : IDisposable
         int bestDimension = -1;
         int bestCut = -1;
         Span<long> half = stackalloc long[4];
+        Span<long> bottom = stackalloc long[4];
+        Span<int> bases = stackalloc int[8];
+        Span<int> signs = stackalloc int[8];
         for (int d = 0; d < _dimensions; d++)
         {
-            int high = box.High[d];
-            for (int position = box.Low[d] + 1; position < high; position++)
+            // The lower part, cut at p in dimension d, is the box's corners over the other dimensions, each taken at p minus at
+            // Low[d]: the Low[d] half ("bottom") is the same for every p, so only the 2^(D-1) cells at p are read per position.
+            int corners = 0;
+            for (int corner = 0; corner < 1 << _dimensions; corner++)
             {
-                box.High[d] = position;
-                long lowerWeight = Weight(box);
+                if ((corner & (1 << d)) != 0)
+                {
+                    continue;
+                }
+
+                int index = 0;
+                int lows = 0;
+                for (int e = 0; e < _dimensions; e++)
+                {
+                    if (e == d)
+                    {
+                        continue;
+                    }
+
+                    bool low = (corner & (1 << e)) != 0;
+                    lows += low ? 1 : 0;
+                    index += (low ? box.Low[e] : box.High[e]) * _strides[e];
+                }
+
+                bases[corners] = index;
+                signs[corners++] = (lows & 1) == 0 ? 1 : -1;
+            }
+
+            int stride = _strides[d];
+            long bottomWeight = Total(_weight, bases, signs, corners, box.Low[d] * stride);
+            TotalSums(bases, signs, corners, box.Low[d] * stride, bottom);
+            for (int position = box.Low[d] + 1; position < box.High[d]; position++)
+            {
+                long lowerWeight = Total(_weight, bases, signs, corners, position * stride) - bottomWeight;
                 if (lowerWeight == 0 || lowerWeight == wholeWeight)
                 {
                     continue;
                 }
 
-                Sums(box, half);
+                TotalSums(bases, signs, corners, position * stride, half);
                 double score = 0;
                 for (int c = 0; c < _dimensions; c++)
                 {
-                    double other = whole[c] - half[c];
-                    score += ((double)half[c] * half[c] / lowerWeight) + (other * other / (wholeWeight - lowerWeight));
+                    long lower = half[c] - bottom[c];
+                    double other = whole[c] - lower;
+                    score += ((double)lower * lower / lowerWeight) + (other * other / (wholeWeight - lowerWeight));
                 }
 
                 if (score > best)
@@ -321,8 +354,6 @@ internal sealed class WuQuantizer : IDisposable
                     bestCut = position;
                 }
             }
-
-            box.High[d] = high;
         }
 
         upper = box.Clone();
@@ -334,6 +365,30 @@ internal sealed class WuQuantizer : IDisposable
         box.High[bestDimension] = bestCut;
         upper.Low[bestDimension] = bestCut;
         return true;
+    }
+
+    private static long Total(long[] values, ReadOnlySpan<int> bases, ReadOnlySpan<int> signs, int corners, int offset)
+    {
+        long total = 0;
+        for (int i = 0; i < corners; i++)
+        {
+            total += signs[i] * values[bases[i] + offset];
+        }
+
+        return total;
+    }
+
+    private void TotalSums(ReadOnlySpan<int> bases, ReadOnlySpan<int> signs, int corners, int offset, Span<long> sums)
+    {
+        sums.Clear();
+        for (int i = 0; i < corners; i++)
+        {
+            int at = (bases[i] + offset) * _dimensions;
+            for (int c = 0; c < _dimensions; c++)
+            {
+                sums[c] += signs[i] * _sums[at + c];
+            }
+        }
     }
 
     /// <summary>A box of histogram cells: from just above <see cref="Low"/> to <see cref="High"/>, in each dimension.</summary>

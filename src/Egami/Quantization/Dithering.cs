@@ -93,6 +93,14 @@ internal static class FrameMapper
             {
                 source(y, row.AsSpan(0, width));
                 Span<byte> target = indices.Slice(y * width, width);
+                if (channels == 3)
+                {
+                    DiffuseRow(row.AsSpan(0, width), target, current, next, mapper, palette);
+                    (current, next) = (next, current);
+                    next.AsSpan(0, stride).Clear();
+                    continue;
+                }
+
                 for (int x = 0; x < width; x++)
                 {
                     Rgba8 pixel = row[x];
@@ -128,6 +136,43 @@ internal static class FrameMapper
         {
             ArrayPool<int>.Shared.Return(current);
             ArrayPool<int>.Shared.Return(next);
+        }
+    }
+
+    /// <summary>One row of <see cref="FloydSteinberg"/> for RGB palettes, with the three channels written out.</summary>
+    private static void DiffuseRow(ReadOnlySpan<Rgba8> row, Span<byte> target, int[] current, int[] next, PaletteMapper mapper, Rgba8[] palette)
+    {
+        for (int x = 0; x < row.Length; x++)
+        {
+            Rgba8 pixel = row[x];
+            if (mapper.IsTransparent(pixel))
+            {
+                target[x] = (byte)mapper.Map(pixel);
+                continue;
+            }
+
+            int at = (x + 1) * 3;
+            int r = Clamp(pixel.R + Round(current[at]));
+            int g = Clamp(pixel.G + Round(current[at + 1]));
+            int b = Clamp(pixel.B + Round(current[at + 2]));
+            int index = mapper.Map(new Rgba8((byte)r, (byte)g, (byte)b, pixel.A));
+            target[x] = (byte)index;
+            Rgba8 chosen = palette[index];
+            int er = r - chosen.R;
+            int eg = g - chosen.G;
+            int eb = b - chosen.B;
+            current[at + 3] += er * 7;
+            current[at + 4] += eg * 7;
+            current[at + 5] += eb * 7;
+            next[at - 3] += er * 3;
+            next[at - 2] += eg * 3;
+            next[at - 1] += eb * 3;
+            next[at] += er * 5;
+            next[at + 1] += eg * 5;
+            next[at + 2] += eb * 5;
+            next[at + 3] += er;
+            next[at + 4] += eg;
+            next[at + 5] += eb;
         }
     }
 
@@ -204,9 +249,11 @@ internal static class FrameMapper
     }
 
     /// <summary>Sixteenths to whole levels, rounding half away from zero.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static int Round(int sixteenths)
     {
-        return sixteenths >= 0 ? (sixteenths + 8) >> 4 : -((-sixteenths + 8) >> 4);
+        // (x + 8) >> 4 for x ≥ 0 and (x + 7) >> 4 below, which is −((−x + 8) >> 4).
+        return (sixteenths + 8 - (int)((uint)sixteenths >> 31)) >> 4;
     }
 
     private static int Clamp(int value) => Math.Clamp(value, 0, 255);

@@ -165,11 +165,11 @@ internal sealed class PngWriter : IFormatWriter
         int width = raster.Width;
         int height = raster.Height;
         Quantization.PaletteOptions paletteOptions = options.Palette with { MaxColors = Math.Min(options.Palette.MaxColors, 1 << (options.BitDepth ?? 8)) };
+        Rgba8[] buffer = new Rgba8[width];
         Quantization.BuiltPalette palette = Quantization.PaletteBuilder.Build(frames * height, r =>
         {
-            Rgba8[] row = new Rgba8[width];
-            PixelConvert.Convert<TPixel, Rgba8>(raster.Frames[r / height].Row(r % height), row);
-            return row;
+            PixelConvert.Convert<TPixel, Rgba8>(raster.Frames[r / height].Row(r % height), buffer);
+            return buffer;
         }, paletteOptions, binaryAlpha: false);
         using Quantization.PaletteMapper mapper = new(palette.Colors, palette.TransparentIndex, withAlpha: true, 0);
         List<Frame<Rgba8>> result = [];

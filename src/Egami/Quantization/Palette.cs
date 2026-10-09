@@ -1,6 +1,9 @@
 using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Pixels;
 
@@ -164,7 +167,44 @@ internal sealed class PaletteMapper : IDisposable
         _cacheLength = withAlpha ? 1 << 20 : 1 << 18;
         _cache = ArrayPool<short>.Shared.Rent(_cacheLength);
         _cache.AsSpan(0, _cacheLength).Fill(-1);
+
+        // The palette by channel, padded to whole vectors with entries too far away to win; the transparent entry is one of those
+        // too, since it is never the nearest color.
+        int padded = (palette.Length + 7) & ~7;
+        _channels = new int[4 * Math.Max(padded, 8)];
+        _channels.AsSpan().Fill(FarAway);
+        _padded = Math.Max(padded, 8);
+        for (int i = 0; i < palette.Length; i++)
+        {
+            if (i == transparentIndex)
+            {
+                continue;
+            }
+
+            _channels[i] = palette[i].R;
+            _channels[_padded + i] = palette[i].G;
+            _channels[(2 * _padded) + i] = palette[i].B;
+            _channels[(3 * _padded) + i] = withAlpha ? palette[i].A : 0;
+        }
+
+        // The same as 16-bit pairs, red with green and blue with alpha, for multiply-add of adjacent pairs.
+        _pairs = new short[4 * _padded];
+        for (int i = 0; i < _padded; i++)
+        {
+            _pairs[2 * i] = (short)_channels[i];
+            _pairs[(2 * i) + 1] = (short)_channels[_padded + i];
+            _pairs[(2 * _padded) + (2 * i)] = (short)_channels[(2 * _padded) + i];
+            _pairs[(2 * _padded) + (2 * i) + 1] = (short)_channels[(3 * _padded) + i];
+        }
     }
+
+    private readonly short[] _pairs;
+
+    /// <summary>A channel value for padding entries: farther from any color than any real entry can be.</summary>
+    private const int FarAway = 10_000;
+
+    private readonly int[] _channels;
+    private readonly int _padded;
 
     internal Rgba8[] Palette => _palette;
 
@@ -202,6 +242,97 @@ internal sealed class PaletteMapper : IDisposable
 
     /// <summary>Returns the index nearest to <paramref name="pixel"/> itself, without the lookup table (for dithering's exact colors).</summary>
     internal int Nearest(Rgba8 pixel)
+    {
+        return Vector256.IsHardwareAccelerated ? NearestVector(pixel) : NearestScalar(pixel);
+    }
+
+    /// <summary>
+    /// <see cref="NearestScalar"/> eight entries at a time: each lane keeps its smallest distance and the first index reaching
+    /// it, and the lanes are then reduced to the smallest distance with the lowest index, the same answer the scalar loop gives.
+    /// </summary>
+    internal int NearestVector(Rgba8 pixel)
+    {
+        if (Avx2.IsSupported)
+        {
+            return NearestAvx2(pixel);
+        }
+
+        ref int r = ref MemoryMarshal.GetArrayDataReference(_channels);
+        Vector256<int> pr = Vector256.Create((int)pixel.R);
+        Vector256<int> pg = Vector256.Create((int)pixel.G);
+        Vector256<int> pb = Vector256.Create((int)pixel.B);
+        Vector256<int> pa = Vector256.Create(_withAlpha ? pixel.A : 0);
+        Vector256<int> index = Vector256.Create(0, 1, 2, 3, 4, 5, 6, 7);
+        Vector256<int> step = Vector256.Create(8);
+        Vector256<int> best = Vector256.Create(int.MaxValue);
+        Vector256<int> bestIndex = Vector256<int>.Zero;
+        for (int i = 0; i < _padded; i += 8)
+        {
+            Vector256<int> dr = Vector256.LoadUnsafe(ref r, (nuint)i) - pr;
+            Vector256<int> dg = Vector256.LoadUnsafe(ref r, (nuint)(_padded + i)) - pg;
+            Vector256<int> db = Vector256.LoadUnsafe(ref r, (nuint)((2 * _padded) + i)) - pb;
+            Vector256<int> da = Vector256.LoadUnsafe(ref r, (nuint)((3 * _padded) + i)) - pa;
+            Vector256<int> distance = (dr * dr) + (dg * dg) + (db * db) + (da * da);
+            Vector256<int> closer = Vector256.LessThan(distance, best);
+            best = Vector256.ConditionalSelect(closer, distance, best);
+            bestIndex = Vector256.ConditionalSelect(closer, index, bestIndex);
+            index += step;
+        }
+
+        int bestDistance = int.MaxValue;
+        int result = 0;
+        for (int lane = 0; lane < 8; lane++)
+        {
+            int d = best.GetElement(lane);
+            int k = bestIndex.GetElement(lane);
+            if (d < bestDistance || (d == bestDistance && k < result))
+            {
+                bestDistance = d;
+                result = k;
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// <see cref="NearestVector"/> with 16-bit differences: red and green (and blue and alpha) of eight entries sit in adjacent
+    /// pairs, so one multiply-add of the differences with themselves gives dr² + dg² per entry, exact in 32 bits.
+    /// </summary>
+    private int NearestAvx2(Rgba8 pixel)
+    {
+        ref short pairs = ref MemoryMarshal.GetArrayDataReference(_pairs);
+        Vector256<short> rg = Vector256.Create(pixel.R | (pixel.G << 16)).AsInt16();
+        Vector256<short> ba = Vector256.Create(pixel.B | ((_withAlpha ? pixel.A : 0) << 16)).AsInt16();
+        Vector256<int> index = Vector256.Create(0, 1, 2, 3, 4, 5, 6, 7);
+        Vector256<int> step = Vector256.Create(8);
+        Vector256<int> best = Vector256.Create(int.MaxValue);
+        Vector256<int> bestIndex = Vector256<int>.Zero;
+        nuint second = (nuint)(2 * _padded);
+        for (nuint i = 0; i < second; i += 16)
+        {
+            Vector256<short> d0 = Vector256.LoadUnsafe(ref pairs, i) - rg;
+            Vector256<short> d1 = Vector256.LoadUnsafe(ref pairs, second + i) - ba;
+            Vector256<int> distance = Avx2.MultiplyAddAdjacent(d0, d0) + Avx2.MultiplyAddAdjacent(d1, d1);
+            Vector256<int> closer = Vector256.LessThan(distance, best);
+            best = Vector256.Min(distance, best);
+            bestIndex = Vector256.ConditionalSelect(closer, index, bestIndex);
+            index += step;
+        }
+
+        // The smallest distance, then the lowest index holding it.
+        Vector256<int> smallest = Vector256.Min(best, Avx2.Shuffle(best, 0b10_11_00_01));
+        smallest = Vector256.Min(smallest, Avx2.Shuffle(smallest, 0b01_00_11_10));
+        smallest = Vector256.Min(smallest, Avx2.Permute2x128(smallest, smallest, 0x01));
+        Vector256<int> candidates = Vector256.ConditionalSelect(Vector256.Equals(best, smallest), bestIndex, Vector256.Create(int.MaxValue));
+        Vector256<int> lowest = Vector256.Min(candidates, Avx2.Shuffle(candidates, 0b10_11_00_01));
+        lowest = Vector256.Min(lowest, Avx2.Shuffle(lowest, 0b01_00_11_10));
+        lowest = Vector256.Min(lowest, Avx2.Permute2x128(lowest, lowest, 0x01));
+        return lowest.ToScalar();
+    }
+
+    /// <summary>Returns the first palette index at the smallest squared distance (the transparent entry excluded).</summary>
+    internal int NearestScalar(Rgba8 pixel)
     {
         int best = 0;
         int bestDistance = int.MaxValue;

@@ -74,9 +74,11 @@ internal sealed class GifWriter : IFormatWriter
         private readonly int _height;
         private readonly int _pixels;
         private readonly Rgba8[] _row;
-        private readonly ArrayBufferWriter<byte> _buffer = new(64 * 1024);
+        private StreamBufferWriter _buffer = null!;
         private readonly LzwEncoder _lzw = new();
+        private readonly Dictionary<int, Task<Frame>> _pending = [];
         private BuiltPalette? _global;
+        private PaletteMapper? _globalMapper;
 
         internal Encoding(Raster<TPixel> raster, GifWriterOptions options)
         {
@@ -90,12 +92,27 @@ internal sealed class GifWriter : IFormatWriter
 
         public void Dispose()
         {
+            foreach (Task<Frame> task in _pending.Values)
+            {
+                try
+                {
+                    task.GetAwaiter().GetResult().Dispose();
+                }
+                catch (Exception)
+                {
+                    // The encode already failed; this frame is not needed.
+                }
+            }
+
             ArrayPool<Rgba8>.Shared.Return(_row);
             _lzw.Dispose();
+            _buffer?.Dispose();
+            _globalMapper?.Dispose();
         }
 
         internal void Write(Stream output)
         {
+            _buffer = new StreamBufferWriter(output);
             int frames = _raster.FrameCount;
             bool animated = frames > 1;
             bool optimize = animated && _options.OptimizeFrames;
@@ -113,6 +130,7 @@ internal sealed class GifWriter : IFormatWriter
             if (global)
             {
                 _global = WithTransparentSlot(BuildPalette(0, frames, palette, reserve), optimize);
+                _globalMapper = new PaletteMapper(_global.Colors, _global.TransparentIndex, withAlpha: false, palette.AlphaThreshold);
             }
 
             WriteHeader(details);
@@ -126,11 +144,11 @@ internal sealed class GifWriter : IFormatWriter
                 WriteMetadata(details);
             }
 
-            Flush(output);
+            _buffer.Flush();
 
             // Each frame is planned from the next one: a frame is cleared after showing when its successor needs transparency
             // where it was opaque.
-            Frame current = Prepare(0, palette, reserve, optimize);
+            Frame current = Next(0, palette, reserve, optimize);
             Rgba8[] canvas = ArrayPool<Rgba8>.Shared.Rent(_pixels);
             Rgba8[] after = ArrayPool<Rgba8>.Shared.Rent(_pixels);
             try
@@ -140,7 +158,7 @@ internal sealed class GifWriter : IFormatWriter
                 Rect bounds = new(0, 0, _width, _height);
                 for (int i = 0; i < frames; i++)
                 {
-                    Frame? next = i + 1 < frames ? Prepare(i + 1, palette, reserve, optimize) : null;
+                    Frame? next = i + 1 < frames ? Next(i + 1, palette, reserve, optimize) : null;
                     canvas.AsSpan(0, _pixels).CopyTo(after);
                     Draw(current, bounds, after);
                     FrameDisposal disposal = FrameDisposal.None;
@@ -180,6 +198,7 @@ internal sealed class GifWriter : IFormatWriter
                 ArrayPool<Rgba8>.Shared.Return(after);
             }
 
+            _buffer.Flush();
             output.WriteByte(0x3B);
         }
 
@@ -200,9 +219,10 @@ internal sealed class GifWriter : IFormatWriter
 
         private BuiltPalette BuildPalette(int first, int count, PaletteOptions options, int reserve)
         {
+            // The builder is done with each row before asking for the next, so one buffer serves them all.
+            Rgba8[] row = new Rgba8[_width];
             return PaletteBuilder.Build(count * _height, r =>
             {
-                Rgba8[] row = new Rgba8[_width];
                 PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[first + (r / _height)].Row(r % _height), row);
                 return row;
             }, options, binaryAlpha: true, reserve);
@@ -224,9 +244,46 @@ internal sealed class GifWriter : IFormatWriter
         {
             BuiltPalette palette = _global ?? WithTransparentSlot(BuildPalette(index, 1, options, reserve), optimize);
             byte[] indices = ArrayPool<byte>.Shared.Rent(_pixels);
-            using PaletteMapper mapper = new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold);
-            FrameMapper.Map(_width, _height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[index].Row(y), row), palette, mapper, _options.Palette.Dither, indices.AsSpan(0, _pixels));
+            PaletteMapper mapper = _globalMapper ?? new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold);
+            try
+            {
+                FrameMapper.Map(_width, _height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[index].Row(y), row), palette, mapper, _options.Palette.Dither, indices.AsSpan(0, _pixels));
+            }
+            finally
+            {
+                if (_globalMapper is null)
+                {
+                    mapper.Dispose();
+                }
+            }
+
             return new Frame(index, palette, indices, _raster.Frames[index].Metadata.Delay);
+        }
+
+        /// <summary>
+        /// Returns frame <paramref name="index"/> mapped to its palette. With threads to spare, the frames after it are mapped on
+        /// other threads meanwhile, a few ahead, since each frame's palette and dithering do not depend on the others.
+        /// </summary>
+        private Frame Next(int index, PaletteOptions options, int reserve, bool optimize)
+        {
+            int ahead = Math.Min(_raster.Context.MaxParallelism, 8);
+            if (ahead <= 1)
+            {
+                return Prepare(index, options, reserve, optimize);
+            }
+
+            for (int k = index; k < Math.Min(_raster.FrameCount, index + ahead); k++)
+            {
+                if (!_pending.ContainsKey(k))
+                {
+                    int frame = k;
+                    _pending[k] = Task.Run(() => Prepare(frame, options, reserve, optimize));
+                }
+            }
+
+            Task<Frame> task = _pending[index];
+            _pending.Remove(index);
+            return task.GetAwaiter().GetResult();
         }
 
         private ReadOnlySpan<Rgba8> Row(int frame, int y)
@@ -475,18 +532,12 @@ internal sealed class GifWriter : IFormatWriter
                 }
 
                 _lzw.Encode(Math.Max(2, (_global ?? palette).Bits), rect.AsSpan(0, bounds.Width * bounds.Height), _buffer);
-                Flush(output);
+                _buffer.Flush();
             }
             finally
             {
                 ArrayPool<byte>.Shared.Return(rect);
             }
-        }
-
-        private void Flush(Stream output)
-        {
-            output.Write(_buffer.WrittenSpan);
-            _buffer.ResetWrittenCount();
         }
 
         /// <summary>A frame mapped to its palette.</summary>

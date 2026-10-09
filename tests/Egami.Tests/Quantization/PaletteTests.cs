@@ -92,6 +92,25 @@ public class PaletteTests(ITestOutputHelper output)
         Assert.Equal(mapper.Map(new Rgba8(128, 0, 0, 255)), mapper.Map(new Rgba8(131, 3, 3, 255)));
     }
 
+    [Theory]
+    [InlineData(3, false)]
+    [InlineData(17, false)]
+    [InlineData(256, false)]
+    [InlineData(100, true)]
+    public void VectorSearchEqualsScalar(int colors, bool withAlpha)
+    {
+        // Duplicated entries make ties, which both must break toward the lower index.
+        Random random = new(colors);
+        Rgba8[] palette = [.. Enumerable.Range(0, colors).Select(i => new Rgba8((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256)))];
+        palette[^1] = palette[0];
+        using PaletteMapper mapper = new(palette, withAlpha ? -1 : colors / 2, withAlpha, 128);
+        for (int i = 0; i < 20_000; i++)
+        {
+            Rgba8 pixel = new((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256));
+            Assert.Equal(mapper.NearestScalar(pixel), mapper.NearestVector(pixel));
+        }
+    }
+
     /// <summary>The quantized-palette PSNR baseline for the photo set, at 256 colors without dithering.</summary>
     [Theory]
     [InlineData("duck.png", 34.0)]
