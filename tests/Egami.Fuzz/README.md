@@ -24,6 +24,16 @@ mkdir -p seeds && cp tests/images/pngsuite/*.png seeds/
 AFL_SKIP_BIN_CHECK=1 afl-fuzz -i seeds -o findings -t 5000 -m none -- out/fuzz/Egami.Fuzz png
 ```
 
+## AFL++ in Docker (any OS)
+
+The Dockerfile here has the .NET SDK, AFL++ and SharpFuzz. `tools/fuzz-afl.py` starts one container per target instance;
+each copies the sources, publishes and instruments the harness and fuzzes for the given hours, with findings in `.cache/afl`.
+
+```sh
+docker build -t egami-fuzz -f tests/Egami.Fuzz/Dockerfile tests/Egami.Fuzz
+python tools/fuzz-afl.py 3 jpeg:6 exif       # 3 hours: six JPEG instances sharing a queue, one EXIF instance
+```
+
 ## Without AFL++ (any OS)
 
 A simple mutation fuzzer runs in process: random edits of the seeds for the given seconds, with crashes and inputs that take
