@@ -165,18 +165,25 @@ public class PngWriterTests
         using Raster<Rgba8> raster = Random<Rgba8>(20, 20, seed: 3);
         Assert.Throws<ArgumentException>(() => Save(raster, new PngWriterOptions { ColorType = PngColorType.Rgb, BitDepth = 4 }));
         Assert.Throws<ArgumentException>(() => Save(raster, new PngWriterOptions { BitDepth = 2 }));
-        Assert.Throws<InvalidOperationException>(() => Save(raster, new PngWriterOptions { ColorType = PngColorType.Palette }));
-        Assert.Throws<InvalidOperationException>(SavePaletteWithTooManyColors);
         Assert.Throws<ArgumentOutOfRangeException>(() => new PngWriterOptions { CompressionLevel = 10 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new PngWriterOptions { MaxIdatSize = 0 });
+    }
 
-        static byte[] SavePaletteWithTooManyColors()
-        {
-            using Raster<Rgba8> three = Raster.Create(3, 1, Rgba8.Red);
-            three.SetPixel(1, 0, Rgba8.Lime);
-            three.SetPixel(2, 0, Rgba8.Blue);
-            return Save(three, new PngWriterOptions { ColorType = PngColorType.Palette, BitDepth = 1 });
-        }
+    [Fact]
+    public void PalettesWithTooManyColorsAreBuilt()
+    {
+        // Since 1.4 a palette is built (PngWriterOptions.Palette) instead of throwing.
+        using Raster<Rgba8> raster = Random<Rgba8>(20, 20, seed: 3);
+        using Raster<Rgba8> many = Raster.Load<Rgba8>(Save(raster, new PngWriterOptions { ColorType = PngColorType.Palette }));
+        Assert.Equal(PngColorType.Palette, ((PngDetails)many.Metadata.FormatDetails!).ColorType);
+
+        using Raster<Rgba8> three = Raster.Create(3, 1, Rgba8.Red);
+        three.SetPixel(1, 0, Rgba8.Lime);
+        three.SetPixel(2, 0, Rgba8.Blue);
+        using Raster<Rgba8> two = Raster.Load<Rgba8>(Save(three, new PngWriterOptions { ColorType = PngColorType.Palette, BitDepth = 1 }));
+        PngDetails details = (PngDetails)two.Metadata.FormatDetails!;
+        Assert.Equal(1, details.BitDepth);
+        Assert.True(details.Palette.Length <= 2);
     }
 
     [Fact]

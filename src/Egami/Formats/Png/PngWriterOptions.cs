@@ -57,10 +57,23 @@ public sealed class PngWriterOptions : WriterOptions
     public static new PngWriterOptions Default { get; } = new();
 
     /// <summary>
-    /// Gets the color type to write, or <see langword="null"/> to follow the pixel type (or <see cref="Reduce"/>).
-    /// Writing a palette needs an image with at most 256 distinct colors.
+    /// Gets the color type to write, or <see langword="null"/> to follow the pixel type (or <see cref="Reduce"/>). A palette for an
+    /// image with more colors than the bit depth holds is built as <see cref="Palette"/> says.
     /// </summary>
     public PngColorType? ColorType { get; init; }
+
+    /// <summary>
+    /// Gets how a palette is built when <see cref="ColorType"/> is <see cref="PngColorType.Palette"/> and the image has more colors
+    /// than fit; partial alpha is kept in the palette. Defaults to <see cref="Quantization.PaletteOptions.Default"/>. Images whose
+    /// colors fit keep them exactly, and <see cref="Reduce"/> never quantizes.
+    /// </summary>
+    public Quantization.PaletteOptions Palette { get; init; } = Quantization.PaletteOptions.Default;
+
+    /// <summary>
+    /// Gets whether only the first frame is written. Defaults to <see langword="false"/>: a raster with more than one frame is
+    /// written as an APNG, which viewers without APNG support show as its first frame.
+    /// </summary>
+    public bool FirstFrameOnly { get; init; }
 
     /// <summary>
     /// Gets the bit depth to write, or <see langword="null"/> for the color type's natural depth.

@@ -253,8 +253,12 @@ Egami.Formats.Png.PngWriterOptions.CompressionStrategy.get -> Egami.Formats.Png.
 Egami.Formats.Png.PngWriterOptions.CompressionStrategy.init -> void
 Egami.Formats.Png.PngWriterOptions.Filter.get -> Egami.Formats.Png.PngFilterMode
 Egami.Formats.Png.PngWriterOptions.Filter.init -> void
+Egami.Formats.Png.PngWriterOptions.FirstFrameOnly.get -> bool
+Egami.Formats.Png.PngWriterOptions.FirstFrameOnly.init -> void
 Egami.Formats.Png.PngWriterOptions.MaxIdatSize.get -> int
 Egami.Formats.Png.PngWriterOptions.MaxIdatSize.init -> void
+Egami.Formats.Png.PngWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Png.PngWriterOptions.Palette.init -> void
 Egami.Formats.Png.PngWriterOptions.PngWriterOptions() -> void
 Egami.Formats.Png.PngWriterOptions.Reduce.get -> bool
 Egami.Formats.Png.PngWriterOptions.Reduce.init -> void
