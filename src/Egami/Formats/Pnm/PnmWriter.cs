@@ -18,6 +18,8 @@ internal sealed class PnmWriter : IFormatWriter
 
     private const int PlainLineLength = 70;
 
+    private const byte LineFeed = 0x0A;
+
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -121,13 +123,13 @@ internal sealed class PnmWriter : IFormatWriter
     {
         if (plain)
         {
-            PlainLine line = new(writer);
+            PlainLine line = new(writer.GetSpan((gray.Length * 2) + 1));
             foreach (byte g in gray)
             {
                 line.Add(g < 128 ? 1 : 0);
             }
 
-            line.End();
+            writer.Advance(line.End());
             return;
         }
 
@@ -149,13 +151,13 @@ internal sealed class PnmWriter : IFormatWriter
     {
         if (plain)
         {
-            PlainLine line = new(writer);
+            PlainLine line = new(writer.GetSpan((samples.Length * 4) + 1));
             foreach (byte s in samples)
             {
                 line.Add(s);
             }
 
-            line.End();
+            writer.Advance(line.End());
             return;
         }
 
@@ -167,60 +169,64 @@ internal sealed class PnmWriter : IFormatWriter
     {
         if (plain)
         {
-            PlainLine line = new(writer);
+            PlainLine line = new(writer.GetSpan((samples.Length * 6) + 1));
             foreach (ushort s in samples)
             {
                 line.Add(s);
             }
 
-            line.End();
+            writer.Advance(line.End());
             return;
         }
 
-        Span<byte> span = writer.GetSpan(samples.Length * 2);
-        for (int i = 0; i < samples.Length; i++)
+        Span<ushort> span = MemoryMarshal.Cast<byte, ushort>(writer.GetSpan(samples.Length * 2)[..(samples.Length * 2)]);
+        if (BitConverter.IsLittleEndian)
         {
-            BinaryPrimitives.WriteUInt16BigEndian(span[(2 * i)..], samples[i]);
+            BinaryPrimitives.ReverseEndianness(samples, span);
+        }
+        else
+        {
+            samples.CopyTo(span);
         }
 
         writer.Advance(samples.Length * 2);
     }
 
-    /// <summary>Writes numbers separated by spaces in lines of at most 70 characters; each image row starts a new line.</summary>
-    private ref struct PlainLine(StreamBufferWriter writer)
+    /// <summary>
+    /// Formats numbers separated by spaces into lines of at most 70 characters, straight into the output; each image row ends
+    /// its line. The span must hold every number with a separator, plus a newline.
+    /// </summary>
+    private ref struct PlainLine(Span<byte> output)
     {
+        private readonly Span<byte> _output = output;
+        private int _count;
         private int _length;
 
         public void Add(int value)
         {
-            Span<byte> digits = stackalloc byte[5];
-            value.TryFormat(digits, out int count, default, CultureInfo.InvariantCulture);
-            if (_length > 0 && _length + 1 + count > PlainLineLength)
-            {
-                Put((byte)'\n');
-                _length = 0;
-            }
-
+            int digits = value < 10 ? 1 : value < 100 ? 2 : value < 1000 ? 3 : value < 10000 ? 4 : 5;
             if (_length > 0)
             {
-                Put((byte)' ');
-                _length++;
+                bool wrap = _length + 1 + digits > PlainLineLength;
+                _output[_count++] = wrap ? LineFeed : (byte)' ';
+                _length = wrap ? 0 : _length + 1;
             }
 
-            digits[..count].CopyTo(writer.GetSpan(count));
-            writer.Advance(count);
-            _length += count;
+            for (int i = digits - 1; i >= 0; i--)
+            {
+                _output[_count + i] = (byte)('0' + (value % 10));
+                value /= 10;
+            }
+
+            _count += digits;
+            _length += digits;
         }
 
-        public readonly void End()
+        /// <summary>Ends the row's line and returns the bytes written.</summary>
+        public int End()
         {
-            Put((byte)'\n');
-        }
-
-        private readonly void Put(byte b)
-        {
-            writer.GetSpan(1)[0] = b;
-            writer.Advance(1);
+            _output[_count++] = LineFeed;
+            return _count;
         }
     }
 

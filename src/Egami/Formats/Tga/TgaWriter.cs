@@ -92,6 +92,8 @@ internal sealed class TgaWriter : IFormatWriter
             }
 
             byte[] row = ArrayPool<byte>.Shared.Rent(width * bpp);
+            uint[] keyBuffer = ArrayPool<uint>.Shared.Rent(width);
+            Span<uint> keys = keyBuffer.AsSpan(0, width);
             try
             {
                 for (int y = height - 1; y >= 0; y--)
@@ -115,7 +117,7 @@ internal sealed class TgaWriter : IFormatWriter
 
                     if (tga.Rle)
                     {
-                        position += WritePackets(writer, pixels, bpp);
+                        position += WritePackets(writer, pixels, bpp, keys);
                     }
                     else
                     {
@@ -126,6 +128,7 @@ internal sealed class TgaWriter : IFormatWriter
             finally
             {
                 ArrayPool<byte>.Shared.Return(row);
+                ArrayPool<uint>.Shared.Return(keyBuffer);
             }
 
             long extension = position;
@@ -155,16 +158,18 @@ internal sealed class TgaWriter : IFormatWriter
     }
 
     /// <summary>Writes one row as packets: a repeat packet for 2 or more equal pixels, raw packets between them, 128 pixels at most.</summary>
-    private static int WritePackets(StreamBufferWriter writer, ReadOnlySpan<byte> pixels, int bpp)
+    private static int WritePackets(StreamBufferWriter writer, ReadOnlySpan<byte> pixels, int bpp, Span<uint> keys)
     {
         int count = pixels.Length / bpp;
+        Pack(pixels, bpp, keys[..count]);
         Span<byte> output = writer.GetSpan(count * (bpp + 1));
         int n = 0;
         int x = 0;
         while (x < count)
         {
+            uint key = keys[x];
             int run = 1;
-            while (x + run < count && run < 128 && Same(pixels, x, x + run, bpp))
+            while (x + run < count && run < 128 && keys[x + run] == key)
             {
                 run++;
             }
@@ -179,7 +184,7 @@ internal sealed class TgaWriter : IFormatWriter
             }
 
             int raw = 1;
-            while (x + raw < count && raw < 128 && !(x + raw + 1 < count && Same(pixels, x + raw, x + raw + 1, bpp)))
+            while (x + raw < count && raw < 128 && !(x + raw + 1 < count && keys[x + raw] == keys[x + raw + 1]))
             {
                 raw++;
             }
@@ -194,9 +199,29 @@ internal sealed class TgaWriter : IFormatWriter
         return n;
     }
 
-    private static bool Same(ReadOnlySpan<byte> pixels, int a, int b, int bpp)
+    /// <summary>Packs each 1 to 4-byte pixel into a word, so runs compare in one instruction.</summary>
+    private static void Pack(ReadOnlySpan<byte> pixels, int bpp, Span<uint> keys)
     {
-        return pixels.Slice(a * bpp, bpp).SequenceEqual(pixels.Slice(b * bpp, bpp));
+        switch (bpp)
+        {
+            case 4:
+                MemoryMarshal.Cast<byte, uint>(pixels).CopyTo(keys);
+                break;
+            case 1:
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = pixels[i];
+                }
+
+                break;
+            default:
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = pixels[3 * i] | ((uint)pixels[(3 * i) + 1] << 8) | ((uint)pixels[(3 * i) + 2] << 16);
+                }
+
+                break;
+        }
     }
 
     /// <summary>Builds the 495-byte extension area: author, comments (four lines of 80 characters) and the alpha type.</summary>

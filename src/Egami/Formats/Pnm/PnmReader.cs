@@ -395,6 +395,7 @@ internal sealed class PnmReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly int _samples = checked(header.Width * header.Depth);
+        private readonly ByteReader? _text = header.Plain ? new ByteReader(input) : null;
         private bool _clamped;
 
         public void Run()
@@ -452,6 +453,7 @@ internal sealed class PnmReader : IFormatReader
                     }
                 }
 
+                _text?.Finish();
                 if (_clamped)
                 {
                     raster.Metadata.Warnings.Add($"Some samples are above the maxval {header.MaxValue}; they were clamped.");
@@ -478,6 +480,8 @@ internal sealed class PnmReader : IFormatReader
             }
             finally
             {
+                _text?.Finish();
+                _text?.Release();
                 ArrayPool<byte>.Shared.Return(bytes);
                 if (wide.Length > 0)
                 {
@@ -519,7 +523,7 @@ internal sealed class PnmReader : IFormatReader
                         byte b = NextNonSpace();
                         if (b is not ((byte)'0' or (byte)'1'))
                         {
-                            throw input.Corrupt(input.Position - 1, "A PBM sample is not 0 or 1.");
+                            throw input.Corrupt(_text!.Offset - 1, "A PBM sample is not 0 or 1.");
                         }
 
                         row[x] = b == '1' ? (byte)0 : (byte)255;
@@ -583,12 +587,18 @@ internal sealed class PnmReader : IFormatReader
             }
             else
             {
-                Span<byte> raw = bytes.AsSpan(0, _samples * 2);
-                input.ReadExactly(raw);
-                for (int x = 0; x < samples.Length; x++)
+                input.ReadExactly(MemoryMarshal.AsBytes(samples));
+                if (BitConverter.IsLittleEndian)
                 {
-                    int v = BinaryPrimitives.ReadUInt16BigEndian(raw[(2 * x)..]);
-                    samples[x] = (ushort)Clamp(v, max);
+                    BinaryPrimitives.ReverseEndianness(samples, samples);
+                }
+
+                if (max != 65535 && samples.IndexOfAnyInRange((ushort)(max + 1), ushort.MaxValue) >= 0)
+                {
+                    for (int x = 0; x < samples.Length; x++)
+                    {
+                        samples[x] = (ushort)Clamp(samples[x], max);
+                    }
                 }
             }
 
@@ -652,7 +662,7 @@ internal sealed class PnmReader : IFormatReader
             byte b;
             do
             {
-                b = input.ReadByte();
+                b = _text!.Next();
             }
             while (IsSpace(b));
             return b;
@@ -660,17 +670,58 @@ internal sealed class PnmReader : IFormatReader
 
         private int ReadPlainNumber()
         {
-            byte b = NextNonSpace();
-            if (b is < (byte)'0' or > (byte)'9')
+            ByteReader text = _text!;
+            ReadOnlySpan<byte> window = text.Window(16);
+            int i = 0;
+            while (true)
             {
-                throw input.Corrupt(input.Position - 1, "A sample is not a number.");
+                while (i < window.Length && IsSpace(window[i]))
+                {
+                    i++;
+                }
+
+                if (i < window.Length)
+                {
+                    break;
+                }
+
+                text.Advance(i);
+                window = text.Window(16);
+                i = 0;
+                if (window.IsEmpty)
+                {
+                    throw new CorruptDataException(PnmFormat.Info.Name, text.Offset, "The data ends unexpectedly.") { IsTruncation = true };
+                }
             }
 
-            int value = b - '0';
-            while (input.Peek(1) is [>= (byte)'0' and <= (byte)'9'] digit)
+            if (window.Length - i < 12)
             {
-                value = Math.Min((value * 10) + digit[0] - '0', 1_000_000);
-                input.ReadByte();
+                // Keep a whole number in one window.
+                text.Advance(i);
+                window = text.Window(16);
+                i = 0;
+            }
+
+            if ((uint)(window[i] - '0') > 9)
+            {
+                throw input.Corrupt(text.Offset + i, "A sample is not a number.");
+            }
+
+            int value = 0;
+            for (; i < window.Length && (uint)(window[i] - '0') <= 9; i++)
+            {
+                value = Math.Min((value * 10) + window[i] - '0', 1_000_000);
+            }
+
+            text.Advance(i);
+            if (i == window.Length)
+            {
+                // More digits may follow in the next window.
+                for (int d = text.Peek(); (uint)(d - '0') <= 9; d = text.Peek())
+                {
+                    value = Math.Min((value * 10) + d - '0', 1_000_000);
+                    text.Next();
+                }
             }
 
             return value;

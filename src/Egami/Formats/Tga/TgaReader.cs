@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 
 using Egami.Metadata;
@@ -394,6 +395,7 @@ internal sealed class TgaReader : IFormatReader
     private sealed class Decoder<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        private readonly ByteReader? _bytes = header.Rle ? new ByteReader(input) : null;
         private int _remaining;
         private bool _repeat;
         private bool _pastPalette;
@@ -406,12 +408,44 @@ internal sealed class TgaReader : IFormatReader
             Bgra8[] color = ArrayPool<Bgra8>.Shared.Rent(width);
             GrayAlpha8[] gray = ArrayPool<GrayAlpha8>.Shared.Rent(width);
             Span<byte> packet = stackalloc byte[4];
+            bool direct = !header.Gray && !header.Mapped && !header.RightToLeft
+                && ((header.Depth == 32 && typeof(TPixel) == typeof(Bgra8)) || (header.Depth == 24 && typeof(TPixel) == typeof(Bgr8)));
             int row = 0;
             try
             {
                 for (; row < header.Height; row++)
                 {
                     input.CancellationToken.ThrowIfCancellationRequested();
+                    if (direct)
+                    {
+                        // The stored layout is the target's: read straight into the row.
+                        Span<TPixel> row0 = raster.Row(header.TopDown ? row : header.Height - 1 - row);
+                        Span<byte> into = MemoryMarshal.AsBytes(row0);
+                        if (header.Rle)
+                        {
+                            ReadPackets(into, packet[..bpp]);
+                        }
+                        else
+                        {
+                            input.ReadExactly(into);
+                        }
+
+                        if (bpp == 4)
+                        {
+                            Span<Bgra8> pixels = MemoryMarshal.Cast<byte, Bgra8>(into);
+                            if (!header.UsesAlpha)
+                            {
+                                SetOpaque(MemoryMarshal.Cast<byte, uint>(into));
+                            }
+                            else if (header.AlphaType == TgaAlphaType.Premultiplied)
+                            {
+                                Unpremultiply(pixels);
+                            }
+                        }
+
+                        continue;
+                    }
+
                     Span<byte> stored = bytes.AsSpan(0, width * bpp);
                     if (header.Rle)
                     {
@@ -452,7 +486,10 @@ internal sealed class TgaReader : IFormatReader
                     Problem("A run-length packet goes past the end of the image; the rest of it was ignored.");
                     if (!_repeat)
                     {
-                        input.Skip(_remaining * bpp);
+                        for (int i = 0; i < _remaining * bpp; i++)
+                        {
+                            _bytes!.Next();
+                        }
                     }
                 }
 
@@ -473,6 +510,8 @@ internal sealed class TgaReader : IFormatReader
             }
             finally
             {
+                _bytes?.Finish();
+                _bytes?.Release();
                 ArrayPool<byte>.Shared.Return(bytes);
                 ArrayPool<Bgra8>.Shared.Return(color);
                 ArrayPool<GrayAlpha8>.Shared.Return(gray);
@@ -521,6 +560,26 @@ internal sealed class TgaReader : IFormatReader
             }
         }
 
+        private static void SetOpaque(Span<uint> pixels)
+        {
+            int x = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                Span<Vector256<uint>> vectors = MemoryMarshal.Cast<uint, Vector256<uint>>(pixels);
+                foreach (ref Vector256<uint> v in vectors)
+                {
+                    v |= Vector256.Create(0xFF00_0000u);
+                }
+
+                x = vectors.Length * Vector256<uint>.Count;
+            }
+
+            for (; x < pixels.Length; x++)
+            {
+                pixels[x] |= 0xFF00_0000;
+            }
+        }
+
         private static void Unpremultiply(Span<Bgra8> pixels)
         {
             foreach (ref Bgra8 p in pixels)
@@ -559,27 +618,35 @@ internal sealed class TgaReader : IFormatReader
             {
                 if (_remaining == 0)
                 {
-                    byte b = input.ReadByte();
+                    byte b = _bytes!.Next();
                     _remaining = (b & 0x7F) + 1;
                     _repeat = (b & 0x80) != 0;
                     if (_repeat)
                     {
-                        input.ReadExactly(pixel);
+                        _bytes.Take(bpp).CopyTo(pixel);
                     }
                 }
 
                 int n = Math.Min(_remaining, width - x);
                 Span<byte> target = stored.Slice(x * bpp, n * bpp);
-                if (_repeat)
+                if (!_repeat)
+                {
+                    _bytes!.Take(n * bpp).CopyTo(target);
+                }
+                else if (bpp == 4)
+                {
+                    MemoryMarshal.Cast<byte, uint>(target).Fill(MemoryMarshal.Read<uint>(pixel));
+                }
+                else if (bpp == 1)
+                {
+                    target.Fill(pixel[0]);
+                }
+                else
                 {
                     for (int i = 0; i < n; i++)
                     {
                         pixel.CopyTo(target[(i * bpp)..]);
                     }
-                }
-                else
-                {
-                    input.ReadExactly(target);
                 }
 
                 x += n;

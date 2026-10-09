@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Egami.Metadata;
@@ -39,6 +40,7 @@ internal sealed class QoiWriter : IFormatWriter
 
             Span<uint> index = stackalloc uint[64];
             index.Clear();
+            ref uint idx = ref MemoryMarshal.GetReference(index);
             uint previous = 0xFF00_0000;
             int run = 0;
             for (int y = 0; y < height; y++)
@@ -55,17 +57,19 @@ internal sealed class QoiWriter : IFormatWriter
 
                 // At most five bytes a pixel, plus the end marker after the last row.
                 Span<byte> span = writer.GetSpan((width * 5) + 8);
+                ref byte dst = ref MemoryMarshal.GetReference(span);
+                ref uint src = ref MemoryMarshal.GetReference(pixels);
                 int n = 0;
                 bool lastRow = y == height - 1;
                 for (int x = 0; x < width; x++)
                 {
-                    uint px = pixels[x];
+                    uint px = Unsafe.Add(ref src, x);
                     if (px == previous)
                     {
                         run++;
                         if (run == 62 || (lastRow && x == width - 1))
                         {
-                            span[n++] = (byte)(QoiReader.OpRun | (run - 1));
+                            Unsafe.Add(ref dst, n++) = (byte)(QoiReader.OpRun | (run - 1));
                             run = 0;
                         }
 
@@ -74,18 +78,19 @@ internal sealed class QoiWriter : IFormatWriter
 
                     if (run > 0)
                     {
-                        span[n++] = (byte)(QoiReader.OpRun | (run - 1));
+                        Unsafe.Add(ref dst, n++) = (byte)(QoiReader.OpRun | (run - 1));
                         run = 0;
                     }
 
                     int slot = QoiReader.Hash(px);
-                    if (index[slot] == px)
+                    ref uint entry = ref Unsafe.Add(ref idx, slot);
+                    if (entry == px)
                     {
-                        span[n++] = (byte)(QoiReader.OpIndex | slot);
+                        Unsafe.Add(ref dst, n++) = (byte)(QoiReader.OpIndex | slot);
                     }
                     else
                     {
-                        index[slot] = px;
+                        entry = px;
                         if ((px >> 24) == (previous >> 24))
                         {
                             int vr = (sbyte)(byte)(px - previous);
@@ -93,28 +98,28 @@ internal sealed class QoiWriter : IFormatWriter
                             int vb = (sbyte)(byte)((px >> 16) - (previous >> 16));
                             int vgr = (sbyte)(vr - vg);
                             int vgb = (sbyte)(vb - vg);
-                            if (vr is > -3 and < 2 && vg is > -3 and < 2 && vb is > -3 and < 2)
+                            if ((uint)(vr + 2) < 4 && (uint)(vg + 2) < 4 && (uint)(vb + 2) < 4)
                             {
-                                span[n++] = (byte)(QoiReader.OpDiff | ((vr + 2) << 4) | ((vg + 2) << 2) | (vb + 2));
+                                Unsafe.Add(ref dst, n++) = (byte)(QoiReader.OpDiff | ((vr + 2) << 4) | ((vg + 2) << 2) | (vb + 2));
                             }
-                            else if (vgr is > -9 and < 8 && vg is > -33 and < 32 && vgb is > -9 and < 8)
+                            else if ((uint)(vgr + 8) < 16 && (uint)(vg + 32) < 64 && (uint)(vgb + 8) < 16)
                             {
-                                span[n++] = (byte)(QoiReader.OpLuma | (vg + 32));
-                                span[n++] = (byte)(((vgr + 8) << 4) | (vgb + 8));
+                                Unsafe.Add(ref dst, n) = (byte)(QoiReader.OpLuma | (vg + 32));
+                                Unsafe.Add(ref dst, n + 1) = (byte)(((vgr + 8) << 4) | (vgb + 8));
+                                n += 2;
                             }
                             else
                             {
-                                span[n++] = QoiReader.OpRgb;
-                                span[n++] = (byte)px;
-                                span[n++] = (byte)(px >> 8);
-                                span[n++] = (byte)(px >> 16);
+                                // The opcode byte, then red, green and blue: the pixel's low three bytes shifted up one.
+                                Unsafe.WriteUnaligned(ref Unsafe.Add(ref dst, n), QoiReader.OpRgb | (px << 8));
+                                n += 4;
                             }
                         }
                         else
                         {
-                            span[n++] = QoiReader.OpRgba;
-                            BinaryPrimitives.WriteUInt32LittleEndian(span[n..], px);
-                            n += 4;
+                            Unsafe.Add(ref dst, n) = QoiReader.OpRgba;
+                            Unsafe.WriteUnaligned(ref Unsafe.Add(ref dst, n + 1), px);
+                            n += 5;
                         }
                     }
 

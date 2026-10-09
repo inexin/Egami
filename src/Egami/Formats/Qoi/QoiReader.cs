@@ -126,6 +126,7 @@ internal sealed class QoiReader : IFormatReader
         uint[]? rented = direct ? null : ArrayPool<uint>.Shared.Rent(width);
         Span<uint> index = stackalloc uint[64];
         index.Clear();
+        ref uint idx = ref MemoryMarshal.GetReference(index);
         uint px = 0xFF00_0000;
         int run = 0;
         ReadOnlySpan<byte> data = input.Peek(64 * 1024);
@@ -148,13 +149,60 @@ internal sealed class QoiReader : IFormatReader
                         continue;
                     }
 
-                    if (data.Length - pos < 5)
+                    if (data.Length - pos >= 5)
                     {
-                        input.Skip(pos);
-                        data = input.Peek(64 * 1024);
-                        pos = 0;
+                        // Every chunk is at most 5 bytes, so up to the last 5 bytes of the window no read needs a check.
+                        ref byte src = ref MemoryMarshal.GetReference(data);
+                        ref uint dst = ref MemoryMarshal.GetReference(row);
+                        int limit = data.Length - 5;
+                        while (pos <= limit && x < width)
+                        {
+                            uint b = Unsafe.Add(ref src, pos++);
+                            if (b < OpLuma)
+                            {
+                                px = b < OpDiff
+                                    ? Unsafe.Add(ref idx, (nint)b)
+                                    : Add(px, (int)((b >> 4) & 3) - 2, (int)((b >> 2) & 3) - 2, (int)(b & 3) - 2);
+                            }
+                            else if (b < OpRun)
+                            {
+                                int dg = (int)(b & 0x3F) - 32;
+                                uint next = Unsafe.Add(ref src, pos++);
+                                px = Add(px, dg - 8 + (int)(next >> 4), dg, dg - 8 + (int)(next & 0x0F));
+                            }
+                            else if (b < OpRgb)
+                            {
+                                run = (int)(b & 0x3F) + 1;
+                                Unsafe.Add(ref idx, Hash(px)) = px;
+                                break;
+                            }
+                            else if (b == OpRgb)
+                            {
+                                px = (px & 0xFF00_0000) | Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref src, pos)) & 0x00FF_FFFF;
+                                pos += 3;
+                            }
+                            else
+                            {
+                                px = Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref src, pos));
+                                pos += 4;
+                            }
+
+                            Unsafe.Add(ref idx, Hash(px)) = px;
+                            Unsafe.Add(ref dst, x++) = px;
+                        }
+
+                        continue;
                     }
 
+                    input.Skip(pos);
+                    data = input.Peek(64 * 1024);
+                    pos = 0;
+                    if (data.Length >= 5)
+                    {
+                        continue;
+                    }
+
+                    // The last few bytes of the data: one chunk at a time, each checked for room.
                     if (pos >= data.Length || (data[pos] == OpRgb && data.Length - pos < 4) || (data[pos] == OpRgba && data.Length - pos < 5)
                         || ((data[pos] & 0xC0) == OpLuma && data.Length - pos < 2))
                     {
@@ -163,34 +211,34 @@ internal sealed class QoiReader : IFormatReader
                         return;
                     }
 
-                    byte b = data[pos++];
-                    if (b == OpRgb)
+                    byte c = data[pos++];
+                    if (c == OpRgb)
                     {
                         px = (px & 0xFF00_0000) | data[pos] | ((uint)data[pos + 1] << 8) | ((uint)data[pos + 2] << 16);
                         pos += 3;
                     }
-                    else if (b == OpRgba)
+                    else if (c == OpRgba)
                     {
                         px = BinaryPrimitives.ReadUInt32LittleEndian(data[pos..]);
                         pos += 4;
                     }
                     else
                     {
-                        switch (b & 0xC0)
+                        switch (c & 0xC0)
                         {
                             case OpIndex:
-                                px = index[b];
+                                px = index[c];
                                 break;
                             case OpDiff:
-                                px = Add(px, ((b >> 4) & 3) - 2, ((b >> 2) & 3) - 2, (b & 3) - 2);
+                                px = Add(px, ((c >> 4) & 3) - 2, ((c >> 2) & 3) - 2, (c & 3) - 2);
                                 break;
                             case OpLuma:
-                                int dg = (b & 0x3F) - 32;
+                                int dg = (c & 0x3F) - 32;
                                 byte next = data[pos++];
                                 px = Add(px, dg - 8 + (next >> 4), dg, dg - 8 + (next & 0x0F));
                                 break;
                             default:
-                                run = (b & 0x3F) + 1;
+                                run = (c & 0x3F) + 1;
                                 break;
                         }
                     }

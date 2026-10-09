@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 using Egami.Metadata;
 using Egami.Pixels;
@@ -525,6 +526,8 @@ internal sealed class BmpReader : IFormatReader
     private sealed class RowDecoder<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        private uint[]? _table;
+
         public void Run()
         {
             int width = header.Width;
@@ -550,6 +553,22 @@ internal sealed class BmpReader : IFormatReader
                         continue;
                     }
 
+                    if (standard32 && typeof(TPixel) == typeof(Bgra8))
+                    {
+                        Span<uint> words = MemoryMarshal.Cast<TPixel, uint>(target);
+                        input.ReadExactly(MemoryMarshal.AsBytes(words));
+                        if (header.Masks.Alpha == 0)
+                        {
+                            SetOpaque(words);
+                        }
+                        else if (!anyAlpha)
+                        {
+                            anyAlpha = words.IndexOfAnyInRange(0x0100_0000u, uint.MaxValue) >= 0;
+                        }
+
+                        continue;
+                    }
+
                     Span<byte> bytes = row.AsSpan(0, stride);
                     input.ReadExactly(bytes);
                     Span<Bgra8> pixels = natural.AsSpan(0, width);
@@ -562,10 +581,7 @@ internal sealed class BmpReader : IFormatReader
                             MemoryMarshal.Cast<byte, Bgra8>(bytes[..used]).CopyTo(pixels);
                             if (header.Masks.Alpha == 0)
                             {
-                                foreach (ref Bgra8 p in pixels)
-                                {
-                                    p.A = 255;
-                                }
+                                SetOpaque(MemoryMarshal.Cast<Bgra8, uint>(pixels));
                             }
                             else if (!anyAlpha)
                             {
@@ -621,28 +637,77 @@ internal sealed class BmpReader : IFormatReader
         /// <summary>Looks up 1, 2, 4 or 8-bit indices in the palette; returns whether any was past its end.</summary>
         private bool Indices(ReadOnlySpan<byte> bytes, Span<Bgra8> pixels)
         {
-            Bgr8[] palette = header.Palette;
+            ReadOnlySpan<uint> table = Table();
+            Span<uint> output = MemoryMarshal.Cast<Bgra8, uint>(pixels);
             int bits = header.Bits;
+            int count = header.Palette.Length;
+            bool past = false;
+            if (bits == 8)
+            {
+                for (int x = 0; x < output.Length; x++)
+                {
+                    output[x] = table[bytes[x]];
+                }
+
+                return count < 256 && bytes[..output.Length].IndexOfAnyInRange((byte)count, (byte)255) >= 0;
+            }
+
             int perByte = 8 / bits;
             int mask = (1 << bits) - 1;
-            bool past = false;
-            for (int x = 0; x < pixels.Length; x++)
+            int x0 = 0;
+            for (int i = 0; x0 < output.Length; i++)
             {
-                int shift = 8 - (bits * ((x % perByte) + 1));
-                int index = (bytes[x / perByte] >> shift) & mask;
-                if (index < palette.Length)
+                int b = bytes[i];
+                int n = Math.Min(perByte, output.Length - x0);
+                for (int k = 0; k < n; k++)
                 {
-                    Bgr8 c = palette[index];
-                    pixels[x] = new Bgra8(c.B, c.G, c.R, 255);
+                    int index = (b >> (8 - (bits * (k + 1)))) & mask;
+                    past |= index >= count;
+                    output[x0 + k] = table[index];
                 }
-                else
-                {
-                    pixels[x] = new Bgra8(0, 0, 0, 255);
-                    past = true;
-                }
+
+                x0 += n;
             }
 
             return past;
+        }
+
+        /// <summary>Sets the top byte of every packed pixel to 255.</summary>
+        private static void SetOpaque(Span<uint> pixels)
+        {
+            int x = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                Span<Vector256<uint>> vectors = MemoryMarshal.Cast<uint, Vector256<uint>>(pixels);
+                Vector256<uint> alpha = Vector256.Create(0xFF00_0000u);
+                foreach (ref Vector256<uint> v in vectors)
+                {
+                    v |= alpha;
+                }
+
+                x = vectors.Length * Vector256<uint>.Count;
+            }
+
+            for (; x < pixels.Length; x++)
+            {
+                pixels[x] |= 0xFF00_0000;
+            }
+        }
+
+        /// <summary>Gets the palette as 256 packed BGRA values, opaque, black past its end.</summary>
+        private uint[] Table()
+        {
+            if (_table is null)
+            {
+                _table = new uint[256];
+                for (int i = 0; i < 256; i++)
+                {
+                    Bgr8 c = i < header.Palette.Length ? header.Palette[i] : default;
+                    _table[i] = c.B | ((uint)c.G << 8) | ((uint)c.R << 16) | 0xFF00_0000;
+                }
+            }
+
+            return _table;
         }
 
         /// <summary>A 32-bit file whose fourth byte is 0 everywhere loads opaque.</summary>
@@ -670,6 +735,7 @@ internal sealed class BmpReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly Bgr8[] _row = ArrayPool<Bgr8>.Shared.Rent(header.Width);
+        private readonly ByteReader _bytes = new(input);
         private int _fileRow;
         private int _x;
         private bool _clipped;
@@ -684,8 +750,8 @@ internal sealed class BmpReader : IFormatReader
                 while (_fileRow < header.Height)
                 {
                     input.CancellationToken.ThrowIfCancellationRequested();
-                    int count = input.ReadByte();
-                    int value = input.ReadByte();
+                    int count = _bytes.Next();
+                    int value = _bytes.Next();
                     if (count > 0)
                     {
                         Run(count, value);
@@ -705,8 +771,8 @@ internal sealed class BmpReader : IFormatReader
 
                             break;
                         case 2:
-                            int dx = input.ReadByte();
-                            int dy = input.ReadByte();
+                            int dx = _bytes.Next();
+                            int dy = _bytes.Next();
                             for (int i = 0; i < dy && _fileRow < header.Height; i++)
                             {
                                 int x = _x;
@@ -745,6 +811,8 @@ internal sealed class BmpReader : IFormatReader
             }
             finally
             {
+                _bytes.Finish();
+                _bytes.Release();
                 ArrayPool<Bgr8>.Shared.Return(_row);
             }
         }
@@ -761,7 +829,7 @@ internal sealed class BmpReader : IFormatReader
                     Fill(count, Color(value >> 4), Color(value & 0x0F));
                     break;
                 default:
-                    Bgr8 bgr = new((byte)value, input.ReadByte(), input.ReadByte());
+                    Bgr8 bgr = new((byte)value, _bytes.Next(), _bytes.Next());
                     Fill(count, bgr, bgr);
                     break;
             }
@@ -773,18 +841,18 @@ internal sealed class BmpReader : IFormatReader
             switch (header.Compression)
             {
                 case BmpCompression.Rle8:
+                    ReadOnlySpan<byte> indices = _bytes.Take(count + (count & 1));
                     for (int i = 0; i < count; i++)
                     {
-                        Put(Color(input.ReadByte()));
+                        Put(Color(indices[i]));
                     }
 
-                    bytes = count;
-                    break;
+                    return;
                 case BmpCompression.Rle4:
                     bytes = (count + 1) / 2;
                     for (int i = 0; i < bytes; i++)
                     {
-                        int pair = input.ReadByte();
+                        int pair = _bytes.Next();
                         Put(Color(pair >> 4));
                         if ((2 * i) + 1 < count)
                         {
@@ -796,7 +864,7 @@ internal sealed class BmpReader : IFormatReader
                 default:
                     for (int i = 0; i < count; i++)
                     {
-                        byte b = input.ReadByte(), g = input.ReadByte(), r = input.ReadByte();
+                        byte b = _bytes.Next(), g = _bytes.Next(), r = _bytes.Next();
                         Put(new Bgr8(b, g, r));
                     }
 
@@ -806,7 +874,7 @@ internal sealed class BmpReader : IFormatReader
 
             if ((bytes & 1) != 0)
             {
-                input.ReadByte();
+                _bytes.Next();
             }
         }
 
@@ -823,6 +891,13 @@ internal sealed class BmpReader : IFormatReader
 
         private void Fill(int count, Bgr8 even, Bgr8 odd)
         {
+            if (even.Equals(odd) && _x + count <= header.Width)
+            {
+                _row.AsSpan(_x, count).Fill(even);
+                _x += count;
+                return;
+            }
+
             for (int i = 0; i < count; i++)
             {
                 Put((i & 1) == 0 ? even : odd);
