@@ -170,6 +170,13 @@ internal sealed class PaletteMapper : IDisposable
 
     internal int TransparentIndex => _transparent;
 
+    /// <summary>Gets whether alpha takes part in the distance.</summary>
+    internal bool WithAlpha => _withAlpha;
+
+    /// <summary>Returns whether a pixel counts as transparent: fully so when alpha is kept, below the threshold otherwise.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool IsTransparent(Rgba8 pixel) => _withAlpha ? pixel.A == 0 : pixel.A < _threshold;
+
     /// <summary>Returns the index for <paramref name="pixel"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Map(Rgba8 pixel)
