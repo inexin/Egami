@@ -1,5 +1,6 @@
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Quantization;
 
 namespace Egami.Formats.Bmp;
 
@@ -15,6 +16,7 @@ public static class BmpFormat
         SignatureLength = 18,
         Matches = BmpReader.Matches,
         Reader = BmpReader.Instance,
+        Writer = BmpWriter.Instance,
     };
 }
 
@@ -92,4 +94,45 @@ public sealed class BmpDetails : FormatDetails
             RenderingIntent = RenderingIntent,
         };
     }
+}
+
+/// <summary>The pixel layout a BMP is written with.</summary>
+public enum BmpBits
+{
+    /// <summary>24-bit when every pixel is opaque, else 32-bit with alpha.</summary>
+    Auto,
+
+    /// <summary>A 2-color palette.</summary>
+    Indexed1,
+
+    /// <summary>A 4-color palette, a Windows CE layout many desktop readers cannot open.</summary>
+    Indexed2,
+
+    /// <summary>A palette of up to 16 colors.</summary>
+    Indexed4,
+
+    /// <summary>A palette of up to 256 colors.</summary>
+    Indexed8,
+
+    /// <summary>24-bit blue, green and red; alpha is dropped.</summary>
+    Bgr24,
+
+    /// <summary>32-bit blue, green, red and alpha, with a V4 header and bit-field masks.</summary>
+    Bgra32,
+}
+
+/// <summary>Options for writing BMP.</summary>
+public sealed class BmpWriterOptions : WriterOptions
+{
+    /// <summary>Gets the default options.</summary>
+    public static new BmpWriterOptions Default { get; } = new();
+
+    /// <summary>Gets the pixel layout. Defaults to <see cref="BmpBits.Auto"/>.</summary>
+    public BmpBits Bits { get; init; }
+
+    /// <summary>
+    /// Gets how a palette is built for the indexed layouts when the image has more colors than fit: the color limit (capped at
+    /// the layout's) and dithering. Alpha is dropped first, since BMP palettes are opaque.
+    /// </summary>
+    public PaletteOptions Palette { get; init; } = PaletteOptions.Default;
 }

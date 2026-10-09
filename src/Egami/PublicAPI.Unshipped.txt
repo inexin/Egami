@@ -24,6 +24,14 @@ Egami.EgamiContext.Memory.init -> void
 Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo! format) -> Egami.EgamiContext!
 Egami.EgamiException
 Egami.EgamiException.EgamiException(string! message, System.Exception? innerException = null) -> void
+Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Auto = 0 -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Bgr24 = 5 -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Bgra32 = 6 -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Indexed1 = 1 -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Indexed2 = 2 -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Indexed4 = 3 -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpBits.Indexed8 = 4 -> Egami.Formats.Bmp.BmpBits
 Egami.Formats.Bmp.BmpCompression
 Egami.Formats.Bmp.BmpCompression.AlphaBitfields = 5 -> Egami.Formats.Bmp.BmpCompression
 Egami.Formats.Bmp.BmpCompression.Bitfields = 4 -> Egami.Formats.Bmp.BmpCompression
@@ -54,6 +62,12 @@ Egami.Formats.Bmp.BmpDetails.RenderingIntent.set -> void
 Egami.Formats.Bmp.BmpDetails.TopDown.get -> bool
 Egami.Formats.Bmp.BmpDetails.TopDown.set -> void
 Egami.Formats.Bmp.BmpFormat
+Egami.Formats.Bmp.BmpWriterOptions
+Egami.Formats.Bmp.BmpWriterOptions.Bits.get -> Egami.Formats.Bmp.BmpBits
+Egami.Formats.Bmp.BmpWriterOptions.Bits.init -> void
+Egami.Formats.Bmp.BmpWriterOptions.BmpWriterOptions() -> void
+Egami.Formats.Bmp.BmpWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Bmp.BmpWriterOptions.Palette.init -> void
 Egami.Formats.EgamiInput
 Egami.Formats.EgamiInput.CancellationToken.get -> System.Threading.CancellationToken
 Egami.Formats.EgamiInput.Context.get -> Egami.EgamiContext!
@@ -971,6 +985,7 @@ static Egami.EgamiContext.Default.get -> Egami.EgamiContext!
 static Egami.EgamiContext.operator !=(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
 static Egami.EgamiContext.operator ==(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
 static Egami.Formats.Bmp.BmpFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Bmp.BmpWriterOptions.Default.get -> Egami.Formats.Bmp.BmpWriterOptions!
 static Egami.Formats.FormatInfo.operator !=(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
 static Egami.Formats.FormatInfo.operator ==(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
 static Egami.Formats.Gif.GifApplicationExtension.operator !=(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool

@@ -151,7 +151,7 @@ public sealed class FormatPipelineTests : IDisposable
     {
         using Raster<Rgba8> raster = Sample();
         using MemoryStream stream = new();
-        Assert.Throws<UnsupportedFormatException>(() => raster.Save(stream, "bmp"));
+        Assert.Throws<UnsupportedFormatException>(() => raster.Save(stream, "xyz"));
         Assert.Throws<UnsupportedFormatException>(() => raster.Save(Path.Combine(_directory, "no-extension")));
         Assert.Throws<UnsupportedFormatException>(() => raster.Save(stream, TestFormat.Info with { Writer = null }));
     }
