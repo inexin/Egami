@@ -21,6 +21,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Tests" />
     <InternalsVisibleTo Include="Egami.Benchmarks" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
   </ItemGroup>
 
 </Project>

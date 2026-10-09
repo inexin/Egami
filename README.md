@@ -7,7 +7,7 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET that loa
 - **Safe on untrusted files**: size limits are checked before allocating, and readers are fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
-> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations; Phase 1.3 adds JPEG reading and writing, typed EXIF and `AutoOrient`.
+> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations; Phase 1.3 adds JPEG reading and writing, typed EXIF and `AutoOrient`; Phase 1.4 adds animation: GIF, APNG and editable frames.
 
 ## Quick start
 
@@ -141,6 +141,50 @@ thumb.Apply(ops => ops.AutoOrient().Fit(256, 256));
 thumb.Save("thumb.jpg", new JpegWriterOptions { Quality = 80 });
 ```
 
+### Animations
+
+A raster holds one or more frames, all the size of the raster. GIF and APNG files load with every frame composited to full
+size, as a browser shows them; the frame list can be edited, and saving a raster with more than one frame as GIF or PNG writes
+an animation.
+
+```csharp
+using Egami.Formats.Gif;
+using Egami.Metadata;
+
+using Raster<Rgba8> anim = Raster.Load<Rgba8>("clip.gif");
+Console.WriteLine($"{anim.FrameCount} frames, plays {anim.Metadata.LoopCount} times (0 = forever)");
+
+anim.Frames.RemoveAt(0);                                   // frames are copied in, moved and removed
+anim.Frames.Add(anim.Frames[0]).Metadata.Delay = TimeSpan.FromMilliseconds(500);
+anim.Frames.Move(anim.FrameCount - 1, 0);
+anim.Apply(ops => ops.Fit(320, 320));                      // operations run on every frame
+
+anim.Save("clip-small.gif");                               // or .png for an APNG
+using Raster<Rgba8> still = anim.CopyFrame(0);             // one frame as its own raster
+
+// Only the first frame, decoding nothing after it.
+using Raster first = Raster.Load("clip.gif", options: new ReaderOptions { Frames = ..1 });
+```
+
+Writers work out each frame's stored rectangle, disposal and blend from the pixels, so edited animations stay small.
+
+### Writing GIF
+
+GIF holds at most 256 colors per frame. Images with few enough colors keep them exactly; others get a palette from Wu's
+quantizer, with Floyd–Steinberg dithering by default.
+
+```csharp
+using Egami.Quantization;
+
+photo.Save(stream, GifFormat.Info, new GifWriterOptions
+{
+    Palette = new PaletteOptions { MaxColors = 128, Dither = DitherMode.Ordered },   // FloydSteinberg, Ordered or None
+    PaletteScope = GifPaletteScope.PerFrame,   // Auto (default): one table when all frames fit, else one per frame
+});
+```
+
+The same `PaletteOptions` build a palette for `PngWriterOptions { ColorType = PngColorType.Palette }`, keeping partial alpha.
+
 ### Operations
 
 Record a chain in a lambda: `Apply` changes the raster in place, `Derive` returns a new one and leaves the source untouched.
@@ -195,8 +239,10 @@ sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linea
 
 | Format | Read | Write |
 | --- | --- | --- |
-| PNG | All color types and bit depths, interlaced, transparency, metadata | All color types and bit depths, adaptive filtering |
+| PNG | All color types and bit depths, interlaced, transparency, metadata | All color types and bit depths, adaptive filtering, built palettes |
 | JPEG | Baseline and progressive, 8-bit, any subsampling, CMYK and YCCK, scaled decode, EXIF, XMP, ICC | Baseline, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0 or gray, optimized Huffman tables, EXIF, XMP, ICC |
+| GIF | GIF87a and 89a, animations with every disposal, interlaced, transparency, loop count, comments, XMP, ICC | GIF89a, exact or quantized palettes (global or per frame), dithering, frame optimization |
+| APNG | Every PNG color type and depth, all disposal and blend modes | Any raster with more than one frame, changed rectangles only |
 
 Custom formats plug in through `FormatInfo`, `IFormatReader` and `IFormatWriter`, registered with
 `EgamiContext.Default.WithFormat(...)`.
@@ -220,7 +266,7 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --fi
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
-| `tests/images/`, `tests/reference/` | PngSuite, the JPEG corpus and their reference decodes, with licenses |
+| `tests/images/`, `tests/reference/` | PngSuite, the JPEG, GIF and APNG corpora and their reference decodes, with licenses |
 | `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
 | `tools/` | Scripts that regenerate references and the public API baseline, and the libpng checker used in CI |
 

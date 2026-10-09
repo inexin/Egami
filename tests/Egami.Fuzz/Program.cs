@@ -42,7 +42,10 @@ static Action<Stream> Target(string name) => name switch
     "png" => LoadPng,
     "jpeg" => LoadJpeg,
     "exif" => ParseExif,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif."),
+    "gif" => LoadGif,
+    "apng" => LoadApng,
+    "lzw" => DecodeLzw,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, gif, apng, lzw."),
 };
 
 static EgamiContext Context()
@@ -104,6 +107,75 @@ static void LoadJpeg(Stream stream)
         catch (EgamiException)
         {
         }
+    }
+}
+
+static void LoadGif(Stream stream)
+{
+    EgamiContext context = Context() with { Limits = Context().Limits with { MaxFrames = 200 } };
+    byte[] data = ReadAll(stream);
+    foreach (ReaderOptions options in new ReaderOptions[]
+    {
+        new() { Recovery = RecoveryMode.Lenient },
+        new() { Recovery = RecoveryMode.Strict },
+        new() { Frames = ..1 },
+        new() { Frames = ^2.. },
+    })
+    {
+        try
+        {
+            Raster.Probe(data, context, options);
+            using Raster<Rgba8> raster = Raster.Load<Rgba8>(data, context, options);
+
+            // Writing back exercises palettes, frame optimization and the LZW encoder on whatever was read.
+            if ((long)raster.Width * raster.Height * raster.FrameCount <= 1_000_000)
+            {
+                raster.Save(Stream.Null, Egami.Formats.Gif.GifFormat.Info);
+                raster.Save(Stream.Null, Egami.Formats.Png.PngFormat.Info);
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+static void LoadApng(Stream stream)
+{
+    EgamiContext context = Context() with { Limits = Context().Limits with { MaxFrames = 200 } };
+    byte[] data = ReadAll(stream);
+    foreach (ReaderOptions options in new ReaderOptions[] { new() { Recovery = RecoveryMode.Lenient }, new() { Recovery = RecoveryMode.Strict }, new() { Frames = 1..2 } })
+    {
+        try
+        {
+            Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            if ((long)raster.Width * raster.Height * raster.FrameCount <= 1_000_000)
+            {
+                raster.Save(Stream.Null, Egami.Formats.Png.PngFormat.Info);
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+// The LZW decoder alone: the first byte is the minimum code size, the rest the data. Bad codes are reported, never thrown.
+static void DecodeLzw(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length == 0)
+    {
+        return;
+    }
+
+    using Egami.Formats.Gif.LzwDecoder decoder = new();
+    byte[] output = new byte[1 << 16];
+    decoder.Decode(1 + (data[0] % 11), data.AsSpan(1), output, out int written);
+    if (written > output.Length)
+    {
+        throw new InvalidOperationException("The decoder wrote past its output.");
     }
 }
 

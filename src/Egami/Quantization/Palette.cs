@@ -17,9 +17,10 @@ internal sealed class ExactColors
 {
     private const int Size = 1024;
 
-    private readonly uint[] _keys = new uint[Size];
-    private readonly byte[] _indices = new byte[Size];
-    private readonly bool[] _used = new bool[Size];
+    // Pooled; Release returns them once the table is no longer needed.
+    private uint[] _keys = ArrayPool<uint>.Shared.Rent(Size);
+    private byte[] _indices = ArrayPool<byte>.Shared.Rent(Size);
+    private bool[] _used = ArrayPool<bool>.Shared.Rent(Size);
     private readonly List<Rgba8> _colors = [];
     private readonly int _limit;
     private readonly bool _binaryAlpha;
@@ -30,9 +31,22 @@ internal sealed class ExactColors
     /// <param name="threshold">The alpha below which a pixel is transparent, when <paramref name="binaryAlpha"/> is set.</param>
     internal ExactColors(int limit, bool binaryAlpha, byte threshold)
     {
+        _used.AsSpan(0, Size).Clear();
         _limit = limit;
         _binaryAlpha = binaryAlpha;
         _threshold = threshold;
+    }
+
+    /// <summary>Returns the table's pooled arrays; it cannot be used afterwards.</summary>
+    internal void Release()
+    {
+        if (_keys.Length > 0)
+        {
+            ArrayPool<uint>.Shared.Return(_keys);
+            ArrayPool<byte>.Shared.Return(_indices);
+            ArrayPool<bool>.Shared.Return(_used);
+            (_keys, _indices, _used) = ([], [], []);
+        }
     }
 
     /// <summary>Gets whether more distinct colors than the limit were seen; the counter then stops counting.</summary>
@@ -175,9 +189,11 @@ internal sealed class PaletteMapper : IDisposable
         // The palette by channel, padded to whole vectors with entries too far away to win; the transparent entry is one of those
         // too, since it is never the nearest color.
         int padded = (palette.Length + 7) & ~7;
-        _channels = new int[4 * Math.Max(padded, 8)];
-        _channels.AsSpan().Fill(FarAway);
+        // The 32-bit channels serve only the portable vector search; with AVX2 the 16-bit pairs below do.
         _padded = Math.Max(padded, 8);
+        _channels = new int[Avx2.IsSupported ? 0 : 4 * _padded];
+        int[] channels = Avx2.IsSupported ? new int[4 * _padded] : _channels;
+        channels.AsSpan().Fill(FarAway);
         for (int i = 0; i < palette.Length; i++)
         {
             if (i == transparentIndex)
@@ -185,20 +201,20 @@ internal sealed class PaletteMapper : IDisposable
                 continue;
             }
 
-            _channels[i] = palette[i].R;
-            _channels[_padded + i] = palette[i].G;
-            _channels[(2 * _padded) + i] = palette[i].B;
-            _channels[(3 * _padded) + i] = withAlpha ? palette[i].A : 0;
+            channels[i] = palette[i].R;
+            channels[_padded + i] = palette[i].G;
+            channels[(2 * _padded) + i] = palette[i].B;
+            channels[(3 * _padded) + i] = withAlpha ? palette[i].A : 0;
         }
 
         // The same as 16-bit pairs, red with green and blue with alpha, for multiply-add of adjacent pairs.
         _pairs = new short[4 * _padded];
         for (int i = 0; i < _padded; i++)
         {
-            _pairs[2 * i] = (short)_channels[i];
-            _pairs[(2 * i) + 1] = (short)_channels[_padded + i];
-            _pairs[(2 * _padded) + (2 * i)] = (short)_channels[(2 * _padded) + i];
-            _pairs[(2 * _padded) + (2 * i) + 1] = (short)_channels[(3 * _padded) + i];
+            _pairs[2 * i] = (short)channels[i];
+            _pairs[(2 * i) + 1] = (short)channels[_padded + i];
+            _pairs[(2 * _padded) + (2 * i)] = (short)channels[(2 * _padded) + i];
+            _pairs[(2 * _padded) + (2 * i) + 1] = (short)channels[(3 * _padded) + i];
         }
     }
 
@@ -399,6 +415,12 @@ internal sealed class PaletteMapper : IDisposable
 /// <summary>A palette ready for mapping: its colors, which index (if any) is transparent, and whether it holds every color exactly.</summary>
 internal sealed record BuiltPalette(Rgba8[] Colors, int TransparentIndex, bool Exact, ExactColors? ExactTable)
 {
+    /// <summary>Returns the exact table's pooled arrays, once nothing maps with this palette any more.</summary>
+    internal void Release()
+    {
+        ExactTable?.Release();
+    }
+
     /// <summary>Gets the bits needed to index the palette, 1 to 8.</summary>
     internal int Bits => Math.Max(1, 32 - BitOperations.LeadingZeroCount((uint)Math.Max(1, Colors.Length - 1)));
 }
@@ -423,7 +445,11 @@ internal static class PaletteBuilder
             exact.Add(rows(y).Span);
         }
 
-        if (!exact.Overflowed)
+        if (exact.Overflowed)
+        {
+            exact.Release();
+        }
+        else
         {
             List<Rgba8> colors = [.. exact.Colors];
             int transparent = -1;

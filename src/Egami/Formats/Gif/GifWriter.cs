@@ -108,6 +108,7 @@ internal sealed class GifWriter : IFormatWriter
             _lzw.Dispose();
             _buffer?.Dispose();
             _globalMapper?.Dispose();
+            _global?.Release();
         }
 
         internal void Write(Stream output)
@@ -217,29 +218,45 @@ internal sealed class GifWriter : IFormatWriter
                 }
             }
 
-            return !exact.Overflowed;
+            bool fits = !exact.Overflowed;
+            exact.Release();
+            return fits;
         }
 
         /// <summary>Builds a frame's own palette from the pixels of <paramref name="region"/>.</summary>
         private BuiltPalette BuildPalette(int index, Rect region, PaletteOptions options, int reserve)
         {
-            Rgba8[] row = new Rgba8[region.Width];
-            return PaletteBuilder.Build(region.Height, r =>
+            Rgba8[] row = ArrayPool<Rgba8>.Shared.Rent(region.Width);
+            try
             {
-                PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[index].Row(region.Y + r).Slice(region.X, region.Width), row);
-                return row;
-            }, options, binaryAlpha: true, reserve);
+                return PaletteBuilder.Build(region.Height, r =>
+                {
+                    PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[index].Row(region.Y + r).Slice(region.X, region.Width), row.AsSpan(0, region.Width));
+                    return row.AsMemory(0, region.Width);
+                }, options, binaryAlpha: true, reserve);
+            }
+            finally
+            {
+                ArrayPool<Rgba8>.Shared.Return(row);
+            }
         }
 
         private BuiltPalette BuildPalette(int first, int count, PaletteOptions options, int reserve)
         {
             // The builder is done with each row before asking for the next, so one buffer serves them all.
-            Rgba8[] row = new Rgba8[_width];
-            return PaletteBuilder.Build(count * _height, r =>
+            Rgba8[] row = ArrayPool<Rgba8>.Shared.Rent(_width);
+            try
             {
-                PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[first + (r / _height)].Row(r % _height), row);
-                return row;
-            }, options, binaryAlpha: true, reserve);
+                return PaletteBuilder.Build(count * _height, r =>
+                {
+                    PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[first + (r / _height)].Row(r % _height), row.AsSpan(0, _width));
+                    return row.AsMemory(0, _width);
+                }, options, binaryAlpha: true, reserve);
+            }
+            finally
+            {
+                ArrayPool<Rgba8>.Shared.Return(row);
+            }
         }
 
         /// <summary>Adds a transparent entry to an exact palette that has room, so unchanged pixels can be skipped.</summary>
@@ -283,7 +300,7 @@ internal sealed class GifWriter : IFormatWriter
                 }
             }
 
-            return new Frame(index, palette, indices, source.Metadata.Delay, region);
+            return new Frame(index, palette, indices, source.Metadata.Delay, region, ownsPalette: _global is null);
         }
 
         /// <summary>Maps a frame again over the whole screen.</summary>
@@ -629,7 +646,7 @@ internal sealed class GifWriter : IFormatWriter
         }
 
         /// <summary>A frame mapped to its palette.</summary>
-        private sealed class Frame(int index, BuiltPalette palette, byte[] indices, TimeSpan delay, Rect region) : IDisposable
+        private sealed class Frame(int index, BuiltPalette palette, byte[] indices, TimeSpan delay, Rect region, bool ownsPalette) : IDisposable
         {
             internal int Index => index;
 
@@ -645,6 +662,10 @@ internal sealed class GifWriter : IFormatWriter
             public void Dispose()
             {
                 ArrayPool<byte>.Shared.Return(indices);
+                if (ownsPalette)
+                {
+                    palette.Release();
+                }
             }
         }
     }

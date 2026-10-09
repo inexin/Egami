@@ -109,9 +109,23 @@ internal sealed class WuQuantizer : IDisposable
             _cumulative = true;
         }
 
-        Box[] boxes = new Box[colors];
-        double[] variance = new double[colors];
-        boxes[0] = new Box(_dimensions);
+        Box[] boxes = ArrayPool<Box>.Shared.Rent(colors);
+        double[] variance = ArrayPool<double>.Shared.Rent(colors);
+        try
+        {
+            return Build(colors, boxes, variance);
+        }
+        finally
+        {
+            ArrayPool<Box>.Shared.Return(boxes);
+            ArrayPool<double>.Shared.Return(variance);
+        }
+    }
+
+    private Rgba8[] Build(int colors, Box[] boxes, double[] variance)
+    {
+        variance.AsSpan(0, colors).Clear();
+        boxes[0] = default;
         for (int d = 0; d < _dimensions; d++)
         {
             boxes[0].High[d] = _side - 1;
@@ -126,7 +140,7 @@ internal sealed class WuQuantizer : IDisposable
         int next = 0;
         for (int i = 1; i < colors; i++)
         {
-            if (Cut(boxes[next], out boxes[i]))
+            if (Cut(ref boxes[next], out boxes[i]))
             {
                 variance[next] = Cells(boxes[next]) > 1 ? Variance(boxes[next]) : 0;
                 variance[i] = Cells(boxes[i]) > 1 ? Variance(boxes[i]) : 0;
@@ -217,7 +231,7 @@ internal sealed class WuQuantizer : IDisposable
     }
 
     /// <summary>Returns the cell index of one corner of a box (bit d of <paramref name="corner"/> picks the low side in dimension d) and its inclusion-exclusion sign.</summary>
-    private int Corner(Box box, int corner, out int sign)
+    private int Corner(in Box box, int corner, out int sign)
     {
         int index = 0;
         int lows = 0;
@@ -232,18 +246,18 @@ internal sealed class WuQuantizer : IDisposable
         return index;
     }
 
-    private long Weight(Box box)
+    private long Weight(in Box box)
     {
         Span<long> sums = stackalloc long[4];
         return Moments(box, sums, out _);
     }
 
-    private void Sums(Box box, Span<long> sums)
+    private void Sums(in Box box, Span<long> sums)
     {
         Moments(box, sums, out _);
     }
 
-    private double Variance(Box box)
+    private double Variance(in Box box)
     {
         Span<long> sums = stackalloc long[4];
         double weight = Moments(box, sums, out double squares);
@@ -261,7 +275,7 @@ internal sealed class WuQuantizer : IDisposable
     /// each corner's cell found once for all of them. The squares are whole numbers well inside a double's exact range, so the
     /// order of the additions cannot change the result.
     /// </summary>
-    private long Moments(Box box, Span<long> sums, out double squares)
+    private long Moments(in Box box, Span<long> sums, out double squares)
     {
         sums[.._dimensions].Clear();
         long weight = 0;
@@ -281,7 +295,7 @@ internal sealed class WuQuantizer : IDisposable
         return weight;
     }
 
-    private long Cells(Box box)
+    private long Cells(in Box box)
     {
         long cells = 1;
         for (int d = 0; d < _dimensions; d++)
@@ -293,7 +307,7 @@ internal sealed class WuQuantizer : IDisposable
     }
 
     /// <summary>Splits <paramref name="box"/> where the variance falls most; it keeps the lower part and the upper goes to <paramref name="upper"/>.</summary>
-    private bool Cut(Box box, out Box upper)
+    private bool Cut(ref Box box, out Box upper)
     {
         Span<long> whole = stackalloc long[4];
         long wholeWeight = Moments(box, whole, out _);
@@ -363,7 +377,7 @@ internal sealed class WuQuantizer : IDisposable
             }
         }
 
-        upper = box.Clone();
+        upper = box;
         if (bestDimension < 0)
         {
             return false;
@@ -399,18 +413,16 @@ internal sealed class WuQuantizer : IDisposable
     }
 
     /// <summary>A box of histogram cells: from just above <see cref="Low"/> to <see cref="High"/>, in each dimension.</summary>
-    private sealed class Box(int dimensions)
+    private struct Box
     {
-        internal int[] Low { get; } = new int[dimensions];
+        internal Bounds Low;
+        internal Bounds High;
+    }
 
-        internal int[] High { get; } = new int[dimensions];
-
-        internal Box Clone()
-        {
-            Box copy = new(Low.Length);
-            Low.CopyTo(copy.Low, 0);
-            High.CopyTo(copy.High, 0);
-            return copy;
-        }
+    /// <summary>One bound per dimension, stored inline so a box is one value and the boxes one array.</summary>
+    [System.Runtime.CompilerServices.InlineArray(4)]
+    private struct Bounds
+    {
+        private int _first;
     }
 }
