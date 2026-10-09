@@ -1,0 +1,30 @@
+- name: Getting started
+  href: getting-started.md
+- name: Guides
+  items:
+    - name: Formats
+      href: guides/formats.md
+    - name: Resizing and geometry
+      href: guides/resizing-and-geometry.md
+    - name: Color
+      href: guides/color.md
+    - name: Filters
+      href: guides/filters.md
+    - name: Compositing
+      href: guides/compositing.md
+    - name: Animation
+      href: guides/animation.md
+    - name: Metadata
+      href: guides/metadata.md
+    - name: JPEG
+      href: guides/jpeg.md
+    - name: Custom operations and formats
+      href: guides/extending.md
+    - name: Memory and threading
+      href: guides/memory-and-threading.md
+    - name: Security
+      href: guides/security.md
+- name: Cookbook
+  href: cookbook/index.md
+- name: Performance
+  href: performance.md

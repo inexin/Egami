@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The code the docs show. Guides and the cookbook pull these files in by region, so every example compiles with the library and
+    runs in the test run; a renamed member or a changed default breaks the build, not the docs. Uses only the public API.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- The samples read as user code, which passes cancellation tokens only where the example is about them. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../images/ops/duck.png" Link="images/duck.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jpeg/exif-orientation-6.jpg" Link="images/sideways.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jpeg/duck-420.jpg" Link="images/duck.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
+  </ItemGroup>
+
+</Project>

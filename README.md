@@ -7,7 +7,8 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET that loa
 - **Safe on untrusted files**: size limits are checked before allocating, and readers are fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
-> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations; Phase 1.3 adds JPEG reading and writing, typed EXIF and `AutoOrient`; Phase 1.4 adds animation: GIF, APNG and editable frames.
+> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations; Phase 1.3 adds JPEG reading and writing, typed EXIF and `AutoOrient`; Phase 1.4 adds animation: GIF, APNG and editable frames;
+Phase 1.5 adds BMP, TGA, QOI and the Netpbm formats, and the 1.0 API. Full documentation is in [docs/](docs/index.md).
 
 ## Quick start
 
@@ -92,7 +93,7 @@ using Egami.Formats;
 using Egami.Formats.Jpeg;
 
 // About 500 × 375 from a 4000 × 3000 photo, decoded at 1/8 scale.
-using Raster preview = Raster.Load("photo.jpg", options: new ReaderOptions { TargetSize = new Size(500, 375) });
+using Raster preview = Raster.Load("photo.jpg", options: new ReaderOptions { MinimumSize = new Size(500, 375) });
 
 image.Save(stream, JpegFormat.Info, new JpegWriterOptions
 {
@@ -136,7 +137,7 @@ and flipping reset the orientation, resizing and cropping update the pixel dimen
 resize, it runs on the small result, so the whole chain below decodes at 1/8 scale and turns 256 pixels, not 12 megapixels.
 
 ```csharp
-using Raster thumb = Raster.Load("photo.jpg", options: new ReaderOptions { TargetSize = new Size(256, 256) });
+using Raster thumb = Raster.Load("photo.jpg", options: new ReaderOptions { MinimumSize = new Size(256, 256) });
 thumb.Apply(ops => ops.AutoOrient().Fit(256, 256));
 thumb.Save("thumb.jpg", new JpegWriterOptions { Quality = 80 });
 ```
@@ -195,7 +196,7 @@ and adjacent color steps run as one pass. Each step runs in parallel bands of ro
 using Egami.Operations;
 
 // A 256 × 256 thumbnail that covers the box, cropped around the center; the source is not touched.
-using Raster<Rgba8> thumb = photo.Derive(ops => ops.Fill(256, 256));
+using Raster<Rgba8> thumb = photo.Derive(ops => ops.Cover(256, 256));
 
 // In place: shrink to fit 1600 × 1600 (never enlarging), straighten, and brighten a little.
 photo.Apply(ops => ops
@@ -213,11 +214,11 @@ photo.Apply(ops => ops
 
 | Group | Operations |
 | --- | --- |
-| Resize | `Resize` (0 for one side keeps the aspect ratio), `Fit`, `Fill`; filters Nearest, Box, Bilinear, Bicubic (default, Catmull-Rom), Mitchell, Lanczos3; gamma-encoded or linear light |
-| Geometry | `Crop`, `Pad`, `Flip`, `Rotate` (exact for multiples of 90°, resampled otherwise), `AutoOrient`, `FillColor` |
+| Resize | `Resize` (0 for one side keeps the aspect ratio), `Fit`, `Cover`; filters Nearest, Box, Bilinear, Bicubic (default, Catmull-Rom), Mitchell, Lanczos3; gamma-encoded or linear light |
+| Geometry | `Crop`, `Pad`, `FlipHorizontal`, `FlipVertical`, `Rotate` (exact for multiples of 90°, resampled otherwise), `AutoOrient`, `FillColor` |
 | Color | `Brightness`, `Contrast`, `Saturation`, `HueRotate`, `Sepia`, `Grayscale`, `Invert`, `Opacity`, `ColorMatrix` (W3C Filter Effects definitions) |
 | Filters | `Blur` (Gaussian), `BoxBlur`, `Sharpen` (unsharp mask), `Convolve` with any `ConvolutionKernel` and `EdgeMode` |
-| Compose | `DrawImage` (source-over, any pixel type, clipped to the overlap) |
+| Compose | `DrawImage` (source-over, any pixel type, whole images or an area, clipped to the overlap) |
 
 Pass a `CancellationToken` to stop between bands of rows. A step that needs a new plane checks `SafetyLimits.MaxTotalBytes`
 first. Your own operation implements `IRasterOperation` and joins a chain with `ops.Add(...)`.
@@ -243,6 +244,10 @@ sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linea
 | JPEG | Baseline and progressive, 8-bit, any subsampling, CMYK and YCCK, scaled decode, EXIF, XMP, ICC | Baseline, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0 or gray, optimized Huffman tables, EXIF, XMP, ICC |
 | GIF | GIF87a and 89a, animations with every disposal, interlaced, transparency, loop count, comments, XMP, ICC | GIF89a, exact or quantized palettes (global or per frame), dithering, frame optimization |
 | APNG | Every PNG color type and depth, all disposal and blend modes | Any raster with more than one frame, changed rectangles only |
+| BMP | Every Windows and OS/2 2.x header, 1 to 32 bits, RLE4, RLE8, RLE24, bit fields, embedded PNG and JPEG, V5 ICC | 24-bit, 32-bit with alpha, 1, 2, 4 and 8-bit palettes, resolution, ICC |
+| TGA | Color-mapped, true-color and gray, raw and RLE, all origins, TGA 2.0 footer and extension area | Gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer |
+| QOI | The whole format | 3 or 4 channels, byte-identical to the reference encoder |
+| PBM, PGM, PPM, PAM | P1 to P7, plain and binary, any maxval | P1 to P7, plain and binary |
 
 Custom formats plug in through `FormatInfo`, `IFormatReader` and `IFormatWriter`, registered with
 `EgamiContext.Default.WithFormat(...)`.
@@ -266,7 +271,10 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --fi
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
-| `tests/images/`, `tests/reference/` | PngSuite, the JPEG, GIF and APNG corpora and their reference decodes, with licenses |
+| `tests/Egami.DocSamples/` | The code the docs show, compiled and run with the tests |
+| `tests/Egami.OutsideTests/` | Plugins written with only the public API: a pixel type, a memory source, operations, formats |
+| `tests/images/`, `tests/reference/` | PngSuite, the JPEG, GIF, APNG, BMP, TGA, QOI and PNM corpora and their reference decodes, with licenses |
+| `docs/` | The documentation site (DocFX): guides, cookbook, API reference |
 | `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
 | `tools/` | Scripts that regenerate references and the public API baseline, and the libpng checker used in CI |
 
