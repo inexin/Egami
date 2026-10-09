@@ -224,8 +224,7 @@ internal sealed class JpegWriter : IFormatWriter
         private readonly int _paddedWidth;
         private readonly Plane[] _planes;
         private readonly Workspace _main;
-        private readonly System.Collections.Concurrent.ConcurrentBag<Workspace> _workspaces = [];
-        private readonly bool _parallel;
+        private readonly int _workers;
         private readonly int[][] _divisors;
         private readonly ushort[][] _reciprocals;
         private readonly ushort[][] _quant;
@@ -260,12 +259,20 @@ internal sealed class JpegWriter : IFormatWriter
             _main = CreateWorkspace();
             _planes = _main.Planes;
 
-            // Large images transform MCU rows on several threads while this one Huffman-codes the rows before them.
-            _parallel = raster.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1;
+            // Large images transform MCU rows on other threads while this one Huffman-codes the rows before them.
+            _workers = raster.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
+                ? Math.Min(raster.Context.MaxParallelism - 1, MaxWorkers)
+                : 0;
         }
 
         /// <summary>Images with fewer pixels than this are encoded on one thread.</summary>
         private const long ParallelPixels = 1 << 20;
+
+        /// <summary>
+        /// The most threads transforming rows for the one coding them; past this the Huffman coder is the limit, and each more
+        /// thread only costs memory.
+        /// </summary>
+        private const int MaxWorkers = 4;
 
         /// <summary>DQT, SOF0, DHT and DRI, laid out as libjpeg does: one table per segment.</summary>
         internal void WriteHeaders(JpegBitWriter writer)
@@ -300,23 +307,16 @@ internal sealed class JpegWriter : IFormatWriter
         /// <summary>Writes DHT, DRI, SOS and the entropy-coded data, after a counting pass when tables are optimized.</summary>
         internal void WriteScan(JpegBitWriter writer)
         {
-            List<short[]>? stored = null;
+            using RowProducer rows = new(this, keepAll: _options.OptimizeHuffman);
             if (_options.OptimizeHuffman)
             {
-                stored = [];
-                for (int my = 0; my < _mcusY; my++)
-                {
-                    stored.Add(ArrayPool<short>.Shared.Rent(BlocksPerRow() * 64));
-                }
-
-                Transform(0, _mcusY, [.. stored]);
                 long[][] dcCounts = [new long[256], new long[256]];
                 long[][] acCounts = [new long[256], new long[256]];
                 int[] predictors = new int[_planes.Length];
                 int mcu = 0;
                 for (int my = 0; my < _mcusY; my++)
                 {
-                    short[] row = stored[my];
+                    short[] row = rows.Get(my);
                     int b = 0;
                     for (int mx = 0; mx < _mcusX; mx++, mcu++)
                     {
@@ -367,97 +367,42 @@ internal sealed class JpegWriter : IFormatWriter
             sos[^2] = 63;
             Segment(writer, JpegMarker.Sos, sos);
 
-            // Without stored rows, two batches of MCU rows alternate: one being transformed while the other is coded.
-            int batch = stored is not null ? _mcusY : _parallel ? Math.Max(2, 2 * _raster.Context.MaxParallelism) : 1;
-            short[][] ready = stored is not null ? [.. stored] : Rent(Math.Min(batch, _mcusY));
-            short[][] spare = stored is not null || !_parallel ? [] : Rent(Math.Min(batch, _mcusY));
-            Task? pending = null;
-            try
+            int[] predictorsForScan = new int[_planes.Length];
+            int mcuForScan = 0;
+            int restart = 0;
+            for (int my = 0; my < _mcusY; my++)
             {
-                if (stored is null)
+                short[] row = rows.Get(my);
+                int b = 0;
+                for (int mx = 0; mx < _mcusX; mx++, mcuForScan++)
                 {
-                    Transform(0, Math.Min(batch, _mcusY), ready);
-                }
-
-                int[] predictors = new int[_planes.Length];
-                int mcu = 0;
-                int restart = 0;
-                for (int start = 0; start < _mcusY; start += batch)
-                {
-                    int next = start + batch;
-                    pending = null;
-                    if (stored is null && next < _mcusY)
+                    if (RestartDue(mcuForScan))
                     {
-                        short[][] target = _parallel ? spare : ready;
-                        int end = Math.Min(next + batch, _mcusY);
-                        pending = _parallel ? Task.Run(() => Transform(next, end, target)) : null;
+                        writer.Align();
+                        writer.Marker((byte)(JpegMarker.Rst0 + restart));
+                        restart = (restart + 1) & 7;
+                        Array.Clear(predictorsForScan);
                     }
 
-                    for (int my = start; my < Math.Min(start + batch, _mcusY); my++)
+                    for (int i = 0; i < _planes.Length; i++)
                     {
-                        short[] row = ready[my - start];
-                        int b = 0;
-                        for (int mx = 0; mx < _mcusX; mx++, mcu++)
+                        int t = _planes[i].Table;
+                        for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
                         {
-                            if (RestartDue(mcu))
-                            {
-                                writer.Align();
-                                writer.Marker((byte)(JpegMarker.Rst0 + restart));
-                                restart = (restart + 1) & 7;
-                                Array.Clear(predictors);
-                            }
-
-                            for (int i = 0; i < _planes.Length; i++)
-                            {
-                                int t = _planes[i].Table;
-                                for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
-                                {
-                                    JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], _dc[t], _ac[t]);
-                                }
-                            }
+                            JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictorsForScan[i], _dc[t], _ac[t]);
                         }
                     }
-
-                    if (pending is not null)
-                    {
-                        pending.GetAwaiter().GetResult();
-                        pending = null;
-                        (ready, spare) = (spare, ready);
-                    }
-                    else if (stored is null && next < _mcusY)
-                    {
-                        Transform(next, Math.Min(next + batch, _mcusY), ready);
-                    }
                 }
 
-                writer.Align();
+                rows.Release(my);
             }
-            finally
-            {
-                // If coding failed while the next batch was being transformed, that work must finish before its rows go back.
-                try
-                {
-                    pending?.Wait();
-                }
-                catch (AggregateException)
-                {
-                    // The coding failure is the one to report.
-                }
 
-                foreach (short[] row in ready.Concat(spare))
-                {
-                    ArrayPool<short>.Shared.Return(row);
-                }
-            }
+            writer.Align();
         }
 
         public void Dispose()
         {
             _main.Dispose();
-            while (_workspaces.TryTake(out Workspace? workspace))
-            {
-                workspace.Dispose();
-            }
         }
 
         private static void WriteHuffman(JpegBitWriter writer, int tableClass, int slot, JpegHuffmanCodes codes)
@@ -473,7 +418,6 @@ internal sealed class JpegWriter : IFormatWriter
 
         private int BlocksPerRow() => _mcusX * _planes.Sum(p => p.BlocksPerMcu);
 
-        private short[][] Rent(int rows) => [.. Enumerable.Range(0, rows).Select(_ => ArrayPool<short>.Shared.Rent(BlocksPerRow() * 64))];
 
         /// <summary>Planes and conversion buffers for one thread: luma at the padded width, chroma averaged down.</summary>
         private Workspace CreateWorkspace()
@@ -488,27 +432,143 @@ internal sealed class JpegWriter : IFormatWriter
             return new Workspace(planes, _width, _paddedWidth * 8 * _maxV);
         }
 
-        /// <summary>Transforms MCU rows <paramref name="from"/> to <paramref name="to"/> into <paramref name="rows"/>, on several threads when allowed.</summary>
-        private void Transform(int from, int to, short[][] rows)
+        /// <summary>
+        /// Hands transformed MCU rows to the coder in order. On one thread each row is transformed when asked for. With workers,
+        /// they take rows in turn into a ring of buffers a few rows ahead of the coder, which waits for each row in order and frees
+        /// its buffer once coded; for optimized tables every row is kept for the second pass instead of a ring.
+        /// </summary>
+        private sealed class RowProducer : IDisposable
         {
-            if (!_parallel)
+            private readonly Encoder<TPixel> _encoder;
+            private readonly bool _keepAll;
+            private readonly short[][] _buffers;
+            private readonly int[] _ready;
+            private readonly Task[] _tasks;
+            private int _next = -1;
+            private int _released;
+            private bool _stop;
+            private Exception? _failure;
+
+            internal RowProducer(Encoder<TPixel> encoder, bool keepAll)
             {
-                for (int my = from; my < to; my++)
+                _encoder = encoder;
+                _keepAll = keepAll;
+                int rows = encoder._mcusY;
+                int count = keepAll ? rows : encoder._workers == 0 ? 1 : Math.Min(rows, 4 * encoder._workers);
+                int length = encoder.BlocksPerRow() * 64;
+                _buffers = new short[count][];
+                for (int i = 0; i < count; i++)
                 {
-                    TransformRow(my, rows[my - from], _main);
+                    _buffers[i] = ArrayPool<short>.Shared.Rent(length);
                 }
 
-                return;
+                _ready = new int[rows];
+                _tasks = new Task[encoder._workers];
+                for (int i = 0; i < _tasks.Length; i++)
+                {
+                    _tasks[i] = Task.Factory.StartNew(Work, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                }
+
+                if (_tasks.Length == 0 && keepAll)
+                {
+                    for (int my = 0; my < rows; my++)
+                    {
+                        encoder.TransformRow(my, _buffers[my], encoder._main);
+                    }
+                }
             }
 
-            // Workspaces are kept for the whole image rather than made for each batch.
-            ParallelOptions options = new() { MaxDegreeOfParallelism = _raster.Context.MaxParallelism };
-            Parallel.For(from, to, options, () => _workspaces.TryTake(out Workspace? kept) ? kept : CreateWorkspace(), (my, _, workspace) =>
+            /// <summary>Returns MCU row <paramref name="my"/>, transformed; rows are asked for in order.</summary>
+            internal short[] Get(int my)
             {
-                TransformRow(my, rows[my - from], workspace);
-                return workspace;
-            }, _workspaces.Add);
+                short[] buffer = _buffers[my % _buffers.Length];
+                if (_tasks.Length == 0)
+                {
+                    if (!_keepAll)
+                    {
+                        _encoder.TransformRow(my, buffer, _encoder._main);
+                    }
+
+                    return buffer;
+                }
+
+                SpinWait wait = default;
+                while (Volatile.Read(ref _ready[my]) == 0)
+                {
+                    if (Volatile.Read(ref _failure) is Exception failure)
+                    {
+                        System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(failure);
+                    }
+
+                    wait.SpinOnce();
+                }
+
+                return buffer;
+            }
+
+            /// <summary>Says row <paramref name="my"/> is coded, so its buffer can take a later row.</summary>
+            internal void Release(int my)
+            {
+                Volatile.Write(ref _released, my + 1);
+            }
+
+            public void Dispose()
+            {
+                Volatile.Write(ref _stop, true);
+                foreach (Task task in _tasks)
+                {
+                    try
+                    {
+                        task.Wait();
+                    }
+                    catch (AggregateException)
+                    {
+                        // Reported through Get.
+                    }
+                }
+
+                foreach (short[] buffer in _buffers)
+                {
+                    ArrayPool<short>.Shared.Return(buffer);
+                }
+            }
+
+            private void Work()
+            {
+                using Workspace workspace = _encoder.CreateWorkspace();
+                try
+                {
+                    while (!Volatile.Read(ref _stop))
+                    {
+                        int my = Interlocked.Increment(ref _next);
+                        if (my >= _ready.Length)
+                        {
+                            return;
+                        }
+
+                        // A ring buffer is free once the row that used it before is coded.
+                        SpinWait wait = default;
+                        while (!_keepAll && my - Volatile.Read(ref _released) >= _buffers.Length)
+                        {
+                            if (Volatile.Read(ref _stop))
+                            {
+                                return;
+                            }
+
+                            wait.SpinOnce();
+                        }
+
+                        _encoder.TransformRow(my, _buffers[my % _buffers.Length], workspace);
+                        Volatile.Write(ref _ready[my], 1);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Interlocked.CompareExchange(ref _failure, e, null);
+                }
+            }
         }
+
         /// <summary>Converts MCU row <paramref name="my"/> and codes its blocks into <paramref name="blocks"/>, in MCU order, each in natural order.</summary>
         private void TransformRow(int my, short[] blocks, Workspace workspace)
         {
