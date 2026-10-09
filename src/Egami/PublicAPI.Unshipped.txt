@@ -706,6 +706,20 @@ Egami.PooledPixelMemorySource.PoolThresholdBytes.get -> int
 Egami.PooledPixelMemorySource.PoolThresholdBytes.init -> void
 Egami.PooledPixelMemorySource.RetainedBytes.get -> long
 Egami.PooledPixelMemorySource.Trim() -> void
+Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.FloydSteinberg = 0 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.None = 2 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Ordered = 1 -> Egami.Quantization.DitherMode
+Egami.Quantization.PaletteOptions
+Egami.Quantization.PaletteOptions.<Clone>$() -> Egami.Quantization.PaletteOptions!
+Egami.Quantization.PaletteOptions.AlphaThreshold.get -> byte
+Egami.Quantization.PaletteOptions.AlphaThreshold.init -> void
+Egami.Quantization.PaletteOptions.Dither.get -> Egami.Quantization.DitherMode
+Egami.Quantization.PaletteOptions.Dither.init -> void
+Egami.Quantization.PaletteOptions.Equals(Egami.Quantization.PaletteOptions? other) -> bool
+Egami.Quantization.PaletteOptions.MaxColors.get -> int
+Egami.Quantization.PaletteOptions.MaxColors.init -> void
+Egami.Quantization.PaletteOptions.PaletteOptions() -> void
 Egami.Raster
 Egami.Raster.Apply(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster.As<TTo>() -> Egami.Raster<TTo>!
@@ -859,6 +873,9 @@ override Egami.Pixels.RgbaF32.Equals(object? obj) -> bool
 override Egami.Pixels.RgbaF32.GetHashCode() -> int
 override Egami.Pixels.RgbaF32.ToString() -> string!
 override Egami.Point.GetHashCode() -> int
+override Egami.Quantization.PaletteOptions.Equals(object? obj) -> bool
+override Egami.Quantization.PaletteOptions.GetHashCode() -> int
+override Egami.Quantization.PaletteOptions.ToString() -> string!
 override Egami.Raster<TPixel>.FrameCount.get -> int
 override Egami.Raster<TPixel>.Layout.get -> Egami.Pixels.PixelLayoutInfo
 override Egami.Rect.GetHashCode() -> int
@@ -988,6 +1005,9 @@ static Egami.Pixels.RgbaF32.operator ==(Egami.Pixels.RgbaF32 left, Egami.Pixels.
 static Egami.Point.operator !=(Egami.Point left, Egami.Point right) -> bool
 static Egami.Point.operator ==(Egami.Point left, Egami.Point right) -> bool
 static Egami.PooledPixelMemorySource.Shared.get -> Egami.PooledPixelMemorySource!
+static Egami.Quantization.PaletteOptions.Default.get -> Egami.Quantization.PaletteOptions!
+static Egami.Quantization.PaletteOptions.operator !=(Egami.Quantization.PaletteOptions? left, Egami.Quantization.PaletteOptions? right) -> bool
+static Egami.Quantization.PaletteOptions.operator ==(Egami.Quantization.PaletteOptions? left, Egami.Quantization.PaletteOptions? right) -> bool
 static Egami.Raster.Create<TPixel>(int width, int height, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
 static Egami.Raster.Create<TPixel>(int width, int height, TPixel fill, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
 static Egami.Raster.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster!
