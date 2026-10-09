@@ -20,6 +20,9 @@ internal static class PngChunkType
     internal const uint Ztxt = 0x7A545874;
     internal const uint Itxt = 0x69545874;
     internal const uint Exif = 0x65584966;
+    internal const uint Actl = 0x6163544C;
+    internal const uint Fctl = 0x6663544C;
+    internal const uint Fdat = 0x66644154;
 
     /// <summary>Chunks with no behavior in v1 that are still kept for round trips.</summary>
     internal static bool IsKeptAsIs(uint type)

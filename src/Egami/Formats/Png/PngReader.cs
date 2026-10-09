@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 using Egami.Metadata;
+using Egami.Operations.Compose;
 using Egami.Pixels;
 
 namespace Egami.Formats.Png;
@@ -32,17 +33,21 @@ internal sealed class PngReader : IFormatReader
     {
         State state = ReadUpToImageData(input, options);
         PngNaturalType natural = state.Unpacker.Natural;
-        PixelLayoutInfo layout = PngUnpacker.Layout(natural);
+        bool animated = state.IsAnimated;
+        PixelLayoutInfo layout = animated ? (state.Header.BitDepth == 16 ? Rgba16.Layout : Rgba8.Layout) : PngUnpacker.Layout(natural);
+        long frameBytes = (long)state.Header.Width * state.Header.Height * layout.BytesPerPixel;
+        int frames = animated ? state.AnimationFrames : 1;
         return new RasterInfo
         {
             Format = PngFormat.Info,
             Width = state.Header.Width,
             Height = state.Header.Height,
             Layout = layout,
-            FrameCount = 1,
+            FrameCount = frames,
             HasMetadata = state.HasMetadata,
-            EstimatedBytes = (long)state.Header.Width * state.Header.Height * layout.BytesPerPixel,
+            EstimatedBytes = animated ? (frameBytes * frames) + frameBytes : frameBytes,
             Orientation = state.Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
+            LoopCount = state.Png.IsAnimated ? state.Plays : null,
         };
     }
 
@@ -50,12 +55,22 @@ internal sealed class PngReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         State state = ReadUpToImageData(input, options);
+        if (state.IsAnimated)
+        {
+            return state.Header.BitDepth == 16 ? ReadAnimation<Rgba16, TPixel>(state) : ReadAnimation<Rgba8, TPixel>(state);
+        }
+
         return Finish(state, DecodeImage<TPixel>(state));
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
         State state = ReadUpToImageData(input, options);
+        if (state.IsAnimated)
+        {
+            return state.Header.BitDepth == 16 ? ReadAnimation<Rgba16, Rgba16>(state) : ReadAnimation<Rgba8, Rgba8>(state);
+        }
+
         Raster raster = state.Unpacker.Natural switch
         {
             PngNaturalType.Gray8 => DecodeImage<Gray8>(state),
@@ -97,6 +112,18 @@ internal sealed class PngReader : IFormatReader
                 break;
             }
 
+            if (type == PngChunkType.Actl)
+            {
+                ReadAnimationControl(state, length);
+                continue;
+            }
+
+            if (type == PngChunkType.Fctl && state.Png.IsAnimated && state.FirstControl is null)
+            {
+                state.FirstControl = ReadFrameControl(state, length);
+                continue;
+            }
+
             ReadChunk(state, type, length);
             if (type == PngChunkType.Iend)
             {
@@ -110,7 +137,90 @@ internal sealed class PngReader : IFormatReader
         }
 
         state.Unpacker = new PngUnpacker(header, state.Palette, state.Transparency);
+        state.Png.DefaultImageIsFrame = !state.Png.IsAnimated || state.FirstControl is not null;
         return state;
+    }
+
+    /// <summary>Reads acTL: the number of frames and plays. A frame count of 0 leaves the file a plain PNG, with a warning.</summary>
+    private static void ReadAnimationControl(State state, uint length)
+    {
+        PngChunkReader chunks = state.Chunks;
+        long offset = chunks.ChunkOffset;
+        byte[]? data = length == 8 ? chunks.ReadData(PngChunkType.Actl, length) : null;
+        if (data is null)
+        {
+            if (length != 8)
+            {
+                chunks.Recoverable(offset, $"The acTL chunk is {length} bytes long; it must be 8. The file is read as a still PNG.");
+                chunks.Skip(PngChunkType.Actl, length);
+            }
+
+            return;
+        }
+
+        if (state.Png.IsAnimated)
+        {
+            chunks.Recoverable(offset, "A second acTL chunk appears. It was ignored.");
+            return;
+        }
+
+        uint frames = BinaryPrimitives.ReadUInt32BigEndian(data);
+        uint plays = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(4));
+        if (frames == 0 || frames > int.MaxValue || plays > int.MaxValue)
+        {
+            state.Metadata.Warnings.Add($"The acTL chunk says {frames} frames; the file is read as a still PNG.");
+            return;
+        }
+
+        state.Input.Limits.CheckFrameCount(frames);
+        state.Png.IsAnimated = true;
+        state.AnimationFrames = (int)frames;
+        state.Plays = (int)plays;
+    }
+
+    /// <summary>Reads fcTL, checking its sequence number and that the frame lies inside the image.</summary>
+    private static FrameControl? ReadFrameControl(State state, uint length)
+    {
+        PngChunkReader chunks = state.Chunks;
+        long offset = chunks.ChunkOffset;
+        if (length != 26)
+        {
+            throw state.Input.Corrupt(offset, $"The fcTL chunk is {length} bytes long; it must be 26.");
+        }
+
+        byte[]? data = chunks.ReadData(PngChunkType.Fctl, length);
+        if (data is null || !state.CheckSequence(BinaryPrimitives.ReadUInt32BigEndian(data)))
+        {
+            return null;
+        }
+
+        uint width = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(4));
+        uint height = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(8));
+        uint x = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(12));
+        uint y = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(16));
+        if (width == 0 || height == 0 || (ulong)x + width > (ulong)state.Header.Width || (ulong)y + height > (ulong)state.Header.Height)
+        {
+            throw state.Input.Corrupt(offset, $"The frame ({x}, {y}, {width}×{height}) does not fit inside the {state.Header.Width}×{state.Header.Height} image.");
+        }
+
+        int numerator = BinaryPrimitives.ReadUInt16BigEndian(data.AsSpan(20));
+        int denominator = BinaryPrimitives.ReadUInt16BigEndian(data.AsSpan(22));
+        if (data[24] > 2 || data[25] > 1)
+        {
+            chunks.Recoverable(offset, $"The fcTL chunk has disposal {data[24]} and blend {data[25]}; unknown values are read as 0.");
+        }
+
+        FrameDisposal disposal = data[24] switch
+        {
+            1 => FrameDisposal.ClearToBackground,
+            2 => FrameDisposal.RestorePrevious,
+            _ => FrameDisposal.None,
+        };
+        return new FrameControl(
+            new Rect((int)x, (int)y, (int)width, (int)height),
+            TimeSpan.FromTicks((long)Math.Round(numerator * (double)TimeSpan.TicksPerSecond / (denominator == 0 ? 100 : denominator))),
+            disposal,
+            data[25] == 1 ? FrameBlend.Over : FrameBlend.Source);
     }
 
     private static PngHeader ReadHeader(PngChunkReader chunks)
@@ -203,6 +313,15 @@ internal sealed class PngReader : IFormatReader
                 }
 
                 break;
+
+            case PngChunkType.Actl or PngChunkType.Fctl or PngChunkType.Fdat:
+                if (type == PngChunkType.Actl && state.SeenImageData)
+                {
+                    chunks.Recoverable(offset, "The acTL chunk comes after the image data; the file is read as a still PNG.");
+                }
+
+                chunks.Skip(type, length);
+                return;
 
             case PngChunkType.Phys:
                 if (state.SeenImageData)
@@ -548,6 +667,25 @@ internal sealed class PngReader : IFormatReader
         IdatStream idat = new(state.Chunks, state.FirstIdatLength);
         try
         {
+            DecodeStream(state, raster, idat, unpack);
+            state.NextChunk = idat.Ended && !idat.Truncated && idat.NextType != 0 ? (idat.NextLength, idat.NextType) : null;
+            return raster;
+        }
+        catch
+        {
+            raster.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Inflates one image's data from <paramref name="idat"/> into <paramref name="raster"/>, which is the image's size.</summary>
+    private static void DecodeStream<TNatural, TPixel>(State state, Raster<TPixel> raster, IdatStream idat, UnpackRow<TNatural> unpack)
+        where TNatural : unmanaged, IPixelType<TNatural>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        PngHeader header = state.Header;
+        EgamiInput input = state.Input;
+        {
             bool complete = false;
             bool checkAdler = false;
             uint adler = 1;
@@ -587,13 +725,222 @@ internal sealed class PngReader : IFormatReader
             }
 
             state.Unpacker.ThrowIfBadIndices(state.Chunks, input.Position);
-            state.NextChunk = idat.Ended && !idat.Truncated && idat.NextType != 0 ? (idat.NextLength, idat.NextType) : null;
-            return raster;
+        }
+    }
+
+    /// <summary>
+    /// Reads an APNG: every frame is decoded at its own size through the same inflate, unfilter and unpack path as IDAT, drawn on
+    /// the shared canvas with its blend and disposal, and copied out at full size. The default image is frame 0 when an fcTL came
+    /// before it; otherwise it is a fallback for old viewers and is skipped.
+    /// </summary>
+    private static Raster<TPixel> ReadAnimation<TCanvas, TPixel>(State state)
+        where TCanvas : unmanaged, IPixelType<TCanvas>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        EgamiInput input = state.Input;
+        PngChunkReader chunks = state.Chunks;
+        PngHeader header = state.Header;
+        Range range = state.Options.Frames;
+        bool fromEnd = range.Start.IsFromEnd || range.End.IsFromEnd;
+        int first = fromEnd ? 0 : range.Start.Value;
+        int end = fromEnd ? int.MaxValue : range.End.Value;
+        List<Frame<TPixel>> frames = [];
+        using AnimationCanvas<TCanvas> canvas = new(header.Width, header.Height, input.Memory);
+        int index = 0;
+        bool stopped = false;
+        try
+        {
+            state.SeenImageData = true;
+            state.Position = PngChunkPosition.AfterImageData;
+            IdatStream idat = new(chunks, state.FirstIdatLength);
+            if (state.FirstControl is FrameControl control)
+            {
+                if (control.Bounds != new Rect(0, 0, header.Width, header.Height))
+                {
+                    throw input.Corrupt(chunks.ChunkOffset, "The first frame is the default image but its fcTL does not cover the whole image.");
+                }
+
+                stopped = !DrawFrame(state, canvas, control, idat, index++, first, end, frames);
+            }
+            else
+            {
+                idat.Drain();
+            }
+
+            (uint Length, uint Type)? next = idat.Ended && !idat.Truncated && idat.NextType != 0 ? (idat.NextLength, idat.NextType) : null;
+            while (!stopped && index < end)
+            {
+                if (next is null)
+                {
+                    chunks.Recoverable(input.Position, "The file ends before IEND.");
+                    break;
+                }
+
+                (uint length, uint type) = next.Value;
+                if (type == PngChunkType.Iend)
+                {
+                    ReadChunk(state, type, length);
+                    break;
+                }
+
+                if (type == PngChunkType.Fctl)
+                {
+                    FrameControl? frame = ReadFrameControl(state, length);
+                    if (frame is null || !chunks.TryReadHeader(out length, out type))
+                    {
+                        break;
+                    }
+
+                    if (type != PngChunkType.Fdat)
+                    {
+                        chunks.Recoverable(chunks.ChunkOffset, "An fcTL chunk is not followed by fdAT; the animation ends there.");
+                        break;
+                    }
+
+                    if (index >= state.AnimationFrames)
+                    {
+                        chunks.Recoverable(chunks.ChunkOffset, $"There are more frames than the {state.AnimationFrames} acTL gives; the rest were ignored.");
+                        break;
+                    }
+
+                    IdatStream fdat = new(chunks, length, PngChunkType.Fdat, state.CheckSequence);
+                    stopped = !DrawFrame(state, canvas, frame.Value, fdat, index++, first, end, frames);
+                    next = fdat.Ended && !fdat.Truncated && fdat.NextType != 0 ? (fdat.NextLength, fdat.NextType) : null;
+                    continue;
+                }
+
+                if (type is PngChunkType.Idat or PngChunkType.Fdat)
+                {
+                    chunks.Recoverable(chunks.ChunkOffset, $"A {PngChunkType.Name(type)} chunk is out of place. It was ignored.");
+                    chunks.Skip(type, length);
+                }
+                else
+                {
+                    ReadChunk(state, type, length);
+                }
+
+                next = chunks.TryReadHeader(out length, out type) ? (length, type) : null;
+            }
+
+            if (!stopped && index < state.AnimationFrames && index < end)
+            {
+                chunks.Recoverable(input.Position, $"acTL gives {state.AnimationFrames} frames but the file has {index}.");
+            }
+        }
+        catch (CorruptDataException e) when (state.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation && frames.Count > 0)
+        {
+            state.Metadata.Warnings.Add("The file ends inside the animation; the frames before that are kept.");
         }
         catch
         {
-            raster.Dispose();
+            foreach (Frame<TPixel> frame in frames)
+            {
+                frame.Plane.Dispose();
+            }
+
             throw;
+        }
+
+        if (fromEnd)
+        {
+            (int offset, int count) = range.GetOffsetAndLength(frames.Count);
+            for (int i = 0; i < frames.Count; i++)
+            {
+                if (i < offset || i >= offset + count)
+                {
+                    frames[i].Plane.Dispose();
+                }
+            }
+
+            frames = frames.GetRange(offset, count);
+        }
+
+        if (frames.Count == 0)
+        {
+            throw input.Corrupt(input.Position, "No frame of the animation is in the requested range or could be read.");
+        }
+
+        RasterMetadata metadata = new() { LoopCount = state.Plays };
+        CopyMetadata(state, metadata);
+        return new Raster<TPixel>(frames, metadata, input.Context);
+    }
+
+    /// <summary>Decodes one frame, draws it on the canvas and keeps a full-size copy when it is in the range.</summary>
+    /// <returns><see langword="false"/> if the frame was cut short and the animation ends there.</returns>
+    private static bool DrawFrame<TCanvas, TPixel>(State state, AnimationCanvas<TCanvas> canvas, FrameControl control, IdatStream data, int index, int first, int end, List<Frame<TPixel>> frames)
+        where TCanvas : unmanaged, IPixelType<TCanvas>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        EgamiInput input = state.Input;
+        input.Limits.CheckFrameCount(index + 1);
+        input.CancellationToken.ThrowIfCancellationRequested();
+        Rect bounds = control.Bounds;
+        State frameState = state.ForFrame(state.Header with { Width = bounds.Width, Height = bounds.Height });
+        using Raster<TCanvas> pixels = input.CreateRaster<TCanvas>(bounds.Width, bounds.Height, ClearMode.Zero);
+        DecodeFrame(frameState, pixels, data);
+        bool complete = !data.Truncated && !data.OutOfSequence;
+        if (data.OutOfSequence)
+        {
+            state.Metadata.Warnings.Add($"Frame {index}'s data is out of sequence; the animation ends before it.");
+            return false;
+        }
+
+        // A first frame that restores the previous canvas restores the empty one (APNG specification, fcTL).
+        FrameDisposal disposal = index == 0 && control.Disposal == FrameDisposal.RestorePrevious ? FrameDisposal.ClearToBackground : control.Disposal;
+        canvas.Begin(bounds, disposal);
+        for (int y = 0; y < bounds.Height; y++)
+        {
+            Span<TCanvas> target = canvas.Row(bounds.Y + y).Slice(bounds.X, bounds.Width);
+            Span<TCanvas> source = pixels.Row(y);
+            if (control.Blend == FrameBlend.Source)
+            {
+                source.CopyTo(target);
+            }
+            else if (typeof(TCanvas) == typeof(Rgba8))
+            {
+                ComposeKernels.SourceOver8(MemoryMarshal.Cast<TCanvas, uint>(source), MemoryMarshal.Cast<TCanvas, uint>(target), 255);
+            }
+            else
+            {
+                AnimationBlend.SourceOver16(MemoryMarshal.Cast<TCanvas, Rgba16>(source), MemoryMarshal.Cast<TCanvas, Rgba16>(target));
+            }
+        }
+
+        if (index >= first && index < end)
+        {
+            input.Memory.Check((long)canvas.Width * canvas.Height * TPixel.Layout.BytesPerPixel);
+            PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(canvas.Width, canvas.Height, input.Memory);
+            canvas.CopyTo(plane);
+            frames.Add(new Frame<TPixel>(plane, new FrameMetadata { Delay = control.Delay, Disposal = control.Disposal, Blend = control.Blend, Bounds = bounds }));
+        }
+
+        canvas.End();
+        return complete;
+    }
+
+    private static void DecodeFrame<TCanvas>(State state, Raster<TCanvas> raster, IdatStream data)
+        where TCanvas : unmanaged, IPixelType<TCanvas>
+    {
+        switch (state.Unpacker.Natural)
+        {
+            case PngNaturalType.Gray8:
+                DecodeStream<Gray8, TCanvas>(state, raster, data, static (u, s, d) => u.Unpack(s, d));
+                break;
+            case PngNaturalType.GrayAlpha8:
+                DecodeStream<GrayAlpha8, TCanvas>(state, raster, data, static (u, s, d) => u.Unpack(s, d));
+                break;
+            case PngNaturalType.Gray16:
+                DecodeStream<Gray16, TCanvas>(state, raster, data, static (_, s, d) => PngUnpacker.Unpack(s, d));
+                break;
+            case PngNaturalType.Rgb8:
+                DecodeStream<Rgb8, TCanvas>(state, raster, data, static (u, s, d) => u.Unpack(s, d));
+                break;
+            case PngNaturalType.Rgba8:
+                DecodeStream<Rgba8, TCanvas>(state, raster, data, static (u, s, d) => u.Unpack(s, d));
+                break;
+            default:
+                DecodeStream<Rgba16, TCanvas>(state, raster, data, static (u, s, d) => u.Unpack(s, d));
+                break;
         }
     }
 
@@ -782,7 +1129,46 @@ internal sealed class PngReader : IFormatReader
         public PngChunkPosition Position { get; set; } = PngChunkPosition.BeforePalette;
 
         public (uint Length, uint Type)? NextChunk { get; set; }
+
+        /// <summary>Gets whether the file is read as an animation: an APNG of more than one frame, or whose frame is not IDAT.</summary>
+        public bool IsAnimated => Png.IsAnimated && (AnimationFrames > 1 || FirstControl is null);
+
+        public int AnimationFrames { get; set; }
+
+        public int Plays { get; set; }
+
+        public FrameControl? FirstControl { get; set; }
+
+        private uint ExpectedSequence { get; set; }
+
+        /// <summary>Checks an fcTL or fdAT sequence number: a gap or repeat is corrupt (Strict), or ends the animation (Lenient).</summary>
+        public bool CheckSequence(uint number)
+        {
+            if (number != ExpectedSequence)
+            {
+                Chunks.Recoverable(Chunks.ChunkOffset, $"Sequence number {number} comes where {ExpectedSequence} was expected.");
+                return false;
+            }
+
+            ExpectedSequence++;
+            return true;
+        }
+
+        /// <summary>Returns a state for decoding one frame: the same file, palette and transparency, with the frame's size.</summary>
+        public State ForFrame(PngHeader header)
+        {
+            return new State(Input, Options, Chunks, header, Metadata, Png)
+            {
+                Palette = Palette,
+                Transparency = Transparency,
+                Unpacker = new PngUnpacker(header, Palette, Transparency),
+                KeptBytes = KeptBytes,
+            };
+        }
     }
+
+    /// <summary>One frame's fcTL: where it goes, how long it shows, and how it is drawn and disposed of.</summary>
+    private readonly record struct FrameControl(Rect Bounds, TimeSpan Delay, FrameDisposal Disposal, FrameBlend Blend);
 
     /// <summary>Reads scanlines from the inflated stream, unfilters them and writes pixels into the raster.</summary>
     private sealed class RowDecoder<TNatural, TPixel>(State state, Raster<TPixel> raster, InflatedReader inflated, UnpackRow<TNatural> unpack)

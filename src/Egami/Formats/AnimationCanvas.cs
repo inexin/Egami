@@ -88,3 +88,36 @@ internal sealed class AnimationCanvas<TCanvas> : IDisposable
         _saved?.Dispose();
     }
 }
+
+/// <summary>Source-over blending for 16-bit APNG frames.</summary>
+internal static class AnimationBlend
+{
+    /// <summary>Blends <paramref name="source"/> over <paramref name="destination"/>, rounding each result to nearest.</summary>
+    internal static void SourceOver16(ReadOnlySpan<Rgba16> source, Span<Rgba16> destination)
+    {
+        for (int i = 0; i < source.Length; i++)
+        {
+            Rgba16 s = source[i];
+            if (s.A == 0)
+            {
+                continue;
+            }
+
+            if (s.A == 65535)
+            {
+                destination[i] = s;
+                continue;
+            }
+
+            Rgba16 d = destination[i];
+            double sa = s.A / 65535.0;
+            double wd = d.A / 65535.0 * (1 - sa);
+            double outA = sa + wd;
+            destination[i] = new Rgba16(
+                (ushort)Math.Round(((s.R * sa) + (d.R * wd)) / outA),
+                (ushort)Math.Round(((s.G * sa) + (d.G * wd)) / outA),
+                (ushort)Math.Round(((s.B * sa) + (d.B * wd)) / outA),
+                (ushort)Math.Round(outA * 65535));
+        }
+    }
+}

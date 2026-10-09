@@ -192,12 +192,16 @@ Egami.Formats.Png.PngDetails.CodingIndependentCodePoints.get -> System.ReadOnlyM
 Egami.Formats.Png.PngDetails.CodingIndependentCodePoints.set -> void
 Egami.Formats.Png.PngDetails.ColorType.get -> Egami.Formats.Png.PngColorType
 Egami.Formats.Png.PngDetails.ColorType.set -> void
+Egami.Formats.Png.PngDetails.DefaultImageIsFrame.get -> bool
+Egami.Formats.Png.PngDetails.DefaultImageIsFrame.set -> void
 Egami.Formats.Png.PngDetails.Gamma.get -> uint?
 Egami.Formats.Png.PngDetails.Gamma.set -> void
 Egami.Formats.Png.PngDetails.IccProfileName.get -> string?
 Egami.Formats.Png.PngDetails.IccProfileName.set -> void
 Egami.Formats.Png.PngDetails.Interlaced.get -> bool
 Egami.Formats.Png.PngDetails.Interlaced.set -> void
+Egami.Formats.Png.PngDetails.IsAnimated.get -> bool
+Egami.Formats.Png.PngDetails.IsAnimated.set -> void
 Egami.Formats.Png.PngDetails.OtherChunks.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngChunk!>!
 Egami.Formats.Png.PngDetails.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgba8>
 Egami.Formats.Png.PngDetails.Palette.set -> void

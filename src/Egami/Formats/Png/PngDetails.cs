@@ -63,6 +63,15 @@ public sealed class PngDetails : FormatDetails
     /// <summary>Gets or sets a value indicating whether pHYs gave a unit (meter) rather than only an aspect ratio.</summary>
     public bool? ResolutionHasUnit { get; set; }
 
+    /// <summary>Gets or sets whether the file is an APNG (has a valid acTL chunk).</summary>
+    public bool IsAnimated { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether an APNG's default image (IDAT) is its first frame. When it is not, it is a still for viewers without
+    /// APNG support, and the reader skips it.
+    /// </summary>
+    public bool DefaultImageIsFrame { get; set; } = true;
+
     /// <summary>Gets the chunk each entry of <see cref="RasterMetadata.Text"/> came from, in the same order.</summary>
     public IList<PngTextSource> TextSources { get; } = [];
 
@@ -85,6 +94,8 @@ public sealed class PngDetails : FormatDetails
             CodingIndependentCodePoints = CodingIndependentCodePoints.ToArray(),
             IccProfileName = IccProfileName,
             ResolutionHasUnit = ResolutionHasUnit,
+            IsAnimated = IsAnimated,
+            DefaultImageIsFrame = DefaultImageIsFrame,
         };
         foreach (PngTextSource source in TextSources)
         {

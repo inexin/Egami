@@ -1,22 +1,41 @@
+using System.Buffers.Binary;
+
 namespace Egami.Formats.Png;
 
 /// <summary>
-/// Presents the data of consecutive IDAT chunks as one read-only stream, checking each chunk's CRC as it reaches the end of the chunk.
-/// When the IDAT run ends, the header of the next chunk is left in <see cref="NextLength"/> and <see cref="NextType"/>.
+/// Presents the data of consecutive IDAT chunks (or an APNG frame's fdAT chunks, without their sequence numbers) as one read-only
+/// stream, checking each chunk's CRC as it reaches the end of the chunk. When the run ends, the header of the next chunk is left
+/// in <see cref="NextLength"/> and <see cref="NextType"/>.
 /// </summary>
 internal sealed class IdatStream : Stream
 {
     private readonly PngChunkReader _chunks;
+    private readonly uint _type;
+    private readonly Func<uint, bool>? _sequence;
     private long _remaining;
     private uint _crc;
     private bool _ended;
 
     /// <summary>Starts at the data of an IDAT chunk whose header has just been read.</summary>
     internal IdatStream(PngChunkReader chunks, uint length)
+        : this(chunks, length, PngChunkType.Idat, null)
+    {
+    }
+
+    /// <summary>
+    /// Starts at the data of a chunk of <paramref name="type"/> whose header has just been read. For fdAT, each chunk's sequence
+    /// number goes to <paramref name="sequence"/>; when it returns false the run ends there, as if the file ended.
+    /// </summary>
+    internal IdatStream(PngChunkReader chunks, uint length, uint type, Func<uint, bool>? sequence)
     {
         _chunks = chunks;
+        _type = type;
+        _sequence = sequence;
         Begin(length);
     }
+
+    /// <summary>Gets a value indicating whether the run ended at a sequence number that was out of order.</summary>
+    internal bool OutOfSequence { get; private set; }
 
     /// <summary>Gets the length of the chunk after the IDAT run, once it has ended.</summary>
     internal uint NextLength { get; private set; }
@@ -109,7 +128,29 @@ internal sealed class IdatStream : Stream
     private void Begin(uint length)
     {
         _remaining = length;
-        _crc = Crc32.Update(0, "IDAT"u8);
+        Span<byte> name = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt32BigEndian(name, _type);
+        _crc = Crc32.Update(0, name);
+        if (_sequence is null)
+        {
+            return;
+        }
+
+        Span<byte> number = stackalloc byte[4];
+        if (length < 4 || _chunks.Input.Read(number) < 4)
+        {
+            Truncated = length >= 4;
+            _ended = true;
+            return;
+        }
+
+        _crc = Crc32.Update(_crc, number);
+        _remaining -= 4;
+        if (!_sequence(BinaryPrimitives.ReadUInt32BigEndian(number)))
+        {
+            OutOfSequence = true;
+            _ended = true;
+        }
     }
 
     /// <summary>Checks the CRC of the finished chunk and reads the next chunk header.</summary>
@@ -122,7 +163,7 @@ internal sealed class IdatStream : Stream
             return;
         }
 
-        _chunks.CheckCrc(PngChunkType.Idat, _crc, critical: true);
+        _chunks.CheckCrc(_type, _crc, critical: true);
         int available = _chunks.Input.Peek(8).Length;
         if (available is > 0 and < 8)
         {
@@ -135,7 +176,7 @@ internal sealed class IdatStream : Stream
             return;
         }
 
-        if (type == PngChunkType.Idat)
+        if (type == _type)
         {
             Begin(length);
             return;
