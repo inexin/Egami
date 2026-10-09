@@ -500,7 +500,7 @@ internal sealed class JpegWriter : IFormatWriter
                         System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(failure);
                     }
 
-                    wait.SpinOnce();
+                    wait.SpinOnce(sleep1Threshold: -1);
                 }
 
                 return buffer;
@@ -555,7 +555,7 @@ internal sealed class JpegWriter : IFormatWriter
                                 return;
                             }
 
-                            wait.SpinOnce();
+                            wait.SpinOnce(sleep1Threshold: -1);
                         }
 
                         _encoder.TransformRow(my, _buffers[my % _buffers.Length], workspace);
