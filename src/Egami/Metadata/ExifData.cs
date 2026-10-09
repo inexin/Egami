@@ -85,7 +85,8 @@ public sealed class ExifData
             if (TryGet(ExifKey.GpsAltitude, out ExifEntry? entry) && entry.Count > 0 && entry.Type != ExifType.Ascii)
             {
                 double meters = entry.AsDouble();
-                bool below = TryGet(ExifKey.GpsAltitudeRef, out ExifEntry? reference) && reference.Count > 0 && reference.Type != ExifType.Ascii && reference.AsInteger() == 1;
+                bool below = TryGet(ExifKey.GpsAltitudeRef, out ExifEntry? reference) && reference.Count > 0
+                    && reference.Type is ExifType.Byte or ExifType.Short or ExifType.Long or ExifType.Undefined && reference.AsInteger() == 1;
                 altitude = below ? -meters : meters;
             }
 

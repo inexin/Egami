@@ -41,6 +41,9 @@ public class FuzzRegressionTests
     public void ExifBlocksRebuildToTheSameEntries(string file)
     {
         ExifData exif = ExifData.Parse(File.ReadAllBytes(Path.Combine(Fuzz, "exif", file)));
+
+        // The typed getters never throw, whatever the block holds.
+        _ = (exif.Orientation, exif.DateTaken, exif.CameraMake, exif.CameraModel, exif.Location);
         exif.Set(ExifKey.Artist, "fuzz");
         ExifData again = ExifData.Parse(exif.ToBytes().Span);
         Assert.False(again.IsDamaged);
