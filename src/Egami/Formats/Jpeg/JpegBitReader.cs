@@ -348,6 +348,12 @@ internal sealed class JpegHuffmanTable : IDisposable
         for (int length = 1; length <= 16; length++)
         {
             int count = spec.Counts[length - 1];
+            if (code + count > (1 << length))
+            {
+                // Checked before the codes are placed: an over-full length would write past the lookahead table.
+                throw new CorruptDataException(JpegFormat.Info.Name, -1, "A Huffman table has more codes than its lengths allow.");
+            }
+
             _valueOffset[length] = k - code;
             for (int i = 0; i < count; i++, k++, code++)
             {
@@ -364,11 +370,6 @@ internal sealed class JpegHuffmanTable : IDisposable
             }
 
             _maxCode[length] = count > 0 ? code - 1 : -1;
-            if (code > (1 << length))
-            {
-                throw new CorruptDataException(JpegFormat.Info.Name, -1, "A Huffman table has more codes than its lengths allow.");
-            }
-
             code <<= 1;
         }
 

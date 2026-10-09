@@ -1,5 +1,7 @@
 using Egami;
 using Egami.Formats;
+using Egami.Formats.Jpeg;
+using Egami.Metadata;
 using Egami.Pixels;
 
 using SharpFuzz;
@@ -8,16 +10,22 @@ using SharpFuzz;
 // that touches Egami, including EgamiContext, is created inside the fuzzed delegate.
 //
 // Fuzz targets, one per reader. Each must load any input or fail with an EgamiException: any other exception is a crash,
-// and AFL++ reports hangs. Limits are lowered so a valid but huge image cannot exhaust the fuzzer's memory.
+// and AFL++ reports hangs. Limits are lowered so a valid but huge image cannot exhaust the fuzzer's memory. The exif target
+// parses raw TIFF blocks, which must never throw at all.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
-string target = args.Length > 0 ? args[0] : "png";
-Action<Stream> run = target switch
+//   dotnet run --project tests/Egami.Fuzz -c Release -- mutate jpeg 3600 seeds-dir findings-dir
+//       mutation fuzzing without AFL++ (any OS): random edits of the seeds for the given seconds; crashes and inputs that take
+//       over 10 seconds are saved to the findings directory. Not coverage-guided, so a complement to AFL++, not a replacement.
+if (args is ["mutate", string mutateTarget, string seconds, string seeds, string findings])
 {
-    "png" => LoadPng,
-    _ => throw new ArgumentException($"Unknown fuzz target '{target}'. Targets: png."),
-};
+    Mutator.Run(Target(mutateTarget), TimeSpan.FromSeconds(double.Parse(seconds, System.Globalization.CultureInfo.InvariantCulture)), seeds, findings);
+    return;
+}
+
+string target = args.Length > 0 ? args[0] : "png";
+Action<Stream> run = Target(target);
 
 if (args.Length > 1)
 {
@@ -28,6 +36,14 @@ if (args.Length > 1)
 }
 
 Fuzzer.OutOfProcess.Run(run);
+
+static Action<Stream> Target(string name) => name switch
+{
+    "png" => LoadPng,
+    "jpeg" => LoadJpeg,
+    "exif" => ParseExif,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif."),
+};
 
 static EgamiContext Context()
 {
@@ -59,5 +75,182 @@ static void LoadPng(Stream stream)
         catch (EgamiException)
         {
         }
+    }
+}
+
+static void LoadJpeg(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    foreach (ReaderOptions options in new ReaderOptions[]
+    {
+        new() { Recovery = RecoveryMode.Lenient },
+        new() { Recovery = RecoveryMode.Strict },
+        new JpegReaderOptions { FastUpsampling = true },
+        new() { TargetSize = new Size(1, 1) },
+        new() { TargetSize = new Size(64, 64) },
+    })
+    {
+        try
+        {
+            Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster<Rgba8> converted = raster.As<Rgba8>();
+
+            // Writing back exercises the EXIF, ICC and XMP writers on whatever was read, and the encoder on the pixels.
+            converted.Apply(ops => ops.AutoOrient());
+            converted.Save(Stream.Null, JpegFormat.Info);
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+static void ParseExif(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    ExifData exif = ExifData.Parse(data);
+    _ = (exif.Orientation, exif.DateTaken, exif.CameraMake, exif.CameraModel, exif.Location, exif.Thumbnail.Length);
+    foreach (ExifEntry entry in exif.Entries)
+    {
+        if (entry.Type == ExifType.Ascii)
+        {
+            _ = entry.AsString();
+        }
+        else if (entry.Count > 0)
+        {
+            _ = entry.AsDouble(entry.Count - 1);
+        }
+    }
+
+    // An edit makes the block lay itself out again, which must read back the same.
+    exif.Set(ExifKey.Artist, "fuzz");
+    ExifData again = ExifData.Parse(exif.ToBytes().Span);
+    if (again.IsDamaged || again.Entries.Count != exif.Entries.Count)
+    {
+        throw new InvalidOperationException("A rebuilt EXIF block did not read back the same.");
+    }
+}
+
+static byte[] ReadAll(Stream stream)
+{
+    using MemoryStream copy = new();
+    stream.CopyTo(copy);
+    return copy.ToArray();
+}
+
+/// <summary>A simple mutation fuzzer: random edits of seed files, run in process, with a watchdog for hangs.</summary>
+internal static class Mutator
+{
+    internal static void Run(Action<Stream> target, TimeSpan duration, string seeds, string findings)
+    {
+        byte[][] corpus = [.. Directory.GetFiles(seeds).Select(File.ReadAllBytes).Where(b => b.Length > 0)];
+        if (corpus.Length == 0)
+        {
+            throw new ArgumentException($"No seed files in {seeds}.");
+        }
+
+        Directory.CreateDirectory(findings);
+        Random random = new();
+        System.Diagnostics.Stopwatch clock = System.Diagnostics.Stopwatch.StartNew();
+        byte[] current = [];
+        long started = 0;
+        long cases = 0;
+        int crashes = 0;
+
+        // The watchdog saves an input that runs too long and stops the process, as AFL++ would report a hang.
+        using Timer watchdog = new(_ =>
+        {
+            long at = Interlocked.Read(ref started);
+            if (at != 0 && System.Diagnostics.Stopwatch.GetElapsedTime(at) > TimeSpan.FromSeconds(10))
+            {
+                Save(findings, "hang", Volatile.Read(ref current));
+                Console.WriteLine("Hang found; stopping.");
+                Environment.Exit(2);
+            }
+        }, null, 1000, 1000);
+
+        while (clock.Elapsed < duration)
+        {
+            byte[] input = Mutate(corpus[random.Next(corpus.Length)], corpus, random);
+            Volatile.Write(ref current, input);
+            Interlocked.Exchange(ref started, System.Diagnostics.Stopwatch.GetTimestamp());
+            try
+            {
+                using MemoryStream stream = new(input, writable: false);
+                target(stream);
+            }
+            catch (Exception e)
+            {
+                crashes++;
+                string name = Save(findings, "crash", input);
+                Console.WriteLine($"Crash {crashes}: {e.GetType().Name}: {e.Message} ({name})");
+            }
+
+            Interlocked.Exchange(ref started, 0);
+            if (++cases % 10_000 == 0)
+            {
+                Console.WriteLine($"{cases:N0} inputs, {crashes} crashes, {(int)clock.Elapsed.TotalMinutes} min");
+            }
+        }
+
+        Console.WriteLine($"Done: {cases:N0} inputs, {crashes} crashes.");
+    }
+
+    private static string Save(string findings, string kind, byte[] input)
+    {
+        string name = Path.Combine(findings, $"{kind}-{Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(input))[..16]}");
+        File.WriteAllBytes(name, input);
+        return name;
+    }
+
+    /// <summary>One to eight edits: bit flips, interesting bytes, insertions, deletions, truncation, duplicated or spliced ranges.</summary>
+    private static byte[] Mutate(byte[] seed, byte[][] corpus, Random random)
+    {
+        List<byte> data = [.. seed];
+        byte[] interesting = [0x00, 0x01, 0x7F, 0x80, 0xFF, 0xFE, 0xD8, 0xD9, 0xDA, 0xC0, 0xC2, 0xC4, 0xDB, 0xDD, 0xE1];
+        for (int n = random.Next(1, 9); n > 0 && data.Count > 0; n--)
+        {
+            int at = random.Next(data.Count);
+            switch (random.Next(8))
+            {
+                case 0:
+                    data[at] ^= (byte)(1 << random.Next(8));
+                    break;
+                case 1:
+                    data[at] = interesting[random.Next(interesting.Length)];
+                    break;
+                case 2:
+                    data.Insert(at, (byte)random.Next(256));
+                    break;
+                case 3:
+                    data.RemoveRange(at, Math.Min(random.Next(1, 64), data.Count - at));
+                    break;
+                case 4:
+                    data.RemoveRange(at, data.Count - at);
+                    break;
+                case 5:
+                    int length = Math.Min(random.Next(1, 256), data.Count - at);
+                    data.InsertRange(random.Next(data.Count), data.GetRange(at, length));
+                    break;
+                case 6:
+                    byte[] other = corpus[random.Next(corpus.Length)];
+                    int from = random.Next(other.Length);
+                    data.InsertRange(at, other.AsSpan(from, Math.Min(random.Next(1, 512), other.Length - from)).ToArray());
+                    break;
+                default:
+                    // A 16-bit length or count, big- or little-endian, set to an edge value.
+                    ushort value = (ushort)(random.Next(4) switch { 0 => 0, 1 => 0xFFFF, 2 => random.Next(16), _ => random.Next(65536) });
+                    if (at + 1 < data.Count)
+                    {
+                        (data[at], data[at + 1]) = random.Next(2) == 0 ? ((byte)(value >> 8), (byte)value) : ((byte)value, (byte)(value >> 8));
+                    }
+
+                    break;
+            }
+        }
+
+        return [.. data];
     }
 }

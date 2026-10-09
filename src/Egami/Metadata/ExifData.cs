@@ -628,6 +628,12 @@ public sealed class ExifData
                     continue;
                 }
 
+                if (_data._ifds[(int)kind].Exists(e => e.Key.Tag == tag))
+                {
+                    _data.Damaged($"An EXIF IFD has tag 0x{tag:X4} twice; the first is kept.");
+                    continue;
+                }
+
                 _data._ifds[(int)kind].Add(new ExifEntry(new ExifKey(tag, kind), type, (int)n, _tiff.Slice(start, (int)length).ToArray(), _data.IsBigEndian, length > 4 ? start : -1));
             }
 

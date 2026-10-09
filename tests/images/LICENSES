@@ -38,3 +38,10 @@ jpeg/testorig.jpg, jpeg/testimgint.jpg, jpeg/testimgari.jpg, jpeg/testorig12.jpg
   the EXIF blocks, and manifest.json, made by tools/make-jpeg-references.py. Same licenses as the files they come from.
   encode/ holds the encoder sources (the duck and egret above, reduced or cropped, as PNG) and cjpeg's encodes of them;
   public domain, as their sources.
+
+fuzz/exif-seeds/
+  Seed EXIF blocks for the exif fuzz target: two taken from jpeg/exif-tags.jpg and jpeg/exif-orientation-6.jpg above, and one
+  written by ExifData. Public domain.
+
+fuzz/jpeg/, fuzz/exif/
+  Inputs the fuzzers found, mutated from the corpus files above; kept as regression tests. Same licenses as their sources.

@@ -78,6 +78,11 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             JpegFrameComponent c = header.Components[i];
             int h = single ? 1 : c.H;
             int v = single ? 1 : c.V;
+            if (_maxH % h != 0 || _maxV % v != 0)
+            {
+                // As in libjpeg: a component sampled at, say, 3/4 of another has no whole upsampling ratio.
+                throw new UnsupportedFormatException($"Fractional chroma sampling ({c.H}×{c.V} against {_maxH}×{_maxV}) is not supported.");
+            }
 
             // Subsampled components are scaled up in the IDCT where they can be, a doubling at a time while it still divides
             // evenly in both directions, so a scaled decode upsamples less or not at all; this is libjpeg's choice too.

@@ -26,6 +26,8 @@ jobs:
       matrix:
         include:
           - { target: png, seeds: "tests/images/pngsuite/*.png" }
+          - { target: jpeg, seeds: "tests/images/jpeg/*.jpg" }
+          - { target: exif, seeds: "tests/images/fuzz/exif-seeds/*.tiff" }
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5
