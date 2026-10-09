@@ -208,6 +208,53 @@ internal sealed class JpegWriter : IFormatWriter
         return table;
     }
 
+    /// <summary>
+    /// The luma and chroma quantization tables for one quality, with the forms the transform uses. The last ones built are kept,
+    /// since a program usually saves many images at one quality.
+    /// </summary>
+    private sealed class QuantTables
+    {
+        private static QuantTables? s_last;
+
+        private QuantTables(int quality)
+        {
+            Quality = quality;
+            Quant = [Scale(JpegTables.LumaQuant, quality), Scale(JpegTables.ChromaQuant, quality)];
+            Divisors = new int[2][];
+            Reciprocals = new ushort[2][];
+            for (int t = 0; t < 2; t++)
+            {
+                Divisors[t] = new int[64];
+                for (int k = 0; k < 64; k++)
+                {
+                    Divisors[t][k] = Quant[t][k] * 8;
+                }
+
+                Reciprocals[t] = JpegFdct.Reciprocals(Divisors[t]);
+            }
+        }
+
+        internal int Quality { get; }
+
+        internal ushort[][] Quant { get; }
+
+        internal int[][] Divisors { get; }
+
+        internal ushort[][] Reciprocals { get; }
+
+        internal static QuantTables For(int quality)
+        {
+            QuantTables? last = Volatile.Read(ref s_last);
+            if (last?.Quality != quality)
+            {
+                last = new QuantTables(quality);
+                Volatile.Write(ref s_last, last);
+            }
+
+            return last;
+        }
+    }
+
     /// <summary>The encoding state for one image: its components, tables and the samples of the MCU row being coded.</summary>
     private sealed class Encoder<TPixel> : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -248,11 +295,9 @@ internal sealed class JpegWriter : IFormatWriter
             _mcusX = (_width + (8 * _maxH) - 1) / (8 * _maxH);
             _mcusY = (_height + (8 * _maxV) - 1) / (8 * _maxV);
             _paddedWidth = _mcusX * 8 * _maxH;
-            _quant = _gray
-                ? [Scale(JpegTables.LumaQuant, options.Quality)]
-                : [Scale(JpegTables.LumaQuant, options.Quality), Scale(JpegTables.ChromaQuant, options.Quality)];
-            _divisors = [.. _quant.Select(q => q.Select(v => v * 8).ToArray())];
-            _reciprocals = [.. _divisors.Select(d => JpegFdct.Reciprocals(d))];
+            QuantTables tables = QuantTables.For(options.Quality);
+            int count = _gray ? 1 : 2;
+            (_quant, _divisors, _reciprocals) = (tables.Quant[..count], tables.Divisors[..count], tables.Reciprocals[..count]);
             _dc = _gray ? [JpegHuffmanCodes.DcLuma] : [JpegHuffmanCodes.DcLuma, JpegHuffmanCodes.DcChroma];
             _ac = _gray ? [JpegHuffmanCodes.AcLuma] : [JpegHuffmanCodes.AcLuma, JpegHuffmanCodes.AcChroma];
 
@@ -310,9 +355,10 @@ internal sealed class JpegWriter : IFormatWriter
             using RowProducer rows = new(this, keepAll: _options.OptimizeHuffman);
             if (_options.OptimizeHuffman)
             {
-                long[][] dcCounts = [new long[256], new long[256]];
-                long[][] acCounts = [new long[256], new long[256]];
-                int[] predictors = new int[_planes.Length];
+                Span<long> counts = stackalloc long[4 * 256];
+                counts.Clear();
+                Span<int> predictors = stackalloc int[_planes.Length];
+                predictors.Clear();
                 int mcu = 0;
                 for (int my = 0; my < _mcusY; my++)
                 {
@@ -322,7 +368,7 @@ internal sealed class JpegWriter : IFormatWriter
                     {
                         if (RestartDue(mcu))
                         {
-                            Array.Clear(predictors);
+                            predictors.Clear();
                         }
 
                         for (int i = 0; i < _planes.Length; i++)
@@ -330,7 +376,7 @@ internal sealed class JpegWriter : IFormatWriter
                             int t = _planes[i].Table;
                             for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
                             {
-                                JpegBlockCoder.Count(row.AsSpan(b * 64, 64), ref predictors[i], dcCounts[t], acCounts[t]);
+                                JpegBlockCoder.Count(row.AsSpan(b * 64, 64), ref predictors[i], counts.Slice(t * 512, 256), counts.Slice((t * 512) + 256, 256));
                             }
                         }
                     }
@@ -338,8 +384,8 @@ internal sealed class JpegWriter : IFormatWriter
 
                 for (int t = 0; t < _dc.Length; t++)
                 {
-                    _dc[t] = JpegHuffmanCodes.Optimal(dcCounts[t]);
-                    _ac[t] = JpegHuffmanCodes.Optimal(acCounts[t]);
+                    _dc[t] = JpegHuffmanCodes.Optimal(counts.Slice(t * 512, 256));
+                    _ac[t] = JpegHuffmanCodes.Optimal(counts.Slice((t * 512) + 256, 256));
                 }
             }
 
@@ -442,9 +488,12 @@ internal sealed class JpegWriter : IFormatWriter
             private readonly Encoder<TPixel> _encoder;
             private readonly bool _keepAll;
             private readonly short[][] _buffers;
-            private readonly int[] _ready;
+            private readonly byte[] _ready;
             private readonly Task[] _tasks;
+            private readonly Workspace[] _workspaces;
             private int _next = -1;
+            private int _nextWorkspace = -1;
+            private int _transformed;
             private int _released;
             private bool _stop;
             private Exception? _failure;
@@ -462,19 +511,20 @@ internal sealed class JpegWriter : IFormatWriter
                     _buffers[i] = ArrayPool<short>.Shared.Rent(length);
                 }
 
-                _ready = new int[rows];
+                _ready = encoder._workers == 0 ? [] : new byte[rows];
+
+                // Workspaces are rented and returned on this thread: a worker thread ends with the encode, and arrays returned
+                // on it would stay in its thread-local pool cache and be lost.
+                _workspaces = new Workspace[encoder._workers];
+                for (int i = 0; i < _workspaces.Length; i++)
+                {
+                    _workspaces[i] = encoder.CreateWorkspace();
+                }
+
                 _tasks = new Task[encoder._workers];
                 for (int i = 0; i < _tasks.Length; i++)
                 {
                     _tasks[i] = Task.Factory.StartNew(Work, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-                }
-
-                if (_tasks.Length == 0 && keepAll)
-                {
-                    for (int my = 0; my < rows; my++)
-                    {
-                        encoder.TransformRow(my, _buffers[my], encoder._main);
-                    }
                 }
             }
 
@@ -484,9 +534,11 @@ internal sealed class JpegWriter : IFormatWriter
                 short[] buffer = _buffers[my % _buffers.Length];
                 if (_tasks.Length == 0)
                 {
-                    if (!_keepAll)
+                    // Kept rows are transformed on the first pass, while the counting that follows still finds them in cache.
+                    if (!_keepAll || my >= _transformed)
                     {
                         _encoder.TransformRow(my, buffer, _encoder._main);
+                        _transformed = my + 1;
                     }
 
                     return buffer;
@@ -531,17 +583,22 @@ internal sealed class JpegWriter : IFormatWriter
                 {
                     ArrayPool<short>.Shared.Return(buffer);
                 }
+
+                foreach (Workspace workspace in _workspaces)
+                {
+                    workspace.Dispose();
+                }
             }
 
             private void Work()
             {
-                using Workspace workspace = _encoder.CreateWorkspace();
+                Workspace workspace = _workspaces[Interlocked.Increment(ref _nextWorkspace)];
                 try
                 {
                     while (!Volatile.Read(ref _stop))
                     {
                         int my = Interlocked.Increment(ref _next);
-                        if (my >= _ready.Length)
+                        if (my >= _encoder._mcusY)
                         {
                             return;
                         }

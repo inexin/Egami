@@ -9,21 +9,25 @@ namespace Egami.Formats.Jpeg;
 /// <summary>A Huffman table for encoding: the code and length of each symbol (T.81 annex C), built from counts and symbols.</summary>
 internal sealed class JpegHuffmanCodes
 {
-    private readonly ushort[] _codes = new ushort[256];
-    private readonly byte[] _lengths = new byte[256];
-
     internal JpegHuffmanCodes(ReadOnlySpan<byte> counts, ReadOnlySpan<byte> symbols)
     {
         Counts = counts.ToArray();
         Symbols = symbols.ToArray();
+
+        // Only as long as the highest symbol: a DC table needs 12 entries, not 256.
+        int highest = 0;
+        foreach (byte symbol in symbols)
+        {
+            highest = Math.Max(highest, symbol);
+        }
+
+        Entries = new int[highest + 1];
         int code = 0;
         int k = 0;
         for (int length = 1; length <= 16; length++)
         {
             for (int i = 0; i < counts[length - 1]; i++, k++, code++)
             {
-                _codes[symbols[k]] = (ushort)code;
-                _lengths[symbols[k]] = (byte)length;
                 Entries[symbols[k]] = (length << 16) | code;
             }
 
@@ -50,13 +54,13 @@ internal sealed class JpegHuffmanCodes
     internal static JpegHuffmanCodes AcChroma { get; } = new(JpegTables.AcChromaCounts, JpegTables.AcChromaSymbols);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int Code(int symbol) => _codes[symbol];
+    internal int Code(int symbol) => Entries[symbol] & 0xFFFF;
 
     /// <summary>Gets each symbol's code in the low 16 bits and its length above them, for one lookup per symbol.</summary>
-    internal int[] Entries { get; } = new int[256];
+    internal int[] Entries { get; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int Length(int symbol) => _lengths[symbol];
+    internal int Length(int symbol) => Entries[symbol] >> 16;
 
     /// <summary>
     /// Builds the optimal table for symbol frequencies, with no code longer than 16 bits and no code of all ones (T.81 annex K.2,
@@ -65,12 +69,13 @@ internal sealed class JpegHuffmanCodes
     internal static JpegHuffmanCodes Optimal(ReadOnlySpan<long> frequencies)
     {
         // One extra symbol with frequency 1 takes the all-ones code, which is then dropped.
-        long[] freq = new long[257];
+        Span<long> freq = stackalloc long[257];
         frequencies[..256].CopyTo(freq);
         freq[256] = 1;
-        int[] codeSize = new int[257];
-        int[] others = new int[257];
-        Array.Fill(others, -1);
+        Span<int> codeSize = stackalloc int[257];
+        codeSize.Clear();
+        Span<int> others = stackalloc int[257];
+        others.Fill(-1);
         while (true)
         {
             // The two least frequent symbols; among equals, the one with the higher number (figure K.1).
@@ -120,7 +125,8 @@ internal sealed class JpegHuffmanCodes
         }
 
         // Count the codes of each length, then move codes longer than 16 bits up the tree (figure K.3).
-        int[] bits = new int[33];
+        Span<int> bits = stackalloc int[33];
+        bits.Clear();
         for (int i = 0; i <= 256; i++)
         {
             if (codeSize[i] > 0)
@@ -154,26 +160,27 @@ internal sealed class JpegHuffmanCodes
         }
 
         bits[longest]--;
-        byte[] counts = new byte[16];
+        Span<byte> counts = stackalloc byte[16];
         for (int i = 1; i <= 16; i++)
         {
             counts[i - 1] = (byte)bits[i];
         }
 
         // Symbols in order of code length, then number (figure K.4).
-        List<byte> symbols = [];
+        Span<byte> symbols = stackalloc byte[256];
+        int symbolCount = 0;
         for (int length = 1; length <= 32; length++)
         {
             for (int s = 0; s < 256; s++)
             {
                 if (codeSize[s] == length)
                 {
-                    symbols.Add((byte)s);
+                    symbols[symbolCount++] = (byte)s;
                 }
             }
         }
 
-        return new JpegHuffmanCodes(counts, [.. symbols]);
+        return new JpegHuffmanCodes(counts, symbols[..symbolCount]);
     }
 }
 
