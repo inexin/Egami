@@ -1,4 +1,5 @@
 using Egami.Metadata;
+using Egami.Quantization;
 
 namespace Egami.Formats.Tga;
 
@@ -17,6 +18,7 @@ public static class TgaFormat
         SignatureLength = 18,
         Matches = TgaReader.Matches,
         Reader = TgaReader.Instance,
+        Writer = TgaWriter.Instance,
     };
 }
 
@@ -105,4 +107,39 @@ public sealed class TgaDetails : FormatDetails
             PixelAspectRatio = PixelAspectRatio,
         };
     }
+}
+
+/// <summary>The pixel layout a TGA is written with.</summary>
+public enum TgaBits
+{
+    /// <summary>8-bit gray for gray types without alpha, 24-bit when every pixel is opaque, else 32-bit with alpha.</summary>
+    Auto,
+
+    /// <summary>8-bit gray (image type 3).</summary>
+    Gray8,
+
+    /// <summary>8-bit indices into a color map of up to 256 colors, with alpha in the map when the image has any.</summary>
+    Indexed8,
+
+    /// <summary>24-bit blue, green and red; alpha is dropped.</summary>
+    Bgr24,
+
+    /// <summary>32-bit blue, green, red and alpha.</summary>
+    Bgra32,
+}
+
+/// <summary>Options for writing TGA.</summary>
+public sealed class TgaWriterOptions : WriterOptions
+{
+    /// <summary>Gets the default options.</summary>
+    public static new TgaWriterOptions Default { get; } = new();
+
+    /// <summary>Gets whether to run-length encode the pixels. Defaults to <see langword="true"/>.</summary>
+    public bool Rle { get; init; } = true;
+
+    /// <summary>Gets the pixel layout. Defaults to <see cref="TgaBits.Auto"/>.</summary>
+    public TgaBits Bits { get; init; }
+
+    /// <summary>Gets how the color map is built for <see cref="TgaBits.Indexed8"/> when the image has more than 256 colors.</summary>
+    public PaletteOptions Palette { get; init; } = PaletteOptions.Default;
 }

@@ -383,6 +383,12 @@ Egami.Formats.Tga.TgaAlphaType.Premultiplied = 4 -> Egami.Formats.Tga.TgaAlphaTy
 Egami.Formats.Tga.TgaAlphaType.Straight = 3 -> Egami.Formats.Tga.TgaAlphaType
 Egami.Formats.Tga.TgaAlphaType.UndefinedIgnore = 1 -> Egami.Formats.Tga.TgaAlphaType
 Egami.Formats.Tga.TgaAlphaType.UndefinedKeep = 2 -> Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaBits
+Egami.Formats.Tga.TgaBits.Auto = 0 -> Egami.Formats.Tga.TgaBits
+Egami.Formats.Tga.TgaBits.Bgr24 = 3 -> Egami.Formats.Tga.TgaBits
+Egami.Formats.Tga.TgaBits.Bgra32 = 4 -> Egami.Formats.Tga.TgaBits
+Egami.Formats.Tga.TgaBits.Gray8 = 1 -> Egami.Formats.Tga.TgaBits
+Egami.Formats.Tga.TgaBits.Indexed8 = 2 -> Egami.Formats.Tga.TgaBits
 Egami.Formats.Tga.TgaDetails
 Egami.Formats.Tga.TgaDetails.AlphaType.get -> Egami.Formats.Tga.TgaAlphaType?
 Egami.Formats.Tga.TgaDetails.AlphaType.set -> void
@@ -411,6 +417,14 @@ Egami.Formats.Tga.TgaOrigin.BottomLeft = 0 -> Egami.Formats.Tga.TgaOrigin
 Egami.Formats.Tga.TgaOrigin.BottomRight = 1 -> Egami.Formats.Tga.TgaOrigin
 Egami.Formats.Tga.TgaOrigin.TopLeft = 2 -> Egami.Formats.Tga.TgaOrigin
 Egami.Formats.Tga.TgaOrigin.TopRight = 3 -> Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaWriterOptions
+Egami.Formats.Tga.TgaWriterOptions.Bits.get -> Egami.Formats.Tga.TgaBits
+Egami.Formats.Tga.TgaWriterOptions.Bits.init -> void
+Egami.Formats.Tga.TgaWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Tga.TgaWriterOptions.Palette.init -> void
+Egami.Formats.Tga.TgaWriterOptions.Rle.get -> bool
+Egami.Formats.Tga.TgaWriterOptions.Rle.init -> void
+Egami.Formats.Tga.TgaWriterOptions.TgaWriterOptions() -> void
 Egami.Formats.WriterOptions
 Egami.Formats.WriterOptions.StripMetadata.get -> bool
 Egami.Formats.WriterOptions.StripMetadata.init -> void
@@ -1049,6 +1063,7 @@ static Egami.Formats.ReaderOptions.Default.get -> Egami.Formats.ReaderOptions!
 static Egami.Formats.ReaderOptions.operator !=(Egami.Formats.ReaderOptions? left, Egami.Formats.ReaderOptions? right) -> bool
 static Egami.Formats.ReaderOptions.operator ==(Egami.Formats.ReaderOptions? left, Egami.Formats.ReaderOptions? right) -> bool
 static Egami.Formats.Tga.TgaFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Tga.TgaWriterOptions.Default.get -> Egami.Formats.Tga.TgaWriterOptions!
 static Egami.Formats.WriterOptions.Default.get -> Egami.Formats.WriterOptions!
 static Egami.Metadata.ExifData.Parse(System.ReadOnlySpan<byte> tiff) -> Egami.Metadata.ExifData!
 static Egami.Metadata.ExifFraction.operator !=(Egami.Metadata.ExifFraction left, Egami.Metadata.ExifFraction right) -> bool
