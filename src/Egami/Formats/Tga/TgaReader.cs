@@ -171,7 +171,7 @@ internal sealed class TgaReader : IFormatReader
             return;
         }
 
-        uint offset = BinaryPrimitives.ReadUInt32LittleEndian(footer);
+        long offset = BinaryPrimitives.ReadUInt32LittleEndian(footer);
         byte[] extension = new byte[ExtensionLength];
         if (offset >= HeaderLength && offset + ExtensionLength <= length - FooterLength && input.TryReadAt(offset, extension))
         {

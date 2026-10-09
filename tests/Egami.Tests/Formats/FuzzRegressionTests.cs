@@ -12,8 +12,12 @@ namespace Egami.Tests.Formats;
 public class FuzzRegressionTests
 {
     private static readonly string Fuzz = Path.Combine(AppContext.BaseDirectory, "images", "fuzz");
+    private static readonly string[] SimpleFolders = ["bmp", "tga", "qoi", "pnm"];
 
     public static TheoryData<string> JpegFiles() => [.. Directory.GetFiles(Path.Combine(Fuzz, "jpeg")).Select(p => Path.GetFileName(p)).Order(StringComparer.Ordinal)];
+
+    public static TheoryData<string> SimpleFiles() =>
+        [.. SimpleFolders.Where(f => Directory.Exists(Path.Combine(Fuzz, f))).SelectMany(f => Directory.GetFiles(Path.Combine(Fuzz, f)).Select(p => $"{f}/{Path.GetFileName(p)}")).Order(StringComparer.Ordinal)];
 
     public static TheoryData<string> ExifFiles() => [.. Directory.GetFiles(Path.Combine(Fuzz, "exif")).Select(p => Path.GetFileName(p)).Order(StringComparer.Ordinal)];
 
@@ -29,6 +33,27 @@ public class FuzzRegressionTests
                 using Raster raster = Raster.Load(data, options: options);
                 using Raster<Rgba8> converted = raster.As<Rgba8>();
                 converted.Save(Stream.Null, JpegFormat.Info);
+            }
+            catch (EgamiException)
+            {
+            }
+        }
+    }
+
+    /// <summary>The BMP, TGA, QOI and PNM inputs load, from memory and from a stream that cannot seek, or fail cleanly.</summary>
+    [Theory]
+    [MemberData(nameof(SimpleFiles))]
+    public void SimpleFormatInputsLoadOrFailCleanly(string file)
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Fuzz, file));
+        foreach (RecoveryMode recovery in (RecoveryMode[])[RecoveryMode.Lenient, RecoveryMode.Strict])
+        {
+            ReaderOptions options = new() { Recovery = recovery };
+            try
+            {
+                Raster.Probe(data, options: options);
+                using Raster raster = Raster.Load(data, options: options);
+                using Raster<Rgba8> converted = Raster.Load<Rgba8>(new NonSeekable(data), options: options);
             }
             catch (EgamiException)
             {
@@ -53,5 +78,16 @@ public class FuzzRegressionTests
 
         static IEnumerable<(ExifKey, ExifType, byte[])> Sorted(ExifData data) =>
             data.Entries.OrderBy(e => e.Key.Ifd).ThenBy(e => e.Key.Tag).Select(e => (e.Key, e.Type, e.RawValue.ToArray()));
+    }
+
+    private sealed class NonSeekable(byte[] data) : MemoryStream(data, writable: false)
+    {
+        public override bool CanSeek => false;
+
+        public override long Position { get => base.Position; set => throw new NotSupportedException(); }
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin loc) => throw new NotSupportedException();
     }
 }

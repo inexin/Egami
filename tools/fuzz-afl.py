@@ -16,7 +16,9 @@ import subprocess
 import sys
 
 SEEDS = {"png": "tests/images/pngsuite/*.png", "jpeg": "tests/images/jpeg/*.jpg", "exif": "tests/images/fuzz/exif-seeds/*.tiff",
-         "gif": "tests/images/gif/*.gif", "apng": "tests/images/apng/*.png", "lzw": "tests/images/fuzz/lzw-seeds/*.bin"}
+         "gif": "tests/images/gif/*.gif", "apng": "tests/images/apng/*.png", "lzw": "tests/images/fuzz/lzw-seeds/*.bin",
+         "bmp": "tests/images/bmp/*", "tga": "tests/images/tga/*", "qoi": "tests/images/qoi/*", "pnm": "tests/images/pnm/*",
+         "detect": "tests/images/fuzz/detect-seeds/*"}
 
 SCRIPT = """
 set -e

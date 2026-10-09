@@ -43,7 +43,7 @@ fuzz/exif-seeds/
   Seed EXIF blocks for the exif fuzz target: two taken from jpeg/exif-tags.jpg and jpeg/exif-orientation-6.jpg above, and one
   written by ExifData. Public domain.
 
-fuzz/jpeg/, fuzz/exif/
+fuzz/jpeg/, fuzz/exif/, fuzz/tga/
   Inputs the fuzzers found, mutated from the corpus files above; kept as regression tests. Same licenses as their sources.
 
 gif/*.gif, apng/*.png
@@ -62,3 +62,7 @@ bmp/, tga/, qoi/, pnm/
 ../reference/simple/
   The files above decoded by Pillow, ImageMagick and Netpbm, the pixels the script wrote into its hand-made files, and
   manifest.json, made by tools/make-simple-references.py. Public domain, as the files they come from.
+
+fuzz/detect-seeds/
+  Copies of one file of each format from the folders above, as seeds for the detect fuzz target. Same licenses as the files
+  they copy.

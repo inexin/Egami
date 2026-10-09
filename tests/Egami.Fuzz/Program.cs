@@ -45,7 +45,12 @@ static Action<Stream> Target(string name) => name switch
     "gif" => LoadGif,
     "apng" => LoadApng,
     "lzw" => DecodeLzw,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, gif, apng, lzw."),
+    "bmp" => stream => LoadSimple(stream, Egami.Formats.Bmp.BmpFormat.Info),
+    "tga" => stream => LoadSimple(stream, Egami.Formats.Tga.TgaFormat.Info),
+    "qoi" => stream => LoadSimple(stream, Egami.Formats.Qoi.QoiFormat.Info),
+    "pnm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
+    "detect" => Detect,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, gif, apng, lzw, bmp, tga, qoi, pnm, detect."),
 };
 
 static EgamiContext Context()
@@ -158,6 +163,43 @@ static void LoadApng(Stream stream)
         catch (EgamiException)
         {
         }
+    }
+}
+
+// One of the 1.5 readers alone (so mutations are not lost to detection), from memory and from a stream that cannot seek (the
+// TGA footer is then read after the pixels), then written back in its own format.
+static void LoadSimple(Stream stream, FormatInfo format)
+{
+    EgamiContext context = Context() with { Formats = [format] };
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery };
+        try
+        {
+            Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster<Rgba8> converted = Raster.Load<Rgba8>(new ForwardOnlyStream(data), context, options);
+            raster.Save(Stream.Null, format);
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+// Every format registered: detection, the TGA header check and the BMP hand-off to PNG and JPEG, fuzzed together.
+static void Detect(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    try
+    {
+        Raster.Probe(data, context);
+        using Raster raster = Raster.Load(data, context);
+    }
+    catch (EgamiException)
+    {
     }
 }
 
@@ -325,4 +367,16 @@ internal static class Mutator
 
         return [.. data];
     }
+}
+
+/// <summary>A stream over bytes that says it cannot seek.</summary>
+internal sealed class ForwardOnlyStream(byte[] data) : MemoryStream(data, writable: false)
+{
+    public override bool CanSeek => false;
+
+    public override long Position { get => base.Position; set => throw new NotSupportedException(); }
+
+    public override long Length => throw new NotSupportedException();
+
+    public override long Seek(long offset, SeekOrigin loc) => throw new NotSupportedException();
 }

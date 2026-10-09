@@ -175,7 +175,7 @@ public class PixelPlaneTests
         PooledPixelMemorySource source = new() { PoolThresholdBytes = 0 };
         AllocateAndForget(source);
         Assert.True(source.Cache.LiveBytes > 0);
-        for (int i = 0; i < 10 && source.Cache.LiveBytes > 0; i++)
+        for (int i = 0; i < 50 && source.Cache.LiveBytes > 0; i++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -184,6 +184,7 @@ public class PixelPlaneTests
         Assert.Equal(0, source.Cache.LiveBytes);
         Assert.Equal(0, source.RetainedBytes);
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         static void AllocateAndForget(PooledPixelMemorySource source)
         {
             for (int i = 0; i < 10; i++)

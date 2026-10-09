@@ -199,7 +199,7 @@ public sealed class EgamiInput : IDisposable
     /// </summary>
     internal bool TryReadAt(long offset, Span<byte> destination)
     {
-        if (_origin < 0 || offset < 0)
+        if (_origin < 0 || offset < 0 || offset > Length - destination.Length)
         {
             return false;
         }
