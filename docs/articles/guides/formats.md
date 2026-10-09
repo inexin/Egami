@@ -77,7 +77,8 @@ QOI's colorspace byte maps to `RasterMetadata.ColorSpace` (sRGB or linear) and b
 
 Maxvals other than 255 and 65,535 are scaled exactly, as round(v × 255 / maxval). A PAM with an unknown tuple type is read by its
 depth, with a warning. A stream with several images reads the first and warns. `#` comments become `Comment` text entries and
-are written back.
+are written back. Saving to a .pbm, .pgm, .ppm or .pam path writes that variant unless `PnmWriterOptions.Kind` names one; .pnm
+chooses from the pixel type.
 
 ## What each writer drops
 

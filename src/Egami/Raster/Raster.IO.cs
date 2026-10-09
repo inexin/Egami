@@ -383,7 +383,8 @@ public abstract partial class Raster
 
     /// <summary>
     /// Encodes the raster to a file, choosing the format from the file extension. An existing file is replaced.
-    /// If encoding fails, the partly written file is deleted.
+    /// If encoding fails, the partly written file is deleted. For Netpbm, the extension also chooses the variant when
+    /// <see cref="Formats.Pnm.PnmWriterOptions.Kind"/> is <see cref="Formats.Pnm.PnmKind.Auto"/>: .pbm, .pgm, .ppm or .pam.
     /// </summary>
     /// <param name="path">The file path.</param>
     /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
@@ -397,6 +398,7 @@ public abstract partial class Raster
     public void Save(string path, WriterOptions? options = null)
     {
         FormatInfo format = FormatPipeline.FormatForPath(Context, path);
+        options = FormatPipeline.OptionsForPath(format, path, options);
         WriteFile(path, stream => Save(stream, format, options));
     }
 
@@ -460,6 +462,7 @@ public abstract partial class Raster
     public async Task SaveAsync(string path, WriterOptions? options = null, CancellationToken cancellationToken = default)
     {
         FormatInfo format = FormatPipeline.FormatForPath(Context, path);
+        options = FormatPipeline.OptionsForPath(format, path, options);
         FileStream stream = new(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous);
         try
         {

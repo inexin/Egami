@@ -14,6 +14,36 @@ public class PnmTests(ITestOutputHelper output)
 
     public static TheoryData<string> Files() => [.. SimpleCorpus.Files("pnm")];
 
+    [Theory]
+    [InlineData(".pbm", "P4")]
+    [InlineData(".pgm", "P5")]
+    [InlineData(".ppm", "P6")]
+    [InlineData(".pam", "P7")]
+    [InlineData(".pnm", "P7")]
+    public void ExtensionChoosesTheKind(string extension, string magic)
+    {
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(4, 2, new Rgba8(200, 100, 50, 128));
+        string path = Path.Combine(Path.GetTempPath(), $"egami-{Guid.NewGuid():N}{extension}");
+        try
+        {
+            image.Save(path);
+            Assert.Equal(magic, Encoding.ASCII.GetString(File.ReadAllBytes(path), 0, 2));
+
+            // Options that name a kind, or options of another kind, win over the extension; plain text is kept.
+            image.Save(path, new PnmWriterOptions { Kind = PnmKind.Pam });
+            Assert.Equal("P7", Encoding.ASCII.GetString(File.ReadAllBytes(path), 0, 2));
+            if (extension == ".pgm")
+            {
+                image.Save(path, new PnmWriterOptions { PlainText = true });
+                Assert.Equal("P2", Encoding.ASCII.GetString(File.ReadAllBytes(path), 0, 2));
+            }
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     /// <summary>
     /// The script's own pixels decide where it wrote the file by hand; otherwise Netpbm, which reads every variant. Pillow scales
     /// maxvals other than 255 and 16-bit gray wrongly and cannot read PAM, so it is only reported.

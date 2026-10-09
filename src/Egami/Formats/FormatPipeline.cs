@@ -46,6 +46,31 @@ internal static class FormatPipeline
         return FormatForName(context, extension);
     }
 
+    /// <summary>
+    /// Lets the file extension refine the options where one format has several variants: .pbm, .pgm, .ppm and .pam choose the
+    /// Netpbm kind unless the options already name one.
+    /// </summary>
+    internal static WriterOptions? OptionsForPath(FormatInfo format, string path, WriterOptions? options)
+    {
+        Pnm.PnmWriterOptions? pnm = options as Pnm.PnmWriterOptions;
+        if (format != Pnm.PnmFormat.Info || pnm?.Kind is not (null or Pnm.PnmKind.Auto) || (options is not null && pnm is null && options.GetType() != typeof(WriterOptions)))
+        {
+            return options;
+        }
+
+        Pnm.PnmKind kind = Path.GetExtension(path).ToUpperInvariant() switch
+        {
+            ".PBM" => Pnm.PnmKind.Bitmap,
+            ".PGM" => Pnm.PnmKind.Graymap,
+            ".PPM" => Pnm.PnmKind.Pixmap,
+            ".PAM" => Pnm.PnmKind.Pam,
+            _ => Pnm.PnmKind.Auto,
+        };
+        return kind == Pnm.PnmKind.Auto
+            ? options
+            : new Pnm.PnmWriterOptions { Kind = kind, PlainText = pnm?.PlainText ?? false, StripMetadata = options?.StripMetadata ?? false };
+    }
+
     /// <summary>Reads a whole stream into a pooled buffer asynchronously, counting it against <see cref="SafetyLimits.MaxTotalBytes"/>.</summary>
     internal static async Task<(byte[] Buffer, int Length)> ReadAllAsync(Stream stream, EgamiContext context, CancellationToken cancellationToken)
     {

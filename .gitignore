@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 # Downloads and scratch files for tools/make-op-references.py
 .cache/
+
+# DocFX output
+docs/_site/
+docs/api/

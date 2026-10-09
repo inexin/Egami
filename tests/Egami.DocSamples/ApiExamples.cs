@@ -28,7 +28,7 @@ public class ApiExamples
             source.Save("duck.bmp");
             source.Save("duck.tga");
             source.Save("duck.qoi");
-            source.Save("duck.pgm", new PnmWriterOptions { Kind = PnmKind.Graymap });
+            source.Save("duck.pgm");
         }
 
         #region format-details
