@@ -733,6 +733,8 @@ Egami.Quantization.PaletteOptions.AlphaThreshold.init -> void
 Egami.Quantization.PaletteOptions.Dither.get -> Egami.Quantization.DitherMode
 Egami.Quantization.PaletteOptions.Dither.init -> void
 Egami.Quantization.PaletteOptions.Equals(Egami.Quantization.PaletteOptions? other) -> bool
+Egami.Quantization.PaletteOptions.FastMapping.get -> bool
+Egami.Quantization.PaletteOptions.FastMapping.init -> void
 Egami.Quantization.PaletteOptions.MaxColors.get -> int
 Egami.Quantization.PaletteOptions.MaxColors.init -> void
 Egami.Quantization.PaletteOptions.PaletteOptions() -> void

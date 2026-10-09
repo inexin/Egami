@@ -101,8 +101,16 @@ internal sealed class WuQuantizer : IDisposable
     }
 
     /// <summary>Returns up to <paramref name="colors"/> palette colors; fewer when the pixels have fewer distinct boxes.</summary>
-    internal Rgba8[] Build(int colors)
+    internal Rgba8[] Build(int colors) => Build(colors, null);
+
+    /// <summary>
+    /// Returns up to <paramref name="colors"/> palette colors, and in three dimensions fills <paramref name="tags"/> (one entry per
+    /// histogram cell, <see cref="TagCells"/> of them) with the palette entry of the box each cell is in, or -1 for cells in boxes
+    /// no pixel fell in.
+    /// </summary>
+    internal Rgba8[] Build(int colors, short[]? tags)
     {
+        tags?.AsSpan(0, _cells).Fill(-1);
         if (!_cumulative)
         {
             Accumulate();
@@ -166,6 +174,18 @@ internal sealed class WuQuantizer : IDisposable
             }
 
             Sums(boxes[i], sums);
+            if (tags is not null)
+            {
+                Box box = boxes[i];
+                for (int r = box.Low[0] + 1; r <= box.High[0]; r++)
+                {
+                    for (int g = box.Low[1] + 1; g <= box.High[1]; g++)
+                    {
+                        tags.AsSpan((r * _strides[0]) + (g * _strides[1]) + box.Low[2] + 1, box.High[2] - box.Low[2]).Fill((short)palette.Count);
+                    }
+                }
+            }
+
             palette.Add(new Rgba8(
                 Mean(sums[0], weight),
                 Mean(sums[1], weight),
@@ -175,6 +195,13 @@ internal sealed class WuQuantizer : IDisposable
 
         return [.. palette];
     }
+
+    /// <summary>Gets the number of histogram cells in three dimensions: 33 × 33 × 33, for box tags.</summary>
+    internal const int TagCells = 33 * 33 * 33;
+
+    /// <summary>Returns the box-tag cell of a color, for <see cref="Build(int, short[])"/>'s tags.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal static int TagCell(int r, int g, int b) => ((((r >> 3) + 1) * 33) + (g >> 3) + 1) * 33 + (b >> 3) + 1;
 
     public void Dispose()
     {

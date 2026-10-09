@@ -44,4 +44,12 @@ public sealed record PaletteOptions
     /// Gets the alpha below which a pixel is transparent, for formats whose transparency is on or off (GIF). Defaults to 128.
     /// </summary>
     public byte AlphaThreshold { get; init; } = 128;
+
+    /// <summary>
+    /// Gets whether a built palette maps each pixel to the color of the quantizer box it falls in instead of searching for the
+    /// nearest color. Several times faster with dithering, but about 0.3 to 0.5 dB worse without it and up to 2 dB worse with
+    /// it, since dithered colors can land in a box whose color is not the nearest. Defaults to <see langword="false"/>.
+    /// Palettes that hold every color exactly, and palettes with partial alpha, always map exactly or to the nearest color.
+    /// </summary>
+    public bool FastMapping { get; init; }
 }

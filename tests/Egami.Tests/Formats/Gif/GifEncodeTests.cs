@@ -84,16 +84,19 @@ public class GifEncodeTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData(DitherMode.None, 34.0)]
-    [InlineData(DitherMode.FloydSteinberg, 32.0)]
-    [InlineData(DitherMode.Ordered, 33.0)]
-    public void PhotosAreQuantizedToTheirPalette(DitherMode dither, double floor)
+    [InlineData(DitherMode.None, false, 34.0)]
+    [InlineData(DitherMode.FloydSteinberg, false, 32.0)]
+    [InlineData(DitherMode.Ordered, false, 33.0)]
+    [InlineData(DitherMode.None, true, 34.0)]
+    [InlineData(DitherMode.FloydSteinberg, true, 31.0)]
+    [InlineData(DitherMode.Ordered, true, 32.0)]
+    public void PhotosAreQuantizedToTheirPalette(DitherMode dither, bool fast, double floor)
     {
         using Raster<Rgb8> photo = Raster.Load<Rgb8>(Path.Combine(AnimCorpus.Images, "ops", "duck.png"));
-        byte[] written = Save(photo, new GifWriterOptions { Palette = new PaletteOptions { Dither = dither } });
+        byte[] written = Save(photo, new GifWriterOptions { Palette = new PaletteOptions { Dither = dither, FastMapping = fast } });
         using Raster<Rgb8> again = Raster.Load<Rgb8>(written);
         double psnr = Psnr(photo, again);
-        output.WriteLine($"{dither}: {written.Length:N0} bytes, {psnr:F2} dB");
+        output.WriteLine($"{dither}{(fast ? " fast" : string.Empty)}: {written.Length:N0} bytes, {psnr:F2} dB");
         Assert.True(psnr >= floor, $"{psnr:F2} dB");
     }
 
@@ -117,6 +120,30 @@ public class GifEncodeTests(ITestOutputHelper output)
         }
 
         output.WriteLine($"{scope}: {written.Length:N0} bytes");
+    }
+
+    [Fact]
+    public void UnchangedAreasKeepTheirColorsWithPerFramePalettes()
+    {
+        // A photo background with a small changing square: only the square is mapped again, so the background never flickers
+        // between palettes.
+        using Raster<Rgba8> photo = Raster.Load<Rgba8>(Path.Combine(AnimCorpus.Images, "ops", "duck.png"));
+        using Raster<Rgba8> anim = photo.Derive(ops => ops.Crop(new Rect(0, 0, 200, 150)), TestContext.Current.CancellationToken);
+        for (int i = 1; i < 6; i++)
+        {
+            Frame<Rgba8> frame = anim.Frames.Add(anim.Frames[0]);
+            for (int y = 60; y < 80; y++)
+            {
+                frame.Row(y).Slice(20 * i, 20).Fill(new Rgba8((byte)(40 * i), 200, 30, 255));
+            }
+        }
+
+        using Raster<Rgba8> again = Raster.Load<Rgba8>(Save(anim, new GifWriterOptions { PaletteScope = GifPaletteScope.PerFrame }));
+        for (int i = 1; i < 6; i++)
+        {
+            Assert.True(again.Frames[i].Row(10).SequenceEqual(again.Frames[0].Row(10)), $"frame {i}");
+            Assert.True(again.Frames[i].Metadata.Bounds!.Value.Height <= 20);
+        }
     }
 
     [Fact]

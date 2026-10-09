@@ -159,8 +159,10 @@ internal sealed class PaletteMapper : IDisposable
     /// <param name="transparentIndex">The index pixels below <paramref name="threshold"/> alpha take, or -1 (binary alpha only).</param>
     /// <param name="withAlpha">Whether alpha takes part in the distance (palette PNG); otherwise alpha is on or off.</param>
     /// <param name="threshold">The alpha below which a pixel is transparent, without alpha in the distance.</param>
-    internal PaletteMapper(Rgba8[] palette, int transparentIndex, bool withAlpha, byte threshold)
+    /// <param name="boxTags">For fast mapping: each histogram cell's palette entry (see <see cref="WuQuantizer.Build(int, short[])"/>), or null.</param>
+    internal PaletteMapper(Rgba8[] palette, int transparentIndex, bool withAlpha, byte threshold, short[]? boxTags = null)
     {
+        _boxTags = withAlpha ? null : boxTags;
         _palette = palette;
         _transparent = transparentIndex;
         _withAlpha = withAlpha;
@@ -203,6 +205,7 @@ internal sealed class PaletteMapper : IDisposable
     }
 
     private readonly short[] _pairs;
+    private readonly short[]? _boxTags;
 
 
     /// <summary>A channel value for padding entries: farther from any color than any real entry can be.</summary>
@@ -236,6 +239,15 @@ internal sealed class PaletteMapper : IDisposable
             if (pixel.A < _threshold && _transparent >= 0)
             {
                 return _transparent;
+            }
+
+            if (_boxTags is not null)
+            {
+                int tag = _boxTags[WuQuantizer.TagCell(pixel.R, pixel.G, pixel.B)];
+                if (tag >= 0)
+                {
+                    return tag;
+                }
             }
 
             key = ((pixel.R >> 2) << 12) | ((pixel.G >> 2) << 6) | (pixel.B >> 2);
@@ -397,8 +409,17 @@ internal sealed class PaletteMapper : IDisposable
 }
 
 /// <summary>A palette ready for mapping: its colors, which index (if any) is transparent, and whether it holds every color exactly.</summary>
-internal sealed record BuiltPalette(Rgba8[] Colors, int TransparentIndex, bool Exact, ExactColors? ExactTable)
+internal sealed record BuiltPalette(Rgba8[] Colors, int TransparentIndex, bool Exact, ExactColors? ExactTable, short[]? BoxTags = null)
 {
+    /// <summary>Returns the pooled box tags, once nothing maps with this palette any more.</summary>
+    internal void ReturnBoxTags()
+    {
+        if (BoxTags is not null)
+        {
+            ArrayPool<short>.Shared.Return(BoxTags);
+        }
+    }
+
     /// <summary>Gets the bits needed to index the palette, 1 to 8.</summary>
     internal int Bits => Math.Max(1, 32 - BitOperations.LeadingZeroCount((uint)Math.Max(1, Colors.Length - 1)));
 }
@@ -460,12 +481,14 @@ internal static class PaletteBuilder
             }
         }
 
-        Rgba8[] built = wu.Build(Math.Max(2, options.MaxColors - reserve - (anyTransparent ? 1 : 0)));
+        // Pooled: whoever ends the palette's use returns them (see BuiltPalette.BoxTags).
+        short[]? tags = options.FastMapping && binaryAlpha ? ArrayPool<short>.Shared.Rent(WuQuantizer.TagCells) : null;
+        Rgba8[] built = wu.Build(Math.Max(2, options.MaxColors - reserve - (anyTransparent ? 1 : 0)), tags);
         if (anyTransparent)
         {
             built = [.. built, default];
         }
 
-        return new BuiltPalette(built, anyTransparent ? built.Length - 1 : -1, false, null);
+        return new BuiltPalette(built, anyTransparent ? built.Length - 1 : -1, false, null, tags);
     }
 }

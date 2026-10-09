@@ -21,6 +21,8 @@ public class AnimationBenchmarks
     private static readonly GifWriterOptions Undithered = new() { Palette = new PaletteOptions { Dither = DitherMode.None } };
     private static readonly GifWriterOptions GlobalPalette = new() { PaletteScope = GifPaletteScope.Global };
     private static readonly GifWriterOptions PerFramePalette = new() { PaletteScope = GifPaletteScope.PerFrame };
+    private static readonly GifWriterOptions DitheredFast = new() { Palette = new PaletteOptions { FastMapping = true } };
+    private static readonly GifWriterOptions PerFrameFast = new() { PaletteScope = GifPaletteScope.PerFrame, Palette = new PaletteOptions { FastMapping = true } };
     private static readonly ReaderOptions FirstFrame = new() { Frames = ..1 };
 
     private EgamiContext _context = EgamiContext.Default;
@@ -82,6 +84,12 @@ public class AnimationBenchmarks
 
     [Benchmark]
     public void GifEncodePhotoUndithered() => _photo.Save(Stream.Null, GifFormat.Info, Undithered);
+
+    [Benchmark]
+    public void GifEncodePhotoDitheredFast() => _photo.Save(Stream.Null, GifFormat.Info, DitheredFast);
+
+    [Benchmark]
+    public void GifEncodeAnimatedPerFrameFast() => _video.Save(Stream.Null, GifFormat.Info, PerFrameFast);
 
     [Benchmark]
     public void GifEncodeExact() => _still.Save(Stream.Null, GifFormat.Info, Dithered);

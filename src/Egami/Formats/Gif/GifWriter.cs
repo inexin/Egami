@@ -108,6 +108,7 @@ internal sealed class GifWriter : IFormatWriter
             _lzw.Dispose();
             _buffer?.Dispose();
             _globalMapper?.Dispose();
+            _global?.ReturnBoxTags();
         }
 
         internal void Write(Stream output)
@@ -130,7 +131,7 @@ internal sealed class GifWriter : IFormatWriter
             if (global)
             {
                 _global = WithTransparentSlot(BuildPalette(0, frames, palette, reserve), optimize);
-                _globalMapper = new PaletteMapper(_global.Colors, _global.TransparentIndex, withAlpha: false, palette.AlphaThreshold);
+                _globalMapper = new PaletteMapper(_global.Colors, _global.TransparentIndex, withAlpha: false, palette.AlphaThreshold, _global.BoxTags);
             }
 
             WriteHeader(details);
@@ -165,13 +166,16 @@ internal sealed class GifWriter : IFormatWriter
                     Rect nextBounds = new(0, 0, _width, _height);
                     if (next is not null && NeedsClearing(next, after))
                     {
-                        // Clearing this frame's rectangle must be enough; when it is not, this frame covers everything.
+                        // Clearing this frame's rectangle must be enough; when it is not, this frame covers everything. Either way the
+                        // next frame now draws on cleared pixels outside the area it changed, so it is mapped over the whole screen.
                         disposal = FrameDisposal.ClearToBackground;
                         Clear(after, bounds);
+                        next = Remap(next, palette, reserve, optimize);
                         if (NeedsClearing(next, after))
                         {
                             bounds = new Rect(0, 0, _width, _height);
                             after.AsSpan(0, _pixels).Clear();
+                            current = Remap(current, palette, reserve, optimize);
                         }
                     }
 
@@ -217,6 +221,17 @@ internal sealed class GifWriter : IFormatWriter
             return !exact.Overflowed;
         }
 
+        /// <summary>Builds a frame's own palette from the pixels of <paramref name="region"/>.</summary>
+        private BuiltPalette BuildPalette(int index, Rect region, PaletteOptions options, int reserve)
+        {
+            Rgba8[] row = new Rgba8[region.Width];
+            return PaletteBuilder.Build(region.Height, r =>
+            {
+                PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[index].Row(region.Y + r).Slice(region.X, region.Width), row);
+                return row;
+            }, options, binaryAlpha: true, reserve);
+        }
+
         private BuiltPalette BuildPalette(int first, int count, PaletteOptions options, int reserve)
         {
             // The builder is done with each row before asking for the next, so one buffer serves them all.
@@ -239,25 +254,84 @@ internal sealed class GifWriter : IFormatWriter
             return palette with { Colors = [.. palette.Colors, default], TransparentIndex = palette.Colors.Length };
         }
 
-        /// <summary>Maps frame <paramref name="index"/> to its palette.</summary>
-        private Frame Prepare(int index, PaletteOptions options, int reserve, bool optimize)
+        /// <summary>
+        /// Maps frame <paramref name="index"/> to its palette. With optimized frames only the area whose source pixels differ from
+        /// the frame before is mapped (and gives a frame's own palette its colors); elsewhere the viewer keeps showing what the
+        /// frames before left there, which is what those pixels were mapped to then.
+        /// </summary>
+        private Frame Prepare(int index, PaletteOptions options, int reserve, bool optimize, bool whole = false)
         {
-            BuiltPalette palette = _global ?? WithTransparentSlot(BuildPalette(index, 1, options, reserve), optimize);
+            Rect region = whole || !optimize || index == 0 ? new Rect(0, 0, _width, _height) : SourceChanged(index);
+            Frame<TPixel> source = _raster.Frames[index];
+            BuiltPalette palette = _global ?? WithTransparentSlot(BuildPalette(index, region, options, reserve), optimize);
             byte[] indices = ArrayPool<byte>.Shared.Rent(_pixels);
-            PaletteMapper mapper = _globalMapper ?? new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold);
+            byte[] mapped = ArrayPool<byte>.Shared.Rent(region.Width * region.Height);
+            PaletteMapper mapper = _globalMapper ?? new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold, palette.BoxTags);
             try
             {
-                FrameMapper.Map(_width, _height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(_raster.Frames[index].Row(y), row), palette, mapper, _options.Palette.Dither, indices.AsSpan(0, _pixels));
+                FrameMapper.Map(region.Width, region.Height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(source.Row(region.Y + y).Slice(region.X, region.Width), row), palette, mapper, _options.Palette.Dither, mapped.AsSpan(0, region.Width * region.Height));
+                for (int y = 0; y < region.Height; y++)
+                {
+                    mapped.AsSpan(y * region.Width, region.Width).CopyTo(indices.AsSpan(((region.Y + y) * _width) + region.X));
+                }
             }
             finally
             {
+                ArrayPool<byte>.Shared.Return(mapped);
                 if (_globalMapper is null)
                 {
                     mapper.Dispose();
                 }
             }
 
-            return new Frame(index, palette, indices, _raster.Frames[index].Metadata.Delay);
+            return new Frame(index, palette, indices, source.Metadata.Delay, region, ownsPalette: _global is null);
+        }
+
+        /// <summary>Maps a frame again over the whole screen.</summary>
+        private Frame Remap(Frame frame, PaletteOptions options, int reserve, bool optimize)
+        {
+            if (frame.Region == new Rect(0, 0, _width, _height))
+            {
+                return frame;
+            }
+
+            frame.Dispose();
+            return Prepare(frame.Index, options, reserve, optimize, whole: true);
+        }
+
+        /// <summary>Returns the bounding box of the source pixels that differ from the frame before (at least 1 × 1).</summary>
+        private Rect SourceChanged(int index)
+        {
+            Frame<TPixel> previous = _raster.Frames[index - 1];
+            Frame<TPixel> frame = _raster.Frames[index];
+            int size = System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
+            int left = _width;
+            int top = -1;
+            int right = -1;
+            int bottom = -1;
+            for (int y = 0; y < _height; y++)
+            {
+                ReadOnlySpan<byte> a = System.Runtime.InteropServices.MemoryMarshal.AsBytes(previous.Row(y));
+                ReadOnlySpan<byte> b = System.Runtime.InteropServices.MemoryMarshal.AsBytes(frame.Row(y));
+                int first = a.CommonPrefixLength(b);
+                if (first == a.Length)
+                {
+                    continue;
+                }
+
+                int last = a.Length - 1;
+                while (a[last] == b[last])
+                {
+                    last--;
+                }
+
+                left = Math.Min(left, first / size);
+                right = Math.Max(right, last / size);
+                top = top < 0 ? y : top;
+                bottom = y;
+            }
+
+            return right < 0 ? new Rect(0, 0, 1, 1) : new Rect(left, top, right - left + 1, bottom - top + 1);
         }
 
         /// <summary>
@@ -301,6 +375,7 @@ internal sealed class GifWriter : IFormatWriter
         /// <summary>Draws a frame's rectangle onto the canvas as a viewer would (transparent pixels leave it unchanged).</summary>
         private void Draw(Frame frame, Rect bounds, Rgba8[] canvas)
         {
+            bounds = Intersect(bounds, frame.Region);
             for (int y = bounds.Y; y < bounds.Y + bounds.Height; y++)
             {
                 for (int x = bounds.X; x < bounds.X + bounds.Width; x++)
@@ -323,11 +398,15 @@ internal sealed class GifWriter : IFormatWriter
                 return false;
             }
 
-            for (int p = 0; p < _pixels; p++)
+            Rect region = frame.Region;
+            for (int y = region.Y; y < region.Y + region.Height; y++)
             {
-                if (frame.Indices[p] == transparent && canvas[p].A != 0)
+                for (int p = (y * _width) + region.X; p < (y * _width) + region.X + region.Width; p++)
                 {
-                    return true;
+                    if (frame.Indices[p] == transparent && canvas[p].A != 0)
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -337,13 +416,14 @@ internal sealed class GifWriter : IFormatWriter
         /// <summary>Returns the bounding box of the pixels <paramref name="frame"/> shows differently from the canvas (at least 1 × 1).</summary>
         private Rect Changed(Frame frame, Rgba8[] canvas)
         {
+            Rect region = frame.Region;
             int left = _width;
             int top = _height;
             int right = -1;
             int bottom = -1;
-            for (int y = 0; y < _height; y++)
+            for (int y = region.Y; y < region.Y + region.Height; y++)
             {
-                for (int x = 0; x < _width; x++)
+                for (int x = region.X; x < region.X + region.Width; x++)
                 {
                     Rgba8 shown = Shown(frame, frame.Indices[(y * _width) + x]);
                     Rgba8 under = canvas[(y * _width) + x];
@@ -358,7 +438,16 @@ internal sealed class GifWriter : IFormatWriter
                 }
             }
 
-            return right < 0 ? new Rect(0, 0, 1, 1) : new Rect(left, top, right - left + 1, bottom - top + 1);
+            return right < 0 ? new Rect(region.X, region.Y, 1, 1) : new Rect(left, top, right - left + 1, bottom - top + 1);
+        }
+
+        private static Rect Intersect(Rect a, Rect b)
+        {
+            int left = Math.Max(a.X, b.X);
+            int top = Math.Max(a.Y, b.Y);
+            int right = Math.Min(a.X + a.Width, b.X + b.Width);
+            int bottom = Math.Min(a.Y + a.Height, b.Y + b.Height);
+            return right <= left || bottom <= top ? default : new Rect(left, top, right - left, bottom - top);
         }
 
         private void Clear(Rgba8[] canvas, Rect bounds)
@@ -541,9 +630,12 @@ internal sealed class GifWriter : IFormatWriter
         }
 
         /// <summary>A frame mapped to its palette.</summary>
-        private sealed class Frame(int index, BuiltPalette palette, byte[] indices, TimeSpan delay) : IDisposable
+        private sealed class Frame(int index, BuiltPalette palette, byte[] indices, TimeSpan delay, Rect region, bool ownsPalette) : IDisposable
         {
             internal int Index => index;
+
+            /// <summary>Gets the area that was mapped; elsewhere the frame shows what the frames before left.</summary>
+            internal Rect Region => region;
 
             internal BuiltPalette Palette => palette;
 
@@ -554,6 +646,10 @@ internal sealed class GifWriter : IFormatWriter
             public void Dispose()
             {
                 ArrayPool<byte>.Shared.Return(indices);
+                if (ownsPalette)
+                {
+                    palette.ReturnBoxTags();
+                }
             }
         }
     }
