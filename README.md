@@ -7,7 +7,7 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET that loa
 - **Safe on untrusted files**: size limits are checked before allocating, and readers are fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 
-> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations.
+> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations; Phase 1.3 adds JPEG reading and writing, typed EXIF and `AutoOrient`.
 
 ## Quick start
 
@@ -41,12 +41,13 @@ Every raster owns its pixel memory, so dispose it when you are done. Methods tha
 
 ### Reading a header only
 
-`Raster.Probe` reads the size, pixel layout and an estimate of the memory a full load needs, without decoding pixels, so a
-server can reject an image before loading it.
+`Raster.Probe` reads the size, pixel layout, EXIF orientation and an estimate of the memory a full load needs, without
+decoding pixels, so a server can reject an image before loading it.
 
 ```csharp
 RasterInfo info = Raster.Probe(stream);
 bool tooLarge = info.EstimatedBytes > 100_000_000;
+bool sideways = info.Orientation is >= ImageOrientation.Transpose;   // shown with width and height swapped
 ```
 
 ### Limits for untrusted files
@@ -80,6 +81,66 @@ image.Save(stream, PngFormat.Info, new PngWriterOptions
 });
 ```
 
+### JPEG
+
+JPEG files load like any other: baseline and progressive, gray, YCbCr, RGB, CMYK and YCCK, with any chroma subsampling. The
+output matches libjpeg-turbo's `djpeg` exactly. Setting a target size decodes at 1/2, 1/4 or 1/8 scale straight from the
+DCT, the smallest that still covers the target, which is far faster than decoding in full and resizing.
+
+```csharp
+using Egami.Formats;
+using Egami.Formats.Jpeg;
+
+// About 500 × 375 from a 4000 × 3000 photo, decoded at 1/8 scale.
+using Raster preview = Raster.Load("photo.jpg", options: new ReaderOptions { TargetSize = new Size(500, 375) });
+
+image.Save(stream, JpegFormat.Info, new JpegWriterOptions
+{
+    Quality = 85,                            // 75 by default; the same scale as libjpeg's cjpeg
+    Subsampling = ChromaSubsampling.Full,    // 4:4:4; Half (4:2:0) by default
+    OptimizeHuffman = true,                  // a few percent smaller, a little slower
+});
+```
+
+`JpegWriterOptions.Background` composites rasters with alpha onto a color first; without it alpha is ignored. Facts about the
+file (progressive, sampling, an estimate of the quality it was saved at) are in `image.Metadata.FormatDetails` as
+`JpegDetails`.
+
+### EXIF
+
+`image.Metadata.Exif` is the parsed EXIF block from a JPEG or PNG file, or null. Common values have typed properties, any tag
+can be read with `TryGet`, and a block that is not edited is saved back byte for byte.
+
+```csharp
+using Egami.Metadata;
+
+if (image.Metadata.Exif is ExifData exif)
+{
+    Console.WriteLine($"{exif.CameraMake} {exif.CameraModel}, {exif.DateTaken}, {exif.Location}");
+    if (exif.TryGet(ExifKey.ExposureTime, out ExifEntry? exposure))
+    {
+        Console.WriteLine($"1/{1 / exposure.AsDouble():0} s");
+    }
+
+    exif.Set(ExifKey.Copyright, "© 2026 Example");
+    exif.Remove(ExifKey.GpsLatitude);
+}
+```
+
+A damaged block keeps its raw bytes and sets `IsDamaged`; the pixels still load. Operations keep the block honest: rotating
+and flipping reset the orientation, resizing and cropping update the pixel dimensions and drop the embedded thumbnail.
+
+### Thumbnails
+
+`Load` returns pixels as stored; `AutoOrient` turns them the way the camera meant and resets the orientation tag. Followed by a
+resize, it runs on the small result, so the whole chain below decodes at 1/8 scale and turns 256 pixels, not 12 megapixels.
+
+```csharp
+using Raster thumb = Raster.Load("photo.jpg", options: new ReaderOptions { TargetSize = new Size(256, 256) });
+thumb.Apply(ops => ops.AutoOrient().Fit(256, 256));
+thumb.Save("thumb.jpg", new JpegWriterOptions { Quality = 80 });
+```
+
 ### Operations
 
 Record a chain in a lambda: `Apply` changes the raster in place, `Derive` returns a new one and leaves the source untouched.
@@ -109,7 +170,7 @@ photo.Apply(ops => ops
 | Group | Operations |
 | --- | --- |
 | Resize | `Resize` (0 for one side keeps the aspect ratio), `Fit`, `Fill`; filters Nearest, Box, Bilinear, Bicubic (default, Catmull-Rom), Mitchell, Lanczos3; gamma-encoded or linear light |
-| Geometry | `Crop`, `Pad`, `Flip`, `Rotate` (exact for multiples of 90°, resampled otherwise), `FillColor` |
+| Geometry | `Crop`, `Pad`, `Flip`, `Rotate` (exact for multiples of 90°, resampled otherwise), `AutoOrient`, `FillColor` |
 | Color | `Brightness`, `Contrast`, `Saturation`, `HueRotate`, `Sepia`, `Grayscale`, `Invert`, `Opacity`, `ColorMatrix` (W3C Filter Effects definitions) |
 | Filters | `Blur` (Gaussian), `BoxBlur`, `Sharpen` (unsharp mask), `Convolve` with any `ConvolutionKernel` and `EdgeMode` |
 | Compose | `DrawImage` (source-over, any pixel type, clipped to the overlap) |
@@ -135,6 +196,7 @@ sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linea
 | Format | Read | Write |
 | --- | --- | --- |
 | PNG | All color types and bit depths, interlaced, transparency, metadata | All color types and bit depths, adaptive filtering |
+| JPEG | Baseline and progressive, 8-bit, any subsampling, CMYK and YCCK, scaled decode, EXIF, XMP, ICC | Baseline, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0 or gray, optimized Huffman tables, EXIF, XMP, ICC |
 
 Custom formats plug in through `FormatInfo`, `IFormatReader` and `IFormatWriter`, registered with
 `EgamiContext.Default.WithFormat(...)`.
@@ -158,7 +220,7 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --fi
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
-| `tests/images/`, `tests/reference/` | PngSuite and its reference decodes, with licenses |
+| `tests/images/`, `tests/reference/` | PngSuite, the JPEG corpus and their reference decodes, with licenses |
 | `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
 | `tools/` | Scripts that regenerate references and the public API baseline, and the libpng checker used in CI |
 
