@@ -843,7 +843,7 @@ internal sealed class PngReader : IFormatReader
 
         if (fromEnd)
         {
-            (int offset, int count) = range.GetOffsetAndLength(frames.Count);
+            (int offset, int count) = AnimationCanvasRange.Clamp(range, frames.Count);
             for (int i = 0; i < frames.Count; i++)
             {
                 if (i < offset || i >= offset + count)

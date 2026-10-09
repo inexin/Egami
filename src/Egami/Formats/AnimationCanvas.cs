@@ -121,3 +121,18 @@ internal static class AnimationBlend
         }
     }
 }
+
+/// <summary>Frame ranges for animated readers.</summary>
+internal static class AnimationCanvasRange
+{
+    /// <summary>
+    /// Returns the frames of <paramref name="range"/> that exist among <paramref name="count"/>: a range reaching past either end
+    /// keeps what it covers (possibly nothing) instead of throwing, since the frame count is only known after reading.
+    /// </summary>
+    internal static (int Offset, int Length) Clamp(Range range, int count)
+    {
+        int start = Math.Clamp(range.Start.GetOffset(count), 0, count);
+        int end = Math.Clamp(range.End.GetOffset(count), 0, count);
+        return (start, Math.Max(0, end - start));
+    }
+}

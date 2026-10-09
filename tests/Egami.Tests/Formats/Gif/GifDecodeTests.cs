@@ -99,6 +99,18 @@ public class GifDecodeTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void RangesPastEitherEndKeepWhatExists()
+    {
+        // Found by fuzzing: ^2.. on a one-frame file threw ArgumentOutOfRangeException.
+        byte[] still = AnimCorpus.Read("gif/colors-2.gif");
+        using Raster<Rgba8> last = Raster.Load<Rgba8>(still, options: new ReaderOptions { Frames = ^2.. });
+        Assert.Equal(1, last.FrameCount);
+        using Raster<Rgba8> apng = Raster.Load<Rgba8>(AnimCorpus.Read("apng/gray.png"), options: new ReaderOptions { Frames = ^10.. });
+        Assert.Equal(4, apng.FrameCount);
+        Assert.Throws<CorruptDataException>(() => Raster.Load<Rgba8>(still, options: new ReaderOptions { Frames = ^0.. }));
+    }
+
+    [Fact]
     public void FrameMetadataDescribesTheStoredFrame()
     {
         using Raster<Rgba8> raster = Raster.Load<Rgba8>(AnimCorpus.Read("gif/page-dispose-previous.gif"));

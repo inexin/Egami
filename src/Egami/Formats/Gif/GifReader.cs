@@ -176,7 +176,7 @@ internal sealed class GifReader : IFormatReader
             if (_options.Frames.Start.IsFromEnd || _options.Frames.End.IsFromEnd)
             {
                 // A range counted from the end is only known once every frame is read.
-                (int offset, int length) = _options.Frames.GetOffsetAndLength(frames.Count);
+                (int offset, int length) = AnimationCanvasRange.Clamp(_options.Frames, frames.Count);
                 for (int i = 0; i < frames.Count; i++)
                 {
                     if (i < offset || i >= offset + length)
