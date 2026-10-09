@@ -23,7 +23,7 @@ public sealed class Raster<TPixel> : Raster
         : base(frames[0].Plane.Width, frames[0].Plane.Height, metadata, context)
     {
         _frames = frames;
-        Frames = new FrameList<TPixel>(frames);
+        Frames = new FrameList<TPixel>(frames, this);
     }
 
     /// <inheritdoc/>
@@ -113,6 +113,11 @@ public sealed class Raster<TPixel> : Raster
         }
 
         plan.UpdateMetadata(Metadata, new Size(Width, Height));
+        if (plan.ChangesGeometry)
+        {
+            ClearStoredLayout(_frames);
+        }
+
         Size size = plan.FinalSize(new Size(Width, Height));
         Width = size.Width;
         Height = size.Height;
@@ -159,6 +164,11 @@ public sealed class Raster<TPixel> : Raster
 
         RasterMetadata metadata = Metadata.Copy();
         plan.UpdateMetadata(metadata, new Size(Width, Height));
+        if (plan.ChangesGeometry)
+        {
+            ClearStoredLayout(frames);
+        }
+
         return new Raster<TPixel>(frames, metadata, Context);
     }
 
@@ -242,6 +252,29 @@ public sealed class Raster<TPixel> : Raster
         CopyPixelsFrom(MemoryMarshal.Cast<byte, TPixel>(source));
     }
 
+    /// <summary>Returns a new one-frame raster with a copy of frame <paramref name="index"/> and of the raster's metadata.</summary>
+    /// <param name="index">The frame to copy.</param>
+    /// <returns>The new raster. The caller must dispose it.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is not a frame.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    public Raster<TPixel> CopyFrame(int index)
+    {
+        ThrowIfDisposed();
+        if ((uint)index >= (uint)_frames.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"The raster has {_frames.Count} frames.");
+        }
+
+        Frame<TPixel> source = _frames[index];
+        PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(Width, Height, Context.Memory);
+        for (int y = 0; y < Height; y++)
+        {
+            source.Plane.Row(y).CopyTo(plane.Row(y));
+        }
+
+        return new Raster<TPixel>([new Frame<TPixel>(plane, source.Metadata.Copy())], Metadata.Copy(), Context);
+    }
+
     /// <summary>Returns a deep copy of the raster: every frame and all metadata.</summary>
     /// <returns>The new raster. The caller must dispose it.</returns>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
@@ -316,6 +349,21 @@ public sealed class Raster<TPixel> : Raster
         foreach (Frame<TPixel> frame in _frames)
         {
             frame.Plane.Dispose();
+        }
+    }
+
+    internal void CheckNotDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
+    /// <summary>Forgets where each frame was stored in its file and its format details, which a size or layout change makes wrong.</summary>
+    private static void ClearStoredLayout(List<Frame<TPixel>> frames)
+    {
+        foreach (Frame<TPixel> frame in frames)
+        {
+            frame.Metadata.Bounds = null;
+            frame.Metadata.FormatDetails = null;
         }
     }
 

@@ -255,8 +255,12 @@ Egami.Frame<TPixel>.Metadata.get -> Egami.Metadata.FrameMetadata!
 Egami.Frame<TPixel>.Plane.get -> Egami.PixelPlane<TPixel>!
 Egami.Frame<TPixel>.Row(int y) -> System.Span<TPixel>
 Egami.FrameList<TPixel>
+Egami.FrameList<TPixel>.Add(Egami.Frame<TPixel>! frame) -> Egami.Frame<TPixel>!
 Egami.FrameList<TPixel>.Count.get -> int
 Egami.FrameList<TPixel>.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Frame<TPixel>!>!
+Egami.FrameList<TPixel>.Insert(int index, Egami.Frame<TPixel>! frame) -> Egami.Frame<TPixel>!
+Egami.FrameList<TPixel>.Move(int from, int to) -> void
+Egami.FrameList<TPixel>.RemoveAt(int index) -> void
 Egami.FrameList<TPixel>.this[int index].get -> Egami.Frame<TPixel>!
 Egami.IPixelMemorySource
 Egami.IPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
@@ -355,11 +359,15 @@ Egami.Metadata.FrameDisposal.RestorePrevious = 2 -> Egami.Metadata.FrameDisposal
 Egami.Metadata.FrameMetadata
 Egami.Metadata.FrameMetadata.Blend.get -> Egami.Metadata.FrameBlend
 Egami.Metadata.FrameMetadata.Blend.set -> void
+Egami.Metadata.FrameMetadata.Bounds.get -> Egami.Rect?
+Egami.Metadata.FrameMetadata.Bounds.set -> void
 Egami.Metadata.FrameMetadata.Copy() -> Egami.Metadata.FrameMetadata!
 Egami.Metadata.FrameMetadata.Delay.get -> System.TimeSpan
 Egami.Metadata.FrameMetadata.Delay.set -> void
 Egami.Metadata.FrameMetadata.Disposal.get -> Egami.Metadata.FrameDisposal
 Egami.Metadata.FrameMetadata.Disposal.set -> void
+Egami.Metadata.FrameMetadata.FormatDetails.get -> Egami.Metadata.FormatDetails?
+Egami.Metadata.FrameMetadata.FormatDetails.set -> void
 Egami.Metadata.FrameMetadata.FrameMetadata() -> void
 Egami.Metadata.GeoPosition
 Egami.Metadata.GeoPosition.Altitude.get -> double?
@@ -678,6 +686,7 @@ Egami.Raster.Width.get -> int
 Egami.Raster<TPixel>
 Egami.Raster<TPixel>.Apply(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
 Egami.Raster<TPixel>.Copy() -> Egami.Raster<TPixel>!
+Egami.Raster<TPixel>.CopyFrame(int index) -> Egami.Raster<TPixel>!
 Egami.Raster<TPixel>.CopyPixelsFrom(System.ReadOnlySpan<byte> source) -> void
 Egami.Raster<TPixel>.CopyPixelsFrom(System.ReadOnlySpan<TPixel> source) -> void
 Egami.Raster<TPixel>.CopyPixelsTo(System.Span<byte> destination) -> void

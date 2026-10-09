@@ -35,10 +35,22 @@ public sealed class FrameMetadata
     /// <summary>Gets or sets how the frame is combined with the canvas.</summary>
     public FrameBlend Blend { get; set; }
 
-    /// <summary>Returns a copy.</summary>
+    /// <summary>
+    /// Gets or sets the rectangle the frame was stored as in its file, or <see langword="null"/>. For information: writers work out
+    /// their own from the pixels, and operations that change the size or layout clear it.
+    /// </summary>
+    public Rect? Bounds { get; set; }
+
+    /// <summary>
+    /// Gets or sets format-specific details of the frame from the reader, such as a GIF frame's own palette, or
+    /// <see langword="null"/>. Operations that change the size or layout clear it.
+    /// </summary>
+    public FormatDetails? FormatDetails { get; set; }
+
+    /// <summary>Returns a deep copy.</summary>
     /// <returns>The copy.</returns>
     public FrameMetadata Copy()
     {
-        return new FrameMetadata { Delay = Delay, Disposal = Disposal, Blend = Blend };
+        return new FrameMetadata { Delay = Delay, Disposal = Disposal, Blend = Blend, Bounds = Bounds, FormatDetails = FormatDetails?.Copy() };
     }
 }

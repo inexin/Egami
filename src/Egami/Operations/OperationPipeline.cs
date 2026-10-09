@@ -130,6 +130,9 @@ internal static class OperationPipeline
             }
         }
 
+        /// <summary>Gets whether a step moves pixels (resize, crop, pad, rotate, flip), so frames lose where they were stored.</summary>
+        internal bool ChangesGeometry => Steps.Any(step => step is IUpdatesMetadata);
+
         /// <summary>Gets the size after the last step, or <paramref name="input"/> for an empty chain.</summary>
         internal Size FinalSize(Size input)
         {
