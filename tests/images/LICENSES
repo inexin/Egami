@@ -53,3 +53,11 @@ gif/*.gif, apng/*.png
 ../reference/anim/
   Every frame of the files above as Pillow and ImageMagick composite them, and manifest.json, made by
   tools/make-anim-references.py. Public domain, as the files they come from.
+
+bmp/, tga/, qoi/, pnm/
+  Made by tools/make-simple-references.py (Pillow, ImageMagick and Netpbm, or written byte by byte by the script) from
+  ops/duck.png above, reduced, or from generated shapes and patterns. Public domain, as their sources.
+
+../reference/simple/
+  The files above decoded by Pillow, ImageMagick and Netpbm, the pixels the script wrote into its hand-made files, and
+  manifest.json, made by tools/make-simple-references.py. Public domain, as the files they come from.

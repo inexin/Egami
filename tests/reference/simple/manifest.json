@@ -1,0 +1,627 @@
+{
+ "bmp/alphabitfields-4444.bmp": {
+  "height": 7,
+  "references": [
+   "expected"
+  ],
+  "unreadable": {
+   "magick": "Command '['magick', 'tests/images/bmp/alphabitfields-4444.bmp[0]', '-depth', '8', 'rgba:/tmp/ref.rgba']' returned non-zero exit status 1.",
+   "pillow": "Unsupported BMP header type (56)"
+  },
+  "width": 13
+ },
+ "bmp/argb1555.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/embedded-jpeg.bmp": {
+  "height": 24,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 32
+ },
+ "bmp/embedded-png.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "magick"
+  ],
+  "unreadable": {
+   "pillow": "Unsupported BMP pixel depth (0)"
+  },
+  "width": 13
+ },
+ "bmp/os2-bmp2-24.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/os2-core-24.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 13
+ },
+ "bmp/os2-pal8.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 13
+ },
+ "bmp/os2-rle24.bmp": {
+  "height": 4,
+  "references": [
+   "expected"
+  ],
+  "unreadable": {
+   "magick": "Command '['magick', 'tests/images/bmp/os2-rle24.bmp[0]', '-depth', '8', 'rgba:/tmp/ref.rgba']' returned non-zero exit status 1.",
+   "pillow": "Unsupported BMP compression (4)"
+  },
+  "width": 10
+ },
+ "bmp/pal1.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/pal2.bmp": {
+  "height": 7,
+  "references": [
+   "expected"
+  ],
+  "unreadable": {
+   "magick": "Command '['magick', 'tests/images/bmp/pal2.bmp[0]', '-depth', '8', 'rgba:/tmp/ref.rgba']' returned non-zero exit status 1.",
+   "pillow": "Unsupported BMP pixel depth (2)"
+  },
+  "width": 13
+ },
+ "bmp/pal4-magick.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/pal8-index-past-palette.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow"
+  ],
+  "unreadable": {
+   "magick": "Command '['magick', 'tests/images/bmp/pal8-index-past-palette.bmp[0]', '-depth', '8', 'rgba:/tmp/ref.rgba']' returned non-zero exit status 1."
+  },
+  "width": 13
+ },
+ "bmp/pal8.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/rgb24.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/rgb32-alpha.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 13
+ },
+ "bmp/rgb32-zero-alpha.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 13
+ },
+ "bmp/rgb555.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 13
+ },
+ "bmp/rgb565.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/rgba32.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/rle4-eol.bmp": {
+  "height": 4,
+  "references": [
+   "expected"
+  ],
+  "unreadable": {
+   "magick": "Command '['magick', 'tests/images/bmp/rle4-eol.bmp[0]', '-depth', '8', 'rgba:/tmp/ref.rgba']' returned non-zero exit status 1.",
+   "pillow": "not enough image data"
+  },
+  "width": 10
+ },
+ "bmp/rle4-magick.bmp": {
+  "height": 64,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 96
+ },
+ "bmp/rle8-delta.bmp": {
+  "height": 4,
+  "references": [
+   "expected",
+   "pillow"
+  ],
+  "unreadable": {
+   "magick": "Command '['magick', 'tests/images/bmp/rle8-delta.bmp[0]', '-depth', '8', 'rgba:/tmp/ref.rgba']' returned non-zero exit status 1."
+  },
+  "width": 10
+ },
+ "bmp/rle8-magick.bmp": {
+  "height": 64,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 96
+ },
+ "bmp/top-down-24.bmp": {
+  "height": 7,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 13
+ },
+ "bmp/v4-argb32.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "bmp/v5-argb32.bmp": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "pnm/bits-plain.pbm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/bits.pbm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/gray-alpha.pam": {
+  "height": 48,
+  "references": [
+   "magick",
+   "netpbm"
+  ],
+  "unreadable": {
+   "pillow": "cannot identify image file '/work/tests/images/pnm/gray-alpha.pam'"
+  },
+  "width": 64
+ },
+ "pnm/gray-plain.pgm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/gray.pgm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/gray16.pgm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/maxval-1000.pgm": {
+  "height": 2,
+  "references": [
+   "expected",
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 3
+ },
+ "pnm/maxval-31.ppm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/p1-packed-digits.pbm": {
+  "height": 3,
+  "references": [
+   "expected",
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 8
+ },
+ "pnm/pam-unknown-tupltype.pam": {
+  "height": 2,
+  "references": [
+   "expected",
+   "magick"
+  ],
+  "unreadable": {
+   "netpbm": "Command '['pamtopng']' returned non-zero exit status 1.",
+   "pillow": "cannot identify image file '/work/tests/images/pnm/pam-unknown-tupltype.pam'"
+  },
+  "width": 4
+ },
+ "pnm/rgb-netpbm.pam": {
+  "height": 48,
+  "references": [
+   "magick",
+   "netpbm"
+  ],
+  "unreadable": {
+   "pillow": "cannot identify image file '/work/tests/images/pnm/rgb-netpbm.pam'"
+  },
+  "width": 64
+ },
+ "pnm/rgb-plain.ppm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/rgb.ppm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/rgb16.ppm": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 64
+ },
+ "pnm/rgba.pam": {
+  "height": 48,
+  "references": [
+   "magick",
+   "netpbm"
+  ],
+  "unreadable": {
+   "pillow": "cannot identify image file '/work/tests/images/pnm/rgba.pam'"
+  },
+  "width": 64
+ },
+ "pnm/two-images.pgm": {
+  "height": 2,
+  "references": [
+   "expected",
+   "pillow",
+   "magick",
+   "netpbm"
+  ],
+  "width": 2
+ },
+ "qoi/linear-rgba.qoi": {
+  "height": 30,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 40
+ },
+ "qoi/long-run.qoi": {
+  "height": 30,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 20
+ },
+ "qoi/rgb-magick.qoi": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "qoi/rgba-magick.qoi": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "qoi/shapes-magick.qoi": {
+  "height": 64,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 96
+ },
+ "tga/argb1555.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/cmap15-offset.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "magick"
+  ],
+  "unreadable": {
+   "pillow": "cannot identify image file '/work/tests/images/tga/cmap15-offset.tga'"
+  },
+  "width": 9
+ },
+ "tga/footer-alpha-none.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/footer-alpha-premultiplied.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/footer-alpha-straight.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/gray-alpha16.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/gray8-rle.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/gray8.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/origin-bottom-left.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/origin-bottom-right.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/origin-top-left.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/origin-top-right.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/pal8-rle.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/pal8.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/rgb15.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "magick"
+  ],
+  "unreadable": {
+   "pillow": "cannot identify image file '/work/tests/images/tga/rgb15.tga'"
+  },
+  "width": 9
+ },
+ "tga/rgb16-no-alpha.tga": {
+  "height": 5,
+  "references": [
+   "expected",
+   "pillow",
+   "magick"
+  ],
+  "width": 9
+ },
+ "tga/rgb24-rle.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/rgb24.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/rgba32-magick.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/rgba32-rle.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/rgba32.tga": {
+  "height": 48,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 64
+ },
+ "tga/shapes-rle-magick.tga": {
+  "height": 64,
+  "references": [
+   "pillow",
+   "magick"
+  ],
+  "width": 96
+ }
+}
