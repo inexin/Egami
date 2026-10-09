@@ -31,7 +31,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
         JpegWriterOptions options = new()
         {
             Quality = entry.GetProperty("quality").GetInt32(),
-            Subsampling = entry.GetProperty("sampling").GetString() switch { "1x1" => ChromaSubsampling.Full, "2x1" => ChromaSubsampling.HalfWidth, _ => ChromaSubsampling.Half },
+            Subsampling = entry.GetProperty("sampling").GetString() switch { "1x1" => ChromaSubsampling.Subsample444, "2x1" => ChromaSubsampling.Subsample422, _ => ChromaSubsampling.Subsample420 },
             OptimizeHuffman = entry.GetProperty("optimize").GetBoolean(),
             RestartInterval = entry.GetProperty("restart").GetInt32(),
             ColorType = entry.GetProperty("gray").GetBoolean() ? JpegColorType.Gray : JpegColorType.Auto,
@@ -56,9 +56,9 @@ public class JpegEncodeTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData(ChromaSubsampling.Half)]
-    [InlineData(ChromaSubsampling.HalfWidth)]
-    [InlineData(ChromaSubsampling.Full)]
+    [InlineData(ChromaSubsampling.Subsample420)]
+    [InlineData(ChromaSubsampling.Subsample422)]
+    [InlineData(ChromaSubsampling.Subsample444)]
     public void RoundTripsEveryPixelTypeAndOddSize(ChromaSubsampling subsampling)
     {
         foreach ((int w, int h) in ((int, int)[])[(1, 1), (7, 3), (16, 16), (17, 9), (33, 65), (100, 75)])
@@ -91,7 +91,7 @@ public class JpegEncodeTests(ITestOutputHelper output)
                 row[x] = new Rgb8((byte)(x ^ y), (byte)((x * 3) + y), (byte)(x * y >> 4));
             }
         });
-        foreach (JpegWriterOptions options in (JpegWriterOptions[])[new(), new() { OptimizeHuffman = true, Subsampling = ChromaSubsampling.Full }, new() { RestartInterval = 7 }])
+        foreach (JpegWriterOptions options in (JpegWriterOptions[])[new(), new() { OptimizeHuffman = true, Subsampling = ChromaSubsampling.Subsample444 }, new() { RestartInterval = 7 }])
         {
             byte[] one = Encode(serial, options);
             using MemoryStream stream = new();
@@ -135,10 +135,10 @@ public class JpegEncodeTests(ITestOutputHelper output)
     {
         using Raster<Rgba8> image = Raster.Create<Rgba8>(16, 16);
         image.ForEachRow((row, y) => row.Fill(new Rgba8(200, 40, 40, 0)));
-        using Raster<Rgb8> ignored = Raster.Load<Rgb8>(Encode(image, new JpegWriterOptions { Quality = 100, Subsampling = ChromaSubsampling.Full }));
+        using Raster<Rgb8> ignored = Raster.Load<Rgb8>(Encode(image, new JpegWriterOptions { Quality = 100, Subsampling = ChromaSubsampling.Subsample444 }));
         Assert.InRange(ignored.GetPixel(8, 8).R, 195, 205);
 
-        using Raster<Rgb8> composited = Raster.Load<Rgb8>(Encode(image, new JpegWriterOptions { Quality = 100, Subsampling = ChromaSubsampling.Full, Background = new Rgba8(0, 0, 255, 255) }));
+        using Raster<Rgb8> composited = Raster.Load<Rgb8>(Encode(image, new JpegWriterOptions { Quality = 100, Subsampling = ChromaSubsampling.Subsample444, Background = new Rgba8(0, 0, 255, 255) }));
         Rgb8 p = composited.GetPixel(8, 8);
         Assert.True(p.R < 5 && p.B > 250, p.ToString());
     }

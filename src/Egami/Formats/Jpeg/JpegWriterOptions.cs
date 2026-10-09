@@ -6,13 +6,13 @@ namespace Egami.Formats.Jpeg;
 public enum ChromaSubsampling
 {
     /// <summary>4:2:0: half the width and half the height. The usual choice for photos.</summary>
-    Half,
+    Subsample420,
 
     /// <summary>4:2:2: half the width, full height.</summary>
-    HalfWidth,
+    Subsample422,
 
     /// <summary>4:4:4: every pixel keeps its own chroma. Larger files; sharper colored edges and text.</summary>
-    Full,
+    Subsample444,
 }
 
 /// <summary>Which components a JPEG is written with.</summary>
@@ -53,7 +53,7 @@ public sealed class JpegWriterOptions : WriterOptions
         }
     }
 
-    /// <summary>Gets the chroma subsampling. Defaults to <see cref="ChromaSubsampling.Half"/> (4:2:0). Ignored for gray output.</summary>
+    /// <summary>Gets the chroma subsampling. Defaults to <see cref="ChromaSubsampling.Subsample420"/> (4:2:0). Ignored for gray output.</summary>
     public ChromaSubsampling Subsampling { get; init; }
 
     /// <summary>

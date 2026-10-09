@@ -240,8 +240,8 @@ internal sealed class JpegWriter : IFormatWriter
             _gray = options.ColorType == JpegColorType.Gray || TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
             (_maxH, _maxV) = _gray ? (1, 1) : options.Subsampling switch
             {
-                ChromaSubsampling.Full => (1, 1),
-                ChromaSubsampling.HalfWidth => (2, 1),
+                ChromaSubsampling.Subsample444 => (1, 1),
+                ChromaSubsampling.Subsample422 => (2, 1),
                 _ => (2, 2),
             };
 

@@ -67,9 +67,9 @@ Egami.Formats.IFormatReader.ReadInfo(Egami.Formats.EgamiInput! input, Egami.Form
 Egami.Formats.IFormatWriter
 Egami.Formats.IFormatWriter.Write<TPixel>(Egami.Raster<TPixel>! raster, System.IO.Stream! output, Egami.Formats.WriterOptions! options) -> void
 Egami.Formats.Jpeg.ChromaSubsampling
-Egami.Formats.Jpeg.ChromaSubsampling.Full = 2 -> Egami.Formats.Jpeg.ChromaSubsampling
-Egami.Formats.Jpeg.ChromaSubsampling.Half = 0 -> Egami.Formats.Jpeg.ChromaSubsampling
-Egami.Formats.Jpeg.ChromaSubsampling.HalfWidth = 1 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Subsample420 = 0 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Subsample422 = 1 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Subsample444 = 2 -> Egami.Formats.Jpeg.ChromaSubsampling
 Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.Cmyk = 3 -> Egami.Formats.Jpeg.JpegColorSpace
 Egami.Formats.Jpeg.JpegColorSpace.Gray = 0 -> Egami.Formats.Jpeg.JpegColorSpace

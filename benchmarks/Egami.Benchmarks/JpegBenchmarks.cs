@@ -96,7 +96,7 @@ internal static class BenchFiles
 public class JpegEncodeBenchmarks
 {
     private static readonly JpegWriterOptions Standard = new() { Quality = 75 };
-    private static readonly JpegWriterOptions Optimized = new() { Quality = 90, Subsampling = ChromaSubsampling.Full, OptimizeHuffman = true };
+    private static readonly JpegWriterOptions Optimized = new() { Quality = 90, Subsampling = ChromaSubsampling.Subsample444, OptimizeHuffman = true };
 
     private Raster<Rgb8> _photo = null!;
 

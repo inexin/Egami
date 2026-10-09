@@ -97,7 +97,7 @@ using Raster preview = Raster.Load("photo.jpg", options: new ReaderOptions { Tar
 image.Save(stream, JpegFormat.Info, new JpegWriterOptions
 {
     Quality = 85,                            // 75 by default; the same scale as libjpeg's cjpeg
-    Subsampling = ChromaSubsampling.Full,    // 4:4:4; Half (4:2:0) by default
+    Subsampling = ChromaSubsampling.Subsample444,    // 4:4:4; 4:2:0 by default
     OptimizeHuffman = true,                  // a few percent smaller, a little slower
 });
 ```
