@@ -262,6 +262,17 @@ Egami.Formats.Png.PngWriterOptions.Palette.init -> void
 Egami.Formats.Png.PngWriterOptions.PngWriterOptions() -> void
 Egami.Formats.Png.PngWriterOptions.Reduce.get -> bool
 Egami.Formats.Png.PngWriterOptions.Reduce.init -> void
+Egami.Formats.Qoi.QoiDetails
+Egami.Formats.Qoi.QoiDetails.Channels.get -> int
+Egami.Formats.Qoi.QoiDetails.Channels.set -> void
+Egami.Formats.Qoi.QoiDetails.Linear.get -> bool
+Egami.Formats.Qoi.QoiDetails.Linear.set -> void
+Egami.Formats.Qoi.QoiDetails.QoiDetails() -> void
+Egami.Formats.Qoi.QoiFormat
+Egami.Formats.Qoi.QoiWriterOptions
+Egami.Formats.Qoi.QoiWriterOptions.IncludeAlpha.get -> bool?
+Egami.Formats.Qoi.QoiWriterOptions.IncludeAlpha.init -> void
+Egami.Formats.Qoi.QoiWriterOptions.QoiWriterOptions() -> void
 Egami.Formats.RasterInfo
 Egami.Formats.RasterInfo.<Clone>$() -> Egami.Formats.RasterInfo!
 Egami.Formats.RasterInfo.Equals(Egami.Formats.RasterInfo? other) -> bool
@@ -841,6 +852,7 @@ override Egami.Formats.Png.PngDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Png.PngTextSource.Equals(object? obj) -> bool
 override Egami.Formats.Png.PngTextSource.GetHashCode() -> int
 override Egami.Formats.Png.PngTextSource.ToString() -> string!
+override Egami.Formats.Qoi.QoiDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.RasterInfo.Equals(object? obj) -> bool
 override Egami.Formats.RasterInfo.GetHashCode() -> int
 override Egami.Formats.RasterInfo.ToString() -> string!
@@ -921,6 +933,8 @@ static Egami.Formats.Png.PngFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Png.PngTextSource.operator !=(Egami.Formats.Png.PngTextSource? left, Egami.Formats.Png.PngTextSource? right) -> bool
 static Egami.Formats.Png.PngTextSource.operator ==(Egami.Formats.Png.PngTextSource? left, Egami.Formats.Png.PngTextSource? right) -> bool
 static Egami.Formats.Png.PngWriterOptions.Default.get -> Egami.Formats.Png.PngWriterOptions!
+static Egami.Formats.Qoi.QoiFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Qoi.QoiWriterOptions.Default.get -> Egami.Formats.Qoi.QoiWriterOptions!
 static Egami.Formats.RasterInfo.operator !=(Egami.Formats.RasterInfo? left, Egami.Formats.RasterInfo? right) -> bool
 static Egami.Formats.RasterInfo.operator ==(Egami.Formats.RasterInfo? left, Egami.Formats.RasterInfo? right) -> bool
 static Egami.Formats.ReaderOptions.Default.get -> Egami.Formats.ReaderOptions!
