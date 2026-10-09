@@ -6,12 +6,14 @@ namespace Egami;
 internal sealed class PooledBlock : IMemoryOwner<byte>
 {
     private readonly int _length;
+    private readonly PixelMemoryUsage.Counted? _counted;
     private byte[]? _array;
 
-    internal PooledBlock(int length, ClearMode clear)
+    internal PooledBlock(int length, ClearMode clear, PixelMemoryUsage? usage = null)
     {
         _length = length;
         _array = ArrayPool<byte>.Shared.Rent(length);
+        _counted = usage?.Allocated(length);
         if (clear == ClearMode.Zero)
         {
             _array.AsSpan(0, length).Clear();
@@ -34,6 +36,7 @@ internal sealed class PooledBlock : IMemoryOwner<byte>
         if (array is not null)
         {
             ArrayPool<byte>.Shared.Return(array);
+            _counted?.Released(_length);
         }
     }
 }

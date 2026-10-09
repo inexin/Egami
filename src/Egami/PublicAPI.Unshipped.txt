@@ -681,6 +681,7 @@ Egami.Operations.RasterOps.Convolve(Egami.Operations.ConvolutionKernel! kernel, 
 Egami.Operations.RasterOps.Crop(Egami.Rect rect) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Crop(int x, int y, int width, int height) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, float opacity = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, float opacity = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Fill(int width, int height, Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FillColor(Egami.Pixels.Rgba8 color, Egami.Rect? rect = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded, bool enlarge = true) -> Egami.Operations.RasterOps!
@@ -703,6 +704,18 @@ Egami.Operations.ResampleFilter.Lanczos3 = 5 -> Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Mitchell = 4 -> Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Nearest = 1 -> Egami.Operations.ResampleFilter
 Egami.Operations.RowBandAction
+Egami.PixelMemoryLeakEventArgs
+Egami.PixelMemoryLeakEventArgs.Bytes.get -> long
+Egami.PixelMemoryLeakEventArgs.PixelMemoryLeakEventArgs(long bytes, string? stackTrace) -> void
+Egami.PixelMemoryLeakEventArgs.StackTrace.get -> string?
+Egami.PixelMemoryUsage
+Egami.PixelMemoryUsage.CaptureStackTraces.get -> bool
+Egami.PixelMemoryUsage.CaptureStackTraces.set -> void
+Egami.PixelMemoryUsage.LeakDetected -> System.EventHandler<Egami.PixelMemoryLeakEventArgs!>?
+Egami.PixelMemoryUsage.LiveBlocks.get -> long
+Egami.PixelMemoryUsage.LiveBytes.get -> long
+Egami.PixelMemoryUsage.TrackLeaks.get -> bool
+Egami.PixelMemoryUsage.TrackLeaks.set -> void
 Egami.PixelPlane
 Egami.PixelPlane<TPixel>
 Egami.PixelPlane<TPixel>.Dispose() -> void
@@ -848,6 +861,7 @@ Egami.PooledPixelMemorySource.PoolThresholdBytes.get -> int
 Egami.PooledPixelMemorySource.PoolThresholdBytes.init -> void
 Egami.PooledPixelMemorySource.RetainedBytes.get -> long
 Egami.PooledPixelMemorySource.Trim() -> void
+Egami.PooledPixelMemorySource.Usage.get -> Egami.PixelMemoryUsage!
 Egami.Quantization.DitherMode
 Egami.Quantization.DitherMode.FloydSteinberg = 0 -> Egami.Quantization.DitherMode
 Egami.Quantization.DitherMode.None = 2 -> Egami.Quantization.DitherMode

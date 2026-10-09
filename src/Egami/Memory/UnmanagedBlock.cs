@@ -16,13 +16,15 @@ internal sealed unsafe class UnmanagedBlock : MemoryManager<byte>
     private readonly int _length;
     private readonly AlignedMemoryHandle _handle;
     private readonly UnmanagedBlockCache _cache;
+    private readonly PixelMemoryUsage.Counted? _counted;
     private int _disposed;
 
-    internal UnmanagedBlock(int length, ClearMode clear, UnmanagedBlockCache cache)
+    internal UnmanagedBlock(int length, ClearMode clear, UnmanagedBlockCache cache, PixelMemoryUsage? usage = null)
     {
         _length = length;
         _cache = cache;
         _handle = cache.Rent(length);
+        _counted = usage?.Allocated(length);
         if (clear == ClearMode.Zero)
         {
             NativeMemory.Clear((void*)_handle.DangerousGetHandle(), (nuint)length);
@@ -53,6 +55,7 @@ internal sealed unsafe class UnmanagedBlock : MemoryManager<byte>
         if (disposing && Interlocked.Exchange(ref _disposed, 1) == 0)
         {
             _cache.Return(_handle);
+            _counted?.Released(_length);
         }
     }
 }

@@ -172,4 +172,64 @@ public class DrawImageTests
 
         return raster;
     }
+
+    /// <summary>Drawing an area gives the same pixels as cropping it out first and drawing the crop.</summary>
+    [Theory]
+    [InlineData(0, 0, 10, 6, 3, 2)]
+    [InlineData(2, 1, 5, 3, 0, 0)]
+    [InlineData(4, 2, 6, 4, -3, -1)]
+    [InlineData(7, 3, 10, 10, 15, 9)]
+    [InlineData(-2, -3, 6, 6, 4, 4)]
+    public void SourceAreaMatchesDrawingACrop(int ax, int ay, int aw, int ah, int px, int py)
+    {
+        DrawAreaLikeCrop<Rgba8>(ax, ay, aw, ah, px, py);
+        DrawAreaLikeCrop<Rgba16>(ax, ay, aw, ah, px, py);
+    }
+
+    [Fact]
+    public void SourceAreaOutsideTheImageThrows()
+    {
+        using Raster<Rgba8> top = Raster.Create(10, 6, Rgba8.Red);
+        using Raster<Rgba8> under = Raster.Create(4, 4, Rgba8.Blue);
+        Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.DrawImage(top, new Rect(10, 0, 3, 3), new Point(0, 0)), Ct));
+        Assert.Throws<ArgumentOutOfRangeException>(() => under.Apply(ops => ops.DrawImage(top, new Rect(0, 0, 0, 3), new Point(0, 0)), Ct));
+    }
+
+    private static void DrawAreaLikeCrop<TPixel>(int ax, int ay, int aw, int ah, int px, int py)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Random random = new(ax + (ay * 7) + (px * 13));
+        using Raster<TPixel> top = Raster.Create<TPixel>(10, 6);
+        using Raster<TPixel> under = Raster.Create<TPixel>(16, 12);
+        foreach (Raster<TPixel> raster in new[] { top, under })
+        {
+            for (int y = 0; y < raster.Height; y++)
+            {
+                Span<TPixel> row = raster.Row(y);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    row[x] = TPixel.FromRgba8(Random(random));
+                }
+            }
+        }
+
+        Rect area = new(ax, ay, aw, ah);
+        Rect clipped = area.Intersect(new Rect(0, 0, top.Width, top.Height));
+        using Raster crop = top.Derive(ops => ops.Crop(clipped), Ct);
+        using Raster expected = under.Derive(ops => ops.DrawImage(crop, new Point(px + clipped.X - ax, py + clipped.Y - ay)), Ct);
+        using Raster actual = under.Derive(ops => ops.DrawImage(top, area, new Point(px, py)), Ct);
+        Assert.Equal(Bytes((Raster<TPixel>)expected), Bytes((Raster<TPixel>)actual));
+    }
+
+    private static byte[] Bytes<TPixel>(Raster<TPixel> raster)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        List<byte> bytes = [];
+        for (int y = 0; y < raster.Height; y++)
+        {
+            bytes.AddRange(System.Runtime.InteropServices.MemoryMarshal.AsBytes(raster.Row(y)).ToArray());
+        }
+
+        return [.. bytes];
+    }
 }

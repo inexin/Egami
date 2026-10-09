@@ -8,12 +8,18 @@ using Egami.Pixels;
 namespace Egami.Operations.Compose;
 
 /// <summary>
-/// Draws another raster's first frame onto every frame with Porter–Duff source-over, in place. Only the overlap of the two is
-/// touched. With straight alpha, <c>sa</c> = source alpha × opacity and <c>da</c> = destination alpha:
+/// Draws an area of another raster's first frame onto every frame with Porter–Duff source-over, in place. Only the overlap of the
+/// area, placed at the position, and the destination is touched; the source rows are read from an offset, so no copy is made. With straight alpha, <c>sa</c> = source alpha × opacity and <c>da</c> = destination alpha:
 /// <c>out alpha = sa + da(1 − sa)</c> and <c>out color = (sc·sa + dc·da(1 − sa)) / out alpha</c>.
 /// </summary>
-internal sealed class DrawImageOperation(Raster image, Point position, float opacity) : IRasterOperation
+internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point position, float opacity) : IRasterOperation
 {
+    /// <summary>Initializes a new instance of the <see cref="DrawImageOperation"/> class that draws the whole image.</summary>
+    public DrawImageOperation(Raster image, Point position, float opacity)
+        : this(image, new Rect(0, 0, image.Width, image.Height), position, opacity)
+    {
+    }
+
     public Size OutputSize(Size input)
     {
         return input;
@@ -23,7 +29,7 @@ internal sealed class DrawImageOperation(Raster image, Point position, float opa
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         OperationRows.CopyIfSeparate(input);
-        Rect area = new Rect(position.X, position.Y, image.Width, image.Height).Intersect(new Rect(0, 0, input.Destination.Width, input.Destination.Height));
+        Rect area = new Rect(position.X, position.Y, sourceArea.Width, sourceArea.Height).Intersect(new Rect(0, 0, input.Destination.Width, input.Destination.Height));
         if (area.IsEmpty || opacity == 0)
         {
             return;
@@ -55,8 +61,8 @@ internal sealed class DrawImageOperation(Raster image, Point position, float opa
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int opacity255 = (int)MathF.Round(opacity * 255);
-        int sx = area.X - position.X;
-        int sy = area.Y - position.Y;
+        int sx = sourceArea.X + area.X - position.X;
+        int sy = sourceArea.Y + area.Y - position.Y;
         input.ForEachBand((start, end) =>
         {
             int from = Math.Max(start, area.Y);
@@ -87,8 +93,8 @@ internal sealed class DrawImageOperation(Raster image, Point position, float opa
     private void RunFloat<TPixel>(OperationInput<TPixel> input, Raster source, Rect area)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        int sx = area.X - position.X;
-        int sy = area.Y - position.Y;
+        int sx = sourceArea.X + area.X - position.X;
+        int sy = sourceArea.Y + area.Y - position.Y;
         input.ForEachBand((start, end) =>
         {
             int from = Math.Max(start, area.Y);

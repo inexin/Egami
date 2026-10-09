@@ -49,6 +49,9 @@ public sealed class PooledPixelMemorySource : IPixelMemorySource
         init => _maxRetainedBytes = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The limit must not be negative.");
     }
 
+    /// <summary>Gets the counts of blocks handed out and not yet disposed, and the switch for leak tracking.</summary>
+    public PixelMemoryUsage Usage { get; } = new();
+
     /// <summary>Gets the bytes currently kept for reuse.</summary>
     public long RetainedBytes => _cache?.RetainedBytes ?? 0;
 
@@ -61,8 +64,8 @@ public sealed class PooledPixelMemorySource : IPixelMemorySource
     {
         ArgumentOutOfRangeException.ThrowIfNegative(byteLength);
         return byteLength <= _poolThresholdBytes
-            ? new PooledBlock(byteLength, clear)
-            : new UnmanagedBlock(byteLength, clear, Cache);
+            ? new PooledBlock(byteLength, clear, Usage)
+            : new UnmanagedBlock(byteLength, clear, Cache, Usage);
     }
 
     /// <summary>Frees all unmanaged memory kept for reuse. Memory in use is not affected.</summary>

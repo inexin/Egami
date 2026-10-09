@@ -413,6 +413,38 @@ public sealed class RasterOps
         return Add(new DrawImageOperation(image, position, opacity));
     }
 
+    /// <summary>
+    /// Draws the part of <paramref name="image"/> inside <paramref name="sourceArea"/> onto this raster with that part's top-left
+    /// corner at <paramref name="position"/>, as <see cref="DrawImage(Raster, Point, float)"/> does for the whole image. Use it for
+    /// sprite sheets, tiles and partial updates: no copy of the area is made.
+    /// </summary>
+    /// <param name="image">The image to draw from. It must stay undisposed until the chain has run.</param>
+    /// <param name="sourceArea">The part of the image to draw, clipped to the image.</param>
+    /// <param name="position">Where the area's top-left corner goes; may be negative.</param>
+    /// <param name="opacity">Multiplies the image's alpha: 1 draws it as it is, 0 draws nothing.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="sourceArea"/> does not overlap the image, or <paramref name="opacity"/> is outside 0..1.
+    /// </exception>
+    public RasterOps DrawImage(Raster image, Rect sourceArea, Point position, float opacity = 1)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        if (!(opacity >= 0 && opacity <= 1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(opacity), opacity, "Opacity must be from 0 to 1.");
+        }
+
+        Rect clipped = sourceArea.Intersect(new Rect(0, 0, image.Width, image.Height));
+        if (clipped.IsEmpty)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sourceArea), sourceArea, $"The area does not overlap the {image.Width}×{image.Height} image.");
+        }
+
+        // Clipping the left or top edge moves where the rest lands.
+        Point shifted = new(position.X + clipped.X - sourceArea.X, position.Y + clipped.Y - sourceArea.Y);
+        return Add(new DrawImageOperation(image, clipped, shifted, opacity));
+    }
+
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
     internal const float LargeSigma = 100;
 
