@@ -78,3 +78,15 @@ pfm/
 ../reference/pfm/, ../reference/jpeg/*.turbo-cmyk.gz
   The PFM files read by ImageMagick, the inputs given to ImageMagick and Netpbm, and duck-cmyk.jpg and duck-ycck.jpg decoded
   by TurboJPEG to raw CMYK, made by tools/make-float-cmyk-references.py. Public domain, as the files they come from.
+
+icc/compact/
+  Compact ICC Profiles by Clinton Ingram (https://github.com/saucecontrol/Compact-ICC-Profiles), CC0 1.0 (public domain
+  dedication); copied unchanged.
+
+icc/synthetic/
+  ICC profiles written byte by byte by tools/make-icc-references.py, covering the LUT tag types and curve forms the compact
+  profiles do not. Public domain.
+
+../reference/icc/
+  Little CMS's reading of every profile above and its transforms of fixed inputs, made by tools/make-icc-references.py.
+  Public domain, as the profiles.

@@ -1,0 +1,8960 @@
+{
+ "tool": "lcms2-2.19-r0",
+ "flags": "cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE, double",
+ "profiles": [
+  {
+   "file": "compact/AdobeCompat-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "A98C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-AdobeCompat-v2.f32.gz",
+   "cases": [
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/AdobeCompat-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "A98C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-AdobeCompat-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AdobeCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AdobeCompat-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/AppleCompat-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "APLC",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-AppleCompat-v2.f32.gz",
+   "cases": [
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/AppleCompat-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "APLC",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-AppleCompat-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/AppleCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/AppleCompat-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/CGATS001Compat-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "scnr",
+    "colorSpace": "CMYK",
+    "pcs": "Lab ",
+    "headerIntent": 0,
+    "description": "uCMY",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0"
+    ]
+   },
+   "outputs": "compact-CGATS001Compat-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "compact/CGATS001Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    }
+   ]
+  },
+  {
+   "file": "compact/ColorMatchCompat-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "ACMC",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642944,
+     1.0,
+     0.8251038
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-ColorMatchCompat-v2.f32.gz",
+   "cases": [
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/ColorMatchCompat-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "ACMC",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-ColorMatchCompat-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ColorMatchCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ColorMatchCompat-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DCI-P3-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "TP3",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DCI-P3-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DCI-P3-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DCI-P3-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DCI-P3-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DCI-P3-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DCI-P3-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DisplayP3-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sP3",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DisplayP3-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DisplayP3-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "uP3",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DisplayP3-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DisplayP3-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sP3",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DisplayP3-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DisplayP3Compat-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sP3C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DisplayP3Compat-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DisplayP3Compat-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "uP3C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DisplayP3Compat-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/DisplayP3Compat-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sP3C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-DisplayP3Compat-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/DisplayP3Compat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/DisplayP3Compat-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/ProPhoto-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "uROM",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642944,
+     1.0,
+     0.8251038
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-ProPhoto-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/ProPhoto-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "uROM",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642944,
+     1.0,
+     0.8251038
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-ProPhoto-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/ProPhoto-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "ROMM",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-ProPhoto-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/ProPhoto-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/ProPhoto-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020-g24-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "2024",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020-g24-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-g24-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-g24-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-g24-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-g24-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-g24-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "2020",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "u202",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "2020",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020Compat-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "202C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020Compat-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020Compat-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "u20C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020Compat-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec2020Compat-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "202C",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec2020Compat-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec2020Compat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec2020Compat-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec601NTSC-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "R601",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec601NTSC-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec601NTSC-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "u601",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec601NTSC-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec601NTSC-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "R601",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec601NTSC-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601NTSC-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601NTSC-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec601PAL-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "601P",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec601PAL-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec601PAL-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "u60P",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec601PAL-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec601PAL-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "601P",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec601PAL-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec601PAL-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec601PAL-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec709-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "R709",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec709-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec709-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "u709",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9504547,
+     1.0,
+     1.0890503
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec709-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/Rec709-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "R709",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-Rec709-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/Rec709-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/Rec709-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/WideGamutCompat-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "AWGC",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642944,
+     1.0,
+     0.8251038
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-WideGamutCompat-v2.f32.gz",
+   "cases": [
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/WideGamutCompat-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "AWGC",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-WideGamutCompat-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/WideGamutCompat-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/WideGamutCompat-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sGrey-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "GRAY",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sGry",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "kTRC"
+    ]
+   },
+   "outputs": "compact-sGrey-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sGrey-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sGrey-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "GRAY",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "uGry",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "kTRC"
+    ]
+   },
+   "outputs": "compact-sGrey-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sGrey-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sGrey-v2-nano.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "GRAY",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "nGry",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "wtpt",
+     "kTRC",
+     "cprt"
+    ]
+   },
+   "outputs": "compact-sGrey-v2-nano.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-nano.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-nano.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sGrey-v2-nano.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-nano.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v2-nano.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sGrey-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "GRAY",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sGry",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "kTRC"
+    ]
+   },
+   "outputs": "compact-sGrey-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sGrey-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sGrey-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sRGB-v2-magic.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sRGB",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-sRGB-v2-magic.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-magic.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-magic.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-magic.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-magic.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-magic.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sRGB-v2-micro.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "uRGB",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-sRGB-v2-micro.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-micro.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-micro.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-micro.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-micro.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-micro.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sRGB-v2-nano.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "nRGB",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC",
+     "cprt"
+    ]
+   },
+   "outputs": "compact-sRGB-v2-nano.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-nano.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-nano.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v2-nano.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-nano.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v2-nano.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/sRGB-v4.icc",
+   "lcms": {
+    "version": 4.2,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "sRGB",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-sRGB-v4.f32.gz",
+   "cases": [
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/sRGB-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/sRGB-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "compact/scRGB-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "cRGB",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9505005,
+     1.0,
+     1.0890045
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "compact-scRGB-v2.f32.gz",
+   "cases": [
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/scRGB-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/scRGB-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "compact/scRGB-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/scRGB-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "compact/scRGB-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/cmyk-lut16-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "prtr",
+    "colorSpace": "CMYK",
+    "pcs": "Lab ",
+    "headerIntent": 0,
+    "description": "Egami synthetic CMYK lut16 v2",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9383392,
+     0.9731598,
+     0.8030701
+    ],
+    "blackPointPerceptual": [
+     0.000502,
+     0.0005206,
+     0.0004295
+    ],
+    "blackPointRelative": [
+     0.000502,
+     0.0005206,
+     0.0004295
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0",
+     "A2B1",
+     "A2B2",
+     "B2A0",
+     "B2A1",
+     "B2A2"
+    ]
+   },
+   "outputs": "synthetic-cmyk-lut16-v2.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-lut16-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-lut16-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/cmyk-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-lut16-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-lut16-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/cmyk-mab-v4.icc",
+   "lcms": {
+    "version": 4.3,
+    "class": "prtr",
+    "colorSpace": "CMYK",
+    "pcs": "Lab ",
+    "headerIntent": 0,
+    "description": "Egami synthetic CMYK lutAtoB v4",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     1,
+     0,
+     1
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     0,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.00336,
+     0.0034731,
+     0.00287
+    ],
+    "blackPointRelative": [
+     0.0031012,
+     0.0032164,
+     0.0026532
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0",
+     "A2B1",
+     "B2A0",
+     "B2A1"
+    ]
+   },
+   "outputs": "synthetic-cmyk-mab-v4.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-mab-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-mab-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/cmyk-mab-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-mab-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/cmyk-mab-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/gray-curv-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "scnr",
+    "colorSpace": "GRAY",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "Egami synthetic gray v2, table",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.95047,
+     1.0,
+     1.0888367
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "kTRC"
+    ]
+   },
+   "outputs": "synthetic-gray-curv-v2.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-curv-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-curv-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/gray-curv-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-curv-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-curv-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/gray-lut16-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "GRAY",
+    "pcs": "Lab ",
+    "headerIntent": 0,
+    "description": "Egami synthetic gray lut16 v2",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0",
+     "B2A0"
+    ]
+   },
+   "outputs": "synthetic-gray-lut16-v2.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-lut16-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-lut16-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/gray-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-lut16-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-lut16-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/gray-para-v4.icc",
+   "lcms": {
+    "version": 4.3,
+    "class": "mntr",
+    "colorSpace": "GRAY",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "Egami synthetic gray v4, para",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "kTRC"
+    ]
+   },
+   "outputs": "synthetic-gray-para-v4.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-para-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-para-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/gray-para-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "gray",
+     "count": 64
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-para-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/gray-para-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/matrix-curv-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "Egami synthetic matrix-shaper v2, curv tables",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "blackPointRelative": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "synthetic-matrix-curv-v2.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-curv-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-curv-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-curv-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-curv-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-curv-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/matrix-para-v4.icc",
+   "lcms": {
+    "version": 4.3,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "Egami synthetic matrix-shaper v4, para curves",
+    "matrixShaper": 1,
+    "clutAsInput": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.000286,
+     0.0001212,
+     0.0014276
+    ],
+    "blackPointRelative": [
+     0.000286,
+     0.0001212,
+     0.0014276
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "chad",
+     "rXYZ",
+     "gXYZ",
+     "bXYZ",
+     "rTRC",
+     "gTRC",
+     "bTRC"
+    ]
+   },
+   "outputs": "synthetic-matrix-para-v4.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-para-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-para-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/matrix-para-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-para-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/matrix-para-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/rgb-lut16-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "scnr",
+    "colorSpace": "RGB ",
+    "pcs": "Lab ",
+    "headerIntent": 1,
+    "description": "Egami synthetic RGB lut16 v2",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     1,
+     0,
+     1
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     0,
+     1
+    ],
+    "mediaWhite": [
+     0.95047,
+     1.0,
+     1.0888367
+    ],
+    "blackPointPerceptual": [
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "blackPointRelative": [
+     -0.0,
+     0.0,
+     0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0",
+     "A2B1",
+     "B2A0",
+     "B2A1"
+    ]
+   },
+   "outputs": "synthetic-rgb-lut16-v2.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut16-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut16-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut16-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut16-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut16-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/rgb-lut8-v2.icc",
+   "lcms": {
+    "version": 2.1,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "Egami synthetic RGB lut8 v2",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.0,
+     0.0,
+     -0.0
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0",
+     "B2A0"
+    ]
+   },
+   "outputs": "synthetic-rgb-lut8-v2.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut8-v2.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut8-v2.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-lut8-v2.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut8-v2.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-lut8-v2.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/rgb-mab-v4.icc",
+   "lcms": {
+    "version": 4.3,
+    "class": "mntr",
+    "colorSpace": "RGB ",
+    "pcs": "Lab ",
+    "headerIntent": 0,
+    "description": "Egami synthetic RGB lutAtoB v4",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     1,
+     0,
+     1
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     0,
+     1
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.00336,
+     0.0034731,
+     0.00287
+    ],
+    "blackPointRelative": [
+     0.0024204,
+     0.0011303,
+     0.0028285
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0",
+     "A2B1",
+     "B2A0",
+     "B2A1"
+    ]
+   },
+   "outputs": "synthetic-rgb-mab-v4.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-mab-v4.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-mab-v4.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-mab-v4.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "synthetic/rgb-mab-v4.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
+   "file": "synthetic/rgb-mab-xyz-v4.icc",
+   "lcms": {
+    "version": 4.3,
+    "class": "scnr",
+    "colorSpace": "RGB ",
+    "pcs": "XYZ ",
+    "headerIntent": 0,
+    "description": "Egami synthetic RGB lutAtoB v4, XYZ PCS",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "intentSupportedAsInput": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "mediaWhite": [
+     0.9642029,
+     1.0,
+     0.8249054
+    ],
+    "blackPointPerceptual": [
+     0.00336,
+     0.0034731,
+     0.00287
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "A2B0"
+    ]
+   },
+   "outputs": "synthetic-rgb-mab-xyz-v4.f32.gz",
+   "cases": [
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "synthetic/rgb-mab-xyz-v4.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  }
+ ]
+}
