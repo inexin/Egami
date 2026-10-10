@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM). Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map). Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -14,7 +14,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 | BMP | Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24; bit fields; embedded PNG and JPEG; V5 ICC | 24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes; resolution and ICC | `Bgr8`, or `Bgra8` with alpha |
 | TGA | Color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, all origins, TGA 2.0 footer and extension area | 8-bit gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer | `Bgr8`, `Bgra8`, `Gray8` or `GrayAlpha8` |
 | QOI | The whole format, 3 or 4 channels, both colorspaces | 3 or 4 channels, byte-identical to the reference encoder | `Rgb8` or `Rgba8` |
-| PNM | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha | P1 to P7, plain or binary | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16` |
+| PNM | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps | P1 to P7, plain or binary; PF and Pf | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16`; `RgbF32` or `GrayF32` for PFM |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
 
@@ -77,8 +77,12 @@ QOI's colorspace byte maps to `RasterMetadata.ColorSpace` (sRGB or linear) and b
 
 Maxvals other than 255 and 65,535 are scaled exactly, as round(v × 255 / maxval). A PAM with an unknown tuple type is read by its
 depth, with a warning. A stream with several images reads the first and warns. `#` comments become `Comment` text entries and
-are written back. Saving to a .pbm, .pgm, .ppm or .pam path writes that variant unless `PnmWriterOptions.Kind` names one; .pnm
+are written back. Saving to a .pbm, .pgm, .ppm, .pam or .pfm path writes that variant unless `PnmWriterOptions.Kind` names one; .pnm
 chooses from the pixel type.
+
+PFM float maps load as `RgbF32` (PF) or `GrayF32` (Pf), marked as linear light, with their scale and byte order in
+`PnmDetails`; values outside 0..1 are kept. Writing uses PFM for float types without alpha, or when `PnmKind.FloatMap` is
+asked for: little-endian, scale −1, as Netpbm and ImageMagick write it.
 
 ## What each writer drops
 

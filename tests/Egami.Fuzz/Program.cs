@@ -49,8 +49,9 @@ static Action<Stream> Target(string name) => name switch
     "tga" => stream => LoadSimple(stream, Egami.Formats.Tga.TgaFormat.Info),
     "qoi" => stream => LoadSimple(stream, Egami.Formats.Qoi.QoiFormat.Info),
     "pnm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
+    "pfm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
     "detect" => Detect,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, gif, apng, lzw, bmp, tga, qoi, pnm, detect."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect."),
 };
 
 static EgamiContext Context()

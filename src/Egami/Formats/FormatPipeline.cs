@@ -48,7 +48,7 @@ internal static class FormatPipeline
 
     /// <summary>
     /// Lets the file extension refine the options where one format has several variants: .pbm, .pgm, .ppm and .pam choose the
-    /// Netpbm kind unless the options already name one.
+    /// Netpbm kind (and .pfm the float map) unless the options already name one.
     /// </summary>
     internal static WriterOptions? OptionsForPath(FormatInfo format, string path, WriterOptions? options)
     {
@@ -64,6 +64,7 @@ internal static class FormatPipeline
             ".PGM" => Pnm.PnmKind.Graymap,
             ".PPM" => Pnm.PnmKind.Pixmap,
             ".PAM" => Pnm.PnmKind.Pam,
+            ".PFM" => Pnm.PnmKind.FloatMap,
             _ => Pnm.PnmKind.Auto,
         };
         return kind == Pnm.PnmKind.Auto

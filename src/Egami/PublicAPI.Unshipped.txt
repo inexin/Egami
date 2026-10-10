@@ -1,4 +1,9 @@
 #nullable enable
+Egami.Formats.Pnm.PnmDetails.LittleEndian.get -> bool?
+Egami.Formats.Pnm.PnmDetails.LittleEndian.set -> void
+Egami.Formats.Pnm.PnmDetails.Scale.get -> double?
+Egami.Formats.Pnm.PnmDetails.Scale.set -> void
+Egami.Formats.Pnm.PnmKind.FloatMap = 5 -> Egami.Formats.Pnm.PnmKind
 Egami.Pixels.Abgr8
 Egami.Pixels.Abgr8.A -> byte
 Egami.Pixels.Abgr8.Abgr8() -> void

@@ -2,7 +2,9 @@ using Egami.Metadata;
 
 namespace Egami.Formats.Pnm;
 
-/// <summary>The Netpbm formats PBM, PGM, PPM and PAM as one format, registered in <see cref="EgamiContext.Default"/>.</summary>
+/// <summary>
+/// The Netpbm formats PBM, PGM, PPM, PAM and the PFM float map as one format, registered in <see cref="EgamiContext.Default"/>.
+/// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/ApiExamples.cs" region="format-info"/>
 /// </example>
@@ -12,8 +14,8 @@ public static class PnmFormat
     public static FormatInfo Info { get; } = new()
     {
         Name = "PNM",
-        MimeTypes = ["image/x-portable-anymap", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", "image/x-portable-arbitrarymap"],
-        Extensions = ["pnm", "pbm", "pgm", "ppm", "pam"],
+        MimeTypes = ["image/x-portable-anymap", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", "image/x-portable-arbitrarymap", "image/x-portable-floatmap"],
+        Extensions = ["pnm", "pbm", "pgm", "ppm", "pam", "pfm"],
         SignatureLength = 3,
         Matches = PnmReader.Matches,
         Reader = PnmReader.Instance,
@@ -27,7 +29,10 @@ public static class PnmFormat
 /// </example>
 public enum PnmKind
 {
-    /// <summary>When writing: PGM for gray pixel types, PPM for other types without alpha, PAM for types with alpha.</summary>
+    /// <summary>
+    /// When writing: PFM for float types without alpha, PGM for other gray types, PPM for other types without alpha, PAM for
+    /// types with alpha.
+    /// </summary>
     Auto,
 
     /// <summary>PBM (P1 or P4): one bit a pixel, 1 for black.</summary>
@@ -41,6 +46,12 @@ public enum PnmKind
 
     /// <summary>PAM (P7): gray, RGB, or either with alpha.</summary>
     Pam,
+
+    /// <summary>
+    /// PFM (PF or Pf): 32-bit float RGB or gray in linear light, loaded as <see cref="Pixels.RgbF32"/> or
+    /// <see cref="Pixels.GrayF32"/>. Gray pixel types are written as Pf, the rest as PF; alpha is dropped.
+    /// </summary>
+    FloatMap,
 }
 
 /// <summary>Details only Netpbm files have, kept in <see cref="RasterMetadata.FormatDetails"/>.</summary>
@@ -61,10 +72,22 @@ public sealed class PnmDetails : FormatDetails
     /// <summary>Gets or sets the PAM tuple type, such as "RGB_ALPHA", or <see langword="null"/> for other variants.</summary>
     public string? TupleType { get; set; }
 
+    /// <summary>
+    /// Gets or sets a PFM file's scale: the absolute value of its third header field, which some programs use as an exposure
+    /// factor. <see langword="null"/> for other variants. The writer always writes 1.
+    /// </summary>
+    public double? Scale { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a PFM file's floats were little-endian (a negative scale); <see langword="null"/> for other variants.
+    /// The writer always writes little-endian.
+    /// </summary>
+    public bool? LittleEndian { get; set; }
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
-        return new PnmDetails { Kind = Kind, PlainText = PlainText, MaxValue = MaxValue, TupleType = TupleType };
+        return new PnmDetails { Kind = Kind, PlainText = PlainText, MaxValue = MaxValue, TupleType = TupleType, Scale = Scale, LittleEndian = LittleEndian };
     }
 }
 

@@ -253,7 +253,7 @@ sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linea
 | BMP | Every Windows and OS/2 2.x header, 1 to 32 bits, RLE4, RLE8, RLE24, bit fields, embedded PNG and JPEG, V5 ICC | 24-bit, 32-bit with alpha, 1, 2, 4 and 8-bit palettes, resolution, ICC |
 | TGA | Color-mapped, true-color and gray, raw and RLE, all origins, TGA 2.0 footer and extension area | Gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer |
 | QOI | The whole format | 3 or 4 channels, byte-identical to the reference encoder |
-| PBM, PGM, PPM, PAM | P1 to P7, plain and binary, any maxval | P1 to P7, plain and binary |
+| PBM, PGM, PPM, PAM, PFM | P1 to P7, plain and binary, any maxval; PF and Pf float maps, either byte order | P1 to P7, plain and binary; PF and Pf |
 
 Custom formats plug in through `FormatInfo`, `IFormatReader` and `IFormatWriter`, registered with
 `EgamiContext.Default.WithFormat(...)`.

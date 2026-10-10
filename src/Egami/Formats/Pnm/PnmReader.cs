@@ -39,10 +39,10 @@ internal sealed class PnmReader : IFormatReader
         Rgba16,
     }
 
-    /// <summary>Returns whether the data starts with P1 to P7 and a whitespace character.</summary>
+    /// <summary>Returns whether the data starts with P1 to P7, PF or Pf, and a whitespace character.</summary>
     internal static bool Matches(ReadOnlySpan<byte> header)
     {
-        return header.Length >= 3 && header[0] == (byte)'P' && header[1] is >= (byte)'1' and <= (byte)'7' && IsSpace(header[2]);
+        return header.Length >= 3 && header[0] == (byte)'P' && header[1] is (>= (byte)'1' and <= (byte)'7') or (byte)'F' or (byte)'f' && IsSpace(header[2]);
     }
 
     internal static bool IsSpace(byte b)
@@ -52,6 +52,11 @@ internal sealed class PnmReader : IFormatReader
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
+        if (Pfm.Is(input))
+        {
+            return Pfm.ReadInfo(input);
+        }
+
         Header header = ReadHeader(input);
         PixelLayoutInfo layout = LayoutOf(header.Natural);
         return new RasterInfo
@@ -69,11 +74,16 @@ internal sealed class PnmReader : IFormatReader
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        return Read<TPixel>(input, options, ReadHeader(input));
+        return Pfm.Is(input) ? Pfm.Read<TPixel>(input, options) : Read<TPixel>(input, options, ReadHeader(input));
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
+        if (Pfm.Is(input))
+        {
+            return Pfm.Read(input, options);
+        }
+
         Header header = ReadHeader(input);
         return header.Natural switch
         {

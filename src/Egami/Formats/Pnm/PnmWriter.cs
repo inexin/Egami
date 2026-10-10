@@ -28,7 +28,15 @@ internal sealed class PnmWriter : IFormatWriter
         PnmWriterOptions pnm = options as PnmWriterOptions ?? new PnmWriterOptions { StripMetadata = options.StripMetadata };
         PixelLayoutInfo layout = TPixel.Layout;
         bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
-        PnmKind kind = pnm.Kind != PnmKind.Auto ? pnm.Kind : layout.HasAlpha ? PnmKind.Pam : gray ? PnmKind.Graymap : PnmKind.Pixmap;
+        PnmKind kind = pnm.Kind != PnmKind.Auto ? pnm.Kind
+            : layout.ChannelType == PixelChannelType.Float32 && !layout.HasAlpha ? PnmKind.FloatMap
+            : layout.HasAlpha ? PnmKind.Pam : gray ? PnmKind.Graymap : PnmKind.Pixmap;
+        if (kind == PnmKind.FloatMap)
+        {
+            Pfm.Write(raster, output);
+            return;
+        }
+
         bool wide = kind != PnmKind.Bitmap && layout.NeedsWideSamples;
         int max = kind == PnmKind.Bitmap ? 1 : wide ? 65535 : 255;
         bool plain = pnm.PlainText && kind != PnmKind.Pam;
