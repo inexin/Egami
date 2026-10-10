@@ -156,9 +156,20 @@ public class RasterDecoderTests
         Assert.Equal(expected.FrameCount, decoder.Info.FrameCount);
         Assert.Equal(probe.Format, decoder.Info.Format);
         Assert.Equal(probe.Orientation, decoder.Info.Orientation);
-        Assert.Equal(RasterAccess.Buffered, decoder.Info.Access);
-        Assert.Equal(RasterAccess.Buffered, probe.Access);
-        Assert.Equal(BytesOf(expected), decoder.Info.WorkingBytes);
+        Assert.Equal(probe.Access, decoder.Info.Access);
+        Assert.Equal(probe.WorkingBytes, decoder.Info.WorkingBytes);
+        if (decoder.Info.Access == RasterAccess.Buffered)
+        {
+            Assert.Equal(BytesOf(expected), decoder.Info.WorkingBytes);
+        }
+
+        // Metadata after the image data arrives once the last frame is read.
+        while (decoder.ReadFrame<Rgba8>() is Raster<Rgba8> frame)
+        {
+            frame.Dispose();
+        }
+
+        Assert.True(decoder.IsMetadataComplete);
         RasterMetadata a = expected.Metadata;
         RasterMetadata b = decoder.Metadata;
         Assert.Equal(a.FormatName, b.FormatName);
@@ -394,10 +405,11 @@ public class RegionAndReductionTests
     [Fact]
     public void ProbeReportsTheWorkingBytesOfTheBuffer()
     {
-        byte[] data = StreamingCorpus.Read("ops/egret.png");
+        byte[] data = StreamingCorpus.Read("bmp/rgb24.bmp");
         RasterInfo full = Raster.Probe(data);
-        Assert.Equal(480L * 640 * full.Layout.BytesPerPixel, full.WorkingBytes);
-        RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(48, 64) });
+        Assert.Equal(RasterAccess.Buffered, full.Access);
+        Assert.Equal(64L * 48 * full.Layout.BytesPerPixel, full.WorkingBytes);
+        RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(16, 12) });
         Assert.True(reduced.WorkingBytes > full.WorkingBytes);
         byte[] jpeg = StreamingCorpus.Read("jpeg/egret-420.jpg");
         Assert.True(Raster.Probe(jpeg, options: new ReaderOptions { MinimumSize = new Size(30, 40) }).WorkingBytes < Raster.Probe(jpeg).WorkingBytes / 32);

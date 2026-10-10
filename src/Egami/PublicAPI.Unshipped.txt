@@ -190,6 +190,7 @@ Egami.RasterDecoder
 Egami.RasterDecoder.CurrentFrame.get -> Egami.Metadata.FrameMetadata?
 Egami.RasterDecoder.Dispose() -> void
 Egami.RasterDecoder.Info.get -> Egami.Formats.RasterInfo!
+Egami.RasterDecoder.IsMetadataComplete.get -> bool
 Egami.RasterDecoder.Metadata.get -> Egami.Metadata.RasterMetadata!
 Egami.RasterDecoder.NextFrame() -> bool
 Egami.RasterDecoder.ReadFrame<TPixel>() -> Egami.Raster<TPixel>?

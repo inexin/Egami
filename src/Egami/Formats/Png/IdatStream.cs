@@ -153,8 +153,32 @@ internal sealed class IdatStream : Stream
         }
     }
 
-    /// <summary>Checks the CRC of the finished chunk and reads the next chunk header.</summary>
-    private void Advance()
+    /// <summary>
+    /// Moves past the rest of the image data without decompressing or checksumming it, for a decode that needs no more rows. The
+    /// chunk headers are still read, so the chunk after the data is known.
+    /// </summary>
+    internal void SkipRest()
+    {
+        while (!_ended)
+        {
+            try
+            {
+                _chunks.Input.Skip(_remaining);
+                _remaining = 0;
+            }
+            catch (CorruptDataException e) when (e.IsTruncation)
+            {
+                Truncated = true;
+                _ended = true;
+                return;
+            }
+
+            Advance(checkCrc: false);
+        }
+    }
+
+    /// <summary>Checks the CRC of the finished chunk (or skips it) and reads the next chunk header.</summary>
+    private void Advance(bool checkCrc = true)
     {
         if (_chunks.Input.Peek(4).Length < 4)
         {
@@ -163,7 +187,15 @@ internal sealed class IdatStream : Stream
             return;
         }
 
-        _chunks.CheckCrc(_type, _crc, critical: true);
+        if (checkCrc)
+        {
+            _chunks.CheckCrc(_type, _crc, critical: true);
+        }
+        else
+        {
+            _chunks.Input.Skip(4);
+        }
+
         int available = _chunks.Input.Peek(8).Length;
         if (available is > 0 and < 8)
         {

@@ -2,6 +2,7 @@ using BenchmarkDotNet.Running;
 
 using Egami;
 using Egami.Benchmarks;
+using Egami.Formats;
 using Egami.Pixels;
 using Egami.Tests.Memory;
 
@@ -22,7 +23,7 @@ if (args is ["--write-camera-files", string directory])
     return;
 }
 
-// Report what 1.0 Load holds at its peak for each file, for the Phase 2.2 memory gates: -- --peak <file>...
+// Report what 1.0 Load and RasterDecoder.ReadRows hold at their peak for each file, for the Phase 2.2 memory gates: -- --peak <file>...
 // Limits are raised so the large generated images (tools/make-large-images.py) load.
 if (args is ["--peak", .. string[] files])
 {
@@ -32,6 +33,24 @@ if (args is ["--peak", .. string[] files])
         long start = System.Diagnostics.Stopwatch.GetTimestamp();
         MemoryPeak peak = PeakMemory.Measure(context => Raster.Load(file, context).Dispose(), limits);
         Console.WriteLine($"{Path.GetFileName(file)}: Load {peak}, {System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds:N0} ms");
+        start = System.Diagnostics.Stopwatch.GetTimestamp();
+        RasterAccess access = RasterAccess.Buffered;
+        peak = PeakMemory.Measure(
+            context =>
+            {
+                using RasterDecoder decoder = RasterDecoder.Open(file, context);
+                access = decoder.Info.Access;
+                using Raster<Rgba8> band = Raster.Create<Rgba8>(decoder.Info.Width, 256, context);
+                do
+                {
+                    while (decoder.ReadRows(band) > 0)
+                    {
+                    }
+                }
+                while (decoder.NextFrame());
+            },
+            limits);
+        Console.WriteLine($"{Path.GetFileName(file)}: ReadRows ({access}, 256-row Rgba8 band) {peak}, {System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds:N0} ms");
     }
 
     return;

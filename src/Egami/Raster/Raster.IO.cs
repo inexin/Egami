@@ -142,14 +142,7 @@ public abstract partial class Raster
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="target"/> is <see langword="null"/>.</exception>
     /// <example>
-    /// <code>
-    /// using Raster&lt;Rgb8&gt; frame = Raster.Create&lt;Rgb8&gt;(1920, 1080);
-    /// foreach (string file in files)
-    /// {
-    ///     Raster.LoadInto(file, frame);
-    ///     Show(frame);
-    /// }
-    /// </code>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="load-into"/>
     /// </example>
     public static void LoadInto<TPixel>(Stream stream, Raster<TPixel> target, EgamiContext? context = null, ReaderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -183,9 +176,7 @@ public abstract partial class Raster
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
     /// <example>
-    /// <code>
-    /// Raster.LoadInto("frame.jpg", reused);
-    /// </code>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="load-into"/>
     /// </example>
     public static void LoadInto<TPixel>(string path, Raster<TPixel> target, EgamiContext? context = null, ReaderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -206,9 +197,7 @@ public abstract partial class Raster
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="target"/> is <see langword="null"/>.</exception>
     /// <example>
-    /// <code>
-    /// Raster.LoadInto(jpegBytes, reused);
-    /// </code>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="load-into"/>
     /// </example>
     public static void LoadInto<TPixel>(ReadOnlyMemory<byte> data, Raster<TPixel> target, EgamiContext? context = null, ReaderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>

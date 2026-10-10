@@ -51,7 +51,14 @@ internal static class FormatPipeline
             if (format.Reader is Streaming.IRowFormatReader rows)
             {
                 Streaming.RowSource source = rows.Open(input, options);
-                owned = true;
+                if (source is not Streaming.BufferedRowSource)
+                {
+                    owned = true;
+                    return (source, format);
+                }
+
+                ((Streaming.BufferedRowSource)source).Raster.Metadata.FormatName ??= format.Name;
+                input.ReturnUnreadBytes();
                 return (source, format);
             }
 
@@ -96,6 +103,14 @@ internal static class FormatPipeline
         }
 
         RasterInfo info = reader.ReadInfo(input, read);
+        if (reader is Streaming.IRowFormatReader && info.Access == RasterAccess.Streamed)
+        {
+            // A streaming reader reports its own working set.
+            Streaming.ReadPlan streamed = Streaming.ReadPlan.Create(info.Width, info.Height, options.Region, options.MinimumSize, maxScale);
+            long reduce = streamed.Factor == 1 ? 0 : (streamed.Output.Width * 4L * sizeof(double)) + (streamed.Region.Width * 16L);
+            return info with { WorkingBytes = info.WorkingBytes + reduce };
+        }
+
         if (width == 0)
         {
             (width, height) = (info.Width, info.Height);

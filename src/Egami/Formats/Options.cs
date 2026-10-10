@@ -62,6 +62,9 @@ public record ReaderOptions
 }
 
 /// <summary>How a decode produces rows, as <see cref="RasterInfo.Access"/> reports it.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="region"/>
+/// </example>
 public enum RasterAccess
 {
     /// <summary>The image is decoded into an internal buffer first, and rows are served from it.</summary>

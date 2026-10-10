@@ -14,7 +14,7 @@ namespace Egami.Formats.Png;
 /// Reads static PNG images, written from the W3C PNG Specification (Third Edition) and RFC 1950/1951.
 /// The reader streams: it holds two scanlines and writes each finished row straight into the raster.
 /// </summary>
-internal sealed class PngReader : IFormatReader
+internal sealed partial class PngReader : IFormatReader, Streaming.IRowFormatReader
 {
     internal static readonly PngReader Instance = new();
 
@@ -48,6 +48,8 @@ internal sealed class PngReader : IFormatReader
             EstimatedBytes = animated ? (frameBytes * frames) + frameBytes : frameBytes,
             Orientation = state.Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
             LoopCount = state.Png.Animated ? state.Plays : null,
+            Access = Streams(options) ? RasterAccess.Streamed : RasterAccess.Buffered,
+            WorkingBytes = Streams(options) ? WorkingBytes(state) : 0,
         };
     }
 
@@ -882,6 +884,35 @@ internal sealed class PngReader : IFormatReader
         where TCanvas : unmanaged, IPixelType<TCanvas>
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        if (ComposeFrame(state, canvas, control, data, index) is not bool complete)
+        {
+            return false;
+        }
+
+        if (index >= first && index < end)
+        {
+            EgamiInput input = state.Input;
+            input.Memory.Check((long)canvas.Width * canvas.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+            PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(canvas.Width, canvas.Height, input.Memory);
+            canvas.CopyTo(plane);
+            frames.Add(new Frame<TPixel>(plane, FrameMetadataOf(control)));
+        }
+
+        canvas.End();
+        return complete;
+    }
+
+    /// <summary>Returns the metadata Load gives a frame with this fcTL.</summary>
+    private static FrameMetadata FrameMetadataOf(FrameControl control)
+    {
+        return new FrameMetadata { Delay = control.Delay, Disposal = control.Disposal, Blend = control.Blend, Bounds = control.Bounds };
+    }
+
+    /// <summary>Decodes one frame and draws it on the canvas with its blend, after <see cref="AnimationCanvas{TCanvas}.Begin"/>; the caller ends it.</summary>
+    /// <returns>Whether the frame's data was complete, or <see langword="null"/> if it was out of sequence and was not drawn.</returns>
+    private static bool? ComposeFrame<TCanvas>(State state, AnimationCanvas<TCanvas> canvas, FrameControl control, IdatStream data, int index)
+        where TCanvas : unmanaged, IPixelType<TCanvas>
+    {
         EgamiInput input = state.Input;
         input.Limits.CheckFrameCount(index + 1);
         input.CancellationToken.ThrowIfCancellationRequested();
@@ -893,7 +924,7 @@ internal sealed class PngReader : IFormatReader
         if (data.OutOfSequence)
         {
             state.Metadata.WarningList.Add($"Frame {index}'s data is out of sequence; the animation ends before it.");
-            return false;
+            return null;
         }
 
         // A first frame that restores the previous canvas restores the empty one (APNG specification, fcTL).
@@ -917,15 +948,6 @@ internal sealed class PngReader : IFormatReader
             }
         }
 
-        if (index >= first && index < end)
-        {
-            input.Memory.Check((long)canvas.Width * canvas.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
-            PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(canvas.Width, canvas.Height, input.Memory);
-            canvas.CopyTo(plane);
-            frames.Add(new Frame<TPixel>(plane, new FrameMetadata { Delay = control.Delay, Disposal = control.Disposal, Blend = control.Blend, Bounds = bounds }));
-        }
-
-        canvas.End();
         return complete;
     }
 

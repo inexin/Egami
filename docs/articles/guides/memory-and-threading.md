@@ -16,6 +16,25 @@ decodes in parallel bands, and animated formats map frames in parallel.
 Rasters are not thread-safe: do not run two chains on the same raster at once. Separate rasters, contexts and loads are
 independent, and readers, writers and contexts can be shared freely.
 
+## Streaming
+
+`RasterDecoder` decodes a band of rows or a frame at a time, so an image never has to exist whole:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#decode-rows)]
+
+`ReaderOptions.Region` decodes only a rectangle and `MinimumSize` a reduced size, in `Load`, `Probe` and the decoder alike.
+`RasterInfo.Access` says whether a format streams its rows (`RasterAccess.Streamed`) or is decoded into a buffer first
+(`RasterAccess.Buffered`), and
+`WorkingBytes` how much the decode holds besides your band:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#region)]
+
+`Raster.LoadInto` decodes into a raster you already have, and `ReadFrame` gives an animation one composed frame at a time:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#load-into)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#frames)]
+
 ## Pixel memory
 
 Pixel memory never lives on the garbage-collected heap as large arrays. `PooledPixelMemorySource.Shared` hands out pooled arrays

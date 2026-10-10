@@ -22,6 +22,14 @@ internal interface IRowFormatReader
     RowSource Open(EgamiInput input, ReaderOptions options);
 }
 
+/// <summary>Work that needs a source's natural pixel type, reached through <see cref="RowSource.WithNaturalType"/>.</summary>
+/// <typeparam name="TResult">What the work returns.</typeparam>
+internal interface INaturalTypeVisitor<TResult>
+{
+    TResult Visit<TPixel>()
+        where TPixel : unmanaged, IPixelType<TPixel>;
+}
+
 /// <summary>Marks a reader that reduces while decoding when <see cref="ReaderOptions.NativeScale"/> asks, by powers of two.</summary>
 internal interface INativeScaling
 {
@@ -50,6 +58,9 @@ internal abstract class RowSource : IDisposable
     /// <summary>Gets the layout of the reader's natural pixel type.</summary>
     public abstract PixelLayoutInfo Layout { get; }
 
+    /// <summary>Calls <paramref name="visitor"/> with the reader's natural pixel type.</summary>
+    public abstract TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor);
+
     /// <summary>Gets the metadata read so far.</summary>
     public abstract RasterMetadata Metadata { get; }
 
@@ -62,8 +73,22 @@ internal abstract class RowSource : IDisposable
     /// <summary>Gets the most bytes the source holds while decoding.</summary>
     public abstract long WorkingBytes { get; }
 
+    /// <summary>
+    /// Gets whether <see cref="Metadata"/> is complete. Formats can put metadata after the image data (PNG text and eXIf, GIF
+    /// comments), which is read only once the last frame is finished.
+    /// </summary>
+    public virtual bool MetadataComplete => true;
+
     /// <summary>Moves to the next frame: the first call moves to frame 0. Returns its metadata, or <see langword="null"/> after the last.</summary>
     public abstract FrameMetadata? NextFrame();
+
+    /// <summary>
+    /// Says no more rows of the current frame are needed, so the source can skip the rest of its data without decoding it and,
+    /// after the last frame, read what follows the image. Called again, it does nothing.
+    /// </summary>
+    public virtual void EndFrame()
+    {
+    }
 
     /// <summary>
     /// Converts row <paramref name="y"/> of the current frame, from column <paramref name="x"/>, into <paramref name="destination"/>.
@@ -112,6 +137,11 @@ internal sealed class BufferedRowSource : RowSource
     public override int MaxNativeScale { get; }
 
     public override PixelLayoutInfo Layout => Raster.Layout;
+
+    public override TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor)
+    {
+        return Raster.Accept(new Adapter<TResult>(visitor));
+    }
 
     public override RasterMetadata Metadata => Raster.Metadata;
 
@@ -184,6 +214,15 @@ internal sealed class BufferedRowSource : RowSource
     {
         _raster?.Dispose();
         _raster = null;
+    }
+
+    private sealed class Adapter<TResult>(INaturalTypeVisitor<TResult> visitor) : IRasterVisitor<TResult>
+    {
+        public TResult Visit<TPixel>(Raster<TPixel> raster)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            return visitor.Visit<TPixel>();
+        }
     }
 
     /// <summary>Returns the pixel bytes of every frame of <paramref name="raster"/>.</summary>

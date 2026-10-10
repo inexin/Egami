@@ -17,15 +17,7 @@ namespace Egami;
 /// rows or is decoded into a buffer first, and <see cref="RasterInfo.WorkingBytes"/> how much that holds.
 /// </remarks>
 /// <example>
-/// <code>
-/// using RasterDecoder decoder = RasterDecoder.Open("huge.png");
-/// using Raster&lt;Rgb8&gt; band = Raster.Create&lt;Rgb8&gt;(decoder.Info.Width, 256);
-/// int rows;
-/// while ((rows = decoder.ReadRows(band)) &gt; 0)
-/// {
-///     Process(band, rows);
-/// }
-/// </code>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="decode-rows"/>
 /// </example>
 public sealed class RasterDecoder : IDisposable
 {
@@ -35,6 +27,8 @@ public sealed class RasterDecoder : IDisposable
     private readonly EgamiContext _context;
     private readonly IDisposable? _owned;
     private FrameMetadata? _frame;
+    private RasterMetadata? _upkept;
+    private bool _upkeptComplete;
     private bool _started;
     private bool _disposed;
 
@@ -50,14 +44,7 @@ public sealed class RasterDecoder : IDisposable
         }
 
         _stage = new RowStage(source, _plan);
-        Metadata = source.Metadata;
-        if (_plan.ChangesGeometry)
-        {
-            Metadata = Metadata.Copy();
-            ExifUpkeep.Dimensions(Metadata, _plan.Output);
-            ExifUpkeep.DropThumbnail(Metadata);
-        }
-
+        RasterMetadata metadata = Metadata;
         Size output = _plan.Output;
         Info = new RasterInfo
         {
@@ -66,10 +53,10 @@ public sealed class RasterDecoder : IDisposable
             Height = output.Height,
             Layout = source.Layout,
             FrameCount = source.FrameCount,
-            HasMetadata = Metadata.Exif is not null || !Metadata.IccProfile.IsEmpty || !Metadata.Xmp.IsEmpty || Metadata.Text.Count > 0,
+            HasMetadata = metadata.Exif is not null || !metadata.IccProfile.IsEmpty || !metadata.Xmp.IsEmpty || metadata.Text.Count > 0,
             EstimatedBytes = (long)output.Width * output.Height * source.Layout.BytesPerPixel * (source.FrameCount ?? 1),
-            Orientation = Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
-            LoopCount = source.FrameCount > 1 ? Metadata.LoopCount : null,
+            Orientation = metadata.Exif?.Orientation ?? ImageOrientation.Normal,
+            LoopCount = source.FrameCount > 1 ? metadata.LoopCount : null,
             Access = source.Access,
             WorkingBytes = source.WorkingBytes + _stage.WorkingBytes,
         };
@@ -82,10 +69,35 @@ public sealed class RasterDecoder : IDisposable
     public RasterInfo Info { get; }
 
     /// <summary>
-    /// Gets the metadata read so far. When the region or reduction changes the size, the EXIF dimensions follow it and the EXIF
-    /// thumbnail is dropped, as a crop or resize would.
+    /// Gets the metadata read so far; see <see cref="IsMetadataComplete"/>. When the region or reduction changes the size, the
+    /// EXIF dimensions follow it and the EXIF thumbnail is dropped, as a crop or resize would.
     /// </summary>
-    public RasterMetadata Metadata { get; }
+    public RasterMetadata Metadata
+    {
+        get
+        {
+            if (!_plan.ChangesGeometry)
+            {
+                return _source.Metadata;
+            }
+
+            if (_upkept is null || _upkeptComplete != _source.MetadataComplete)
+            {
+                _upkeptComplete = _source.MetadataComplete;
+                _upkept = _source.Metadata.Copy();
+                ExifUpkeep.Dimensions(_upkept, _plan.Output);
+                ExifUpkeep.DropThumbnail(_upkept);
+            }
+
+            return _upkept;
+        }
+    }
+
+    /// <summary>
+    /// Gets whether <see cref="Metadata"/> holds everything the file has. PNG and GIF may put text, EXIF and comments after the
+    /// image data, which arrive once the last frame has been read.
+    /// </summary>
+    public bool IsMetadataComplete => _source.MetadataComplete;
 
     /// <summary>Gets the metadata of the frame being read, or <see langword="null"/> after the last frame.</summary>
     public FrameMetadata? CurrentFrame
@@ -110,6 +122,9 @@ public sealed class RasterDecoder : IDisposable
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><see cref="ReaderOptions.Region"/> has no area or misses the image.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="decode-rows"/>
+    /// </example>
     public static RasterDecoder Open(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
     {
         return Open(stream, context, options, owned: null);
@@ -127,6 +142,9 @@ public sealed class RasterDecoder : IDisposable
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="decode-rows"/>
+    /// </example>
     public static RasterDecoder Open(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         FileStream stream = Raster.OpenRead(path);
@@ -142,6 +160,9 @@ public sealed class RasterDecoder : IDisposable
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><see cref="ReaderOptions.Region"/> has no area or misses the image.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="decode-rows"/>
+    /// </example>
     public static RasterDecoder Open(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
         MemoryStream stream = Raster.AsStream(data);
@@ -177,6 +198,7 @@ public sealed class RasterDecoder : IDisposable
             _stage.Read(band.Row(y));
         }
 
+        EndFrameIfDone();
         return rows;
     }
 
@@ -196,6 +218,7 @@ public sealed class RasterDecoder : IDisposable
 
         int skipped = Math.Min(count, _stage.Remaining);
         _stage.Skip(skipped);
+        EndFrameIfDone();
         return skipped;
     }
 
@@ -207,6 +230,7 @@ public sealed class RasterDecoder : IDisposable
         Start();
         if (_frame is not null)
         {
+            _source.EndFrame();
             _frame = _source.NextFrame();
             _stage.Reset();
         }
@@ -223,6 +247,9 @@ public sealed class RasterDecoder : IDisposable
     /// <returns>The frame's metadata, or <see langword="null"/> after the last frame.</returns>
     /// <exception cref="ArgumentException"><paramref name="target"/> is not <see cref="Info"/>'s size.</exception>
     /// <exception cref="ObjectDisposedException">The decoder has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="frames"/>
+    /// </example>
     public FrameMetadata? ReadFrame<TPixel>(Raster<TPixel> target)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -288,7 +315,7 @@ public sealed class RasterDecoder : IDisposable
         }
     }
 
-    /// <summary>Opens a decoder over <paramref name="stream"/>, disposing <paramref name="owned"/> with it.</summary>
+    // Opens a decoder over the stream, disposing `owned` with it.
     internal static RasterDecoder Open(Stream stream, EgamiContext? context, ReaderOptions? options, IDisposable? owned)
     {
         try
@@ -362,9 +389,7 @@ public sealed class RasterDecoder : IDisposable
     /// <summary>Decodes every remaining frame into one raster in the natural pixel type. See <see cref="ReadAll{TPixel}"/>.</summary>
     internal Raster ReadAll()
     {
-        return _source is BufferedRowSource buffered
-            ? buffered.Raster.Accept(new ReadAllVisitor(this))
-            : throw new NotSupportedException("A streamed source names its natural pixel type itself.");
+        return _source.WithNaturalType(new ReadAllVisitor(this));
     }
 
     /// <summary>Throws unless <paramref name="target"/> is <see cref="Info"/>'s size.</summary>
@@ -373,6 +398,14 @@ public sealed class RasterDecoder : IDisposable
         if (target.Width != Info.Width || target.Height != Info.Height)
         {
             throw new ArgumentException($"The target is {target.Width}×{target.Height} but the image decodes to {Info.Width}×{Info.Height}.", name);
+        }
+    }
+
+    private void EndFrameIfDone()
+    {
+        if (_stage.Remaining == 0)
+        {
+            _source.EndFrame();
         }
     }
 
@@ -407,9 +440,9 @@ public sealed class RasterDecoder : IDisposable
         return copy;
     }
 
-    private sealed class ReadAllVisitor(RasterDecoder decoder) : IRasterVisitor<Raster>
+    private sealed class ReadAllVisitor(RasterDecoder decoder) : INaturalTypeVisitor<Raster>
     {
-        public Raster Visit<TPixel>(Raster<TPixel> raster)
+        public Raster Visit<TPixel>()
             where TPixel : unmanaged, IPixelType<TPixel>
         {
             return decoder.ReadAll<TPixel>();
