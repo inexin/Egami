@@ -72,6 +72,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         private readonly Plan _plan;
         private readonly PngDetails? _original;
         private readonly bool _sameFormat;
+        private readonly bool _hdrWritten;
         private readonly RasterMetadata _metadata;
         private readonly int? _frameCount;
         private readonly bool _seekable;
@@ -101,6 +102,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             _header = new(start.Width, start.Height, plan.BitDepth, plan.ColorType, Interlaced: false);
             _hasAlpha = plan.ColorType is PngColorType.Rgba or PngColorType.GrayAlpha && TPixel.Layout.HasAlpha;
             bool strip = png.StripMetadata;
+            _hdrWritten = !strip && start.Metadata.Hdr is not null;
             _original = start.Metadata.FormatDetails as PngDetails;
             _sameFormat = _original is not null && _original.ColorType == plan.ColorType && _original.BitDepth == plan.BitDepth
                 && (plan.ColorType != PngColorType.Palette || _original.Palette.Span.SequenceEqual(plan.Palette));
@@ -115,9 +117,9 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 
             if (!strip)
             {
-                WriteColorChunks(output, start.Metadata, _original);
+                WriteColorChunks(output, start.Metadata, _original, start.Options.ProfileToWrite(start.Metadata));
                 WriteMetadataChunks(output, start.Metadata, _original);
-                WriteKeptChunks(output, _original, PngChunkPosition.BeforePalette, _sameFormat);
+                WriteKeptChunks(output, _original, PngChunkPosition.BeforePalette, _sameFormat, start.Metadata.Hdr is not null);
             }
 
             if (plan.ColorType == PngColorType.Palette)
@@ -140,7 +142,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 
             if (!strip)
             {
-                WriteKeptChunks(output, _original, PngChunkPosition.BeforeImageData, _sameFormat);
+                WriteKeptChunks(output, _original, PngChunkPosition.BeforeImageData, _sameFormat, start.Metadata.Hdr is not null);
             }
         }
 
@@ -242,7 +244,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 
             if (!_options.StripMetadata)
             {
-                WriteKeptChunks(_output, _original, PngChunkPosition.AfterImageData, _sameFormat);
+                WriteKeptChunks(_output, _original, PngChunkPosition.AfterImageData, _sameFormat, _hdrWritten);
             }
 
             WriteChunk(_output, PngChunkType.Iend, []);
@@ -710,25 +712,33 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         }
     }
 
-    /// <summary>Writes cICP, then iCCP or sRGB, then gAMA and cHRM (section 5.6 orders them before PLTE).</summary>
-    private static void WriteColorChunks(Stream output, RasterMetadata metadata, PngDetails? original)
+    /// <summary>
+    /// Writes cICP, then iCCP or sRGB, then gAMA, cHRM, mDCV and cLLI (section 5.6 orders them before PLTE), from the generic
+    /// metadata, so a file converted from another format keeps its color tags; the original chunks fill in what it lacks.
+    /// </summary>
+    private static void WriteColorChunks(Stream output, RasterMetadata metadata, PngDetails? original, ReadOnlyMemory<byte> profile)
     {
-        if (original is not null && original.CodingIndependentCodePoints.Length == 4)
+        if (metadata.CodePoints is Colors.ColorCodePoints codes)
+        {
+            WriteChunk(output, PngChunkType.Cicp, [codes.Primaries, codes.TransferCharacteristics, codes.MatrixCoefficients, (byte)(codes.FullRange ? 1 : 0)]);
+        }
+        else if (original is not null && original.CodingIndependentCodePoints.Length == 4)
         {
             WriteChunk(output, PngChunkType.Cicp, original.CodingIndependentCodePoints.Span);
         }
 
-        if (!metadata.IccProfile.IsEmpty)
+        if (!profile.IsEmpty)
         {
             string name = original?.IccProfileName is { Length: > 0 } n && IsValidKeyword(n) ? n : "ICC profile";
-            WriteChunk(output, PngChunkType.Iccp, [.. Encoding.Latin1.GetBytes(name), 0, 0, .. Compress(metadata.IccProfile.Span)]);
+            WriteChunk(output, PngChunkType.Iccp, [.. Encoding.Latin1.GetBytes(name), 0, 0, .. Compress(profile.Span)]);
         }
         else if (original?.SrgbRenderingIntent is byte intent)
         {
             WriteChunk(output, PngChunkType.Srgb, [intent]);
         }
-        else if (metadata.ColorSpace == ColorSpaceHint.Srgb)
+        else if (metadata.ColorSpace == ColorSpaceHint.Srgb || !metadata.IccProfile.IsEmpty)
         {
+            // The sRGB tag, or an sRGB profile left out by OmitSrgbProfile.
             WriteChunk(output, PngChunkType.Srgb, [0]);
         }
 
@@ -753,6 +763,46 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         {
             WriteChunk(output, PngChunkType.Chrm, original.Chromaticities.Span);
         }
+        else if (metadata.Primaries is Colors.ColorPrimaries p && metadata.IccProfile.IsEmpty)
+        {
+            Span<byte> data = stackalloc byte[32];
+            Colors.Chromaticity[] points = [p.White, p.Red, p.Green, p.Blue];
+            for (int i = 0; i < 4; i++)
+            {
+                BinaryPrimitives.WriteUInt32BigEndian(data[(i * 8)..], (uint)Math.Round(points[i].X * 100_000));
+                BinaryPrimitives.WriteUInt32BigEndian(data[((i * 8) + 4)..], (uint)Math.Round(points[i].Y * 100_000));
+            }
+
+            WriteChunk(output, PngChunkType.Chrm, data);
+        }
+
+        if (metadata.Hdr is Colors.HdrMetadata hdr)
+        {
+            if (hdr.MasteringPrimaries is Colors.ColorPrimaries d && hdr.MasteringMaxLuminance is double max)
+            {
+                Span<byte> data = stackalloc byte[24];
+                Colors.Chromaticity[] points = [d.Red, d.Green, d.Blue, d.White];
+                for (int i = 0; i < 4; i++)
+                {
+                    BinaryPrimitives.WriteUInt16BigEndian(data[(i * 4)..], (ushort)Math.Clamp(Math.Round(points[i].X / 0.00002), 0, ushort.MaxValue));
+                    BinaryPrimitives.WriteUInt16BigEndian(data[((i * 4) + 2)..], (ushort)Math.Clamp(Math.Round(points[i].Y / 0.00002), 0, ushort.MaxValue));
+                }
+
+                BinaryPrimitives.WriteUInt32BigEndian(data[16..], Luminance(max));
+                BinaryPrimitives.WriteUInt32BigEndian(data[20..], Luminance(hdr.MasteringMinLuminance ?? 0));
+                WriteChunk(output, 0x6D444356 /* mDCV */, data);
+            }
+
+            if (hdr.MaxContentLightLevel is double cll)
+            {
+                Span<byte> data = stackalloc byte[8];
+                BinaryPrimitives.WriteUInt32BigEndian(data, Luminance(cll));
+                BinaryPrimitives.WriteUInt32BigEndian(data[4..], Luminance(hdr.MaxFrameAverageLightLevel ?? 0));
+                WriteChunk(output, 0x634C4C49 /* cLLI */, data);
+            }
+        }
+
+        static uint Luminance(double nits) => (uint)Math.Clamp(Math.Round(nits * 10_000), 0, uint.MaxValue);
     }
 
     /// <summary>Writes pHYs, eXIf and the text chunks.</summary>
@@ -816,7 +866,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
     /// Writes kept chunks from one position group. Safe-to-copy chunks are always written; the others only when the color type,
     /// bit depth and palette are unchanged, as the specification's copy rules require (section 14.2).
     /// </summary>
-    private static void WriteKeptChunks(Stream output, PngDetails? original, PngChunkPosition position, bool sameFormat)
+    private static void WriteKeptChunks(Stream output, PngDetails? original, PngChunkPosition position, bool sameFormat, bool hdrWritten)
     {
         if (original is null)
         {
@@ -826,6 +876,12 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         foreach (PngChunk chunk in original.OtherChunks)
         {
             if (chunk.Position != position || chunk.Type.Length != 4)
+            {
+                continue;
+            }
+
+            // mDCV and cLLI were written from the metadata.
+            if (hdrWritten && (string.Equals(chunk.Type, "mDCV", StringComparison.OrdinalIgnoreCase) || string.Equals(chunk.Type, "cLLI", StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }

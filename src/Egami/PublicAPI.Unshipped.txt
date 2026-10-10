@@ -185,6 +185,8 @@ Egami.Formats.RowReader.Dispose() -> void
 Egami.Formats.RowReader.RowReader() -> void
 Egami.Formats.RowReader<TNatural>
 Egami.Formats.RowReader<TNatural>.RowReader() -> void
+Egami.Formats.WriterOptions.OmitSrgbProfile.get -> bool
+Egami.Formats.WriterOptions.OmitSrgbProfile.init -> void
 Egami.Metadata.RasterMetadata.CodePoints.get -> Egami.Colors.ColorCodePoints?
 Egami.Metadata.RasterMetadata.CodePoints.set -> void
 Egami.Metadata.RasterMetadata.GetColorProfile() -> Egami.Colors.ColorProfile!

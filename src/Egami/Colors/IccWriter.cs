@@ -6,7 +6,7 @@ namespace Egami.Colors;
 /// <summary>
 /// Writes small version 4 ICC profiles for RGB and gray encodings: a matrix-shaper (or gray curve) with para curves where the
 /// curve is a formula and curv tables otherwise, version 4.3 for SDR and 4.4 with a cicp tag for PQ and HLG, whose curves are
-/// written as tables clipped at reference white for readers that ignore cicp.
+/// written as tables that roll highlights off toward reference white, for readers that ignore cicp.
 /// </summary>
 internal static class IccWriter
 {
@@ -112,18 +112,25 @@ internal static class IccWriter
             return e == 0 && f == 0 ? Para(3, g, a, b, c, d) : Para(4, g, a, b, c, d, e, f);
         }
 
-        // Tables, and PQ and HLG clipped at reference white.
+        // Tables; and for PQ and HLG, for readers that ignore cicp, the curve up to reference white with highlights rolled off
+        // smoothly toward 1 above three quarters of it, so it stays increasing and invertible.
         int n = curve.Shape == TransferFunction.Kind.Table ? curve.TableValues.Length : TableSize;
         byte[] data = new byte[12 + (2 * n)];
         "curv"u8.CopyTo(data);
         BinaryPrimitives.WriteUInt32BigEndian(data.AsSpan(8), (uint)n);
         for (int i = 0; i < n; i++)
         {
-            double v = curve.Shape == TransferFunction.Kind.Table ? curve.TableValues[i] : curve.ToLinear(i / (double)(n - 1));
+            double v = curve.Shape == TransferFunction.Kind.Table ? curve.TableValues[i] : RollOff(curve.ToLinear(i / (double)(n - 1)));
             BinaryPrimitives.WriteUInt16BigEndian(data.AsSpan(12 + (2 * i)), (ushort)Math.Round(Math.Clamp(v, 0, 1) * 65535));
         }
 
         return data;
+    }
+
+    private static double RollOff(double linear)
+    {
+        const double Knee = 0.75;
+        return linear <= Knee ? linear : Knee + ((1 - Knee) * Math.Tanh((linear - Knee) / (1 - Knee)));
     }
 
     private static byte[] Para(ushort function, params ReadOnlySpan<double> values)

@@ -79,7 +79,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
             int height = start.Height;
             long stride = (((long)width * _bits) + 31) / 32 * 4;
             long imageSize = stride * height;
-            _profile = bmp.StripMetadata ? default : start.Metadata.IccProfile;
+            _profile = bmp.StripMetadata ? default : start.Options.ProfileToWrite(start.Metadata);
             int headerSize = !_profile.IsEmpty ? 124 : layout == BmpPixelFormat.Bgra32 ? 108 : 40;
             _topDown = start.Streaming && !start.Seekable;
 

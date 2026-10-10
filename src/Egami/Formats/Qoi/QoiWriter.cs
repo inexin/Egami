@@ -62,7 +62,7 @@ internal sealed class QoiWriter : IFormatWriter, IRowFormatWriter
             BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)_width);
             BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)_height);
             header[12] = (byte)(alpha ? 4 : 3);
-            header[13] = (byte)(start.Metadata.ColorSpace == ColorSpaceHint.Linear ? 1 : 0);
+            header[13] = (byte)(start.Metadata.ColorSpace == ColorSpaceHint.Linear || start.Metadata.GetColorProfile().Transfer?.IsLinear == true ? 1 : 0);
             _writer.Advance(QoiReader.HeaderLength);
         }
 

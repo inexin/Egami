@@ -100,6 +100,35 @@ public class WriterOptions
 
     /// <summary>Gets whether to leave out all metadata. Defaults to <see langword="false"/>: writers keep whatever their format supports.</summary>
     public bool StripMetadata { get; init; }
+
+    /// <summary>
+    /// Gets whether to leave out an embedded ICC profile that means sRGB (<see cref="Colors.ColorProfile.IsEquivalentTo"/>), which
+    /// saves about 3 KB on a web image; PNG writes its small sRGB chunk instead. Defaults to <see langword="false"/>, so output
+    /// is as in 1.0.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="omit-srgb"/>
+    /// </example>
+    public bool OmitSrgbProfile { get; init; }
+
+    /// <summary>Returns the ICC profile to embed: the raster's, or none when <see cref="OmitSrgbProfile"/> drops it.</summary>
+    internal ReadOnlyMemory<byte> ProfileToWrite(Metadata.RasterMetadata metadata)
+    {
+        ReadOnlyMemory<byte> icc = metadata.IccProfile;
+        if (!OmitSrgbProfile || icc.IsEmpty)
+        {
+            return icc;
+        }
+
+        try
+        {
+            return Colors.ColorProfile.FromIcc(icc.Span).IsEquivalentTo(Colors.ColorProfile.Srgb) ? default : icc;
+        }
+        catch (EgamiException)
+        {
+            return icc;
+        }
+    }
 }
 
 /// <summary>What a file's header says, read without decoding pixels.</summary>

@@ -77,9 +77,18 @@ and half types keep values outside 0..1.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#transform)]
 
-`ColorProfile.ToIcc` writes an encoding as a small version 4 ICC profile, the one embedded after a conversion.
+`ColorProfile.ToIcc` writes an encoding as a small version 4 ICC profile, the one embedded after a conversion: version 4.3 with
+parametric curves, or 4.4 with a cicp tag for PQ and HLG. Little CMS, Pillow and ImageMagick read them.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#to-icc)]
+
+## Writing color tags
+
+Writers take color tags from the generic metadata, so they survive a change of format: PNG writes cICP from `CodePoints`, cHRM
+from `Primaries` when there is no ICC profile, and mDCV and cLLI from `Hdr`; QOI marks a raster linear when its profile is linear.
+`WriterOptions.OmitSrgbProfile` leaves out an embedded profile that means sRGB (PNG writes its sRGB chunk instead).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#omit-srgb)]
 
 ## Code points
 

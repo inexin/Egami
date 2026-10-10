@@ -89,6 +89,7 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
         private readonly Raster<TPixel>? _raster;
         private readonly Stream _output;
         private readonly GifWriterOptions _options;
+        private readonly ReadOnlyMemory<byte> _profile;
         private readonly RasterMetadata _metadata;
         private readonly IPixelMemorySource _memory;
         private readonly int _parallelism;
@@ -122,6 +123,7 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             _output = output;
             _options = options;
             _metadata = start.Metadata;
+            _profile = start.Options.ProfileToWrite(start.Metadata);
             _memory = start.Context.Memory;
             _parallelism = start.Context.MaxParallelism;
             _width = start.Width;
@@ -697,11 +699,11 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
                 _buffer.Advance(258);
             }
 
-            if (!metadata.IccProfile.IsEmpty)
+            if (!_profile.IsEmpty)
             {
                 _buffer.Write<byte>([0x21, 0xFF, 11]);
                 _buffer.Write("ICCRGBG1012"u8);
-                WriteSubBlocks(metadata.IccProfile.Span);
+                WriteSubBlocks(_profile.Span);
             }
 
             foreach (GifApplicationExtension extension in details?.OtherExtensions ?? [])

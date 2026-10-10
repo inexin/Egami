@@ -66,7 +66,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             WriteJfif(_writer, jpeg.StripMetadata ? null : start.Metadata.Resolution);
             if (!jpeg.StripMetadata)
             {
-                WriteMetadata(_writer, start.Metadata);
+                WriteMetadata(_writer, start.Metadata, start.Options.ProfileToWrite(start.Metadata));
             }
 
             _encoder.WriteHeaders(_writer);
@@ -137,7 +137,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     private static ushort Density(double value) => (ushort)Math.Clamp(Math.Round(value), 1, ushort.MaxValue);
 
     /// <summary>EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large) and comments, in that order.</summary>
-    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata)
+    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile)
     {
         // An EXIF block too large for one segment loses its thumbnail first; if it is still too large it is left out.
         if (metadata.Exif is ExifData exifData)
@@ -157,7 +157,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             }
         }
 
-        ReadOnlySpan<byte> icc = metadata.IccProfile.Span;
+        ReadOnlySpan<byte> icc = profile.Span;
         const int IccChunk = ushort.MaxValue - 2 - 14;
         int chunks = (icc.Length + IccChunk - 1) / IccChunk;
         if (chunks is > 0 and <= 255)

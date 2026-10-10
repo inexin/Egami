@@ -148,6 +148,21 @@ public class ColorManagement
     }
 
     [Fact]
+    public void OmitSrgb()
+    {
+        using Raster<Rgba8> raster = Raster.Create<Rgba8>(4, 4);
+        raster.Metadata.IccProfile = ColorProfile.Srgb.ToIcc();
+        using MemoryStream output = new();
+
+        #region omit-srgb
+        // Leave out an embedded profile that only says sRGB, which is what a file without one means anyway.
+        raster.Save(output, "png", new WriterOptions { OmitSrgbProfile = true });
+        #endregion
+
+        Assert.True(Raster.Load(output.ToArray()).Metadata.IccProfile.IsEmpty);
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);
