@@ -223,6 +223,7 @@ internal sealed partial class TgaReader : IFormatReader
     private static void ReadTrailingFooter(EgamiInput input, Header header)
     {
         long start = input.Position;
+        input.ImageEnd = start;
         long cap = Math.Min(input.Limits.MaxMetadataBytes, 1 << 24);
         byte[] rest = ArrayPool<byte>.Shared.Rent(64 * 1024);
         int length = 0;

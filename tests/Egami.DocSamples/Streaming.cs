@@ -101,6 +101,30 @@ public class Streaming
     }
 
     [Fact]
+    public async Task Async()
+    {
+        using SampleFiles files = new();
+        long sum = 0;
+
+        #region async
+        // On a server: read rows as the upload arrives, without holding the whole file.
+        await using Stream upload = File.OpenRead("egret.png");
+        using RasterDecoder decoder = await RasterDecoder.OpenAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
+        using Raster<Gray8> band = Raster.Create<Gray8>(decoder.Info.Width, 32);
+        int rows;
+        while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.CancellationToken)) > 0)
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                sum += band.Row(y)[0].L;
+            }
+        }
+        #endregion
+
+        Assert.True(sum > 0);
+    }
+
+    [Fact]
     public void Frames()
     {
         using SampleFiles files = new();

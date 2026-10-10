@@ -60,6 +60,22 @@ public class StreamingBenchmarks
         return rows;
     }
 
+    /// <summary>LoadAsync from a memory stream: seekable, so 2.2 reads it whole first as 1.0 did.</summary>
+    [Benchmark]
+    public async Task<int> LoadAsync()
+    {
+        using Raster<Rgba8> raster = await Raster.LoadAsync<Rgba8>(new MemoryStream(_file, writable: false), OneThread);
+        return raster.Width;
+    }
+
+    /// <summary>LoadAsync from a stream that cannot seek, like an upload: 2.2 decodes each 256 KB chunk as it comes.</summary>
+    [Benchmark]
+    public async Task<int> LoadAsyncUnseekable()
+    {
+        using Raster<Rgba8> raster = await Raster.LoadAsync<Rgba8>(new Unseekable(new MemoryStream(_file, writable: false)), OneThread);
+        return raster.Width;
+    }
+
     /// <summary>A centred region of 1/16 the area: the design's region gate asks for at least 2x on the 8,000 x 8,000 baseline JPEG.</summary>
     [Benchmark]
     public int RegionCentre()
@@ -69,4 +85,38 @@ public class StreamingBenchmarks
         using Raster<Rgba8> raster = Raster.Load<Rgba8>(_file, OneThread, options);
         return raster.Width;
     }
+}
+
+/// <summary>A stream that hides its ability to seek, as a network stream has none.</summary>
+internal sealed class Unseekable(Stream inner) : Stream
+{
+    public override bool CanRead => true;
+
+    public override bool CanSeek => false;
+
+    public override bool CanWrite => false;
+
+    public override long Length => throw new NotSupportedException();
+
+    public override long Position
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
+
+    public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
+
+    public override int Read(Span<byte> buffer) => inner.Read(buffer);
+
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => inner.ReadAsync(buffer, cancellationToken);
+
+    public override void Flush()
+    {
+    }
+
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+    public override void SetLength(long value) => throw new NotSupportedException();
+
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 }

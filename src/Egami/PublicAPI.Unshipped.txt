@@ -304,9 +304,12 @@ Egami.RasterDecoder.Info.get -> Egami.Formats.RasterInfo!
 Egami.RasterDecoder.IsMetadataComplete.get -> bool
 Egami.RasterDecoder.Metadata.get -> Egami.Metadata.RasterMetadata!
 Egami.RasterDecoder.NextFrame() -> bool
+Egami.RasterDecoder.NextFrameAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<bool>
 Egami.RasterDecoder.ReadFrame<TPixel>() -> Egami.Raster<TPixel>?
 Egami.RasterDecoder.ReadFrame<TPixel>(Egami.Raster<TPixel>! target) -> Egami.Metadata.FrameMetadata?
+Egami.RasterDecoder.ReadFrameAsync<TPixel>(Egami.Raster<TPixel>! target, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Egami.Metadata.FrameMetadata?>
 Egami.RasterDecoder.ReadRows<TPixel>(Egami.Raster<TPixel>! band) -> int
+Egami.RasterDecoder.ReadRowsAsync<TPixel>(Egami.Raster<TPixel>! band, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>
 Egami.RasterDecoder.RenderPreview<TPixel>(Egami.Raster<TPixel>! target) -> bool
 Egami.RasterDecoder.SkipRows(int count) -> int
 Egami.RasterDecoder.Status.get -> Egami.DecodeStatus
@@ -501,6 +504,7 @@ static Egami.Raster.LoadInto<TPixel>(System.ReadOnlyMemory<byte> data, Egami.Ras
 static Egami.RasterDecoder.Open(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.Open(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.Open(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
+static Egami.RasterDecoder.OpenAsync(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.RasterDecoder!>!
 static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 ~override Egami.Colors.Chromaticity.Equals(object obj) -> bool
 ~override Egami.Colors.Chromaticity.ToString() -> string

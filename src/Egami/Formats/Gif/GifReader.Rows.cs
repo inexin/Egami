@@ -32,7 +32,12 @@ internal sealed partial class GifReader
         }
     }
 
-    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
+    {
+        return !Streams(options) ? HeaderState.WaitsForEnd : HeaderArrived(input, options) ? HeaderState.Arrived : HeaderState.NotYet;
+    }
+
+    private static bool HeaderArrived(EgamiInput input, ReaderOptions options)
     {
         if (!Streams(options))
         {

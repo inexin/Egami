@@ -11,7 +11,7 @@ namespace Egami.Formats.Qoi;
 /// <content>Streaming: QOI rows decode in order, the 64-entry index and the run carried from one row to the next.</content>
 internal sealed partial class QoiReader : IRowFormatReader, IIncrementalFormatReader
 {
-    public bool HeaderArrived(EgamiInput input, ReaderOptions options) => input.Available >= HeaderLength;
+    public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options) => input.Available >= HeaderLength ? HeaderState.Arrived : HeaderState.NotYet;
 
     /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>
     private static void Wait(bool ready)

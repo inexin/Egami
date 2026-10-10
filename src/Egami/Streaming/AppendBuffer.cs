@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace Egami.Streaming;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace Egami.Streaming;
 /// </summary>
 internal sealed class AppendBuffer : Stream
 {
-    private byte[] _data = new byte[4096];
+    private byte[] _data = ArrayPool<byte>.Shared.Rent(64 * 1024);
     private int _start;
     private int _end;
 
@@ -46,8 +48,9 @@ internal sealed class AppendBuffer : Stream
             int unread = _end - _start;
             if (unread + data.Length > _data.Length)
             {
-                byte[] larger = new byte[Math.Max(_data.Length * 2, unread + data.Length)];
+                byte[] larger = ArrayPool<byte>.Shared.Rent(Math.Max(_data.Length * 2, unread + data.Length));
                 _data.AsSpan(_start, unread).CopyTo(larger);
+                ArrayPool<byte>.Shared.Return(_data);
                 _data = larger;
             }
             else
@@ -69,6 +72,9 @@ internal sealed class AppendBuffer : Stream
     {
         Ended = true;
     }
+
+    /// <summary>Gets the bytes received and not yet read, valid until the next append or read.</summary>
+    public ReadOnlyMemory<byte> Unread => _data.AsMemory(_start, _end - _start);
 
     /// <summary>Copies bytes not yet read, from <paramref name="offset"/> on, without reading them; false if they have not all arrived.</summary>
     public bool TryPeek(long offset, Span<byte> destination)
@@ -100,6 +106,17 @@ internal sealed class AppendBuffer : Stream
 
     public override void Flush()
     {
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        byte[]? data = Interlocked.Exchange(ref _data, null!);
+        if (data is not null)
+        {
+            ArrayPool<byte>.Shared.Return(data);
+        }
+
+        base.Dispose(disposing);
     }
 
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();

@@ -190,14 +190,72 @@ internal static class FormatPipeline
             : new Pnm.PnmWriterOptions { Kind = kind, PlainText = pnm?.PlainText ?? false, StripMetadata = options?.StripMetadata ?? false };
     }
 
-    /// <summary>Reads a whole stream into a pooled buffer asynchronously, counting it against <see cref="SafetyLimits.MaxTotalBytes"/>.</summary>
-    internal static async Task<(byte[] Buffer, int Length)> ReadAllAsync(Stream stream, EgamiContext context, CancellationToken cancellationToken)
+    /// <summary>
+    /// Loads asynchronously. A stream that cannot seek (a network or pipe) is read on the incremental path, each chunk decoded
+    /// before the next is read, so decoding overlaps the wait for bytes and the whole file is never held. A seekable stream (a
+    /// file or memory) has its bytes at hand: it is read whole and decoded as 1.0 did, which is faster.
+    /// </summary>
+    internal static async Task<Raster<TPixel>> LoadAsync<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        if (stream.CanSeek)
+        {
+            return await RunBufferedAsync(stream, context, s => Load<TPixel>(s, context, options, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        using Streaming.IncrementalLoad load = new(stream, context, options, cancellationToken);
+        Raster<TPixel> raster = await load.ReadAsync<TPixel>().ConfigureAwait(false);
+        return load.Decoder.HeaderRead ? Named(raster, load.Decoder.Info.Format) : raster;
+    }
+
+    /// <summary>Loads asynchronously in the natural pixel type. See <see cref="LoadAsync{TPixel}"/>.</summary>
+    internal static async Task<Raster> LoadAsync(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    {
+        if (stream.CanSeek)
+        {
+            return await RunBufferedAsync(stream, context, s => Load(s, context, options, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        using Streaming.IncrementalLoad load = new(stream, context, options, cancellationToken);
+        await load.ReadHeaderAsync().ConfigureAwait(false);
+        if (load.Decoder.WaitsForEnd && !load.Decoder.HeaderRead)
+        {
+            return await load.LoadWholeAsync(file => Load(file, context, options, cancellationToken)).ConfigureAwait(false);
+        }
+
+        Raster raster = await load.Decoder.WithNaturalType(new Streaming.NaturalLoad(load)).ConfigureAwait(false);
+        return Named(raster, load.Decoder.Info.Format);
+    }
+
+    /// <summary>
+    /// Reads a whole stream into a pooled buffer asynchronously, after the bytes of <paramref name="prefix"/> if given, counting
+    /// them against <see cref="SafetyLimits.MaxTotalBytes"/>.
+    /// </summary>
+    internal static async Task<(byte[] Buffer, int Length)> ReadAllAsync(
+        Stream stream, EgamiContext context, CancellationToken cancellationToken, Stream? prefix = null)
     {
         long max = Math.Min(context.Limits.MaxTotalBytes, Array.MaxLength);
         byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
         int length = 0;
         try
         {
+            if (prefix is not null)
+            {
+                if (prefix.Length > max)
+                {
+                    throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), context.Limits.MaxTotalBytes, prefix.Length);
+                }
+
+                if (prefix.Length > buffer.Length)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                    buffer = ArrayPool<byte>.Shared.Rent((int)prefix.Length);
+                }
+
+                prefix.ReadExactly(buffer, 0, (int)prefix.Length);
+                length = (int)prefix.Length;
+            }
+
             while (true)
             {
                 if (length == buffer.Length)

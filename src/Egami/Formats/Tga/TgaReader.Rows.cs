@@ -15,16 +15,21 @@ namespace Egami.Formats.Tga;
 /// </content>
 internal sealed partial class TgaReader : IRowFormatReader, IIncrementalFormatReader
 {
-    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
         ReadOnlySpan<byte> bytes = input.Peek(HeaderLength);
-        if (bytes.Length < HeaderLength || !Streams(input, options))
+        if (bytes.Length < HeaderLength)
         {
-            return false;
+            return HeaderState.NotYet;
+        }
+
+        if (!Streams(input, options))
+        {
+            return HeaderState.WaitsForEnd;
         }
 
         int map = BinaryPrimitives.ReadUInt16LittleEndian(bytes[5..]) * (bytes[1] == 1 ? (bytes[7] + 7) / 8 : 0);
-        return input.Available >= HeaderLength + bytes[0] + map;
+        return input.Available >= HeaderLength + bytes[0] + map ? HeaderState.Arrived : HeaderState.NotYet;
     }
 
     /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>

@@ -25,7 +25,11 @@ public sealed class RasterDecoder : IDisposable
     private readonly ReaderOptions _options;
     private readonly IDisposable? _owned;
     private readonly AppendBuffer? _append;
+    private readonly CancellationToken _cancellationToken;
     private EgamiInput? _input;
+    private EgamiInput? _incremental;
+    private Stream? _feed;
+    private byte[]? _feedBuffer;
     private RowSource? _source;
     private ReadPlan? _plan;
     private RowStage? _stage;
@@ -36,6 +40,8 @@ public sealed class RasterDecoder : IDisposable
     private bool _started;
     private bool _advancing;
     private bool _waiting;
+    private long _appendedSinceWait;
+    private long _neededSinceWait;
     private bool _disposed;
 
     private RasterDecoder(RowSource source, FormatInfo format, EgamiContext context, ReaderOptions options, IDisposable? owned)
@@ -46,10 +52,11 @@ public sealed class RasterDecoder : IDisposable
         Initialize(source, format);
     }
 
-    private RasterDecoder(EgamiContext context, ReaderOptions options)
+    private RasterDecoder(EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
         _context = context;
         _options = options;
+        _cancellationToken = cancellationToken;
         _append = new AppendBuffer();
     }
 
@@ -236,7 +243,284 @@ public sealed class RasterDecoder : IDisposable
     /// </example>
     public static RasterDecoder OpenIncremental(EgamiContext? context = null, ReaderOptions? options = null)
     {
-        return new RasterDecoder(context ?? EgamiContext.Default, options ?? ReaderOptions.Default);
+        return OpenIncrementalCore(context ?? EgamiContext.Default, options ?? ReaderOptions.Default, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Opens an image from a stream read asynchronously: the header is read before this returns, and
+    /// <see cref="ReadRowsAsync"/>, <see cref="ReadFrameAsync"/> and <see cref="NextFrameAsync"/> read on as they need. Only the
+    /// bytes since the decode's last step are held, not the whole file; formats from plugins, and files decoded into a buffer
+    /// first, gather the file and are read at the end. The stream is left open; the decoder does not dispose it.
+    /// </summary>
+    /// <param name="stream">The encoded image, read from its current position.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <param name="cancellationToken">Cancels reading and, between rows, decoding.</param>
+    /// <returns>The decoder, its header read. The caller must dispose it.</returns>
+    /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
+    /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
+    /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="async"/>
+    /// </example>
+    public static async Task<RasterDecoder> OpenAsync(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        RasterDecoder decoder = OpenIncrementalCore(context ?? EgamiContext.Default, options ?? ReaderOptions.Default, cancellationToken);
+        try
+        {
+            decoder.Attach(stream);
+            while (!decoder.HeaderRead && await decoder.MoreAsync(cancellationToken).ConfigureAwait(false))
+            {
+            }
+
+            return decoder;
+        }
+        catch
+        {
+            decoder.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Fills <paramref name="band"/> with the next rows of the current frame, reading the stream asynchronously as far as they
+    /// need. See <see cref="ReadRows"/>.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type to produce.</typeparam>
+    /// <param name="band">Where to write: <see cref="Info"/>'s width, any height.</param>
+    /// <param name="cancellationToken">Cancels reading.</param>
+    /// <returns>The rows written, at least one unless the frame has ended; 0 at the end of the frame.</returns>
+    /// <exception cref="InvalidOperationException">The decoder was not opened with <see cref="OpenAsync"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="async"/>
+    /// </example>
+    public async ValueTask<int> ReadRowsAsync<TPixel>(Raster<TPixel> band, CancellationToken cancellationToken = default)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        CheckFeed();
+        while (true)
+        {
+            int rows = ReadRows(band);
+            if (rows > 0 || Status != DecodeStatus.NeedsInput || _feed is null)
+            {
+                return rows;
+            }
+
+            await MoreAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Decodes the rest of the current frame into <paramref name="target"/>, reading the stream asynchronously as far as it needs,
+    /// and moves to the next frame. See <see cref="ReadFrame{TPixel}(Raster{TPixel})"/>.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type to produce.</typeparam>
+    /// <param name="target">Where to write: <see cref="Info"/>'s size.</param>
+    /// <param name="cancellationToken">Cancels reading.</param>
+    /// <returns>The frame's metadata, or <see langword="null"/> after the last frame.</returns>
+    /// <exception cref="InvalidOperationException">The decoder was not opened with <see cref="OpenAsync"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="async"/>
+    /// </example>
+    public async ValueTask<FrameMetadata?> ReadFrameAsync<TPixel>(Raster<TPixel> target, CancellationToken cancellationToken = default)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        CheckFeed();
+        while (true)
+        {
+            FrameMetadata? frame = ReadFrame(target);
+            if (frame is not null || Status != DecodeStatus.NeedsInput || _feed is null)
+            {
+                return frame;
+            }
+
+            await MoreAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Moves to the next frame, reading the stream asynchronously as far as it needs. See <see cref="NextFrame"/>.</summary>
+    /// <param name="cancellationToken">Cancels reading.</param>
+    /// <returns><see langword="true"/> if there is another frame; <see langword="false"/> after the last.</returns>
+    /// <exception cref="InvalidOperationException">The decoder was not opened with <see cref="OpenAsync"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="async"/>
+    /// </example>
+    public async ValueTask<bool> NextFrameAsync(CancellationToken cancellationToken = default)
+    {
+        CheckFeed();
+        while (true)
+        {
+            if (NextFrame())
+            {
+                return true;
+            }
+
+            if (Status != DecodeStatus.NeedsInput || _feed is null)
+            {
+                return false;
+            }
+
+            await MoreAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Starts an incremental decode whose steps check <paramref name="cancellationToken"/>.</summary>
+    internal static RasterDecoder OpenIncrementalCore(EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    {
+        return new RasterDecoder(context, options, cancellationToken);
+    }
+
+    /// <summary>The bytes read from an attached stream at a time: large enough that a step (an MCU row) rarely spans two reads.</summary>
+    private const int FeedBytes = 256 * 1024;
+
+    /// <summary>Feeds this incremental decoder from <paramref name="stream"/>, read asynchronously by <see cref="MoreAsync"/>.</summary>
+    internal void Attach(Stream stream)
+    {
+        _feed = stream;
+        _feedBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(FeedBytes);
+    }
+
+    /// <summary>
+    /// Gets whether the format is known and will wait for the last byte before decoding: a format without incremental decoding,
+    /// or a file it decodes into a buffer first.
+    /// </summary>
+    internal bool WaitsForEnd { get; private set; }
+
+    /// <summary>Gets or sets whether a file that yields no row before its last byte waits for the end too, for a caller with no use for previews.</summary>
+    internal bool WholeIfRowsAtEnd { get; set; }
+
+    /// <summary>Gets the context the decode runs in.</summary>
+    internal EgamiContext Context => _context;
+
+    /// <summary>Gets the options the decode reads with.</summary>
+    internal ReaderOptions Options => _options;
+
+    /// <summary>
+    /// Opens the bytes received and not yet read, in place, which for a decode that waits for the end is the whole file so far.
+    /// </summary>
+    internal Stream OpenReceived() => new JoinedStream(_input?.BufferedUnread ?? default, _append!.Unread);
+
+    /// <summary>Reads the next chunk of the attached stream into the decoder; at its end, says so and returns false.</summary>
+    internal async ValueTask<bool> MoreAsync(CancellationToken cancellationToken)
+    {
+        if (_feed is not Stream stream || _feedBuffer is not byte[] buffer)
+        {
+            return false;
+        }
+
+        int read = await stream.ReadAsync(buffer.AsMemory(0, FeedBytes), cancellationToken).ConfigureAwait(false);
+        if (read == 0)
+        {
+            _feed = null;
+            EndOfInput();
+            return false;
+        }
+
+        Append(buffer.AsSpan(0, read));
+        return true;
+    }
+
+    /// <summary>Gets the most received bytes an incremental decode has held at once, before reading them.</summary>
+    internal long MostBytesHeld { get; private set; }
+
+    /// <summary>Gets the bytes of the image the decode has consumed, which is where a seekable stream should be left.</summary>
+    internal long ConsumedBytes => _incremental?.ImageEnd ?? _incremental?.Position ?? 0;
+
+    /// <summary>The frames an asynchronous load fills as the bytes arrive.</summary>
+    internal sealed class LoadFrames<TPixel> : IDisposable
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        public List<Frame<TPixel>> Frames { get; } = [];
+
+        public Frame<TPixel>? Current { get; set; }
+
+        public void Dispose()
+        {
+            foreach (Frame<TPixel> frame in Frames)
+            {
+                frame.Plane.Dispose();
+            }
+
+            Frames.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Decodes as much as the bytes so far allow into <paramref name="frames"/>, starting a new frame raster as each frame starts.
+    /// Returns whether every frame is done.
+    /// </summary>
+    internal bool Pump<TPixel>(LoadFrames<TPixel> frames)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        while (true)
+        {
+            if (!Run(() => Start()))
+            {
+                return false;
+            }
+
+            if (_frame is null)
+            {
+                return true;
+            }
+
+            if (frames.Current is null)
+            {
+                frames.Current = new Frame<TPixel>(Allocate<TPixel>(), FrameOut(_frame));
+                frames.Frames.Add(frames.Current);
+            }
+
+            Frame<TPixel> current = frames.Current;
+            if (!Run(() =>
+            {
+                while (_stage!.Remaining > 0)
+                {
+                    _stage.Read(current.Plane.Row(_stage.Row));
+                }
+            }))
+            {
+                return false;
+            }
+
+            frames.Current = null;
+            _advancing = true;
+            if (!Run(() => { }))
+            {
+                return false;
+            }
+        }
+    }
+
+    /// <summary>Returns the frames an asynchronous load filled as one raster, as Load returns it.</summary>
+    internal Raster<TPixel> Finish<TPixel>(LoadFrames<TPixel> frames)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        if (frames.Frames.Count == 0)
+        {
+            throw new InvalidOperationException("The options select no frame.");
+        }
+
+        Raster<TPixel> raster = new([.. frames.Frames], Metadata.Copy(), _context);
+        frames.Frames.Clear();
+        return raster;
+    }
+
+    /// <summary>Calls <paramref name="visitor"/> with the natural pixel type, once the header has been read.</summary>
+    internal TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor)
+    {
+        return (_source ?? throw NoHeader()).WithNaturalType(visitor);
+    }
+
+    private void CheckFeed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_feedBuffer is null)
+        {
+            throw new InvalidOperationException("Only a decoder from OpenAsync reads its stream asynchronously.");
+        }
     }
 
     /// <summary>Gives an incremental decode the next bytes of the file, and reads the header once it has all arrived.</summary>
@@ -251,7 +535,15 @@ public sealed class RasterDecoder : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         AppendBuffer append = _append ?? throw new InvalidOperationException("Only a decoder from OpenIncremental takes appended bytes.");
         append.Append(data);
-        _waiting = false;
+        _appendedSinceWait += data.Length;
+        MostBytesHeld = Math.Max(MostBytesHeld, append.Available);
+        if (append.Available > _context.Limits.MaxTotalBytes)
+        {
+            // Bytes held while waiting (for a header, or for the end of a file decoded at once) count like pixels.
+            throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), _context.Limits.MaxTotalBytes, append.Available);
+        }
+
+        _waiting = _waiting && _appendedSinceWait < _neededSinceWait;
         TryOpen();
     }
 
@@ -266,6 +558,8 @@ public sealed class RasterDecoder : IDisposable
         AppendBuffer append = _append ?? throw new InvalidOperationException("Only a decoder from OpenIncremental takes EndOfInput.");
         append.End();
         _waiting = false;
+        _appendedSinceWait = 0;
+        _neededSinceWait = 0;
         TryOpen();
     }
 
@@ -489,7 +783,13 @@ public sealed class RasterDecoder : IDisposable
             _disposed = true;
             _source?.Dispose();
             _input?.Dispose();
+            _append?.Dispose();
             _owned?.Dispose();
+            byte[]? buffer = Interlocked.Exchange(ref _feedBuffer, null);
+            if (buffer is not null)
+            {
+                System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
     }
 
@@ -596,6 +896,13 @@ public sealed class RasterDecoder : IDisposable
             return false;
         }
 
+        if (_waiting)
+        {
+            // Still too few new bytes since the last step ran out to make trying again worth it.
+            return false;
+        }
+
+        long before = _incremental?.Position ?? 0;
         try
         {
             // A move to the next frame that had to wait is finished by the frame-level calls; row calls leave it to NextFrame.
@@ -605,12 +912,13 @@ public sealed class RasterDecoder : IDisposable
             }
 
             step();
-            _waiting = false;
             return true;
         }
         catch (NeedsInputException)
         {
             _waiting = true;
+            _appendedSinceWait = 0;
+            _neededSinceWait = Math.Max(1, ((_incremental?.Position ?? 0) - before) / 2);
             return false;
         }
     }
@@ -634,7 +942,14 @@ public sealed class RasterDecoder : IDisposable
         }
 
         AppendBuffer append = _append!;
-        EgamiInput input = _input ??= new EgamiInput(append, _context, CancellationToken.None);
+        if (WaitsForEnd && !append.Ended)
+        {
+            // Known to wait for the last byte: nothing to look at until then.
+            return;
+        }
+
+        EgamiInput input = _input ??= new EgamiInput(append, _context, _cancellationToken);
+        _incremental = input;
         int signature = 0;
         foreach (FormatInfo known in _context.Formats)
         {
@@ -648,10 +963,15 @@ public sealed class RasterDecoder : IDisposable
 
         FormatInfo format = FormatPipeline.Detect(input, _context);
         input.SetFormat(format);
-        if (!append.Ended && (format.Reader is not IIncrementalFormatReader incremental || !incremental.HeaderArrived(input, _options)))
+        if (!append.Ended)
         {
-            // Formats that cannot decode while bytes arrive wait for the end and are then read whole.
-            return;
+            // Formats that cannot decode while bytes arrive, and files they decode into a buffer first, wait for the end.
+            HeaderState state = format.Reader is IIncrementalFormatReader incremental ? incremental.HeaderStatus(input, _options) : HeaderState.WaitsForEnd;
+            WaitsForEnd = state == HeaderState.WaitsForEnd || (state == HeaderState.ArrivedRowsAtEnd && WholeIfRowsAtEnd);
+            if (WaitsForEnd || state == HeaderState.NotYet)
+            {
+                return;
+            }
         }
 
         _input = null;

@@ -294,6 +294,12 @@ public sealed class EgamiInput
     /// <summary>Gets the length of the data from the start of the image, or <see langword="null"/> if the stream cannot seek.</summary>
     internal long? Length => _origin >= 0 ? _stream.Length - _origin : null;
 
+    /// <summary>
+    /// Gets or sets where the image ends, from its start, when a reader read past it: TGA looks for its footer at the end of a
+    /// stream that cannot seek. <see langword="null"/> when the bytes consumed are the image.
+    /// </summary>
+    internal long? ImageEnd { get; set; }
+
     /// <summary>Gets whether this is an incremental decode, whose bytes are appended as they arrive.</summary>
     internal bool Incremental => _append is not null;
 
@@ -305,6 +311,9 @@ public sealed class EgamiInput
 
     /// <summary>Gets the bytes an incremental decode can read now, without waiting for more.</summary>
     internal long Available => (_end - _start) + (_append?.Available ?? 0);
+
+    /// <summary>Gets the bytes read ahead into this input's buffer and not consumed, valid until the next read.</summary>
+    internal ReadOnlyMemory<byte> BufferedUnread => Buffer.AsMemory(_start, _end - _start);
 
     /// <summary>
     /// Copies upcoming bytes of an incremental decode, from <paramref name="offset"/> bytes after the read position, without

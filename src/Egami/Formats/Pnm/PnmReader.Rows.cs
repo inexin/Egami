@@ -13,13 +13,18 @@ namespace Egami.Formats.Pnm;
 /// </content>
 internal sealed partial class PnmReader : IRowFormatReader, IIncrementalFormatReader
 {
-    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
         // The header is text of no fixed length: it has arrived when it parses from the bytes so far. Plain text images and PFM
         // wait for the end.
+        if (input.Available < 3)
+        {
+            return HeaderState.NotYet;
+        }
+
         if (Pfm.Is(input))
         {
-            return false;
+            return HeaderState.WaitsForEnd;
         }
 
         try
@@ -28,7 +33,7 @@ internal sealed partial class PnmReader : IRowFormatReader, IIncrementalFormatRe
             EgamiInput probe = new(peeked, input.Context, input.CancellationToken);
             try
             {
-                return !ReadHeader(probe).Plain && probe.Position <= input.Available;
+                return ReadHeader(probe).Plain ? HeaderState.WaitsForEnd : HeaderState.Arrived;
             }
             finally
             {
@@ -37,7 +42,7 @@ internal sealed partial class PnmReader : IRowFormatReader, IIncrementalFormatRe
         }
         catch (CorruptDataException)
         {
-            return false;
+            return HeaderState.NotYet;
         }
     }
 

@@ -15,16 +15,44 @@ namespace Egami.Formats.Bmp;
 /// </content>
 internal sealed partial class BmpReader : IRowFormatReader, IIncrementalFormatReader
 {
-    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
-        // The headers, the color table and any profile before the pixels: everything Open reads, up to the pixel data.
+        if (!HeaderParses(input, options))
+        {
+            return HeaderState.NotYet;
+        }
+
         if (!Streams(input, options))
+        {
+            return HeaderState.WaitsForEnd;
+        }
+
+        // The headers, the color table and any profile before the pixels: everything Open reads, up to the pixel data.
+        ReadOnlySpan<byte> file = input.Peek(14);
+        return input.Available >= BinaryPrimitives.ReadUInt32LittleEndian(file[10..]) ? HeaderState.Arrived : HeaderState.NotYet;
+    }
+
+    /// <summary>Returns whether the headers parse from the first 4 KB, read in a probe of their own.</summary>
+    private static bool HeaderParses(EgamiInput input, ReaderOptions options)
+    {
+        try
+        {
+            using MemoryStream peeked = new(input.Peek(4096).ToArray(), writable: false);
+            EgamiInput probe = new(peeked, input.Context, input.CancellationToken);
+            try
+            {
+                ReadHeader(probe, options);
+                return true;
+            }
+            finally
+            {
+                probe.Dispose();
+            }
+        }
+        catch (CorruptDataException)
         {
             return false;
         }
-
-        ReadOnlySpan<byte> file = input.Peek(14);
-        return file.Length == 14 && input.Available >= BinaryPrimitives.ReadUInt32LittleEndian(file[10..]);
     }
 
     /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>

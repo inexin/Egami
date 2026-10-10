@@ -245,17 +245,33 @@ internal sealed class BufferedRowSource : RowSource
     }
 }
 
+/// <summary>Where the header of an incremental decode stands, as <see cref="IIncrementalFormatReader.HeaderStatus"/> tells it.</summary>
+internal enum HeaderState
+{
+    /// <summary>Not every byte <see cref="IRowFormatReader.Open"/> reads has arrived yet.</summary>
+    NotYet,
+
+    /// <summary>Every byte <see cref="IRowFormatReader.Open"/> reads has arrived: the source can be opened.</summary>
+    Arrived,
+
+    /// <summary>
+    /// As <see cref="Arrived"/>, but no row can come out before the last byte (a progressive JPEG): a caller that only wants the
+    /// whole image, not a preview, loses nothing by waiting for the end.
+    /// </summary>
+    ArrivedRowsAtEnd,
+
+    /// <summary>The file decodes into a buffer first with these options, so the decode waits for the last byte.</summary>
+    WaitsForEnd,
+}
+
 /// <summary>
 /// Marks a reader whose row source can decode while bytes are still arriving: it says when the header has arrived, and its
 /// source waits (with <see cref="NeedsInputException"/>) instead of treating missing bytes as the end of the data.
 /// </summary>
 internal interface IIncrementalFormatReader
 {
-    /// <summary>
-    /// Returns whether every byte <see cref="IRowFormatReader.Open"/> reads has arrived, looking ahead without consuming. A reader
-    /// that would not stream with <paramref name="options"/> returns <see langword="false"/>, so the decode waits for the end.
-    /// </summary>
-    bool HeaderArrived(EgamiInput input, ReaderOptions options);
+    /// <summary>Looks ahead, without consuming, at whether the header has arrived or the file will wait for the end.</summary>
+    HeaderState HeaderStatus(EgamiInput input, ReaderOptions options);
 }
 
 /// <summary>A source whose rows are another source's preview rows, so the row stage can crop and reduce a preview too.</summary>

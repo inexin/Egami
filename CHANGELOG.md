@@ -19,6 +19,10 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterDecoder.OpenIncremental`, `Append` and `EndOfInput` decode while bytes are still arriving; `Status` (`DecodeStatus`) and
   `HeaderRead` say how far it has got, and `RenderPreview` draws an interlaced PNG, a progressive JPEG or a GIF frame as far
   as it has arrived. Every 1.x format decodes as its bytes arrive, except files that are decoded into a buffer first.
+- `LoadAsync` from a stream that cannot seek, such as an upload, decodes it in 256 KB chunks as it arrives instead of reading the
+  whole file into memory first; results are the same. Seekable streams, plugins, progressive JPEG and files decoded into a buffer
+  first keep 1.0's faster buffered path. `RasterDecoder.OpenAsync` with `ReadRowsAsync`, `ReadFrameAsync` and `NextFrameAsync`
+  reads rows and frames from an asynchronous stream.
 - A 32-bit BMP whose alpha byte is zero everywhere now loads into 16-bit and premultiplied pixel types without a lossy round trip
   when the stream can seek.
 - Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at

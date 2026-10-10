@@ -42,6 +42,11 @@ as it has arrived. Files that are decoded into a buffer first (such as bottom-up
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#incremental)]
 
+On a server, `RasterDecoder.OpenAsync` reads an asynchronous stream the same way, and `LoadAsync` from a stream that cannot seek,
+such as a request body, no longer holds the whole file while it decodes:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#async)]
+
 ## Pixel memory
 
 Pixel memory never lives on the garbage-collected heap as large arrays. `PooledPixelMemorySource.Shared` hands out pooled arrays

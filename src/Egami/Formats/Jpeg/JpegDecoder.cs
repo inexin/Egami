@@ -60,6 +60,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private Component[] _pullOrder = [];
     private int[] _pullFirstBlock = [];
     private EntropyState? _pullState;
+    private EntropyState? _saved;
     private short[]? _pullCoefficients;
     private byte[]? _pullHasAc;
     private int _pullBlocks;
@@ -421,7 +422,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 bool incremental = _input!.Incremental;
                 JpegBitReader.Checkpoint mark = incremental ? _reader!.Mark() : default;
                 EntropyState state = _pullState!;
-                EntropyState? saved = incremental ? state.Copy() : null;
+                EntropyState? saved = incremental ? state.CopyTo(_saved ??= new EntropyState(state.Predictors.Length)) : null;
                 int warnings = _warnings.Count;
                 bool warned = _warned;
                 try
@@ -1557,15 +1558,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             return resynced;
         }
 
-        /// <summary>Returns a copy, to go back to if an incremental decode runs out of bytes.</summary>
-        internal EntropyState Copy()
+        /// <summary>Copies this state into <paramref name="copy"/>, to go back to if an incremental decode runs out of bytes.</summary>
+        internal EntropyState CopyTo(EntropyState copy)
         {
-            EntropyState copy = new(Predictors.Length) { NextRestart = NextRestart, Mcu = Mcu, Ended = Ended, Resynced = Resynced };
             Predictors.CopyTo(copy.Predictors, 0);
+            copy.NextRestart = NextRestart;
+            copy.Mcu = Mcu;
+            copy.Ended = Ended;
+            copy.Resynced = Resynced;
             return copy;
         }
 
-        /// <summary>Goes back to a copy made with <see cref="Copy"/>.</summary>
+        /// <summary>Goes back to a copy made with <see cref="CopyTo"/>.</summary>
         internal void Restore(EntropyState saved)
         {
             saved.Predictors.CopyTo(Predictors, 0);

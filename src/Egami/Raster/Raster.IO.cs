@@ -207,8 +207,11 @@ public abstract partial class Raster
     }
 
     /// <summary>
-    /// Reads the encoded image asynchronously, then decodes it. The whole stream is read into a pooled buffer first, which counts against
-    /// <see cref="SafetyLimits.MaxTotalBytes"/>; decoding itself is synchronous, since it is CPU-bound.
+    /// Reads the encoded image asynchronously. A stream that cannot seek, such as an upload, is decoded 256 KB at a time as it
+    /// arrives, so decoding overlaps the wait and only the bytes since the decode's last step are held, not the whole file. A
+    /// seekable stream, and formats from plugins, files decoded into a buffer first (such as bottom-up BMP) and progressive JPEG,
+    /// are read whole and then decoded; the bytes held count against <see cref="SafetyLimits.MaxTotalBytes"/>. Decoding itself is
+    /// synchronous, since it is CPU-bound.
     /// </summary>
     /// <param name="stream">The encoded image.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
@@ -226,9 +229,7 @@ public abstract partial class Raster
     public static Task<Raster> LoadAsync(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        context ??= EgamiContext.Default;
-        return FormatPipeline.RunBufferedAsync(
-            stream, context, s => FormatPipeline.Load(s, context, options ?? ReaderOptions.Default, cancellationToken), cancellationToken);
+        return FormatPipeline.LoadAsync(stream, context ?? EgamiContext.Default, options ?? ReaderOptions.Default, cancellationToken);
     }
 
     /// <summary>Loads an image file asynchronously. See <see cref="LoadAsync(Stream, EgamiContext?, ReaderOptions?, CancellationToken)"/>.</summary>
@@ -256,7 +257,7 @@ public abstract partial class Raster
         }
     }
 
-    /// <summary>Reads the encoded image asynchronously, then decodes it as <typeparamref name="TPixel"/>.</summary>
+    /// <summary>Reads the encoded image asynchronously, decoding it as <typeparamref name="TPixel"/> as it arrives. See <see cref="LoadAsync(Stream, EgamiContext?, ReaderOptions?, CancellationToken)"/>.</summary>
     /// <typeparam name="TPixel">The pixel type to produce.</typeparam>
     /// <param name="stream">The encoded image.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
@@ -275,9 +276,7 @@ public abstract partial class Raster
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         ArgumentNullException.ThrowIfNull(stream);
-        context ??= EgamiContext.Default;
-        return FormatPipeline.RunBufferedAsync(
-            stream, context, s => FormatPipeline.Load<TPixel>(s, context, options ?? ReaderOptions.Default, cancellationToken), cancellationToken);
+        return FormatPipeline.LoadAsync<TPixel>(stream, context ?? EgamiContext.Default, options ?? ReaderOptions.Default, cancellationToken);
     }
 
     /// <summary>Loads an image file asynchronously as <typeparamref name="TPixel"/>.</summary>

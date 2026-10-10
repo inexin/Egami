@@ -11,16 +11,19 @@ namespace Egami.Formats.Jpeg;
 /// </content>
 internal sealed partial class JpegReader : IRowFormatReader, IIncrementalFormatReader
 {
-    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
-        // SOI, then marker segments by their lengths, through the first SOS, which is where Open stops.
+        // SOI, then marker segments by their lengths, through the first SOS, which is where Open stops. A progressive frame, or a
+        // first scan without every component, yields no row until the last scan.
         Span<byte> bytes = stackalloc byte[4];
         long offset = 2;
+        bool rowsAtEnd = false;
+        int components = 0;
         while (true)
         {
             if (!input.TryPeekAt(offset, bytes[..2]))
             {
-                return false;
+                return HeaderState.NotYet;
             }
 
             if (bytes[0] != 0xFF || bytes[1] == 0xFF)
@@ -39,23 +42,35 @@ internal sealed partial class JpegReader : IRowFormatReader, IIncrementalFormatR
 
             if (marker == JpegMarker.Eoi)
             {
-                return true;
+                return HeaderState.Arrived;
             }
 
             if (!input.TryPeekAt(offset, bytes[..2]))
             {
-                return false;
+                return HeaderState.NotYet;
             }
 
+            long segment = offset;
             offset += (bytes[0] << 8) | bytes[1];
             if (input.Available < offset)
             {
-                return false;
+                return HeaderState.NotYet;
+            }
+
+            if (marker is 0xC2 or 0xC6 or 0xCA or 0xCE)
+            {
+                rowsAtEnd = true;
+            }
+
+            if (marker is >= 0xC0 and <= 0xCF and not 0xC4 and not 0xC8 and not 0xCC && input.TryPeekAt(segment + 7, bytes[..1]))
+            {
+                components = bytes[0];
             }
 
             if (marker == JpegMarker.Sos)
             {
-                return true;
+                rowsAtEnd |= input.TryPeekAt(segment + 2, bytes[..1]) && bytes[0] < components;
+                return rowsAtEnd ? HeaderState.ArrivedRowsAtEnd : HeaderState.Arrived;
             }
         }
     }
