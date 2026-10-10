@@ -440,8 +440,13 @@ internal sealed class IccModel
         if (model == ColorModel.Rgb && Data.TryGetTag("rXYZ", out IccTag r) && Data.TryGetTag("gXYZ", out IccTag g) && Data.TryGetTag("bXYZ", out IccTag b)
             && Data.TryGetTag("rTRC", out IccTag rTrc) && Data.TryGetTag("gTRC", out IccTag gTrc) && Data.TryGetTag("bTRC", out IccTag bTrc))
         {
-            Colorants = Matrix3d.FromColumns(Xyz(r), Xyz(g), Xyz(b));
-            Curves = [Curve(rTrc), Curve(gTrc), Curve(bTrc)];
+            // Colorants that cannot be inverted make no matrix-shaper; the tables, if any, still convert.
+            Matrix3d colorants = Matrix3d.FromColumns(Xyz(r), Xyz(g), Xyz(b));
+            if (colorants.IsInvertible)
+            {
+                Colorants = colorants;
+                Curves = [Curve(rTrc), Curve(gTrc), Curve(bTrc)];
+            }
         }
         else if (model == ColorModel.Gray && Data.TryGetTag("kTRC", out IccTag kTrc))
         {
@@ -479,7 +484,8 @@ internal sealed class IccModel
             throw Corrupt(tag.Signature, "not an s15Fixed16ArrayType of nine values");
         }
 
-        return new Matrix3d(S15(d[8..]), S15(d[12..]), S15(d[16..]), S15(d[20..]), S15(d[24..]), S15(d[28..]), S15(d[32..]), S15(d[36..]), S15(d[40..]));
+        Matrix3d m = new(S15(d[8..]), S15(d[12..]), S15(d[16..]), S15(d[20..]), S15(d[24..]), S15(d[28..]), S15(d[32..]), S15(d[36..]), S15(d[40..]));
+        return m.IsInvertible ? m : throw Corrupt(tag.Signature, "the adaptation matrix cannot be inverted");
     }
 
     private static IccCurve Curve(IccTag tag) => IccCurve.Read(tag.Data.Span, tag.Signature).Curve;

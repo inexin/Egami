@@ -1,3 +1,4 @@
+using Egami.Colors;
 using Egami.Formats;
 using Egami.Formats.Jpeg;
 using Egami.Metadata;
@@ -6,8 +7,8 @@ using Egami.Pixels;
 namespace Egami.Tests.Formats;
 
 /// <summary>
-/// Inputs the fuzzers found (tests/images/fuzz): each once crashed a reader or the EXIF parser. Readers must load them or throw an
-/// <see cref="EgamiException"/>; EXIF blocks must parse, and rebuild after an edit to a block that reads back the same.
+/// Inputs the fuzzers found (tests/images/fuzz): each once crashed a reader, the EXIF parser or the ICC reader. Readers must load them or
+/// throw an <see cref="EgamiException"/>; EXIF blocks must parse, and rebuild after an edit to a block that reads back the same.
 /// </summary>
 public class FuzzRegressionTests
 {
@@ -69,6 +70,18 @@ public class FuzzRegressionTests
         Assert.Throws<LimitExceededException>(() => RasterDecoder.Open(data, context, reduced).Dispose());
         using RasterDecoder incremental = RasterDecoder.OpenIncremental(context, reduced);
         Assert.Throws<LimitExceededException>(() => incremental.Append(data));
+    }
+
+    /// <summary>
+    /// A chad tag that cannot be inverted threw InvalidOperationException from the profile's white (found by the Phase 2.1.2 icc
+    /// target). It is now a damaged profile.
+    /// </summary>
+    [Fact]
+    public void AnAdaptationThatCannotBeInvertedIsDamage()
+    {
+        IccData icc = IccData.Parse(File.ReadAllBytes(Path.Combine(Fuzz, "icc", "singular-chad.icc")));
+        CorruptDataException e = Assert.Throws<CorruptDataException>(() => ColorProfile.FromIcc(icc));
+        Assert.Contains("cannot be inverted", e.Message, StringComparison.Ordinal);
     }
 
     /// <summary>The BMP, TGA, QOI and PNM inputs load, from memory and from a stream that cannot seek, or fail cleanly.</summary>

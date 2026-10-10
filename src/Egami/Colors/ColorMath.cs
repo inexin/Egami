@@ -89,6 +89,16 @@ internal readonly struct Matrix3d
             (m._m20 * v.X) + (m._m21 * v.Y) + (m._m22 * v.Z));
     }
 
+    /// <summary>Gets whether the matrix has an inverse: a determinant that is finite and not 0.</summary>
+    public bool IsInvertible
+    {
+        get
+        {
+            double det = (_m00 * ((_m11 * _m22) - (_m12 * _m21))) + (_m01 * ((_m12 * _m20) - (_m10 * _m22))) + (_m02 * ((_m10 * _m21) - (_m11 * _m20)));
+            return det != 0 && double.IsFinite(det);
+        }
+    }
+
     public Matrix3d Inverse()
     {
         double c00 = (_m11 * _m22) - (_m12 * _m21);
