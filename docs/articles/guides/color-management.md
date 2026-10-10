@@ -90,6 +90,12 @@ from `Primaries` when there is no ICC profile, and mDCV and cLLI from `Hdr`; QOI
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#omit-srgb)]
 
+## Linear light
+
+Operations with `ColorSpace.Linear` (resize, blur, sharpen, grayscale) decode with the raster's own transfer function, from
+`GetColorProfile` or the last `ConvertColor` before them in the chain, so a gamma 1.8 file or a PQ image is linearized correctly and
+a raster tagged linear is used as it is. Untagged and sRGB rasters give the same bytes as before.
+
 ## HDR
 
 PQ and HLG decode to linear light with reference white (203 cd/m², ITU-R BT.2408) at 1.0, so highlights are values above 1, kept

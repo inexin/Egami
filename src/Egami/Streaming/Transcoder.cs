@@ -40,7 +40,7 @@ internal sealed class StreamTarget(Stream stream, FormatInfo format, WriterOptio
 internal sealed record TranscodePlan(ReaderOptions Options, IReadOnlyList<IRasterOperation> Steps)
 {
     /// <summary>Plans the chain for an image the user's options decode to <paramref name="info"/>'s size and orientation.</summary>
-    public static TranscodePlan Create(Action<RasterOps>? build, RasterInfo info, ReaderOptions options)
+    public static TranscodePlan Create(Action<RasterOps>? build, RasterInfo info, ReaderOptions options, Colors.ColorProfile? colorProfile = null, Colors.HdrMetadata? hdr = null)
     {
         if (build is null)
         {
@@ -48,7 +48,8 @@ internal sealed record TranscodePlan(ReaderOptions Options, IReadOnlyList<IRaste
         }
 
         Size size = new(info.Width, info.Height);
-        OperationPipeline.Plan plan = OperationPipeline.Build(build, size, info.Orientation);
+        // Linear-light steps and ConvertColor need the encoding the rows arrive in: the file's, or ConvertColorTo's.
+        OperationPipeline.Plan plan = OperationPipeline.Build(build, size, info.Orientation, colorProfile is null ? null : () => colorProfile, hdr);
         List<IRasterOperation> steps = [.. plan.Steps];
         foreach (IRasterOperation step in steps)
         {
@@ -139,7 +140,7 @@ internal static class Transcoder
         TranscodePlan plan;
         using (RasterDecoder probe = RasterDecoder.Open(source, context, options))
         {
-            plan = TranscodePlan.Create(build, probe.Info, options);
+            plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
         Restart(input, replay, start);
@@ -155,7 +156,7 @@ internal static class Transcoder
         TranscodePlan plan;
         using (RasterDecoder probe = await RasterDecoder.OpenAsync(source, context, options, cancellationToken).ConfigureAwait(false))
         {
-            plan = TranscodePlan.Create(build, probe.Info, options);
+            plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
         Restart(input, replay, start);

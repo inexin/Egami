@@ -258,8 +258,12 @@ internal sealed class ColorMatrixOperation : IRasterOperation
 }
 
 /// <summary>Converts toward gray in linear light: decode, take the luma, mix, encode.</summary>
-internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount) : IRasterOperation
+internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount, Colors.LinearCurve? curve = null) : IRasterOperation, ILinearLight
 {
+    public bool UsesLinearLight => true;
+
+    public IRasterOperation WithCurve(Colors.LinearCurve linear) => new LinearGrayscaleOperation(mode, amount, linear);
+
     public Size OutputSize(Size input)
     {
         return input;
@@ -270,7 +274,8 @@ internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount) :
     {
         (float wr, float wg, float wb) = ColorMatrix.Weights(mode);
         bool eightBit = TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
-        float[] toLinear = Srgb.LinearFrom8;
+        Colors.LinearCurve c = curve ?? Colors.LinearCurve.Srgb;
+        float[] toLinear = c.LinearFrom8;
         input.ForEachBand((start, end) =>
         {
             RgbaF32[] buffer = ArrayPool<RgbaF32>.Shared.Rent(input.Source.Width);
@@ -282,13 +287,13 @@ internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount) :
                     PixelConvert.Convert<TPixel, RgbaF32>(input.Source.Row(y), row);
                     foreach (ref RgbaF32 p in row)
                     {
-                        float r = eightBit ? toLinear[(int)((p.R * 255f) + 0.5f)] : (float)Srgb.ToLinear(Math.Clamp(p.R, 0f, 1f));
-                        float g = eightBit ? toLinear[(int)((p.G * 255f) + 0.5f)] : (float)Srgb.ToLinear(Math.Clamp(p.G, 0f, 1f));
-                        float b = eightBit ? toLinear[(int)((p.B * 255f) + 0.5f)] : (float)Srgb.ToLinear(Math.Clamp(p.B, 0f, 1f));
+                        float r = eightBit ? toLinear[(int)((p.R * 255f) + 0.5f)] : (float)c.ToLinear(Math.Clamp(p.R, 0f, 1f));
+                        float g = eightBit ? toLinear[(int)((p.G * 255f) + 0.5f)] : (float)c.ToLinear(Math.Clamp(p.G, 0f, 1f));
+                        float b = eightBit ? toLinear[(int)((p.B * 255f) + 0.5f)] : (float)c.ToLinear(Math.Clamp(p.B, 0f, 1f));
                         float luma = (wr * r) + (wg * g) + (wb * b);
-                        p.R = Encode(r + ((luma - r) * amount), eightBit);
-                        p.G = Encode(g + ((luma - g) * amount), eightBit);
-                        p.B = Encode(b + ((luma - b) * amount), eightBit);
+                        p.R = Encode(c, r + ((luma - r) * amount), eightBit);
+                        p.G = Encode(c, g + ((luma - g) * amount), eightBit);
+                        p.B = Encode(c, b + ((luma - b) * amount), eightBit);
                     }
 
                     PixelConvert.Convert<RgbaF32, TPixel>(row, input.Destination.Row(y));
@@ -301,9 +306,9 @@ internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount) :
         });
     }
 
-    private static float Encode(float linear, bool eightBit)
+    private static float Encode(Colors.LinearCurve curve, float linear, bool eightBit)
     {
-        return eightBit ? Srgb.FromLinearTo8(linear) / 255f : (float)Srgb.FromLinear(Math.Clamp(linear, 0f, 1f));
+        return eightBit ? curve.FromLinearTo8(linear) / 255f : (float)curve.FromLinear(Math.Clamp(linear, 0f, 1f));
     }
 }
 

@@ -24,9 +24,16 @@ internal enum ResizeKind
 /// full-size intermediate exists. The source can be a sub-rectangle, which is how Fill and a Crop followed by a resize run.
 /// </summary>
 internal sealed class ResizeOperation(
-    ResizeKind mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null)
-    : IRasterOperation, INeedsNewPlane, IHoldsBuffers, Geometry.IUpdatesMetadata
+    ResizeKind mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null,
+    Colors.LinearCurve? curve = null)
+    : IRasterOperation, INeedsNewPlane, IHoldsBuffers, Geometry.IUpdatesMetadata, ILinearLight
 {
+    public bool UsesLinearLight => colorSpace == ColorSpace.Linear;
+
+    public IRasterOperation WithCurve(Colors.LinearCurve linear) => new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, crop, linear);
+
+    private Colors.LinearCurve? Curve => colorSpace == ColorSpace.Linear ? curve ?? Colors.LinearCurve.Srgb : null;
+
     private Plan? _plan;
 
     public void UpdateMetadata(Metadata.RasterMetadata metadata, Size input, Size output)
@@ -43,13 +50,13 @@ internal sealed class ResizeOperation(
     internal ResizeOperation BeforeOrienting(Metadata.ImageOrientation orientation)
     {
         bool swaps = orientation >= Metadata.ImageOrientation.Transpose;
-        return new ResizeOperation(mode, swaps ? height : width, swaps ? width : height, filter, colorSpace, StoredAnchor(anchor, orientation), enlarge, crop);
+        return new ResizeOperation(mode, swaps ? height : width, swaps ? width : height, filter, colorSpace, StoredAnchor(anchor, orientation), enlarge, crop, curve);
     }
 
     /// <summary>Returns this resize reading only <paramref name="rect"/> of its input, as a Crop before it would.</summary>
     internal ResizeOperation WithCrop(Rect rect)
     {
-        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, rect);
+        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, rect, curve);
     }
 
     /// <summary>Maps an anchor in the upright image to the same point of the stored image.</summary>
@@ -95,7 +102,7 @@ internal sealed class ResizeOperation(
     /// <summary>Returns this resize reading its whole input, for when the crop is done before it (by a decoder's Region).</summary>
     internal ResizeOperation WithoutCrop()
     {
-        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, null);
+        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, null, curve);
     }
 
     /// <summary>
@@ -112,7 +119,7 @@ internal sealed class ResizeOperation(
         }
 
         (ResizeWeights horizontal, ResizeWeights vertical) = plan.Weights(filter);
-        return new ResizeRows<TPixel>(plan.Output, horizontal, vertical, filter == ResampleFilter.Nearest, colorSpace);
+        return new ResizeRows<TPixel>(plan.Output, horizontal, vertical, filter == ResampleFilter.Nearest, colorSpace, Curve);
     }
 
     public bool NeedsNewPlane(Size input)
@@ -147,7 +154,7 @@ internal sealed class ResizeOperation(
             return;
         }
 
-        RowConverter<TPixel> converter = new(colorSpace == ColorSpace.Linear);
+        RowConverter<TPixel> converter = new(Curve);
         int outWidth = plan.Output.Width;
         int xLow = horizontal.First[0];
         int xCount = horizontal.First[outWidth - 1] + horizontal.Count[outWidth - 1] - xLow;
@@ -333,9 +340,11 @@ internal sealed class ResizeOperation(
 /// Moves rows between a pixel type and the float working form: four floats per pixel, RGBA in 0..1, encoded or linear,
 /// premultiplied unless the row is opaque. Rgba8, Bgra8 and RgbaF32 have vector paths; other types go through RgbaF32.
 /// </summary>
-internal sealed class RowConverter<TPixel>(bool linear)
+internal sealed class RowConverter<TPixel>(Colors.LinearCurve? curve)
     where TPixel : unmanaged, IPixelType<TPixel>
 {
+    private readonly bool _linear = curve is not null;
+
     private static readonly bool HasAlpha = TPixel.Layout.Alpha != AlphaKind.None;
     private static readonly bool EightBit = TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
     internal static readonly bool FourByte = typeof(TPixel) == typeof(Rgba8) || typeof(TPixel) == typeof(Bgra8);
@@ -350,7 +359,7 @@ internal sealed class RowConverter<TPixel>(bool linear)
     internal static readonly bool PremulFloat = typeof(TPixel) == typeof(PremulRgbaF32);
 
     // Premultiplied rows load and store as they are, except in linear light, which needs straight values to decode.
-    private readonly bool _raw = (Premul8 || PremulFloat) && !linear;
+    private readonly bool _raw = (Premul8 || PremulFloat) && curve is null;
 
     /// <summary>Converts <paramref name="source"/> to working pixels at the start of <paramref name="destination"/>.</summary>
     /// <returns><see langword="true"/> if every pixel is opaque, so nothing was premultiplied.</returns>
@@ -377,7 +386,7 @@ internal sealed class RowConverter<TPixel>(bool linear)
             return false;
         }
 
-        if (FourByte && !linear)
+        if (FourByte && !_linear)
         {
             return ResizeKernels.Load8(MemoryMarshal.AsBytes(source), pixels);
         }
@@ -385,7 +394,7 @@ internal sealed class RowConverter<TPixel>(bool linear)
         if (FourByte)
         {
             ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(source);
-            float[] table = Srgb.LinearFrom8;
+            float[] table = curve!.LinearFrom8;
             for (int i = 0; i < bytes.Length; i += 4)
             {
                 pixels[i] = table[bytes[i]];
@@ -397,7 +406,7 @@ internal sealed class RowConverter<TPixel>(bool linear)
         else
         {
             PixelConvert.Convert(source, MemoryMarshal.Cast<float, RgbaF32>(pixels));
-            if (linear)
+            if (_linear)
             {
                 ToLinear(pixels);
             }
@@ -435,7 +444,7 @@ internal sealed class RowConverter<TPixel>(bool linear)
         }
 
         opaque |= !HasAlpha;
-        if (FourByte && !linear)
+        if (FourByte && !_linear)
         {
             ResizeKernels.Store8(pixels, MemoryMarshal.AsBytes(destination), opaque);
             return;
@@ -447,16 +456,16 @@ internal sealed class RowConverter<TPixel>(bool linear)
             Span<byte> bytes = MemoryMarshal.AsBytes(destination);
             for (int i = 0; i < bytes.Length; i += 4)
             {
-                bytes[i] = Srgb.FromLinearTo8(pixels[i]);
-                bytes[i + 1] = Srgb.FromLinearTo8(pixels[i + 1]);
-                bytes[i + 2] = Srgb.FromLinearTo8(pixels[i + 2]);
+                bytes[i] = curve!.FromLinearTo8(pixels[i]);
+                bytes[i + 1] = curve.FromLinearTo8(pixels[i + 1]);
+                bytes[i + 2] = curve.FromLinearTo8(pixels[i + 2]);
                 bytes[i + 3] = (byte)(int)((pixels[i + 3] * 255f) + 0.5f);
             }
 
             return;
         }
 
-        if (linear)
+        if (_linear)
         {
             FromLinear(pixels);
         }
@@ -464,26 +473,26 @@ internal sealed class RowConverter<TPixel>(bool linear)
         PixelConvert.Convert<RgbaF32, TPixel>(MemoryMarshal.Cast<float, RgbaF32>(pixels), destination);
     }
 
-    private static void ToLinear(Span<float> pixels)
+    private void ToLinear(Span<float> pixels)
     {
-        float[] table = Srgb.LinearFrom8;
+        float[] table = curve!.LinearFrom8;
         for (int i = 0; i < pixels.Length; i += 4)
         {
             for (int c = 0; c < 3; c++)
             {
                 // 8-bit values arrive as exact multiples of 1/255, so the table gives the same result as the formula.
-                pixels[i + c] = EightBit ? table[(int)((pixels[i + c] * 255f) + 0.5f)] : (float)Srgb.ToLinear(pixels[i + c]);
+                pixels[i + c] = EightBit ? table[(int)((pixels[i + c] * 255f) + 0.5f)] : (float)curve.ToLinear(pixels[i + c]);
             }
         }
     }
 
-    private static void FromLinear(Span<float> pixels)
+    private void FromLinear(Span<float> pixels)
     {
         for (int i = 0; i < pixels.Length; i += 4)
         {
             for (int c = 0; c < 3; c++)
             {
-                pixels[i + c] = EightBit ? Srgb.FromLinearTo8(pixels[i + c]) * (1f / 255f) : (float)Srgb.FromLinear(pixels[i + c]);
+                pixels[i + c] = EightBit ? curve!.FromLinearTo8(pixels[i + c]) * (1f / 255f) : (float)curve!.FromLinear(pixels[i + c]);
             }
         }
     }
@@ -511,13 +520,13 @@ internal sealed class ResizeRows<TPixel> : Streaming.RowStep<TPixel>
     private int _source;
     private int _y;
 
-    internal ResizeRows(Size output, ResizeWeights horizontal, ResizeWeights vertical, bool nearest, ColorSpace colorSpace)
+    internal ResizeRows(Size output, ResizeWeights horizontal, ResizeWeights vertical, bool nearest, ColorSpace colorSpace, Colors.LinearCurve? curve)
     {
         _output = output;
         _horizontal = horizontal;
         _vertical = vertical;
         _nearest = nearest;
-        _converter = new(colorSpace == ColorSpace.Linear);
+        _converter = new(curve);
         int outWidth = output.Width;
         _xLow = horizontal.First[0];
         _xCount = horizontal.First[outWidth - 1] + horizontal.Count[outWidth - 1] - _xLow;

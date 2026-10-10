@@ -40,7 +40,6 @@ public record ReaderOptions
     /// stays the same, and otherwise picks the target model's type of the same depth (a CMYK JPEG converted to sRGB loads as
     /// <see cref="Pixels.Rgb8"/>). Conversion uses <see cref="Colors.ColorTransformOptions.Default"/>.
     /// </summary>
-    /// <remarks>Streaming reads through RasterDecoder rows do not convert yet.</remarks>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="convert-on-load"/>
     /// </example>

@@ -16,7 +16,7 @@ namespace Egami.Operations.Filters;
 /// into a ring of rows, then sums the ring vertically; a box filter does both with running sums; any other kernel keeps the padded
 /// rows in the ring and sums every tap.
 /// </summary>
-internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
+internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, ILinearLight
 {
     private readonly float[]? _row;
     private readonly float[]? _column;
@@ -29,10 +29,12 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
     private readonly float _offset;
     private readonly float _sharpen;
     private readonly bool _linear;
+    private readonly Colors.LinearCurve? _curve;
 
     private ConvolutionOperation(
-        float[]? row, float[]? column, float[]? full, int rx, int ry, bool box, EdgeMode edge, bool preserveAlpha, float offset, float sharpen, bool linear)
+        float[]? row, float[]? column, float[]? full, int rx, int ry, bool box, EdgeMode edge, bool preserveAlpha, float offset, float sharpen, bool linear, Colors.LinearCurve? curve = null)
     {
+        _curve = curve;
         _row = row;
         _column = column;
         _full = full;
@@ -45,6 +47,11 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
         _sharpen = sharpen;
         _linear = linear;
     }
+
+    public bool UsesLinearLight => _linear;
+
+    public IRasterOperation WithCurve(Colors.LinearCurve curve) =>
+        new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve);
 
     /// <summary>A Gaussian blur: radius ceil(3σ), weights normalized to sum to 1.</summary>
     internal static ConvolutionOperation Gaussian(float sigma, bool linear, float sharpen = 0)
@@ -167,7 +174,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
             _op = op;
             _preserveAlpha = op._preserveAlpha && !RowConverter<TPixel>.Ink;
             _input = input;
-            _converter = new RowConverter<TPixel>(op._linear);
+            _converter = new RowConverter<TPixel>(op._linear ? op._curve ?? Colors.LinearCurve.Srgb : null);
             _width = input.Source.Width;
             _height = input.Source.Height;
 

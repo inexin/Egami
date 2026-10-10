@@ -48,7 +48,7 @@ internal sealed class RotateOperation(double degrees, ResampleFilter filter, Rgb
     {
         bool hasAlpha = TPixel.Layout.Alpha != AlphaKind.None;
         Vector4 back = Fetch(TPixel.FromRgba8(background), hasAlpha);
-        RowConverter<TPixel> converter = new(linear: false);
+        RowConverter<TPixel> converter = new(curve: null);
         int reach = (int)Math.Ceiling(ResampleKernels.Support(filter));
         int taps = filter == ResampleFilter.Nearest ? 1 : 2 * reach;
         float[] table = ArrayPool<float>.Shared.Rent((Steps + 1) * taps);

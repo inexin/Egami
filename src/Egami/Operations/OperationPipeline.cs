@@ -32,7 +32,13 @@ internal static class OperationPipeline
         Colors.ColorProfile? current = null;
         for (int i = 0; i < steps.Count; i++)
         {
-            if (steps[i] is Color.ConvertColorOperation convert)
+            if (steps[i] is ILinearLight { UsesLinearLight: true } linear && colorProfile is not null)
+            {
+                // Linear light is the raster's own curve at this point in the chain (sRGB's for CMYK and table profiles).
+                current ??= colorProfile();
+                steps[i] = linear.WithCurve(Colors.LinearCurve.For(current.Transfer));
+            }
+            else if (steps[i] is Color.ConvertColorOperation convert)
             {
                 current ??= colorProfile?.Invoke() ?? Colors.ColorProfile.Srgb;
                 steps[i] = convert.Bind(current, hdr);
@@ -247,4 +253,12 @@ internal static class OperationPipeline
             return planned;
         }
     }
+}
+
+/// <summary>A step that can work in linear light, which decodes with the curve the pipeline binds to it.</summary>
+internal interface ILinearLight
+{
+    bool UsesLinearLight { get; }
+
+    IRasterOperation WithCurve(Colors.LinearCurve curve);
 }
