@@ -115,7 +115,7 @@ internal sealed class MatrixTransform : CompiledTransform
         _encode8 = hdr.OutScale == 1 ? [.. _out.Select(EncodeTable)] : new byte[]?[_out.Length];
         if (hdr.Tone is ToneMapping tone)
         {
-            _tone = new ToneTable(tone, hdr.PeakRelative);
+            _tone = ToneTable.For(tone, hdr.PeakRelative);
             _luminance = form.Luminance is Vector3d l ? [(float)l.X, (float)l.Y, (float)l.Z] : null;
         }
     }
@@ -461,6 +461,25 @@ internal sealed class ToneTable
     private readonly ToneMapping _method;
     private readonly double _peak;
 
+    private const int Kept = 32;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(ToneMapping, double), ToneTable> Tables = new();
+
+    /// <summary>Returns the table for a curve and peak, built once.</summary>
+    public static ToneTable For(ToneMapping method, double peak)
+    {
+        if (Tables.TryGetValue((method, peak), out ToneTable? known))
+        {
+            return known;
+        }
+
+        if (Tables.Count >= Kept)
+        {
+            Tables.Clear();
+        }
+
+        return Tables.GetOrAdd((method, peak), key => new ToneTable(key.Item1, key.Item2));
+    }
+
     public ToneTable(ToneMapping method, double peak)
     {
         (_method, _peak) = (method, peak);
@@ -763,7 +782,8 @@ internal static class TransformCache
     /// <summary>What a profile means: its ICC bytes when it came from a profile, else its model, primaries, white and curve.</summary>
     private sealed class ProfileKey : IEquatable<ProfileKey>
     {
-        private readonly byte[]? _icc;
+        // An IccData never changes its bytes, so the key holds them without a copy.
+        private readonly ReadOnlyMemory<byte>? _icc;
         private readonly (ColorModel, ColorPrimaries?, Chromaticity, TransferFunction?) _encoding;
         private readonly int _hash;
 
@@ -771,9 +791,9 @@ internal static class TransformCache
         {
             if (profile.Icc is IccData icc)
             {
-                _icc = icc.ToBytes().ToArray();
+                _icc = icc.ToBytes();
                 HashCode hash = default;
-                hash.AddBytes(_icc);
+                hash.AddBytes(_icc.Value.Span);
                 _hash = hash.ToHashCode();
             }
             else
@@ -786,7 +806,7 @@ internal static class TransformCache
         public static ProfileKey Of(ColorProfile profile) => new(profile);
 
         public bool Equals(ProfileKey? other) => other is not null && _hash == other._hash
-            && (_icc is null ? other._icc is null && _encoding.Equals(other._encoding) : other._icc is not null && _icc.AsSpan().SequenceEqual(other._icc));
+            && (_icc is null ? other._icc is null && _encoding.Equals(other._encoding) : other._icc is not null && _icc.Value.Span.SequenceEqual(other._icc.Value.Span));
 
         public override bool Equals(object? obj) => Equals(obj as ProfileKey);
 

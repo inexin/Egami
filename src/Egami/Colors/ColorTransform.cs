@@ -145,19 +145,24 @@ public sealed class ColorTransform
         bool alphaIn = TFrom.Layout.HasAlpha, alphaOut = TTo.Layout.HasAlpha;
         int inAlpha = inLayout.Stride - 1, outAlpha = outLayout.Stride - 1;
 
-        // Alpha first, from the source bytes, in case the spans are the same memory with the color written over them next.
+        // Alpha first, from the source bytes, in case the spans are the same memory with the color written over them next; a
+        // chunk at a time, so nothing is allocated.
         if (alphaOut && !(alphaIn && inLayout.Stride == outLayout.Stride && Unsafe.AreSame(ref MemoryMarshal.GetReference(src), ref MemoryMarshal.GetReference(dst))))
         {
-            Span<byte> alpha = count <= Chunk ? stackalloc byte[count] : new byte[count];
-            for (int i = 0; i < count; i++)
+            Span<byte> alpha = stackalloc byte[Chunk];
+            for (int start = 0; start < count; start += Chunk)
             {
-                alpha[i] = alphaIn ? src[(i * inLayout.Stride) + inAlpha] : (byte)255;
-            }
+                int n = Math.Min(Chunk, count - start);
+                for (int i = 0; i < n; i++)
+                {
+                    alpha[i] = alphaIn ? src[((start + i) * inLayout.Stride) + inAlpha] : (byte)255;
+                }
 
-            _compiled.Apply(src, inLayout, dst, outLayout, count);
-            for (int i = 0; i < count; i++)
-            {
-                dst[(i * outLayout.Stride) + outAlpha] = alpha[i];
+                _compiled.Apply(src[(start * inLayout.Stride)..], inLayout, dst[(start * outLayout.Stride)..], outLayout, n);
+                for (int i = 0; i < n; i++)
+                {
+                    dst[((start + i) * outLayout.Stride) + outAlpha] = alpha[i];
+                }
             }
 
             return;

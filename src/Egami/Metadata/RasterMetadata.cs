@@ -101,6 +101,8 @@ public abstract class FormatDetails
 /// </example>
 public sealed class RasterMetadata
 {
+    private ParsedProfile? _parsed;
+
     /// <summary>Gets or sets the physical pixel density, if known.</summary>
     public Resolution? Resolution { get; set; }
 
@@ -173,16 +175,9 @@ public sealed class RasterMetadata
             return coded;
         }
 
-        if (!IccProfile.IsEmpty)
+        if (!IccProfile.IsEmpty && ProfileFromIcc() is Colors.ColorProfile fromIcc)
         {
-            try
-            {
-                return Colors.ColorProfile.FromIcc(IccProfile.Span);
-            }
-            catch (EgamiException)
-            {
-                // A profile conversion cannot use is treated as no profile, as the design says for damaged ones.
-            }
+            return fromIcc;
         }
 
         Colors.ColorPrimaries? primaries = Primaries is { IsValid: true } p ? p : null;
@@ -215,6 +210,33 @@ public sealed class RasterMetadata
 
         return srgbPrimaries ? Colors.ColorProfile.Srgb : Colors.ColorProfile.Create(primaries!, Colors.TransferFunction.Srgb);
     }
+
+    // The profile parsed from IccProfile, kept while the same bytes are set, so planning a chain does not parse it again; null
+    // when conversion cannot use it, which counts as no profile, as the design says for damaged ones.
+    private Colors.ColorProfile? ProfileFromIcc()
+    {
+        ReadOnlyMemory<byte> icc = IccProfile;
+        if (_parsed is ParsedProfile parsed && parsed.Bytes.Equals(icc))
+        {
+            return parsed.Profile;
+        }
+
+        Colors.ColorProfile? result;
+        try
+        {
+            result = Colors.ColorProfile.FromIcc(icc.Span);
+        }
+        catch (EgamiException)
+        {
+            result = null;
+        }
+
+        _parsed = new ParsedProfile(icc, result);
+        return result;
+    }
+
+    // One object, so a reader on another thread sees the bytes and their profile together.
+    private sealed record ParsedProfile(ReadOnlyMemory<byte> Bytes, Colors.ColorProfile? Profile);
 
     // DCF: EXIF ColorSpace "uncalibrated" (0xFFFF) with interoperability index "R03" is a camera set to Adobe RGB.
     private static bool IsAdobeRgbCamera(ExifData? exif)

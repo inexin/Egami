@@ -38,7 +38,7 @@ internal sealed class ToneMapOperation(ToneMapping method, float? sourcePeakNits
         }
 
         double peak = new ColorTransformOptions { SourcePeakNits = sourcePeakNits }.PeakFor(hdr) / ReferenceWhite;
-        ToneTable table = new(method, peak);
+        ToneTable table = ToneTable.For(method, peak);
         bool gray = model == ColorModel.Gray;
         PixelPlane<TPixel> src = input.Source, dst = input.Destination;
         input.ForEachBand((start, end) =>

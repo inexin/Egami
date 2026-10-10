@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 using Egami.Pixels;
 
 namespace Egami.Colors;
@@ -12,7 +10,8 @@ namespace Egami.Colors;
 internal sealed class LinearCurve
 {
     private const int EncodeSize = 4096;
-    private static readonly ConditionalWeakTable<TransferFunction, LinearCurve> Curves = [];
+    private const int Kept = 64;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<TransferFunction, LinearCurve> Curves = new();
 
     private readonly TransferFunction? _curve;
     private readonly float[]? _encode;   // encoded × 255 at linear i / 4095, and a guard entry; null to compute
@@ -58,7 +57,19 @@ internal sealed class LinearCurve
             return Srgb;
         }
 
-        return Curves.GetValue(curve, c => new LinearCurve(c));
+        // By value, as a raster's gamma makes a new TransferFunction each time its profile is read; a handful of curves are
+        // ever in use, so the cache is simply emptied if it fills.
+        if (Curves.TryGetValue(curve, out LinearCurve? known))
+        {
+            return known;
+        }
+
+        if (Curves.Count >= Kept)
+        {
+            Curves.Clear();
+        }
+
+        return Curves.GetOrAdd(curve, c => new LinearCurve(c));
     }
 
     public double ToLinear(double encoded) => _curve is null ? Pixels.Srgb.ToLinear(encoded) : _curve.ToLinear(encoded);
