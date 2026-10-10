@@ -78,7 +78,7 @@ public sealed class RasterDecoder : IDisposable
         PixelLayoutInfo layout = source.Layout;
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
-            _stage.Color = source.WithNaturalType(new ColorRows.Factory(source.Metadata.GetColorProfile(), target, _context));
+            _stage.Color = source.WithNaturalType(new ColorRows.Factory(source.Metadata.GetColorProfile(), source.Metadata.Hdr, target, _context));
             layout = WithNaturalType(new LayoutVisitor());
         }
 

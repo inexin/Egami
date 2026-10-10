@@ -133,12 +133,12 @@ internal abstract class ColorRows
         where TPixel : unmanaged, IPixelType<TPixel>;
 
     /// <summary>Makes the conversion for a source whose natural type is the visited one.</summary>
-    internal sealed class Factory(Colors.ColorProfile source, Colors.ColorProfile target, EgamiContext context) : INaturalTypeVisitor<ColorRows>
+    internal sealed class Factory(Colors.ColorProfile source, Colors.HdrMetadata? hdr, Colors.ColorProfile target, EgamiContext context) : INaturalTypeVisitor<ColorRows>
     {
         public ColorRows Visit<TNatural>()
             where TNatural : unmanaged, IPixelType<TNatural>
         {
-            return new ColorRows<TNatural>(source, target, context);
+            return new ColorRows<TNatural>(source, hdr, target, context);
         }
     }
 }
@@ -147,7 +147,7 @@ internal abstract class ColorRows
 /// The conversion for natural type <typeparamref name="TNatural"/>: the same transform Raster.ConvertColor builds, from the
 /// source's profile to the target at the destination's color model, kept per destination type.
 /// </summary>
-internal sealed class ColorRows<TNatural>(Colors.ColorProfile source, Colors.ColorProfile target, EgamiContext context) : ColorRows
+internal sealed class ColorRows<TNatural>(Colors.ColorProfile source, Colors.HdrMetadata? hdr, Colors.ColorProfile target, EgamiContext context) : ColorRows
     where TNatural : unmanaged, IPixelType<TNatural>
 {
     private TNatural[] _row = [];
@@ -167,7 +167,7 @@ internal sealed class ColorRows<TNatural>(Colors.ColorProfile source, Colors.Col
         {
             Colors.ColorProfile from = Operations.Color.ConvertColorOperation.ForPixels(source, Colors.ColorTransform.ModelOf<TNatural>() ?? Colors.ColorModel.Rgb);
             Colors.ColorProfile to = Operations.Color.ConvertColorOperation.ForPixels(target, Colors.ColorTransform.ModelOf<TPixel>() ?? Colors.ColorModel.Rgb);
-            _transform = Colors.ColorTransform.Create(from, to, Colors.ColorTransformOptions.Default, context);
+            _transform = Colors.ColorTransform.CreateFor(from, to, Colors.ColorTransformOptions.Default, hdr, context);
             _type = typeof(TPixel);
         }
 
