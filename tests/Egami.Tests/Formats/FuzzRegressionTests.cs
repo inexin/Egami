@@ -40,6 +40,37 @@ public class FuzzRegressionTests
         }
     }
 
+    /// <summary>
+    /// A scan that names one component three times left the other two uncoded, and the streaming decoder then showed whatever
+    /// its pooled buffers held from before (found by the Phase 2.2 stream target). Such a scan is now refused.
+    /// </summary>
+    [Fact]
+    public void AScanNamingAComponentTwiceIsRefused()
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Fuzz, "jpeg", "duplicate-scan-component.jpg"));
+        foreach (RecoveryMode recovery in (RecoveryMode[])[RecoveryMode.Lenient, RecoveryMode.Strict])
+        {
+            CorruptDataException e = Assert.Throws<CorruptDataException>(() => Raster.Load(data, options: new ReaderOptions { Recovery = recovery }));
+            Assert.Contains("twice", e.Message, StringComparison.Ordinal);
+            Assert.Throws<CorruptDataException>(() => RasterDecoder.Open(data, options: new ReaderOptions { Recovery = recovery }).Dispose());
+        }
+    }
+
+    /// <summary>
+    /// A 674-byte JPEG declaring 65,313 × 32,768 pixels streamed for seconds, since only a full decode's allocation checked the
+    /// size (found by the Phase 2.2 stream target). The decoder now checks the stored size against the limits as it opens.
+    /// </summary>
+    [Fact]
+    public void TheDecoderChecksTheStoredSizeAgainstTheLimits()
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Fuzz, "jpeg", "declared-two-gigapixels.jpg"));
+        EgamiContext context = EgamiContext.Default with { Limits = SafetyLimits.Default with { MaxPixels = 4_000_000 } };
+        ReaderOptions reduced = new() { MinimumSize = new Size(100, 100) };
+        Assert.Throws<LimitExceededException>(() => RasterDecoder.Open(data, context, reduced).Dispose());
+        using RasterDecoder incremental = RasterDecoder.OpenIncremental(context, reduced);
+        Assert.Throws<LimitExceededException>(() => incremental.Append(data));
+    }
+
     /// <summary>The BMP, TGA, QOI and PNM inputs load, from memory and from a stream that cannot seek, or fail cleanly.</summary>
     [Theory]
     [MemberData(nameof(SimpleFiles))]

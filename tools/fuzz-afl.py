@@ -18,7 +18,8 @@ import sys
 SEEDS = {"png": "tests/images/pngsuite/*.png", "jpeg": "tests/images/jpeg/*.jpg", "exif": "tests/images/fuzz/exif-seeds/*.tiff", "icc": "tests/images/icc/*/*.icc",
          "gif": "tests/images/gif/*.gif", "apng": "tests/images/apng/*.png", "lzw": "tests/images/fuzz/lzw-seeds/*.bin",
          "bmp": "tests/images/bmp/*", "tga": "tests/images/tga/*", "qoi": "tests/images/qoi/*", "pnm": "tests/images/pnm/*", "pfm": "tests/images/pfm/*.pfm",
-         "detect": "tests/images/fuzz/detect-seeds/*"}
+         "detect": "tests/images/fuzz/detect-seeds/*",
+         "stream": "tests/images/fuzz/stream-seeds/*"}
 
 SCRIPT = """
 set -e
@@ -49,7 +50,8 @@ def main():
             role = "" if instances == 1 else "-M main" if i == 0 else f"-S secondary{i}"
             subprocess.run(["docker", "rm", "-f", name], capture_output=True)
             script = SCRIPT.format(seeds="/src/" + SEEDS[target], seconds=int(hours * 3600), target=target, role=role)
-            subprocess.run(["docker", "run", "-d", "--name", name, "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
+            # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
+            subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)
             print(f"Started {name} for {hours} h.")
 

@@ -20,6 +20,42 @@ using SharpFuzz;
 //   dotnet run --project tests/Egami.Fuzz -c Release -- mutate jpeg 3600 seeds-dir findings-dir
 //       mutation fuzzing without AFL++ (any OS): random edits of the seeds for the given seconds; crashes and inputs that take
 //       over 10 seconds are saved to the findings directory. Not coverage-guided, so a complement to AFL++, not a replacement.
+//   dotnet run --project tests/Egami.Fuzz -c Release -- replay png findings-dir
+//       runs every file in a directory and counts the failures by message, to triage a run's findings
+if (args is ["replay", string replayTarget, string directory])
+{
+    Action<Stream> replay = Target(replayTarget);
+    Dictionary<string, int> failures = [];
+    int files = 0;
+    foreach (string file in Directory.GetFiles(directory))
+    {
+        files++;
+        try
+        {
+            using FileStream input = File.OpenRead(file);
+            replay(input);
+        }
+        catch (Exception e)
+        {
+            string key = $"{e.GetType().Name}: {System.Text.RegularExpressions.Regex.Replace(e.Message, "[0-9A-F]{16}|[0-9]+", "#")}";
+            key = key[..Math.Min(key.Length, 160)];
+            failures[key] = failures.GetValueOrDefault(key) + 1;
+            if (failures[key] == 1)
+            {
+                Console.WriteLine($"{Path.GetFileName(file)}: {e.GetType().Name}: {e.Message}");
+            }
+        }
+    }
+
+    foreach ((string key, int count) in failures.OrderByDescending(f => f.Value))
+    {
+        Console.WriteLine($"{count,6}  {key}");
+    }
+
+    Console.WriteLine($"{files} files, {failures.Values.Sum()} failures.");
+    return;
+}
+
 if (args is ["mutate", string mutateTarget, string seconds, string seeds, string findings])
 {
     Mutator.Run(Target(mutateTarget), TimeSpan.FromSeconds(double.Parse(seconds, System.Globalization.CultureInfo.InvariantCulture)), seeds, findings);
@@ -54,7 +90,8 @@ static Action<Stream> Target(string name) => name switch
     "pnm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
     "pfm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
     "detect" => Detect,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, icc, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect."),
+    "stream" => DecodeStreaming,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, icc, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream."),
 };
 
 static EgamiContext Context()
@@ -205,6 +242,168 @@ static void Detect(Stream stream)
     catch (EgamiException)
     {
     }
+}
+
+// Phase 2.2: every reader through RasterDecoder, whole and incremental. The input's own hash picks, reproducibly, a region, a
+// reduction, a band height and the sizes the bytes arrive in (1 to 64 bytes, sometimes up to 64 KB), with previews drawn along
+// the way. Strict decodes must agree: the incremental decode fails exactly when the whole one does, and otherwise hands out the
+// same rows (with a region, only when both succeed); a difference is thrown as a crash.
+static void DecodeStreaming(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    Random random = new(Hash(data));
+    RasterInfo info;
+    try
+    {
+        info = Raster.Probe(data, context);
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    ReaderOptions options = new() { Recovery = random.Next(2) == 0 ? RecoveryMode.Lenient : RecoveryMode.Strict };
+    bool sized = info.Width is > 0 and < 1 << 24 && info.Height is > 0 and < 1 << 24;
+    if (sized && random.Next(3) == 0)
+    {
+        int x = random.Next(info.Width);
+        int y = random.Next(info.Height);
+        options = options with { Region = new Rect(x, y, random.Next(1, info.Width - x + 1), random.Next(1, info.Height - y + 1)) };
+    }
+
+    if (sized && random.Next(3) == 0)
+    {
+        options = options with { MinimumSize = new Size(random.Next(1, info.Width + 1), random.Next(1, info.Height + 1)) };
+    }
+
+    int bandHeight = random.Next(1, 33);
+    ulong? whole = null;
+    string? wholeError = null;
+    string? incrementalError = null;
+    try
+    {
+        using RasterDecoder decoder = RasterDecoder.Open(data, context, options);
+        using Raster<Rgba8> band = Raster.Create<Rgba8>(decoder.Info.Width, bandHeight, context);
+        ulong hash = 14695981039346656037;
+        do
+        {
+            int rows;
+            while ((rows = decoder.ReadRows(band)) > 0)
+            {
+                hash = Mix(hash, band, rows);
+            }
+        }
+        while (decoder.NextFrame());
+
+        whole = hash;
+    }
+    catch (EgamiException e)
+    {
+        wholeError = e.Message;
+    }
+
+    ulong? incremental = null;
+    try
+    {
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental(context, options);
+        Raster<Rgba8>? band = null;
+        Raster<Rgba8>? preview = null;
+        ulong hash = 14695981039346656037;
+        try
+        {
+            int at = 0;
+            bool ended = false;
+            while (true)
+            {
+                if (at < data.Length)
+                {
+                    int size = random.Next(8) == 0 ? random.Next(1, 65537) : random.Next(1, 65);
+                    size = Math.Min(size, data.Length - at);
+                    decoder.Append(data.AsSpan(at, size));
+                    at += size;
+                }
+                else
+                {
+                    decoder.EndOfInput();
+                    ended = true;
+                }
+
+                if (decoder.HeaderRead)
+                {
+                    band ??= Raster.Create<Rgba8>(decoder.Info.Width, bandHeight, context);
+                    while (true)
+                    {
+                        int rows = decoder.ReadRows(band);
+                        hash = Mix(hash, band, rows);
+                        if (decoder.Status == DecodeStatus.FrameEnded && decoder.NextFrame())
+                        {
+                            continue;
+                        }
+
+                        if (rows == 0 || decoder.Status != DecodeStatus.RowsAvailable)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (random.Next(16) == 0 && decoder.Status == DecodeStatus.NeedsInput)
+                    {
+                        preview ??= Raster.Create<Rgba8>(decoder.Info.Width, decoder.Info.Height, context);
+                        decoder.RenderPreview(preview);
+                    }
+                }
+
+                if (ended)
+                {
+                    break;
+                }
+            }
+
+            incremental = hash;
+        }
+        finally
+        {
+            band?.Dispose();
+            preview?.Dispose();
+        }
+    }
+    catch (EgamiException e)
+    {
+        incrementalError = e.Message;
+    }
+
+    // A region decode stops at the region's last row, and on a seekable input skips straight to the rows it needs, so damage
+    // outside the region may be seen by one decode and not the other; only pixels both decodes give must agree.
+    bool comparable = options.Region is null || (whole is not null && incremental is not null);
+    if (options.Recovery == RecoveryMode.Strict && comparable && whole != incremental)
+    {
+        throw new InvalidOperationException($"{info.Format.Name}: the incremental decode gave {incremental?.ToString("X16", System.Globalization.CultureInfo.InvariantCulture) ?? incrementalError}, the whole decode {whole?.ToString("X16", System.Globalization.CultureInfo.InvariantCulture) ?? wholeError}, with {options}.");
+    }
+}
+
+static int Hash(byte[] data)
+{
+    uint hash = 2166136261;
+    foreach (byte b in data)
+    {
+        hash = (hash ^ b) * 16777619;
+    }
+
+    return (int)hash;
+}
+
+static ulong Mix(ulong hash, Raster<Rgba8> band, int rows)
+{
+    for (int y = 0; y < rows; y++)
+    {
+        foreach (byte b in System.Runtime.InteropServices.MemoryMarshal.AsBytes(band.Row(y)))
+        {
+            hash = (hash ^ b) * 1099511628211;
+        }
+    }
+
+    return hash;
 }
 
 // The LZW decoder alone: the first byte is the minimum code size, the rest the data. Bad codes are reported, never thrown.

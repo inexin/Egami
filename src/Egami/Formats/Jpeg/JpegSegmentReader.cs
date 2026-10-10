@@ -366,6 +366,15 @@ internal static class JpegSegmentReader
                 throw input.Corrupt(at, $"The scan names an unknown component ({id}) or table.");
             }
 
+            for (int j = 0; j < i; j++)
+            {
+                if (components[j].ComponentIndex == index)
+                {
+                    // A component coded twice in one scan leaves another uncoded (T.81 B.2.3); libjpeg-turbo rejects it too.
+                    throw input.Corrupt(at, $"The scan names component {id} twice.");
+                }
+            }
+
             components[i] = new JpegScanComponent(index, tables >> 4, tables & 15);
         }
 

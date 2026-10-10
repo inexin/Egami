@@ -12,6 +12,7 @@ Targets:
 | `jpeg` | JPEG files: probed and loaded leniently, strictly, with fast upsampling and at reduced scale, then auto-oriented and saved as JPEG | `tests/images/jpeg/*.jpg` |
 | `exif` | Raw EXIF (TIFF) blocks: parsed, every value read, edited and rebuilt; parsing must never throw at all | `tests/images/fuzz/exif-seeds/*.tiff` |
 | `icc` | ICC profiles: parsed (must never throw), then made into a ColorProfile (may fail only with an EgamiException) | `tests/images/icc/*/*.icc` |
+| `stream` | Any format through `RasterDecoder`, whole and incremental, with a region, a reduction, a band height and the sizes the bytes arrive in all picked from the input's hash, and previews drawn on the way; a strict incremental decode must give the whole decode's rows | `tests/images/fuzz/stream-seeds/*` |
 
 ## Running locally (Linux or WSL)
 

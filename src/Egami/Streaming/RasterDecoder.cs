@@ -63,6 +63,9 @@ public sealed class RasterDecoder : IDisposable
     /// <summary>Sets the decoder up over an opened source: the plan, the row stage and what <see cref="Info"/> says.</summary>
     private void Initialize(RowSource source, FormatInfo format)
     {
+        // The stored size is checked in every mode, before any row: a small file can declare billions of pixels, and streaming
+        // them would cost the time a full decode's allocation check saves.
+        _context.Limits.CheckFrameSize(source.StoredWidth, source.StoredHeight);
         _source = source;
         ReaderOptions options = _options;
         _plan = ReadPlan.Create(source.StoredWidth, source.StoredHeight, options.Region, options.MinimumSize, source.MaxNativeScale);
