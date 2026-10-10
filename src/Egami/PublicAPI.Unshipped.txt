@@ -1,6 +1,15 @@
 #nullable enable
 Egami.Pixels.AlphaKind.Premultiplied = 2 -> Egami.Pixels.AlphaKind
 Egami.Pixels.Gray16.ToRgba16() -> Egami.Pixels.Rgba16
+Egami.Pixels.GrayAlpha16
+Egami.Pixels.GrayAlpha16.A -> ushort
+Egami.Pixels.GrayAlpha16.Equals(Egami.Pixels.GrayAlpha16 other) -> bool
+Egami.Pixels.GrayAlpha16.GrayAlpha16() -> void
+Egami.Pixels.GrayAlpha16.GrayAlpha16(ushort l, ushort a) -> void
+Egami.Pixels.GrayAlpha16.L -> ushort
+Egami.Pixels.GrayAlpha16.ToRgba16() -> Egami.Pixels.Rgba16
+Egami.Pixels.GrayAlpha16.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.GrayAlpha16.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.IPixelType<TSelf>.FromRgba16(Egami.Pixels.Rgba16 value) -> TSelf
 Egami.Pixels.IPixelType<TSelf>.ToRgba16() -> Egami.Pixels.Rgba16
 Egami.Pixels.PixelChannelOrder.Abgr = 8 -> Egami.Pixels.PixelChannelOrder
@@ -12,5 +21,32 @@ Egami.Pixels.PixelChannelType.Packed = 5 -> Egami.Pixels.PixelChannelType
 Egami.Pixels.PixelLayoutInfo.BitsPerPixel.get -> int
 Egami.Pixels.PixelLayoutInfo.ChannelBits.get -> System.ReadOnlySpan<int>
 Egami.Pixels.PixelLayoutInfo.PixelLayoutInfo(Egami.Pixels.PixelChannelOrder channelOrder, Egami.Pixels.PixelChannelType channelType, Egami.Pixels.AlphaKind alpha, int bitsPerPixel, params System.ReadOnlySpan<int> channelBits) -> void
+Egami.Pixels.Rgb16
+Egami.Pixels.Rgb16.B -> ushort
+Egami.Pixels.Rgb16.Equals(Egami.Pixels.Rgb16 other) -> bool
+Egami.Pixels.Rgb16.G -> ushort
+Egami.Pixels.Rgb16.R -> ushort
+Egami.Pixels.Rgb16.Rgb16() -> void
+Egami.Pixels.Rgb16.Rgb16(ushort r, ushort g, ushort b) -> void
+Egami.Pixels.Rgb16.ToRgba16() -> Egami.Pixels.Rgba16
+Egami.Pixels.Rgb16.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Rgb16.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.Rgba16.ToRgba16() -> Egami.Pixels.Rgba16
+override Egami.Pixels.GrayAlpha16.Equals(object? obj) -> bool
+override Egami.Pixels.GrayAlpha16.GetHashCode() -> int
+override Egami.Pixels.GrayAlpha16.ToString() -> string!
+override Egami.Pixels.Rgb16.Equals(object? obj) -> bool
+override Egami.Pixels.Rgb16.GetHashCode() -> int
+override Egami.Pixels.Rgb16.ToString() -> string!
+static Egami.Pixels.GrayAlpha16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.GrayAlpha16
+static Egami.Pixels.GrayAlpha16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.GrayAlpha16
+static Egami.Pixels.GrayAlpha16.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.GrayAlpha16.operator !=(Egami.Pixels.GrayAlpha16 left, Egami.Pixels.GrayAlpha16 right) -> bool
+static Egami.Pixels.GrayAlpha16.operator ==(Egami.Pixels.GrayAlpha16 left, Egami.Pixels.GrayAlpha16 right) -> bool
+static Egami.Pixels.Rgb16.FromRgba16(Egami.Pixels.Rgba16 value) -> Egami.Pixels.Rgb16
+static Egami.Pixels.Rgb16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Rgb16
+static Egami.Pixels.Rgb16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Rgb16
+static Egami.Pixels.Rgb16.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Rgb16.operator !=(Egami.Pixels.Rgb16 left, Egami.Pixels.Rgb16 right) -> bool
+static Egami.Pixels.Rgb16.operator ==(Egami.Pixels.Rgb16 left, Egami.Pixels.Rgb16 right) -> bool
 static Egami.Pixels.Rgba16.FromRgba16(Egami.Pixels.Rgba16 value) -> Egami.Pixels.Rgba16

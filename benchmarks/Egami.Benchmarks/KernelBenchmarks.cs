@@ -46,6 +46,30 @@ public class PixelConvertBenchmarks
     }
 
     [Benchmark]
+    public void Rgb16ToRgb8()
+    {
+        PixelConvert.Convert(Source<Rgb16>(), Destination<Rgb8>());
+    }
+
+    [Benchmark]
+    public void Rgb8ToRgb16()
+    {
+        PixelConvert.Convert(Source<Rgb8>(), Destination<Rgb16>());
+    }
+
+    [Benchmark]
+    public void GrayAlpha16ToGrayAlpha8()
+    {
+        PixelConvert.Convert(Source<GrayAlpha16>(), Destination<GrayAlpha8>());
+    }
+
+    [Benchmark]
+    public void Rgb16ToRgba16()
+    {
+        PixelConvert.Convert(Source<Rgb16>(), Destination<Rgba16>());
+    }
+
+    [Benchmark]
     public void Gray8ToRgba8()
     {
         PixelConvert.Convert(Source<Gray8>(), Destination<Rgba8>());

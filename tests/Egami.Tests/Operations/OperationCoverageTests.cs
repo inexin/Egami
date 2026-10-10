@@ -94,6 +94,12 @@ public sealed class OperationCoverageTests : IDisposable
             Assert.Equal((expected.Width, expected.Height), (rgbResult.Width, rgbResult.Height));
             Assert.Equal((expected.Width, expected.Height), (grayResult.Width, grayResult.Height));
             Assert.Equal((expected.Width, expected.Height), (floatResult.Width, floatResult.Height));
+            using Raster<Rgb16> rgb16 = contiguous.As<Rgb16>();
+            using Raster<Rgb16> rgb16Result = rgb16.Derive(chain, Ct);
+            using Raster<GrayAlpha16> grayAlpha = contiguous.As<GrayAlpha16>();
+            using Raster<GrayAlpha16> grayAlphaResult = grayAlpha.Derive(chain, Ct);
+            Assert.Equal((expected.Width, expected.Height), (rgb16Result.Width, rgb16Result.Height));
+            Assert.Equal((expected.Width, expected.Height), (grayAlphaResult.Width, grayAlphaResult.Height));
         }
     }
 

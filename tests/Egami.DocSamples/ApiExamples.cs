@@ -398,6 +398,8 @@ public class ApiExamples
         GrayAlpha8 grayAlpha = new(gray.L, 128);
         Gray16 deep = Gray16.FromRgba8(orange);
         Rgba16 wide = new(65535, 32896, 0, 65535);
+        Rgb16 wideOpaque = Rgb16.FromRgba16(wide);           // exact: 16-bit to 16-bit never rounds
+        GrayAlpha16 deepMask = new(deep.L, 32768);
         RgbaF32 linear = RgbaF32.FromScaled(orange.ToScaled());
 
         Rgba8[] row = [orange, Rgba8.Transparent];
@@ -407,7 +409,7 @@ public class ApiExamples
 
         Assert.Equal(orange, wide.ToRgba8());
         Assert.Equal(255, bgr.R);
-        Assert.True(deep.L > 0 && linear.A == 1 && grayAlpha.A == 128);
+        Assert.True(deep.L > 0 && linear.A == 1 && grayAlpha.A == 128 && wideOpaque.G == 32896 && deepMask.A == 32768);
     }
 
     [Fact]

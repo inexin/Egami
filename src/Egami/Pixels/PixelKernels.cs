@@ -105,12 +105,14 @@ internal static class PixelKernels
         }
 
         // 8 and 16 bits.
-        if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(Rgba16)) || (typeof(TFrom) == typeof(Gray8) && typeof(TTo) == typeof(Gray16)))
+        if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(Rgba16)) || (typeof(TFrom) == typeof(Gray8) && typeof(TTo) == typeof(Gray16))
+            || (typeof(TFrom) == typeof(Rgb8) && typeof(TTo) == typeof(Rgb16)) || (typeof(TFrom) == typeof(GrayAlpha8) && typeof(TTo) == typeof(GrayAlpha16)))
         {
             return Widen(src, MemoryMarshal.Cast<byte, ushort>(dst), vectorBits) / TFrom.Layout.ChannelCount;
         }
 
-        if ((typeof(TFrom) == typeof(Rgba16) && typeof(TTo) == typeof(Rgba8)) || (typeof(TFrom) == typeof(Gray16) && typeof(TTo) == typeof(Gray8)))
+        if ((typeof(TFrom) == typeof(Rgba16) && typeof(TTo) == typeof(Rgba8)) || (typeof(TFrom) == typeof(Gray16) && typeof(TTo) == typeof(Gray8))
+            || (typeof(TFrom) == typeof(Rgb16) && typeof(TTo) == typeof(Rgb8)) || (typeof(TFrom) == typeof(GrayAlpha16) && typeof(TTo) == typeof(GrayAlpha8)))
         {
             return Narrow(MemoryMarshal.Cast<byte, ushort>(src), dst, vectorBits) / TFrom.Layout.ChannelCount;
         }

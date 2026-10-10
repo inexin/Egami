@@ -7,6 +7,11 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Pixel types
+
+- `Rgb16` and `GrayAlpha16`: 16-bit color without alpha and 16-bit gray with alpha, with exact conversions and SIMD to and
+  from `Rgb8` and `GrayAlpha8`.
+
 ### Pixel layouts
 
 - New enum values, for code that switches on them: `PixelChannelOrder.Argb`, `Abgr`, `Alpha` and `Cmyk`;

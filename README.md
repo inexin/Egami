@@ -229,8 +229,8 @@ first. Your own operation implements `IRasterOperation` and joins a chain with `
 | --- | --- | --- |
 | `Rgba8`, `Bgra8` | 8-bit color with alpha | Default working type, interop with Windows and GPU buffers |
 | `Rgb8`, `Bgr8` | 8-bit color | Photos without alpha |
-| `Gray8`, `Gray16`, `GrayAlpha8` | Gray | Grayscale images |
-| `Rgba16` | 16-bit color with alpha | 16-bit PNG |
+| `Gray8`, `Gray16`, `GrayAlpha8`, `GrayAlpha16` | Gray | Grayscale images |
+| `Rgba16`, `Rgb16` | 16-bit color, with or without alpha | 16-bit PNG |
 | `RgbaF32` | 32-bit float color with alpha | High-precision processing |
 
 Convert between them with `raster.As<TPixel>()` for a whole raster, or `PixelConvert.Convert` for a span. Pixel values are

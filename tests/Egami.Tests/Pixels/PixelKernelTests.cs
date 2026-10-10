@@ -40,6 +40,8 @@ public class PixelKernelTests
         (typeof(GrayAlpha8), typeof(Rgba8)), (typeof(GrayAlpha8), typeof(Bgra8)),
         (typeof(Rgba8), typeof(Rgba16)), (typeof(Gray8), typeof(Gray16)),
         (typeof(Rgba16), typeof(Rgba8)), (typeof(Gray16), typeof(Gray8)),
+        (typeof(Rgb8), typeof(Rgb16)), (typeof(GrayAlpha8), typeof(GrayAlpha16)),
+        (typeof(Rgb16), typeof(Rgb8)), (typeof(GrayAlpha16), typeof(GrayAlpha8)),
         (typeof(Rgba8), typeof(Gray8)), (typeof(Bgra8), typeof(Gray8)), (typeof(Rgb8), typeof(Gray8)), (typeof(Bgr8), typeof(Gray8)),
     ];
 
@@ -70,7 +72,7 @@ public class PixelKernelTests
     private static object? Invoke(string method, string from, string to, int bits)
     {
         MethodInfo m = typeof(PixelKernelTests).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Static)!;
-        Type[] all = [typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8), typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16)];
+        Type[] all = [typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8), typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(Rgb16), typeof(GrayAlpha16)];
         return m.MakeGenericMethod(all.Single(t => t.Name == from), all.Single(t => t.Name == to)).Invoke(null, [bits]);
     }
 

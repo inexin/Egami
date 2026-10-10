@@ -29,8 +29,8 @@ to work in, and rows come back as spans of it.
 | --- | --- | --- |
 | `Rgba8`, `Bgra8` | 8-bit color with alpha | The default working type; interop with Windows and GPU buffers |
 | `Rgb8`, `Bgr8` | 8-bit color | Photos without alpha |
-| `Gray8`, `Gray16`, `GrayAlpha8` | Gray | Grayscale images and masks |
-| `Rgba16` | 16-bit color with alpha | 16-bit PNG and PPM |
+| `Gray8`, `Gray16`, `GrayAlpha8`, `GrayAlpha16` | Gray | Grayscale images and masks |
+| `Rgba16`, `Rgb16` | 16-bit color, with or without alpha | 16-bit PNG and PPM |
 | `RgbaF32` | 32-bit float color with alpha | High-precision processing |
 
 Values are sRGB-encoded with straight (not premultiplied) alpha. `raster.As<TPixel>()` converts a whole raster;
