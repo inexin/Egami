@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Pnm;
 
@@ -12,7 +13,7 @@ namespace Egami.Formats.Pnm;
 /// Writes PBM, PGM, PPM and PAM, written from the Netpbm format pages. Maxval is 255 for 8-bit pixel types and 65535 for
 /// wider ones (1 for PBM). Comment text entries become # lines. Only the first frame is written.
 /// </summary>
-internal sealed class PnmWriter : IFormatWriter
+internal sealed class PnmWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly PnmWriter Instance = new();
 
@@ -23,60 +24,80 @@ internal sealed class PnmWriter : IFormatWriter
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        ArgumentNullException.ThrowIfNull(raster);
-        ArgumentNullException.ThrowIfNull(output);
-        PnmWriterOptions pnm = options as PnmWriterOptions ?? new PnmWriterOptions { StripMetadata = options.StripMetadata };
-        PixelLayoutInfo layout = TPixel.Layout;
-        bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
-        PnmKind kind = pnm.Kind != PnmKind.Auto ? pnm.Kind
-            : layout.ChannelType == PixelChannelType.Float32 && !layout.HasAlpha ? PnmKind.FloatMap
-            : layout.HasAlpha ? PnmKind.Pam : gray ? PnmKind.Graymap : PnmKind.Pixmap;
-        if (kind == PnmKind.FloatMap)
-        {
-            Pfm.Write(raster, output);
-            return;
-        }
-
-        bool wide = kind != PnmKind.Bitmap && layout.NeedsWideSamples;
-        int max = kind == PnmKind.Bitmap ? 1 : wide ? 65535 : 255;
-        bool plain = pnm.PlainText && kind != PnmKind.Pam;
-        int depth = kind switch
-        {
-            PnmKind.Bitmap or PnmKind.Graymap => 1,
-            PnmKind.Pixmap => 3,
-            _ => (gray ? 1 : 3) + (layout.HasAlpha ? 1 : 0),
-        };
-
-        using StreamBufferWriter writer = new(output);
-        WriteHeader(writer, raster, pnm, kind, plain, depth, max, gray);
-        Rows<TPixel> rows = new(raster, depth, wide);
-        try
-        {
-            for (int y = 0; y < raster.Height; y++)
-            {
-                if (kind == PnmKind.Bitmap)
-                {
-                    WriteBitmapRow(writer, rows.Gray(y), plain);
-                }
-                else if (wide)
-                {
-                    WriteSamples(writer, rows.Wide(y), plain);
-                }
-                else
-                {
-                    WriteSamples(writer, rows.Narrow(y), plain);
-                }
-            }
-        }
-        finally
-        {
-            rows.Dispose();
-        }
-
-        writer.Flush();
+        RowEncoding.Save(this, raster, output, options);
     }
 
-    private static void WriteHeader<TPixel>(StreamBufferWriter writer, Raster<TPixel> raster, PnmWriterOptions options, PnmKind kind, bool plain, int depth, int max, bool gray)
+    public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        PnmWriterOptions pnm = start.Options as PnmWriterOptions ?? new PnmWriterOptions { StripMetadata = start.Options.StripMetadata };
+        PixelLayoutInfo layout = TPixel.Layout;
+        PnmKind kind = pnm.Kind != PnmKind.Auto ? pnm.Kind
+            : layout.ChannelType == PixelChannelType.Float32 && !layout.HasAlpha ? PnmKind.FloatMap
+            : layout.HasAlpha ? PnmKind.Pam : layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha ? PnmKind.Graymap : PnmKind.Pixmap;
+        return kind == PnmKind.FloatMap ? Pfm.Start(output, start) : new Encoder<TPixel>(output, start, pnm, kind);
+    }
+
+    /// <summary>Writes the header, then each row as it comes.</summary>
+    private sealed class Encoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly StreamBufferWriter _writer;
+        private readonly PnmKind _kind;
+        private readonly bool _wide;
+        private readonly bool _plain;
+        private readonly Rows<TPixel> _rows;
+
+        internal Encoder(Stream output, EncodeStart<TPixel> start, PnmWriterOptions pnm, PnmKind kind)
+        {
+            PixelLayoutInfo layout = TPixel.Layout;
+            bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
+            _kind = kind;
+            _wide = kind != PnmKind.Bitmap && layout.NeedsWideSamples;
+            int max = kind == PnmKind.Bitmap ? 1 : _wide ? 65535 : 255;
+            _plain = pnm.PlainText && kind != PnmKind.Pam;
+            int depth = kind switch
+            {
+                PnmKind.Bitmap or PnmKind.Graymap => 1,
+                PnmKind.Pixmap => 3,
+                _ => (gray ? 1 : 3) + (layout.HasAlpha ? 1 : 0),
+            };
+
+            _writer = new StreamBufferWriter(output);
+            WriteHeader(_writer, start, pnm, kind, _plain, depth, max, gray);
+            _rows = new Rows<TPixel>(start.Width, depth, _wide);
+        }
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            if (_kind == PnmKind.Bitmap)
+            {
+                WriteBitmapRow(_writer, _rows.Gray(row), _plain);
+            }
+            else if (_wide)
+            {
+                WriteSamples(_writer, _rows.Wide(row), _plain);
+            }
+            else
+            {
+                WriteSamples(_writer, _rows.Narrow(row), _plain);
+            }
+        }
+
+        public override void Complete()
+        {
+            _writer.Flush();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _writer.Dispose();
+            _rows.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+
+    private static void WriteHeader<TPixel>(StreamBufferWriter writer, EncodeStart<TPixel> raster, PnmWriterOptions options, PnmKind kind, bool plain, int depth, int max, bool gray)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int magic = kind switch { PnmKind.Bitmap => 1, PnmKind.Graymap => 2, PnmKind.Pixmap => 3, _ => 7 };
@@ -239,62 +260,60 @@ internal sealed class PnmWriter : IFormatWriter
     }
 
     /// <summary>Converts rows to samples in pooled buffers.</summary>
-    private sealed class Rows<TPixel>(Raster<TPixel> raster, int depth, bool wide) : IDisposable
+    private sealed class Rows<TPixel>(int width, int depth, bool wide) : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        private readonly byte[] _narrow = ArrayPool<byte>.Shared.Rent(raster.Width * 4);
-        private readonly ushort[] _wide = wide ? ArrayPool<ushort>.Shared.Rent(raster.Width * 4) : [];
-        private readonly Rgba16[] _rgba16 = wide ? ArrayPool<Rgba16>.Shared.Rent(raster.Width) : [];
+        private readonly byte[] _narrow = ArrayPool<byte>.Shared.Rent(width * 4);
+        private readonly ushort[] _wide = wide ? ArrayPool<ushort>.Shared.Rent(width * 4) : [];
+        private readonly Rgba16[] _rgba16 = wide ? ArrayPool<Rgba16>.Shared.Rent(width) : [];
 
-        public ReadOnlySpan<byte> Gray(int y)
+        public ReadOnlySpan<byte> Gray(ReadOnlySpan<TPixel> row)
         {
-            Span<byte> gray = _narrow.AsSpan(0, raster.Width);
-            PixelConvert.Convert<TPixel, Gray8>(raster.Row(y), MemoryMarshal.Cast<byte, Gray8>(gray));
+            Span<byte> gray = _narrow.AsSpan(0, width);
+            PixelConvert.Convert<TPixel, Gray8>(row, MemoryMarshal.Cast<byte, Gray8>(gray));
             return gray;
         }
 
-        public ReadOnlySpan<byte> Narrow(int y)
+        public ReadOnlySpan<byte> Narrow(ReadOnlySpan<TPixel> row)
         {
-            int width = raster.Width;
             Span<byte> samples = _narrow.AsSpan(0, width * depth);
             switch (depth)
             {
                 case 1:
-                    PixelConvert.Convert<TPixel, Gray8>(raster.Row(y), MemoryMarshal.Cast<byte, Gray8>(samples));
+                    PixelConvert.Convert<TPixel, Gray8>(row, MemoryMarshal.Cast<byte, Gray8>(samples));
                     break;
                 case 2:
-                    PixelConvert.Convert<TPixel, GrayAlpha8>(raster.Row(y), MemoryMarshal.Cast<byte, GrayAlpha8>(samples));
+                    PixelConvert.Convert<TPixel, GrayAlpha8>(row, MemoryMarshal.Cast<byte, GrayAlpha8>(samples));
                     break;
                 case 3:
-                    PixelConvert.Convert<TPixel, Rgb8>(raster.Row(y), MemoryMarshal.Cast<byte, Rgb8>(samples));
+                    PixelConvert.Convert<TPixel, Rgb8>(row, MemoryMarshal.Cast<byte, Rgb8>(samples));
                     break;
                 default:
-                    PixelConvert.Convert<TPixel, Rgba8>(raster.Row(y), MemoryMarshal.Cast<byte, Rgba8>(samples));
+                    PixelConvert.Convert<TPixel, Rgba8>(row, MemoryMarshal.Cast<byte, Rgba8>(samples));
                     break;
             }
 
             return samples;
         }
 
-        public ReadOnlySpan<ushort> Wide(int y)
+        public ReadOnlySpan<ushort> Wide(ReadOnlySpan<TPixel> row)
         {
-            int width = raster.Width;
             Span<ushort> samples = _wide.AsSpan(0, width * depth);
 
             // 16-bit RGB and gray-alpha rows already hold the samples in file order.
             if ((depth == 3 && typeof(TPixel) == typeof(Rgb16)) || (depth == 2 && typeof(TPixel) == typeof(GrayAlpha16)))
             {
-                return MemoryMarshal.Cast<TPixel, ushort>(raster.Row(y));
+                return MemoryMarshal.Cast<TPixel, ushort>(row);
             }
 
             if (depth == 1)
             {
-                PixelConvert.Convert<TPixel, Gray16>(raster.Row(y), MemoryMarshal.Cast<ushort, Gray16>(samples));
+                PixelConvert.Convert<TPixel, Gray16>(row, MemoryMarshal.Cast<ushort, Gray16>(samples));
                 return samples;
             }
 
             Span<Rgba16> pixels = _rgba16.AsSpan(0, width);
-            PixelConvert.Convert<TPixel, Rgba16>(raster.Row(y), pixels);
+            PixelConvert.Convert<TPixel, Rgba16>(row, pixels);
             if (depth == 4)
             {
                 MemoryMarshal.Cast<Rgba16, ushort>(pixels).CopyTo(samples);
@@ -305,7 +324,7 @@ internal sealed class PnmWriter : IFormatWriter
             {
                 // Only gray types reach here, so the three color channels are equal.
                 Span<ushort> gray = _wide.AsSpan(width * 2, width);
-                PixelConvert.Convert<TPixel, Gray16>(raster.Row(y), MemoryMarshal.Cast<ushort, Gray16>(gray));
+                PixelConvert.Convert<TPixel, Gray16>(row, MemoryMarshal.Cast<ushort, Gray16>(gray));
                 for (int x = 0; x < width; x++)
                 {
                     samples[2 * x] = gray[x];

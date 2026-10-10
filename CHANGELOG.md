@@ -23,6 +23,10 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   whole file into memory first; results are the same. Seekable streams, plugins, progressive JPEG and files decoded into a buffer
   first keep 1.0's faster buffered path. `RasterDecoder.OpenAsync` with `ReadRowsAsync`, `ReadFrameAsync` and `NextFrameAsync`
   reads rows and frames from an asynchronous stream.
+- `RasterEncoder.Create` with `WriteRows`, `WriteFrame` and `Complete` (and their async forms) writes an image a band of rows or
+  a frame at a time, with the bytes `Save` writes. Options that need every pixel first throw `NotSupportedException` at
+  `Create`. `PngWriterOptions.FrameCount` declares an APNG's frame count for streams that cannot seek. `SaveAsync` now writes
+  each band out as it is encoded instead of holding the whole file.
 - A 32-bit BMP whose alpha byte is zero everywhere now loads into 16-bit and premultiplied pixel types without a lossy round trip
   when the stream can seek.
 - Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at

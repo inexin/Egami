@@ -107,6 +107,8 @@ Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
 Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
 Egami.DecodeStatus.NeedsInput = 1 -> Egami.DecodeStatus
 Egami.DecodeStatus.RowsAvailable = 0 -> Egami.DecodeStatus
+Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
+Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Pnm.PnmDetails.LittleEndian.get -> bool?
 Egami.Formats.Pnm.PnmDetails.LittleEndian.set -> void
 Egami.Formats.Pnm.PnmDetails.Scale.get -> double?
@@ -313,6 +315,21 @@ Egami.RasterDecoder.ReadRowsAsync<TPixel>(Egami.Raster<TPixel>! band, System.Thr
 Egami.RasterDecoder.RenderPreview<TPixel>(Egami.Raster<TPixel>! target) -> bool
 Egami.RasterDecoder.SkipRows(int count) -> int
 Egami.RasterDecoder.Status.get -> Egami.DecodeStatus
+Egami.RasterEncoder
+Egami.RasterEncoder<TPixel>
+Egami.RasterEncoder<TPixel>.Complete() -> void
+Egami.RasterEncoder<TPixel>.CompleteAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Egami.RasterEncoder<TPixel>.Dispose() -> void
+Egami.RasterEncoder<TPixel>.Format.get -> Egami.Formats.FormatInfo!
+Egami.RasterEncoder<TPixel>.FramesWritten.get -> int
+Egami.RasterEncoder<TPixel>.Height.get -> int
+Egami.RasterEncoder<TPixel>.RowsWritten.get -> int
+Egami.RasterEncoder<TPixel>.Width.get -> int
+Egami.RasterEncoder<TPixel>.WriteFrame(Egami.Raster<TPixel>! frame, Egami.Metadata.FrameMetadata? metadata = null) -> void
+Egami.RasterEncoder<TPixel>.WriteFrameAsync(Egami.Raster<TPixel>! frame, Egami.Metadata.FrameMetadata? metadata = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band) -> void
+Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band, int rows) -> void
+Egami.RasterEncoder<TPixel>.WriteRowsAsync(Egami.Raster<TPixel>! band, int rows, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 override Egami.Colors.Chromaticity.GetHashCode() -> int
 override Egami.Colors.ColorCodePoints.GetHashCode() -> int
 override Egami.Colors.ColorPrimaries.Equals(object? obj) -> bool
@@ -506,6 +523,8 @@ static Egami.RasterDecoder.Open(System.IO.Stream! stream, Egami.EgamiContext? co
 static Egami.RasterDecoder.Open(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.OpenAsync(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.RasterDecoder!>!
 static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
+static Egami.RasterEncoder.Create<TPixel>(string! path, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
+static Egami.RasterEncoder.Create<TPixel>(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
 ~override Egami.Colors.Chromaticity.Equals(object obj) -> bool
 ~override Egami.Colors.Chromaticity.ToString() -> string
 ~override Egami.Colors.ColorCodePoints.Equals(object obj) -> bool

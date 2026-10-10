@@ -500,10 +500,9 @@ public abstract partial class Raster
     public async Task SaveAsync(Stream stream, FormatInfo format, WriterOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(format);
         cancellationToken.ThrowIfCancellationRequested();
-        using PooledBufferStream buffer = new();
-        Save(buffer, format, options);
-        await stream.WriteAsync(buffer.Written, cancellationToken).ConfigureAwait(false);
+        await FormatPipeline.SaveAsync(this, stream, format, options ?? WriterOptions.Default, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Encodes the raster in the named format and writes it asynchronously.</summary>

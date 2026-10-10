@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Quantization;
+using Egami.Streaming;
 
 namespace Egami.Formats.Bmp;
 
@@ -13,53 +14,91 @@ namespace Egami.Formats.Bmp;
 /// 1, 2, 4 or 8-bit palette. An ICC profile switches to a BITMAPV5HEADER with the profile after the pixels. Only the first frame
 /// is written.
 /// </summary>
-internal sealed class BmpWriter : IFormatWriter
+internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly BmpWriter Instance = new();
 
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        ArgumentNullException.ThrowIfNull(raster);
-        ArgumentNullException.ThrowIfNull(output);
-        BmpWriterOptions bmp = options as BmpWriterOptions ?? new BmpWriterOptions { StripMetadata = options.StripMetadata };
-        BmpPixelFormat layout = bmp.PixelFormat != BmpPixelFormat.Auto ? bmp.PixelFormat : !TPixel.Layout.HasAlpha || IsOpaque(raster) ? BmpPixelFormat.Bgr24 : BmpPixelFormat.Bgra32;
-        int bits = layout switch
-        {
-            BmpPixelFormat.Indexed1 => 1,
-            BmpPixelFormat.Indexed2 => 2,
-            BmpPixelFormat.Indexed4 => 4,
-            BmpPixelFormat.Indexed8 => 8,
-            BmpPixelFormat.Bgr24 => 24,
-            _ => 32,
-        };
+        RowEncoding.Save(this, raster, output, options);
+    }
 
-        int width = raster.Width;
-        int height = raster.Height;
-        long stride = (((long)width * bits) + 31) / 32 * 4;
-        long imageSize = stride * height;
-        ReadOnlyMemory<byte> profile = bmp.StripMetadata ? default : raster.Metadata.IccProfile;
-        int headerSize = !profile.IsEmpty ? 124 : layout == BmpPixelFormat.Bgra32 ? 108 : 40;
-
-        BuiltPalette? palette = null;
-        byte[]? indices = null;
-        try
+    public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        BmpWriterOptions bmp = start.Options as BmpWriterOptions ?? new BmpWriterOptions { StripMetadata = start.Options.StripMetadata };
+        if (bmp.PixelFormat == BmpPixelFormat.Auto && TPixel.Layout.HasAlpha)
         {
-            if (bits <= 8)
+            start.Refuse("BMP", "Choosing 24 or 32 bits by whether any pixel is transparent", "Set BmpWriterOptions.PixelFormat to Bgr24 or Bgra32.");
+        }
+
+        if (bmp.PixelFormat is BmpPixelFormat.Indexed1 or BmpPixelFormat.Indexed2 or BmpPixelFormat.Indexed4 or BmpPixelFormat.Indexed8)
+        {
+            start.Refuse("BMP", "Building a palette", "Use Bgr24 or Bgra32.");
+        }
+
+        return new Encoder<TPixel>(output, start, bmp);
+    }
+
+    /// <summary>
+    /// Writes the headers, then rows: bottom-up in file order for Save, put in place on a seekable stream when streaming, and
+    /// top-down (a negative height) on a stream that cannot seek.
+    /// </summary>
+    private sealed class Encoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly Stream _output;
+        private readonly StreamBufferWriter _writer;
+        private readonly int _width;
+        private readonly int _bits;
+        private readonly int _stride;
+        private readonly bool _topDown;
+        private readonly ReadOnlyMemory<byte> _profile;
+        private readonly BottomUpRows? _rows;
+        private readonly BuiltPalette? _palette;
+        private readonly byte[]? _indices;
+        private int _y;
+
+        internal Encoder(Stream output, EncodeStart<TPixel> start, BmpWriterOptions bmp)
+        {
+            _output = output;
+            Raster<TPixel>? raster = start.Whole;
+            BmpPixelFormat layout = bmp.PixelFormat != BmpPixelFormat.Auto ? bmp.PixelFormat : !TPixel.Layout.HasAlpha || IsOpaque(raster!) ? BmpPixelFormat.Bgr24 : BmpPixelFormat.Bgra32;
+            _bits = layout switch
             {
-                (palette, indices) = MapToPalette(raster, bmp.Palette, 1 << bits);
+                BmpPixelFormat.Indexed1 => 1,
+                BmpPixelFormat.Indexed2 => 2,
+                BmpPixelFormat.Indexed4 => 4,
+                BmpPixelFormat.Indexed8 => 8,
+                BmpPixelFormat.Bgr24 => 24,
+                _ => 32,
+            };
+
+            int width = _width = start.Width;
+            int height = start.Height;
+            long stride = (((long)width * _bits) + 31) / 32 * 4;
+            long imageSize = stride * height;
+            _profile = bmp.StripMetadata ? default : start.Metadata.IccProfile;
+            int headerSize = !_profile.IsEmpty ? 124 : layout == BmpPixelFormat.Bgra32 ? 108 : 40;
+            _topDown = start.Streaming && !start.Seekable;
+
+            if (_bits <= 8)
+            {
+                (_palette, _indices) = MapToPalette(raster!, bmp.Palette, 1 << _bits);
             }
 
-            int paletteBytes = (palette?.Colors.Length ?? 0) * 4;
+            int paletteBytes = (_palette?.Colors.Length ?? 0) * 4;
             long offset = 14 + headerSize + paletteBytes;
-            long fileSize = offset + imageSize + profile.Length;
+            long fileSize = offset + imageSize + _profile.Length;
             if (fileSize > uint.MaxValue)
             {
-                throw new ArgumentException($"A {width}×{height} image at {bits} bits a pixel is too large for BMP, whose sizes are 32-bit.", nameof(raster));
+                throw new ArgumentException($"A {width}×{height} image at {_bits} bits a pixel is too large for BMP, whose sizes are 32-bit.");
             }
 
-            using StreamBufferWriter writer = new(output);
-            Span<byte> header = writer.GetSpan((int)offset);
+            _stride = (int)stride;
+            _writer = new StreamBufferWriter(output);
+            Span<byte> header = _writer.GetSpan((int)offset);
             header[..(int)offset].Clear();
             header[0] = (byte)'B';
             header[1] = (byte)'M';
@@ -68,15 +107,15 @@ internal sealed class BmpWriter : IFormatWriter
             Span<byte> info = header.Slice(14, headerSize);
             BinaryPrimitives.WriteUInt32LittleEndian(info, (uint)headerSize);
             BinaryPrimitives.WriteInt32LittleEndian(info[4..], width);
-            BinaryPrimitives.WriteInt32LittleEndian(info[8..], height);
+            BinaryPrimitives.WriteInt32LittleEndian(info[8..], _topDown ? -height : height);
             BinaryPrimitives.WriteUInt16LittleEndian(info[12..], 1);
-            BinaryPrimitives.WriteUInt16LittleEndian(info[14..], (ushort)bits);
+            BinaryPrimitives.WriteUInt16LittleEndian(info[14..], (ushort)_bits);
             BinaryPrimitives.WriteUInt32LittleEndian(info[16..], layout == BmpPixelFormat.Bgra32 ? 3u : 0u);
             BinaryPrimitives.WriteUInt32LittleEndian(info[20..], (uint)imageSize);
-            (int xppm, int yppm) = PixelsPerMeter(raster.Metadata.Resolution);
+            (int xppm, int yppm) = PixelsPerMeter(start.Metadata.Resolution);
             BinaryPrimitives.WriteInt32LittleEndian(info[24..], xppm);
             BinaryPrimitives.WriteInt32LittleEndian(info[28..], yppm);
-            BinaryPrimitives.WriteUInt32LittleEndian(info[32..], (uint)(palette?.Colors.Length ?? 0));
+            BinaryPrimitives.WriteUInt32LittleEndian(info[32..], (uint)(_palette?.Colors.Length ?? 0));
             if (headerSize >= 108)
             {
                 if (layout == BmpPixelFormat.Bgra32)
@@ -87,44 +126,107 @@ internal sealed class BmpWriter : IFormatWriter
                     BinaryPrimitives.WriteUInt32LittleEndian(info[52..], 0xFF00_0000);
                 }
 
-                BinaryPrimitives.WriteUInt32LittleEndian(info[56..], profile.IsEmpty ? BmpReader.SpaceSrgb : BmpReader.SpaceEmbedded);
+                BinaryPrimitives.WriteUInt32LittleEndian(info[56..], _profile.IsEmpty ? BmpReader.SpaceSrgb : BmpReader.SpaceEmbedded);
             }
 
             if (headerSize == 124)
             {
                 BinaryPrimitives.WriteUInt32LittleEndian(info[108..], 4); // LCS_GM_IMAGES, the perceptual intent
                 BinaryPrimitives.WriteUInt32LittleEndian(info[112..], (uint)(headerSize + paletteBytes + imageSize));
-                BinaryPrimitives.WriteUInt32LittleEndian(info[116..], (uint)profile.Length);
+                BinaryPrimitives.WriteUInt32LittleEndian(info[116..], (uint)_profile.Length);
             }
 
-            if (palette is not null)
+            if (_palette is not null)
             {
                 Span<byte> entries = header.Slice(14 + headerSize, paletteBytes);
-                for (int i = 0; i < palette.Colors.Length; i++)
+                for (int i = 0; i < _palette.Colors.Length; i++)
                 {
-                    Rgba8 c = palette.Colors[i];
+                    Rgba8 c = _palette.Colors[i];
                     entries[4 * i] = c.B;
                     entries[(4 * i) + 1] = c.G;
                     entries[(4 * i) + 2] = c.R;
                 }
             }
 
-            writer.Advance((int)offset);
-            WriteRows(writer, raster, bits, (int)stride, indices);
-            if (!profile.IsEmpty)
+            _writer.Advance((int)offset);
+            if (start.Streaming && !_topDown)
             {
-                profile.Span.CopyTo(writer.GetSpan(profile.Length));
-                writer.Advance(profile.Length);
+                _rows = new BottomUpRows(output, _writer, height, stride, seek: true);
+            }
+        }
+
+        public override void WriteRow(ReadOnlySpan<TPixel> source)
+        {
+            Span<byte> row = _writer.GetSpan(_stride)[.._stride];
+            Pack(source, row);
+            if (_rows is null)
+            {
+                _writer.Advance(_stride);
+            }
+            else
+            {
+                // Put in place: the packed row goes straight to its offset, not through the buffer.
+                _rows.Write(_writer, row);
+            }
+        }
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            for (_y = raster.Height - 1; _y >= 0; _y--)
+            {
+                WriteRow(raster.Row(_y));
+                if ((_y & 63) == 0)
+                {
+                    yield return _y;
+                }
+            }
+        }
+
+        public override void Complete()
+        {
+            _writer.Flush();
+            _rows?.End();
+            if (!_profile.IsEmpty)
+            {
+                _output.Write(_profile.Span);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _writer.Dispose();
+            _palette?.Release();
+            if (_indices is not null)
+            {
+                ArrayPool<byte>.Shared.Return(_indices);
             }
 
-            writer.Flush();
+            base.Dispose(disposing);
         }
-        finally
+
+        private void Pack(ReadOnlySpan<TPixel> source, Span<byte> row)
         {
-            palette?.Release();
-            if (indices is not null)
+            int width = _width;
+            switch (_bits)
             {
-                ArrayPool<byte>.Shared.Return(indices);
+                case 24:
+                    PixelConvert.Convert<TPixel, Bgr8>(source, MemoryMarshal.Cast<byte, Bgr8>(row[..(width * 3)]));
+                    row[(width * 3)..].Clear();
+                    break;
+                case 32:
+                    PixelConvert.Convert<TPixel, Bgra8>(source, MemoryMarshal.Cast<byte, Bgra8>(row));
+                    break;
+                default:
+                    // Only Save maps to a palette, so the row's place in the image is known.
+                    row.Clear();
+                    ReadOnlySpan<byte> indices = _indices.AsSpan(_y * width, width);
+                    int perByte = 8 / _bits;
+                    for (int x = 0; x < width; x++)
+                    {
+                        row[x / perByte] |= (byte)(indices[x] << (8 - (_bits * ((x % perByte) + 1))));
+                    }
+
+                    break;
             }
         }
     }
@@ -179,38 +281,6 @@ internal sealed class BmpWriter : IFormatWriter
         finally
         {
             ArrayPool<Rgba8>.Shared.Return(row);
-        }
-    }
-
-    private static void WriteRows<TPixel>(StreamBufferWriter writer, Raster<TPixel> raster, int bits, int stride, byte[]? indices)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        int width = raster.Width;
-        for (int y = raster.Height - 1; y >= 0; y--)
-        {
-            Span<byte> row = writer.GetSpan(stride)[..stride];
-            switch (bits)
-            {
-                case 24:
-                    PixelConvert.Convert<TPixel, Bgr8>(raster.Row(y), MemoryMarshal.Cast<byte, Bgr8>(row[..(width * 3)]));
-                    row[(width * 3)..].Clear();
-                    break;
-                case 32:
-                    PixelConvert.Convert<TPixel, Bgra8>(raster.Row(y), MemoryMarshal.Cast<byte, Bgra8>(row));
-                    break;
-                default:
-                    row.Clear();
-                    ReadOnlySpan<byte> source = indices.AsSpan(y * width, width);
-                    int perByte = 8 / bits;
-                    for (int x = 0; x < width; x++)
-                    {
-                        row[x / perByte] |= (byte)(source[x] << (8 - (bits * ((x % perByte) + 1))));
-                    }
-
-                    break;
-            }
-
-            writer.Advance(stride);
         }
     }
 

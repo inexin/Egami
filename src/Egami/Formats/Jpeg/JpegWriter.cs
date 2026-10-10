@@ -6,6 +6,7 @@ using System.Text;
 
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Jpeg;
 
@@ -15,7 +16,7 @@ namespace Egami.Formats.Jpeg;
 /// and the Huffman coder. With optimized tables the quantized blocks are kept for a second, coding pass. Only the first frame is
 /// written.
 /// </summary>
-internal sealed class JpegWriter : IFormatWriter
+internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly JpegWriter Instance = new();
 
@@ -32,27 +33,72 @@ internal sealed class JpegWriter : IFormatWriter
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        ArgumentNullException.ThrowIfNull(raster);
-        ArgumentNullException.ThrowIfNull(output);
-        JpegWriterOptions jpeg = options as JpegWriterOptions ?? new JpegWriterOptions { StripMetadata = options.StripMetadata };
-        if (raster.Width > ushort.MaxValue || raster.Height > ushort.MaxValue)
+        RowEncoding.Save(this, raster, output, options);
+    }
+
+    public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        JpegWriterOptions jpeg = start.Options as JpegWriterOptions ?? new JpegWriterOptions { StripMetadata = start.Options.StripMetadata };
+        if (start.Width > ushort.MaxValue || start.Height > ushort.MaxValue)
         {
-            throw new InvalidOperationException($"JPEG holds at most 65,535 × 65,535 pixels; the image is {raster.Width} × {raster.Height}.");
+            throw new InvalidOperationException($"JPEG holds at most 65,535 × 65,535 pixels; the image is {start.Width} × {start.Height}.");
         }
 
-        using Encoder<TPixel> encoder = new(raster, jpeg);
-        using JpegBitWriter writer = new(output);
-        writer.Marker(JpegMarker.Soi);
-        WriteJfif(writer, jpeg.StripMetadata ? null : raster.Metadata.Resolution);
-        if (!jpeg.StripMetadata)
+        return new RowWriter<TPixel>(output, start, jpeg);
+    }
+
+    /// <summary>
+    /// Writes the markers before the scan at once; Save then codes the whole image, and a streamed encode codes each MCU row
+    /// once its rows have come (keeping them all for the second pass when tables are optimized).
+    /// </summary>
+    private sealed class RowWriter<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly Encoder<TPixel> _encoder;
+        private readonly JpegBitWriter _writer;
+
+        internal RowWriter(Stream output, EncodeStart<TPixel> start, JpegWriterOptions jpeg)
         {
-            WriteMetadata(writer, raster.Metadata);
+            _encoder = new(start, jpeg);
+            _writer = new(output);
+            _writer.Marker(JpegMarker.Soi);
+            WriteJfif(_writer, jpeg.StripMetadata ? null : start.Metadata.Resolution);
+            if (!jpeg.StripMetadata)
+            {
+                WriteMetadata(_writer, start.Metadata);
+            }
+
+            _encoder.WriteHeaders(_writer);
+            if (start.Streaming)
+            {
+                _encoder.StartStream(_writer);
+            }
         }
 
-        encoder.WriteHeaders(writer);
-        encoder.WriteScan(writer);
-        writer.Marker(JpegMarker.Eoi);
-        writer.Flush();
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            _encoder.StreamRow(_writer, row);
+        }
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            return _encoder.WriteScan(_writer);
+        }
+
+        public override void Complete()
+        {
+            _encoder.EndScan(_writer);
+            _writer.Marker(JpegMarker.Eoi);
+            _writer.Flush();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _encoder.Dispose();
+            _writer.Dispose();
+            base.Dispose(disposing);
+        }
     }
 
     private static void Segment(JpegBitWriter writer, byte marker, ReadOnlySpan<byte> payload)
@@ -259,7 +305,7 @@ internal sealed class JpegWriter : IFormatWriter
     private sealed class Encoder<TPixel> : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        private readonly Raster<TPixel> _raster;
+        private readonly RowAt _rowAt;
         private readonly JpegWriterOptions _options;
         private readonly bool _gray;
         private readonly int _width;
@@ -277,13 +323,20 @@ internal sealed class JpegWriter : IFormatWriter
         private readonly ushort[][] _quant;
         private readonly JpegHuffmanCodes[] _dc;
         private readonly JpegHuffmanCodes[] _ac;
+        private readonly int[] _predictors;
+        private readonly TPixel[]? _window;
+        private readonly List<short[]>? _kept;
+        private short[]? _blocks;
+        private int _mcu;
+        private int _restart;
+        private int _rowsIn;
 
-        internal Encoder(Raster<TPixel> raster, JpegWriterOptions options)
+        internal Encoder(EncodeStart<TPixel> start, JpegWriterOptions options)
         {
-            _raster = raster;
+            Raster<TPixel>? raster = start.Whole;
             _options = options;
-            _width = raster.Width;
-            _height = raster.Height;
+            _width = start.Width;
+            _height = start.Height;
             _gray = options.ColorType == JpegColorType.Gray || TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
             (_maxH, _maxV) = _gray ? (1, 1) : options.Subsampling switch
             {
@@ -303,12 +356,28 @@ internal sealed class JpegWriter : IFormatWriter
 
             _main = CreateWorkspace();
             _planes = _main.Planes;
+            _predictors = new int[_planes.Length];
 
-            // Large images transform MCU rows on other threads while this one Huffman-codes the rows before them.
-            _workers = raster.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
-                ? Math.Min(raster.Context.MaxParallelism - 1, MaxWorkers)
+            // Large images transform MCU rows on other threads while this one Huffman-codes the rows before them. Streamed rows
+            // come one MCU row at a time, so there is nothing to transform ahead.
+            _workers = raster is not null && start.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
+                ? Math.Min(start.Context.MaxParallelism - 1, MaxWorkers)
                 : 0;
+            if (raster is not null)
+            {
+                _rowAt = y => raster.Row(y);
+            }
+            else
+            {
+                int rows = 8 * _maxV;
+                TPixel[] window = _window = ArrayPool<TPixel>.Shared.Rent(_width * rows);
+                _rowAt = y => window.AsSpan((y % rows) * _width, _width);
+                _kept = options.OptimizeHuffman ? [] : null;
+            }
         }
+
+        /// <summary>Returns image row <paramref name="y"/>.</summary>
+        private delegate ReadOnlySpan<TPixel> RowAt(int y);
 
         /// <summary>Images with fewer pixels than this are encoded on one thread.</summary>
         private const long ParallelPixels = 1 << 20;
@@ -349,46 +418,119 @@ internal sealed class JpegWriter : IFormatWriter
             Segment(writer, JpegMarker.Sof0, sof);
         }
 
-        /// <summary>Writes DHT, DRI, SOS and the entropy-coded data, after a counting pass when tables are optimized.</summary>
-        internal void WriteScan(JpegBitWriter writer)
+        /// <summary>
+        /// Writes DHT, DRI, SOS and the entropy-coded data, after a counting pass when tables are optimized, yielding after each MCU
+        /// row.
+        /// </summary>
+        internal IEnumerable<int> WriteScan(JpegBitWriter writer)
         {
             using RowProducer rows = new(this, keepAll: _options.OptimizeHuffman);
             if (_options.OptimizeHuffman)
             {
-                Span<long> counts = stackalloc long[4 * 256];
-                counts.Clear();
-                Span<int> predictors = stackalloc int[_planes.Length];
-                predictors.Clear();
-                int mcu = 0;
-                for (int my = 0; my < _mcusY; my++)
-                {
-                    short[] row = rows.Get(my);
-                    int b = 0;
-                    for (int mx = 0; mx < _mcusX; mx++, mcu++)
-                    {
-                        if (RestartDue(mcu))
-                        {
-                            predictors.Clear();
-                        }
+                Optimize(rows.Get);
+            }
 
-                        for (int i = 0; i < _planes.Length; i++)
-                        {
-                            int t = _planes[i].Table;
-                            for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
-                            {
-                                JpegBlockCoder.Count(row.AsSpan(b * 64, 64), ref predictors[i], counts.Slice(t * 512, 256), counts.Slice((t * 512) + 256, 256));
-                            }
-                        }
-                    }
-                }
+            BeginScan(writer);
+            for (int my = 0; my < _mcusY; my++)
+            {
+                CodeRow(writer, rows.Get(my));
+                rows.Release(my);
+                yield return my;
+            }
+        }
 
-                for (int t = 0; t < _dc.Length; t++)
+        /// <summary>Starts a streamed scan: with the standard tables its markers go out now, before any row.</summary>
+        internal void StartStream(JpegBitWriter writer)
+        {
+            if (!_options.OptimizeHuffman)
+            {
+                BeginScan(writer);
+            }
+        }
+
+        /// <summary>
+        /// Takes the next image row of a streamed encode. Each full MCU row (and the last, padded) is transformed, then coded, or
+        /// kept for the counting pass when tables are optimized.
+        /// </summary>
+        internal void StreamRow(JpegBitWriter writer, ReadOnlySpan<TPixel> row)
+        {
+            int rows = 8 * _maxV;
+            row.CopyTo(_window.AsSpan((_rowsIn % rows) * _width, _width));
+            _rowsIn++;
+            if (_rowsIn % rows != 0 && _rowsIn != _height)
+            {
+                return;
+            }
+
+            int length = BlocksPerRow() * 64;
+            short[] blocks = _kept is not null ? ArrayPool<short>.Shared.Rent(length) : _blocks ??= ArrayPool<short>.Shared.Rent(length);
+            TransformRow((_rowsIn - 1) / rows, blocks, _main);
+            if (_kept is not null)
+            {
+                _kept.Add(blocks);
+            }
+            else
+            {
+                CodeRow(writer, blocks);
+            }
+        }
+
+        /// <summary>Ends the scan: a streamed encode with optimized tables counts and codes its kept rows now.</summary>
+        internal void EndScan(JpegBitWriter writer)
+        {
+            if (_kept is not null)
+            {
+                Optimize(my => _kept[my]);
+                BeginScan(writer);
+                foreach (short[] row in _kept)
                 {
-                    _dc[t] = JpegHuffmanCodes.Optimal(counts.Slice(t * 512, 256));
-                    _ac[t] = JpegHuffmanCodes.Optimal(counts.Slice((t * 512) + 256, 256));
+                    CodeRow(writer, row);
                 }
             }
 
+            writer.Align();
+        }
+
+        /// <summary>Counts every symbol of every MCU row and replaces the standard tables with optimal ones.</summary>
+        private void Optimize(Func<int, short[]> rows)
+        {
+            Span<long> counts = stackalloc long[4 * 256];
+            counts.Clear();
+            Span<int> predictors = stackalloc int[_planes.Length];
+            predictors.Clear();
+            int mcu = 0;
+            for (int my = 0; my < _mcusY; my++)
+            {
+                short[] row = rows(my);
+                int b = 0;
+                for (int mx = 0; mx < _mcusX; mx++, mcu++)
+                {
+                    if (RestartDue(mcu))
+                    {
+                        predictors.Clear();
+                    }
+
+                    for (int i = 0; i < _planes.Length; i++)
+                    {
+                        int t = _planes[i].Table;
+                        for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
+                        {
+                            JpegBlockCoder.Count(row.AsSpan(b * 64, 64), ref predictors[i], counts.Slice(t * 512, 256), counts.Slice((t * 512) + 256, 256));
+                        }
+                    }
+                }
+            }
+
+            for (int t = 0; t < _dc.Length; t++)
+            {
+                _dc[t] = JpegHuffmanCodes.Optimal(counts.Slice(t * 512, 256));
+                _ac[t] = JpegHuffmanCodes.Optimal(counts.Slice((t * 512) + 256, 256));
+            }
+        }
+
+        /// <summary>Writes DHT, DRI and SOS, and starts coding from the first MCU.</summary>
+        private void BeginScan(JpegBitWriter writer)
+        {
             for (int t = 0; t < _dc.Length; t++)
             {
                 WriteHuffman(writer, 0, t, _dc[t]);
@@ -412,43 +554,61 @@ internal sealed class JpegWriter : IFormatWriter
 
             sos[^2] = 63;
             Segment(writer, JpegMarker.Sos, sos);
+            Array.Clear(_predictors);
+            _mcu = 0;
+            _restart = 0;
+        }
 
-            int[] predictorsForScan = new int[_planes.Length];
-            int mcuForScan = 0;
-            int restart = 0;
-            for (int my = 0; my < _mcusY; my++)
+        /// <summary>Huffman-codes one transformed MCU row, with a restart marker where one is due.</summary>
+        private void CodeRow(JpegBitWriter writer, short[] row)
+        {
+            // Locals, not fields, in the loop: the coder is the slowest stage of a parallel encode.
+            int[] predictors = _predictors;
+            Plane[] planes = _planes;
+            JpegHuffmanCodes[] dc = _dc;
+            JpegHuffmanCodes[] ac = _ac;
+            int mcu = _mcu;
+            int b = 0;
+            for (int mx = 0; mx < _mcusX; mx++, mcu++)
             {
-                short[] row = rows.Get(my);
-                int b = 0;
-                for (int mx = 0; mx < _mcusX; mx++, mcuForScan++)
+                if (RestartDue(mcu))
                 {
-                    if (RestartDue(mcuForScan))
-                    {
-                        writer.Align();
-                        writer.Marker((byte)(JpegMarker.Rst0 + restart));
-                        restart = (restart + 1) & 7;
-                        Array.Clear(predictorsForScan);
-                    }
-
-                    for (int i = 0; i < _planes.Length; i++)
-                    {
-                        int t = _planes[i].Table;
-                        for (int n = 0; n < _planes[i].BlocksPerMcu; n++, b++)
-                        {
-                            JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictorsForScan[i], _dc[t], _ac[t]);
-                        }
-                    }
+                    writer.Align();
+                    writer.Marker((byte)(JpegMarker.Rst0 + _restart));
+                    _restart = (_restart + 1) & 7;
+                    Array.Clear(predictors);
                 }
 
-                rows.Release(my);
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    int t = planes[i].Table;
+                    for (int n = 0; n < planes[i].BlocksPerMcu; n++, b++)
+                    {
+                        JpegBlockCoder.Encode(writer, row.AsSpan(b * 64, 64), ref predictors[i], dc[t], ac[t]);
+                    }
+                }
             }
 
-            writer.Align();
+            _mcu = mcu;
         }
 
         public void Dispose()
         {
             _main.Dispose();
+            if (_window is not null)
+            {
+                ArrayPool<TPixel>.Shared.Return(_window);
+            }
+
+            if (_blocks is not null)
+            {
+                ArrayPool<short>.Shared.Return(_blocks);
+            }
+
+            foreach (short[] row in _kept ?? [])
+            {
+                ArrayPool<short>.Shared.Return(row);
+            }
         }
 
         private static void WriteHuffman(JpegBitWriter writer, int tableClass, int slot, JpegHuffmanCodes codes)
@@ -687,7 +847,7 @@ internal sealed class JpegWriter : IFormatWriter
                 Span<byte> lumaRow = luma.Samples.AsSpan(r * luma.Stride, _paddedWidth);
                 if (_gray && _options.Background is null && TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha)
                 {
-                    PixelConvert.Convert<TPixel, Gray8>(_raster.Row(y), MemoryMarshal.Cast<byte, Gray8>(lumaRow[.._width]));
+                    PixelConvert.Convert<TPixel, Gray8>(_rowAt(y), MemoryMarshal.Cast<byte, Gray8>(lumaRow[.._width]));
                     lumaRow[_width..].Fill(lumaRow[_width - 1]);
                     continue;
                 }
@@ -720,7 +880,7 @@ internal sealed class JpegWriter : IFormatWriter
         private ReadOnlySpan<byte> RgbRow(int y, Workspace workspace)
         {
             byte[] converted = workspace.Rgb;
-            ReadOnlySpan<TPixel> source = _raster.Row(y);
+            ReadOnlySpan<TPixel> source = _rowAt(y);
             if (_options.Background is Rgba8 background)
             {
                 Span<Rgba8> rgba = MemoryMarshal.Cast<byte, Rgba8>(workspace.Rgba.AsSpan(0, _width * 4));

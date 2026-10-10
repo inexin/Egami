@@ -388,7 +388,7 @@ public sealed class Raster<TPixel> : Raster
         }
     }
 
-    private void ThrowIfDisposed()
+    internal void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
     }

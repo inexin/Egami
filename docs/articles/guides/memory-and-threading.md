@@ -47,6 +47,20 @@ such as a request body, no longer holds the whole file while it decodes:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#async)]
 
+`RasterEncoder` writes the other way: a band of rows or a frame at a time, into a file or stream, with the bytes `Save` writes.
+Options that need every pixel before the first byte, such as an automatic palette, PNG's `Reduce` or choosing alpha by looking
+at the pixels, throw `NotSupportedException` at `Create` and say what to set instead. BMP and TGA store rows bottom-up: on a
+stream that cannot seek they are written top-down, as is run-length TGA, and an APNG there needs `PngWriterOptions.FrameCount`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#encode-rows)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#encode-frames)]
+
+`WriteRowsAsync` and `CompleteAsync` write each band out asynchronously, and `SaveAsync` now does the same instead of
+encoding the whole file into memory first:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#encode-async)]
+
 ## Pixel memory
 
 Pixel memory never lives on the garbage-collected heap as large arrays. `PooledPixelMemorySource.Shared` hands out pooled arrays

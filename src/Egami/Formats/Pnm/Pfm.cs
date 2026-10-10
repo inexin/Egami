@@ -6,6 +6,7 @@ using System.Text;
 
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Pnm;
 
@@ -52,51 +53,87 @@ internal static class Pfm
         return Read<TPixel>(input, options, ReadHeader(input));
     }
 
-    /// <summary>Writes RGB types as PF and gray types as Pf, little-endian with scale −1, as Netpbm and ImageMagick do.</summary>
-    internal static void Write<TPixel>(Raster<TPixel> raster, Stream output)
+    /// <summary>
+    /// Starts writing RGB types as PF and gray types as Pf, little-endian with scale −1, as Netpbm and ImageMagick do. Rows are
+    /// stored bottom row first, so streaming needs a seekable output.
+    /// </summary>
+    internal static RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        bool gray = TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha or PixelChannelOrder.Alpha;
-        int channels = gray ? 1 : 3;
-        using StreamBufferWriter writer = new(output);
-        string header = string.Create(CultureInfo.InvariantCulture, $"{(gray ? "Pf" : "PF")}\n{raster.Width} {raster.Height}\n-1.0\n");
-        Encoding.ASCII.GetBytes(header, writer.GetSpan(header.Length));
-        writer.Advance(header.Length);
-
-        float[] row = ArrayPool<float>.Shared.Rent(raster.Width * channels);
-        try
+        if (start.Streaming && !start.Seekable)
         {
-            Span<float> samples = row.AsSpan(0, raster.Width * channels);
+            throw new NotSupportedException("PFM stores rows bottom-up, so streaming it needs a seekable stream.");
+        }
+
+        return new Encoder<TPixel>(output, start);
+    }
+
+    private sealed class Encoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly StreamBufferWriter _writer;
+        private readonly bool _gray;
+        private readonly int _width;
+        private readonly float[] _row;
+        private readonly BottomUpRows _rows;
+
+        internal Encoder(Stream output, EncodeStart<TPixel> start)
+        {
+            _gray = TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha or PixelChannelOrder.Alpha;
+            _width = start.Width;
+            int channels = _gray ? 1 : 3;
+            _writer = new StreamBufferWriter(output);
+            string header = string.Create(CultureInfo.InvariantCulture, $"{(_gray ? "Pf" : "PF")}\n{start.Width} {start.Height}\n-1.0\n");
+            Encoding.ASCII.GetBytes(header, _writer.GetSpan(header.Length));
+            _writer.Advance(header.Length);
+            _row = ArrayPool<float>.Shared.Rent(start.Width * channels);
+            _rows = new BottomUpRows(output, _writer, start.Height, (long)start.Width * channels * 4, start.Streaming);
+        }
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            Span<float> samples = _row.AsSpan(0, _width * (_gray ? 1 : 3));
+            if (_gray)
+            {
+                PixelConvert.Convert(row, MemoryMarshal.Cast<float, GrayF32>(samples));
+            }
+            else
+            {
+                PixelConvert.Convert(row, MemoryMarshal.Cast<float, RgbF32>(samples));
+            }
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<float, uint>(samples), MemoryMarshal.Cast<float, uint>(samples));
+            }
+
+            _rows.Write(_writer, MemoryMarshal.AsBytes(samples));
+        }
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
             for (int y = raster.Height - 1; y >= 0; y--)
             {
-                if (gray)
+                WriteRow(raster.Row(y));
+                if ((y & 63) == 0)
                 {
-                    PixelConvert.Convert(raster.Row(y), MemoryMarshal.Cast<float, GrayF32>(samples));
+                    yield return y;
                 }
-                else
-                {
-                    PixelConvert.Convert(raster.Row(y), MemoryMarshal.Cast<float, RgbF32>(samples));
-                }
-
-                Span<byte> target = writer.GetSpan(samples.Length * 4)[..(samples.Length * 4)];
-                if (BitConverter.IsLittleEndian)
-                {
-                    MemoryMarshal.AsBytes(samples).CopyTo(target);
-                }
-                else
-                {
-                    BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<float, uint>(samples), MemoryMarshal.Cast<byte, uint>(target));
-                }
-
-                writer.Advance(target.Length);
             }
         }
-        finally
+
+        public override void Complete()
         {
-            ArrayPool<float>.Shared.Return(row);
+            _writer.Flush();
+            _rows.End();
         }
 
-        writer.Flush();
+        protected override void Dispose(bool disposing)
+        {
+            _writer.Dispose();
+            ArrayPool<float>.Shared.Return(_row);
+            base.Dispose(disposing);
+        }
     }
 
     private static Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options, Header header)

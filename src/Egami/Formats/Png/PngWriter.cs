@@ -7,6 +7,7 @@ using System.Text;
 
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Png;
 
@@ -14,7 +15,7 @@ namespace Egami.Formats.Png;
 /// Writes PNG, non-interlaced, from the W3C PNG Specification (Third Edition), and APNG for rasters with more than one frame. It
 /// streams: one row at a time is filtered and compressed, and IDAT (or fdAT) chunks are written as compressed data fills them.
 /// </summary>
-internal sealed class PngWriter : IFormatWriter
+internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly PngWriter Instance = new();
 
@@ -23,82 +24,305 @@ internal sealed class PngWriter : IFormatWriter
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        ArgumentNullException.ThrowIfNull(raster);
-        ArgumentNullException.ThrowIfNull(output);
-        PngWriterOptions png = options as PngWriterOptions ?? new PngWriterOptions { StripMetadata = options.StripMetadata };
-        bool animated = raster.FrameCount > 1 && !png.FirstFrameOnly;
-        if (png.ColorType == PngColorType.Palette && NeedsQuantizing(raster, png, animated))
+        RowEncoding.Save(this, raster, output, options);
+    }
+
+    public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        PngWriterOptions png = start.Options as PngWriterOptions ?? new PngWriterOptions { StripMetadata = start.Options.StripMetadata };
+        Raster<TPixel>? raster = start.Whole;
+        if (png.ColorType == PngColorType.Palette)
         {
-            using Raster<Rgba8> quantized = Quantize(raster, png, animated);
-            Write(quantized, output, png);
-            return;
+            start.Refuse("PNG", "Building a palette", "Choose another ColorType.");
+        }
+        else if (png.Reduce && png.ColorType is null && png.BitDepth is null)
+        {
+            start.Refuse("PNG", "Reduce", "Leave Reduce off, or set ColorType and BitDepth.");
         }
 
-        Plan plan = PlanOutput(raster, png, animated);
-        PngHeader header = new(raster.Width, raster.Height, plan.BitDepth, plan.ColorType, Interlaced: false);
-        bool strip = png.StripMetadata;
-        PngDetails? original = raster.Metadata.FormatDetails as PngDetails;
-        bool sameFormat = original is not null && original.ColorType == plan.ColorType && original.BitDepth == plan.BitDepth
-            && (plan.ColorType != PngColorType.Palette || original.Palette.Span.SequenceEqual(plan.Palette));
-
-        output.Write(Signature);
-        Span<byte> ihdr = stackalloc byte[13];
-        BinaryPrimitives.WriteUInt32BigEndian(ihdr, (uint)header.Width);
-        BinaryPrimitives.WriteUInt32BigEndian(ihdr[4..], (uint)header.Height);
-        ihdr[8] = (byte)header.BitDepth;
-        ihdr[9] = (byte)header.ColorType;
-        WriteChunk(output, PngChunkType.Ihdr, ihdr);
-
-        if (!strip)
+        bool animated = raster is not null && raster.FrameCount > 1 && !png.FirstFrameOnly;
+        if (raster is not null && png.ColorType == PngColorType.Palette && NeedsQuantizing(raster, png, animated))
         {
-            WriteColorChunks(output, raster.Metadata, original);
-            WriteMetadataChunks(output, raster.Metadata, original);
-            WriteKeptChunks(output, original, PngChunkPosition.BeforePalette, sameFormat);
-        }
-
-        if (plan.ColorType == PngColorType.Palette)
-        {
-            byte[] plte = new byte[plan.Palette.Length * 3];
-            for (int i = 0; i < plan.Palette.Length; i++)
+            Raster<Rgba8> quantized = Quantize(raster, png, animated);
+            try
             {
-                plte[i * 3] = plan.Palette[i].R;
-                plte[(i * 3) + 1] = plan.Palette[i].G;
-                plte[(i * 3) + 2] = plan.Palette[i].B;
+                return new Quantized<TPixel>(quantized, Start(output, RowEncoding.Whole(quantized, png)));
             }
-
-            WriteChunk(output, PngChunkType.Plte, plte);
-            int transparent = Array.FindLastIndex(plan.Palette, c => c.A != 255) + 1;
-            if (transparent > 0)
+            catch
             {
-                WriteChunk(output, PngChunkType.Trns, [.. plan.Palette[..transparent].Select(c => c.A)]);
+                quantized.Dispose();
+                throw;
             }
         }
 
-        if (!strip)
+        return new Encoder<TPixel>(output, start, png, PlanOutput(raster, png, animated), animated);
+    }
+
+    /// <summary>
+    /// Writes everything before the image data at once, then a still image's rows into IDAT as they come, or frames as fcTL with
+    /// IDAT or fdAT; then the chunks after the image data and IEND.
+    /// </summary>
+    private sealed class Encoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly Stream _output;
+        private readonly PngWriterOptions _options;
+        private readonly PngHeader _header;
+        private readonly Plan _plan;
+        private readonly PngDetails? _original;
+        private readonly bool _sameFormat;
+        private readonly RasterMetadata _metadata;
+        private readonly int? _frameCount;
+        private readonly bool _seekable;
+        private readonly bool _animated;
+        private readonly bool _hasAlpha;
+        private readonly bool _streaming;
+        private readonly IPixelMemorySource _memory;
+        private ImageData<TPixel>? _image;
+        private int _frames;
+        private uint _sequence;
+        private long _actlAt = -1;
+        private Frame<TPixel>? _previous;
+        private PixelPlane<TPixel>? _kept;
+        private TPixel[]? _patch;
+
+        internal Encoder(Stream output, EncodeStart<TPixel> start, PngWriterOptions png, Plan plan, bool animated)
         {
-            WriteKeptChunks(output, original, PngChunkPosition.BeforeImageData, sameFormat);
+            _output = output;
+            _options = png;
+            _plan = plan;
+            _metadata = start.Metadata;
+            _animated = animated;
+            _frameCount = start.Whole?.FrameCount ?? png.FrameCount;
+            _seekable = start.Seekable;
+            _streaming = start.Streaming;
+            _memory = start.Context.Memory;
+            _header = new(start.Width, start.Height, plan.BitDepth, plan.ColorType, Interlaced: false);
+            _hasAlpha = plan.ColorType is PngColorType.Rgba or PngColorType.GrayAlpha && TPixel.Layout.HasAlpha;
+            bool strip = png.StripMetadata;
+            _original = start.Metadata.FormatDetails as PngDetails;
+            _sameFormat = _original is not null && _original.ColorType == plan.ColorType && _original.BitDepth == plan.BitDepth
+                && (plan.ColorType != PngColorType.Palette || _original.Palette.Span.SequenceEqual(plan.Palette));
+
+            output.Write(Signature);
+            Span<byte> ihdr = stackalloc byte[13];
+            BinaryPrimitives.WriteUInt32BigEndian(ihdr, (uint)_header.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(ihdr[4..], (uint)_header.Height);
+            ihdr[8] = (byte)_header.BitDepth;
+            ihdr[9] = (byte)_header.ColorType;
+            WriteChunk(output, PngChunkType.Ihdr, ihdr);
+
+            if (!strip)
+            {
+                WriteColorChunks(output, start.Metadata, _original);
+                WriteMetadataChunks(output, start.Metadata, _original);
+                WriteKeptChunks(output, _original, PngChunkPosition.BeforePalette, _sameFormat);
+            }
+
+            if (plan.ColorType == PngColorType.Palette)
+            {
+                byte[] plte = new byte[plan.Palette.Length * 3];
+                for (int i = 0; i < plan.Palette.Length; i++)
+                {
+                    plte[i * 3] = plan.Palette[i].R;
+                    plte[(i * 3) + 1] = plan.Palette[i].G;
+                    plte[(i * 3) + 2] = plan.Palette[i].B;
+                }
+
+                WriteChunk(output, PngChunkType.Plte, plte);
+                int transparent = Array.FindLastIndex(plan.Palette, c => c.A != 255) + 1;
+                if (transparent > 0)
+                {
+                    WriteChunk(output, PngChunkType.Trns, [.. plan.Palette[..transparent].Select(c => c.A)]);
+                }
+            }
+
+            if (!strip)
+            {
+                WriteKeptChunks(output, _original, PngChunkPosition.BeforeImageData, _sameFormat);
+            }
         }
 
-        if (animated)
+        /// <summary>Gets whether frames make an APNG: not when only the first frame is wanted, or one frame is declared.</summary>
+        public override bool Animates => !_options.FirstFrameOnly && _options.FrameCount != 1;
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
         {
-            WriteAnimation(raster, output, png, header, plan);
-        }
-        else
-        {
-            using IdatChunkStream idat = new(output, png.MaxIdatSize, PngChunkType.Idat, null);
-            WriteImageData(y => raster.Row(y), idat, png, header, plan);
+            _image ??= new ImageData<TPixel>(new IdatChunkStream(_output, _options.MaxIdatSize, PngChunkType.Idat, null), _options, _header, _plan, ownsData: true);
+            _image.Row(row);
         }
 
-        if (!strip)
+        /// <summary>
+        /// Writes one frame. Frame 0 is the IDAT image (so the default image is always a frame). Each later frame stores the
+        /// rectangle that differs from the frame before; it replaces those pixels (blend Source), or, when it has alpha, its
+        /// changed pixels are all opaque and enough are unchanged, it is drawn Over with the unchanged ones made transparent, which
+        /// compresses better. Either way the canvas then equals the frame, so no frame needs disposing.
+        /// </summary>
+        public override void WriteFrame(Frame<TPixel> frame)
         {
-            WriteKeptChunks(output, original, PngChunkPosition.AfterImageData, sameFormat);
+            int i = _frames;
+            if (i == 0)
+            {
+                WriteAnimationControl();
+            }
+
+            Rect bounds = i == 0 ? new Rect(0, 0, _header.Width, _header.Height) : Changed(_previous!, frame);
+            bool over = i > 0 && _hasAlpha && PreferOver(_previous!, frame, bounds);
+            WriteFrameControl(_output, _sequence++, bounds, frame.Metadata.Delay, over);
+            PngHeader frameHeader = _header with { Width = bounds.Width, Height = bounds.Height };
+            using IdatChunkStream data = i == 0
+                ? new(_output, _options.MaxIdatSize, PngChunkType.Idat, null)
+                : new(_output, _options.MaxIdatSize, PngChunkType.Fdat, () => _sequence++);
+            Frame<TPixel> previous = _previous ?? frame;
+            TPixel[] patch = _patch ??= ArrayPool<TPixel>.Shared.Rent(_header.Width);
+            WriteImageData(y =>
+            {
+                Span<TPixel> row = frame.Row(bounds.Y + y).Slice(bounds.X, bounds.Width);
+                if (!over)
+                {
+                    return row;
+                }
+
+                // Drawn Over: pixels the frame before already shows become fully transparent.
+                Span<TPixel> below = previous.Row(bounds.Y + y).Slice(bounds.X, bounds.Width);
+                Span<TPixel> result = patch.AsSpan(0, bounds.Width);
+                for (int x = 0; x < result.Length; x++)
+                {
+                    result[x] = Same(row[x], below[x]) ? default : row[x];
+                }
+
+                return result;
+            }, data, _options, frameHeader, _plan);
+            Keep(frame);
+            _frames++;
         }
 
-        WriteChunk(output, PngChunkType.Iend, []);
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            if (!_animated)
+            {
+                foreach (int y in base.WriteWhole(raster))
+                {
+                    yield return y;
+                }
+
+                yield break;
+            }
+
+            for (int i = 0; i < raster.FrameCount; i++)
+            {
+                WriteFrame(raster.Frames[i]);
+                yield return i;
+            }
+        }
+
+        public override void Complete()
+        {
+            if (_image is not null)
+            {
+                _image.Finish();
+            }
+            else if (_frames > 0)
+            {
+                if (_frameCount is int declared && declared != _frames)
+                {
+                    throw new InvalidOperationException($"PngWriterOptions.FrameCount says {declared} frames, but {_frames} were written.");
+                }
+
+                if (_actlAt >= 0)
+                {
+                    // The count was not known before the first frame: fill it in now.
+                    long end = _output.Position;
+                    _output.Position = _actlAt;
+                    WriteAnimationChunk(_frames);
+                    _output.Position = end;
+                }
+            }
+
+            if (!_options.StripMetadata)
+            {
+                WriteKeptChunks(_output, _original, PngChunkPosition.AfterImageData, _sameFormat);
+            }
+
+            WriteChunk(_output, PngChunkType.Iend, []);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _image?.Dispose();
+            _kept?.Dispose();
+            if (_patch is not null)
+            {
+                ArrayPool<TPixel>.Shared.Return(_patch);
+            }
+
+            base.Dispose(disposing);
+        }
+
+        /// <summary>Writes acTL with the frame count, or a placeholder filled in at the end on a seekable stream.</summary>
+        private void WriteAnimationControl()
+        {
+            if (_frameCount is null)
+            {
+                if (!_seekable)
+                {
+                    throw new InvalidOperationException("An APNG holds its frame count before the first frame; on a stream that cannot seek, set PngWriterOptions.FrameCount.");
+                }
+
+                _actlAt = _output.Position;
+            }
+
+            WriteAnimationChunk(_frameCount ?? 0);
+        }
+
+        private void WriteAnimationChunk(int frames)
+        {
+            Span<byte> actl = stackalloc byte[8];
+            BinaryPrimitives.WriteUInt32BigEndian(actl, (uint)frames);
+            BinaryPrimitives.WriteUInt32BigEndian(actl[4..], (uint)Math.Max(0, _metadata.LoopCount));
+            WriteChunk(_output, PngChunkType.Actl, actl);
+        }
+
+        /// <summary>Keeps the frame just written to compare the next one with: Save's own frame, or a copy when streaming.</summary>
+        private void Keep(Frame<TPixel> frame)
+        {
+            if (_streaming)
+            {
+                _kept ??= PixelPlane.Allocate<TPixel>(_header.Width, _header.Height, _memory);
+                for (int y = 0; y < _header.Height; y++)
+                {
+                    frame.Row(y).CopyTo(_kept.Row(y));
+                }
+
+                _previous ??= new Frame<TPixel>(_kept, new FrameMetadata());
+                return;
+            }
+
+            _previous = frame;
+        }
+    }
+
+    /// <summary>Writes the image Save was given after mapping it to a built palette, as Rgba8 that fits the palette exactly.</summary>
+    private sealed class Quantized<TPixel>(Raster<Rgba8> quantized, RowEncoder<Rgba8> inner) : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        public override void WriteRow(ReadOnlySpan<TPixel> row) => throw new NotSupportedException();
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster) => inner.WriteWhole(quantized);
+
+        public override void Complete() => inner.Complete();
+
+        protected override void Dispose(bool disposing)
+        {
+            inner.Dispose();
+            quantized.Dispose();
+            base.Dispose(disposing);
+        }
     }
 
     /// <summary>Chooses the color type, bit depth and palette (PNG design, "Choosing the color type").</summary>
-    private static Plan PlanOutput<TPixel>(Raster<TPixel> raster, PngWriterOptions options, bool animated)
+    private static Plan PlanOutput<TPixel>(Raster<TPixel>? raster, PngWriterOptions options, bool animated)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         PixelLayoutInfo layout = TPixel.Layout;
@@ -120,14 +344,14 @@ internal sealed class PngWriter : IFormatWriter
                 return new Plan(colorType, depth, []);
             }
 
-            Scan scan = Scan.Of(raster, animated);
+            Scan scan = Scan.Of(raster!, animated);
             if (scan.Colors is null || scan.Colors.Count > 1 << depth)
             {
                 throw new InvalidOperationException(
                     $"A palette PNG at bit depth {depth} holds at most {1 << depth} colors, but the image has {(scan.Colors is null ? "more than 256" : scan.Colors.Count.ToString(System.Globalization.CultureInfo.InvariantCulture))}.");
             }
 
-            return new Plan(PngColorType.Palette, depth, scan.PaletteOrdered(OriginalPalette(raster), 1 << depth));
+            return new Plan(PngColorType.Palette, depth, scan.PaletteOrdered(OriginalPalette(raster!), 1 << depth));
         }
 
         if (options.BitDepth is int bitDepth)
@@ -141,7 +365,7 @@ internal sealed class PngWriter : IFormatWriter
             return new Plan(natural, wide ? 16 : 8, []);
         }
 
-        return Scan.Of(raster, animated).Smallest(OriginalPalette(raster));
+        return Scan.Of(raster!, animated).Smallest(OriginalPalette(raster!));
     }
 
     /// <summary>Returns whether a palette output needs a built palette: more colors (or 16-bit values) than the depth holds.</summary>
@@ -208,64 +432,6 @@ internal sealed class PngWriter : IFormatWriter
         }
 
         return new Raster<Rgba8>(result, raster.Metadata, raster.Context);
-    }
-
-    /// <summary>
-    /// Writes acTL and every frame. Frame 0 is the IDAT image (so the default image is always a frame). Each later frame stores
-    /// the rectangle that differs from the frame before; it replaces those pixels (blend Source), or, when it has alpha, its
-    /// changed pixels are all opaque and enough are unchanged, it is drawn Over with the unchanged ones made transparent, which
-    /// compresses better. Either way the canvas then equals the frame, so no frame needs disposing.
-    /// </summary>
-    private static void WriteAnimation<TPixel>(Raster<TPixel> raster, Stream output, PngWriterOptions options, PngHeader header, Plan plan)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        int frames = raster.FrameCount;
-        Span<byte> actl = stackalloc byte[8];
-        BinaryPrimitives.WriteUInt32BigEndian(actl, (uint)frames);
-        BinaryPrimitives.WriteUInt32BigEndian(actl[4..], (uint)Math.Max(0, raster.Metadata.LoopCount));
-        WriteChunk(output, PngChunkType.Actl, actl);
-
-        uint sequence = 0;
-        bool hasAlpha = plan.ColorType is PngColorType.Rgba or PngColorType.GrayAlpha
-            && TPixel.Layout.HasAlpha;
-        TPixel[] patch = ArrayPool<TPixel>.Shared.Rent(raster.Width);
-        try
-        {
-            for (int i = 0; i < frames; i++)
-            {
-                Frame<TPixel> frame = raster.Frames[i];
-                Rect bounds = i == 0 ? new Rect(0, 0, raster.Width, raster.Height) : Changed(raster.Frames[i - 1], frame);
-                bool over = i > 0 && hasAlpha && PreferOver(raster.Frames[i - 1], frame, bounds);
-                WriteFrameControl(output, sequence++, bounds, frame.Metadata.Delay, over);
-                PngHeader frameHeader = header with { Width = bounds.Width, Height = bounds.Height };
-                using IdatChunkStream data = i == 0
-                    ? new(output, options.MaxIdatSize, PngChunkType.Idat, null)
-                    : new(output, options.MaxIdatSize, PngChunkType.Fdat, () => sequence++);
-                Frame<TPixel> previous = raster.Frames[Math.Max(0, i - 1)];
-                WriteImageData(y =>
-                {
-                    Span<TPixel> row = frame.Row(bounds.Y + y).Slice(bounds.X, bounds.Width);
-                    if (!over)
-                    {
-                        return row;
-                    }
-
-                    // Drawn Over: pixels the frame before already shows become fully transparent.
-                    Span<TPixel> below = previous.Row(bounds.Y + y).Slice(bounds.X, bounds.Width);
-                    Span<TPixel> result = patch.AsSpan(0, bounds.Width);
-                    for (int x = 0; x < result.Length; x++)
-                    {
-                        result[x] = Same(row[x], below[x]) ? default : row[x];
-                    }
-
-                    return result;
-                }, data, options, frameHeader, plan);
-            }
-        }
-        finally
-        {
-            ArrayPool<TPixel>.Shared.Return(patch);
-        }
     }
 
     private static void WriteFrameControl(Stream output, uint sequence, Rect bounds, TimeSpan delay, bool over)
@@ -425,79 +591,122 @@ internal sealed class PngWriter : IFormatWriter
     private static void WriteImageData<TPixel>(RowGetter<TPixel> rows, IdatChunkStream idat, PngWriterOptions options, PngHeader header, Plan plan)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        bool lowDepthOrPalette = header.BitDepth < 8 || header.ColorType == PngColorType.Palette;
-        PngFilterMode mode = options.Filter == PngFilterMode.Adaptive && lowDepthOrPalette ? PngFilterMode.None : options.Filter;
-        ZLibCompressionStrategy strategy = options.CompressionStrategy switch
+        using ImageData<TPixel> data = new(idat, options, header, plan, ownsData: false);
+        for (int y = 0; y < header.Height; y++)
         {
-            PngCompressionStrategy.Auto => ZLibCompressionStrategy.Default,
-            PngCompressionStrategy.Filtered => ZLibCompressionStrategy.Filtered,
-            PngCompressionStrategy.HuffmanOnly => ZLibCompressionStrategy.HuffmanOnly,
-            PngCompressionStrategy.RunLengthEncoding => ZLibCompressionStrategy.RunLengthEncoding,
-            _ => ZLibCompressionStrategy.Default,
-        };
+            data.Row(rows(y));
+        }
 
-        int rowBytes = (int)header.RowBytes(header.Width);
-        int stride = header.FilterStride;
-        int candidates = mode == PngFilterMode.Adaptive ? 5 : 1;
-        byte[] current = ArrayPool<byte>.Shared.Rent(rowBytes);
-        byte[] previous = ArrayPool<byte>.Shared.Rent(rowBytes);
-        byte[] filtered = ArrayPool<byte>.Shared.Rent(rowBytes * candidates);
-        RowPacker<TPixel> packer = new(header, plan);
-        try
+        data.Finish();
+    }
+
+    /// <summary>One image's rows being filtered and compressed into IDAT or fdAT chunks, a row at a time.</summary>
+    private sealed class ImageData<TPixel> : IDisposable
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly IdatChunkStream _idat;
+        private readonly bool _ownsData;
+        private readonly PngFilterMode _mode;
+        private readonly int _rowBytes;
+        private readonly int _stride;
+        private readonly byte[] _filtered;
+        private readonly RowPacker<TPixel> _packer;
+        private readonly ZLibStream _zlib;
+        private byte[] _current;
+        private byte[] _previous;
+        private bool _disposed;
+
+        internal ImageData(IdatChunkStream idat, PngWriterOptions options, PngHeader header, Plan plan, bool ownsData)
         {
-            previous.AsSpan(0, rowBytes).Clear();
-            Span<byte> filterByte = stackalloc byte[1];
-            using (ZLibStream zlib = new(idat, new ZLibCompressionOptions { CompressionLevel = options.CompressionLevel, CompressionStrategy = strategy }, leaveOpen: true))
+            _idat = idat;
+            _ownsData = ownsData;
+            bool lowDepthOrPalette = header.BitDepth < 8 || header.ColorType == PngColorType.Palette;
+            _mode = options.Filter == PngFilterMode.Adaptive && lowDepthOrPalette ? PngFilterMode.None : options.Filter;
+            ZLibCompressionStrategy strategy = options.CompressionStrategy switch
             {
-                for (int y = 0; y < header.Height; y++)
+                PngCompressionStrategy.Auto => ZLibCompressionStrategy.Default,
+                PngCompressionStrategy.Filtered => ZLibCompressionStrategy.Filtered,
+                PngCompressionStrategy.HuffmanOnly => ZLibCompressionStrategy.HuffmanOnly,
+                PngCompressionStrategy.RunLengthEncoding => ZLibCompressionStrategy.RunLengthEncoding,
+                _ => ZLibCompressionStrategy.Default,
+            };
+
+            _rowBytes = (int)header.RowBytes(header.Width);
+            _stride = header.FilterStride;
+            int candidates = _mode == PngFilterMode.Adaptive ? 5 : 1;
+            _current = ArrayPool<byte>.Shared.Rent(_rowBytes);
+            _previous = ArrayPool<byte>.Shared.Rent(_rowBytes);
+            _filtered = ArrayPool<byte>.Shared.Rent(_rowBytes * candidates);
+            _packer = new(header, plan);
+            _previous.AsSpan(0, _rowBytes).Clear();
+            _zlib = new(idat, new ZLibCompressionOptions { CompressionLevel = options.CompressionLevel, CompressionStrategy = strategy }, leaveOpen: true);
+        }
+
+        public void Row(ReadOnlySpan<TPixel> source)
+        {
+            int rowBytes = _rowBytes;
+            Span<byte> row = _current.AsSpan(0, rowBytes);
+            _packer.Pack(source, row);
+            ReadOnlySpan<byte> above = _previous.AsSpan(0, rowBytes);
+            byte filter;
+            ReadOnlySpan<byte> chosen;
+            if (_mode == PngFilterMode.Adaptive)
+            {
+                filter = 0;
+                long best = long.MaxValue;
+                for (byte f = 0; f < 5; f++)
                 {
-                    Span<byte> row = current.AsSpan(0, rowBytes);
-                    packer.Pack(rows(y), row);
-                    ReadOnlySpan<byte> above = previous.AsSpan(0, rowBytes);
-                    byte filter;
-                    ReadOnlySpan<byte> chosen;
-                    if (mode == PngFilterMode.Adaptive)
+                    Span<byte> candidate = _filtered.AsSpan(f * rowBytes, rowBytes);
+                    PngFilterEncoder.Filter(f, row, above, _stride, candidate);
+                    long sum = PngFilterEncoder.SumOfAbsolutes(candidate, PixelKernels.HardwareBits);
+                    if (sum < best)
                     {
-                        filter = 0;
-                        long best = long.MaxValue;
-                        for (byte f = 0; f < 5; f++)
-                        {
-                            Span<byte> candidate = filtered.AsSpan(f * rowBytes, rowBytes);
-                            PngFilterEncoder.Filter(f, row, above, stride, candidate);
-                            long sum = PngFilterEncoder.SumOfAbsolutes(candidate, PixelKernels.HardwareBits);
-                            if (sum < best)
-                            {
-                                best = sum;
-                                filter = f;
-                            }
-                        }
-
-                        chosen = filtered.AsSpan(filter * rowBytes, rowBytes);
+                        best = sum;
+                        filter = f;
                     }
-                    else
-                    {
-                        filter = (byte)(mode - PngFilterMode.None);
-                        Span<byte> destination = filtered.AsSpan(0, rowBytes);
-                        PngFilterEncoder.Filter(filter, row, above, stride, destination);
-                        chosen = destination;
-                    }
-
-                    // Stream.WriteByte allocates a one-byte array on every call, so the filter byte goes through a span.
-                    filterByte[0] = filter;
-                    zlib.Write(filterByte);
-                    zlib.Write(chosen);
-                    (current, previous) = (previous, current);
                 }
+
+                chosen = _filtered.AsSpan(filter * rowBytes, rowBytes);
+            }
+            else
+            {
+                filter = (byte)(_mode - PngFilterMode.None);
+                Span<byte> destination = _filtered.AsSpan(0, rowBytes);
+                PngFilterEncoder.Filter(filter, row, above, _stride, destination);
+                chosen = destination;
             }
 
-            idat.Finish();
+            // Stream.WriteByte allocates a one-byte array on every call, so the filter byte goes through a span.
+            Span<byte> filterByte = [filter];
+            _zlib.Write(filterByte);
+            _zlib.Write(chosen);
+            (_current, _previous) = (_previous, _current);
         }
-        finally
+
+        /// <summary>Ends the compressed data and writes the last chunk.</summary>
+        public void Finish()
         {
-            ArrayPool<byte>.Shared.Return(current);
-            ArrayPool<byte>.Shared.Return(previous);
-            ArrayPool<byte>.Shared.Return(filtered);
-            packer.Dispose();
+            _zlib.Dispose();
+            _idat.Finish();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _zlib.Dispose();
+            ArrayPool<byte>.Shared.Return(_current);
+            ArrayPool<byte>.Shared.Return(_previous);
+            ArrayPool<byte>.Shared.Return(_filtered);
+            _packer.Dispose();
+            if (_ownsData)
+            {
+                _idat.Dispose();
+            }
         }
     }
 

@@ -60,6 +60,7 @@ public enum PngCompressionStrategy
 public sealed class PngWriterOptions : WriterOptions
 {
     private readonly int? _bitDepth;
+    private readonly int? _frameCount;
 
     private readonly int _compressionLevel = 5;
     private readonly int _maxIdatSize = 64 * 1024;
@@ -85,6 +86,19 @@ public sealed class PngWriterOptions : WriterOptions
     /// written as an APNG, which viewers without APNG support show as its first frame.
     /// </summary>
     public bool FirstFrameOnly { get; init; }
+
+    /// <summary>
+    /// Gets how many frames an APNG written with <see cref="RasterEncoder{TPixel}.WriteFrame"/> will have, or
+    /// <see langword="null"/> to count them. APNG stores the count before the first frame: a seekable stream has it filled in at
+    /// <see cref="RasterEncoder{TPixel}.Complete"/>, but a stream that cannot seek needs it here. Save counts the raster's frames
+    /// and ignores this.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is less than 1.</exception>
+    public int? FrameCount
+    {
+        get => _frameCount;
+        init => _frameCount = value is null or >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "An APNG has at least one frame.");
+    }
 
     /// <summary>
     /// Gets the bit depth to write, or <see langword="null"/> for the color type's natural depth.

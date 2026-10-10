@@ -6,6 +6,7 @@ using System.Text;
 using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Quantization;
+using Egami.Streaming;
 
 namespace Egami.Formats.Tga;
 
@@ -14,70 +15,111 @@ namespace Egami.Formats.Tga;
 /// with an extension area whose alpha type says straight alpha or none, holding the Author and Comment text entries. Only the
 /// first frame is written.
 /// </summary>
-internal sealed class TgaWriter : IFormatWriter
+internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly TgaWriter Instance = new();
 
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        ArgumentNullException.ThrowIfNull(raster);
-        ArgumentNullException.ThrowIfNull(output);
-        TgaWriterOptions tga = options as TgaWriterOptions ?? new TgaWriterOptions { StripMetadata = options.StripMetadata };
-        int width = raster.Width;
-        int height = raster.Height;
-        if (width > ushort.MaxValue || height > ushort.MaxValue)
+        RowEncoding.Save(this, raster, output, options);
+    }
+
+    public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        TgaWriterOptions tga = start.Options as TgaWriterOptions ?? new TgaWriterOptions { StripMetadata = start.Options.StripMetadata };
+        if (start.Width > ushort.MaxValue || start.Height > ushort.MaxValue)
         {
-            throw new ArgumentException($"TGA holds at most 65535×65535 pixels; the image is {width}×{height}.", nameof(raster));
+            throw new ArgumentException($"TGA holds at most 65535×65535 pixels; the image is {start.Width}×{start.Height}.");
         }
 
-        PixelLayoutInfo layout = TPixel.Layout;
-        TgaPixelFormat bits = tga.PixelFormat;
-        if (bits == TgaPixelFormat.Auto)
+        if (tga.PixelFormat == TgaPixelFormat.Auto && TPixel.Layout.HasAlpha && TPixel.Layout.ChannelOrder != PixelChannelOrder.Gray)
         {
-            bool opaque = !layout.HasAlpha || IsOpaque(raster);
-            bits = layout.ChannelOrder == PixelChannelOrder.Gray ? TgaPixelFormat.Gray8 : opaque ? TgaPixelFormat.Bgr24 : TgaPixelFormat.Bgra32;
+            start.Refuse("TGA", "Choosing 24 or 32 bits by whether any pixel is transparent", "Set TgaWriterOptions.PixelFormat to Bgr24 or Bgra32.");
         }
 
-        BuiltPalette? palette = null;
-        byte[]? indices = null;
-        try
+        if (tga.PixelFormat == TgaPixelFormat.Indexed8)
         {
+            start.Refuse("TGA", "Building a palette", "Use Gray8, Bgr24 or Bgra32.");
+        }
+
+        return new Encoder<TPixel>(output, start, tga);
+    }
+
+    /// <summary>
+    /// Writes the header and color map, then rows: bottom-up in file order for Save, put in place on a seekable stream when
+    /// streaming uncompressed rows, and otherwise top-down with a top-left origin; then the extension area and footer.
+    /// </summary>
+    private sealed class Encoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly StreamBufferWriter _writer;
+        private readonly RasterMetadata _metadata;
+        private readonly TgaWriterOptions _tga;
+        private readonly TgaPixelFormat _bits;
+        private readonly int _width;
+        private readonly int _bpp;
+        private readonly bool _alpha;
+        private readonly BuiltPalette? _palette;
+        private readonly byte[]? _indices;
+        private readonly byte[] _row;
+        private readonly uint[] _keys;
+        private readonly BottomUpRows? _rows;
+        private long _position;
+        private int _y;
+
+        internal Encoder(Stream output, EncodeStart<TPixel> start, TgaWriterOptions tga)
+        {
+            _tga = tga;
+            _metadata = start.Metadata;
+            int width = _width = start.Width;
+            int height = start.Height;
+            PixelLayoutInfo layout = TPixel.Layout;
+            TgaPixelFormat bits = tga.PixelFormat;
+            if (bits == TgaPixelFormat.Auto)
+            {
+                bool opaque = !layout.HasAlpha || IsOpaque(start.Whole!);
+                bits = layout.ChannelOrder == PixelChannelOrder.Gray ? TgaPixelFormat.Gray8 : opaque ? TgaPixelFormat.Bgr24 : TgaPixelFormat.Bgra32;
+            }
+
+            _bits = bits;
             int mapEntry = 0;
             if (bits == TgaPixelFormat.Indexed8)
             {
-                (palette, indices) = MapToPalette(raster, tga.Palette);
-                mapEntry = palette.Colors.Any(c => c.A != 255) ? 32 : 24;
+                (_palette, _indices) = MapToPalette(start.Whole!, tga.Palette);
+                mapEntry = _palette.Colors.Any(c => c.A != 255) ? 32 : 24;
             }
 
-            bool alpha = bits == TgaPixelFormat.Bgra32 || mapEntry == 32;
-            int bpp = bits switch { TgaPixelFormat.Gray8 or TgaPixelFormat.Indexed8 => 1, TgaPixelFormat.Bgr24 => 3, _ => 4 };
-            ReadOnlySpan<byte> imageId = !tga.StripMetadata && raster.Metadata.FormatDetails is TgaDetails details ? details.ImageId.Span : default;
+            _alpha = bits == TgaPixelFormat.Bgra32 || mapEntry == 32;
+            _bpp = bits switch { TgaPixelFormat.Gray8 or TgaPixelFormat.Indexed8 => 1, TgaPixelFormat.Bgr24 => 3, _ => 4 };
+            ReadOnlySpan<byte> imageId = !tga.StripMetadata && start.Metadata.FormatDetails is TgaDetails details ? details.ImageId.Span : default;
             imageId = imageId[..Math.Min(imageId.Length, 255)];
 
-            using StreamBufferWriter writer = new(output);
-            long position = 0;
-            Span<byte> header = writer.GetSpan(TgaReader.HeaderLength)[..TgaReader.HeaderLength];
+            // Streamed rows come top-down; only uncompressed rows on a seekable stream can still be stored bottom-up.
+            bool topDown = start.Streaming && (tga.Rle || !start.Seekable);
+            _writer = new StreamBufferWriter(output);
+            Span<byte> header = _writer.GetSpan(TgaReader.HeaderLength)[..TgaReader.HeaderLength];
             header.Clear();
             header[0] = (byte)imageId.Length;
-            header[1] = (byte)(palette is null ? 0 : 1);
+            header[1] = (byte)(_palette is null ? 0 : 1);
             header[2] = (byte)((bits switch { TgaPixelFormat.Gray8 => 3, TgaPixelFormat.Indexed8 => 1, _ => 2 }) + (tga.Rle ? 8 : 0));
-            BinaryPrimitives.WriteUInt16LittleEndian(header[5..], (ushort)(palette?.Colors.Length ?? 0));
+            BinaryPrimitives.WriteUInt16LittleEndian(header[5..], (ushort)(_palette?.Colors.Length ?? 0));
             header[7] = (byte)mapEntry;
             BinaryPrimitives.WriteUInt16LittleEndian(header[12..], (ushort)width);
             BinaryPrimitives.WriteUInt16LittleEndian(header[14..], (ushort)height);
-            header[16] = (byte)(bpp * 8);
-            header[17] = (byte)(bits == TgaPixelFormat.Bgra32 ? 8 : mapEntry == 32 ? 8 : 0);
-            writer.Advance(TgaReader.HeaderLength);
-            position += TgaReader.HeaderLength;
-            Put(writer, imageId, ref position);
-            if (palette is not null)
+            header[16] = (byte)(_bpp * 8);
+            header[17] = (byte)((bits == TgaPixelFormat.Bgra32 ? 8 : mapEntry == 32 ? 8 : 0) | (topDown ? 0x20 : 0));
+            _writer.Advance(TgaReader.HeaderLength);
+            _position += TgaReader.HeaderLength;
+            Put(_writer, imageId, ref _position);
+            if (_palette is not null)
             {
                 int entryBytes = mapEntry / 8;
-                Span<byte> map = writer.GetSpan(palette.Colors.Length * entryBytes);
-                for (int i = 0; i < palette.Colors.Length; i++)
+                Span<byte> map = _writer.GetSpan(_palette.Colors.Length * entryBytes);
+                for (int i = 0; i < _palette.Colors.Length; i++)
                 {
-                    Rgba8 c = palette.Colors[i];
+                    Rgba8 c = _palette.Colors[i];
                     map[i * entryBytes] = c.B;
                     map[(i * entryBytes) + 1] = c.G;
                     map[(i * entryBytes) + 2] = c.R;
@@ -87,66 +129,96 @@ internal sealed class TgaWriter : IFormatWriter
                     }
                 }
 
-                writer.Advance(palette.Colors.Length * entryBytes);
-                position += palette.Colors.Length * entryBytes;
+                _writer.Advance(_palette.Colors.Length * entryBytes);
+                _position += _palette.Colors.Length * entryBytes;
             }
 
-            byte[] row = ArrayPool<byte>.Shared.Rent(width * bpp);
-            uint[] keyBuffer = ArrayPool<uint>.Shared.Rent(width);
-            Span<uint> keys = keyBuffer.AsSpan(0, width);
-            try
+            _row = ArrayPool<byte>.Shared.Rent(width * _bpp);
+            _keys = ArrayPool<uint>.Shared.Rent(width);
+            if (start.Streaming && !topDown)
             {
-                for (int y = height - 1; y >= 0; y--)
-                {
-                    Span<byte> pixels = row.AsSpan(0, width * bpp);
-                    switch (bits)
-                    {
-                        case TgaPixelFormat.Gray8:
-                            PixelConvert.Convert<TPixel, Gray8>(raster.Row(y), MemoryMarshal.Cast<byte, Gray8>(pixels));
-                            break;
-                        case TgaPixelFormat.Indexed8:
-                            indices.AsSpan(y * width, width).CopyTo(pixels);
-                            break;
-                        case TgaPixelFormat.Bgr24:
-                            PixelConvert.Convert<TPixel, Bgr8>(raster.Row(y), MemoryMarshal.Cast<byte, Bgr8>(pixels));
-                            break;
-                        default:
-                            PixelConvert.Convert<TPixel, Bgra8>(raster.Row(y), MemoryMarshal.Cast<byte, Bgra8>(pixels));
-                            break;
-                    }
+                _rows = new BottomUpRows(output, _writer, height, (long)width * _bpp, seek: true);
+            }
+        }
 
-                    if (tga.Rle)
-                    {
-                        position += WritePackets(writer, pixels, bpp, keys);
-                    }
-                    else
-                    {
-                        Put(writer, pixels, ref position);
-                    }
+        public override void WriteRow(ReadOnlySpan<TPixel> source)
+        {
+            int width = _width;
+            Span<byte> pixels = _row.AsSpan(0, width * _bpp);
+            switch (_bits)
+            {
+                case TgaPixelFormat.Gray8:
+                    PixelConvert.Convert<TPixel, Gray8>(source, MemoryMarshal.Cast<byte, Gray8>(pixels));
+                    break;
+                case TgaPixelFormat.Indexed8:
+                    // Only Save maps to a palette, so the row's place in the image is known.
+                    _indices.AsSpan(_y * width, width).CopyTo(pixels);
+                    break;
+                case TgaPixelFormat.Bgr24:
+                    PixelConvert.Convert<TPixel, Bgr8>(source, MemoryMarshal.Cast<byte, Bgr8>(pixels));
+                    break;
+                default:
+                    PixelConvert.Convert<TPixel, Bgra8>(source, MemoryMarshal.Cast<byte, Bgra8>(pixels));
+                    break;
+            }
+
+            if (_rows is not null)
+            {
+                _rows.Write(_writer, pixels);
+                _position += pixels.Length;
+            }
+            else if (_tga.Rle)
+            {
+                _position += WritePackets(_writer, pixels, _bpp, _keys.AsSpan(0, width));
+            }
+            else
+            {
+                Put(_writer, pixels, ref _position);
+            }
+        }
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            for (_y = raster.Height - 1; _y >= 0; _y--)
+            {
+                WriteRow(raster.Row(_y));
+                if ((_y & 63) == 0)
+                {
+                    yield return _y;
                 }
             }
-            finally
+        }
+
+        public override void Complete()
+        {
+            if (_rows is not null)
             {
-                ArrayPool<byte>.Shared.Return(row);
-                ArrayPool<uint>.Shared.Return(keyBuffer);
+                _writer.Flush();
+                _rows.End();
             }
 
-            long extension = position;
-            Put(writer, Extension(raster.Metadata, tga.StripMetadata, alpha), ref position);
-            Span<byte> footer = writer.GetSpan(TgaReader.FooterLength)[..TgaReader.FooterLength];
+            long extension = _position;
+            Put(_writer, Extension(_metadata, _tga.StripMetadata, _alpha), ref _position);
+            Span<byte> footer = _writer.GetSpan(TgaReader.FooterLength)[..TgaReader.FooterLength];
             BinaryPrimitives.WriteUInt32LittleEndian(footer, checked((uint)extension));
             BinaryPrimitives.WriteUInt32LittleEndian(footer[4..], 0);
             TgaReader.FooterSignature.CopyTo(footer[8..]);
-            writer.Advance(TgaReader.FooterLength);
-            writer.Flush();
+            _writer.Advance(TgaReader.FooterLength);
+            _writer.Flush();
         }
-        finally
+
+        protected override void Dispose(bool disposing)
         {
-            palette?.Release();
-            if (indices is not null)
+            _writer.Dispose();
+            ArrayPool<byte>.Shared.Return(_row);
+            ArrayPool<uint>.Shared.Return(_keys);
+            _palette?.Release();
+            if (_indices is not null)
             {
-                ArrayPool<byte>.Shared.Return(indices);
+                ArrayPool<byte>.Shared.Return(_indices);
             }
+
+            base.Dispose(disposing);
         }
     }
 

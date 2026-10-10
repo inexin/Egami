@@ -1,4 +1,6 @@
 using Egami.Formats;
+using Egami.Formats.Gif;
+using Egami.Formats.Jpeg;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -141,5 +143,86 @@ public class Streaming
         #endregion
 
         Assert.True(count > 1);
+    }
+
+    [Fact]
+    public void EncodeRows()
+    {
+        using SampleFiles files = new();
+
+        #region encode-rows
+        // A huge image written a band at a time: only the band is ever in memory.
+        const int Width = 8_000, Height = 6_000;
+        using Raster<Rgb8> band = Raster.Create<Rgb8>(Width, 64);
+        using RasterEncoder<Rgb8> encoder = RasterEncoder.Create<Rgb8>("big.png", Width, Height);
+        for (int top = 0; top < Height; top += band.Height)
+        {
+            int rows = Math.Min(band.Height, Height - top);
+            for (int y = 0; y < rows; y++)
+            {
+                band.Row(y).Fill(new Rgb8((byte)(top + y), 128, 200));
+            }
+
+            encoder.WriteRows(band, rows);
+        }
+
+        encoder.Complete(); // writes IEND; without it the file is deleted on dispose
+        #endregion
+
+        encoder.Dispose();
+        RasterInfo info = Raster.Probe("big.png");
+        Assert.Equal((Width, Height), (info.Width, info.Height));
+    }
+
+    [Fact]
+    public void EncodeFrames()
+    {
+        using SampleFiles files = new();
+
+        #region encode-frames
+        // An animation written a frame at a time, each frame from one reused canvas.
+        using Raster<Rgba8> canvas = Raster.Create<Rgba8>(120, 80);
+        using FileStream file = File.Create("spinner.gif");
+        using RasterEncoder<Rgba8> gif = RasterEncoder.Create<Rgba8>(file, GifFormat.Info, 120, 80);
+        for (int i = 0; i < 12; i++)
+        {
+            for (int y = 0; y < canvas.Height; y++)
+            {
+                canvas.Row(y).Fill(new Rgba8(255, 255, 255, 255));
+            }
+
+            canvas.Row(40)[(i * 10)..((i * 10) + 10)].Fill(new Rgba8(200, 0, 0, 255));
+            gif.WriteFrame(canvas, new Metadata.FrameMetadata { Delay = TimeSpan.FromMilliseconds(80) });
+        }
+
+        gif.Complete();
+        #endregion
+
+        gif.Dispose();
+        file.Dispose();
+        Assert.Equal(12, Raster.Probe("spinner.gif").FrameCount);
+    }
+
+    [Fact]
+    public async Task EncodeAsync()
+    {
+        using SampleFiles files = new();
+        using MemoryStream response = new();
+
+        #region encode-async
+        // On a server: send each band as it is encoded, without holding the file.
+        using RasterDecoder source = RasterDecoder.Open("egret.png");
+        using Raster<Rgb8> band = Raster.Create<Rgb8>(source.Info.Width, 32);
+        using RasterEncoder<Rgb8> encoder = RasterEncoder.Create<Rgb8>(response, JpegFormat.Info, source.Info.Width, source.Info.Height);
+        int rows;
+        while ((rows = source.ReadRows(band)) > 0)
+        {
+            await encoder.WriteRowsAsync(band, rows, TestContext.Current.CancellationToken);
+        }
+
+        await encoder.CompleteAsync(TestContext.Current.CancellationToken);
+        #endregion
+
+        Assert.True(response.Length > 0);
     }
 }
