@@ -142,6 +142,7 @@ public class RasterDecoderTests
         CheckFrames<RgbaF32>(data);
         CheckFrames<Bgra8>(data);
         CheckFrames<Gray16>(data);
+        CheckFrames<Cmyk8>(data);
     }
 
     [Theory]
@@ -412,7 +413,9 @@ public class RegionAndReductionTests
         RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(16, 12) });
         Assert.True(reduced.WorkingBytes > full.WorkingBytes);
         byte[] jpeg = StreamingCorpus.Read("jpeg/egret-420.jpg");
-        Assert.True(Raster.Probe(jpeg, options: new ReaderOptions { MinimumSize = new Size(30, 40) }).WorkingBytes < Raster.Probe(jpeg).WorkingBytes / 32);
+        RasterInfo jpegFull = Raster.Probe(jpeg);
+        Assert.Equal(RasterAccess.Streamed, jpegFull.Access);
+        Assert.True(Raster.Probe(jpeg, options: new ReaderOptions { MinimumSize = new Size(30, 40) }).WorkingBytes < jpegFull.WorkingBytes);
     }
 
     private static void CheckReduced<TPixel>(byte[] data, ReaderOptions options, Raster<RgbaF32> natural, Rect region, int factor, string file)

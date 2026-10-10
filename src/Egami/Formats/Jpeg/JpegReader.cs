@@ -4,7 +4,7 @@ using Egami.Pixels;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>Reads JPEG files: baseline and progressive Huffman-coded, 8-bit, gray, YCbCr, RGB, CMYK and YCCK.</summary>
-internal sealed class JpegReader : IFormatReader, Streaming.INativeScaling
+internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScaling
 {
     internal static JpegReader Instance { get; } = new();
 
@@ -31,6 +31,8 @@ internal sealed class JpegReader : IFormatReader, Streaming.INativeScaling
             HasMetadata = header.HasMetadata,
             EstimatedBytes = JpegSegmentReader.EstimateBytes(header, scale),
             Orientation = header.Metadata.Exif?.Orientation ?? ImageOrientation.Normal,
+            Access = RasterAccess.Streamed,
+            WorkingBytes = WorkingBytes(header, options, scale),
         };
     }
 

@@ -33,7 +33,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
     private readonly JpegHeader _header;
     private readonly ReaderOptions _options;
-    private readonly Raster<TPixel> _raster;
+    private readonly Raster<TPixel>? _raster;
+    private readonly List<string> _warnings;
     private readonly Component[] _components;
     private readonly int _maxH;
     private readonly int _maxV;
@@ -51,12 +52,38 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private readonly List<(JpegHuffmanSpec Spec, JpegHuffmanTable Table)> _tables = [];
     private bool _warned;
 
+    // Pull mode (RasterDecoder): the decode advances only as far as the rows asked for.
+    private JpegBitReader? _reader;
+    private bool _pullSequential;
+    private JpegHuffmanTable[] _pullDc = [];
+    private JpegHuffmanTable[] _pullAc = [];
+    private Component[] _pullOrder = [];
+    private int[] _pullFirstBlock = [];
+    private EntropyState? _pullState;
+    private short[]? _pullCoefficients;
+    private byte[]? _pullHasAc;
+    private int _pullBlocks;
+    private int _transformed = -1;
+    private int _firstNeeded;
+
     /// <summary>Creates a decoder whose output is the image scaled by 1/<paramref name="scale"/> (1, 2, 4 or 8).</summary>
     internal JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel> raster, bool fastUpsampling, int scale = 1)
+        : this(header, options, raster, raster.Metadata.WarningList, fastUpsampling, scale)
+    {
+    }
+
+    /// <summary>Creates a decoder for pull mode, with no raster: rows come from <see cref="ReadRow"/>, warnings go to <paramref name="warnings"/>.</summary>
+    internal JpegDecoder(JpegHeader header, ReaderOptions options, List<string> warnings, bool fastUpsampling, int scale)
+        : this(header, options, null, warnings, fastUpsampling, scale)
+    {
+    }
+
+    private JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel>? raster, List<string> warnings, bool fastUpsampling, int scale)
     {
         _header = header;
         _options = options;
         _raster = raster;
+        _warnings = warnings;
         _fast = fastUpsampling;
         bool single = header.Components.Length == 1;
 
@@ -155,42 +182,10 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             LatchQuant(i);
         }
 
-        Span<short> natural = stackalloc short[64];
-
         for (int my = 0; my < _mcusY; my++)
         {
             input.CancellationToken.ThrowIfCancellationRequested();
-            foreach (Component c in _components)
-            {
-                Span<byte> strip = c.Strip(my);
-                for (int v = 0; v < c.V; v++)
-                {
-                    int by = (my * c.V) + v;
-                    Span<short> row = c.BlockRow(by);
-                    for (int bx = 0; bx < _mcusX * c.H; bx++)
-                    {
-                        Span<short> block = row.Slice(bx * 64, 64);
-                        Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
-                        ulong nonzero = JpegBlock.NonZero(block);
-                        if (c.BlockSize > 1 && (nonzero & ~1UL) == 0)
-                        {
-                            JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth, c.BlockSize);
-                            continue;
-                        }
-
-                        // Back to natural order, visiting only the nonzero coefficients.
-                        natural.Clear();
-                        for (; nonzero != 0; nonzero &= nonzero - 1)
-                        {
-                            int z = BitOperations.TrailingZeroCount(nonzero);
-                            natural[JpegTables.ZigZag[z]] = block[z];
-                        }
-
-                        c.Idct(natural, target);
-                    }
-                }
-            }
-
+            TransformBufferedRow(my);
             if (my > 0)
             {
                 EmitRows(my - 1);
@@ -200,8 +195,289 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         EmitRows(_mcusY - 1);
     }
 
+    /// <summary>
+    /// Pull mode: reads every scan of a buffered file, or gets a sequential file's single scan ready. Only the MCU rows and block
+    /// columns of <paramref name="region"/> (in output pixels) are transformed, and MCU rows above it are skipped at restart
+    /// markers when the file has them.
+    /// </summary>
+    internal void Begin(EgamiInput input, Rect region)
+    {
+        _reader = new JpegBitReader(input);
+        _firstNeeded = Math.Max(0, (region.Y / _mcuRows) - 1);
+        foreach (Component c in _components)
+        {
+            // Block columns covering the region, with one more each side for the upsampling filters.
+            int samples = c.HorizontalRatio * c.BlockSize;
+            c.FirstColumn = Math.Max(0, (region.X / samples) - 1);
+            c.EndColumn = ((region.Right + samples - 1) / samples) + 1;
+        }
+
+        JpegScan scan = _header.FirstScan!;
+        if (!_header.Progressive && scan.Components.Length == _components.Length)
+        {
+            _pullSequential = true;
+            int count = scan.Components.Length;
+            _pullDc = new JpegHuffmanTable[count];
+            _pullAc = new JpegHuffmanTable[count];
+            _pullOrder = new Component[count];
+            _pullFirstBlock = new int[count];
+            for (int i = 0; i < count; i++)
+            {
+                JpegScanComponent sc = scan.Components[i];
+                _pullOrder[i] = _components[sc.ComponentIndex];
+                LatchQuant(sc.ComponentIndex);
+                _pullDc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+                _pullAc[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+                _pullFirstBlock[i] = _pullBlocks;
+                _pullBlocks += _mcusX * _pullOrder[i].H * _pullOrder[i].V;
+            }
+
+            _reader.BeginScan();
+            _pullState = new EntropyState(count);
+            _pullCoefficients = ArrayPool<short>.Shared.Rent(_pullBlocks * 64);
+            _pullHasAc = ArrayPool<byte>.Shared.Rent(_pullBlocks);
+            return;
+        }
+
+        foreach (Component c in _components)
+        {
+            c.AllocateCoefficients(input.Memory, _mcusX * c.H, _mcusY * c.V);
+        }
+
+        int scans = 0;
+        while (true)
+        {
+            if (++scans > MaxScans)
+            {
+                throw new CorruptDataException(JpegFormat.Info.Name, -1, string.Create(CultureInfo.InvariantCulture, $"The file has more than {MaxScans:N0} scans."));
+            }
+
+            input.CancellationToken.ThrowIfCancellationRequested();
+            bool skip = _header.Progressive && scan.SpectralStart > 0 && _components[scan.Components[0].ComponentIndex].BlockSize == 1;
+            if (skip)
+            {
+                _reader.BeginScan();
+            }
+
+            if ((!skip && !DecodeBufferedScan(_reader, scan)) || NextScan(input, _reader) is not JpegScan next)
+            {
+                break;
+            }
+
+            scan = next;
+        }
+
+        for (int i = 0; i < _components.Length; i++)
+        {
+            // A component no scan reached is all zeros, mid-gray, and still needs a table.
+            LatchQuant(i);
+        }
+    }
+
+    /// <summary>Returns the bytes pull mode holds: strips, row buffers, and the coefficients of one MCU row or of the whole image.</summary>
+    internal long WorkingBytes(bool buffered)
+    {
+        long bytes = ((long)_header.Width * Math.Max(_channels, _components.Length)) + ((long)_header.Width * _components.Length) + ((_header.Width + 2) * 2L);
+        long blocks = 0;
+        foreach (Component c in _components)
+        {
+            bytes += 3L * c.StripWidth * c.V * c.BlockSize;
+            blocks += (long)_mcusX * c.H * (buffered ? _mcusY * c.V : c.V);
+        }
+
+        return bytes + (blocks * 64 * sizeof(short)) + (buffered ? 0 : blocks);
+    }
+
+    /// <summary>
+    /// Pull mode: converts the part of output row <paramref name="y"/> from column <paramref name="x"/> into
+    /// <paramref name="destination"/>, decoding and transforming MCU rows only as far as it needs. Rows are asked for in order.
+    /// </summary>
+    internal void ReadRow<TOut>(int y, int x, Span<TOut> destination)
+        where TOut : unmanaged, IPixelType<TOut>
+    {
+        int my = y / _mcuRows;
+        AdvanceTo(Math.Min(my + 1, _mcusY - 1));
+        int count = _components.Length;
+        ReadOnlySpan<byte> a = SampleRow(0, y);
+        ReadOnlySpan<byte> b = count > 1 ? SampleRow(1, y) : default;
+        ReadOnlySpan<byte> c = count > 2 ? SampleRow(2, y) : default;
+        ReadOnlySpan<byte> k = count > 3 ? SampleRow(3, y) : default;
+        ConvertRow(x, a, b, c, k, destination);
+    }
+
+    /// <summary>Transforms MCU rows up to <paramref name="my"/>, entropy-decoding them first in a sequential file.</summary>
+    private void AdvanceTo(int my)
+    {
+        while (_transformed < my)
+        {
+            int next = _transformed + 1;
+            if (_pullSequential)
+            {
+                if (next < _firstNeeded)
+                {
+                    _transformed = SkipRows(next) - 1;
+                    continue;
+                }
+
+                RowSlot slot = new(_pullCoefficients!, 0, _pullHasAc!, 0, _pullFirstBlock);
+                DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, _pullState!, slot);
+                TransformRow(next, _pullOrder, slot);
+            }
+            else if (next >= _firstNeeded)
+            {
+                TransformBufferedRow(next);
+            }
+
+            _transformed = next;
+        }
+    }
+
+    /// <summary>
+    /// Moves a sequential decode past MCU rows nobody needs, starting at row <paramref name="from"/>: straight to the last restart
+    /// marker that starts a row before the first needed one, when the file has markers, else by entropy-decoding one row without
+    /// its IDCT. Returns the row the entropy decoder is at now.
+    /// </summary>
+    private int SkipRows(int from)
+    {
+        EntropyState state = _pullState!;
+        int restart = _header.RestartInterval;
+        int target = -1;
+        if (restart > 0 && !state.Ended)
+        {
+            for (int row = _firstNeeded; row > from; row--)
+            {
+                if ((long)row * _mcusX % restart == 0)
+                {
+                    target = row;
+                    break;
+                }
+            }
+        }
+
+        if (target < 0)
+        {
+            RowSlot slot = new(_pullCoefficients!, 0, _pullHasAc!, 0, _pullFirstBlock);
+            DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, state, slot);
+            return from + 1;
+        }
+
+        // The markers before MCUs below the current one are behind; those up to the target MCU's are skipped over unread.
+        long mcu = state.Mcu;
+        long passed = mcu == 0 ? 0 : (mcu - 1) / restart;
+        long wanted = (long)target * _mcusX / restart;
+        for (long marker = passed + 1; marker <= wanted; marker++)
+        {
+            if (!_reader!.Restart((int)((marker - 1) & 7)))
+            {
+                Problem("A restart marker is missing or out of order; the data was resynchronized at the next one.");
+                state.Ended = _reader.Marker != 0;
+                break;
+            }
+        }
+
+        state.Mcu = target * _mcusX;
+        state.NextRestart = _reader!.LastRestart >= 0 ? _reader.LastRestart + 1 : (int)wanted;
+        state.Resynced = true;
+        Array.Clear(state.Predictors);
+        return target;
+    }
+
+    /// <summary>Dequantizes and transforms MCU row <paramref name="my"/> of the coefficient buffer into the strips.</summary>
+    private void TransformBufferedRow(int my)
+    {
+        Span<short> natural = stackalloc short[64];
+        foreach (Component c in _components)
+        {
+            Span<byte> strip = c.Strip(my);
+            int end = Math.Min(_mcusX * c.H, c.EndColumn);
+            for (int v = 0; v < c.V; v++)
+            {
+                int by = (my * c.V) + v;
+                Span<short> row = c.BlockRow(by);
+                for (int bx = c.FirstColumn; bx < end; bx++)
+                {
+                    Span<short> block = row.Slice(bx * 64, 64);
+                    Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
+                    ulong nonzero = JpegBlock.NonZero(block);
+                    if (c.BlockSize > 1 && (nonzero & ~1UL) == 0)
+                    {
+                        JpegIdct.FillDc(block[0] * c.Quant![0], target, c.StripWidth, c.BlockSize);
+                        continue;
+                    }
+
+                    // Back to natural order, visiting only the nonzero coefficients.
+                    natural.Clear();
+                    for (; nonzero != 0; nonzero &= nonzero - 1)
+                    {
+                        int z = BitOperations.TrailingZeroCount(nonzero);
+                        natural[JpegTables.ZigZag[z]] = block[z];
+                    }
+
+                    c.Idct(natural, target);
+                }
+            }
+        }
+    }
+
+    /// <summary>Converts columns from <paramref name="x"/> of one row of component samples, as <see cref="WriteRow"/> does for a whole row.</summary>
+    private void ConvertRow<TOut>(int x, ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, ReadOnlySpan<byte> c, ReadOnlySpan<byte> k, Span<TOut> target)
+        where TOut : unmanaged, IPixelType<TOut>
+    {
+        int width = target.Length;
+        a = a.Slice(x, width);
+        b = b.IsEmpty ? b : b.Slice(x, width);
+        c = c.IsEmpty ? c : c.Slice(x, width);
+        k = k.IsEmpty ? k : k.Slice(x, width);
+        if (_channels == 1)
+        {
+            if (typeof(TOut) == typeof(Gray8))
+            {
+                a.CopyTo(MemoryMarshal.AsBytes(target));
+            }
+            else
+            {
+                PixelConvert.Convert(MemoryMarshal.Cast<byte, Gray8>(a), target);
+            }
+
+            return;
+        }
+
+        if (_header.Details.ColorSpace is JpegColorSpace.Cmyk or JpegColorSpace.Ycck && CmykInk.Is<TOut>())
+        {
+            Span<byte> inks = typeof(TOut) == typeof(Cmyk8) ? MemoryMarshal.AsBytes(target) : _rowBuffer.AsSpan(0, width * 4);
+            JpegColor.ToInk(_header.Details.ColorSpace, a, b, c, k, inks);
+            if (typeof(TOut) != typeof(Cmyk8))
+            {
+                PixelConvert.Convert(MemoryMarshal.Cast<byte, Cmyk8>(inks), target);
+            }
+
+            return;
+        }
+
+        Span<byte> rgb = typeof(TOut) == typeof(Rgb8) ? MemoryMarshal.AsBytes(target) : _rowBuffer.AsSpan(0, width * 3);
+        JpegColor.ToRgb(_header.Details.ColorSpace, a, b, c, k, rgb);
+        if (typeof(TOut) != typeof(Rgb8))
+        {
+            PixelConvert.Convert(MemoryMarshal.Cast<byte, Rgb8>(rgb), target);
+        }
+    }
+
     public void Dispose()
     {
+        _reader?.Dispose();
+        _reader = null;
+        if (_pullCoefficients is not null)
+        {
+            ArrayPool<short>.Shared.Return(_pullCoefficients);
+            _pullCoefficients = null;
+        }
+
+        if (_pullHasAc is not null)
+        {
+            ArrayPool<byte>.Shared.Return(_pullHasAc);
+            _pullHasAc = null;
+        }
+
         foreach (Component c in _components)
         {
             c.Dispose();
@@ -683,7 +959,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         int restart = _header.RestartInterval;
         for (int mx = 0; mx < _mcusX; mx++, state.Mcu++)
         {
-            if (restart > 0 && state.Mcu > 0 && state.Mcu % restart == 0 && !state.Ended)
+            if (restart > 0 && state.Mcu > 0 && state.Mcu % restart == 0 && !state.Ended && !state.TakeResynced())
             {
                 int next = state.NextRestart;
                 state.Ended = !RestartInterval(reader, ref next);
@@ -727,9 +1003,10 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             Component c = order[i];
             Span<byte> strip = c.Strip(my);
             int across = _mcusX * c.H;
+            int end = Math.Min(across, c.EndColumn);
             for (int v = 0; v < c.V; v++)
             {
-                for (int bx = 0; bx < across; bx++)
+                for (int bx = c.FirstColumn; bx < end; bx++)
                 {
                     int b = slot.FirstBlock[i] + (v * across) + bx;
                     Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
@@ -1018,7 +1295,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         if (!_warned)
         {
-            _raster.Metadata.WarningList.Add(message);
+            _warnings.Add(message);
             _warned = true;
         }
     }
@@ -1093,7 +1370,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// <summary>Converts one row of component samples to RGB or gray and stores it in the raster.</summary>
     private void WriteRow(int y, ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, ReadOnlySpan<byte> c, ReadOnlySpan<byte> k)
     {
-        Span<TPixel> target = _raster.Row(y);
+        Span<TPixel> target = _raster!.Row(y);
         int width = _width;
         if (_channels == 1)
         {
@@ -1139,6 +1416,17 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         internal int Mcu { get; set; }
 
         internal bool Ended { get; set; }
+
+        /// <summary>Gets or sets whether the restart marker before the current MCU was consumed by a skip already.</summary>
+        internal bool Resynced { get; set; }
+
+        /// <summary>Returns whether the marker was consumed already, clearing the flag.</summary>
+        internal bool TakeResynced()
+        {
+            bool resynced = Resynced;
+            Resynced = false;
+            return resynced;
+        }
     }
 
     /// <summary>One MCU row of coefficients in the pipeline, with a flag per block saying whether it has AC terms.</summary>
@@ -1178,6 +1466,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         internal ushort[]? Quant { get; set; }
 
         internal int StripWidth => stripWidth;
+
+        /// <summary>Gets or sets the first block column transformed; a region decode leaves the others alone.</summary>
+        internal int FirstColumn { get; set; }
+
+        /// <summary>Gets or sets the block column after the last one transformed.</summary>
+        internal int EndColumn { get; set; } = int.MaxValue;
 
         /// <summary>Gets the side of a block in samples after the IDCT: 8 at full scale, less in a scaled decode.</summary>
         internal int BlockSize => blockSize;

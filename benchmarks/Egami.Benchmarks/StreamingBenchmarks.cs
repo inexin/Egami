@@ -18,12 +18,22 @@ public class StreamingBenchmarks
     [ParamsSource(nameof(Scenarios))]
     public string Scenario { get; set; } = string.Empty;
 
-    public static IEnumerable<string> Scenarios => ["png:Photo-RGBA8", "png:Screenshot-RGB8", "png:Palette8", "png:Adam7-RGBA8"];
+    public static IEnumerable<string> Scenarios =>
+    [
+        "png:Photo-RGBA8", "png:Screenshot-RGB8", "png:Palette8", "png:Adam7-RGBA8",
+        "jpeg:photo-420.jpg", "jpeg:photo-progressive.jpg", "large:jpeg-8000.jpg", "large:jpeg-8000-restart.jpg",
+    ];
 
     [GlobalSetup]
     public void Setup()
     {
-        _file = BenchImages.Png(Scenario[4..]);
+        string[] parts = Scenario.Split(':');
+        _file = parts[0] switch
+        {
+            "png" => BenchImages.Png(parts[1]),
+            "jpeg" => BenchFiles.Jpeg(parts[1]),
+            _ => BenchFiles.Large(parts[1]),
+        };
     }
 
     [Benchmark(Baseline = true)]
@@ -48,11 +58,12 @@ public class StreamingBenchmarks
         return rows;
     }
 
+    /// <summary>A centred region of 1/16 the area: the design's region gate asks for at least 2x on the 8,000 x 8,000 baseline JPEG.</summary>
     [Benchmark]
-    public int RegionQuarter()
+    public int RegionCentre()
     {
         RasterInfo info = Raster.Probe(_file);
-        ReaderOptions options = new() { Region = new Rect(info.Width / 4, info.Height / 4, info.Width / 4, info.Height / 4) };
+        ReaderOptions options = new() { Region = new Rect(info.Width * 3 / 8, info.Height * 3 / 8, info.Width / 4, info.Height / 4) };
         using Raster<Rgba8> raster = Raster.Load<Rgba8>(_file, OneThread, options);
         return raster.Width;
     }

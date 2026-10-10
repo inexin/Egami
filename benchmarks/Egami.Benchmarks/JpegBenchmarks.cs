@@ -78,16 +78,27 @@ internal static class BenchFiles
 {
     internal static byte[] Jpeg(string name)
     {
+        return Read("bench-jpeg", name, "tools/make-jpeg-bench-files.py");
+    }
+
+    /// <summary>Reads one of the Phase 2.2 large images.</summary>
+    internal static byte[] Large(string name)
+    {
+        return Read("large", name, "tools/make-large-images.py");
+    }
+
+    private static byte[] Read(string folder, string name, string tool)
+    {
         string? directory = AppContext.BaseDirectory;
         while (directory is not null && !System.IO.File.Exists(Path.Combine(directory, "Egami.slnx")))
         {
             directory = Path.GetDirectoryName(directory);
         }
 
-        string path = Path.Combine(directory ?? ".", ".cache", "bench-jpeg", name);
+        string path = Path.Combine(directory ?? ".", ".cache", folder, name);
         return System.IO.File.Exists(path)
             ? System.IO.File.ReadAllBytes(path)
-            : throw new FileNotFoundException($"{path} is missing. Run python tools/make-jpeg-bench-files.py first.", path);
+            : throw new FileNotFoundException($"{path} is missing. Run python {tool} first.", path);
     }
 }
 
