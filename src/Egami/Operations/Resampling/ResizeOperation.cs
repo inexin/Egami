@@ -125,7 +125,8 @@ internal sealed class ResizeOperation(
         int ringRows = vertical.Stride;
         float[] pairs = horizontal.Pairs;
         // Opaque 8-bit rows take a fixed-point horizontal pass, which measured 1.5 times faster than float for a 5× reduction.
-        bool fixedPoint = RowConverter<TPixel>.FourByte && colorSpace == ColorSpace.Encoded;
+        // Premultiplied 8-bit rows take it whether opaque or not, as nothing needs multiplying.
+        bool fixedPoint = (RowConverter<TPixel>.FourByte || RowConverter<TPixel>.Premul8) && colorSpace == ColorSpace.Encoded;
         short[] fixedWeights = fixedPoint ? horizontal.Fixed : [];
         int[] groupCount = fixedPoint ? horizontal.GroupCount : [];
         int[] pairCount = horizontal.PairCount;
@@ -156,7 +157,7 @@ internal sealed class ResizeOperation(
                         int slot = next % ringRows;
                         Span<float> target = ring.Slice(slot * outWidth * 4, outWidth * 4);
                         ReadOnlySpan<TPixel> sourceRow = input.Source.Row(next).Slice(xLow, xCount);
-                        if (fixedPoint && ResizeKernels.IsOpaque8(MemoryMarshal.AsBytes(sourceRow)))
+                        if (fixedPoint && (RowConverter<TPixel>.Premul8 || ResizeKernels.IsOpaque8(MemoryMarshal.AsBytes(sourceRow))))
                         {
                             Span<byte> bytes = byteBuffer.AsSpan(0, (xCount + 3) * 4);
                             MemoryMarshal.AsBytes(sourceRow).CopyTo(bytes);
@@ -313,6 +314,15 @@ internal sealed class RowConverter<TPixel>(bool linear)
     /// <summary>CMYK types filter their four inks as numbers, so black stays black instead of being rebuilt from RGB.</summary>
     internal static readonly bool Ink = CmykInk.Is<TPixel>();
 
+    /// <summary>Egami's 8-bit premultiplied types: their stored values are already the working form.</summary>
+    internal static readonly bool Premul8 = typeof(TPixel) == typeof(PremulRgba8) || typeof(TPixel) == typeof(PremulBgra8);
+
+    /// <summary>Egami's float premultiplied type.</summary>
+    internal static readonly bool PremulFloat = typeof(TPixel) == typeof(PremulRgbaF32);
+
+    // Premultiplied rows load and store as they are, except in linear light, which needs straight values to decode.
+    private readonly bool _raw = (Premul8 || PremulFloat) && !linear;
+
     /// <summary>Converts <paramref name="source"/> to working pixels at the start of <paramref name="destination"/>.</summary>
     /// <returns><see langword="true"/> if every pixel is opaque, so nothing was premultiplied.</returns>
     internal bool Load(ReadOnlySpan<TPixel> source, Span<float> destination)
@@ -322,6 +332,20 @@ internal sealed class RowConverter<TPixel>(bool linear)
         {
             CmykInk.Load(source, pixels);
             return true;
+        }
+
+        if (_raw)
+        {
+            if (Premul8)
+            {
+                ResizeKernels.LoadRaw8(MemoryMarshal.AsBytes(source), pixels);
+            }
+            else
+            {
+                MemoryMarshal.Cast<TPixel, float>(source).CopyTo(pixels);
+            }
+
+            return false;
         }
 
         if (FourByte && !linear)
@@ -363,6 +387,21 @@ internal sealed class RowConverter<TPixel>(bool linear)
         if (Ink)
         {
             CmykInk.Store<TPixel>(pixels, destination);
+            return;
+        }
+
+        if (_raw)
+        {
+            if (Premul8)
+            {
+                ResizeKernels.StoreRaw8(pixels, MemoryMarshal.AsBytes(destination));
+            }
+            else
+            {
+                ResizeKernels.ClampPremultiplied(pixels);
+                pixels.CopyTo(MemoryMarshal.Cast<TPixel, float>(destination));
+            }
+
             return;
         }
 

@@ -142,6 +142,18 @@ internal sealed class RotateOperation(double degrees, ResampleFilter filter, Rgb
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         Vector4 p;
+        if (RowConverter<TPixel>.Premul8)
+        {
+            // Already premultiplied: the stored bytes are the working form.
+            Vector128<byte> raw = Vector128.CreateScalarUnsafe(Unsafe.As<TPixel, uint>(ref Unsafe.AsRef(in pixel))).AsByte();
+            return (Vector128.ConvertToSingle(Vector128.WidenLower(Vector128.WidenLower(raw)).AsInt32()) * (1f / 255f)).AsVector4();
+        }
+
+        if (RowConverter<TPixel>.PremulFloat)
+        {
+            return Unsafe.As<TPixel, Vector4>(ref Unsafe.AsRef(in pixel));
+        }
+
         if (RowConverter<TPixel>.Ink)
         {
             Span<float> ink = stackalloc float[4];

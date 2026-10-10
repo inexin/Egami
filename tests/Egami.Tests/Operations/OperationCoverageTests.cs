@@ -130,6 +130,15 @@ public sealed class OperationCoverageTests : IDisposable
             using Raster<Cmyk16> cmyk16Result = cmyk16.Derive(chain, Ct);
             Assert.Equal((expected.Width, expected.Height), (cmykResult.Width, cmykResult.Height));
             Assert.Equal((expected.Width, expected.Height), (cmyk16Result.Width, cmyk16Result.Height));
+            using Raster<PremulRgba8> premul = contiguous.As<PremulRgba8>();
+            using Raster<PremulRgba8> premulResult = premul.Derive(chain, Ct);
+            using Raster<PremulBgra8> premulBgra = contiguous.As<PremulBgra8>();
+            using Raster<PremulBgra8> premulBgraResult = premulBgra.Derive(chain, Ct);
+            using Raster<PremulRgbaF32> premulFloat = contiguous.As<PremulRgbaF32>();
+            using Raster<PremulRgbaF32> premulFloatResult = premulFloat.Derive(chain, Ct);
+            Assert.Equal((expected.Width, expected.Height), (premulResult.Width, premulResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (premulBgraResult.Width, premulBgraResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (premulFloatResult.Width, premulFloatResult.Height));
         }
     }
 

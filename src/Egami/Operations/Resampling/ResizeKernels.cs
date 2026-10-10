@@ -252,6 +252,104 @@ internal static class ResizeKernels
         return opaque;
     }
 
+    /// <summary>Loads 8-bit pixels as floats scaled to 0..1 without premultiplying: premultiplied pixels, already the working form.</summary>
+    internal static void LoadRaw8(ReadOnlySpan<byte> source, Span<float> destination)
+    {
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            ref byte src = ref MemoryMarshal.GetReference(source);
+            ref float dst = ref MemoryMarshal.GetReference(destination);
+            if (destination.Length < source.Length)
+            {
+                throw new ArgumentException("The destination is too short.");
+            }
+
+            Vector256<float> scale = Vector256.Create(1f / 255f);
+            for (; i <= source.Length - 16; i += 16)
+            {
+                (Vector256<ushort> lo, _) = Vector256.Widen(Vector256.Create(Vector128.LoadUnsafe(ref src, (nuint)i), Vector128<byte>.Zero));
+                (Vector256<uint> a, Vector256<uint> b) = Vector256.Widen(lo);
+                (Vector256.ConvertToSingle(a.AsInt32()) * scale).StoreUnsafe(ref dst, (nuint)i);
+                (Vector256.ConvertToSingle(b.AsInt32()) * scale).StoreUnsafe(ref dst, (nuint)(i + 8));
+            }
+        }
+
+        Load8Scalar(source[i..], destination[i..], opaque: true);
+    }
+
+    /// <summary>
+    /// Stores premultiplied working pixels as 8-bit premultiplied pixels with alpha last, clamping a filter's overshoot exactly as
+    /// the straight path does when it divides out alpha, clamps and multiplies again: color = clamp(c, 0, a) / max(a, 1) and
+    /// alpha = clamp(a, 0, 1), then rounded.
+    /// </summary>
+    internal static void StoreRaw8(Span<float> source, Span<byte> destination)
+    {
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            if (source.Length < destination.Length)
+            {
+                throw new ArgumentException("The source is too short.");
+            }
+
+            ref float src = ref MemoryMarshal.GetReference(source);
+            ref byte dst = ref MemoryMarshal.GetReference(destination);
+            Vector256<int> alphaLanes = Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7);
+            for (; i <= destination.Length - 16; i += 16)
+            {
+                Vector256<int> a = Vector256.ConvertToInt32(Clamp(Vector256.LoadUnsafe(ref src, (nuint)i), alphaLanes));
+                Vector256<int> b = Vector256.ConvertToInt32(Clamp(Vector256.LoadUnsafe(ref src, (nuint)(i + 8)), alphaLanes));
+                Vector256<ushort> words = Vector256.Narrow(a.AsUInt32(), b.AsUInt32());
+                Vector256.Narrow(words, words).GetLower().StoreUnsafe(ref dst, (nuint)i);
+            }
+        }
+
+        StoreRaw8Scalar(source[i..], destination[i..]);
+
+        static Vector256<float> Clamp(Vector256<float> v, Vector256<int> alphaLanes)
+        {
+            Vector256<float> raw = Vector256.Shuffle(v, alphaLanes);
+            Vector256<float> clamped = Vector256.Min(Vector256.Max(v, Vector256<float>.Zero), Vector256.Max(raw, Vector256<float>.Zero));
+
+            // Dividing by 1 changes nothing, so the division runs only where a filter pushed alpha above 1.
+            if (Vector256.GreaterThanAny(raw, Vector256<float>.One))
+            {
+                clamped /= Vector256.Max(raw, Vector256<float>.One);
+            }
+
+            return Vector256.Floor((clamped * 255f) + Vector256.Create(0.5f));
+        }
+    }
+
+    /// <summary>The reference for <see cref="StoreRaw8"/>.</summary>
+    internal static void StoreRaw8Scalar(ReadOnlySpan<float> source, Span<byte> destination)
+    {
+        for (int i = 0; i < destination.Length; i += 4)
+        {
+            float raw = source[i + 3];
+            float high = MathF.Max(raw, 0f), scale = MathF.Max(raw, 1f);
+            for (int c = 0; c < 4; c++)
+            {
+                destination[i + c] = (byte)(int)((MathF.Floor(((MathF.Min(MathF.Max(source[i + c], 0f), high) / scale) * 255f) + 0.5f)));
+            }
+        }
+    }
+
+    /// <summary>Clamps premultiplied float pixels in place as <see cref="StoreRaw8"/> does: color = clamp(c, 0, a) / max(a, 1).</summary>
+    internal static void ClampPremultiplied(Span<float> pixels)
+    {
+        for (int i = 0; i < pixels.Length; i += 4)
+        {
+            float raw = pixels[i + 3];
+            float high = MathF.Max(raw, 0f), scale = MathF.Max(raw, 1f);
+            for (int c = 0; c < 4; c++)
+            {
+                pixels[i + c] = MathF.Min(MathF.Max(pixels[i + c], 0f), high) / scale;
+            }
+        }
+    }
+
     /// <summary>The reference for <see cref="Load8"/>, with the opacity already known.</summary>
     internal static void Load8Scalar(ReadOnlySpan<byte> source, Span<float> destination, bool opaque)
     {

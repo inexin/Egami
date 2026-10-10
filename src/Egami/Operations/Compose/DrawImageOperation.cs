@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Egami.Operations.Geometry;
+using Egami.Operations.Resampling;
 using Egami.Pixels;
 
 namespace Egami.Operations.Compose;
@@ -43,6 +44,10 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
             {
                 RunBytes(input, source, area);
             }
+            else if (RowConverter<TPixel>.Premul8 || RowConverter<TPixel>.PremulFloat)
+            {
+                RunPremultiplied(input, source, area);
+            }
             else
             {
                 RunFloat(input, source, area);
@@ -81,6 +86,47 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
                     source.ReadRow(sy + y - area.Y, sx, row);
                     Span<TPixel> destination = input.Destination.Row(y).Slice(area.X, area.Width);
                     ComposeKernels.SourceOver8(MemoryMarshal.Cast<TPixel, uint>(row), MemoryMarshal.Cast<TPixel, uint>(destination), opacity255);
+                }
+            }
+            finally
+            {
+                ArrayPool<TPixel>.Shared.Return(buffer);
+            }
+        });
+    }
+
+    /// <summary>Premultiplied source-over, dst = src + dst × (1 − src.a): the source is read as the destination's own type.</summary>
+    private void RunPremultiplied<TPixel>(OperationInput<TPixel> input, Raster source, Rect area)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        int opacity255 = (int)MathF.Round(opacity * 255);
+        int sx = sourceArea.X + area.X - position.X;
+        int sy = sourceArea.Y + area.Y - position.Y;
+        input.ForEachBand((start, end) =>
+        {
+            int from = Math.Max(start, area.Y);
+            int to = Math.Min(end, area.Bottom);
+            if (from >= to)
+            {
+                return;
+            }
+
+            TPixel[] buffer = ArrayPool<TPixel>.Shared.Rent(area.Width);
+            try
+            {
+                Span<TPixel> row = buffer.AsSpan(0, area.Width);
+                for (int y = from; y < to; y++)
+                {
+                    source.ReadRow(sy + y - area.Y, sx, row);
+                    Span<TPixel> destination = input.Destination.Row(y).Slice(area.X, area.Width);
+                    if (RowConverter<TPixel>.Premul8)
+                    {
+                        ComposeKernels.PremultipliedOver8(MemoryMarshal.Cast<TPixel, uint>(row), MemoryMarshal.Cast<TPixel, uint>(destination), opacity255);
+                    }
+                    else
+                    {
+                        ComposeKernels.PremultipliedOverFloat(MemoryMarshal.Cast<TPixel, float>(row), MemoryMarshal.Cast<TPixel, float>(destination), opacity);
+                    }
                 }
             }
             finally
@@ -135,6 +181,71 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
 /// <summary>Source-over blending of rows.</summary>
 internal static class ComposeKernels
 {
+    /// <summary>
+    /// Premultiplied source-over on 8-bit pixels with alpha last, in integers: the source is scaled by
+    /// <paramref name="opacity255"/>, then dst = src + round(dst × (255 − src.a) / 255) for every channel.
+    /// </summary>
+    internal static void PremultipliedOver8(ReadOnlySpan<uint> source, Span<uint> destination, int opacity255)
+    {
+        for (int i = 0; i < source.Length; i++)
+        {
+            uint s = source[i];
+            if (opacity255 != 255)
+            {
+                s = Scale8(s, (uint)opacity255);
+            }
+
+            uint sa = s >> 24;
+            if (sa == 255)
+            {
+                destination[i] = s;
+                continue;
+            }
+
+            if (s == 0)
+            {
+                continue;
+            }
+
+            uint d = destination[i];
+            uint keep = 255 - sa;
+            uint result = 0;
+            for (int shift = 0; shift < 32; shift += 8)
+            {
+                uint dc = (d >> shift) & 0xFF;
+                uint sc = (s >> shift) & 0xFF;
+                uint mixed = sc + ((((dc * keep) + 127) * 0x8081) >> 23);
+                result |= Math.Min(mixed, 255u) << shift;
+            }
+
+            destination[i] = result;
+        }
+
+        static uint Scale8(uint p, uint factor)
+        {
+            uint result = 0;
+            for (int shift = 0; shift < 32; shift += 8)
+            {
+                result |= (((((p >> shift) & 0xFF) * factor) + 127) * 0x8081 >> 23) << shift;
+            }
+
+            return result;
+        }
+    }
+
+    /// <summary>Premultiplied source-over on float pixels: dst = src × o + dst × (1 − src.a × o), with o the opacity.</summary>
+    internal static void PremultipliedOverFloat(ReadOnlySpan<float> source, Span<float> destination, float opacity)
+    {
+        for (int i = 0; i < source.Length; i += 4)
+        {
+            float keep = 1f - (source[i + 3] * opacity);
+            destination[i] = (source[i] * opacity) + (destination[i] * keep);
+            destination[i + 1] = (source[i + 1] * opacity) + (destination[i + 1] * keep);
+            destination[i + 2] = (source[i + 2] * opacity) + (destination[i + 2] * keep);
+            destination[i + 3] = (source[i + 3] * opacity) + (destination[i + 3] * keep);
+        }
+    }
+
     /// <summary>
     /// Blends RGBA source pixels onto CMYK pixels: each source color becomes inks with the plain formula, then every ink mixes as
     /// ink = source × a + destination × (1 − a), with a the source alpha times <paramref name="opacity"/>.

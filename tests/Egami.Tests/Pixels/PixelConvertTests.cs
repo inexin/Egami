@@ -27,6 +27,7 @@ public class PixelConvertTests
         typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(RgbaF32), typeof(Rgb16), typeof(GrayAlpha16),
         typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32), typeof(GrayF32),
         typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2), typeof(Cmyk8), typeof(Cmyk16),
+        typeof(PremulRgba8), typeof(PremulBgra8), typeof(PremulRgbaF32),
     ];
 
     public static TheoryData<string, string> AllPairs()
@@ -46,7 +47,7 @@ public class PixelConvertTests
     [Fact]
     public void AllPairsCoversEveryCombination()
     {
-        Assert.Equal(484, AllPairs().Count);
+        Assert.Equal(625, AllPairs().Count);
     }
 
     [Theory]
@@ -82,6 +83,9 @@ public class PixelConvertTests
         Assert.Equal(4, Size<Rgb10A2>());
         Assert.Equal(4, Size<Cmyk8>());
         Assert.Equal(8, Size<Cmyk16>());
+        Assert.Equal(4, Size<PremulRgba8>());
+        Assert.Equal(4, Size<PremulBgra8>());
+        Assert.Equal(16, Size<PremulRgbaF32>());
 
         static int Size<T>()
             where T : unmanaged, IPixelType<T>
@@ -198,7 +202,7 @@ public class PixelConvertTests
 
             double[] expected = Expected<TTo>(logical);
             double[] got = Channels(actual[i]);
-            double tolerance = typeof(TTo) == typeof(RgbaF16) ? 1.0 / 2048 : typeof(TTo) == typeof(RgbaF32) || typeof(TTo) == typeof(RgbF32) || typeof(TTo) == typeof(GrayF32) ? 1e-6 : 0;
+            double tolerance = typeof(TTo) == typeof(RgbaF16) ? 1.0 / 2048 : typeof(TTo) == typeof(RgbaF32) || typeof(TTo) == typeof(RgbF32) || typeof(TTo) == typeof(GrayF32) ? 1e-6 : typeof(TTo) == typeof(PremulRgbaF32) ? 1e-5 : 0;
 
             if (typeof(TTo) == typeof(Cmyk8) || typeof(TTo) == typeof(Cmyk16))
             {
@@ -225,9 +229,19 @@ public class PixelConvertTests
     {
         bool gray = typeof(T) == typeof(Gray8) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(GrayAlpha8) || typeof(T) == typeof(GrayAlpha16) || typeof(T) == typeof(GrayF32);
         bool alpha = T_HasAlpha<T>();
-        double max = typeof(T) == typeof(Rgba16) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(Rgb16) || typeof(T) == typeof(GrayAlpha16) ? 65535 : typeof(T) == typeof(RgbaF32) || typeof(T) == typeof(RgbaF16) || typeof(T) == typeof(RgbF32) || typeof(T) == typeof(GrayF32) ? 0 : 255;
+        double max = typeof(T) == typeof(Rgba16) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(Rgb16) || typeof(T) == typeof(GrayAlpha16) ? 65535 : typeof(T) == typeof(RgbaF32) || typeof(T) == typeof(RgbaF16) || typeof(T) == typeof(RgbF32) || typeof(T) == typeof(GrayF32) || typeof(T) == typeof(PremulRgbaF32) ? 0 : 255;
 
         double[] result = (double[])rgba.Clone();
+        if (typeof(T) == typeof(PremulRgba8) || typeof(T) == typeof(PremulBgra8))
+        {
+            return PremultipliedRoundTrip(rgba);
+        }
+
+        if (typeof(T) == typeof(PremulRgbaF32) && rgba[3] == 0)
+        {
+            return [0, 0, 0, 0];
+        }
+
         if (typeof(T) == typeof(Cmyk8) || typeof(T) == typeof(Cmyk16))
         {
             return CmykRoundTrip(rgba, typeof(T) == typeof(Cmyk8) ? 255 : 65535);
@@ -271,6 +285,21 @@ public class PixelConvertTests
             nameof(Rgb10A2) => c == 3 ? 3 : 1023,
             _ => max,
         };
+    }
+
+    /// <summary>The straight color an 8-bit premultiplied type gives back: alpha and premultiplied color rounded to 8 bits.</summary>
+    private static double[] PremultipliedRoundTrip(double[] rgba)
+    {
+        double a = Math.Floor((rgba[3] * 255) + 0.5);
+        double[] result = new double[4];
+        for (int c = 0; c < 3; c++)
+        {
+            double stored = Math.Floor((rgba[c] * a) + 0.5);
+            result[c] = a == 0 ? 0 : Math.Floor((stored * 255 / a) + 0.5) / 255;
+        }
+
+        result[3] = a / 255;
+        return result;
     }
 
     /// <summary>The RGB a CMYK type holds for a color: inks by the plain formula, rounded to the type's levels, then back.</summary>
@@ -336,6 +365,9 @@ public class PixelConvertTests
             nameof(Bgr565) => new Bgr565(Level(c.R, 31), Level(c.G, 63), Level(c.B, 31)),
             nameof(Bgra4444) => new Bgra4444(Level(c.R, 15), Level(c.G, 15), Level(c.B, 15), Level(c.A, 15)),
             nameof(Rgb10A2) => new Rgb10A2(Level(c.R, 1023), Level(c.G, 1023), Level(c.B, 1023), Level(c.A, 3)),
+            nameof(PremulRgba8) => new PremulRgba8(Times(c.R, c.A), Times(c.G, c.A), Times(c.B, c.A), c.A),
+            nameof(PremulBgra8) => new PremulBgra8(Times(c.B, c.A), Times(c.G, c.A), Times(c.R, c.A), c.A),
+            nameof(PremulRgbaF32) => new PremulRgbaF32(c.R / 255f * (c.A / 255f), c.G / 255f * (c.A / 255f), c.B / 255f * (c.A / 255f), c.A / 255f),
             nameof(Cmyk8) => Inks(c, 255, v => new Cmyk8((byte)v[0], (byte)v[1], (byte)v[2], (byte)v[3])),
             nameof(Cmyk16) => Inks(c, 65535, v => new Cmyk16((ushort)v[0], (ushort)v[1], (ushort)v[2], (ushort)v[3])),
             _ => throw new ArgumentOutOfRangeException(nameof(T)),
@@ -368,6 +400,9 @@ public class PixelConvertTests
             Bgr565 p => [p.R / 31.0, p.G / 63.0, p.B / 31.0, 1],
             Bgra4444 p => [p.R / 15.0, p.G / 15.0, p.B / 15.0, p.A / 15.0],
             Rgb10A2 p => [p.R / 1023.0, p.G / 1023.0, p.B / 1023.0, p.A / 3.0],
+            PremulRgba8 p => p.A == 0 ? [0, 0, 0, 0] : [Over(p.R, p.A), Over(p.G, p.A), Over(p.B, p.A), p.A / 255.0],
+            PremulBgra8 p => p.A == 0 ? [0, 0, 0, 0] : [Over(p.R, p.A), Over(p.G, p.A), Over(p.B, p.A), p.A / 255.0],
+            PremulRgbaF32 p => p.A == 0 ? [0, 0, 0, 0] : [p.R / p.A, p.G / p.A, p.B / p.A, p.A],
             Cmyk8 p => [(1 - (p.C / 255.0)) * (1 - (p.K / 255.0)), (1 - (p.M / 255.0)) * (1 - (p.K / 255.0)), (1 - (p.Y / 255.0)) * (1 - (p.K / 255.0)), 1],
             Cmyk16 p => [(1 - (p.C / 65535.0)) * (1 - (p.K / 65535.0)), (1 - (p.M / 65535.0)) * (1 - (p.K / 65535.0)), (1 - (p.Y / 65535.0)) * (1 - (p.K / 65535.0)), 1],
             _ => throw new ArgumentOutOfRangeException(nameof(pixel)),
@@ -381,6 +416,10 @@ public class PixelConvertTests
         int Ink(byte v) => max == 0 ? 0 : (int)Math.Round((max - (v / 255.0)) / max * levels);
         return make([Ink(c.R), Ink(c.G), Ink(c.B), (int)Math.Round((1 - max) * levels)]);
     }
+
+    private static byte Times(byte color, byte alpha) => (byte)Math.Floor((color * alpha / 255.0) + 0.5);
+
+    private static double Over(byte color, byte alpha) => Math.Floor((Math.Min(color, alpha) * 255.0 / alpha) + 0.5) / 255;
 
     private static int Level(byte value, int levels)
     {

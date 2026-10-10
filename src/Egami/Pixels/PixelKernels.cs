@@ -72,6 +72,17 @@ internal static class PixelKernels
             return HalfKernels.ToHalf(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, ushort>(dst), vectorBits) / 4;
         }
 
+        // Premultiplying and unpremultiplying, alpha last in both orders.
+        if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(PremulRgba8)) || (typeof(TFrom) == typeof(Bgra8) && typeof(TTo) == typeof(PremulBgra8)))
+        {
+            return PremulKernels.Premultiply(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, uint>(dst), vectorBits);
+        }
+
+        if ((typeof(TFrom) == typeof(PremulRgba8) && typeof(TTo) == typeof(Rgba8)) || (typeof(TFrom) == typeof(PremulBgra8) && typeof(TTo) == typeof(Bgra8)))
+        {
+            return PremulKernels.Unpremultiply(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, uint>(dst), vectorBits);
+        }
+
         // 5-6-5 and the 8-bit four-channel layouts.
         if (typeof(TFrom) == typeof(Bgr565) && (typeof(TTo) == typeof(Rgba8) || typeof(TTo) == typeof(Bgra8)))
         {

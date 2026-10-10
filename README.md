@@ -237,6 +237,7 @@ first. Your own operation implements `IRasterOperation` and joins a chain with `
 | `RgbaF16` | 16-bit half-float color with alpha | HDR and GPU textures |
 | `Bgr565`, `Bgra4444`, `Rgb10A2` | Packed 16 and 32-bit color | Embedded displays, 10-bit displays |
 | `Cmyk8`, `Cmyk16` | Cyan, magenta, yellow and black ink | CMYK JPEG |
+| `PremulRgba8`, `PremulBgra8`, `PremulRgbaF32` | Color premultiplied by alpha | Compositing |
 
 Convert between them with `raster.As<TPixel>()` for a whole raster, or `PixelConvert.Convert` for a span. Pixel values are
 sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linear light.

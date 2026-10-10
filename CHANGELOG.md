@@ -21,6 +21,10 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   arrive. `Raster.Load<Cmyk8>` of a CMYK or YCCK JPEG returns the file's inks without the RGB step. Resize, blur, sharpen,
   convolution and rotation filter the four inks, so black stays black; `DrawImage` blends inks; color adjustments go through
   RGB and rebuild black.
+- `PremulRgba8`, `PremulBgra8` and `PremulRgbaF32`: color stored premultiplied by alpha. Conversions take and return straight
+  colors (exact rounding both ways, SIMD for the 8-bit pairs, every stored pixel round-trips); resize, blur, sharpen,
+  convolution, rotation and `DrawImage` run on the stored values directly. On translucent images resize is about 30% and
+  `DrawImage` about 35% faster than on `Rgba8`.
 - `Alpha8`: an alpha-only mask. It reads as black with that alpha; converting a color to it keeps only the alpha.
 
 ### Pixel layouts
