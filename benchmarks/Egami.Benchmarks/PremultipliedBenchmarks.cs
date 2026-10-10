@@ -8,7 +8,8 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// Resize, blur and DrawImage on translucent images, straight Rgba8 against PremulRgba8, which skips the multiply and divide
-/// (the 2.1.1 gate: premultiplied must be faster). One thread, so the comparison is per core.
+/// (the 2.1.1 gate: premultiplied must be faster for resize and DrawImage; for blur, which is convolution-bound, matching is
+/// acceptable, as Lars decided on 2026-10-10). One thread, so the comparison is per core.
 /// </summary>
 [MemoryDiagnoser]
 public class PremultipliedBenchmarks
