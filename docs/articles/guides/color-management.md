@@ -90,6 +90,17 @@ from `Primaries` when there is no ICC profile, and mDCV and cLLI from `Hdr`; QOI
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#omit-srgb)]
 
+## HDR
+
+PQ and HLG decode to linear light with reference white (203 cd/m², ITU-R BT.2408) at 1.0, so highlights are values above 1, kept
+by float and half pixel types. Converting an HDR encoding to an SDR one tone maps by default: `ToneMapping.Bt2390` applies the
+EETF of ITU-R BT.2390 to max(R, G, B), which keeps hue, and then clips what is still outside the target's gamut toward each
+pixel's luminance. The source peak comes from `ColorTransformOptions.SourcePeakNits`, else the raster's `Hdr` (MaxCLL, then the
+mastering display's peak), else 1,000 cd/m². `ToneMapping.Reinhard` is a simpler curve; `ToneMapping.Clip` turns mapping off.
+`RasterOps.ToneMap` maps linear HDR pixels in place.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#tone-map)]
+
 ## Code points
 
 `ColorCodePoints` holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami

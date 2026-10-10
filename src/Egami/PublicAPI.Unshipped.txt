@@ -76,6 +76,12 @@ Egami.Colors.ColorTransformOptions.ColorTransformOptions() -> void
 Egami.Colors.ColorTransformOptions.Equals(Egami.Colors.ColorTransformOptions? other) -> bool
 Egami.Colors.ColorTransformOptions.Intent.get -> Egami.Colors.RenderingIntent
 Egami.Colors.ColorTransformOptions.Intent.init -> void
+Egami.Colors.ColorTransformOptions.ReferenceWhiteNits.get -> double
+Egami.Colors.ColorTransformOptions.ReferenceWhiteNits.init -> void
+Egami.Colors.ColorTransformOptions.SourcePeakNits.get -> double?
+Egami.Colors.ColorTransformOptions.SourcePeakNits.init -> void
+Egami.Colors.ColorTransformOptions.ToneMapping.get -> Egami.Colors.ToneMapping
+Egami.Colors.ColorTransformOptions.ToneMapping.init -> void
 Egami.Colors.HdrMetadata
 Egami.Colors.HdrMetadata.<Clone>$() -> Egami.Colors.HdrMetadata!
 Egami.Colors.HdrMetadata.Equals(Egami.Colors.HdrMetadata? other) -> bool
@@ -131,6 +137,10 @@ Egami.Colors.RenderingIntent.AbsoluteColorimetric = 3 -> Egami.Colors.RenderingI
 Egami.Colors.RenderingIntent.Perceptual = 0 -> Egami.Colors.RenderingIntent
 Egami.Colors.RenderingIntent.RelativeColorimetric = 1 -> Egami.Colors.RenderingIntent
 Egami.Colors.RenderingIntent.Saturation = 2 -> Egami.Colors.RenderingIntent
+Egami.Colors.ToneMapping
+Egami.Colors.ToneMapping.Bt2390 = 0 -> Egami.Colors.ToneMapping
+Egami.Colors.ToneMapping.Clip = 2 -> Egami.Colors.ToneMapping
+Egami.Colors.ToneMapping.Reinhard = 1 -> Egami.Colors.ToneMapping
 Egami.Colors.TransferFunction
 Egami.Colors.TransferFunction.Equals(Egami.Colors.TransferFunction? other) -> bool
 Egami.Colors.TransferFunction.FromLinear(double linear) -> double
@@ -195,6 +205,7 @@ Egami.Metadata.RasterMetadata.Hdr.set -> void
 Egami.Metadata.RasterMetadata.Primaries.get -> Egami.Colors.ColorPrimaries?
 Egami.Metadata.RasterMetadata.Primaries.set -> void
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, float? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Pixels.Abgr8
 Egami.Pixels.Abgr8.A -> byte
 Egami.Pixels.Abgr8.Abgr8() -> void

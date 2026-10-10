@@ -231,6 +231,7 @@ public sealed class RasterMetadata
     {
         Gamma = null;
         Primaries = null;
+        Hdr = profile.IsHdr ? Hdr : null;
         CodePoints = profile.Icc is null && !profile.IsEquivalentTo(Colors.ColorProfile.Srgb) ? profile.ToCodePoints() : null;
         FormatDetails?.ClearColorTags();
         Colors.ColorProfile? plain = profile.Model == Colors.ColorModel.Gray

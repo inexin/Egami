@@ -40,7 +40,7 @@ public class CompiledTransformTests(ITestOutputHelper output)
         ColorProfile from = Profile(fromName), to = Profile(toName);
         foreach (RenderingIntent intent in Intents)
         {
-            ColorPipeline pipeline = ColorPipeline.Create(from, to, intent, intent == RenderingIntent.Perceptual);
+            ColorPipeline pipeline = ColorPipeline.Create(from, to, new ColorTransformOptions { Intent = intent, BlackPointCompensation = intent == RenderingIntent.Perceptual }, 1000);
             CompiledTransform compiled = CompiledTransform.Compile(from, to, intent, intent == RenderingIntent.Perceptual);
             int ci = compiled.InputChannels, co = compiled.OutputChannels;
             Assert.Equal((pipeline.InputChannels, pipeline.OutputChannels), (ci, co));

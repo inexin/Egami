@@ -59,12 +59,16 @@ public sealed class ColorTransform
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="transform"/>
     /// </example>
-    public static ColorTransform Create(ColorProfile source, ColorProfile target, ColorTransformOptions? options = null, EgamiContext? context = null)
+    public static ColorTransform Create(ColorProfile source, ColorProfile target, ColorTransformOptions? options = null, EgamiContext? context = null) =>
+        CreateFor(source, target, options, null, context);
+
+    /// <summary>Compiles the conversion with the source peak taken from <paramref name="hdr"/> when the options give none.</summary>
+    internal static ColorTransform CreateFor(ColorProfile source, ColorProfile target, ColorTransformOptions? options, HdrMetadata? hdr, EgamiContext? context)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(target);
         options ??= ColorTransformOptions.Default;
-        CompiledTransform compiled = TransformCache.Get(context ?? EgamiContext.Default, source, target, options.Intent, options.BlackPointCompensation);
+        CompiledTransform compiled = TransformCache.Get(context ?? EgamiContext.Default, source, target, options, options.PeakFor(hdr));
         return new ColorTransform(source, target, options, compiled);
     }
 

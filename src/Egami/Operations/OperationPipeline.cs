@@ -16,14 +16,14 @@ internal static class OperationPipeline
     /// <returns>The planned steps and the size after each one.</returns>
     internal static Plan Build(Action<RasterOps> build, Size size, RasterMetadata? metadata = null)
     {
-        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal, metadata is null ? null : metadata.GetColorProfile);
+        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal, metadata is null ? null : metadata.GetColorProfile, metadata?.Hdr);
     }
 
     /// <summary>
     /// Records and plans the chain for an image stored with <paramref name="orientation"/>, whose pixels are in the encoding
     /// <paramref name="colorProfile"/> returns (sRGB when <see langword="null"/>); it is asked only if the chain converts color.
     /// </summary>
-    internal static Plan Build(Action<RasterOps> build, Size size, ImageOrientation orientation, Func<Colors.ColorProfile>? colorProfile = null)
+    internal static Plan Build(Action<RasterOps> build, Size size, ImageOrientation orientation, Func<Colors.ColorProfile>? colorProfile = null, Colors.HdrMetadata? hdr = null)
     {
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
@@ -35,8 +35,14 @@ internal static class OperationPipeline
             if (steps[i] is Color.ConvertColorOperation convert)
             {
                 current ??= colorProfile?.Invoke() ?? Colors.ColorProfile.Srgb;
-                steps[i] = convert.Bind(current);
+                steps[i] = convert.Bind(current, hdr);
+                hdr = convert.Target.IsHdr ? hdr : null;
                 current = convert.Target;
+            }
+            else if (steps[i] is Color.ToneMapOperation tone)
+            {
+                steps[i] = tone.Bind(hdr);
+                hdr = null;
             }
         }
 

@@ -163,6 +163,27 @@ public class ColorManagement
     }
 
     [Fact]
+    public void ToneMap()
+    {
+        using Raster<RgbaF32> hdr = Raster.Create<RgbaF32>(2, 2, new RgbaF32(0.5f, 0.5f, 0.5f, 1));
+        hdr.Metadata.CodePoints = ColorCodePoints.Rec2100Pq;
+
+        #region tone-map
+        // HDR to SDR tone maps by default (BT.2390, source peak from the file's mDCV/cLLI, else 1,000 cd/m²).
+        using Raster<Rgb8> web = hdr.ConvertColor<Rgb8>(ColorProfile.Srgb);
+
+        // Or choose the curve and peak; Clip turns tone mapping off.
+        using Raster<Rgb8> soft = hdr.ConvertColor<Rgb8>(ColorProfile.Srgb, new ColorTransformOptions { ToneMapping = ToneMapping.Reinhard, SourcePeakNits = 4000 });
+
+        // Linear HDR pixels (1.0 = reference white, 203 cd/m²) can be tone mapped in place.
+        using Raster<RgbaF32> linear = hdr.ConvertColor<RgbaF32>(ColorProfile.LinearSrgb, new ColorTransformOptions { ToneMapping = ToneMapping.Clip });
+        linear.Apply(ops => ops.ToneMap(ToneMapping.Bt2390, sourcePeakNits: 1000));
+        #endregion
+
+        Assert.Equal(web.Width, soft.Width);
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);

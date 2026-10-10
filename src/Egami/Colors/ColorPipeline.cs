@@ -19,10 +19,11 @@ internal sealed class ColorPipeline
     private readonly FromPcs _target;
     private readonly Vector3d _scale;
     private readonly Vector3d _offset;
+    private readonly HdrStep _hdr;
 
-    private ColorPipeline(ToPcs source, FromPcs target, Vector3d scale, Vector3d offset)
+    private ColorPipeline(ToPcs source, FromPcs target, Vector3d scale, Vector3d offset, HdrStep hdr)
     {
-        (_source, _target, _scale, _offset) = (source, target, scale, offset);
+        (_source, _target, _scale, _offset, _hdr) = (source, target, scale, offset, hdr);
     }
 
     public int InputChannels => _source.Channels;
@@ -31,19 +32,33 @@ internal sealed class ColorPipeline
 
     /// <summary>Builds the pipeline from <paramref name="from"/> to <paramref name="to"/>.</summary>
     /// <exception cref="UnsupportedFormatException">A profile has no tables for the direction it is used in.</exception>
-    public static ColorPipeline Create(ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation) => Build(from, to, intent, blackPointCompensation);
+    public static ColorPipeline Create(ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation) => Build(from, to, intent, blackPointCompensation, null, 1000);
+
+    /// <summary>
+    /// Builds the pipeline with the HDR steps of <paramref name="options"/>: reference white scaling on PQ and HLG ends, and for HDR
+    /// to SDR, tone mapping of the source's linear RGB (peak <paramref name="sourcePeakNits"/>) and a hue-keeping gamut clip.
+    /// </summary>
+    public static ColorPipeline Create(ColorProfile from, ColorProfile to, ColorTransformOptions options, double sourcePeakNits) =>
+        Build(from, to, options.Intent, options.BlackPointCompensation, options, sourcePeakNits);
 
     /// <summary>
     /// Builds a pipeline from <paramref name="from"/> to connection space XYZ (D50), with the steps a conversion to an abstract
     /// Lab profile gets: absolute colorimetric against a D50 white, and black point compensation to a black of 0.
     /// </summary>
-    public static ColorPipeline ToConnectionSpace(ColorProfile from, RenderingIntent intent, bool blackPointCompensation) => Build(from, null, intent, blackPointCompensation);
+    public static ColorPipeline ToConnectionSpace(ColorProfile from, RenderingIntent intent, bool blackPointCompensation) => Build(from, null, intent, blackPointCompensation, null, 1000);
 
     // A null target is the connection space itself, as an abstract version 4 profile: D50 white, black 0.
-    private static ColorPipeline Build(ColorProfile from, ColorProfile? to, RenderingIntent intent, bool blackPointCompensation)
+    private static ColorPipeline Build(ColorProfile from, ColorProfile? to, RenderingIntent intent, bool blackPointCompensation, ColorTransformOptions? options, double sourcePeakNits)
     {
-        ToPcs source = ToPcs.Create(from, intent);
-        FromPcs target = to is null ? new FromPcs.Connection() : FromPcs.Create(to, intent);
+        double white = options?.ReferenceWhiteNits ?? 203;
+        bool tone = options is not null && from.IsHdr && to is not null && !to.IsHdr && options.ToneMapping != ToneMapping.Clip;
+        HdrStep hdr = new(
+            from.IsHdr ? 203 / white : 1,
+            to?.IsHdr == true ? white / 203 : 1,
+            tone ? options!.ToneMapping : null,
+            sourcePeakNits / white);
+        ToPcs source = ToPcs.Create(from, intent, hdr);
+        FromPcs target = to is null ? new FromPcs.Connection() : FromPcs.Create(to, intent, hdr);
         Vector3d scale = new(1, 1, 1), offset = default;
         if (intent == RenderingIntent.AbsoluteColorimetric)
         {
@@ -55,7 +70,7 @@ internal sealed class ColorPipeline
             (scale, offset) = Compensation(BlackPoint(from, intent), to is null ? default : DestinationBlackPoint(to, intent));
         }
 
-        return new ColorPipeline(source, target, scale, offset);
+        return new ColorPipeline(source, target, scale, offset, hdr);
     }
 
     // Black point compensation: a per-channel line through D50 white that takes the source black to the target black.
@@ -85,7 +100,7 @@ internal sealed class ColorPipeline
         }
 
         Matrix3d matrix = fromPcs * Matrix3d.Diagonal(_scale) * toPcs;
-        return new LinearForm(inCurves, matrix, fromPcs * _offset, outCurves);
+        return new LinearForm(inCurves, matrix, fromPcs * _offset, outCurves, _hdr, _hdr.Tone is null ? null : _target.Luminance);
     }
 
     /// <summary>Converts one color.</summary>
@@ -201,6 +216,8 @@ internal sealed class ColorPipeline
         return Cie.LabToXyz(new Vector3d(black, initial.Y, initial.Z), Cie.D50);
     }
 
+    private static Vector3d Row(Matrix3d m, int row) => new(m[row, 0], m[row, 1], m[row, 2]);
+
     // Gray in: Y becomes D50 times Y. Gray out: Y is taken from XYZ.
     private static Matrix3d GrayIn => new(Cie.D50.X, 0, 0, Cie.D50.Y, 0, 0, Cie.D50.Z, 0, 0);
 
@@ -313,11 +330,12 @@ internal sealed class ColorPipeline
 
         public int Channels { get; }
 
-        public static ToPcs Create(ColorProfile profile, RenderingIntent intent)
+        public static ToPcs Create(ColorProfile profile, RenderingIntent intent, HdrStep? hdr = null)
         {
-            if (profile.IccModel is not IccModel icc)
+            // An HDR profile from ICC is used through its cicp code points, not its fallback curve.
+            if (profile.IccModel is not IccModel icc || (profile.IsHdr && profile.Primaries is not null))
             {
-                return new Encoding(profile);
+                return new Encoding(profile, hdr ?? HdrStep.None);
             }
 
             IccLut? lut = icc.DeviceToPcs[TableIndex(intent)] ?? icc.DeviceToPcs[0];
@@ -334,8 +352,11 @@ internal sealed class ColorPipeline
         /// <summary>Gets the curves and the matrix from linear device values to XYZ, when the profile is that simple.</summary>
         public virtual (TransferFunction[] Curves, Matrix3d Matrix)? Linear => null;
 
-        /// <summary>A built-in or created encoding: its curve, its primaries' matrix, and Bradford adaptation to D50.</summary>
-        private sealed class Encoding(ColorProfile profile) : ToPcs(profile.Model == ColorModel.Gray ? 1 : 3)
+        /// <summary>
+        /// A built-in or created encoding: its curve (scaled to the reference white, and tone mapped on max(R, G, B) for HDR to
+        /// SDR), its primaries' matrix, and Bradford adaptation to D50.
+        /// </summary>
+        private sealed class Encoding(ColorProfile profile, HdrStep hdr) : ToPcs(profile.Model == ColorModel.Gray ? 1 : 3)
         {
             private readonly TransferFunction _curve = profile.Transfer!;
             private readonly Matrix3d _matrix = profile.Model == ColorModel.Gray ? Matrix3d.Identity : Matrix3d.Bradford(profile.White.ToXyz(), Cie.D50) * profile.ToXyz();
@@ -346,10 +367,18 @@ internal sealed class ColorPipeline
             {
                 if (Channels == 1)
                 {
-                    return Cie.D50 * _curve.ToLinear(device[0]);
+                    double y = _curve.ToLinear(device[0]) * hdr.InScale;
+                    return Cie.D50 * (hdr.Tone is ToneMapping m ? ToneCurves.Map(m, y, hdr.PeakRelative) : y);
                 }
 
-                return _matrix * new Vector3d(_curve.ToLinear(device[0]), _curve.ToLinear(device[1]), _curve.ToLinear(device[2]));
+                Vector3d linear = new Vector3d(_curve.ToLinear(device[0]), _curve.ToLinear(device[1]), _curve.ToLinear(device[2])) * hdr.InScale;
+                if (hdr.Tone is ToneMapping method)
+                {
+                    double max = Math.Max(linear.X, Math.Max(linear.Y, linear.Z));
+                    linear *= max > 0 ? ToneCurves.Map(method, max, hdr.PeakRelative) / max : 0;
+                }
+
+                return _matrix * linear;
             }
         }
 
@@ -406,11 +435,12 @@ internal sealed class ColorPipeline
 
         public int Channels { get; }
 
-        public static FromPcs Create(ColorProfile profile, RenderingIntent intent)
+        public static FromPcs Create(ColorProfile profile, RenderingIntent intent, HdrStep? hdr = null)
         {
-            if (profile.IccModel is not IccModel icc)
+            hdr ??= HdrStep.None;
+            if (profile.IccModel is not IccModel icc || (profile.IsHdr && profile.Primaries is not null))
             {
-                return new Encoding(profile);
+                return new Encoding(profile, hdr);
             }
 
             IccLut? lut = icc.PcsToDevice[TableIndex(intent)] ?? icc.PcsToDevice[0];
@@ -421,7 +451,7 @@ internal sealed class ColorPipeline
 
             if (icc.Curves is not null && icc.DeviceToPcs[0] is null)
             {
-                return new Matrix(icc);
+                return new Matrix(icc, hdr.Tone is not null);
             }
 
             throw new UnsupportedFormatException($"The ICC profile '{profile.Name}' has no tables for converting to it.");
@@ -432,6 +462,32 @@ internal sealed class ColorPipeline
         /// <summary>Gets the matrix from XYZ to linear device values and the curves, when the profile is that simple.</summary>
         public virtual (TransferFunction[] Curves, Matrix3d Matrix)? Linear => null;
 
+        /// <summary>Gets the luminance of linear device RGB (the Y row of its matrix to XYZ), for the gamut clip; null for gray.</summary>
+        public virtual Vector3d? Luminance => null;
+
+        /// <summary>
+        /// Brings a linear RGB color into 0..1 by moving it toward its luminance Y, which keeps its hue: the largest step back that
+        /// puts every channel in range, and white where Y itself is above 1.
+        /// </summary>
+        internal static Vector3d GamutClip(Vector3d c, Vector3d luminance)
+        {
+            double y = Math.Clamp((luminance.X * c.X) + (luminance.Y * c.Y) + (luminance.Z * c.Z), 0, 1);
+            double t = 1;
+            foreach (double v in (ReadOnlySpan<double>)[c.X, c.Y, c.Z])
+            {
+                if (v > 1)
+                {
+                    t = Math.Min(t, (1 - y) / (v - y));
+                }
+                else if (v < 0)
+                {
+                    t = Math.Min(t, y / (y - v));
+                }
+            }
+
+            return t >= 1 ? c : new Vector3d(y + ((c.X - y) * t), y + ((c.Y - y) * t), y + ((c.Z - y) * t));
+        }
+
         /// <summary>The connection space itself: XYZ out as it comes.</summary>
         public sealed class Connection() : FromPcs(3)
         {
@@ -441,31 +497,42 @@ internal sealed class ColorPipeline
             }
         }
 
-        private sealed class Encoding(ColorProfile profile) : FromPcs(profile.Model == ColorModel.Gray ? 1 : 3)
+        private sealed class Encoding(ColorProfile profile, HdrStep hdr) : FromPcs(profile.Model == ColorModel.Gray ? 1 : 3)
         {
             private readonly TransferFunction _curve = profile.Transfer!;
             private readonly Matrix3d _matrix = profile.Model == ColorModel.Gray ? Matrix3d.Identity : (Matrix3d.Bradford(profile.White.ToXyz(), Cie.D50) * profile.ToXyz()).Inverse();
+            private readonly Vector3d? _luminance = profile.Model == ColorModel.Gray ? null : Row(profile.ToXyz(), 1);
 
             public override (TransferFunction[] Curves, Matrix3d Matrix)? Linear => Channels == 1 ? ([_curve], GrayOut) : ([_curve, _curve, _curve], _matrix);
+
+            public override Vector3d? Luminance => _luminance;
 
             public override void Run(Vector3d xyz, Span<double> device)
             {
                 if (Channels == 1)
                 {
-                    device[0] = _curve.FromLinear(xyz.Y);
+                    device[0] = _curve.FromLinear(hdr.Tone is null ? xyz.Y * hdr.OutScale : Math.Clamp(xyz.Y, 0, 1));
                     return;
                 }
 
                 Vector3d linear = _matrix * xyz;
+                if (hdr.Tone is not null)
+                {
+                    linear = GamutClip(linear, _luminance!.Value);
+                }
+
+                linear *= hdr.OutScale;
                 device[0] = _curve.FromLinear(linear.X);
                 device[1] = _curve.FromLinear(linear.Y);
                 device[2] = _curve.FromLinear(linear.Z);
             }
         }
 
-        private sealed class Matrix(IccModel icc) : FromPcs(icc.Channels)
+        private sealed class Matrix(IccModel icc, bool clip = false) : FromPcs(icc.Channels)
         {
             private readonly Matrix3d _inverse = icc.Model == ColorModel.Gray ? Matrix3d.Identity : icc.Colorants!.Value.Inverse();
+
+            public override Vector3d? Luminance => icc.Model == ColorModel.Gray ? null : Row(icc.Colorants!.Value, 1) * (1 / Cie.D50.Y);
 
             public override (TransferFunction[] Curves, Matrix3d Matrix)? Linear
             {
@@ -491,6 +558,11 @@ internal sealed class ColorPipeline
                 }
 
                 Vector3d linear = _inverse * xyz;
+                if (clip)
+                {
+                    linear = GamutClip(linear, Luminance!.Value);
+                }
+
                 device[0] = curves[0].EvaluateInverse(linear.X);
                 device[1] = curves[1].EvaluateInverse(linear.Y);
                 device[2] = curves[2].EvaluateInverse(linear.Z);
@@ -511,8 +583,21 @@ internal sealed class ColorPipeline
     }
 }
 
-/// <summary>A pipeline as curves, an affine map and curves; see <see cref="ColorPipeline.GetLinearForm"/>.</summary>
-internal sealed record LinearForm(TransferFunction[] InCurves, Matrix3d Matrix, Vector3d Offset, TransferFunction[] OutCurves);
+/// <summary>
+/// A pipeline as curves, an affine map and curves; see <see cref="ColorPipeline.GetLinearForm"/>. The HDR steps go around the map:
+/// the input scale and tone mapping before it, the gamut clip toward <paramref name="Luminance"/> and the output scale after it.
+/// </summary>
+internal sealed record LinearForm(TransferFunction[] InCurves, Matrix3d Matrix, Vector3d Offset, TransferFunction[] OutCurves, HdrStep Hdr, Vector3d? Luminance);
+
+/// <summary>
+/// The HDR steps of a conversion: linear light from a PQ or HLG source times <paramref name="InScale"/> (203 over the reference
+/// white), into a PQ or HLG target times <paramref name="OutScale"/>, and for HDR to SDR the tone curve with the source peak
+/// relative to reference white.
+/// </summary>
+internal sealed record HdrStep(double InScale, double OutScale, ToneMapping? Tone, double PeakRelative)
+{
+    public static HdrStep None { get; } = new(1, 1, null, 1);
+}
 
 /// <summary>Evaluates the stages of an ICC table on normalized values, and the connection space encodings at its ends.</summary>
 internal static class IccStages

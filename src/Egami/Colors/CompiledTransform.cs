@@ -28,14 +28,19 @@ internal abstract class CompiledTransform
 
     /// <summary>Compiles the conversion; profiles that mean the same colors give an identity.</summary>
     /// <exception cref="UnsupportedFormatException">A profile has no tables for the direction it is used in.</exception>
-    public static CompiledTransform Compile(ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation)
+    public static CompiledTransform Compile(ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation) =>
+        Compile(from, to, new ColorTransformOptions { Intent = intent, BlackPointCompensation = blackPointCompensation }, 1000);
+
+    /// <summary>Compiles the conversion with the HDR steps of <paramref name="options"/> and a source peak.</summary>
+    /// <exception cref="UnsupportedFormatException">A profile has no tables for the direction it is used in.</exception>
+    public static CompiledTransform Compile(ColorProfile from, ColorProfile to, ColorTransformOptions options, double sourcePeakNits)
     {
         if (from.IsEquivalentTo(to))
         {
             return new IdentityTransform(Channels(from));
         }
 
-        ColorPipeline pipeline = ColorPipeline.Create(from, to, intent, blackPointCompensation);
+        ColorPipeline pipeline = ColorPipeline.Create(from, to, options, sourcePeakNits);
         return pipeline.GetLinearForm() is LinearForm form ? new MatrixTransform(form, pipeline.InputChannels, pipeline.OutputChannels) : new GridTransform(pipeline);
     }
 
@@ -104,9 +109,21 @@ internal sealed class MatrixTransform : CompiledTransform
         Matrix3d m = form.Matrix;
         _m = [(float)m[0, 0], (float)m[0, 1], (float)m[0, 2], (float)m[1, 0], (float)m[1, 1], (float)m[1, 2], (float)m[2, 0], (float)m[2, 1], (float)m[2, 2],
               (float)form.Offset.X, (float)form.Offset.Y, (float)form.Offset.Z];
-        _decode8 = [.. _in.Select(c => Enumerable.Range(0, 256).Select(i => (float)c.ToLinear(i / 255.0)).ToArray())];
-        _encode8 = [.. _out.Select(EncodeTable)];
+        HdrStep hdr = form.Hdr;
+        (_inScale, _outScale) = ((float)hdr.InScale, (float)hdr.OutScale);
+        _decode8 = [.. _in.Select(c => Enumerable.Range(0, 256).Select(i => (float)(c.ToLinear(i / 255.0) * hdr.InScale)).ToArray())];
+        _encode8 = hdr.OutScale == 1 ? [.. _out.Select(EncodeTable)] : new byte[]?[_out.Length];
+        if (hdr.Tone is ToneMapping tone)
+        {
+            _tone = new ToneTable(tone, hdr.PeakRelative);
+            _luminance = form.Luminance is Vector3d l ? [(float)l.X, (float)l.Y, (float)l.Z] : null;
+        }
     }
+
+    private readonly float _inScale;
+    private readonly float _outScale;
+    private readonly ToneTable? _tone;
+    private readonly float[]? _luminance;
 
     public override void Apply(ReadOnlySpan<float> source, Span<float> destination, int count)
     {
@@ -135,7 +152,16 @@ internal sealed class MatrixTransform : CompiledTransform
                 _in[2].ToLinear(z, z);
             }
 
+            if (_inScale != 1)
+            {
+                Scale(x, _inScale);
+                Scale(y, _inScale);
+                Scale(z, _inScale);
+            }
+
+            BeforeMap(x, y, z);
             Affine(x, y, z, r, g, b);
+            AfterMap(r, g, b, _outScale);
             _out[0].FromLinear(r, r);
             if (OutputChannels == 1)
             {
@@ -183,7 +209,9 @@ internal sealed class MatrixTransform : CompiledTransform
                 }
             }
 
+            BeforeMap(x, y, z);
             Affine(x, y, z, r, g, b);
+            AfterMap(r, g, b, _outScale);
             Span<byte> dst = destination[(start * destinationStride)..];
             for (int c = 0; c < outs; c++)
             {
@@ -207,6 +235,77 @@ internal sealed class MatrixTransform : CompiledTransform
                 }
             }
         }
+    }
+
+    private static void Scale(Span<float> plane, float factor)
+    {
+        for (int i = 0; i < plane.Length; i++)
+        {
+            plane[i] *= factor;
+        }
+    }
+
+    // Tone mapping of HDR linear light on max(R, G, B), or on gray.
+    private void BeforeMap(Span<float> x, Span<float> y, Span<float> z)
+    {
+        if (_tone is not ToneTable tone)
+        {
+            return;
+        }
+
+        bool gray = InputChannels == 1;
+        for (int i = 0; i < x.Length; i++)
+        {
+            float max = gray ? x[i] : MathF.Max(x[i], MathF.Max(y[i], z[i]));
+            float ratio = tone.Ratio(max);
+            x[i] *= ratio;
+            if (!gray)
+            {
+                y[i] *= ratio;
+                z[i] *= ratio;
+            }
+        }
+    }
+
+    // The hue-keeping gamut clip after tone mapping, then the scale into an HDR target.
+    private void AfterMap(Span<float> r, Span<float> g, Span<float> b, float scale)
+    {
+        if (_luminance is float[] l && OutputChannels == 3)
+        {
+            for (int i = 0; i < r.Length; i++)
+            {
+                float y = Math.Clamp((l[0] * r[i]) + (l[1] * g[i]) + (l[2] * b[i]), 0f, 1f);
+                float t = 1f;
+                t = Limit(t, r[i], y);
+                t = Limit(t, g[i], y);
+                t = Limit(t, b[i], y);
+                if (t < 1f)
+                {
+                    r[i] = y + ((r[i] - y) * t);
+                    g[i] = y + ((g[i] - y) * t);
+                    b[i] = y + ((b[i] - y) * t);
+                }
+            }
+        }
+        else if (_tone is not null && OutputChannels == 1)
+        {
+            for (int i = 0; i < r.Length; i++)
+            {
+                r[i] = Math.Clamp(r[i], 0f, 1f);
+            }
+        }
+
+        if (scale != 1)
+        {
+            Scale(r, scale);
+            if (OutputChannels == 3)
+            {
+                Scale(g, scale);
+                Scale(b, scale);
+            }
+        }
+
+        static float Limit(float t, float v, float y) => v > 1f ? MathF.Min(t, (1f - y) / (v - y)) : v < 0f ? MathF.Min(t, y / (y - v)) : t;
     }
 
     // A 65536-entry table from linear to 8 bits works where the curve takes linear 0..1 onto encoded 0..1, as SDR curves do;
@@ -346,6 +445,57 @@ internal sealed class MatrixTransform : CompiledTransform
     private static Vector128<float> Row(float[] m, int row, Vector128<float> x, Vector128<float> y, Vector128<float> z, bool gray) =>
         gray ? (Vector128.Create(m[row * 3]) * x) + Vector128.Create(m[9 + row])
              : (Vector128.Create(m[row * 3]) * x) + (Vector128.Create(m[(row * 3) + 1]) * y) + (Vector128.Create(m[(row * 3) + 2]) * z) + Vector128.Create(m[9 + row]);
+}
+
+/// <summary>
+/// The tone curve's ratio Map(m) / m on max(R, G, B), tabulated against log2 m (512 entries an octave from 2^-16 to just above the
+/// source peak) and interpolated, within 1e-5 of the double-precision curve; past the table the ratio is computed directly.
+/// </summary>
+internal sealed class ToneTable
+{
+    private const float Low = -16f;
+    private const int PerOctave = 512;
+
+    private readonly float[] _ratios;
+    private readonly float _high;
+    private readonly ToneMapping _method;
+    private readonly double _peak;
+
+    public ToneTable(ToneMapping method, double peak)
+    {
+        (_method, _peak) = (method, peak);
+        _high = (float)Math.Log2(Math.Max(peak, 1) * 1.01);
+        int n = (int)Math.Ceiling((_high - Low) * PerOctave) + 2;
+        _ratios = new float[n];
+        for (int i = 0; i < n; i++)
+        {
+            double m = Math.Pow(2, Low + ((double)i / PerOctave));
+            _ratios[i] = (float)(ToneCurves.Map(method, m, peak) / m);
+        }
+    }
+
+    public float Ratio(float max)
+    {
+        if (!(max > 0f))
+        {
+            return 0f;
+        }
+
+        float p = (MathF.Log2(max) - Low) * PerOctave;
+        if (p < 0f)
+        {
+            return _ratios[0];
+        }
+
+        if (p >= _ratios.Length - 1)
+        {
+            return (float)(ToneCurves.Map(_method, max, _peak) / max);
+        }
+
+        int i = (int)p;
+        float a = _ratios[i];
+        return a + ((p - i) * (_ratios[i + 1] - a));
+    }
 }
 
 /// <summary>
@@ -563,10 +713,17 @@ internal static class TransformCache
 
     private static readonly ConditionalWeakTable<EgamiContext, Store> Stores = [];
 
-    public static CompiledTransform Get(EgamiContext context, ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation)
+    public static CompiledTransform Get(EgamiContext context, ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation) =>
+        Get(context, from, to, new ColorTransformOptions { Intent = intent, BlackPointCompensation = blackPointCompensation }, 1000);
+
+    public static CompiledTransform Get(EgamiContext context, ColorProfile from, ColorProfile to, ColorTransformOptions options, double sourcePeakNits)
     {
         Store store = Stores.GetValue(context, _ => new Store());
-        Key key = new(ProfileKey.Of(from), ProfileKey.Of(to), intent, blackPointCompensation);
+
+        // The peak and HDR options only matter for HDR ends; leaving them out of other keys lets those transforms be shared.
+        bool hdr = from.IsHdr || to.IsHdr;
+        Key key = new(ProfileKey.Of(from), ProfileKey.Of(to), options.Intent, options.BlackPointCompensation,
+            hdr ? options.ToneMapping : ToneMapping.Bt2390, hdr ? sourcePeakNits : 0, hdr ? options.ReferenceWhiteNits : 0);
         lock (store)
         {
             if (store.Transforms.TryGetValue(key, out CompiledTransform? cached))
@@ -575,7 +732,7 @@ internal static class TransformCache
             }
         }
 
-        CompiledTransform compiled = CompiledTransform.Compile(from, to, intent, blackPointCompensation);
+        CompiledTransform compiled = CompiledTransform.Compile(from, to, options, sourcePeakNits);
         lock (store)
         {
             if (store.Transforms.TryAdd(key, compiled))
@@ -601,7 +758,7 @@ internal static class TransformCache
         public Queue<Key> Order { get; } = new();
     }
 
-    private readonly record struct Key(ProfileKey From, ProfileKey To, RenderingIntent Intent, bool BlackPointCompensation);
+    private readonly record struct Key(ProfileKey From, ProfileKey To, RenderingIntent Intent, bool BlackPointCompensation, ToneMapping ToneMapping, double Peak, double ReferenceWhite);
 
     /// <summary>What a profile means: its ICC bytes when it came from a profile, else its model, primaries, white and curve.</summary>
     private sealed class ProfileKey : IEquatable<ProfileKey>

@@ -328,7 +328,7 @@ public sealed class Raster<TPixel> : Raster
         ThrowIfDisposed();
         Colors.ColorProfile from = Operations.Color.ConvertColorOperation.ForPixels(Metadata.GetColorProfile(), Colors.ColorTransform.ModelOf<TPixel>() ?? Colors.ColorModel.Rgb);
         Colors.ColorProfile to = Operations.Color.ConvertColorOperation.ForPixels(target, Colors.ColorTransform.ModelOf<TTo>() ?? Colors.ColorModel.Rgb);
-        Colors.ColorTransform transform = Colors.ColorTransform.Create(from, to, options, Context);
+        Colors.ColorTransform transform = Colors.ColorTransform.CreateFor(from, to, options, Metadata.Hdr, Context);
         List<Frame<TTo>> frames = new(_frames.Count);
         try
         {

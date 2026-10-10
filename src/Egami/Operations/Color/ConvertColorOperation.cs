@@ -8,13 +8,13 @@ namespace Egami.Operations.Color;
 /// Converts pixels in place from the raster's encoding to another of the same model. Recorded unbound; the pipeline binds it to
 /// the encoding the raster has at that point in the chain (<see cref="Bind"/>), and records the new encoding in the metadata.
 /// </summary>
-internal sealed class ConvertColorOperation(ColorProfile target, ColorTransformOptions options, ColorProfile? source = null) : IRasterOperation, IUpdatesColor
+internal sealed class ConvertColorOperation(ColorProfile target, ColorTransformOptions options, ColorProfile? source = null, HdrMetadata? hdr = null) : IRasterOperation, IUpdatesColor
 {
     public ColorProfile Target => target;
 
     public ColorProfile? Source => source;
 
-    public ConvertColorOperation Bind(ColorProfile from) => new(target, options, from);
+    public ConvertColorOperation Bind(ColorProfile from, HdrMetadata? hdrMetadata) => new(target, options, from, hdrMetadata);
 
     public Size OutputSize(Size input) => input;
 
@@ -34,7 +34,7 @@ internal sealed class ConvertColorOperation(ColorProfile target, ColorTransformO
                 $"ConvertColor converts in place, so it keeps the pixel model ({model}); '{target.Name}' is {target.Model}. Use Raster.ConvertColor<TTo> to change the pixel type.");
         }
 
-        ColorTransform transform = ColorTransform.Create(from, to, options, input.Context);
+        ColorTransform transform = ColorTransform.CreateFor(from, to, options, hdr, input.Context);
         if (transform.IsIdentity && input.IsInPlace)
         {
             return;

@@ -90,3 +90,8 @@ icc/synthetic/
 ../reference/icc/
   Little CMS's reading of every profile above and its transforms of fixed inputs, made by tools/make-icc-references.py.
   Public domain, as the profiles.
+
+hdr/
+  pattern-pq.png and pattern-hlg.png: ramps from 0 to 4,000 cd/m² of gray and saturated Rec. 2020 colors; duck-pq.png and
+  duck-hlg.png: ops/duck.png reduced, with its highlights stretched to about 2,000 cd/m². Written by Egami as 16-bit Rec. 2100
+  PQ and HLG PNGs with cICP, mDCV and cLLI, by tools/make-hdr-images. Public domain, as their source.

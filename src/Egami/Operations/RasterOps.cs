@@ -321,6 +321,32 @@ public sealed class RasterOps
     }
 
     /// <summary>
+    /// Maps HDR linear light into 0..1: pixel values are read as linear light with reference white at 1.0 (as RgbaF32, RgbaF16 and
+    /// RgbF32 rasters hold PQ and HLG images converted to a linear encoding), and the tone curve brings the brightest down to 1
+    /// on max(R, G, B), which keeps hue. Gray pixels map their value; CMYK pixels are left alone. The metadata's
+    /// <see cref="Metadata.RasterMetadata.Hdr"/> is cleared, as the pixels are no longer HDR.
+    /// </summary>
+    /// <param name="method">The curve. Defaults to <see cref="Colors.ToneMapping.Bt2390"/>.</param>
+    /// <param name="sourcePeakNits">
+    /// The brightest light in the image, in cd/m² (reference white is 203), or <see langword="null"/> to take it from the
+    /// metadata's <see cref="Metadata.RasterMetadata.Hdr"/> (MaxCLL, then the mastering peak), else 1,000.
+    /// </param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="sourcePeakNits"/> is not a positive finite number.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="tone-map"/>
+    /// </example>
+    public RasterOps ToneMap(Colors.ToneMapping method = Colors.ToneMapping.Bt2390, float? sourcePeakNits = null)
+    {
+        if (sourcePeakNits is float peak && !(float.IsFinite(peak) && peak > 0))
+        {
+            throw new ArgumentOutOfRangeException(nameof(sourcePeakNits), sourcePeakNits, "The peak must be a positive finite number.");
+        }
+
+        return Add(new Color.ToneMapOperation(method, sourcePeakNits));
+    }
+
+    /// <summary>
     /// Applies a color matrix to straight RGBA and clamps the result. Adjacent color steps are multiplied into one matrix before
     /// anything runs, so the chain clamps once, at its end.
     /// </summary>
