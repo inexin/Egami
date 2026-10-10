@@ -12,7 +12,7 @@ namespace Egami.Benchmarks;
 public class PixelConvertBenchmarks
 {
     private const int Pixels = 1024 * 1024;
-    private readonly byte[] _source = new byte[Pixels * 8];
+    private readonly byte[] _source = new byte[Pixels * 16];
     private readonly byte[] _destination = new byte[Pixels * 16];
 
     [GlobalSetup]
@@ -73,6 +73,18 @@ public class PixelConvertBenchmarks
     public void Abgr8ToBgra8()
     {
         PixelConvert.Convert(Source<Abgr8>(), Destination<Bgra8>());
+    }
+
+    [Benchmark]
+    public void RgbaF32ToRgbaF16()
+    {
+        PixelConvert.Convert(Source<RgbaF32>(), Destination<RgbaF16>());
+    }
+
+    [Benchmark]
+    public void RgbaF16ToRgbaF32()
+    {
+        PixelConvert.Convert(Source<RgbaF16>(), Destination<RgbaF32>());
     }
 
     [Benchmark]

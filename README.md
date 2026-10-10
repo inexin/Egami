@@ -233,7 +233,8 @@ first. Your own operation implements `IRasterOperation` and joins a chain with `
 | `Alpha8` | Alpha only | Masks |
 | `Gray8`, `Gray16`, `GrayAlpha8`, `GrayAlpha16` | Gray | Grayscale images |
 | `Rgba16`, `Rgb16` | 16-bit color, with or without alpha | 16-bit PNG |
-| `RgbaF32` | 32-bit float color with alpha | High-precision processing |
+| `RgbaF32`, `RgbF32`, `GrayF32` | 32-bit float color or gray | High-precision processing |
+| `RgbaF16` | 16-bit half-float color with alpha | HDR and GPU textures |
 
 Convert between them with `raster.As<TPixel>()` for a whole raster, or `PixelConvert.Convert` for a span. Pixel values are
 sRGB-encoded with straight alpha. Conversion to gray uses Rec. 709 luma in linear light.

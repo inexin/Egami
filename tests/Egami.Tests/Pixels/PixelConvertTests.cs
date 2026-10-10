@@ -25,7 +25,7 @@ public class PixelConvertTests
     [
         typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8),
         typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(RgbaF32), typeof(Rgb16), typeof(GrayAlpha16),
-        typeof(Argb8), typeof(Abgr8), typeof(Alpha8),
+        typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32), typeof(GrayF32),
     ];
 
     public static TheoryData<string, string> AllPairs()
@@ -45,7 +45,7 @@ public class PixelConvertTests
     [Fact]
     public void AllPairsCoversEveryCombination()
     {
-        Assert.Equal(196, AllPairs().Count);
+        Assert.Equal(289, AllPairs().Count);
     }
 
     [Theory]
@@ -73,6 +73,9 @@ public class PixelConvertTests
         Assert.Equal(4, Size<Argb8>());
         Assert.Equal(4, Size<Abgr8>());
         Assert.Equal(1, Size<Alpha8>());
+        Assert.Equal(8, Size<RgbaF16>());
+        Assert.Equal(12, Size<RgbF32>());
+        Assert.Equal(4, Size<GrayF32>());
 
         static int Size<T>()
             where T : unmanaged, IPixelType<T>
@@ -181,7 +184,14 @@ public class PixelConvertTests
             double[] logical = Channels(source[i]);
             double[] expected = Expected<TTo>(logical);
             double[] got = Channels(actual[i]);
-            double tolerance = typeof(TTo) == typeof(RgbaF32) ? 1e-6 : 0;
+            double tolerance = typeof(TTo) == typeof(RgbaF16) ? 1.0 / 2048 : typeof(TTo) == typeof(RgbaF32) || typeof(TTo) == typeof(RgbF32) || typeof(TTo) == typeof(GrayF32) ? 1e-6 : 0;
+
+            // Half-precision palette values can land within float rounding of a 16-bit step, so allow one level there.
+            if (typeof(TFrom) == typeof(RgbaF16) && tolerance == 0)
+            {
+                tolerance = 1.0 / 65535;
+            }
+
             for (int c = 0; c < 4; c++)
             {
                 Assert.True(
@@ -194,9 +204,9 @@ public class PixelConvertTests
     /// <summary>The value a conversion to <typeparamref name="T"/> must produce, worked out with exact formulas in doubles.</summary>
     private static double[] Expected<T>(double[] rgba)
     {
-        bool gray = typeof(T) == typeof(Gray8) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(GrayAlpha8) || typeof(T) == typeof(GrayAlpha16);
+        bool gray = typeof(T) == typeof(Gray8) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(GrayAlpha8) || typeof(T) == typeof(GrayAlpha16) || typeof(T) == typeof(GrayF32);
         bool alpha = T_HasAlpha<T>();
-        double max = typeof(T) == typeof(Rgba16) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(Rgb16) || typeof(T) == typeof(GrayAlpha16) ? 65535 : typeof(T) == typeof(RgbaF32) ? 0 : 255;
+        double max = typeof(T) == typeof(Rgba16) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(Rgb16) || typeof(T) == typeof(GrayAlpha16) ? 65535 : typeof(T) == typeof(RgbaF32) || typeof(T) == typeof(RgbaF16) || typeof(T) == typeof(RgbF32) || typeof(T) == typeof(GrayF32) ? 0 : 255;
 
         double[] result = (double[])rgba.Clone();
         if (typeof(T) == typeof(Alpha8))
@@ -228,7 +238,7 @@ public class PixelConvertTests
 
     private static bool T_HasAlpha<T>()
     {
-        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16);
+        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32);
     }
 
     private static double LumaExact(double r, double g, double b)
@@ -266,6 +276,9 @@ public class PixelConvertTests
             nameof(Argb8) => new Argb8(c.A, c.R, c.G, c.B),
             nameof(Abgr8) => new Abgr8(c.A, c.B, c.G, c.R),
             nameof(Alpha8) => new Alpha8(c.A),
+            nameof(RgbaF16) => new RgbaF16((Half)(c.R / 255f), (Half)(c.G / 255f), (Half)(c.B / 255f), (Half)(c.A / 255f)),
+            nameof(RgbF32) => new RgbF32(c.R / 255f, c.G / 255f, c.B / 255f),
+            nameof(GrayF32) => new GrayF32(c.Luma / 255f),
             _ => throw new ArgumentOutOfRangeException(nameof(T)),
         };
         return (T)pixel;
@@ -290,6 +303,9 @@ public class PixelConvertTests
             Argb8 p => [p.R / 255.0, p.G / 255.0, p.B / 255.0, p.A / 255.0],
             Abgr8 p => [p.R / 255.0, p.G / 255.0, p.B / 255.0, p.A / 255.0],
             Alpha8 p => [0, 0, 0, p.A / 255.0],
+            RgbaF16 p => [(double)p.R, (double)p.G, (double)p.B, (double)p.A],
+            RgbF32 p => [p.R, p.G, p.B, 1],
+            GrayF32 p => [p.L, p.L, p.L, 1],
             _ => throw new ArgumentOutOfRangeException(nameof(pixel)),
         };
     }

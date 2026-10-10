@@ -106,6 +106,15 @@ public sealed class OperationCoverageTests : IDisposable
             using Raster<Alpha8> mask = contiguous.As<Alpha8>();
             using Raster<Alpha8> maskResult = mask.Derive(chain, Ct);
             Assert.Equal((expected.Width, expected.Height), (maskResult.Width, maskResult.Height));
+            using Raster<RgbaF16> half = contiguous.As<RgbaF16>();
+            using Raster<RgbaF16> halfResult = half.Derive(chain, Ct);
+            using Raster<RgbF32> rgbFloat = contiguous.As<RgbF32>();
+            using Raster<RgbF32> rgbFloatResult = rgbFloat.Derive(chain, Ct);
+            using Raster<GrayF32> grayFloat = contiguous.As<GrayF32>();
+            using Raster<GrayF32> grayFloatResult = grayFloat.Derive(chain, Ct);
+            Assert.Equal((expected.Width, expected.Height), (halfResult.Width, halfResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (rgbFloatResult.Width, rgbFloatResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (grayFloatResult.Width, grayFloatResult.Height));
         }
     }
 

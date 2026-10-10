@@ -61,6 +61,17 @@ internal static class PixelKernels
             return SwapRb4Bytes(src, dst, vectorBits) / 4;
         }
 
+        // Half and single floats, four channels each.
+        if (typeof(TFrom) == typeof(RgbaF16) && typeof(TTo) == typeof(RgbaF32))
+        {
+            return HalfKernels.ToSingle(MemoryMarshal.Cast<byte, ushort>(src), MemoryMarshal.Cast<byte, uint>(dst), vectorBits) / 4;
+        }
+
+        if (typeof(TFrom) == typeof(RgbaF32) && typeof(TTo) == typeof(RgbaF16))
+        {
+            return HalfKernels.ToHalf(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, ushort>(dst), vectorBits) / 4;
+        }
+
         // Alpha-first layouts: one byte shuffle per pixel.
         Vector128<byte> mask4 = Mask4For<TFrom, TTo>();
         if (mask4 != default)

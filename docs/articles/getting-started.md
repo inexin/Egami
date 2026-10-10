@@ -33,7 +33,8 @@ to work in, and rows come back as spans of it.
 | `Alpha8` | Alpha only | Masks and glyph coverage |
 | `Gray8`, `Gray16`, `GrayAlpha8`, `GrayAlpha16` | Gray | Grayscale images and masks |
 | `Rgba16`, `Rgb16` | 16-bit color, with or without alpha | 16-bit PNG and PPM |
-| `RgbaF32` | 32-bit float color with alpha | High-precision processing |
+| `RgbaF32`, `RgbF32`, `GrayF32` | 32-bit float color or gray | High-precision processing, PFM, depth maps |
+| `RgbaF16` | 16-bit half-float color with alpha | HDR and GPU textures |
 
 Values are sRGB-encoded with straight (not premultiplied) alpha. `raster.As<TPixel>()` converts a whole raster;
 `PixelConvert.Convert` converts a span.
