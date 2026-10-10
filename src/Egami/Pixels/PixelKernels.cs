@@ -19,7 +19,11 @@ internal static class PixelKernels
         Vector128.IsHardwareAccelerated ? 128 : 0;
 
     // Shuffle masks. An index of 0x80 produces a zero byte on every platform.
-    private static readonly Vector128<byte> SwapRb4 = Vector128.Create((byte)2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+    private static readonly Vector128<byte> SwapRb4 = Mask4(2, 1, 0, 3);
+    private static readonly Vector128<byte> RotateRight4 = Mask4(3, 0, 1, 2);
+    private static readonly Vector128<byte> RotateLeft4 = Mask4(1, 2, 3, 0);
+    private static readonly Vector128<byte> Reverse4 = Mask4(3, 2, 1, 0);
+    private static readonly Vector128<byte> SwapMiddle4 = Mask4(0, 3, 2, 1);
     private static readonly Vector128<byte> SwapRb3 = Vector128.Create((byte)2, 1, 0, 5, 4, 3, 8, 7, 6, 11, 10, 9, 14, 13, 12, 15);
     private static readonly Vector128<byte> Expand3To4 = Vector128.Create((byte)0, 1, 2, 0x80, 3, 4, 5, 0x80, 6, 7, 8, 0x80, 9, 10, 11, 0x80);
     private static readonly Vector128<byte> Expand3To4Swap = Vector128.Create((byte)2, 1, 0, 0x80, 5, 4, 3, 0x80, 8, 7, 6, 0x80, 11, 10, 9, 0x80);
@@ -55,6 +59,13 @@ internal static class PixelKernels
         if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(Bgra8)) || (typeof(TFrom) == typeof(Bgra8) && typeof(TTo) == typeof(Rgba8)))
         {
             return SwapRb4Bytes(src, dst, vectorBits) / 4;
+        }
+
+        // Alpha-first layouts: one byte shuffle per pixel.
+        Vector128<byte> mask4 = Mask4For<TFrom, TTo>();
+        if (mask4 != default)
+        {
+            return Shuffle4Bytes(src, dst, mask4, vectorBits) / 4;
         }
 
         if ((typeof(TFrom) == typeof(Rgb8) && typeof(TTo) == typeof(Bgr8)) || (typeof(TFrom) == typeof(Bgr8) && typeof(TTo) == typeof(Rgb8)))
@@ -210,12 +221,53 @@ internal static class PixelKernels
     /// <returns>The number of bytes converted.</returns>
     private static int SwapRb4Bytes(ReadOnlySpan<byte> source, Span<byte> destination, int vectorBits)
     {
+        return Shuffle4Bytes(source, destination, SwapRb4, vectorBits);
+    }
+
+    /// <summary>Builds a shuffle that reorders the four bytes of each pixel: destination byte i takes source byte <c>order[i]</c>.</summary>
+    private static Vector128<byte> Mask4(byte a, byte b, byte c, byte d)
+    {
+        return Vector128.Create(a, b, c, d, (byte)(a + 4), (byte)(b + 4), (byte)(c + 4), (byte)(d + 4), (byte)(a + 8), (byte)(b + 8), (byte)(c + 8), (byte)(d + 8), (byte)(a + 12), (byte)(b + 12), (byte)(c + 12), (byte)(d + 12));
+    }
+
+    /// <summary>Returns the byte shuffle between two 4-byte layouts that involve an alpha-first type, or default if there is none.</summary>
+    private static Vector128<byte> Mask4For<TFrom, TTo>()
+    {
+        Type from = typeof(TFrom), to = typeof(TTo);
+        if ((from == typeof(Rgba8) && to == typeof(Argb8)) || (from == typeof(Bgra8) && to == typeof(Abgr8)))
+        {
+            return RotateRight4;
+        }
+
+        if ((from == typeof(Argb8) && to == typeof(Rgba8)) || (from == typeof(Abgr8) && to == typeof(Bgra8)))
+        {
+            return RotateLeft4;
+        }
+
+        if ((from == typeof(Rgba8) && to == typeof(Abgr8)) || (from == typeof(Abgr8) && to == typeof(Rgba8))
+            || (from == typeof(Bgra8) && to == typeof(Argb8)) || (from == typeof(Argb8) && to == typeof(Bgra8)))
+        {
+            return Reverse4;
+        }
+
+        if ((from == typeof(Argb8) && to == typeof(Abgr8)) || (from == typeof(Abgr8) && to == typeof(Argb8)))
+        {
+            return SwapMiddle4;
+        }
+
+        return default;
+    }
+
+    /// <summary>Reorders the four bytes of each pixel with <paramref name="mask128"/>.</summary>
+    /// <returns>The number of bytes converted.</returns>
+    private static int Shuffle4Bytes(ReadOnlySpan<byte> source, Span<byte> destination, Vector128<byte> mask128, int vectorBits)
+    {
         int i = 0;
         ref byte src = ref MemoryMarshal.GetReference(source);
         ref byte dst = ref MemoryMarshal.GetReference(destination);
         if (vectorBits >= 512 && Avx512BW.IsSupported)
         {
-            Vector512<byte> mask = Vector512.Create(Vector256.Create(SwapRb4, SwapRb4), Vector256.Create(SwapRb4, SwapRb4));
+            Vector512<byte> mask = Vector512.Create(Vector256.Create(mask128, mask128), Vector256.Create(mask128, mask128));
             for (; i + 64 <= source.Length; i += 64)
             {
                 Avx512BW.Shuffle(Vector512.LoadUnsafe(ref src, (nuint)i), mask).StoreUnsafe(ref dst, (nuint)i);
@@ -224,7 +276,7 @@ internal static class PixelKernels
 
         if (vectorBits >= 256 && Avx2.IsSupported)
         {
-            Vector256<byte> mask = Vector256.Create(SwapRb4, SwapRb4);
+            Vector256<byte> mask = Vector256.Create(mask128, mask128);
             for (; i + 32 <= source.Length; i += 32)
             {
                 Avx2.Shuffle(Vector256.LoadUnsafe(ref src, (nuint)i), mask).StoreUnsafe(ref dst, (nuint)i);
@@ -233,7 +285,7 @@ internal static class PixelKernels
 
         for (; i + 16 <= source.Length; i += 16)
         {
-            ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)i), SwapRb4).StoreUnsafe(ref dst, (nuint)i);
+            ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)i), mask128).StoreUnsafe(ref dst, (nuint)i);
         }
 
         return i;

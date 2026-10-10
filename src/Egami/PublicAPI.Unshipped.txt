@@ -1,5 +1,32 @@
 #nullable enable
+Egami.Pixels.Abgr8
+Egami.Pixels.Abgr8.A -> byte
+Egami.Pixels.Abgr8.Abgr8() -> void
+Egami.Pixels.Abgr8.Abgr8(byte a, byte b, byte g, byte r) -> void
+Egami.Pixels.Abgr8.B -> byte
+Egami.Pixels.Abgr8.Equals(Egami.Pixels.Abgr8 other) -> bool
+Egami.Pixels.Abgr8.G -> byte
+Egami.Pixels.Abgr8.R -> byte
+Egami.Pixels.Abgr8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Abgr8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Alpha8
+Egami.Pixels.Alpha8.A -> byte
+Egami.Pixels.Alpha8.Alpha8() -> void
+Egami.Pixels.Alpha8.Alpha8(byte a) -> void
+Egami.Pixels.Alpha8.Equals(Egami.Pixels.Alpha8 other) -> bool
+Egami.Pixels.Alpha8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Alpha8.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.AlphaKind.Premultiplied = 2 -> Egami.Pixels.AlphaKind
+Egami.Pixels.Argb8
+Egami.Pixels.Argb8.A -> byte
+Egami.Pixels.Argb8.Argb8() -> void
+Egami.Pixels.Argb8.Argb8(byte a, byte r, byte g, byte b) -> void
+Egami.Pixels.Argb8.B -> byte
+Egami.Pixels.Argb8.Equals(Egami.Pixels.Argb8 other) -> bool
+Egami.Pixels.Argb8.G -> byte
+Egami.Pixels.Argb8.R -> byte
+Egami.Pixels.Argb8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Argb8.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.Gray16.ToRgba16() -> Egami.Pixels.Rgba16
 Egami.Pixels.GrayAlpha16
 Egami.Pixels.GrayAlpha16.A -> ushort
@@ -32,12 +59,36 @@ Egami.Pixels.Rgb16.ToRgba16() -> Egami.Pixels.Rgba16
 Egami.Pixels.Rgb16.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.Rgb16.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.Rgba16.ToRgba16() -> Egami.Pixels.Rgba16
+override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
+override Egami.Pixels.Abgr8.GetHashCode() -> int
+override Egami.Pixels.Abgr8.ToString() -> string!
+override Egami.Pixels.Alpha8.Equals(object? obj) -> bool
+override Egami.Pixels.Alpha8.GetHashCode() -> int
+override Egami.Pixels.Alpha8.ToString() -> string!
+override Egami.Pixels.Argb8.Equals(object? obj) -> bool
+override Egami.Pixels.Argb8.GetHashCode() -> int
+override Egami.Pixels.Argb8.ToString() -> string!
 override Egami.Pixels.GrayAlpha16.Equals(object? obj) -> bool
 override Egami.Pixels.GrayAlpha16.GetHashCode() -> int
 override Egami.Pixels.GrayAlpha16.ToString() -> string!
 override Egami.Pixels.Rgb16.Equals(object? obj) -> bool
 override Egami.Pixels.Rgb16.GetHashCode() -> int
 override Egami.Pixels.Rgb16.ToString() -> string!
+static Egami.Pixels.Abgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Abgr8
+static Egami.Pixels.Abgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Abgr8
+static Egami.Pixels.Abgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Abgr8.operator !=(Egami.Pixels.Abgr8 left, Egami.Pixels.Abgr8 right) -> bool
+static Egami.Pixels.Abgr8.operator ==(Egami.Pixels.Abgr8 left, Egami.Pixels.Abgr8 right) -> bool
+static Egami.Pixels.Alpha8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Alpha8
+static Egami.Pixels.Alpha8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Alpha8
+static Egami.Pixels.Alpha8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Alpha8.operator !=(Egami.Pixels.Alpha8 left, Egami.Pixels.Alpha8 right) -> bool
+static Egami.Pixels.Alpha8.operator ==(Egami.Pixels.Alpha8 left, Egami.Pixels.Alpha8 right) -> bool
+static Egami.Pixels.Argb8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Argb8
+static Egami.Pixels.Argb8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Argb8
+static Egami.Pixels.Argb8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Argb8.operator !=(Egami.Pixels.Argb8 left, Egami.Pixels.Argb8 right) -> bool
+static Egami.Pixels.Argb8.operator ==(Egami.Pixels.Argb8 left, Egami.Pixels.Argb8 right) -> bool
 static Egami.Pixels.GrayAlpha16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.GrayAlpha16
 static Egami.Pixels.GrayAlpha16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.GrayAlpha16
 static Egami.Pixels.GrayAlpha16.Layout.get -> Egami.Pixels.PixelLayoutInfo

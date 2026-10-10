@@ -11,6 +11,8 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 
 - `Rgb16` and `GrayAlpha16`: 16-bit color without alpha and 16-bit gray with alpha, with exact conversions and SIMD to and
   from `Rgb8` and `GrayAlpha8`.
+- `Argb8` and `Abgr8`: alpha-first byte orders, with SIMD byte shuffles to and from `Rgba8` and `Bgra8`.
+- `Alpha8`: an alpha-only mask. It reads as black with that alpha; converting a color to it keeps only the alpha.
 
 ### Pixel layouts
 

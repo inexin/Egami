@@ -64,6 +64,18 @@ public class PixelConvertBenchmarks
     }
 
     [Benchmark]
+    public void Rgba8ToArgb8()
+    {
+        PixelConvert.Convert(Source<Rgba8>(), Destination<Argb8>());
+    }
+
+    [Benchmark]
+    public void Abgr8ToBgra8()
+    {
+        PixelConvert.Convert(Source<Abgr8>(), Destination<Bgra8>());
+    }
+
+    [Benchmark]
     public void Rgb16ToRgba16()
     {
         PixelConvert.Convert(Source<Rgb16>(), Destination<Rgba16>());
