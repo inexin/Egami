@@ -485,6 +485,20 @@ internal static class PixelKernels
         if (vectorBits >= 256 && Avx2.IsSupported)
         {
             Vector256<byte> mask = Vector256.Create(mask128, mask128);
+
+            // Four vectors per step: the loads, shuffles and stores overlap instead of waiting on each other.
+            for (; i + 128 <= source.Length; i += 128)
+            {
+                Vector256<byte> a = Vector256.LoadUnsafe(ref src, (nuint)i);
+                Vector256<byte> b = Vector256.LoadUnsafe(ref src, (nuint)(i + 32));
+                Vector256<byte> c = Vector256.LoadUnsafe(ref src, (nuint)(i + 64));
+                Vector256<byte> d = Vector256.LoadUnsafe(ref src, (nuint)(i + 96));
+                Avx2.Shuffle(a, mask).StoreUnsafe(ref dst, (nuint)i);
+                Avx2.Shuffle(b, mask).StoreUnsafe(ref dst, (nuint)(i + 32));
+                Avx2.Shuffle(c, mask).StoreUnsafe(ref dst, (nuint)(i + 64));
+                Avx2.Shuffle(d, mask).StoreUnsafe(ref dst, (nuint)(i + 96));
+            }
+
             for (; i + 32 <= source.Length; i += 32)
             {
                 Avx2.Shuffle(Vector256.LoadUnsafe(ref src, (nuint)i), mask).StoreUnsafe(ref dst, (nuint)i);
