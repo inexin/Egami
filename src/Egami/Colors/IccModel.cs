@@ -4,13 +4,16 @@ namespace Egami.Colors;
 
 /// <summary>
 /// One ICC curve (curv or para), evaluated as ICC.1 defines it: tables interpolate linearly over 0..1 with the input clamped,
-/// parametric curves follow their formula, with 0 where the power's base is negative.
+/// parametric curves follow their formula, with 0 where the power's base is negative. Tables run at the 16-bit precision they
+/// are stored in, input and output, and invert through a 4096-entry reversed table, as Little CMS does.
 /// </summary>
 internal sealed class IccCurve
 {
+    private const int ReversedSize = 4096;
     private static readonly int[] ParameterCounts = [1, 3, 4, 5, 7];
 
     private readonly float[]? _table;
+    private float[]? _reversed;
     private readonly int _type;   // -1 identity, 0..4 para types (curv gamma is type 0), 5 table
     private readonly double _g, _a, _b, _c, _d, _e, _f;
 
@@ -142,7 +145,7 @@ internal sealed class IccCurve
                 }
 
             default:
-                return Interpolate(_table!, x);
+                return Table16(_table!, x);
         }
     }
 
@@ -184,7 +187,7 @@ internal sealed class IccCurve
                 }
 
             default:
-                return InvertTable(_table!, y);
+                return Table16(_reversed ??= Reverse(_table!), y);
         }
     }
 
@@ -240,6 +243,24 @@ internal sealed class IccCurve
         int i = (int)position;
         double t = position - i;
         return table[i] + ((table[i + 1] - table[i]) * t);
+    }
+
+    /// <summary>Evaluates a table with input and output rounded to 16 bits.</summary>
+    internal static double Table16(ReadOnlySpan<float> table, double x)
+    {
+        double q = Math.Round(Math.Clamp(double.IsNaN(x) ? 0 : x, 0, 1) * 65535) / 65535;
+        return Math.Round(Interpolate(table, q) * 65535) / 65535;
+    }
+
+    private static float[] Reverse(float[] table)
+    {
+        float[] reversed = new float[ReversedSize];
+        for (int i = 0; i < reversed.Length; i++)
+        {
+            reversed[i] = (float)(Math.Round(InvertTable(table, (double)i / (ReversedSize - 1)) * 65535) / 65535);
+        }
+
+        return reversed;
     }
 
     private static double InvertTable(float[] table, double y)

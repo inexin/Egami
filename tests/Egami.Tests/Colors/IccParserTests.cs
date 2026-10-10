@@ -128,8 +128,8 @@ public class IccParserTests
         Assert.Equal(0.1, type2.Evaluate(0.25), 4);
         Assert.Equal(0.6, type2.Evaluate(1.0), 4);
         IccCurve table = IccCurve.FromTable([0f, 0.5f, 0.25f]);
-        Assert.Equal(0.375, table.Evaluate(0.75), 6);
-        Assert.Equal(0.25, table.Evaluate(2), 6);
+        Assert.Equal(0.375, table.Evaluate(0.75), 4);             // tables run at 16 bits
+        Assert.Equal(0.25, table.Evaluate(2), 4);
         Assert.Null(table.ToTransferFunction());                  // it goes down
         // curv stores a gamma as u8Fixed8, so 2.2 is kept as 563/256.
         Assert.Equal(TransferFunction.Gamma(563 / 256.0), IccCurve.Read(IccBuilder.Gamma(2.2), "test").Curve.ToTransferFunction());
@@ -153,16 +153,16 @@ public class IccParserTests
             for (int i = 0; i <= 100; i++)
             {
                 double x = 0.1 + (i * 0.009);   // where every curve above is rising
-                Assert.Equal(x, curve.EvaluateInverse(curve.Evaluate(x)), 5);
+                Assert.Equal(x, curve.EvaluateInverse(curve.Evaluate(x)), curve.Table.IsEmpty ? 5 : 3);
             }
         }
 
         IccCurve flat = IccCurve.FromTable([0f, 0f, 0f, 0.5f, 1f]);
-        Assert.Equal(0.5, flat.EvaluateInverse(0), 6);           // the last segment holding 0, as Little CMS reverses it
-        Assert.Equal(0.625, flat.EvaluateInverse(0.25), 6);
-        Assert.Equal(1, flat.EvaluateInverse(2), 6);
+        Assert.Equal(0.5, flat.EvaluateInverse(0), 4);           // the last segment holding 0, as Little CMS reverses it
+        Assert.Equal(0.625, flat.EvaluateInverse(0.25), 4);
+        Assert.Equal(1, flat.EvaluateInverse(2), 4);
         IccCurve down = IccCurve.FromTable([1f, 0.5f, 0f]);
-        Assert.Equal(0.25, down.EvaluateInverse(0.75), 6);
+        Assert.Equal(0.25, down.EvaluateInverse(0.75), 4);
     }
 
     [Fact]
