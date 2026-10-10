@@ -127,6 +127,97 @@ public abstract partial class Raster
     }
 
     /// <summary>
+    /// Decodes the first frame <see cref="ReaderOptions.Frames"/> selects into a raster the caller already has, so pooled images
+    /// and video frames reuse their memory. <paramref name="target"/>'s metadata is replaced with the file's; only working
+    /// buffers are allocated.
+    /// </summary>
+    /// <typeparam name="TPixel">The target's pixel type.</typeparam>
+    /// <param name="stream">The encoded image. It is read from its current position and left open.</param>
+    /// <param name="target">Where to decode: the size the image decodes to, after <see cref="ReaderOptions.Region"/> and <see cref="ReaderOptions.MinimumSize"/>. Only its first frame is written.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <exception cref="ArgumentException"><paramref name="target"/> is not the size the image decodes to; the message names both sizes.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
+    /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="target"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code>
+    /// using Raster&lt;Rgb8&gt; frame = Raster.Create&lt;Rgb8&gt;(1920, 1080);
+    /// foreach (string file in files)
+    /// {
+    ///     Raster.LoadInto(file, frame);
+    ///     Show(frame);
+    /// }
+    /// </code>
+    /// </example>
+    public static void LoadInto<TPixel>(Stream stream, Raster<TPixel> target, EgamiContext? context = null, ReaderOptions? options = null)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(target);
+        using RasterDecoder decoder = RasterDecoder.Open(stream, context, options);
+        decoder.CheckSize(target, nameof(target));
+        Metadata.FrameMetadata frame = decoder.ReadFrame(target) ?? throw new ArgumentException("The options select no frame.", nameof(options));
+        target.Metadata.ReplaceWith(decoder.Metadata.Copy());
+        target.Metadata.FormatName ??= decoder.Info.Format.Name;
+        Metadata.FrameMetadata first = target.Frames[0].Metadata;
+        first.Delay = frame.Delay;
+        first.Disposal = frame.Disposal;
+        first.Blend = frame.Blend;
+        first.Bounds = frame.Bounds;
+        first.FormatDetails = frame.FormatDetails;
+    }
+
+    /// <summary>Decodes an image file into a raster the caller already has. See <see cref="LoadInto{TPixel}(Stream, Raster{TPixel}, EgamiContext?, ReaderOptions?)"/>.</summary>
+    /// <typeparam name="TPixel">The target's pixel type.</typeparam>
+    /// <param name="path">The file path.</param>
+    /// <param name="target">Where to decode: the size the image decodes to. Only its first frame is written.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <exception cref="ArgumentException"><paramref name="target"/> is not the size the image decodes to; the message names both sizes.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
+    /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="target"/> is <see langword="null"/>.</exception>
+    /// <exception cref="FileNotFoundException">The file does not exist.</exception>
+    /// <exception cref="IOException">The file cannot be read.</exception>
+    /// <example>
+    /// <code>
+    /// Raster.LoadInto("frame.jpg", reused);
+    /// </code>
+    /// </example>
+    public static void LoadInto<TPixel>(string path, Raster<TPixel> target, EgamiContext? context = null, ReaderOptions? options = null)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using FileStream stream = OpenRead(path);
+        LoadInto(stream, target, context, options);
+    }
+
+    /// <summary>Decodes an image from bytes in memory into a raster the caller already has. See <see cref="LoadInto{TPixel}(Stream, Raster{TPixel}, EgamiContext?, ReaderOptions?)"/>.</summary>
+    /// <typeparam name="TPixel">The target's pixel type.</typeparam>
+    /// <param name="data">The encoded image.</param>
+    /// <param name="target">Where to decode: the size the image decodes to. Only its first frame is written.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <exception cref="ArgumentException"><paramref name="target"/> is not the size the image decodes to; the message names both sizes.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
+    /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="target"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code>
+    /// Raster.LoadInto(jpegBytes, reused);
+    /// </code>
+    /// </example>
+    public static void LoadInto<TPixel>(ReadOnlyMemory<byte> data, Raster<TPixel> target, EgamiContext? context = null, ReaderOptions? options = null)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using MemoryStream stream = AsStream(data);
+        LoadInto(stream, target, context, options);
+    }
+
+    /// <summary>
     /// Reads the encoded image asynchronously, then decodes it. The whole stream is read into a pooled buffer first, which counts against
     /// <see cref="SafetyLimits.MaxTotalBytes"/>; decoding itself is synchronous, since it is CPU-bound.
     /// </summary>
@@ -478,13 +569,13 @@ public abstract partial class Raster
         }
     }
 
-    private static FileStream OpenRead(string path, bool async = false)
+    internal static FileStream OpenRead(string path, bool async = false)
     {
         ArgumentNullException.ThrowIfNull(path);
         return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, async ? FileOptions.Asynchronous | FileOptions.SequentialScan : FileOptions.SequentialScan);
     }
 
-    private static MemoryStream AsStream(ReadOnlyMemory<byte> data)
+    internal static MemoryStream AsStream(ReadOnlyMemory<byte> data)
     {
         return System.Runtime.InteropServices.MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
             ? new MemoryStream(segment.Array!, segment.Offset, segment.Count, writable: false)

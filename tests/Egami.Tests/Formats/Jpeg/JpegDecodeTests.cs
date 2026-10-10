@@ -134,8 +134,12 @@ public class JpegDecodeTests(ITestOutputHelper output)
         Assert.Equal(1, Assert.IsType<JpegDetails>(full.Metadata.FormatDetails).ScaleDenominator);
         using Raster half = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(100, 100) });
         Assert.Equal((160, 120), (half.Width, half.Height));
-        using Raster eighth = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(1, 1) });
+        using Raster eighth = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(40, 30) });
         Assert.Equal((40, 30), (eighth.Width, eighth.Height));
+
+        // Since 2.2, a box average follows the IDCT's 1/8 when the target is smaller still.
+        using Raster tiny = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(1, 1) });
+        Assert.Equal((1, 1), (tiny.Width, tiny.Height));
         using Raster wide = Raster.Load(data, options: new ReaderOptions { MinimumSize = new Size(300, 10) });
         Assert.Equal((320, 240), (wide.Width, wide.Height));
         Assert.True(Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(40, 30) }).EstimatedBytes < Raster.Probe(data).EstimatedBytes / 32);

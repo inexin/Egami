@@ -9,18 +9,102 @@ internal static class FormatPipeline
 {
     internal static Raster Load(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
+        if (Reshapes(options))
+        {
+            using RasterDecoder decoder = RasterDecoder.Open(stream, context, options, owned: null);
+            return Named(decoder.ReadAll(), decoder.Info.Format);
+        }
+
         return Run(stream, context, (format, input) => Named(format.Reader!.Read(input, options), format), cancellationToken);
     }
 
     internal static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        if (Reshapes(options))
+        {
+            using RasterDecoder decoder = RasterDecoder.Open(stream, context, options, owned: null);
+            return Named(decoder.ReadAll<TPixel>(), decoder.Info.Format);
+        }
+
         return Run(stream, context, (format, input) => Named(format.Reader!.Read<TPixel>(input, options), format), cancellationToken);
     }
 
     internal static RasterInfo Probe(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
-        return Run(stream, context, (format, input) => format.Reader!.ReadInfo(input, options), cancellationToken);
+        return Run(stream, context, (format, input) => ProbeCore(format, input, options), cancellationToken);
+    }
+
+    /// <summary>
+    /// Opens a source of rows: a streaming one when the format offers it (it then owns the input), otherwise the whole image
+    /// decoded into a buffer.
+    /// </summary>
+    internal static (Streaming.RowSource Source, FormatInfo Format) OpenSource(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        EgamiInput input = new(stream, context, cancellationToken);
+        bool owned = false;
+        try
+        {
+            FormatInfo format = Detect(input, context);
+            input.SetFormat(format);
+            if (format.Reader is Streaming.IRowFormatReader rows)
+            {
+                Streaming.RowSource source = rows.Open(input, options);
+                owned = true;
+                return (source, format);
+            }
+
+            Streaming.BufferedRowSource buffered = Streaming.BufferedRowSource.Read(format, input, options);
+            buffered.Raster.Metadata.FormatName ??= format.Name;
+            input.ReturnUnreadBytes();
+            return (buffered, format);
+        }
+        finally
+        {
+            if (!owned)
+            {
+                input.Dispose();
+            }
+        }
+    }
+
+    /// <summary>Gets whether the options crop or reduce, which the session path does; otherwise Load runs as in 1.0.</summary>
+    private static bool Reshapes(ReaderOptions options)
+    {
+        return options.Region is not null || options.MinimumSize is not null;
+    }
+
+    /// <summary>Reads the header, then adds what a decoder with the same options would do: its access and working bytes.</summary>
+    private static RasterInfo ProbeCore(FormatInfo format, EgamiInput input, ReaderOptions options)
+    {
+        IFormatReader reader = format.Reader!;
+        int maxScale = reader is Streaming.INativeScaling native ? native.MaxNativeScale : 1;
+        int width = 0;
+        int height = 0;
+        ReaderOptions read = options;
+        if (maxScale > 1 && options.Region is not null)
+        {
+            read = options with
+            {
+                NativeScale = (w, h) =>
+                {
+                    (width, height) = (w, h);
+                    return Streaming.ReadPlan.Create(w, h, options.Region, options.MinimumSize, maxScale).NativeScale;
+                },
+            };
+        }
+
+        RasterInfo info = reader.ReadInfo(input, read);
+        if (width == 0)
+        {
+            (width, height) = (info.Width, info.Height);
+        }
+
+        Streaming.ReadPlan plan = Streaming.ReadPlan.Create(width, height, options.Region, options.MinimumSize, maxScale);
+        long stage = plan.Factor == 1 ? 0 : (plan.Output.Width * 4L * sizeof(double)) + (plan.Region.Width * 16L);
+        long buffer = (long)plan.ScaledSize.Width * plan.ScaledSize.Height * info.Layout.BytesPerPixel * Math.Max(1, info.FrameCount ?? 1);
+        return info with { Access = RasterAccess.Buffered, WorkingBytes = buffer + stage };
     }
 
     internal static void Save(Stream output, FormatInfo format, WriterOptions options, Action<IFormatWriter, Stream, WriterOptions> write)

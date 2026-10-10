@@ -160,4 +160,26 @@ public sealed class RasterMetadata
 
         return copy;
     }
+
+    /// <summary>Replaces everything this metadata holds with what <paramref name="source"/> holds, sharing its values.</summary>
+    internal void ReplaceWith(RasterMetadata source)
+    {
+        Resolution = source.Resolution;
+        Exif = source.Exif;
+        IccProfile = source.IccProfile;
+        Xmp = source.Xmp;
+        ColorSpace = source.ColorSpace;
+        Gamma = source.Gamma;
+        FormatName = source.FormatName;
+        FormatDetails = source.FormatDetails;
+        LoopCount = source.LoopCount;
+        Text.Clear();
+        foreach (TextEntry entry in source.Text)
+        {
+            Text.Add(entry);
+        }
+
+        WarningList.Clear();
+        WarningList.AddRange(source.WarningList);
+    }
 }

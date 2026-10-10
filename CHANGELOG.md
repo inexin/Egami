@@ -7,6 +7,15 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Streaming decode (in progress)
+
+- `RasterDecoder`: open an image and read it a band of rows (`ReadRows`) or a frame (`ReadFrame`) at a time, in any pixel
+  type. Formats are decoded into a buffer first for now; `RasterInfo.Access` and `WorkingBytes` say so.
+- `ReaderOptions.Region` decodes only a rectangle, for every format, exactly as Load then Crop gives it.
+- `Raster.LoadInto` decodes into a raster the caller already has.
+- Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at
+  least that big, averaging blocks of pixels. JPEG keeps its 1/2, 1/4 and 1/8 IDCT scaling and averages blocks beyond 1/8.
+
 ### Pixel types
 
 - `Rgb16` and `GrayAlpha16`: 16-bit color without alpha and 16-bit gray with alpha, with exact conversions and SIMD to and

@@ -4,6 +4,15 @@ Egami.Formats.Pnm.PnmDetails.LittleEndian.set -> void
 Egami.Formats.Pnm.PnmDetails.Scale.get -> double?
 Egami.Formats.Pnm.PnmDetails.Scale.set -> void
 Egami.Formats.Pnm.PnmKind.FloatMap = 5 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.RasterAccess
+Egami.Formats.RasterAccess.Buffered = 0 -> Egami.Formats.RasterAccess
+Egami.Formats.RasterAccess.Streamed = 1 -> Egami.Formats.RasterAccess
+Egami.Formats.RasterInfo.Access.get -> Egami.Formats.RasterAccess
+Egami.Formats.RasterInfo.Access.init -> void
+Egami.Formats.RasterInfo.WorkingBytes.get -> long
+Egami.Formats.RasterInfo.WorkingBytes.init -> void
+Egami.Formats.ReaderOptions.Region.get -> Egami.Rect?
+Egami.Formats.ReaderOptions.Region.init -> void
 Egami.Pixels.Abgr8
 Egami.Pixels.Abgr8.A -> byte
 Egami.Pixels.Abgr8.Abgr8() -> void
@@ -177,6 +186,16 @@ Egami.Pixels.RgbF32.RgbF32() -> void
 Egami.Pixels.RgbF32.RgbF32(float r, float g, float b) -> void
 Egami.Pixels.RgbF32.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.RgbF32.ToScaled() -> System.Numerics.Vector4
+Egami.RasterDecoder
+Egami.RasterDecoder.CurrentFrame.get -> Egami.Metadata.FrameMetadata?
+Egami.RasterDecoder.Dispose() -> void
+Egami.RasterDecoder.Info.get -> Egami.Formats.RasterInfo!
+Egami.RasterDecoder.Metadata.get -> Egami.Metadata.RasterMetadata!
+Egami.RasterDecoder.NextFrame() -> bool
+Egami.RasterDecoder.ReadFrame<TPixel>() -> Egami.Raster<TPixel>?
+Egami.RasterDecoder.ReadFrame<TPixel>(Egami.Raster<TPixel>! target) -> Egami.Metadata.FrameMetadata?
+Egami.RasterDecoder.ReadRows<TPixel>(Egami.Raster<TPixel>! band) -> int
+Egami.RasterDecoder.SkipRows(int count) -> int
 override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Abgr8.GetHashCode() -> int
 override Egami.Pixels.Abgr8.ToString() -> string!
@@ -309,3 +328,9 @@ static Egami.Pixels.RgbF32.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pix
 static Egami.Pixels.RgbF32.Layout.get -> Egami.Pixels.PixelLayoutInfo
 static Egami.Pixels.RgbF32.operator !=(Egami.Pixels.RgbF32 left, Egami.Pixels.RgbF32 right) -> bool
 static Egami.Pixels.RgbF32.operator ==(Egami.Pixels.RgbF32 left, Egami.Pixels.RgbF32 right) -> bool
+static Egami.Raster.LoadInto<TPixel>(string! path, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
+static Egami.Raster.LoadInto<TPixel>(System.IO.Stream! stream, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
+static Egami.Raster.LoadInto<TPixel>(System.ReadOnlyMemory<byte> data, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
+static Egami.RasterDecoder.Open(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
+static Egami.RasterDecoder.Open(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
+static Egami.RasterDecoder.Open(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!

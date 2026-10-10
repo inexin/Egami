@@ -294,6 +294,22 @@ public sealed class Raster<TPixel> : Raster
         PixelConvert.Convert<TPixel, TTo>(_frames[0].Plane.Row(y).Slice(x, destination.Length), destination);
     }
 
+    internal override void ReadFrameRow<TTo>(int frame, int y, int x, Span<TTo> destination)
+    {
+        ThrowIfDisposed();
+        PixelConvert.Convert<TPixel, TTo>(_frames[frame].Plane.Row(y).Slice(x, destination.Length), destination);
+    }
+
+    internal override FrameMetadata FrameMetadataAt(int frame)
+    {
+        return _frames[frame].Metadata;
+    }
+
+    internal override TResult Accept<TResult>(IRasterVisitor<TResult> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
     internal override bool HasPlane(object plane)
     {
         foreach (Frame<TPixel> frame in _frames)

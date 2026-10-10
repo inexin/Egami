@@ -37,10 +37,38 @@ public record ReaderOptions
     public Range Frames { get; init; } = Range.All;
 
     /// <summary>
-    /// Gets the smallest size the caller needs, or <see langword="null"/> for full size. Formats that can decode at a reduced scale,
-    /// such as JPEG, may return a smaller image that is still at least this big. Others ignore it.
+    /// Gets the smallest size the caller needs, or <see langword="null"/> for full size. The image is decoded reduced by the largest
+    /// whole factor N that keeps it at least this big: ceil(width / N) by ceil(height / N), each pixel the alpha-weighted average
+    /// of an N × N block of encoded values (partial blocks at the right and bottom edges average the pixels they have). JPEG keeps
+    /// its IDCT scaling by 1/2, 1/4 or 1/8 and averages blocks only beyond 1/8. With <see cref="Region"/> the factor is chosen
+    /// for the region.
     /// </summary>
+    /// <remarks>Before 1.x 2.2, formats other than JPEG ignored this.</remarks>
     public Size? MinimumSize { get; init; }
+
+    /// <summary>
+    /// Gets the rectangle to decode, in stored pixels (before EXIF orientation), or <see langword="null"/> for the whole image.
+    /// It is clipped to the image and applied before <see cref="MinimumSize"/>; the result is exactly the clipped rectangle, never
+    /// widened to a block boundary. For JPEG with a reduced scale the result is the scaled image cropped to the scaled rectangle.
+    /// </summary>
+    /// <remarks>A rectangle that misses the image entirely, or has no area, throws <see cref="ArgumentOutOfRangeException"/>.</remarks>
+    public Rect? Region { get; init; }
+
+    /// <summary>
+    /// Gets the reduction a reader that scales while decoding (JPEG) should use, chosen from the stored size, or
+    /// <see langword="null"/> to choose from <see cref="MinimumSize"/> alone as in 1.3. Set by the streaming path, never by callers.
+    /// </summary>
+    internal Func<int, int, int>? NativeScale { get; init; }
+}
+
+/// <summary>How a decode produces rows, as <see cref="RasterInfo.Access"/> reports it.</summary>
+public enum RasterAccess
+{
+    /// <summary>The image is decoded into an internal buffer first, and rows are served from it.</summary>
+    Buffered,
+
+    /// <summary>Rows are decoded as they are asked for, holding only the format's own working set.</summary>
+    Streamed,
 }
 
 /// <summary>
@@ -96,4 +124,16 @@ public sealed record RasterInfo
     /// <see langword="null"/> for formats without animation.
     /// </summary>
     public int? LoopCount { get; init; }
+
+    /// <summary>
+    /// Gets whether a <see cref="RasterDecoder"/> streams this image's rows or decodes it into a buffer first. Set by
+    /// <see cref="Raster.Probe(Stream, EgamiContext?, ReaderOptions?)"/> and the decoder; formats need not set it.
+    /// </summary>
+    public RasterAccess Access { get; init; }
+
+    /// <summary>
+    /// Gets the most bytes a <see cref="RasterDecoder"/> holds while decoding with the same options, besides the caller's band or
+    /// target. Set by <see cref="Raster.Probe(Stream, EgamiContext?, ReaderOptions?)"/> and the decoder; formats need not set it.
+    /// </summary>
+    public long WorkingBytes { get; init; }
 }

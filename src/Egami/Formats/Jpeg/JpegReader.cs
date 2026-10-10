@@ -4,9 +4,12 @@ using Egami.Pixels;
 namespace Egami.Formats.Jpeg;
 
 /// <summary>Reads JPEG files: baseline and progressive Huffman-coded, 8-bit, gray, YCbCr, RGB, CMYK and YCCK.</summary>
-internal sealed class JpegReader : IFormatReader
+internal sealed class JpegReader : IFormatReader, Streaming.INativeScaling
 {
     internal static JpegReader Instance { get; } = new();
+
+    /// <summary>Gets the IDCT's largest reduction, 1/8.</summary>
+    public int MaxNativeScale => 8;
 
     /// <summary>Returns whether <paramref name="header"/> starts like a JPEG: SOI then the first byte of another marker.</summary>
     internal static bool Matches(ReadOnlySpan<byte> header)
@@ -17,7 +20,7 @@ internal sealed class JpegReader : IFormatReader
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
         JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
-        int scale = JpegSegmentReader.ScaleFor(header, options.MinimumSize);
+        int scale = JpegSegmentReader.ScaleFor(header, options);
         return new RasterInfo
         {
             Format = JpegFormat.Info,
@@ -48,7 +51,7 @@ internal sealed class JpegReader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
-        int scale = JpegSegmentReader.ScaleFor(header, options.MinimumSize);
+        int scale = JpegSegmentReader.ScaleFor(header, options);
         Raster<TPixel> raster = input.CreateRaster<TPixel>(JpegDecoder<TPixel>.ScaledSize(header.Width, scale), JpegDecoder<TPixel>.ScaledSize(header.Height, scale));
         try
         {

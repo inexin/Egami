@@ -127,6 +127,12 @@ internal static class JpegSegmentReader
         return bytes;
     }
 
+    /// <summary>Returns the decode scale the streaming path chose for this size, or else the one <see cref="ReaderOptions.MinimumSize"/> gives.</summary>
+    internal static int ScaleFor(JpegHeader header, ReaderOptions options)
+    {
+        return options.NativeScale is { } choose ? choose(header.Width, header.Height) : ScaleFor(header, options.MinimumSize);
+    }
+
     /// <summary>
     /// Returns the smallest decode scale, 1, 2, 4 or 8, whose output still covers <paramref name="target"/> in both directions, or 1
     /// without a target.

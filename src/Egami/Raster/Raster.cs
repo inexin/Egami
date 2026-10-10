@@ -186,6 +186,16 @@ public abstract partial class Raster : IDisposable
     internal abstract void ReadRow<TTo>(int y, int x, Span<TTo> destination)
         where TTo : unmanaged, IPixelType<TTo>;
 
+    /// <summary>Converts part of one row of frame <paramref name="frame"/>, starting at column <paramref name="x"/>, into <paramref name="destination"/>.</summary>
+    internal abstract void ReadFrameRow<TTo>(int frame, int y, int x, Span<TTo> destination)
+        where TTo : unmanaged, IPixelType<TTo>;
+
+    /// <summary>Gets the metadata of frame <paramref name="frame"/>.</summary>
+    internal abstract FrameMetadata FrameMetadataAt(int frame);
+
+    /// <summary>Calls <paramref name="visitor"/> with this raster as its own pixel type.</summary>
+    internal abstract TResult Accept<TResult>(IRasterVisitor<TResult> visitor);
+
     /// <summary>Returns whether one of this raster's frames is <paramref name="plane"/>.</summary>
     internal abstract bool HasPlane(object plane);
 
@@ -199,4 +209,12 @@ public abstract partial class Raster : IDisposable
     /// <summary>Releases the frames' memory.</summary>
     /// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
     protected abstract void Dispose(bool disposing);
+}
+
+/// <summary>Work on a raster that needs its pixel type, reached from the untyped <see cref="Raster"/> through <see cref="Raster.Accept"/>.</summary>
+/// <typeparam name="TResult">What the work returns.</typeparam>
+internal interface IRasterVisitor<TResult>
+{
+    TResult Visit<TPixel>(Raster<TPixel> raster)
+        where TPixel : unmanaged, IPixelType<TPixel>;
 }
