@@ -13,8 +13,35 @@ namespace Egami.Formats.Bmp;
 /// is stored. Run-length and embedded PNG or JPEG files, bottom-up files on a stream that cannot seek, and 32-bit files whose alpha
 /// counts only if some pixel uses it (unless the stream can seek to check first) are decoded into a buffer first.
 /// </content>
-internal sealed partial class BmpReader : IRowFormatReader
+internal sealed partial class BmpReader : IRowFormatReader, IIncrementalFormatReader
 {
+    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    {
+        // The headers, the color table and any profile before the pixels: everything Open reads, up to the pixel data.
+        if (!Streams(input, options))
+        {
+            return false;
+        }
+
+        ReadOnlySpan<byte> file = input.Peek(14);
+        return file.Length == 14 && input.Available >= BinaryPrimitives.ReadUInt32LittleEndian(file[10..]);
+    }
+
+    /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>
+    private static void Wait(bool ready)
+    {
+        if (!ready)
+        {
+            throw new NeedsInputException();
+        }
+    }
+
+    /// <summary>Returns whether <paramref name="bytes"/> bytes from the read position have arrived, or the input has ended.</summary>
+    private static bool Arrived(EgamiInput input, long bytes)
+    {
+        return !input.Incremental || input.AtEndOfInput || input.Available >= bytes;
+    }
+
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
         if (!Streams(input, options))
@@ -169,6 +196,7 @@ internal sealed partial class BmpReader : IRowFormatReader
                     try
                     {
                         _input.CancellationToken.ThrowIfCancellationRequested();
+                        Wait(Arrived(_input, _stride));
                         _input.ReadExactly(stored);
                         Decode(stored);
                         _next++;
@@ -214,6 +242,12 @@ internal sealed partial class BmpReader : IRowFormatReader
             if (_ended)
             {
                 return;
+            }
+
+            if (_options.ReadMetadata && _header.ProfileSize > 0 && _header.Profile is null && _header.ProfileOffset >= _input.Position)
+            {
+                // A profile after the pixels is read once all of it has arrived.
+                Wait(Arrived(_input, _header.ProfileOffset - _input.Position + _header.ProfileSize));
             }
 
             _ended = true;

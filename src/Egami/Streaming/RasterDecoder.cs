@@ -226,7 +226,9 @@ public sealed class RasterDecoder : IDisposable
     /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
     /// <returns>The decoder. The caller must dispose it.</returns>
     /// <remarks>
-    /// PNG, APNG and GIF decode as their bytes arrive, keeping only the bytes since the step they are in. Other formats wait for
+    /// Every 1.x format decodes as its bytes arrive, keeping only the bytes since the step it is in (an MCU row, a PNG chunk or
+    /// scanline, a GIF block, a row). Files that are decoded into a buffer first (PFM, plain-text PNM, bottom-up BMP and TGA, a
+    /// 32-bit BMP whose alpha may not count, TGA alpha set by a footer) and formats from plugins wait for
     /// <see cref="EndOfInput"/> and are then read whole.
     /// </remarks>
     /// <example>
@@ -446,8 +448,9 @@ public sealed class RasterDecoder : IDisposable
     }
 
     /// <summary>
-    /// Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a GIF frame from the rows
-    /// received so far (interlaced ones repeated over the rows they stand for), each later pass sharpening it. Region and
+    /// Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a progressive JPEG from its
+    /// scans so far, a GIF frame from the rows received so far (interlaced ones repeated over the rows they stand for), each later
+    /// pass sharpening it. Region and
     /// reduction apply as to rows. The decode does not move on.
     /// </summary>
     /// <typeparam name="TPixel">The pixel type to draw in.</typeparam>

@@ -20,6 +20,8 @@ internal sealed class JpegBitReader : IDisposable
     private ulong _bits;
     private int _count;
     private int _padding;
+    private int _mark = -1;
+    private long _searched;
 
     internal JpegBitReader(EgamiInput input)
     {
@@ -312,15 +314,115 @@ internal sealed class JpegBitReader : IDisposable
     {
         if (_position == _length)
         {
-            _length = _input.Read(_chunk.AsSpan(0, ChunkSize));
-            _position = 0;
-            if (_length == 0)
+            if (_mark >= 0)
             {
+                // The bytes since the checkpoint stay, so the decode can go back to it.
+                int kept = _length - _mark;
+                if (kept + ChunkSize > _chunk.Length)
+                {
+                    byte[] larger = ArrayPool<byte>.Shared.Rent(Math.Max(_chunk.Length * 2, kept + ChunkSize));
+                    _chunk.AsSpan(_mark, kept).CopyTo(larger);
+                    ArrayPool<byte>.Shared.Return(_chunk);
+                    _chunk = larger;
+                }
+                else
+                {
+                    _chunk.AsSpan(_mark, kept).CopyTo(_chunk);
+                }
+
+                _position = kept;
+                _length = kept;
+                _mark = 0;
+            }
+            else
+            {
+                _position = 0;
+                _length = 0;
+            }
+
+            int read = _input.Read(_chunk.AsSpan(_length, ChunkSize));
+            _length += read;
+            if (read == 0)
+            {
+                if (_input.Incremental && !_input.AtEndOfInput)
+                {
+                    throw new Streaming.NeedsInputException();
+                }
+
                 return -1;
             }
         }
 
         return _chunk[_position++];
+    }
+
+    /// <summary>Where the reader is, so an incremental decode that runs out of bytes can go back.</summary>
+    internal readonly record struct Checkpoint(int Position, ulong Bits, int Count, int Padding, int Marker, int LastRestart);
+
+    /// <summary>Marks the current place: the bytes from here on are kept until the next mark.</summary>
+    internal Checkpoint Mark()
+    {
+        _mark = _position;
+        return new Checkpoint(0, _bits, _count, _padding, Marker, LastRestart);
+    }
+
+    /// <summary>Goes back to the place <see cref="Mark"/> returned, whose bytes were kept.</summary>
+    internal void Rewind(Checkpoint checkpoint)
+    {
+        _position = _mark + checkpoint.Position;
+        _bits = checkpoint.Bits;
+        _count = checkpoint.Count;
+        _padding = checkpoint.Padding;
+        Marker = checkpoint.Marker;
+        LastRestart = checkpoint.LastRestart;
+    }
+
+    /// <summary>
+    /// Returns whether the rest of the current scan has arrived: a marker other than a restart marker follows in the bytes
+    /// received, so decoding the scan cannot run dry. Always true outside an incremental decode or once the input has ended.
+    /// </summary>
+    internal bool ScanArrived()
+    {
+        if (!_input.Incremental || _input.AtEndOfInput)
+        {
+            return true;
+        }
+
+        // Bytes held here first, then those the input has not handed over yet; the search resumes where the last one stopped.
+        int held = _length - _position;
+        long total = held + _input.Available;
+        for (long at = Math.Max(0, _searched - 1); at + 1 < total; at++)
+        {
+            byte first = at < held ? _chunk[_position + (int)at] : InputByte(at - held);
+            if (first != 0xFF)
+            {
+                continue;
+            }
+
+            byte second = at + 1 < held ? _chunk[_position + (int)at + 1] : InputByte(at + 1 - held);
+            if (second is not (0x00 or 0xFF) and not (>= 0xD0 and <= 0xD7))
+            {
+                _searched = 0;
+                return true;
+            }
+        }
+
+        _searched = Math.Max(0, total - 1);
+        return false;
+    }
+
+    /// <summary>Returns a byte the input has not handed over yet, <paramref name="offset"/> bytes ahead.</summary>
+    private byte InputByte(long offset)
+    {
+        Span<byte> one = stackalloc byte[1];
+        _input.TryPeekAt(offset, one);
+        return one[0];
+    }
+
+    /// <summary>Forgets how far <see cref="ScanArrived"/> looked, at the start of a scan.</summary>
+    internal void ResetSearch()
+    {
+        _searched = 0;
     }
 }
 

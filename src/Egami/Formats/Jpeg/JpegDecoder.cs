@@ -65,6 +65,13 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private int _pullBlocks;
     private int _transformed = -1;
     private int _firstNeeded;
+    private EgamiInput? _input;
+    private JpegScan? _scan;
+    private int _scans;
+    private bool _scansDone;
+    private bool _scanDecoded;
+    private bool _previewed;
+    private int _previewRow = int.MaxValue;
 
     /// <summary>Creates a decoder whose output is the image scaled by 1/<paramref name="scale"/> (1, 2, 4 or 8).</summary>
     internal JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel> raster, bool fastUpsampling, int scale = 1)
@@ -202,6 +209,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// </summary>
     internal void Begin(EgamiInput input, Rect region)
     {
+        _input = input;
         _reader = new JpegBitReader(input);
         _firstNeeded = Math.Max(0, (region.Y / _mcuRows) - 1);
         foreach (Component c in _components)
@@ -244,27 +252,75 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             c.AllocateCoefficients(input.Memory, _mcusX * c.H, _mcusY * c.V);
         }
 
-        int scans = 0;
-        while (true)
+        _scan = scan;
+        PumpScans();
+    }
+
+    /// <summary>
+    /// Decodes the scans of a buffered file into the coefficients, one after another. An incremental decode decodes a scan once
+    /// all of it has arrived and stops (with <see cref="Streaming.NeedsInputException"/>) at the first that has not.
+    /// </summary>
+    private void PumpScans()
+    {
+        EgamiInput input = _input!;
+        JpegBitReader reader = _reader!;
+        while (!_scansDone)
         {
-            if (++scans > MaxScans)
+            JpegScan scan = _scan!;
+            if (!_scanDecoded)
             {
-                throw new CorruptDataException(JpegFormat.Info.Name, -1, string.Create(CultureInfo.InvariantCulture, $"The file has more than {MaxScans:N0} scans."));
+                if (_scans + 1 > MaxScans)
+                {
+                    throw new CorruptDataException(JpegFormat.Info.Name, -1, string.Create(CultureInfo.InvariantCulture, $"The file has more than {MaxScans:N0} scans."));
+                }
+
+                input.CancellationToken.ThrowIfCancellationRequested();
+                bool skip = _header.Progressive && scan.SpectralStart > 0 && _components[scan.Components[0].ComponentIndex].BlockSize == 1;
+                if (!skip && !reader.ScanArrived())
+                {
+                    throw new Streaming.NeedsInputException();
+                }
+
+                _scans++;
+                if (skip)
+                {
+                    reader.BeginScan();
+                }
+
+                _scanDecoded = true;
+                if (!skip && !DecodeBufferedScan(reader, scan))
+                {
+                    _scansDone = true;
+                    break;
+                }
             }
 
-            input.CancellationToken.ThrowIfCancellationRequested();
-            bool skip = _header.Progressive && scan.SpectralStart > 0 && _components[scan.Components[0].ComponentIndex].BlockSize == 1;
-            if (skip)
+            // The segments up to the next scan are read whole or, if they have not all arrived, read again later.
+            JpegBitReader.Checkpoint mark = reader.Mark();
+            int warnings = _warnings.Count;
+            bool warned = _warned;
+            JpegScan? next;
+            try
             {
-                _reader.BeginScan();
+                next = NextScan(input, reader);
+            }
+            catch (Streaming.NeedsInputException)
+            {
+                reader.Rewind(mark);
+                _warnings.RemoveRange(warnings, _warnings.Count - warnings);
+                _warned = warned;
+                throw;
             }
 
-            if ((!skip && !DecodeBufferedScan(_reader, scan)) || NextScan(input, _reader) is not JpegScan next)
+            if (next is null)
             {
+                _scansDone = true;
                 break;
             }
 
-            scan = next;
+            _scan = next;
+            _scanDecoded = false;
+            reader.ResetSearch();
         }
 
         for (int i = 0; i < _components.Length; i++)
@@ -272,6 +328,42 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             // A component no scan reached is all zeros, mid-gray, and still needs a table.
             LatchQuant(i);
         }
+    }
+
+    /// <summary>Gets whether a preview can be drawn: a buffered file whose rows have not been read yet.</summary>
+    internal bool CanPreview => !_pullSequential && (_transformed < 0 || _previewed);
+
+    /// <summary>
+    /// Pull mode: converts a row of a preview of a buffered file from the scans decoded so far, transforming the coefficients as
+    /// they stand; the first real row starts the transform over.
+    /// </summary>
+    internal void PreviewRow<TOut>(int y, int x, Span<TOut> destination)
+        where TOut : unmanaged, IPixelType<TOut>
+    {
+        try
+        {
+            PumpScans();
+        }
+        catch (Streaming.NeedsInputException)
+        {
+            // The scans so far are what the preview shows.
+        }
+
+        if (y <= _previewRow)
+        {
+            _transformed = -1;
+        }
+
+        _previewRow = y;
+        _previewed = true;
+        int my = y / _mcuRows;
+        AdvanceTo(Math.Min(my + 1, _mcusY - 1));
+        int count = _components.Length;
+        ReadOnlySpan<byte> a = SampleRow(0, y);
+        ReadOnlySpan<byte> b = count > 1 ? SampleRow(1, y) : default;
+        ReadOnlySpan<byte> c = count > 2 ? SampleRow(2, y) : default;
+        ReadOnlySpan<byte> k = count > 3 ? SampleRow(3, y) : default;
+        ConvertRow(x, a, b, c, k, destination);
     }
 
     /// <summary>Returns the bytes pull mode holds: strips, row buffers, and the coefficients of one MCU row or of the whole image.</summary>
@@ -295,6 +387,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     internal void ReadRow<TOut>(int y, int x, Span<TOut> destination)
         where TOut : unmanaged, IPixelType<TOut>
     {
+        if (!_pullSequential)
+        {
+            // Every scan must have arrived before a row is final; a preview's transforms are started over.
+            PumpScans();
+            if (_previewed)
+            {
+                _previewed = false;
+                _previewRow = int.MaxValue;
+                _transformed = -1;
+            }
+        }
+
         int my = y / _mcuRows;
         AdvanceTo(Math.Min(my + 1, _mcusY - 1));
         int count = _components.Length;
@@ -313,15 +417,33 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             int next = _transformed + 1;
             if (_pullSequential)
             {
-                if (next < _firstNeeded)
+                // An incremental decode that runs out of bytes inside an MCU row goes back to its start and waits.
+                bool incremental = _input!.Incremental;
+                JpegBitReader.Checkpoint mark = incremental ? _reader!.Mark() : default;
+                EntropyState state = _pullState!;
+                EntropyState? saved = incremental ? state.Copy() : null;
+                int warnings = _warnings.Count;
+                bool warned = _warned;
+                try
                 {
-                    _transformed = SkipRows(next) - 1;
-                    continue;
-                }
+                    if (next < _firstNeeded)
+                    {
+                        _transformed = SkipRows(next) - 1;
+                        continue;
+                    }
 
-                RowSlot slot = new(_pullCoefficients!, 0, _pullHasAc!, 0, _pullFirstBlock);
-                DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, _pullState!, slot);
-                TransformRow(next, _pullOrder, slot);
+                    RowSlot slot = new(_pullCoefficients!, 0, _pullHasAc!, 0, _pullFirstBlock);
+                    DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, state, slot);
+                    TransformRow(next, _pullOrder, slot);
+                }
+                catch (Streaming.NeedsInputException) when (incremental)
+                {
+                    _reader!.Rewind(mark);
+                    state.Restore(saved!);
+                    _warnings.RemoveRange(warnings, _warnings.Count - warnings);
+                    _warned = warned;
+                    throw;
+                }
             }
             else if (next >= _firstNeeded)
             {
@@ -398,6 +520,13 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 {
                     Span<short> block = row.Slice(bx * 64, 64);
                     Span<byte> target = strip[(((v * c.StripWidth) + bx) * c.BlockSize)..];
+                    if (c.Quant is null)
+                    {
+                        // A preview before the component's first scan: every coefficient is still 0, which is mid-gray.
+                        JpegIdct.FillDc(0, target, c.StripWidth, c.BlockSize);
+                        continue;
+                    }
+
                     ulong nonzero = JpegBlock.NonZero(block);
                     if (c.BlockSize > 1 && (nonzero & ~1UL) == 0)
                     {
@@ -1426,6 +1555,24 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             bool resynced = Resynced;
             Resynced = false;
             return resynced;
+        }
+
+        /// <summary>Returns a copy, to go back to if an incremental decode runs out of bytes.</summary>
+        internal EntropyState Copy()
+        {
+            EntropyState copy = new(Predictors.Length) { NextRestart = NextRestart, Mcu = Mcu, Ended = Ended, Resynced = Resynced };
+            Predictors.CopyTo(copy.Predictors, 0);
+            return copy;
+        }
+
+        /// <summary>Goes back to a copy made with <see cref="Copy"/>.</summary>
+        internal void Restore(EntropyState saved)
+        {
+            saved.Predictors.CopyTo(Predictors, 0);
+            NextRestart = saved.NextRestart;
+            Mcu = saved.Mcu;
+            Ended = saved.Ended;
+            Resynced = saved.Resynced;
         }
     }
 

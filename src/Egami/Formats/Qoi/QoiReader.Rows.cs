@@ -9,8 +9,25 @@ using Egami.Streaming;
 namespace Egami.Formats.Qoi;
 
 /// <content>Streaming: QOI rows decode in order, the 64-entry index and the run carried from one row to the next.</content>
-internal sealed partial class QoiReader : IRowFormatReader
+internal sealed partial class QoiReader : IRowFormatReader, IIncrementalFormatReader
 {
+    public bool HeaderArrived(EgamiInput input, ReaderOptions options) => input.Available >= HeaderLength;
+
+    /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>
+    private static void Wait(bool ready)
+    {
+        if (!ready)
+        {
+            throw new NeedsInputException();
+        }
+    }
+
+    /// <summary>Returns whether <paramref name="bytes"/> bytes from the read position have arrived, or the input has ended.</summary>
+    private static bool Arrived(EgamiInput input, long bytes)
+    {
+        return !input.Incremental || input.AtEndOfInput || input.Available >= bytes;
+    }
+
     /// <summary>The read window between rows: small enough that keeping it filled never moves much of the input buffer.</summary>
     private const int Window = 4096;
 
@@ -35,6 +52,7 @@ internal sealed partial class QoiReader : IRowFormatReader
         private uint _px = 0xFF00_0000;
         private int _run;
         private int _next;
+        private int _x;
         private int _failedAt = -1;
         private bool _ended;
         private bool _disposed;
@@ -111,20 +129,23 @@ internal sealed partial class QoiReader : IRowFormatReader
                 return;
             }
 
-            _ended = true;
             if (_next < StoredHeight || _failedAt >= 0)
             {
+                _ended = true;
                 // Rows after the last one asked for are not decoded, and a truncated file has no end marker to check.
                 return;
             }
 
+            Wait(Arrived(_input, EndMarker.Length));
             ReadOnlySpan<byte> end = _input.Peek(EndMarker.Length);
             if (end.SequenceEqual(EndMarker))
             {
                 _input.Skip(EndMarker.Length);
+                _ended = true;
                 return;
             }
 
+            _ended = true;
             string problem = end.Length == 0 || EndMarker.StartsWith(end)
                 ? "The file ends without the QOI end marker."
                 : "More data follows the last pixel where the QOI end marker should be; it was ignored.";
@@ -154,7 +175,9 @@ internal sealed partial class QoiReader : IRowFormatReader
             Span<uint> row = Row;
             Span<uint> index = _index;
             int width = row.Length;
-            int x = 0;
+
+            // A row an incremental decode stopped in carries on from the pixel it reached.
+            int x = _x;
             ReadOnlySpan<byte> data = _input.Peek(Window);
             int pos = 0;
             while (x < width)
@@ -176,7 +199,14 @@ internal sealed partial class QoiReader : IRowFormatReader
                     if (data.Length < 5 && (data.Length == 0 || (data[0] == OpRgb && data.Length < 4) || (data[0] == OpRgba && data.Length < 5)
                         || ((data[0] & 0xC0) == OpLuma && data.Length < 2)))
                     {
+                        if (!Arrived(_input, 5))
+                        {
+                            _x = x;
+                            throw new NeedsInputException();
+                        }
+
                         Truncated(row, x);
+                        _x = 0;
                         return;
                     }
                 }
@@ -221,6 +251,7 @@ internal sealed partial class QoiReader : IRowFormatReader
             }
 
             _input.Skip(pos);
+            _x = 0;
             _next++;
         }
 

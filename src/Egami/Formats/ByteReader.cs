@@ -16,6 +16,9 @@ internal sealed class ByteReader(EgamiInput input)
     private int _position;
     private int _length;
 
+    /// <summary>Gets the bytes taken from the window that the input has not consumed yet: where the next byte is, from the input's position.</summary>
+    public int Pending => _position;
+
     /// <summary>Gets the offset of the next byte from the start of the image.</summary>
     public long Offset => input.Position + _position;
 

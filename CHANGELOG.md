@@ -17,8 +17,8 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   of the whole image. Interlaced PNG, progressive JPEG and bottom-up BMP and TGA on streams that cannot seek are buffered at the
   cheapest stage.
 - `RasterDecoder.OpenIncremental`, `Append` and `EndOfInput` decode while bytes are still arriving; `Status` (`DecodeStatus`) and
-  `HeaderRead` say how far it has got, and `RenderPreview` draws an interlaced PNG or a GIF frame as far as it has arrived. PNG,
-  APNG and GIF decode as their bytes arrive; other formats wait for the end for now.
+  `HeaderRead` say how far it has got, and `RenderPreview` draws an interlaced PNG, a progressive JPEG or a GIF frame as far
+  as it has arrived. Every 1.x format decodes as its bytes arrive, except files that are decoded into a buffer first.
 - A 32-bit BMP whose alpha byte is zero everywhere now loads into 16-bit and premultiplied pixel types without a lossy round trip
   when the stream can seek.
 - Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at

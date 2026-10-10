@@ -13,8 +13,35 @@ namespace Egami.Formats.Tga;
 /// where it is stored. Bottom-up run-length files, bottom-up files on a stream that cannot seek, and files whose alpha meaning is
 /// only known from a footer after the pixels are decoded into a buffer first.
 /// </content>
-internal sealed partial class TgaReader : IRowFormatReader
+internal sealed partial class TgaReader : IRowFormatReader, IIncrementalFormatReader
 {
+    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    {
+        ReadOnlySpan<byte> bytes = input.Peek(HeaderLength);
+        if (bytes.Length < HeaderLength || !Streams(input, options))
+        {
+            return false;
+        }
+
+        int map = BinaryPrimitives.ReadUInt16LittleEndian(bytes[5..]) * (bytes[1] == 1 ? (bytes[7] + 7) / 8 : 0);
+        return input.Available >= HeaderLength + bytes[0] + map;
+    }
+
+    /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>
+    private static void Wait(bool ready)
+    {
+        if (!ready)
+        {
+            throw new NeedsInputException();
+        }
+    }
+
+    /// <summary>Returns whether <paramref name="bytes"/> bytes from the read position have arrived, or the input has ended.</summary>
+    private static bool Arrived(EgamiInput input, long bytes)
+    {
+        return !input.Incremental || input.AtEndOfInput || input.Available >= bytes;
+    }
+
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
         if (!Streams(input, options))
@@ -156,6 +183,7 @@ internal sealed partial class TgaReader : IRowFormatReader
                 {
                     try
                     {
+                        Wait(_decoder.RowArrived());
                         Span<byte> stored = _decoder.Stored;
                         _decoder.ReadStored(stored);
                         _decoder.Convert(stored, Row);
@@ -199,8 +227,11 @@ internal sealed partial class TgaReader : IRowFormatReader
                 return;
             }
 
+            bool allRows = _next == _header.Height && _failedAt < 0;
+            Wait(!allRows || _decoder.RestArrived());
+            Wait(!(_header.FooterAfterPixels && _next == _header.Height) || _input.AtEndOfInput);
             _ended = true;
-            if (_next == _header.Height && _failedAt < 0)
+            if (allRows)
             {
                 _decoder.FinishRows();
             }

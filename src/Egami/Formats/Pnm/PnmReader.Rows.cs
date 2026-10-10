@@ -11,8 +11,58 @@ namespace Egami.Formats.Pnm;
 /// Streaming: PBM, PGM, PPM and PAM rows, binary or plain text, decode in order, one row held. PFM stores its rows bottom-up, so it
 /// is decoded into a buffer first.
 /// </content>
-internal sealed partial class PnmReader : IRowFormatReader
+internal sealed partial class PnmReader : IRowFormatReader, IIncrementalFormatReader
 {
+    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    {
+        // The header is text of no fixed length: it has arrived when it parses from the bytes so far. Plain text images and PFM
+        // wait for the end.
+        if (Pfm.Is(input))
+        {
+            return false;
+        }
+
+        try
+        {
+            using MemoryStream peeked = new(input.Peek(64 * 1024).ToArray(), writable: false);
+            EgamiInput probe = new(peeked, input.Context, input.CancellationToken);
+            try
+            {
+                return !ReadHeader(probe).Plain && probe.Position <= input.Available;
+            }
+            finally
+            {
+                probe.Dispose();
+            }
+        }
+        catch (CorruptDataException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Returns the bytes one stored row of a binary PNM takes.</summary>
+    private static long RowBytes(Header header)
+    {
+        long samples = (long)header.Width * header.Depth;
+        return header.Wide ? samples * 2 : header.Bitmap ? (header.Width + 7) / 8 : samples;
+    }
+
+    /// <summary>Waits for more bytes unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>
+    private static void Wait(bool ready)
+    {
+        if (!ready)
+        {
+            throw new NeedsInputException();
+        }
+    }
+
+    /// <summary>Returns whether <paramref name="bytes"/> bytes from the read position have arrived, or the input has ended.</summary>
+    private static bool Arrived(EgamiInput input, long bytes)
+    {
+        return !input.Incremental || input.AtEndOfInput || input.Available >= bytes;
+    }
+
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
         if (Pfm.Is(input))
@@ -124,6 +174,7 @@ internal sealed partial class PnmReader : IRowFormatReader
             {
                 try
                 {
+                    Wait(_header.Plain || Arrived(_input, RowBytes(_header)));
                     _decoder.DecodeRow(Row);
                     _next++;
                 }
@@ -150,11 +201,14 @@ internal sealed partial class PnmReader : IRowFormatReader
                 return;
             }
 
-            _ended = true;
             if (_next == _header.Height && _failedAt < 0)
             {
+                // The check for data after the image looks at up to 4 KB of it.
+                Wait(Arrived(_input, 4096));
                 _decoder.Finish(Metadata.WarningList);
             }
+
+            _ended = true;
         }
 
         protected override void Dispose(bool disposing)

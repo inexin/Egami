@@ -477,6 +477,55 @@ internal sealed partial class TgaReader : IFormatReader
             }
         }
 
+        /// <summary>
+        /// Returns whether the bytes of the next stored row have arrived: the row itself, or for run-length data, the rest of a
+        /// packet carried over and the packets that cover the row. Always true outside an incremental decode or once the input ended.
+        /// </summary>
+        public bool RowArrived()
+        {
+            if (!input.Incremental || input.AtEndOfInput)
+            {
+                return true;
+            }
+
+            int bpp = header.BytesPerPixel;
+            if (!header.Rle)
+            {
+                return input.Available >= (long)header.Width * bpp;
+            }
+
+            long offset = _bytes!.Pending;
+            int pixels = header.Width;
+            if (_remaining > 0)
+            {
+                int n = Math.Min(_remaining, pixels);
+                offset += _repeat ? 0 : (long)n * bpp;
+                pixels -= n;
+            }
+
+            Span<byte> packet = stackalloc byte[1];
+            while (pixels > 0)
+            {
+                if (!input.TryPeekAt(offset, packet))
+                {
+                    return false;
+                }
+
+                int count = Math.Min((packet[0] & 0x7F) + 1, pixels);
+                offset += 1 + ((packet[0] & 0x80) != 0 ? bpp : (long)count * bpp);
+                pixels -= count;
+            }
+
+            return input.Available >= offset;
+        }
+
+        /// <summary>Returns whether the rest of a raw packet that runs past the image has arrived, which <see cref="FinishRows"/> reads.</summary>
+        public bool RestArrived()
+        {
+            return !input.Incremental || input.AtEndOfInput || _remaining == 0 || _repeat
+                || input.Available >= _bytes!.Pending + ((long)_remaining * header.BytesPerPixel);
+        }
+
         /// <summary>Hands back the bytes the packet reader read ahead.</summary>
         public void FinishBytes()
         {

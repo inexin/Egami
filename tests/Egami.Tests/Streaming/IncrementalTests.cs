@@ -7,12 +7,10 @@ namespace Egami.Tests.Streaming;
 /// <summary>Phase 2.2 task 7: PNG, APNG and GIF decode while their bytes arrive, to exactly what Load gives, whatever the splits.</summary>
 public class IncrementalTests
 {
-    private static readonly string[] Incremental = [".png", ".gif"];
-
     public static TheoryData<string, int> Cases()
     {
         TheoryData<string, int> data = [];
-        foreach (string file in StreamingCorpus.Files.Where(f => Incremental.Any(f.EndsWith)))
+        foreach (string file in StreamingCorpus.Files)
         {
             foreach (int split in (int[])[1, 7, 65_536, -1])
             {
@@ -23,7 +21,7 @@ public class IncrementalTests
         return data;
     }
 
-    public static TheoryData<string> Others() => [.. StreamingCorpus.Files.Where(f => !Incremental.Any(f.EndsWith))];
+    public static TheoryData<string> Others() => [.. StreamingCorpus.Files];
 
     [Theory]
     [MemberData(nameof(Cases))]
@@ -86,7 +84,7 @@ public class IncrementalTests
         int rowsBeforeEnd = 0;
         try
         {
-            for (int at = 0; at <= data.Length; at += split)
+            for (int at = 0; at < data.Length + split; at = Math.Min(at + split, data.Length))
             {
                 if (at < data.Length)
                 {
@@ -125,6 +123,11 @@ public class IncrementalTests
                         break;
                     }
                 }
+
+                if (at == data.Length)
+                {
+                    break;
+                }
             }
 
             if (decoder.Status == DecodeStatus.FrameEnded)
@@ -148,7 +151,7 @@ public class IncrementalTests
 
     [Theory]
     [MemberData(nameof(Others))]
-    public void OtherFormatsDecodeAtTheEnd(string file)
+    public void LargeChunksDecodeAtTheEnd(string file)
     {
         byte[] data = StreamingCorpus.Read(file);
         using Raster<Rgba8> expected = Raster.Load<Rgba8>(data);
@@ -237,6 +240,51 @@ public class PreviewTests
         {
             preview?.Dispose();
         }
+    }
+
+    public static TheoryData<string> Progressive() => [.. StreamingCorpus.Files.Where(f => f.Contains("progressive", StringComparison.Ordinal))];
+
+    [Theory]
+    [MemberData(nameof(Progressive))]
+    public void AProgressiveJpegPreviewSharpensIntoTheImage(string file)
+    {
+        byte[] data = StreamingCorpus.Read(file);
+        using Raster<Rgb8> expected = Raster.Load<Rgb8>(data);
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+        Raster<Rgb8>? preview = null;
+        try
+        {
+            for (int at = 0; at < data.Length; at += 97)
+            {
+                decoder.Append(data.AsSpan(at, Math.Min(97, data.Length - at)));
+                if (decoder.HeaderRead)
+                {
+                    preview ??= Raster.Create<Rgb8>(decoder.Info.Width, decoder.Info.Height);
+                    Assert.True(decoder.RenderPreview(preview));
+                }
+            }
+
+            decoder.EndOfInput();
+            Assert.True(decoder.RenderPreview(preview!));
+            StreamingCorpus.Equal(expected, 0, preview!, file);
+
+            // Rows read after previews are the image too.
+            using Raster<Rgb8> frame = Raster.Create<Rgb8>(decoder.Info.Width, decoder.Info.Height);
+            Assert.NotNull(decoder.ReadFrame(frame));
+            StreamingCorpus.Equal(expected, 0, frame, file);
+        }
+        finally
+        {
+            preview?.Dispose();
+        }
+    }
+
+    [Fact]
+    public void ABaselineJpegHasNoPreview()
+    {
+        using RasterDecoder decoder = RasterDecoder.Open(StreamingCorpus.Read("jpeg/duck-420.jpg"));
+        using Raster<Rgb8> preview = Raster.Create<Rgb8>(decoder.Info.Width, decoder.Info.Height);
+        Assert.False(decoder.RenderPreview(preview));
     }
 
     [Theory]
