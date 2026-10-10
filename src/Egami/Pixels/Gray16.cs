@@ -52,6 +52,12 @@ public struct Gray16 : IPixelType<Gray16>
     }
 
     /// <inheritdoc/>
+    public readonly Rgba16 ToRgba16()
+    {
+        return new Rgba16(L, L, L, ushort.MaxValue);
+    }
+
+    /// <inheritdoc/>
     public readonly bool Equals(Gray16 other)
     {
         return L == other.L;

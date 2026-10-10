@@ -63,6 +63,18 @@ public struct Rgba16 : IPixelType<Rgba16>
     }
 
     /// <inheritdoc/>
+    public static Rgba16 FromRgba16(Rgba16 value)
+    {
+        return value;
+    }
+
+    /// <inheritdoc/>
+    public readonly Rgba16 ToRgba16()
+    {
+        return this;
+    }
+
+    /// <inheritdoc/>
     public readonly bool Equals(Rgba16 other)
     {
         return R == other.R && G == other.G && B == other.B && A == other.A;

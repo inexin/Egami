@@ -1,1 +1,16 @@
 #nullable enable
+Egami.Pixels.AlphaKind.Premultiplied = 2 -> Egami.Pixels.AlphaKind
+Egami.Pixels.Gray16.ToRgba16() -> Egami.Pixels.Rgba16
+Egami.Pixels.IPixelType<TSelf>.FromRgba16(Egami.Pixels.Rgba16 value) -> TSelf
+Egami.Pixels.IPixelType<TSelf>.ToRgba16() -> Egami.Pixels.Rgba16
+Egami.Pixels.PixelChannelOrder.Abgr = 8 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Alpha = 9 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Argb = 7 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Cmyk = 10 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelType.Float16 = 4 -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelChannelType.Packed = 5 -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelLayoutInfo.BitsPerPixel.get -> int
+Egami.Pixels.PixelLayoutInfo.ChannelBits.get -> System.ReadOnlySpan<int>
+Egami.Pixels.PixelLayoutInfo.PixelLayoutInfo(Egami.Pixels.PixelChannelOrder channelOrder, Egami.Pixels.PixelChannelType channelType, Egami.Pixels.AlphaKind alpha, int bitsPerPixel, params System.ReadOnlySpan<int> channelBits) -> void
+Egami.Pixels.Rgba16.ToRgba16() -> Egami.Pixels.Rgba16
+static Egami.Pixels.Rgba16.FromRgba16(Egami.Pixels.Rgba16 value) -> Egami.Pixels.Rgba16

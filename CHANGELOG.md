@@ -3,6 +3,23 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Unreleased
+
+Additive to the 1.0 API: nothing in it changes or goes away.
+
+### Pixel layouts
+
+- New enum values, for code that switches on them: `PixelChannelOrder.Argb`, `Abgr`, `Alpha` and `Cmyk`;
+  `PixelChannelType.Float16` and `Packed`; `AlphaKind.Premultiplied`.
+- `PixelLayoutInfo` describes packed layouts such as 5-6-5: a constructor taking the pixel size and channel widths, and the
+  `BitsPerPixel` and `ChannelBits` properties. `BytesPerPixel` and `BitsPerChannel` are unchanged for every 1.0 type.
+- `IPixelType` gains `FromRgba16` and `ToRgba16` with default bodies, so types written against 1.0 keep compiling.
+  Conversions between integer types wider than 8 bits now go through `Rgba16` and are exact; results for the 1.0 types are
+  unchanged.
+- Writers and color operations handle unknown, packed and premultiplied layouts: PNG and PNM write 8-bit samples for packed
+  types no wider than 8 bits, and an unknown layout without alpha is written as RGB. Color operations never read premultiplied
+  bytes as straight values.
+
 ## 1.0.0 (unreleased)
 
 The first public release.

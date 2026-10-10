@@ -29,7 +29,7 @@ internal sealed class PnmWriter : IFormatWriter
         PixelLayoutInfo layout = TPixel.Layout;
         bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
         PnmKind kind = pnm.Kind != PnmKind.Auto ? pnm.Kind : layout.HasAlpha ? PnmKind.Pam : gray ? PnmKind.Graymap : PnmKind.Pixmap;
-        bool wide = kind != PnmKind.Bitmap && layout.ChannelType != PixelChannelType.Unorm8;
+        bool wide = kind != PnmKind.Bitmap && layout.NeedsWideSamples;
         int max = kind == PnmKind.Bitmap ? 1 : wide ? 65535 : 255;
         bool plain = pnm.PlainText && kind != PnmKind.Pam;
         int depth = kind switch

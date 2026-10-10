@@ -23,6 +23,51 @@ public class OutsideTests
     }
 
     [Fact]
+    public void AnOutsideWidePackedTypeLoadsConvertsRunsAndSaves()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"egami-outside-{Guid.NewGuid():N}.png");
+        try
+        {
+            using (Raster<Rgba16> source = Raster.Create<Rgba16>(8, 4, new Rgba16(65535, 32768, 0, 65535)))
+            {
+                source.Save(path);
+            }
+
+            using Raster<Rgb30> packed = Raster.Load<Rgb30>(path);
+            Assert.Equal(1023u | (512u << 10) | (3u << 30), packed.Row(0)[0].Value);
+            packed.Apply(ops => ops.Resize(4, 2).Brightness(1f), Ct);
+            packed.Save(path);
+
+            // Packed channels wider than 8 bits are written as 16-bit samples, so the 10-bit values survive.
+            using Raster<Rgba16> back = Raster.Load<Rgba16>(path);
+            Assert.Equal(new Rgba16(65535, (ushort)Math.Round(512 * 65535.0 / 1023), 0, 65535), back.Row(1)[3]);
+            Assert.Equal(PixelChannelType.Unorm16, Raster.Probe(path).Layout.ChannelType);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void AnOutsidePremultipliedTypeGetsStraightColorMath()
+    {
+        Rgba8 color = new(200, 100, 50, 128);
+        using Raster<Rgba8> straight = Raster.Create<Rgba8>(4, 4, color);
+        using Raster<PremultipliedRgba> premultiplied = Raster.Create<PremultipliedRgba>(4, 4, PremultipliedRgba.FromRgba8(color));
+        straight.Apply(ops => ops.Invert().Contrast(1.3f), Ct);
+        premultiplied.Apply(ops => ops.Invert().Contrast(1.3f), Ct);
+
+        // 8-bit premultiplied storage at alpha 128 holds about 7 bits of color, so a level or two moves before the contrast.
+        Rgba8 expected = straight.Row(2)[2];
+        Rgba8 actual = premultiplied.Row(2)[2].ToRgba8();
+        Assert.Equal(expected.A, actual.A);
+        Assert.InRange(Math.Abs(expected.R - actual.R), 0, 4);
+        Assert.InRange(Math.Abs(expected.G - actual.G), 0, 4);
+        Assert.InRange(Math.Abs(expected.B - actual.B), 0, 4);
+    }
+
+    [Fact]
     public void AnOutsideMemorySourceServesEveryAllocation()
     {
         CountingMemorySource memory = new();

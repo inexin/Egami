@@ -45,4 +45,20 @@ public interface IPixelType<TSelf> : IEquatable<TSelf>
     /// </summary>
     /// <returns>The 8-bit color.</returns>
     Rgba8 ToRgba8();
+
+    /// <summary>
+    /// Creates a pixel from a 16-bit color. Conversions between two integer types wider than 8 bits go through this, so they
+    /// are exact wherever the type can hold the color. The default goes through <see cref="FromScaled"/>; types with integer
+    /// channels may override it with exact integer code.
+    /// </summary>
+    /// <param name="value">The color.</param>
+    /// <returns>The pixel.</returns>
+    static virtual TSelf FromRgba16(Rgba16 value) => TSelf.FromScaled(value.ToScaled());
+
+    /// <summary>
+    /// Returns the pixel as a 16-bit color. The default goes through <see cref="ToScaled"/>; types with integer channels may
+    /// override it with exact integer code.
+    /// </summary>
+    /// <returns>The 16-bit color.</returns>
+    Rgba16 ToRgba16() => Rgba16.FromScaled(ToScaled());
 }

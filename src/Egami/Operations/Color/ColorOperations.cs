@@ -240,7 +240,8 @@ internal sealed class ColorMatrixOperation : IRasterOperation
     private static int[]? ByteChannelOrder<TPixel>()
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        if (TPixel.Layout.ChannelType != PixelChannelType.Unorm8)
+        // Premultiplied bytes are not the straight values the color math expects, so they take the converting path.
+        if (TPixel.Layout.ChannelType != PixelChannelType.Unorm8 || TPixel.Layout.Alpha == AlphaKind.Premultiplied)
         {
             return null;
         }

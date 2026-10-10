@@ -102,13 +102,13 @@ internal sealed class PngWriter : IFormatWriter
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         PixelLayoutInfo layout = TPixel.Layout;
-        bool wide = layout.ChannelType != PixelChannelType.Unorm8;
+        bool wide = layout.NeedsWideSamples;
         PngColorType natural = layout.ChannelOrder switch
         {
             PixelChannelOrder.Gray => PngColorType.Gray,
             PixelChannelOrder.GrayAlpha => PngColorType.GrayAlpha,
             PixelChannelOrder.Rgb or PixelChannelOrder.Bgr => PngColorType.Rgb,
-            _ => PngColorType.Rgba,
+            _ => layout.HasAlpha ? PngColorType.Rgba : PngColorType.Rgb,
         };
 
         if (options.ColorType is PngColorType colorType)
@@ -227,7 +227,7 @@ internal sealed class PngWriter : IFormatWriter
 
         uint sequence = 0;
         bool hasAlpha = plan.ColorType is PngColorType.Rgba or PngColorType.GrayAlpha
-            && TPixel.Layout.ChannelOrder is PixelChannelOrder.Rgba or PixelChannelOrder.Bgra or PixelChannelOrder.GrayAlpha;
+            && TPixel.Layout.HasAlpha;
         TPixel[] patch = ArrayPool<TPixel>.Shared.Rent(raster.Width);
         try
         {

@@ -13,9 +13,10 @@ public static class PixelConvert
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Conversions between integer types where either side has 8-bit channels go through <see cref="Rgba8"/>, so they are exact:
-    /// 8 to 16 bits multiplies by 257, and 16 to 8 bits rounds to the nearest value. All other conversions go through
-    /// red, green, blue and alpha scaled to 0..1.
+    /// Conversions between integer types where either side has 8-bit (or narrower packed) channels go through <see cref="Rgba8"/>,
+    /// so they are exact: 8 to 16 bits multiplies by 257, and 16 to 8 bits rounds to the nearest value. Conversions between
+    /// integer types wider than 8 bits go through <see cref="Rgba16"/>, also exact. All other conversions, including every one
+    /// with a float or half-float side, go through red, green, blue and alpha scaled to 0..1.
     /// </para>
     /// <para>
     /// Converting to a gray type takes the Rec. 709 luma of the color, weighted in linear light; gray colors keep their value.
@@ -56,21 +57,65 @@ public static class PixelConvert
         where TFrom : unmanaged, IPixelType<TFrom>
         where TTo : unmanaged, IPixelType<TTo>
     {
-        if (ConvertsThroughRgba8(TFrom.Layout.ChannelType, TTo.Layout.ChannelType))
+        switch (Route(TFrom.Layout, TTo.Layout))
         {
-            ConvertThroughRgba8(source, destination);
-        }
-        else
-        {
-            ConvertThroughScaled(source, destination);
+            case ConvertRoute.Rgba8:
+                ConvertThroughRgba8(source, destination);
+                break;
+            case ConvertRoute.Rgba16:
+                ConvertThroughRgba16(source, destination);
+                break;
+            default:
+                ConvertThroughScaled(source, destination);
+                break;
         }
     }
 
-    private static bool ConvertsThroughRgba8(PixelChannelType from, PixelChannelType to)
+    /// <summary>
+    /// Chooses the exact route where there is one: through <see cref="Rgba8"/> when both sides are integer and one is 8 bits or
+    /// narrower, through <see cref="Rgba16"/> when both are 16-bit or packed wider than 8 bits, otherwise through scaled values.
+    /// Layouts Egami does not know (<see cref="PixelChannelType.Other"/>) count as integer for the 8-bit route, as in 1.0.
+    /// </summary>
+    internal static ConvertRoute Route(PixelLayoutInfo from, PixelLayoutInfo to)
     {
-        return from != PixelChannelType.Float32
-            && to != PixelChannelType.Float32
-            && (from == PixelChannelType.Unorm8 || to == PixelChannelType.Unorm8);
+        if (IsFloat(from) || IsFloat(to))
+        {
+            return ConvertRoute.Scaled;
+        }
+
+        if (IsNarrow(from) || IsNarrow(to))
+        {
+            return ConvertRoute.Rgba8;
+        }
+
+        return IsWideInteger(from) && IsWideInteger(to) ? ConvertRoute.Rgba16 : ConvertRoute.Scaled;
+    }
+
+    private static bool IsFloat(PixelLayoutInfo layout)
+    {
+        return layout.ChannelType is PixelChannelType.Float32 or PixelChannelType.Float16;
+    }
+
+    private static bool IsNarrow(PixelLayoutInfo layout)
+    {
+        return layout.ChannelType == PixelChannelType.Unorm8
+            || (layout.ChannelType == PixelChannelType.Packed && layout.MaxChannelBits is > 0 and <= 8);
+    }
+
+    private static bool IsWideInteger(PixelLayoutInfo layout)
+    {
+        return layout.ChannelType == PixelChannelType.Unorm16
+            || (layout.ChannelType == PixelChannelType.Packed && layout.MaxChannelBits > 8);
+    }
+
+    private static void ConvertThroughRgba16<TFrom, TTo>(ReadOnlySpan<TFrom> source, Span<TTo> destination)
+        where TFrom : unmanaged, IPixelType<TFrom>
+        where TTo : unmanaged, IPixelType<TTo>
+    {
+        for (int i = 0; i < source.Length; i++)
+        {
+            destination[i] = TTo.FromRgba16(source[i].ToRgba16());
+        }
     }
 
     private static void ConvertThroughRgba8<TFrom, TTo>(ReadOnlySpan<TFrom> source, Span<TTo> destination)
@@ -92,4 +137,17 @@ public static class PixelConvert
             destination[i] = TTo.FromScaled(source[i].ToScaled());
         }
     }
+}
+
+/// <summary>The intermediate a scalar conversion goes through.</summary>
+internal enum ConvertRoute
+{
+    /// <summary>Red, green, blue and alpha scaled to 0..1.</summary>
+    Scaled,
+
+    /// <summary>An 8-bit color: exact when one side is 8 bits or narrower.</summary>
+    Rgba8,
+
+    /// <summary>A 16-bit color: exact when both sides are integer and wider than 8 bits.</summary>
+    Rgba16,
 }
