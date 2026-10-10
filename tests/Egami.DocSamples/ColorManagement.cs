@@ -1,5 +1,6 @@
 using Egami.Colors;
 using Egami.Formats;
+using Egami.Metadata;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -144,6 +145,23 @@ public class ColorManagement
         #endregion
 
         Assert.True(same);
+    }
+
+    [Fact]
+    public void HdrInfo()
+    {
+        using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);
+        raster.Metadata.CodePoints = ColorCodePoints.Rec2100Pq;
+        raster.Metadata.Hdr = new HdrMetadata { MasteringMaxLuminance = 1000, MaxContentLightLevel = 800 };
+
+        #region hdr-metadata
+        // What an HDR file says about its mastering display and light levels, alongside its code points.
+        RasterMetadata metadata = raster.Metadata;
+        double? peak = metadata.Hdr?.MaxContentLightLevel ?? metadata.Hdr?.MasteringMaxLuminance;
+        bool pq = metadata.GetColorProfile().IsHdr;
+        #endregion
+
+        Assert.True(pq && peak == 800);
     }
 
     [Fact]

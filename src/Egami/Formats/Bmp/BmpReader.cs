@@ -19,6 +19,7 @@ internal sealed partial class BmpReader : IFormatReader
     internal static readonly BmpReader Instance = new();
 
     /// <summary>"sRGB", "Win ", "LINK" and "MBED" as V4 and V5 color space types.</summary>
+    internal const uint SpaceCalibrated = 0;
     internal const uint SpaceSrgb = 0x7352_4742;
     internal const uint SpaceWindows = 0x5769_6E20;
     internal const uint SpaceLinked = 0x4C49_4E4B;
@@ -389,6 +390,10 @@ internal sealed partial class BmpReader : IFormatReader
         else if (header.ColorSpaceType is SpaceSrgb or SpaceWindows)
         {
             metadata.ColorSpace = ColorSpaceHint.Srgb;
+        }
+        else if (header.ColorSpaceType == SpaceCalibrated && header.Calibration.Length == 48)
+        {
+            metadata.Primaries = BmpDetails.Endpoints(header.Calibration);
         }
     }
 

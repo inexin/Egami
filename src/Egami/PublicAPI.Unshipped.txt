@@ -76,6 +76,20 @@ Egami.Colors.ColorTransformOptions.ColorTransformOptions() -> void
 Egami.Colors.ColorTransformOptions.Equals(Egami.Colors.ColorTransformOptions? other) -> bool
 Egami.Colors.ColorTransformOptions.Intent.get -> Egami.Colors.RenderingIntent
 Egami.Colors.ColorTransformOptions.Intent.init -> void
+Egami.Colors.HdrMetadata
+Egami.Colors.HdrMetadata.<Clone>$() -> Egami.Colors.HdrMetadata!
+Egami.Colors.HdrMetadata.Equals(Egami.Colors.HdrMetadata? other) -> bool
+Egami.Colors.HdrMetadata.HdrMetadata() -> void
+Egami.Colors.HdrMetadata.MasteringMaxLuminance.get -> double?
+Egami.Colors.HdrMetadata.MasteringMaxLuminance.init -> void
+Egami.Colors.HdrMetadata.MasteringMinLuminance.get -> double?
+Egami.Colors.HdrMetadata.MasteringMinLuminance.init -> void
+Egami.Colors.HdrMetadata.MasteringPrimaries.get -> Egami.Colors.ColorPrimaries?
+Egami.Colors.HdrMetadata.MasteringPrimaries.init -> void
+Egami.Colors.HdrMetadata.MaxContentLightLevel.get -> double?
+Egami.Colors.HdrMetadata.MaxContentLightLevel.init -> void
+Egami.Colors.HdrMetadata.MaxFrameAverageLightLevel.get -> double?
+Egami.Colors.HdrMetadata.MaxFrameAverageLightLevel.init -> void
 Egami.Colors.IccData
 Egami.Colors.IccData.CodePoints.get -> Egami.Colors.ColorCodePoints?
 Egami.Colors.IccData.ConnectionSpace.get -> string!
@@ -171,7 +185,13 @@ Egami.Formats.RowReader.Dispose() -> void
 Egami.Formats.RowReader.RowReader() -> void
 Egami.Formats.RowReader<TNatural>
 Egami.Formats.RowReader<TNatural>.RowReader() -> void
+Egami.Metadata.RasterMetadata.CodePoints.get -> Egami.Colors.ColorCodePoints?
+Egami.Metadata.RasterMetadata.CodePoints.set -> void
 Egami.Metadata.RasterMetadata.GetColorProfile() -> Egami.Colors.ColorProfile!
+Egami.Metadata.RasterMetadata.Hdr.get -> Egami.Colors.HdrMetadata?
+Egami.Metadata.RasterMetadata.Hdr.set -> void
+Egami.Metadata.RasterMetadata.Primaries.get -> Egami.Colors.ColorPrimaries?
+Egami.Metadata.RasterMetadata.Primaries.set -> void
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Pixels.Abgr8
 Egami.Pixels.Abgr8.A -> byte
@@ -390,6 +410,9 @@ override Egami.Colors.ColorProfile.ToString() -> string!
 override Egami.Colors.ColorTransformOptions.Equals(object? obj) -> bool
 override Egami.Colors.ColorTransformOptions.GetHashCode() -> int
 override Egami.Colors.ColorTransformOptions.ToString() -> string!
+override Egami.Colors.HdrMetadata.Equals(object? obj) -> bool
+override Egami.Colors.HdrMetadata.GetHashCode() -> int
+override Egami.Colors.HdrMetadata.ToString() -> string!
 override Egami.Colors.IccData.ToString() -> string!
 override Egami.Colors.IccTag.GetHashCode() -> int
 override Egami.Colors.TransferFunction.Equals(object? obj) -> bool
@@ -479,6 +502,8 @@ static Egami.Colors.ColorTransform.Create(Egami.Colors.ColorProfile! source, Ega
 static Egami.Colors.ColorTransformOptions.Default.get -> Egami.Colors.ColorTransformOptions!
 static Egami.Colors.ColorTransformOptions.operator !=(Egami.Colors.ColorTransformOptions? left, Egami.Colors.ColorTransformOptions? right) -> bool
 static Egami.Colors.ColorTransformOptions.operator ==(Egami.Colors.ColorTransformOptions? left, Egami.Colors.ColorTransformOptions? right) -> bool
+static Egami.Colors.HdrMetadata.operator !=(Egami.Colors.HdrMetadata? left, Egami.Colors.HdrMetadata? right) -> bool
+static Egami.Colors.HdrMetadata.operator ==(Egami.Colors.HdrMetadata? left, Egami.Colors.HdrMetadata? right) -> bool
 static Egami.Colors.IccData.Parse(System.ReadOnlySpan<byte> profile, Egami.SafetyLimits? limits = null) -> Egami.Colors.IccData!
 static Egami.Colors.IccTag.operator !=(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
 static Egami.Colors.IccTag.operator ==(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool

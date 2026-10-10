@@ -49,6 +49,14 @@ the same model and records the result: no profile for sRGB, the target's ICC pro
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert)]
 
+What a file says is kept in the metadata: the 1.0 `IccProfile`, `ColorSpace` hint and `Gamma` as before, and now
+`CodePoints` (PNG cICP), `Primaries` (PNG cHRM, BMP calibrated endpoints) and `Hdr` (PNG mDCV and cLLI, as `HdrMetadata`).
+`GetColorProfile` resolves them in one order for every format: code points, then the ICC profile, then an sRGB tag, then a gamma
+or linear tag with the primaries, then a camera's EXIF Adobe RGB marker, and sRGB when the file said nothing. PNG's gAMA 45455
+(1/2.2) without other chromaticities than sRGB's counts as sRGB, which is what such files mean.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#hdr-metadata)]
+
 `Raster.ConvertColor<TTo>` converts into a new raster of another pixel type, which is how a CMYK image becomes RGB through its
 profile. `ColorTransformOptions` choose the rendering intent (perceptual by default) and black point compensation (off by
 default, as in Little CMS and Pillow).

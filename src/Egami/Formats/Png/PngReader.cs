@@ -1131,6 +1131,58 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             target.ColorSpace = gamma == 100_000 ? ColorSpaceHint.Linear : ColorSpaceHint.Gamma;
             target.Gamma = 100_000.0 / gamma;
         }
+
+        ColorTags(png, target);
+    }
+
+    /// <summary>
+    /// The 2.1.2 color fields: cICP into CodePoints, cHRM into Primaries, mDCV and cLLI (PNG third edition, either spelling of the
+    /// last letter) into Hdr. The chunks stay in the details, so the 1.0 values and round trips are unchanged.
+    /// </summary>
+    private static void ColorTags(PngDetails png, RasterMetadata target)
+    {
+        ReadOnlySpan<byte> cicp = png.CodingIndependentCodePoints.Span;
+        if (cicp.Length == 4)
+        {
+            target.CodePoints = new Colors.ColorCodePoints(cicp[0], cicp[1], cicp[2], cicp[3] != 0);
+        }
+
+        ReadOnlySpan<byte> chrm = png.Chromaticities.Span;
+        if (chrm.Length == 32)
+        {
+            Colors.ColorPrimaries primaries = new(Xy(chrm[8..], 100_000), Xy(chrm[16..], 100_000), Xy(chrm[24..], 100_000), Xy(chrm, 100_000));
+            target.Primaries = primaries.IsValid ? primaries : null;
+        }
+
+        Colors.HdrMetadata? hdr = null;
+        foreach (PngChunk chunk in png.OtherChunks)
+        {
+            ReadOnlySpan<byte> d = chunk.Data.Span;
+            if (string.Equals(chunk.Type, "mDCV", StringComparison.OrdinalIgnoreCase) && d.Length == 24)
+            {
+                Colors.ColorPrimaries display = new(Xy16(d), Xy16(d[4..]), Xy16(d[8..]), Xy16(d[12..]));
+                hdr = (hdr ?? new Colors.HdrMetadata()) with
+                {
+                    MasteringPrimaries = display.IsValid ? display : null,
+                    MasteringMaxLuminance = BinaryPrimitives.ReadUInt32BigEndian(d[16..]) / 10_000.0,
+                    MasteringMinLuminance = BinaryPrimitives.ReadUInt32BigEndian(d[20..]) / 10_000.0,
+                };
+            }
+            else if (string.Equals(chunk.Type, "cLLI", StringComparison.OrdinalIgnoreCase) && d.Length == 8)
+            {
+                hdr = (hdr ?? new Colors.HdrMetadata()) with
+                {
+                    MaxContentLightLevel = BinaryPrimitives.ReadUInt32BigEndian(d) / 10_000.0,
+                    MaxFrameAverageLightLevel = BinaryPrimitives.ReadUInt32BigEndian(d[4..]) / 10_000.0,
+                };
+            }
+        }
+
+        target.Hdr = hdr;
+
+        static Colors.Chromaticity Xy(ReadOnlySpan<byte> d, double scale) => new(BinaryPrimitives.ReadUInt32BigEndian(d) / scale, BinaryPrimitives.ReadUInt32BigEndian(d[4..]) / scale);
+
+        static Colors.Chromaticity Xy16(ReadOnlySpan<byte> d) => new(BinaryPrimitives.ReadUInt16BigEndian(d) * 0.00002, BinaryPrimitives.ReadUInt16BigEndian(d[2..]) * 0.00002);
     }
 
     /// <summary>Everything the reader learns while going through the file.</summary>

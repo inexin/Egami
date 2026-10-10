@@ -87,6 +87,9 @@ public abstract class FormatDetails
     internal virtual void ClearColorTags()
     {
     }
+
+    /// <summary>Gets a gamma the format gives outside <see cref="RasterMetadata.Gamma"/> (a BMP's calibrated curve), or <see langword="null"/>.</summary>
+    internal virtual double? CalibratedGamma => null;
 }
 
 /// <summary>
@@ -119,6 +122,21 @@ public sealed class RasterMetadata
     /// <summary>Gets or sets the file's gamma when <see cref="ColorSpace"/> is <see cref="ColorSpaceHint.Gamma"/>, as the exponent that decodes values to linear light.</summary>
     public double? Gamma { get; set; }
 
+    /// <summary>
+    /// Gets or sets the ITU-T H.273 code points the file gave (PNG cICP), or <see langword="null"/>. They take precedence over
+    /// every other color tag in <see cref="GetColorProfile"/>.
+    /// </summary>
+    public Colors.ColorCodePoints? CodePoints { get; set; }
+
+    /// <summary>
+    /// Gets or sets the primaries and white point the file gave (PNG cHRM, BMP calibrated endpoints), or <see langword="null"/>.
+    /// They apply with a gamma, linear or unspecified curve; an ICC profile or code points carry their own.
+    /// </summary>
+    public Colors.ColorPrimaries? Primaries { get; set; }
+
+    /// <summary>Gets or sets the HDR mastering display and light levels the file gave (PNG mDCV and cLLI), or <see langword="null"/>.</summary>
+    public Colors.HdrMetadata? Hdr { get; set; }
+
     /// <summary>Gets or sets the name of the format the raster was read from, such as "PNG", or <see langword="null"/>.</summary>
     public string? FormatName { get; set; }
 
@@ -138,17 +156,23 @@ public sealed class RasterMetadata
     internal List<string> WarningList { get; } = [];
 
     /// <summary>
-    /// Returns what the raster's pixel values mean, resolved from everything the file said: the embedded ICC profile, then an
-    /// sRGB or linear tag, then a gamma, and sRGB when the file said nothing. A damaged or unsupported profile counts as saying
-    /// nothing. The result is an RGB encoding unless the profile is gray or CMYK; <see cref="Raster.ConvertColor{TTo}"/>
-    /// and <see cref="Operations.RasterOps.ConvertColor"/> read gray pixels with the gray form of an RGB curve.
+    /// Returns what the raster's pixel values mean, resolved from everything the file said, in this order: the H.273
+    /// <see cref="CodePoints"/> (PNG cICP), the embedded ICC profile, an sRGB tag, a gamma or linear tag with the file's
+    /// <see cref="Primaries"/> (sRGB's when it has none), the EXIF marker of an Adobe RGB camera, primaries alone with the sRGB
+    /// curve, and sRGB when the file said nothing. A damaged or unsupported profile, or code points Egami does not know, count as
+    /// saying nothing. PNG's gAMA 45455 (1/2.2) with no cHRM, or with sRGB's, counts as sRGB, which is what such files mean.
     /// </summary>
-    /// <returns>The encoding.</returns>
+    /// <returns>The encoding: RGB unless an ICC profile says gray or CMYK. Gray pixels are read with an RGB encoding's curve.</returns>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="convert"/>
     /// </example>
     public Colors.ColorProfile GetColorProfile()
     {
+        if (CodePoints is Colors.ColorCodePoints codes && Colors.ColorProfile.FromCodePoints(codes) is Colors.ColorProfile coded)
+        {
+            return coded;
+        }
+
         if (!IccProfile.IsEmpty)
         {
             try
@@ -161,13 +185,42 @@ public sealed class RasterMetadata
             }
         }
 
-        return ColorSpace switch
+        Colors.ColorPrimaries? primaries = Primaries is { IsValid: true } p ? p : null;
+        bool srgbPrimaries = primaries is null || primaries.IsCloseTo(Colors.ColorPrimaries.Rec709);
+        double? gamma = ColorSpace == ColorSpaceHint.Gamma ? Gamma : FormatDetails?.CalibratedGamma;
+        if (ColorSpace == ColorSpaceHint.Srgb)
         {
-            ColorSpaceHint.Linear => Colors.ColorProfile.LinearSrgb,
-            ColorSpaceHint.Gamma when Gamma is double g && double.IsFinite(g) && g > 0 =>
-                Colors.ColorProfile.Create(Colors.ColorPrimaries.Rec709, Colors.TransferFunction.Gamma(g), $"Gamma {g:0.###}"),
-            _ => Colors.ColorProfile.Srgb,
-        };
+            return Colors.ColorProfile.Srgb;
+        }
+
+        if (ColorSpace == ColorSpaceHint.Linear)
+        {
+            return srgbPrimaries ? Colors.ColorProfile.LinearSrgb : Colors.ColorProfile.Create(primaries!, Colors.TransferFunction.Linear, "Linear");
+        }
+
+        if (gamma is double g && double.IsFinite(g) && g > 0)
+        {
+            if (srgbPrimaries && Math.Abs(g - (100_000.0 / 45_455)) < 1e-6)
+            {
+                return Colors.ColorProfile.Srgb;
+            }
+
+            return Colors.ColorProfile.Create(primaries ?? Colors.ColorPrimaries.Rec709, Colors.TransferFunction.Gamma(g), $"Gamma {g:0.###}");
+        }
+
+        if (IsAdobeRgbCamera(Exif))
+        {
+            return Colors.ColorProfile.AdobeRgb;
+        }
+
+        return srgbPrimaries ? Colors.ColorProfile.Srgb : Colors.ColorProfile.Create(primaries!, Colors.TransferFunction.Srgb);
+    }
+
+    // DCF: EXIF ColorSpace "uncalibrated" (0xFFFF) with interoperability index "R03" is a camera set to Adobe RGB.
+    private static bool IsAdobeRgbCamera(ExifData? exif)
+    {
+        return exif is not null && exif.TryGet(ExifKey.ColorSpace, out ExifEntry? space) && space.Count > 0 && space.AsDouble() == 0xFFFF
+            && exif.TryGet(new ExifKey(0x0001, ExifIfd.Interoperability), out ExifEntry? index) && index.AsString().StartsWith("R03", StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -177,6 +230,8 @@ public sealed class RasterMetadata
     internal void SetColorProfile(Colors.ColorProfile profile)
     {
         Gamma = null;
+        Primaries = null;
+        CodePoints = profile.Icc is null && !profile.IsEquivalentTo(Colors.ColorProfile.Srgb) ? profile.ToCodePoints() : null;
         FormatDetails?.ClearColorTags();
         Colors.ColorProfile? plain = profile.Model == Colors.ColorModel.Gray
             ? (profile.IsEquivalentTo(Colors.ColorProfile.GraySrgb) ? Colors.ColorProfile.Srgb : profile.IsEquivalentTo(Colors.ColorProfile.GrayLinear) ? Colors.ColorProfile.LinearSrgb : null)
@@ -204,6 +259,9 @@ public sealed class RasterMetadata
             Xmp = Xmp.ToArray(),
             ColorSpace = ColorSpace,
             Gamma = Gamma,
+            CodePoints = CodePoints,
+            Primaries = Primaries,
+            Hdr = Hdr,
             FormatName = FormatName,
             FormatDetails = FormatDetails?.Copy(),
             LoopCount = LoopCount,
@@ -230,6 +288,9 @@ public sealed class RasterMetadata
         Xmp = source.Xmp;
         ColorSpace = source.ColorSpace;
         Gamma = source.Gamma;
+        CodePoints = source.CodePoints;
+        Primaries = source.Primaries;
+        Hdr = source.Hdr;
         FormatName = source.FormatName;
         FormatDetails = source.FormatDetails;
         LoopCount = source.LoopCount;

@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Quantization;
@@ -86,6 +88,51 @@ public sealed class BmpDetails : FormatDetails
 
     /// <summary>Gets or sets the V5 rendering intent, or 0 when absent.</summary>
     internal uint RenderingIntent { get; set; }
+
+    /// <summary>
+    /// Gets the calibrated curve of an LCS_CALIBRATED_RGB header: the mean of its three 16.16 gamma values, when they are given.
+    /// 1.0 ignored it, so it is not put in <see cref="RasterMetadata.Gamma"/>; the color profile uses it.
+    /// </summary>
+    internal override double? CalibratedGamma
+    {
+        get
+        {
+            ReadOnlySpan<byte> c = Calibration.Span;
+            if (ColorSpaceType != 0 || c.Length != 48)
+            {
+                return null;
+            }
+
+            double sum = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                double g = BinaryPrimitives.ReadUInt32LittleEndian(c[(36 + (i * 4))..]) / 65536.0;
+                if (!(g > 0))
+                {
+                    return null;
+                }
+
+                sum += g;
+            }
+
+            return sum / 3;
+        }
+    }
+
+    /// <summary>Returns the primaries of the three CIEXYZ endpoints (2.30 fixed point), with their sum as white, or null when they cannot form a color space.</summary>
+    internal static Colors.ColorPrimaries? Endpoints(ReadOnlySpan<byte> c)
+    {
+        Span<double> v = stackalloc double[9];
+        for (int i = 0; i < 9; i++)
+        {
+            v[i] = BinaryPrimitives.ReadInt32LittleEndian(c[(i * 4)..]) / (double)(1 << 30);
+        }
+
+        Colors.ColorPrimaries primaries = new(Xy(v[0], v[1], v[2]), Xy(v[3], v[4], v[5]), Xy(v[6], v[7], v[8]), Xy(v[0] + v[3] + v[6], v[1] + v[4] + v[7], v[2] + v[5] + v[8]));
+        return primaries.IsValid ? primaries : null;
+
+        static Colors.Chromaticity Xy(double x, double y, double z) => x + y + z > 0 ? new(x / (x + y + z), y / (x + y + z)) : default;
+    }
 
     /// <inheritdoc/>
     public override FormatDetails Copy()
