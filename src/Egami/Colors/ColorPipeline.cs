@@ -72,6 +72,22 @@ internal sealed class ColorPipeline
         return (scale, offset);
     }
 
+    /// <summary>
+    /// Returns the pipeline as curves, an affine map and curves, when both ends are matrix or gray encodings whose curves are
+    /// transfer functions: linear out = <see cref="LinearForm.Matrix"/> × linear in + <see cref="LinearForm.Offset"/>. A gray
+    /// input is the first component of linear in; a gray output is the first component of linear out.
+    /// </summary>
+    public LinearForm? GetLinearForm()
+    {
+        if (_source.Linear is not (TransferFunction[] inCurves, Matrix3d toPcs) || _target.Linear is not (TransferFunction[] outCurves, Matrix3d fromPcs))
+        {
+            return null;
+        }
+
+        Matrix3d matrix = fromPcs * Matrix3d.Diagonal(_scale) * toPcs;
+        return new LinearForm(inCurves, matrix, fromPcs * _offset, outCurves);
+    }
+
     /// <summary>Converts one color.</summary>
     public void Evaluate(ReadOnlySpan<double> input, Span<double> output)
     {
@@ -184,6 +200,11 @@ internal sealed class ColorPipeline
         double black = Math.Max(0, QuadraticRoot(points));
         return Cie.LabToXyz(new Vector3d(black, initial.Y, initial.Z), Cie.D50);
     }
+
+    // Gray in: Y becomes D50 times Y. Gray out: Y is taken from XYZ.
+    private static Matrix3d GrayIn => new(Cie.D50.X, 0, 0, Cie.D50.Y, 0, 0, Cie.D50.Z, 0, 0);
+
+    private static Matrix3d GrayOut => new(0, 1, 0, 0, 0, 0, 0, 0, 0);
 
     private static bool IsVersion4(ColorProfile profile) => profile.Icc is not IccData icc || icc.Version.Major >= 4;
 
@@ -310,11 +331,16 @@ internal sealed class ColorPipeline
 
         public abstract Vector3d Run(ReadOnlySpan<double> device);
 
+        /// <summary>Gets the curves and the matrix from linear device values to XYZ, when the profile is that simple.</summary>
+        public virtual (TransferFunction[] Curves, Matrix3d Matrix)? Linear => null;
+
         /// <summary>A built-in or created encoding: its curve, its primaries' matrix, and Bradford adaptation to D50.</summary>
         private sealed class Encoding(ColorProfile profile) : ToPcs(profile.Model == ColorModel.Gray ? 1 : 3)
         {
             private readonly TransferFunction _curve = profile.Transfer!;
             private readonly Matrix3d _matrix = profile.Model == ColorModel.Gray ? Matrix3d.Identity : Matrix3d.Bradford(profile.White.ToXyz(), Cie.D50) * profile.ToXyz();
+
+            public override (TransferFunction[] Curves, Matrix3d Matrix)? Linear => Channels == 1 ? ([_curve], GrayIn) : ([_curve, _curve, _curve], _matrix);
 
             public override Vector3d Run(ReadOnlySpan<double> device)
             {
@@ -330,6 +356,20 @@ internal sealed class ColorPipeline
         /// <summary>An ICC matrix-shaper (curves, then the colorants) or gray profile (the curve times D50, or as L*).</summary>
         private sealed class Matrix(IccModel icc) : ToPcs(icc.Channels)
         {
+            public override (TransferFunction[] Curves, Matrix3d Matrix)? Linear
+            {
+                get
+                {
+                    if (Channels == 1 && icc.PcsIsLab)
+                    {
+                        return null;
+                    }
+
+                    TransferFunction?[] curves = [.. icc.Curves!.Select(c => c.ToTransferFunction())];
+                    return curves.Any(c => c is null) ? null : ([.. curves.Select(c => c!)], Channels == 1 ? GrayIn : icc.Colorants!.Value);
+                }
+            }
+
             public override Vector3d Run(ReadOnlySpan<double> device)
             {
                 IccCurve[] curves = icc.Curves!;
@@ -389,6 +429,9 @@ internal sealed class ColorPipeline
 
         public abstract void Run(Vector3d xyz, Span<double> device);
 
+        /// <summary>Gets the matrix from XYZ to linear device values and the curves, when the profile is that simple.</summary>
+        public virtual (TransferFunction[] Curves, Matrix3d Matrix)? Linear => null;
+
         /// <summary>The connection space itself: XYZ out as it comes.</summary>
         public sealed class Connection() : FromPcs(3)
         {
@@ -402,6 +445,8 @@ internal sealed class ColorPipeline
         {
             private readonly TransferFunction _curve = profile.Transfer!;
             private readonly Matrix3d _matrix = profile.Model == ColorModel.Gray ? Matrix3d.Identity : (Matrix3d.Bradford(profile.White.ToXyz(), Cie.D50) * profile.ToXyz()).Inverse();
+
+            public override (TransferFunction[] Curves, Matrix3d Matrix)? Linear => Channels == 1 ? ([_curve], GrayOut) : ([_curve, _curve, _curve], _matrix);
 
             public override void Run(Vector3d xyz, Span<double> device)
             {
@@ -421,6 +466,20 @@ internal sealed class ColorPipeline
         private sealed class Matrix(IccModel icc) : FromPcs(icc.Channels)
         {
             private readonly Matrix3d _inverse = icc.Model == ColorModel.Gray ? Matrix3d.Identity : icc.Colorants!.Value.Inverse();
+
+            public override (TransferFunction[] Curves, Matrix3d Matrix)? Linear
+            {
+                get
+                {
+                    if (Channels == 1 && icc.PcsIsLab)
+                    {
+                        return null;
+                    }
+
+                    TransferFunction?[] curves = [.. icc.Curves!.Select(c => c.ToTransferFunction())];
+                    return curves.Any(c => c is null) ? null : ([.. curves.Select(c => c!)], Channels == 1 ? GrayOut : _inverse);
+                }
+            }
 
             public override void Run(Vector3d xyz, Span<double> device)
             {
@@ -451,6 +510,9 @@ internal sealed class ColorPipeline
         }
     }
 }
+
+/// <summary>A pipeline as curves, an affine map and curves; see <see cref="ColorPipeline.GetLinearForm"/>.</summary>
+internal sealed record LinearForm(TransferFunction[] InCurves, Matrix3d Matrix, Vector3d Offset, TransferFunction[] OutCurves);
 
 /// <summary>Evaluates the stages of an ICC table on normalized values, and the connection space encodings at its ends.</summary>
 internal static class IccStages
