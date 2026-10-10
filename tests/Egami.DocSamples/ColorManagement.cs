@@ -184,6 +184,45 @@ public class ColorManagement
     }
 
     [Fact]
+    public void ColorValues()
+    {
+        #region color-values
+        // Color values in the models apps ask for, from and to pixels, and between each other.
+        Rgba8 orange = new(240, 128, 32, 255);
+        HslColor hsl = HslColor.From(orange);                          // hue 28°, saturation 0.87, lightness 0.53
+        LabColor lab = ColorConvert.Convert<HslColor, LabColor>(hsl);  // through XYZ
+        OklchColor oklch = OklchColor.From(orange);
+        YCbCrColor jpeg = YCbCrColor.From(orange);                     // BT.601 full range, as JPEG
+        YCbCrColor video = YCbCrColor.From(orange, YuvMatrix.Bt709, YuvRange.Limited);
+
+        // Color difference: CIEDE2000 on Lab, distance on Oklab.
+        double deltaE = lab.DeltaE2000(LabColor.From(new Rgba8(235, 130, 40, 255)));
+
+        // Whole rows at once, from any pixel type and encoding.
+        Rgba8[] pixels = [orange, new(10, 20, 30, 255)];
+        OklabColor[] row = new OklabColor[pixels.Length];
+        ColorConvert.FromPixels<Rgba8, OklabColor>(pixels, row);
+        ColorConvert.FromPixels<Rgba8, OklabColor>(pixels, row, ColorProfile.DisplayP3);   // the same pixels read as Display P3
+        #endregion
+
+        Assert.True(deltaE < 3 && oklch.H > 0 && video.Y < jpeg.Y + 1);
+    }
+
+    [Fact]
+    public void CmykInk()
+    {
+        ColorProfile print = ColorProfile.FromIcc(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "cmyk.icc")));
+
+        #region cmyk-ink
+        // The inks a press would use for a color, and the color it would print, through the press's CMYK profile.
+        CmykColor inks = CmykColor.From(new Rgba8(200, 60, 30, 255), print, new ColorTransformOptions { Intent = RenderingIntent.RelativeColorimetric });
+        Rgba8 proof = inks.ToRgba8(print);
+        #endregion
+
+        Assert.True(inks.M > 0.5f && proof.R > 150);
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);

@@ -16,6 +16,24 @@ Egami.Colors.Chromaticity.X.get -> double
 Egami.Colors.Chromaticity.X.init -> void
 Egami.Colors.Chromaticity.Y.get -> double
 Egami.Colors.Chromaticity.Y.init -> void
+Egami.Colors.CmykColor
+Egami.Colors.CmykColor.C.get -> float
+Egami.Colors.CmykColor.C.init -> void
+Egami.Colors.CmykColor.CmykColor() -> void
+Egami.Colors.CmykColor.CmykColor(float C, float M, float Y, float K) -> void
+Egami.Colors.CmykColor.Deconstruct(out float C, out float M, out float Y, out float K) -> void
+Egami.Colors.CmykColor.Equals(Egami.Colors.CmykColor other) -> bool
+Egami.Colors.CmykColor.IsCloseTo(Egami.Colors.CmykColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.CmykColor.K.get -> float
+Egami.Colors.CmykColor.K.init -> void
+Egami.Colors.CmykColor.M.get -> float
+Egami.Colors.CmykColor.M.init -> void
+Egami.Colors.CmykColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.CmykColor.ToRgba8(Egami.Colors.ColorProfile! cmyk, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Pixels.Rgba8
+Egami.Colors.CmykColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.CmykColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.CmykColor.Y.get -> float
+Egami.Colors.CmykColor.Y.init -> void
 Egami.Colors.ColorCodePoints
 Egami.Colors.ColorCodePoints.ColorCodePoints() -> void
 Egami.Colors.ColorCodePoints.ColorCodePoints(byte Primaries, byte TransferCharacteristics, byte MatrixCoefficients, bool FullRange) -> void
@@ -31,6 +49,7 @@ Egami.Colors.ColorCodePoints.Primaries.get -> byte
 Egami.Colors.ColorCodePoints.Primaries.init -> void
 Egami.Colors.ColorCodePoints.TransferCharacteristics.get -> byte
 Egami.Colors.ColorCodePoints.TransferCharacteristics.init -> void
+Egami.Colors.ColorConvert
 Egami.Colors.ColorModel
 Egami.Colors.ColorModel.Cmyk = 2 -> Egami.Colors.ColorModel
 Egami.Colors.ColorModel.Gray = 1 -> Egami.Colors.ColorModel
@@ -96,6 +115,36 @@ Egami.Colors.HdrMetadata.MaxContentLightLevel.get -> double?
 Egami.Colors.HdrMetadata.MaxContentLightLevel.init -> void
 Egami.Colors.HdrMetadata.MaxFrameAverageLightLevel.get -> double?
 Egami.Colors.HdrMetadata.MaxFrameAverageLightLevel.init -> void
+Egami.Colors.HslColor
+Egami.Colors.HslColor.Deconstruct(out float H, out float S, out float L) -> void
+Egami.Colors.HslColor.Equals(Egami.Colors.HslColor other) -> bool
+Egami.Colors.HslColor.H.get -> float
+Egami.Colors.HslColor.H.init -> void
+Egami.Colors.HslColor.HslColor() -> void
+Egami.Colors.HslColor.HslColor(float H, float S, float L) -> void
+Egami.Colors.HslColor.IsCloseTo(Egami.Colors.HslColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.HslColor.L.get -> float
+Egami.Colors.HslColor.L.init -> void
+Egami.Colors.HslColor.S.get -> float
+Egami.Colors.HslColor.S.init -> void
+Egami.Colors.HslColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.HslColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.HslColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.HsvColor
+Egami.Colors.HsvColor.Deconstruct(out float H, out float S, out float V) -> void
+Egami.Colors.HsvColor.Equals(Egami.Colors.HsvColor other) -> bool
+Egami.Colors.HsvColor.H.get -> float
+Egami.Colors.HsvColor.H.init -> void
+Egami.Colors.HsvColor.HsvColor() -> void
+Egami.Colors.HsvColor.HsvColor(float H, float S, float V) -> void
+Egami.Colors.HsvColor.IsCloseTo(Egami.Colors.HsvColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.HsvColor.S.get -> float
+Egami.Colors.HsvColor.S.init -> void
+Egami.Colors.HsvColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.HsvColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.HsvColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.HsvColor.V.get -> float
+Egami.Colors.HsvColor.V.init -> void
 Egami.Colors.IccData
 Egami.Colors.IccData.CodePoints.get -> Egami.Colors.ColorCodePoints?
 Egami.Colors.IccData.ConnectionSpace.get -> string!
@@ -132,6 +181,78 @@ Egami.Colors.IccTag.Signature.get -> string!
 Egami.Colors.IccTag.Signature.init -> void
 Egami.Colors.IccTag.Type.get -> string!
 Egami.Colors.IccTag.Type.init -> void
+Egami.Colors.IColorValue<TSelf>
+Egami.Colors.IColorValue<TSelf>.From(Egami.Pixels.Rgba8 color) -> TSelf
+Egami.Colors.IColorValue<TSelf>.From(Egami.Pixels.RgbaF32 color) -> TSelf
+Egami.Colors.IColorValue<TSelf>.FromXyz(Egami.Colors.XyzColor xyz) -> TSelf
+Egami.Colors.IColorValue<TSelf>.IsCloseTo(TSelf other, float tolerance = 0.0001) -> bool
+Egami.Colors.IColorValue<TSelf>.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.IColorValue<TSelf>.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.IColorValue<TSelf>.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.LabColor
+Egami.Colors.LabColor.A.get -> float
+Egami.Colors.LabColor.A.init -> void
+Egami.Colors.LabColor.B.get -> float
+Egami.Colors.LabColor.B.init -> void
+Egami.Colors.LabColor.Deconstruct(out float L, out float A, out float B) -> void
+Egami.Colors.LabColor.DeltaE2000(Egami.Colors.LabColor other) -> double
+Egami.Colors.LabColor.Equals(Egami.Colors.LabColor other) -> bool
+Egami.Colors.LabColor.IsCloseTo(Egami.Colors.LabColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.LabColor.L.get -> float
+Egami.Colors.LabColor.L.init -> void
+Egami.Colors.LabColor.LabColor() -> void
+Egami.Colors.LabColor.LabColor(float L, float A, float B) -> void
+Egami.Colors.LabColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.LabColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.LabColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.LchColor
+Egami.Colors.LchColor.C.get -> float
+Egami.Colors.LchColor.C.init -> void
+Egami.Colors.LchColor.Deconstruct(out float L, out float C, out float H) -> void
+Egami.Colors.LchColor.Equals(Egami.Colors.LchColor other) -> bool
+Egami.Colors.LchColor.H.get -> float
+Egami.Colors.LchColor.H.init -> void
+Egami.Colors.LchColor.IsCloseTo(Egami.Colors.LchColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.LchColor.L.get -> float
+Egami.Colors.LchColor.L.init -> void
+Egami.Colors.LchColor.LchColor() -> void
+Egami.Colors.LchColor.LchColor(float L, float C, float H) -> void
+Egami.Colors.LchColor.ToLab() -> Egami.Colors.LabColor
+Egami.Colors.LchColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.LchColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.LchColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.OklabColor
+Egami.Colors.OklabColor.A.get -> float
+Egami.Colors.OklabColor.A.init -> void
+Egami.Colors.OklabColor.B.get -> float
+Egami.Colors.OklabColor.B.init -> void
+Egami.Colors.OklabColor.Deconstruct(out float L, out float A, out float B) -> void
+Egami.Colors.OklabColor.Distance(Egami.Colors.OklabColor other) -> double
+Egami.Colors.OklabColor.Equals(Egami.Colors.OklabColor other) -> bool
+Egami.Colors.OklabColor.IsCloseTo(Egami.Colors.OklabColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.OklabColor.L.get -> float
+Egami.Colors.OklabColor.L.init -> void
+Egami.Colors.OklabColor.OklabColor() -> void
+Egami.Colors.OklabColor.OklabColor(float L, float A, float B) -> void
+Egami.Colors.OklabColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.OklabColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.OklabColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.OklchColor
+Egami.Colors.OklchColor.C.get -> float
+Egami.Colors.OklchColor.C.init -> void
+Egami.Colors.OklchColor.Deconstruct(out float L, out float C, out float H) -> void
+Egami.Colors.OklchColor.Equals(Egami.Colors.OklchColor other) -> bool
+Egami.Colors.OklchColor.H.get -> float
+Egami.Colors.OklchColor.H.init -> void
+Egami.Colors.OklchColor.IsCloseTo(Egami.Colors.OklchColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.OklchColor.L.get -> float
+Egami.Colors.OklchColor.L.init -> void
+Egami.Colors.OklchColor.OklchColor() -> void
+Egami.Colors.OklchColor.OklchColor(float L, float C, float H) -> void
+Egami.Colors.OklchColor.ToOklab() -> Egami.Colors.OklabColor
+Egami.Colors.OklchColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.OklchColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.OklchColor.ToXyz() -> Egami.Colors.XyzColor
 Egami.Colors.RenderingIntent
 Egami.Colors.RenderingIntent.AbsoluteColorimetric = 3 -> Egami.Colors.RenderingIntent
 Egami.Colors.RenderingIntent.Perceptual = 0 -> Egami.Colors.RenderingIntent
@@ -150,6 +271,39 @@ Egami.Colors.TransferFunction.IsHdr.get -> bool
 Egami.Colors.TransferFunction.IsLinear.get -> bool
 Egami.Colors.TransferFunction.ToLinear(double encoded) -> double
 Egami.Colors.TransferFunction.ToLinear(System.ReadOnlySpan<float> source, System.Span<float> destination) -> void
+Egami.Colors.XyzColor
+Egami.Colors.XyzColor.Deconstruct(out float X, out float Y, out float Z) -> void
+Egami.Colors.XyzColor.Equals(Egami.Colors.XyzColor other) -> bool
+Egami.Colors.XyzColor.IsCloseTo(Egami.Colors.XyzColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.XyzColor.ToD50() -> Egami.Colors.XyzColor
+Egami.Colors.XyzColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.XyzColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.XyzColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.XyzColor.X.get -> float
+Egami.Colors.XyzColor.X.init -> void
+Egami.Colors.XyzColor.XyzColor() -> void
+Egami.Colors.XyzColor.XyzColor(float X, float Y, float Z) -> void
+Egami.Colors.XyzColor.Y.get -> float
+Egami.Colors.XyzColor.Y.init -> void
+Egami.Colors.XyzColor.Z.get -> float
+Egami.Colors.XyzColor.Z.init -> void
+Egami.Colors.YCbCrColor
+Egami.Colors.YCbCrColor.Cb.get -> float
+Egami.Colors.YCbCrColor.Cb.init -> void
+Egami.Colors.YCbCrColor.Cr.get -> float
+Egami.Colors.YCbCrColor.Cr.init -> void
+Egami.Colors.YCbCrColor.Deconstruct(out float Y, out float Cb, out float Cr) -> void
+Egami.Colors.YCbCrColor.Equals(Egami.Colors.YCbCrColor other) -> bool
+Egami.Colors.YCbCrColor.IsCloseTo(Egami.Colors.YCbCrColor other, float tolerance = 0.0001) -> bool
+Egami.Colors.YCbCrColor.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Colors.YCbCrColor.ToRgba8(Egami.Pixels.YuvMatrix matrix, Egami.Pixels.YuvRange range = Egami.Pixels.YuvRange.Full) -> Egami.Pixels.Rgba8
+Egami.Colors.YCbCrColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
+Egami.Colors.YCbCrColor.ToRgbaF32(Egami.Pixels.YuvMatrix matrix, Egami.Pixels.YuvRange range = Egami.Pixels.YuvRange.Full) -> Egami.Pixels.RgbaF32
+Egami.Colors.YCbCrColor.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.YCbCrColor.Y.get -> float
+Egami.Colors.YCbCrColor.Y.init -> void
+Egami.Colors.YCbCrColor.YCbCrColor() -> void
+Egami.Colors.YCbCrColor.YCbCrColor(float Y, float Cb, float Cr) -> void
 Egami.DecodeStatus
 Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
 Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
@@ -379,6 +533,14 @@ Egami.Pixels.RgbF32.RgbF32() -> void
 Egami.Pixels.RgbF32.RgbF32(float r, float g, float b) -> void
 Egami.Pixels.RgbF32.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.RgbF32.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvMatrix.Bt2020Ncl = 2 -> Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvMatrix.Bt601 = 0 -> Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvMatrix.Bt709 = 1 -> Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvMatrix.Identity = 3 -> Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvRange
+Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
+Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
 Egami.Raster.ConvertColor<TTo>(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Raster<TTo>!
 Egami.RasterDecoder
 Egami.RasterDecoder.Append(System.ReadOnlySpan<byte> data) -> void
@@ -415,6 +577,7 @@ Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band) -> void
 Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band, int rows) -> void
 Egami.RasterEncoder<TPixel>.WriteRowsAsync(Egami.Raster<TPixel>! band, int rows, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 override Egami.Colors.Chromaticity.GetHashCode() -> int
+override Egami.Colors.CmykColor.GetHashCode() -> int
 override Egami.Colors.ColorCodePoints.GetHashCode() -> int
 override Egami.Colors.ColorPrimaries.Equals(object? obj) -> bool
 override Egami.Colors.ColorPrimaries.GetHashCode() -> int
@@ -426,11 +589,19 @@ override Egami.Colors.ColorTransformOptions.ToString() -> string!
 override Egami.Colors.HdrMetadata.Equals(object? obj) -> bool
 override Egami.Colors.HdrMetadata.GetHashCode() -> int
 override Egami.Colors.HdrMetadata.ToString() -> string!
+override Egami.Colors.HslColor.GetHashCode() -> int
+override Egami.Colors.HsvColor.GetHashCode() -> int
 override Egami.Colors.IccData.ToString() -> string!
 override Egami.Colors.IccTag.GetHashCode() -> int
+override Egami.Colors.LabColor.GetHashCode() -> int
+override Egami.Colors.LchColor.GetHashCode() -> int
+override Egami.Colors.OklabColor.GetHashCode() -> int
+override Egami.Colors.OklchColor.GetHashCode() -> int
 override Egami.Colors.TransferFunction.Equals(object? obj) -> bool
 override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
+override Egami.Colors.XyzColor.GetHashCode() -> int
+override Egami.Colors.YCbCrColor.GetHashCode() -> int
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
 override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Abgr8.GetHashCode() -> int
@@ -484,11 +655,20 @@ static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.operator !=(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
 static Egami.Colors.Chromaticity.operator ==(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
+static Egami.Colors.CmykColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.CmykColor
+static Egami.Colors.CmykColor.From(Egami.Pixels.Rgba8 color, Egami.Colors.ColorProfile! cmyk, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Colors.CmykColor
+static Egami.Colors.CmykColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.CmykColor
+static Egami.Colors.CmykColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.CmykColor
+static Egami.Colors.CmykColor.operator !=(Egami.Colors.CmykColor left, Egami.Colors.CmykColor right) -> bool
+static Egami.Colors.CmykColor.operator ==(Egami.Colors.CmykColor left, Egami.Colors.CmykColor right) -> bool
 static Egami.Colors.ColorCodePoints.operator !=(Egami.Colors.ColorCodePoints left, Egami.Colors.ColorCodePoints right) -> bool
 static Egami.Colors.ColorCodePoints.operator ==(Egami.Colors.ColorCodePoints left, Egami.Colors.ColorCodePoints right) -> bool
 static Egami.Colors.ColorCodePoints.Rec2100Hlg.get -> Egami.Colors.ColorCodePoints
 static Egami.Colors.ColorCodePoints.Rec2100Pq.get -> Egami.Colors.ColorCodePoints
 static Egami.Colors.ColorCodePoints.Srgb.get -> Egami.Colors.ColorCodePoints
+static Egami.Colors.ColorConvert.Convert<TFrom, TTo>(TFrom value) -> TTo
+static Egami.Colors.ColorConvert.FromPixels<TPixel, TColor>(System.ReadOnlySpan<TPixel> pixels, System.Span<TColor> colors, Egami.Colors.ColorProfile? encoding = null) -> void
+static Egami.Colors.ColorConvert.ToPixels<TColor, TPixel>(System.ReadOnlySpan<TColor> colors, System.Span<TPixel> pixels, Egami.Colors.ColorProfile? encoding = null) -> void
 static Egami.Colors.ColorPrimaries.AdobeRgb.get -> Egami.Colors.ColorPrimaries!
 static Egami.Colors.ColorPrimaries.DisplayP3.get -> Egami.Colors.ColorPrimaries!
 static Egami.Colors.ColorPrimaries.operator !=(Egami.Colors.ColorPrimaries? left, Egami.Colors.ColorPrimaries? right) -> bool
@@ -517,9 +697,41 @@ static Egami.Colors.ColorTransformOptions.operator !=(Egami.Colors.ColorTransfor
 static Egami.Colors.ColorTransformOptions.operator ==(Egami.Colors.ColorTransformOptions? left, Egami.Colors.ColorTransformOptions? right) -> bool
 static Egami.Colors.HdrMetadata.operator !=(Egami.Colors.HdrMetadata? left, Egami.Colors.HdrMetadata? right) -> bool
 static Egami.Colors.HdrMetadata.operator ==(Egami.Colors.HdrMetadata? left, Egami.Colors.HdrMetadata? right) -> bool
+static Egami.Colors.HslColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.HslColor
+static Egami.Colors.HslColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.HslColor
+static Egami.Colors.HslColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.HslColor
+static Egami.Colors.HslColor.operator !=(Egami.Colors.HslColor left, Egami.Colors.HslColor right) -> bool
+static Egami.Colors.HslColor.operator ==(Egami.Colors.HslColor left, Egami.Colors.HslColor right) -> bool
+static Egami.Colors.HsvColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.HsvColor
+static Egami.Colors.HsvColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.HsvColor
+static Egami.Colors.HsvColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.HsvColor
+static Egami.Colors.HsvColor.operator !=(Egami.Colors.HsvColor left, Egami.Colors.HsvColor right) -> bool
+static Egami.Colors.HsvColor.operator ==(Egami.Colors.HsvColor left, Egami.Colors.HsvColor right) -> bool
 static Egami.Colors.IccData.Parse(System.ReadOnlySpan<byte> profile, Egami.SafetyLimits? limits = null) -> Egami.Colors.IccData!
 static Egami.Colors.IccTag.operator !=(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
 static Egami.Colors.IccTag.operator ==(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
+static Egami.Colors.LabColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.LabColor
+static Egami.Colors.LabColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.LabColor
+static Egami.Colors.LabColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.LabColor
+static Egami.Colors.LabColor.operator !=(Egami.Colors.LabColor left, Egami.Colors.LabColor right) -> bool
+static Egami.Colors.LabColor.operator ==(Egami.Colors.LabColor left, Egami.Colors.LabColor right) -> bool
+static Egami.Colors.LchColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.LchColor
+static Egami.Colors.LchColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.LchColor
+static Egami.Colors.LchColor.FromLab(Egami.Colors.LabColor lab) -> Egami.Colors.LchColor
+static Egami.Colors.LchColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.LchColor
+static Egami.Colors.LchColor.operator !=(Egami.Colors.LchColor left, Egami.Colors.LchColor right) -> bool
+static Egami.Colors.LchColor.operator ==(Egami.Colors.LchColor left, Egami.Colors.LchColor right) -> bool
+static Egami.Colors.OklabColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.OklabColor
+static Egami.Colors.OklabColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.OklabColor
+static Egami.Colors.OklabColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.OklabColor
+static Egami.Colors.OklabColor.operator !=(Egami.Colors.OklabColor left, Egami.Colors.OklabColor right) -> bool
+static Egami.Colors.OklabColor.operator ==(Egami.Colors.OklabColor left, Egami.Colors.OklabColor right) -> bool
+static Egami.Colors.OklchColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.OklchColor
+static Egami.Colors.OklchColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.OklchColor
+static Egami.Colors.OklchColor.FromOklab(Egami.Colors.OklabColor lab) -> Egami.Colors.OklchColor
+static Egami.Colors.OklchColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.OklchColor
+static Egami.Colors.OklchColor.operator !=(Egami.Colors.OklchColor left, Egami.Colors.OklchColor right) -> bool
+static Egami.Colors.OklchColor.operator ==(Egami.Colors.OklchColor left, Egami.Colors.OklchColor right) -> bool
 static Egami.Colors.TransferFunction.Gamma(double gamma) -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Hlg.get -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Linear.get -> Egami.Colors.TransferFunction!
@@ -528,6 +740,19 @@ static Egami.Colors.TransferFunction.Pq.get -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Rec709.get -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Srgb.get -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Table(System.ReadOnlySpan<float> linear) -> Egami.Colors.TransferFunction!
+static Egami.Colors.XyzColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.XyzColor
+static Egami.Colors.XyzColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.XyzColor
+static Egami.Colors.XyzColor.FromD50(Egami.Colors.XyzColor d50) -> Egami.Colors.XyzColor
+static Egami.Colors.XyzColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.XyzColor
+static Egami.Colors.XyzColor.operator !=(Egami.Colors.XyzColor left, Egami.Colors.XyzColor right) -> bool
+static Egami.Colors.XyzColor.operator ==(Egami.Colors.XyzColor left, Egami.Colors.XyzColor right) -> bool
+static Egami.Colors.YCbCrColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.YCbCrColor
+static Egami.Colors.YCbCrColor.From(Egami.Pixels.Rgba8 color, Egami.Pixels.YuvMatrix matrix, Egami.Pixels.YuvRange range = Egami.Pixels.YuvRange.Full) -> Egami.Colors.YCbCrColor
+static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.YCbCrColor
+static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.YuvMatrix matrix, Egami.Pixels.YuvRange range = Egami.Pixels.YuvRange.Full) -> Egami.Colors.YCbCrColor
+static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
+static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Pixels.Abgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
@@ -638,7 +863,25 @@ virtual Egami.Formats.RowReader.IsMetadataComplete.get -> bool
 virtual Egami.Formats.RowReader.WorkingBytes.get -> long
 ~override Egami.Colors.Chromaticity.Equals(object obj) -> bool
 ~override Egami.Colors.Chromaticity.ToString() -> string
+~override Egami.Colors.CmykColor.Equals(object obj) -> bool
+~override Egami.Colors.CmykColor.ToString() -> string
 ~override Egami.Colors.ColorCodePoints.Equals(object obj) -> bool
 ~override Egami.Colors.ColorCodePoints.ToString() -> string
+~override Egami.Colors.HslColor.Equals(object obj) -> bool
+~override Egami.Colors.HslColor.ToString() -> string
+~override Egami.Colors.HsvColor.Equals(object obj) -> bool
+~override Egami.Colors.HsvColor.ToString() -> string
 ~override Egami.Colors.IccTag.Equals(object obj) -> bool
 ~override Egami.Colors.IccTag.ToString() -> string
+~override Egami.Colors.LabColor.Equals(object obj) -> bool
+~override Egami.Colors.LabColor.ToString() -> string
+~override Egami.Colors.LchColor.Equals(object obj) -> bool
+~override Egami.Colors.LchColor.ToString() -> string
+~override Egami.Colors.OklabColor.Equals(object obj) -> bool
+~override Egami.Colors.OklabColor.ToString() -> string
+~override Egami.Colors.OklchColor.Equals(object obj) -> bool
+~override Egami.Colors.OklchColor.ToString() -> string
+~override Egami.Colors.XyzColor.Equals(object obj) -> bool
+~override Egami.Colors.XyzColor.ToString() -> string
+~override Egami.Colors.YCbCrColor.Equals(object obj) -> bool
+~override Egami.Colors.YCbCrColor.ToString() -> string
