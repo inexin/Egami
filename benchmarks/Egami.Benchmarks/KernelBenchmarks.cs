@@ -209,3 +209,45 @@ public class PngFilterBenchmarks
         PngFilterEncoder.FilterScalar(Filter, _row, _previous, Stride, _output);
     }
 }
+
+/// <summary>The 16-bit linear-light luma on its own, from 8-bit and from float channels, a megapixel at a time.</summary>
+public class Luma16Benchmarks
+{
+    private const int Pixels = 1024 * 1024;
+    private readonly byte[] _bytes = new byte[Pixels * 3];
+    private readonly float[] _floats = new float[Pixels * 3];
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        new Random(1).NextBytes(_bytes);
+        for (int i = 0; i < _floats.Length; i++)
+        {
+            _floats[i] = _bytes[i] / 255.5f;
+        }
+    }
+
+    [Benchmark]
+    public int Of8()
+    {
+        int sum = 0;
+        for (int i = 0; i < _bytes.Length; i += 3)
+        {
+            sum += Luma16.Of8(_bytes[i], _bytes[i + 1], _bytes[i + 2]);
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int OfScaled()
+    {
+        int sum = 0;
+        for (int i = 0; i < _floats.Length; i += 3)
+        {
+            sum += Luma16.OfScaled(_floats[i], _floats[i + 1], _floats[i + 2]);
+        }
+
+        return sum;
+    }
+}

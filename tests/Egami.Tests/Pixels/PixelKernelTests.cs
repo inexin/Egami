@@ -46,6 +46,9 @@ public class PixelKernelTests
         (typeof(Rgba8), typeof(Abgr8)), (typeof(Abgr8), typeof(Rgba8)), (typeof(Bgra8), typeof(Argb8)), (typeof(Argb8), typeof(Bgra8)),
         (typeof(Argb8), typeof(Abgr8)), (typeof(Abgr8), typeof(Argb8)),
         (typeof(RgbaF16), typeof(RgbaF32)), (typeof(RgbaF32), typeof(RgbaF16)),
+        (typeof(RgbaF32), typeof(Rgba8)), (typeof(RgbaF32), typeof(Bgra8)), (typeof(RgbaF32), typeof(Argb8)), (typeof(RgbaF32), typeof(Abgr8)), (typeof(RgbaF32), typeof(Alpha8)),
+        (typeof(Rgba8), typeof(RgbaF16)), (typeof(RgbaF16), typeof(Rgba8)), (typeof(Rgba8), typeof(Rgb16)), (typeof(Rgb16), typeof(Rgba8)),
+        (typeof(Rgba8), typeof(Gray16)), (typeof(Rgba8), typeof(GrayAlpha16)), (typeof(RgbaF32), typeof(Gray16)), (typeof(RgbaF32), typeof(GrayAlpha16)),
         (typeof(Rgba8), typeof(PremulRgba8)), (typeof(Bgra8), typeof(PremulBgra8)), (typeof(PremulRgba8), typeof(Rgba8)), (typeof(PremulBgra8), typeof(Bgra8)),
         (typeof(Bgr565), typeof(Rgba8)), (typeof(Bgr565), typeof(Bgra8)), (typeof(Rgba8), typeof(Bgr565)), (typeof(Bgra8), typeof(Bgr565)),
         (typeof(Rgba8), typeof(Gray8)), (typeof(Bgra8), typeof(Gray8)), (typeof(Rgb8), typeof(Gray8)), (typeof(Bgr8), typeof(Gray8)),
@@ -78,7 +81,7 @@ public class PixelKernelTests
     private static object? Invoke(string method, string from, string to, int bits)
     {
         MethodInfo m = typeof(PixelKernelTests).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Static)!;
-        Type[] all = [typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8), typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(Rgb16), typeof(GrayAlpha16), typeof(Argb8), typeof(Abgr8), typeof(RgbaF16), typeof(RgbaF32), typeof(Bgr565), typeof(PremulRgba8), typeof(PremulBgra8)];
+        Type[] all = [typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8), typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(Rgb16), typeof(GrayAlpha16), typeof(Argb8), typeof(Abgr8), typeof(RgbaF16), typeof(RgbaF32), typeof(Bgr565), typeof(PremulRgba8), typeof(PremulBgra8), typeof(Alpha8)];
         return m.MakeGenericMethod(all.Single(t => t.Name == from), all.Single(t => t.Name == to)).Invoke(null, [bits]);
     }
 

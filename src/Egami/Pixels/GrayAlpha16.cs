@@ -31,14 +31,14 @@ public struct GrayAlpha16 : IPixelType<GrayAlpha16>
     /// <inheritdoc/>
     public static GrayAlpha16 FromScaled(Vector4 rgba)
     {
-        return new GrayAlpha16(Scale.ToUInt16(Luma.OfScaled(Scale.Clamp(rgba.X), Scale.Clamp(rgba.Y), Scale.Clamp(rgba.Z))), Scale.ToUInt16(rgba.W));
+        return new GrayAlpha16(Luma16.OfScaled(Scale.Clamp(rgba.X), Scale.Clamp(rgba.Y), Scale.Clamp(rgba.Z)), Scale.ToUInt16(rgba.W));
     }
 
     /// <inheritdoc/>
     public static GrayAlpha16 FromRgba8(Rgba8 value)
     {
         // The same luminance Gray16 takes, so a color converts to the same gray with or without alpha.
-        ushort l = value.R == value.G && value.G == value.B ? Scale.Widen(value.R) : Gray16.FromScaled(value.ToScaled()).L;
+        ushort l = value.R == value.G && value.G == value.B ? Scale.Widen(value.R) : Luma16.Of8(value.R, value.G, value.B);
         return new GrayAlpha16(l, Scale.Widen(value.A));
     }
 

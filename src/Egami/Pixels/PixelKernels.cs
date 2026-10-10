@@ -72,6 +72,58 @@ internal static class PixelKernels
             return HalfKernels.ToHalf(MemoryMarshal.Cast<byte, uint>(src), MemoryMarshal.Cast<byte, ushort>(dst), vectorBits) / 4;
         }
 
+        // Floats to 8-bit four-channel layouts: convert in RGBA order, then reorder the bytes in place.
+        if (typeof(TFrom) == typeof(RgbaF32) && (typeof(TTo) == typeof(Rgba8) || typeof(TTo) == typeof(Bgra8) || typeof(TTo) == typeof(Argb8) || typeof(TTo) == typeof(Abgr8)))
+        {
+            int bytes = FloatByteKernels.ToBytes(MemoryMarshal.Cast<byte, float>(src), dst, vectorBits);
+            Vector128<byte> order = typeof(TTo) == typeof(Bgra8) ? SwapRb4 : typeof(TTo) == typeof(Argb8) ? RotateRight4 : typeof(TTo) == typeof(Abgr8) ? Reverse4 : default;
+            if (order != default)
+            {
+                Shuffle4Bytes(dst[..bytes], dst[..bytes], order, vectorBits);
+            }
+
+            return bytes / 4;
+        }
+
+        if (typeof(TFrom) == typeof(RgbaF32) && typeof(TTo) == typeof(Alpha8))
+        {
+            ReadOnlySpan<float> floats = MemoryMarshal.Cast<byte, float>(src);
+            for (int p = 0; p < dst.Length; p++)
+            {
+                dst[p] = Scale.ToByte(floats[(p * 4) + 3]);
+            }
+
+            return dst.Length;
+        }
+
+        // 8-bit RGBA and half floats, through a stack buffer of floats.
+        if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(RgbaF16)) || (typeof(TFrom) == typeof(RgbaF16) && typeof(TTo) == typeof(Rgba8)))
+        {
+            return Chunked<TFrom, TTo>(src, dst, vectorBits);
+        }
+
+        // 8-bit RGBA and 16-bit RGB: drop or add alpha with a byte shuffle, widen or narrow with SIMD.
+        if (typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(Rgb16))
+        {
+            return Rgba8ToRgb16(src, MemoryMarshal.Cast<byte, ushort>(dst));
+        }
+
+        if (typeof(TFrom) == typeof(Rgb16) && typeof(TTo) == typeof(Rgba8))
+        {
+            return Rgb16ToRgba8(MemoryMarshal.Cast<byte, ushort>(src), dst);
+        }
+
+        // 16-bit gray from color: the exact linear-light luma, in a loop without the generic per-pixel calls.
+        if (typeof(TFrom) == typeof(Rgba8) && (typeof(TTo) == typeof(Gray16) || typeof(TTo) == typeof(GrayAlpha16)))
+        {
+            return GrayFromRgba8(src, MemoryMarshal.Cast<byte, ushort>(dst), typeof(TTo) == typeof(GrayAlpha16));
+        }
+
+        if (typeof(TFrom) == typeof(RgbaF32) && (typeof(TTo) == typeof(Gray16) || typeof(TTo) == typeof(GrayAlpha16)))
+        {
+            return GrayFromRgbaF32(MemoryMarshal.Cast<byte, float>(src), MemoryMarshal.Cast<byte, ushort>(dst), typeof(TTo) == typeof(GrayAlpha16));
+        }
+
         // Premultiplying and unpremultiplying, alpha last in both orders.
         if ((typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(PremulRgba8)) || (typeof(TFrom) == typeof(Bgra8) && typeof(TTo) == typeof(PremulBgra8)))
         {
@@ -162,6 +214,129 @@ internal static class PixelKernels
         }
 
         return 0;
+    }
+
+    /// <summary>Drops alpha and widens: four pixels per shuffle, then 8 to 16 bits by multiplying by 257.</summary>
+    /// <returns>The number of pixels converted.</returns>
+    private static int Rgba8ToRgb16(ReadOnlySpan<byte> source, Span<ushort> destination)
+    {
+        int p = 0;
+        ref byte src = ref MemoryMarshal.GetReference(source);
+        ref ushort dst = ref MemoryMarshal.GetReference(destination);
+        int pixels = source.Length / 4;
+
+        // Each step writes 16 words (12 used), so it stops while 16 words of room remain.
+        for (; p + 4 <= pixels && (p * 3) + 16 <= destination.Length; p += 4)
+        {
+            Vector128<byte> rgb = ShuffleBytes(Vector128.LoadUnsafe(ref src, (nuint)(p * 4)), Drop4To3);
+            (Vector128<ushort> low, Vector128<ushort> high) = Vector128.Widen(rgb);
+            (low * 257).StoreUnsafe(ref dst, (nuint)(p * 3));
+            (high * 257).StoreUnsafe(ref dst, (nuint)((p * 3) + 8));
+        }
+
+        return p;
+    }
+
+    /// <summary>Narrows to the nearest 8-bit value and adds opaque alpha: four pixels per step.</summary>
+    /// <returns>The number of pixels converted.</returns>
+    private static int Rgb16ToRgba8(ReadOnlySpan<ushort> source, Span<byte> destination)
+    {
+        int p = 0;
+        ref ushort src = ref MemoryMarshal.GetReference(source);
+        ref byte dst = ref MemoryMarshal.GetReference(destination);
+        int pixels = source.Length / 3;
+
+        // Each step reads 16 words (12 used), so it stops while 16 words remain.
+        for (; p + 4 <= pixels && (p * 3) + 16 <= source.Length; p += 4)
+        {
+            Vector128<byte> narrow = Vector128.Narrow(NarrowWords(Vector128.LoadUnsafe(ref src, (nuint)(p * 3))), NarrowWords(Vector128.LoadUnsafe(ref src, (nuint)((p * 3) + 8))));
+            (ShuffleBytes(narrow, Expand3To4) | OpaqueAlpha).StoreUnsafe(ref dst, (nuint)(p * 4));
+        }
+
+        return p;
+
+        // (v × 255 + 32895) >> 16 in 32-bit lanes, as Scale.Narrow does.
+        static Vector128<ushort> NarrowWords(Vector128<ushort> v)
+        {
+            (Vector128<uint> a, Vector128<uint> b) = Vector128.Widen(v);
+            Vector128<uint> k = Vector128.Create(32895u);
+            return Vector128.Narrow(((a * 255) + k) >> 16, ((b * 255) + k) >> 16);
+        }
+    }
+
+    private static int GrayFromRgba8(ReadOnlySpan<byte> source, Span<ushort> destination, bool alpha)
+    {
+        int pixels = source.Length / 4;
+        int step = alpha ? 2 : 1;
+        for (int p = 0; p < pixels; p++)
+        {
+            byte r = source[p * 4], g = source[(p * 4) + 1], b = source[(p * 4) + 2];
+            destination[p * step] = r == g && g == b ? Scale.Widen(r) : Luma16.Of8(r, g, b);
+            if (alpha)
+            {
+                destination[(p * 2) + 1] = Scale.Widen(source[(p * 4) + 3]);
+            }
+        }
+
+        return pixels;
+    }
+
+    private static int GrayFromRgbaF32(ReadOnlySpan<float> source, Span<ushort> destination, bool alpha)
+    {
+        int pixels = source.Length / 4;
+        int step = alpha ? 2 : 1;
+        for (int p = 0; p < pixels; p++)
+        {
+            destination[p * step] = Luma16.OfScaled(Scale.Clamp(source[p * 4]), Scale.Clamp(source[(p * 4) + 1]), Scale.Clamp(source[(p * 4) + 2]));
+            if (alpha)
+            {
+                destination[(p * 2) + 1] = Scale.ToUInt16(source[(p * 4) + 3]);
+            }
+        }
+
+        return pixels;
+    }
+
+    /// <summary>
+    /// Converts 32 pixels at a time through a stack buffer of floats, chaining two exact kernels, so the result equals the
+    /// scalar path: Rgba8 to RgbaF16 (b / 255, then to half) and back (half to float, then to byte).
+    /// </summary>
+    /// <returns>The number of pixels converted.</returns>
+    private static int Chunked<TFrom, TTo>(ReadOnlySpan<byte> src, Span<byte> dst, int vectorBits)
+    {
+        const int Chunk = 32;
+        Span<uint> buffer = stackalloc uint[Chunk * 4];
+        int fromSize = Unsafe.SizeOf<TFrom>(), toSize = Unsafe.SizeOf<TTo>();
+        int count = src.Length / fromSize;
+        int done = 0;
+        for (; done + Chunk <= count; done += Chunk)
+        {
+            ReadOnlySpan<byte> s = src.Slice(done * fromSize, Chunk * fromSize);
+            Span<byte> d = dst.Slice(done * toSize, Chunk * toSize);
+            int ok;
+            if (typeof(TFrom) == typeof(Rgba8) && typeof(TTo) == typeof(RgbaF16))
+            {
+                Span<float> floats = MemoryMarshal.Cast<uint, float>(buffer);
+                ok = FloatByteKernels.ToFloats(s, floats, vectorBits) == Chunk * 4
+                    && HalfKernels.ToHalf(buffer, MemoryMarshal.Cast<byte, ushort>(d), vectorBits) == Chunk * 4 ? Chunk : 0;
+            }
+            else if (typeof(TFrom) == typeof(RgbaF16) && typeof(TTo) == typeof(Rgba8))
+            {
+                ok = HalfKernels.ToSingle(MemoryMarshal.Cast<byte, ushort>(s), buffer, vectorBits) == Chunk * 4
+                    && FloatByteKernels.ToBytes(MemoryMarshal.Cast<uint, float>(buffer), d, vectorBits) == Chunk * 4 ? Chunk : 0;
+            }
+            else
+            {
+                ok = 0;
+            }
+
+            if (ok != Chunk)
+            {
+                break;
+            }
+        }
+
+        return done;
     }
 
     /// <summary>Converts 8-bit RGB pixels in any of the four layouts to gray. Not SIMD, but free of per-pixel calls and bounds checks.</summary>

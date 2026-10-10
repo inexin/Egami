@@ -26,7 +26,7 @@ public struct Gray16 : IPixelType<Gray16>
     /// <inheritdoc/>
     public static Gray16 FromScaled(Vector4 rgba)
     {
-        return new Gray16(Scale.ToUInt16(Luma.OfScaled(Scale.Clamp(rgba.X), Scale.Clamp(rgba.Y), Scale.Clamp(rgba.Z))));
+        return new Gray16(Luma16.OfScaled(Scale.Clamp(rgba.X), Scale.Clamp(rgba.Y), Scale.Clamp(rgba.Z)));
     }
 
     /// <inheritdoc/>
@@ -34,7 +34,7 @@ public struct Gray16 : IPixelType<Gray16>
     {
         return value.R == value.G && value.G == value.B
             ? new Gray16(Scale.Widen(value.R))
-            : FromScaled(value.ToScaled());
+            : new Gray16(Luma16.Of8(value.R, value.G, value.B));
     }
 
     /// <inheritdoc/>
