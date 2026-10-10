@@ -86,6 +86,35 @@ internal sealed class ResizeOperation(
     /// <summary>Gets whether this resize already reads a sub-rectangle chosen by a merged Crop.</summary>
     internal bool HasCrop => crop is not null;
 
+    /// <summary>Gets the sub-rectangle a merged Crop chose, if any.</summary>
+    internal Rect? CropRect => crop;
+
+    /// <summary>Gets the filter.</summary>
+    internal ResampleFilter Filter => filter;
+
+    /// <summary>Returns this resize reading its whole input, for when the crop is done before it (by a decoder's Region).</summary>
+    internal ResizeOperation WithoutCrop()
+    {
+        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, null);
+    }
+
+    /// <summary>
+    /// Returns a step that resizes rows as they arrive, with the same arithmetic as <see cref="Run"/>: each source row takes the
+    /// horizontal pass into the ring once, and each output row goes on as soon as the last source row it reaches has come.
+    /// </summary>
+    internal Streaming.RowStep<TPixel> Rows<TPixel>(Size input)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Plan plan = PlanFor(input);
+        if (plan.IsIdentity)
+        {
+            return new Streaming.CropRows<TPixel>(new Rect(0, 0, input.Width, input.Height));
+        }
+
+        (ResizeWeights horizontal, ResizeWeights vertical) = plan.Weights(filter);
+        return new ResizeRows<TPixel>(plan.Output, horizontal, vertical, filter == ResampleFilter.Nearest, colorSpace);
+    }
+
     public bool NeedsNewPlane(Size input)
     {
         return !PlanFor(input).IsIdentity;
@@ -457,5 +486,133 @@ internal sealed class RowConverter<TPixel>(bool linear)
                 pixels[i + c] = EightBit ? Srgb.FromLinearTo8(pixels[i + c]) * (1f / 255f) : (float)Srgb.FromLinear(pixels[i + c]);
             }
         }
+    }
+}
+
+/// <summary>A resize that takes its source rows one at a time, top-down; see <see cref="ResizeOperation.Rows{TPixel}"/>.</summary>
+internal sealed class ResizeRows<TPixel> : Streaming.RowStep<TPixel>
+    where TPixel : unmanaged, IPixelType<TPixel>
+{
+    private readonly Size _output;
+    private readonly ResizeWeights _horizontal;
+    private readonly ResizeWeights _vertical;
+    private readonly bool _nearest;
+    private readonly RowConverter<TPixel> _converter;
+    private readonly bool _fixedPoint;
+    private readonly int _xLow;
+    private readonly int _xCount;
+    private readonly int _ringRows;
+    private readonly float[] _ring;
+    private readonly float[] _line;
+    private readonly float[] _out;
+    private readonly bool[] _opaqueRows;
+    private readonly byte[] _bytes;
+    private readonly TPixel[] _row;
+    private int _source;
+    private int _y;
+
+    internal ResizeRows(Size output, ResizeWeights horizontal, ResizeWeights vertical, bool nearest, ColorSpace colorSpace)
+    {
+        _output = output;
+        _horizontal = horizontal;
+        _vertical = vertical;
+        _nearest = nearest;
+        _converter = new(colorSpace == ColorSpace.Linear);
+        int outWidth = output.Width;
+        _xLow = horizontal.First[0];
+        _xCount = horizontal.First[outWidth - 1] + horizontal.Count[outWidth - 1] - _xLow;
+        _ringRows = nearest ? 0 : vertical.Stride;
+        _fixedPoint = (RowConverter<TPixel>.FourByte || RowConverter<TPixel>.Premul8) && colorSpace == ColorSpace.Encoded;
+
+        // The source line holds one extra zeroed pixel, which the last odd tap pair reads with a zero weight; the fixed-point
+        // pass reads up to three zeroed pixels past the last tap.
+        _ring = ArrayPool<float>.Shared.Rent(_ringRows * outWidth * 4);
+        _line = ArrayPool<float>.Shared.Rent((_xCount + 1) * 4);
+        _line.AsSpan(_xCount * 4, 4).Clear();
+        _out = ArrayPool<float>.Shared.Rent(outWidth * 4);
+        _opaqueRows = ArrayPool<bool>.Shared.Rent(_ringRows);
+        _bytes = ArrayPool<byte>.Shared.Rent(_fixedPoint ? (_xCount + 3) * 4 : 0);
+        _row = ArrayPool<TPixel>.Shared.Rent(outWidth);
+    }
+
+    public override void Take(ReadOnlySpan<TPixel> row)
+    {
+        int r = _source++;
+        if (_y >= _output.Height)
+        {
+            return;
+        }
+
+        if (_nearest)
+        {
+            // Each output row repeats the source row it samples, once the source has reached it.
+            int[] columns = _horizontal.First;
+            while (_y < _output.Height && _vertical.First[_y] == r)
+            {
+                Span<TPixel> destination = _row.AsSpan(0, _output.Width);
+                for (int x = 0; x < destination.Length; x++)
+                {
+                    destination[x] = row[columns[x]];
+                }
+
+                Next.Take(destination);
+                _y++;
+            }
+
+            return;
+        }
+
+        int outWidth = _output.Width;
+        if (r >= _vertical.First[_y])
+        {
+            int slot = r % _ringRows;
+            Span<float> target = _ring.AsSpan(slot * outWidth * 4, outWidth * 4);
+            ReadOnlySpan<TPixel> sourceRow = row.Slice(_xLow, _xCount);
+            if (_fixedPoint && (RowConverter<TPixel>.Premul8 || ResizeKernels.IsOpaque8(System.Runtime.InteropServices.MemoryMarshal.AsBytes(sourceRow))))
+            {
+                Span<byte> bytes = _bytes.AsSpan(0, (_xCount + 3) * 4);
+                System.Runtime.InteropServices.MemoryMarshal.AsBytes(sourceRow).CopyTo(bytes);
+                bytes[(_xCount * 4)..].Clear();
+                ResizeKernels.HorizontalFixed8(bytes, _horizontal.First, _horizontal.GroupCount, _horizontal.Fixed, _horizontal.GroupStride, _xLow, target);
+                _opaqueRows[slot] = true;
+            }
+            else
+            {
+                Span<float> line = _line.AsSpan(0, (_xCount + 1) * 4);
+                _opaqueRows[slot] = _converter.Load(sourceRow, line);
+                ResizeKernels.Horizontal(line, _horizontal.First, _horizontal.PairCount, _horizontal.Pairs, _horizontal.PairStride, _xLow, target);
+            }
+        }
+
+        // Every output row whose last source row has come goes on now.
+        Span<float> ring = _ring.AsSpan(0, _ringRows * outWidth * 4);
+        Span<float> output = _out.AsSpan(0, outWidth * 4);
+        while (_y < _output.Height && _vertical.First[_y] + _vertical.Count[_y] - 1 <= r)
+        {
+            int first = _vertical.First[_y];
+            int count = _vertical.Count[_y];
+            bool opaque = true;
+            for (int k = 0; k < count; k++)
+            {
+                opaque &= _opaqueRows[(first + k) % _ringRows];
+            }
+
+            ResizeKernels.Vertical(ring, outWidth * 4, _ringRows, first, _vertical.Row(_y), output);
+            Span<TPixel> destination = _row.AsSpan(0, outWidth);
+            _converter.Store(output, destination, opaque);
+            Next.Take(destination);
+            _y++;
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        ArrayPool<float>.Shared.Return(_ring);
+        ArrayPool<float>.Shared.Return(_line);
+        ArrayPool<float>.Shared.Return(_out);
+        ArrayPool<bool>.Shared.Return(_opaqueRows);
+        ArrayPool<byte>.Shared.Return(_bytes);
+        ArrayPool<TPixel>.Shared.Return(_row);
+        base.Dispose(disposing);
     }
 }

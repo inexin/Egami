@@ -16,10 +16,16 @@ internal static class OperationPipeline
     /// <returns>The planned steps and the size after each one.</returns>
     internal static Plan Build(Action<RasterOps> build, Size size, RasterMetadata? metadata = null)
     {
+        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal);
+    }
+
+    /// <summary>Records and plans the chain for an image stored with <paramref name="orientation"/>.</summary>
+    internal static Plan Build(Action<RasterOps> build, Size size, ImageOrientation orientation)
+    {
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
         build(ops);
-        List<IRasterOperation> steps = Planner.Plan(ops.Steps, metadata?.Exif?.Orientation ?? ImageOrientation.Normal);
+        List<IRasterOperation> steps = Planner.Plan(ops.Steps, orientation);
         Size[] sizes = new Size[steps.Count];
         for (int i = 0; i < steps.Count; i++)
         {

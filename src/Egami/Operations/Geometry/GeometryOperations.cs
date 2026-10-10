@@ -204,6 +204,12 @@ internal sealed class PadOperation(int width, int height, Rgba8 color, Anchor an
 /// <summary>Mirrors the image horizontally, vertically or both (which is a 180° rotation).</summary>
 internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOperation, IUpdatesMetadata
 {
+    /// <summary>Gets whether rows are mirrored left to right.</summary>
+    internal bool Horizontal => horizontal;
+
+    /// <summary>Gets whether the row order is reversed.</summary>
+    internal bool Vertical => vertical;
+
     public void UpdateMetadata(RasterMetadata metadata, Size input, Size output)
     {
         ExifUpkeep.Upright(metadata);

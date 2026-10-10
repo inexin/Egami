@@ -23,7 +23,7 @@ if (args is ["--write-camera-files", string directory])
     return;
 }
 
-// Report what 1.0 Load and RasterDecoder.ReadRows hold at their peak for each file, for the Phase 2.2 memory gates: -- --peak <file>...
+// Report what 1.0 Load, RasterDecoder.ReadRows and a thumbnail Transcode hold at their peak for each file, for the Phase 2.2 memory gates: -- --peak <file>...
 // Limits are raised so the large generated images (tools/make-large-images.py) load.
 if (args is ["--peak", .. string[] files])
 {
@@ -51,6 +51,9 @@ if (args is ["--peak", .. string[] files])
             },
             limits);
         Console.WriteLine($"{Path.GetFileName(file)}: ReadRows ({access}, 256-row Rgba8 band) {peak}, {System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds:N0} ms");
+        start = System.Diagnostics.Stopwatch.GetTimestamp();
+        peak = PeakMemory.Measure(context => Raster.Transcode(File.OpenRead(file), Stream.Null, Egami.Formats.Jpeg.JpegFormat.Info, x => x.Fit(1024, 1024), context: context), limits);
+        Console.WriteLine($"{Path.GetFileName(file)}: Transcode to a 1,024-pixel JPEG {peak}, {System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds:N0} ms");
     }
 
     return;

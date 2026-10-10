@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Gif;
 using Egami.Formats.Jpeg;
+using Egami.Formats.Png;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -221,6 +222,34 @@ public class Streaming
         }
 
         await encoder.CompleteAsync(TestContext.Current.CancellationToken);
+        #endregion
+
+        Assert.True(response.Length > 0);
+    }
+
+    [Fact]
+    public void Transcode()
+    {
+        using SampleFiles files = new();
+
+        #region transcode
+        // A thumbnail of a big file without ever holding the full image: the decoder already shrinks by a whole factor.
+        Raster.Transcode("egret.png", "thumb.jpg", x => x.Fit(256, 256).Saturation(1.1f));
+        #endregion
+
+        Assert.Equal(256, Math.Max(Raster.Probe("thumb.jpg").Width, Raster.Probe("thumb.jpg").Height));
+    }
+
+    [Fact]
+    public async Task TranscodeAsync()
+    {
+        using SampleFiles files = new();
+        using MemoryStream response = new();
+
+        #region transcode-async
+        // On a server: an upload to a 512-pixel PNG preview, streamed both ways.
+        await using Stream upload = File.OpenRead("egret.png");
+        await Raster.TranscodeAsync(upload, response, PngFormat.Info, x => x.Fit(512, 512), cancellationToken: TestContext.Current.CancellationToken);
         #endregion
 
         Assert.True(response.Length > 0);

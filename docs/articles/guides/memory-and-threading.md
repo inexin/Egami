@@ -61,6 +61,16 @@ encoding the whole file into memory first:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#encode-async)]
 
+`Raster.Transcode` joins the two: rows go from the decoder through a short chain of operations into the encoder, so a thumbnail
+of a 20,000 × 20,000 PNG holds well under a megabyte of pixels instead of 1.6 GB. When the chain starts with `Fit`, `Cover` or
+`Resize`, the decoder already shrinks by a whole factor (`MinimumSize`), and a leading `Crop` becomes `Region`. The chain may
+crop, resize, mirror left to right and adjust colors pixel by pixel; anything that needs rows out of order or the whole image,
+such as `Blur` or `Rotate`, throws `NotSupportedException` before anything is written.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#transcode)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#transcode-async)]
+
 ## Pixel memory
 
 Pixel memory never lives on the garbage-collected heap as large arrays. `PooledPixelMemorySource.Shared` hands out pooled arrays

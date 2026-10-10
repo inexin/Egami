@@ -27,6 +27,10 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   a frame at a time, with the bytes `Save` writes. Options that need every pixel first throw `NotSupportedException` at
   `Create`. `PngWriterOptions.FrameCount` declares an APNG's frame count for streams that cannot seek. `SaveAsync` now writes
   each band out as it is encoded instead of holding the whole file.
+- `Raster.Transcode` and `TranscodeAsync` decode, run a chain of streamable operations (crop, the resize family, horizontal flip,
+  per-pixel color adjustments) and encode, a band of rows at a time. A leading resize shrinks on load and a leading crop
+  becomes a region; other operations throw `NotSupportedException`. A 20,000 × 20,000 PNG to a 1,024-pixel JPEG peaks at
+  0.4 MB of pixels.
 - A 32-bit BMP whose alpha byte is zero everywhere now loads into 16-bit and premultiplied pixel types without a lossy round trip
   when the stream can seek.
 - Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at

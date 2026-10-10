@@ -163,6 +163,18 @@ public sealed class RasterEncoder<TPixel> : IDisposable
         }
     }
 
+    /// <summary>Gets whether frames make an animation in this format; otherwise one frame is the still image.</summary>
+    internal bool Animates => _encoder?.Animates ?? true;
+
+    /// <summary>Sets whether bytes are held until <see cref="WriteOutAsync"/>, for a caller that writes rows from async code.</summary>
+    internal bool Hold
+    {
+        set => _output.Hold = value;
+    }
+
+    /// <summary>Writes out the bytes held, asynchronously.</summary>
+    internal ValueTask WriteOutAsync(CancellationToken cancellationToken) => _output.WriteOutAsync(cancellationToken);
+
     /// <summary>Gets the format being written.</summary>
     public FormatInfo Format { get; }
 
