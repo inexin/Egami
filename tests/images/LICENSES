@@ -66,3 +66,15 @@ bmp/, tga/, qoi/, pnm/
 fuzz/detect-seeds/
   Copies of one file of each format from the folders above, as seeds for the detect fuzz target. Same licenses as the files
   they copy.
+
+jpeg/duck-ycck.jpg
+  Written by tools/make-float-cmyk-references.py with libjpeg-turbo's TurboJPEG from the samples of jpeg/duck-cmyk.jpg (it
+  stores CMYK as YCCK). Public domain, as its source.
+
+pfm/
+  rgb-*.pfm and gray-*.pfm written byte by byte by a short script; magick-*.pfm and netpbm-*.pfm written by ImageMagick and
+  Netpbm's pamtopfm from numbers in ../reference/pfm/pfm-source.json, by tools/make-float-cmyk-references.py. Public domain.
+
+../reference/pfm/, ../reference/jpeg/*.turbo-cmyk.gz
+  The PFM files read by ImageMagick, the inputs given to ImageMagick and Netpbm, and duck-cmyk.jpg and duck-ycck.jpg decoded
+  by TurboJPEG to raw CMYK, made by tools/make-float-cmyk-references.py. Public domain, as the files they come from.
