@@ -10,7 +10,7 @@ namespace Egami.Formats.Gif;
 /// Reads GIF87a and GIF89a files, written from the GIF89a specification. Frames are LZW-decoded into a pooled index buffer and
 /// drawn onto a shared <see cref="AnimationCanvas{TCanvas}"/>, which every kept frame is copied out of at full size.
 /// </summary>
-internal sealed class GifReader : IFormatReader
+internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatReader
 {
     internal static readonly GifReader Instance = new();
 
@@ -39,6 +39,8 @@ internal sealed class GifReader : IFormatReader
                 HasMetadata = state.Metadata.Text.Count > 0 || !state.Metadata.Xmp.IsEmpty || !state.Metadata.IccProfile.IsEmpty,
                 EstimatedBytes = (canvas * state.FramesSeen) + canvas,
                 LoopCount = state.Metadata.LoopCount,
+                Access = Streams(options) ? RasterAccess.Streamed : RasterAccess.Buffered,
+                WorkingBytes = Streams(options) ? WorkingBytesFor(state.Width, state.Height) : 0,
             };
         }
         finally
@@ -84,6 +86,16 @@ internal sealed class GifReader : IFormatReader
         private AnimationCanvas<Rgba8>? _canvas;
         private Rgb8[] _global = [];
 
+        // Streaming (RasterDecoder): frames are composed one at a time and read from the canvas, not copied out.
+        private bool _streaming;
+        private bool _pendingEnd;
+        private bool _stopped;
+        private bool _finished;
+        private int _first;
+        private int _end;
+        private int _served;
+        private FrameMetadata? _composed;
+
         // The Graphic Control Extension applies to the next image only.
         private bool _hasControl;
         private FrameDisposal _disposal;
@@ -107,11 +119,80 @@ internal sealed class GifReader : IFormatReader
 
         internal RasterMetadata Metadata { get; }
 
+        /// <summary>Gets the canvas the current frame is composed on, once a frame has been read.</summary>
+        internal AnimationCanvas<Rgba8>? Canvas => _canvas;
+
+        /// <summary>Gets whether the walk has reached its end, so the metadata is complete.</summary>
+        internal bool Finished => _finished;
+
+        /// <summary>Starts a streaming read: reads the screen descriptor and global palette, and composes no frame yet.</summary>
+        internal void BeginStreaming()
+        {
+            _streaming = true;
+            ReadScreen();
+            (_first, _end) = KeptRange();
+        }
+
+        /// <summary>
+        /// Streaming: ends the frame on the canvas, walks the blocks to the next frame in the range and composes it on the canvas.
+        /// Returns its metadata, or <see langword="null"/> after the last.
+        /// </summary>
+        internal FrameMetadata? NextFrame()
+        {
+            if (_pendingEnd)
+            {
+                _canvas!.End();
+                _pendingEnd = false;
+            }
+
+            while (!_finished)
+            {
+                if (_stopped || !Step(_first, _end))
+                {
+                    _finished = true;
+                    if (_served == 0)
+                    {
+                        throw _input.Corrupt(_input.Position, FramesSeen == 0 ? "The GIF has no image." : "No frame is in the requested range.");
+                    }
+
+                    return null;
+                }
+
+                if (_composed is FrameMetadata frame)
+                {
+                    _composed = null;
+                    _served++;
+                    return frame;
+                }
+
+                if (_pendingEnd)
+                {
+                    // A frame before the range: drawn, because later frames build on it, but not handed out.
+                    _canvas!.End();
+                    _pendingEnd = false;
+                }
+            }
+
+            return null;
+        }
+
         internal void Run()
         {
             ReadScreen();
             (int first, int end) = KeptRange();
-            while (true)
+            while (Step(first, end))
+            {
+            }
+
+            if (!_probe && _frames.Count == 0)
+            {
+                throw _input.Corrupt(_input.Position, FramesSeen == 0 ? "The GIF has no image." : "No frame is in the requested range.");
+            }
+        }
+
+        /// <summary>Reads one block. Returns false when the walk ends: the trailer, the end of the file, or the last frame wanted.</summary>
+        private bool Step(int first, int end)
+        {
             {
                 long at = _input.Position;
                 int block;
@@ -122,12 +203,12 @@ internal sealed class GifReader : IFormatReader
                 catch (CorruptDataException)
                 {
                     Problem(at, "The file ends without a trailer.");
-                    break;
+                    return false;
                 }
 
                 if (block == 0x3B)
                 {
-                    break;
+                    return false;
                 }
 
                 try
@@ -138,34 +219,40 @@ internal sealed class GifReader : IFormatReader
                     }
                     else if (block == 0x2C)
                     {
-                        if (!ReadImage(at, first, end))
+                        bool complete = ReadImage(at, first, end);
+                        bool last = !_probe && FramesSeen >= end;
+                        if (_streaming && (!complete || last))
                         {
-                            break;
+                            // The frame just composed is still handed out; the walk ends after it.
+                            _stopped = true;
+                            return _composed is not null;
                         }
 
-                        if (!_probe && FramesSeen >= end)
+                        if (!complete)
+                        {
+                            return false;
+                        }
+
+                        if (last)
                         {
                             // Every frame asked for is decoded; the rest of the file is not needed.
-                            break;
+                            return false;
                         }
                     }
                     else
                     {
                         Problem(at, $"Unknown block 0x{block:X2} where a block introducer was expected.");
-                        break;
+                        return false;
                     }
                 }
                 catch (CorruptDataException) when (!_strict && _input.Peek(1).IsEmpty)
                 {
                     // The file ends inside a block's header: keep what came before it.
                     Problem(at, "The file ends inside a block.");
-                    break;
+                    return false;
                 }
-            }
 
-            if (!_probe && _frames.Count == 0)
-            {
-                throw _input.Corrupt(_input.Position, FramesSeen == 0 ? "The GIF has no image." : "No frame is in the requested range.");
+                return true;
             }
         }
 
@@ -475,6 +562,24 @@ internal sealed class GifReader : IFormatReader
             if (!complete || decoded < width * height)
             {
                 Problem(at, "The image data ends early.");
+            }
+
+            if (_streaming)
+            {
+                _pendingEnd = true;
+                if (index >= first && index < end)
+                {
+                    _composed = new FrameMetadata
+                    {
+                        Delay = delay,
+                        Disposal = disposal,
+                        Blend = FrameBlend.Over,
+                        Bounds = new Rect(left, top, width, height),
+                        FormatDetails = new GifFrameDetails { LocalPalette = local, TransparentIndex = transparent >= 0 ? transparent : null, Interlaced = interlaced },
+                    };
+                }
+
+                return complete;
             }
 
             if (index >= first && index < end)

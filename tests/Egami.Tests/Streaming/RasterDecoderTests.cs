@@ -154,7 +154,7 @@ public class RasterDecoderTests
         RasterInfo probe = Raster.Probe(data);
         using RasterDecoder decoder = RasterDecoder.Open(data);
         Assert.Equal(expected.Layout, decoder.Info.Layout);
-        Assert.Equal(expected.FrameCount, decoder.Info.FrameCount);
+        Assert.True(decoder.Info.FrameCount is null || decoder.Info.FrameCount == expected.FrameCount);
         Assert.Equal(probe.Format, decoder.Info.Format);
         Assert.Equal(probe.Orientation, decoder.Info.Orientation);
         Assert.Equal(probe.Access, decoder.Info.Access);
