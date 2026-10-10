@@ -329,9 +329,13 @@ public sealed class TransferFunction : IEquatable<TransferFunction>
         return scene <= 1.0 / 12 ? Math.Sqrt(3 * scene) : (HlgA * Math.Log((12 * scene) - HlgB)) + HlgC;
     }
 
+    private double KneeValue => Math.Pow(Math.Max((_a * _d) + _b, 0), _g) + _f;
+
     private double ParametricFromLinear(double y)
     {
-        double knee = (_c * _d) + _f;
+        // The knee is the power segment's start plus f, as Little CMS inverts: for a continuous curve that is where the segments
+        // meet, and a curve that jumps at d sends values in the jump to the linear segment.
+        double knee = KneeValue;
         if (y >= knee && _a != 0)
         {
             return (Math.Pow(Math.Max(y - _e, 0), 1 / _g) - _b) / _a;
@@ -461,7 +465,7 @@ public sealed class TransferFunction : IEquatable<TransferFunction>
             return Select(Vector256.GreaterThanOrEqual(x, Vector256.Create(d)), power, (x * c) + Vector256.Create(f));
         }
 
-        float knee = (c * d) + f;
+        float knee = (float)KneeValue;
         Vector256<float> curve = a == 0 ? Vector256<float>.Zero : (TransferMath.Pow(Vector256.Max(x - Vector256.Create(e), Vector256<float>.Zero), 1 / g) - Vector256.Create(b)) / a;
         Vector256<float> line = c == 0 ? Vector256<float>.Zero : (x - Vector256.Create(f)) / c;
         return Select(Vector256.GreaterThanOrEqual(x, Vector256.Create(knee)), curve, line);

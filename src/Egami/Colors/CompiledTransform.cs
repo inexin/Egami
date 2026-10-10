@@ -31,11 +31,15 @@ internal abstract class CompiledTransform
     public static CompiledTransform Compile(ColorProfile from, ColorProfile to, RenderingIntent intent, bool blackPointCompensation) =>
         Compile(from, to, new ColorTransformOptions { Intent = intent, BlackPointCompensation = blackPointCompensation }, 1000);
 
-    /// <summary>Compiles the conversion with the HDR steps of <paramref name="options"/> and a source peak.</summary>
+    /// <summary>
+    /// Compiles the conversion with the HDR steps of <paramref name="options"/> and a source peak. Encodings whose matrices to the
+    /// connection space agree within 1e-4 and whose curves agree within 2e-5 give an identity, so an sRGB file's profile does not
+    /// move its pixels; so does a profile converted to itself.
+    /// </summary>
     /// <exception cref="UnsupportedFormatException">A profile has no tables for the direction it is used in.</exception>
     public static CompiledTransform Compile(ColorProfile from, ColorProfile to, ColorTransformOptions options, double sourcePeakNits)
     {
-        if (from.IsEquivalentTo(to))
+        if (SameEncoding(from, to, options))
         {
             return new IdentityTransform(Channels(from));
         }
@@ -49,6 +53,52 @@ internal abstract class CompiledTransform
 
     /// <summary>Converts 8-bit colors; each color's channels are at the start of its <see cref="ByteLayout.Stride"/> bytes.</summary>
     public abstract void Apply(ReadOnlySpan<byte> source, ByteLayout sourceLayout, Span<byte> destination, ByteLayout destinationLayout, int count);
+
+    // The same profile, the same ICC bytes, or matrix encodings whose matrices to D50 agree within 1e-4 (an sRGB profile's
+    // rounded colorants are 9e-5 from sRGB's) and whose curves agree within 2e-5, under the options' intent: absolute colorimetric
+    // keeps two media whites apart.
+    private static bool SameEncoding(ColorProfile a, ColorProfile b, ColorTransformOptions options)
+    {
+        if (ReferenceEquals(a, b) || (a.Icc is IccData x && b.Icc is IccData y && x.ToBytes().Span.SequenceEqual(y.ToBytes().Span)))
+        {
+            return true;
+        }
+
+        if (a.Model != b.Model || a.IsHdr || b.IsHdr
+            || ColorPipeline.Create(a, b, options.Intent, options.BlackPointCompensation).GetLinearForm() is not LinearForm form)
+        {
+            return false;
+        }
+
+        // A matrix and offset that are the identity, and output curves that undo the input curves.
+        Matrix3d m = form.Matrix;
+        int n = a.Model == ColorModel.Gray ? 1 : 3;
+        for (int r = 0; r < n; r++)
+        {
+            for (int c = 0; c < n; c++)
+            {
+                if (Math.Abs(m[r, c] - (r == c ? (n == 1 ? Cie.D50.Y : 1) : 0)) > 1e-4)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (Math.Abs(form.Offset.X) > 1e-4 || Math.Abs(form.Offset.Y) > 1e-4 || Math.Abs(form.Offset.Z) > 1e-4)
+        {
+            return false;
+        }
+
+        for (int c = 0; c < form.InCurves.Length; c++)
+        {
+            if (!form.InCurves[c].IsCloseTo(form.OutCurves[Math.Min(c, form.OutCurves.Length - 1)], 2e-5))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     internal static int Channels(ColorProfile profile) => profile.Model switch
     {
@@ -88,8 +138,9 @@ internal sealed class IdentityTransform(int channels) : CompiledTransform(channe
 /// <summary>
 /// Curves, one affine map, curves. Rows are split into planes of up to <see cref="CompiledTransform.Chunk"/> values; curves
 /// run as <see cref="TransferFunction"/> rows (8-bit input through 256-entry tables, 8-bit output through a 65536-entry
-/// table indexed by the rounded linear value where the curve allows), and the map and the rounding run on Vector512, Vector256
-/// or Vector128 with a scalar tail that does the same arithmetic in the same order, so every path gives the same bits.
+/// table indexed by the rounded square root of the linear value where the curve allows), and the map and the rounding run on
+/// Vector512, Vector256 or Vector128 with a scalar tail that does the same arithmetic in the same order, so every path gives the
+/// same bits.
 /// </summary>
 internal sealed class MatrixTransform : CompiledTransform
 {
@@ -100,7 +151,7 @@ internal sealed class MatrixTransform : CompiledTransform
     private readonly TransferFunction[] _out;
     private readonly float[] _m;          // row-major 3×3, then three offsets
     private readonly float[][] _decode8;  // per input channel: the linear value of each byte
-    private readonly byte[]?[] _encode8;  // per output channel: the byte for linear i / 65535; null to compute
+    private readonly byte[]?[] _encode8;  // per output channel: the byte for linear (i / 65535)²; null to compute
 
     public MatrixTransform(LinearForm form, int inputs, int outputs)
         : base(inputs, outputs)
@@ -309,7 +360,8 @@ internal sealed class MatrixTransform : CompiledTransform
     }
 
     // A 65536-entry table from linear to 8 bits works where the curve takes linear 0..1 onto encoded 0..1, as SDR curves do;
-    // the shared curves' tables are built once.
+    // the shared curves' tables are built once. It is spaced by the square root of linear, so the steep start of a pure power
+    // curve (gamma 2.4 climbs 2.5 levels in linear's first 1/65535) is fine enough to round right.
     private static byte[]? EncodeTable(TransferFunction curve)
     {
         if (curve.IsHdr || Math.Abs(curve.ToLinear(1) - 1) > 1e-6)
@@ -319,17 +371,22 @@ internal sealed class MatrixTransform : CompiledTransform
 
         return EncodeTables.GetValue(curve, c =>
         {
-            byte[] table = new byte[EncodeSize];
-            for (int i = 0; i < table.Length; i++)
+            // One entry past the end is for values below 0, where the curve is mirrored: a curve whose output at 0 is above 0
+            // still gives 0 just below it, as the float path and Little CMS do.
+            byte[] table = new byte[EncodeSize + 1];
+            for (int i = 0; i < EncodeSize; i++)
             {
-                table[i] = (byte)Math.Round(Math.Clamp(c.FromLinear(i / (double)(EncodeSize - 1)), 0, 1) * 255);
+                double root = i / (double)(EncodeSize - 1);
+                table[i] = (byte)Math.Round(Math.Clamp(c.FromLinear(root * root), 0, 1) * 255);
             }
 
+            table[EncodeSize] = (byte)Math.Round(Math.Clamp(c.FromLinear(-1e-6), 0, 1) * 255);
             return table;
         });
     }
 
-    // indices = round(clamp(v, 0, 1) × 65535), with NaN as 0, the same on every path.
+    // indices = round(√clamp(v, 0, 1) × 65535), with NaN as 0 and values below 0 as 65536, the same on every path (the square
+    // root is exact in IEEE arithmetic, scalar and vector alike).
     private static void Quantize(ReadOnlySpan<float> values, Span<int> indices)
     {
         int n = values.Length, i = 0;
@@ -339,9 +396,11 @@ internal sealed class MatrixTransform : CompiledTransform
             for (; i <= n - Vector256<float>.Count; i += Vector256<float>.Count)
             {
                 Vector256<float> v = Vector256.Create(values[i..]);
+                Vector256<int> below = Vector256.LessThan(v, Vector256<float>.Zero).AsInt32();
                 v = Vector256.ConditionalSelect(Vector256.GreaterThan(v, Vector256<float>.Zero), v, Vector256<float>.Zero);
-                v = Vector256.Min(v, Vector256<float>.One);
-                Vector256.ConvertToInt32((v * Scale) + Vector256.Create(0.5f)).CopyTo(indices[i..]);
+                v = Vector256.Sqrt(Vector256.Min(v, Vector256<float>.One));
+                Vector256<int> index = Vector256.ConvertToInt32((v * Scale) + Vector256.Create(0.5f));
+                Vector256.ConditionalSelect(below, Vector256.Create(EncodeSize), index).CopyTo(indices[i..]);
             }
         }
 
@@ -350,17 +409,20 @@ internal sealed class MatrixTransform : CompiledTransform
             for (; i <= n - Vector128<float>.Count; i += Vector128<float>.Count)
             {
                 Vector128<float> v = Vector128.Create(values[i..]);
+                Vector128<int> below = Vector128.LessThan(v, Vector128<float>.Zero).AsInt32();
                 v = Vector128.ConditionalSelect(Vector128.GreaterThan(v, Vector128<float>.Zero), v, Vector128<float>.Zero);
-                v = Vector128.Min(v, Vector128<float>.One);
-                Vector128.ConvertToInt32((v * Scale) + Vector128.Create(0.5f)).CopyTo(indices[i..]);
+                v = Vector128.Sqrt(Vector128.Min(v, Vector128<float>.One));
+                Vector128<int> index = Vector128.ConvertToInt32((v * Scale) + Vector128.Create(0.5f));
+                Vector128.ConditionalSelect(below, Vector128.Create(EncodeSize), index).CopyTo(indices[i..]);
             }
         }
 
         for (; i < n; i++)
         {
-            float v = values[i] > 0f ? values[i] : 0f;
-            v = v < 1f ? v : 1f;
-            indices[i] = (int)((v * Scale) + 0.5f);
+            float raw = values[i];
+            float v = raw > 0f ? raw : 0f;
+            v = MathF.Sqrt(v < 1f ? v : 1f);
+            indices[i] = raw < 0f ? EncodeSize : (int)((v * Scale) + 0.5f);
         }
     }
 

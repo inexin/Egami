@@ -176,7 +176,8 @@ internal sealed class IccCurve
             case 4:
                 {
                     double start = (_a * _d) + _b;
-                    double knee = (start < 0 ? 0 : Math.Pow(start, _g)) + _e;
+                    // Little CMS puts the knee at the power segment's start plus f (not e); they differ only for curves that jump.
+                    double knee = (start < 0 ? 0 : Math.Pow(start, _g)) + _f;
                     if (y >= knee)
                     {
                         double t = y - _e;

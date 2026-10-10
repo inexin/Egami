@@ -171,6 +171,41 @@ public class CompiledTransformTests(ITestOutputHelper output)
         Assert.Equal([200, 100, 50, 220, 130, 77], copy);
     }
 
+    /// <summary>
+    /// The 8-bit output table is fine enough at the foot of a pure power curve: gamma 2.4 climbs 2.5 levels in linear's first
+    /// 1/65535, so a table spaced evenly in linear rounds near-black values up to two levels off the float path.
+    /// </summary>
+    [Fact]
+    public void EightBitsHoldTheFootOfAPowerCurve()
+    {
+        CompiledTransform compiled = CompiledTransform.Compile(ColorProfile.Srgb, ColorProfile.Create(ColorPrimaries.Rec2020, TransferFunction.Gamma(2.4)), RenderingIntent.RelativeColorimetric, false);
+        List<byte> bytes = [];
+        for (int r = 0; r < 256; r += 3)
+        {
+            for (int g = 0; g < 256; g += 3)
+            {
+                for (int b = 0; b < 256; b += 51)
+                {
+                    bytes.AddRange([(byte)r, (byte)g, (byte)b]);
+                }
+            }
+        }
+
+        int count = bytes.Count / 3;
+        byte[] eight = new byte[bytes.Count];
+        compiled.Apply(bytes.ToArray(), new ByteLayout(3, false), eight, new ByteLayout(3, false), count);
+        float[] floats = [.. bytes.Select(v => v / 255f)];
+        float[] exact = new float[floats.Length];
+        compiled.Apply(floats, exact, count);
+        int worst = 0;
+        for (int i = 0; i < eight.Length; i++)
+        {
+            worst = Math.Max(worst, Math.Abs(eight[i] - (int)Math.Round(Math.Clamp(exact[i], 0, 1) * 255)));
+        }
+
+        Assert.True(worst <= 1, $"{worst} levels");
+    }
+
     [Fact]
     public void TransformsAreCachedPerContext()
     {

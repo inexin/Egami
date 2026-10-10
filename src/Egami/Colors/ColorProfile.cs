@@ -245,7 +245,13 @@ public sealed class ColorProfile
     /// </summary>
     /// <param name="other">The other encoding.</param>
     /// <returns><see langword="true"/> if they are equivalent.</returns>
-    public bool IsEquivalentTo(ColorProfile other)
+    public bool IsEquivalentTo(ColorProfile other) => IsCloseTo(other, 1e-4);
+
+    /// <summary>
+    /// Returns whether two encodings mean the same colors within <paramref name="tolerance"/>. Conversion treats encodings within
+    /// 2e-5, the rounding of an ICC profile's s15.16 numbers, as one, and converts anything further apart.
+    /// </summary>
+    internal bool IsCloseTo(ColorProfile other, double tolerance)
     {
         ArgumentNullException.ThrowIfNull(other);
         if (ReferenceEquals(this, other))
@@ -253,7 +259,7 @@ public sealed class ColorProfile
             return true;
         }
 
-        if (Model != other.Model || Math.Abs(White.X - other.White.X) > 1e-4 || Math.Abs(White.Y - other.White.Y) > 1e-4)
+        if (Model != other.Model || Math.Abs(White.X - other.White.X) > tolerance || Math.Abs(White.Y - other.White.Y) > tolerance)
         {
             return false;
         }
@@ -264,12 +270,12 @@ public sealed class ColorProfile
             return Icc is not null && other.Icc is not null && Icc.ToBytes().Span.SequenceEqual(other.Icc.ToBytes().Span);
         }
 
-        if (Model == ColorModel.Rgb && !Primaries!.IsCloseTo(other.Primaries!))
+        if (Model == ColorModel.Rgb && !Primaries!.IsCloseTo(other.Primaries!, tolerance))
         {
             return false;
         }
 
-        return Transfer.IsCloseTo(other.Transfer);
+        return Transfer.IsCloseTo(other.Transfer, tolerance);
     }
 
     /// <inheritdoc/>
