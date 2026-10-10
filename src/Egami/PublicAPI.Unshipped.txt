@@ -1,4 +1,9 @@
 #nullable enable
+Egami.DecodeStatus
+Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
+Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
+Egami.DecodeStatus.NeedsInput = 1 -> Egami.DecodeStatus
+Egami.DecodeStatus.RowsAvailable = 0 -> Egami.DecodeStatus
 Egami.Formats.Pnm.PnmDetails.LittleEndian.get -> bool?
 Egami.Formats.Pnm.PnmDetails.LittleEndian.set -> void
 Egami.Formats.Pnm.PnmDetails.Scale.get -> double?
@@ -187,8 +192,11 @@ Egami.Pixels.RgbF32.RgbF32(float r, float g, float b) -> void
 Egami.Pixels.RgbF32.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.RgbF32.ToScaled() -> System.Numerics.Vector4
 Egami.RasterDecoder
+Egami.RasterDecoder.Append(System.ReadOnlySpan<byte> data) -> void
 Egami.RasterDecoder.CurrentFrame.get -> Egami.Metadata.FrameMetadata?
 Egami.RasterDecoder.Dispose() -> void
+Egami.RasterDecoder.EndOfInput() -> void
+Egami.RasterDecoder.HeaderRead.get -> bool
 Egami.RasterDecoder.Info.get -> Egami.Formats.RasterInfo!
 Egami.RasterDecoder.IsMetadataComplete.get -> bool
 Egami.RasterDecoder.Metadata.get -> Egami.Metadata.RasterMetadata!
@@ -196,7 +204,9 @@ Egami.RasterDecoder.NextFrame() -> bool
 Egami.RasterDecoder.ReadFrame<TPixel>() -> Egami.Raster<TPixel>?
 Egami.RasterDecoder.ReadFrame<TPixel>(Egami.Raster<TPixel>! target) -> Egami.Metadata.FrameMetadata?
 Egami.RasterDecoder.ReadRows<TPixel>(Egami.Raster<TPixel>! band) -> int
+Egami.RasterDecoder.RenderPreview<TPixel>(Egami.Raster<TPixel>! target) -> bool
 Egami.RasterDecoder.SkipRows(int count) -> int
+Egami.RasterDecoder.Status.get -> Egami.DecodeStatus
 override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Abgr8.GetHashCode() -> int
 override Egami.Pixels.Abgr8.ToString() -> string!
@@ -335,3 +345,4 @@ static Egami.Raster.LoadInto<TPixel>(System.ReadOnlyMemory<byte> data, Egami.Ras
 static Egami.RasterDecoder.Open(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.Open(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.Open(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
+static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!

@@ -14,7 +14,7 @@ namespace Egami.Formats.Png;
 /// Reads static PNG images, written from the W3C PNG Specification (Third Edition) and RFC 1950/1951.
 /// The reader streams: it holds two scanlines and writes each finished row straight into the raster.
 /// </summary>
-internal sealed partial class PngReader : IFormatReader, Streaming.IRowFormatReader
+internal sealed partial class PngReader : IFormatReader, Streaming.IRowFormatReader, Streaming.IIncrementalFormatReader
 {
     internal static readonly PngReader Instance = new();
 
@@ -988,6 +988,13 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowFormatRea
             read += idat.Read(header[1..]);
         }
 
+        return CheckZlibHeader(state, header, read);
+    }
+
+    /// <summary>Checks the two zlib header bytes, of which <paramref name="read"/> arrived (RFC 1950, section 2.2).</summary>
+    /// <returns><see langword="false"/> if the image data ended first in lenient mode.</returns>
+    private static bool CheckZlibHeader(State state, ReadOnlySpan<byte> header, int read)
+    {
         if (read < 2)
         {
             state.Chunks.Recoverable(state.Input.Position, "The image data ends early, before any scanline. The image is transparent black.");

@@ -22,6 +22,7 @@ public sealed class EgamiInput
     private const int DirectReadBytes = 4 * 1024;
 
     private readonly Stream _stream;
+    private readonly Streaming.AppendBuffer? _append;
     private readonly BudgetedMemorySource _memory;
     private readonly long _origin;
     private byte[]? _buffer;
@@ -38,6 +39,13 @@ public sealed class EgamiInput
         _memory = new BudgetedMemorySource(context.Memory, context.Limits.MaxTotalBytes);
         _origin = stream.CanSeek ? stream.Position : -1;
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+    }
+
+    /// <summary>Creates the input of an incremental decode, which reads the bytes appended so far.</summary>
+    internal EgamiInput(Streaming.AppendBuffer append, EgamiContext context, CancellationToken cancellationToken)
+        : this((Stream)append, context, cancellationToken)
+    {
+        _append = append;
     }
 
     /// <summary>Gets the context of the load.</summary>
@@ -286,6 +294,39 @@ public sealed class EgamiInput
     /// <summary>Gets the length of the data from the start of the image, or <see langword="null"/> if the stream cannot seek.</summary>
     internal long? Length => _origin >= 0 ? _stream.Length - _origin : null;
 
+    /// <summary>Gets whether this is an incremental decode, whose bytes are appended as they arrive.</summary>
+    internal bool Incremental => _append is not null;
+
+    /// <summary>Gets whether running out of bytes is the end of the data: always, unless an incremental decode is still receiving.</summary>
+    internal bool AtEndOfInput => _append is null || _append.Ended;
+
+    /// <summary>Gets whether an incremental decode has read every byte received so far while more may come.</summary>
+    internal bool Dry => _append is { Ended: false } && _start == _end && _append.Available == 0;
+
+    /// <summary>Gets the bytes an incremental decode can read now, without waiting for more.</summary>
+    internal long Available => (_end - _start) + (_append?.Available ?? 0);
+
+    /// <summary>
+    /// Copies upcoming bytes of an incremental decode, from <paramref name="offset"/> bytes after the read position, without
+    /// consuming them. Returns <see langword="false"/> if they have not all arrived.
+    /// </summary>
+    internal bool TryPeekAt(long offset, Span<byte> destination)
+    {
+        int buffered = _end - _start;
+        if (offset < 0 || offset > Available - destination.Length)
+        {
+            return false;
+        }
+
+        int fromBuffer = (int)Math.Clamp(buffered - offset, 0, destination.Length);
+        if (fromBuffer > 0)
+        {
+            Buffer.AsSpan(_start + (int)offset, fromBuffer).CopyTo(destination);
+        }
+
+        return fromBuffer == destination.Length || _append!.TryPeek(Math.Max(0, offset - buffered), destination[fromBuffer..]);
+    }
+
     /// <summary>
     /// Reads bytes at <paramref name="offset"/> from the start of the image without moving the read position, for formats that
     /// keep a footer at the end. Returns <see langword="false"/> if the stream cannot seek or the bytes are not all there.
@@ -395,8 +436,11 @@ public sealed class EgamiInput
         return _end > _start;
     }
 
-    private CorruptDataException Truncated(long offset)
+    private Exception Truncated(long offset)
     {
-        return new CorruptDataException(FormatName, offset, "The data ends unexpectedly.") { IsTruncation = true };
+        // An incremental decode still receiving waits for more bytes instead.
+        return _append is { Ended: false }
+            ? new Streaming.NeedsInputException()
+            : new CorruptDataException(FormatName, offset, "The data ends unexpectedly.") { IsTruncation = true };
     }
 }

@@ -43,29 +43,48 @@ internal static class FormatPipeline
     {
         ArgumentNullException.ThrowIfNull(stream);
         EgamiInput input = new(stream, context, cancellationToken);
+        FormatInfo format;
+        try
+        {
+            format = Detect(input, context);
+            input.SetFormat(format);
+        }
+        catch
+        {
+            input.Dispose();
+            throw;
+        }
+
+        return (OpenSource(input, format, options), format);
+    }
+
+    /// <summary>
+    /// Opens a source of rows over an input whose format is known, taking the input over: a streaming source owns it from then on,
+    /// and a buffered one has read it whole and disposed of it.
+    /// </summary>
+    internal static Streaming.RowSource OpenSource(EgamiInput input, FormatInfo format, ReaderOptions options)
+    {
         bool owned = false;
         try
         {
-            FormatInfo format = Detect(input, context);
-            input.SetFormat(format);
             if (format.Reader is Streaming.IRowFormatReader rows)
             {
                 Streaming.RowSource source = rows.Open(input, options);
-                if (source is not Streaming.BufferedRowSource)
+                if (source is not Streaming.BufferedRowSource buffered)
                 {
                     owned = true;
-                    return (source, format);
+                    return source;
                 }
 
-                ((Streaming.BufferedRowSource)source).Raster.Metadata.FormatName ??= format.Name;
+                buffered.Raster.Metadata.FormatName ??= format.Name;
                 input.ReturnUnreadBytes();
-                return (source, format);
+                return source;
             }
 
-            Streaming.BufferedRowSource buffered = Streaming.BufferedRowSource.Read(format, input, options);
-            buffered.Raster.Metadata.FormatName ??= format.Name;
+            Streaming.BufferedRowSource read = Streaming.BufferedRowSource.Read(format, input, options);
+            read.Raster.Metadata.FormatName ??= format.Name;
             input.ReturnUnreadBytes();
-            return (buffered, format);
+            return read;
         }
         finally
         {
@@ -302,7 +321,7 @@ internal static class FormatPipeline
         }
     }
 
-    private static FormatInfo Detect(EgamiInput input, EgamiContext context)
+    internal static FormatInfo Detect(EgamiInput input, EgamiContext context)
     {
         if (context.Formats.Count == 0)
         {

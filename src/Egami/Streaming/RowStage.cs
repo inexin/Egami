@@ -12,6 +12,7 @@ internal sealed class RowStage(RowSource source, ReadPlan plan)
 {
     private double[]? _sums;
     private RgbaF32[]? _line;
+    private int _accumulated = -1;
 
     /// <summary>Gets the next output row of the current frame.</summary>
     public int Row { get; private set; }
@@ -26,6 +27,7 @@ internal sealed class RowStage(RowSource source, ReadPlan plan)
     public void Reset()
     {
         Row = 0;
+        _accumulated = -1;
     }
 
     /// <summary>Moves past output rows without producing them, decoding only where the source must.</summary>
@@ -50,14 +52,22 @@ internal sealed class RowStage(RowSource source, ReadPlan plan)
         int width = plan.Output.Width;
         double[] sums = _sums ??= new double[width * 4];
         RgbaF32[] line = _line ??= new RgbaF32[region.Width];
-        Array.Clear(sums);
+        if (_accumulated < 0)
+        {
+            Array.Clear(sums);
+            _accumulated = 0;
+        }
+
+        // The sums so far are kept if the source runs out of bytes, so an incremental decode carries on from the next row.
         int top = region.Y + (Row * factor);
         int rows = Math.Min(factor, region.Bottom - top);
-        for (int y = top; y < top + rows; y++)
+        for (; _accumulated < rows; _accumulated++)
         {
-            source.ReadRow(y, region.X, line.AsSpan());
+            source.ReadRow(top + _accumulated, region.X, line.AsSpan());
             Accumulate(line, sums, factor);
         }
+
+        _accumulated = -1;
 
         for (int x = 0; x < width; x++)
         {

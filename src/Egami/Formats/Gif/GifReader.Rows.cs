@@ -32,6 +32,24 @@ internal sealed partial class GifReader
         }
     }
 
+    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    {
+        if (!Streams(options))
+        {
+            return false;
+        }
+
+        // The screen descriptor and its global color table, which is all Open reads.
+        Span<byte> screen = stackalloc byte[13];
+        if (!input.TryPeekAt(0, screen))
+        {
+            return false;
+        }
+
+        int table = (screen[10] & 0x80) != 0 ? 3 * (2 << (screen[10] & 7)) : 0;
+        return input.Available >= 13 + table;
+    }
+
     /// <summary>Returns whether <see cref="Open"/> streams with these options, rather than reading every frame first.</summary>
     private static bool Streams(ReaderOptions options)
     {
@@ -48,6 +66,8 @@ internal sealed partial class GifReader
     /// <summary>A GIF read a frame at a time.</summary>
     private sealed class GifRows(Decoding<Rgba8> state, EgamiInput input) : RowSource
     {
+        private PixelPlane<Rgba8>? _preview;
+        private int _previewRow = int.MaxValue;
         private bool _disposed;
 
         public override int StoredWidth => state.Width;
@@ -73,6 +93,20 @@ internal sealed partial class GifReader
         public override TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor) => visitor.Visit<Rgba8>();
 
         public override FrameMetadata? NextFrame() => state.NextFrame();
+
+        public override bool CanPreview => true;
+
+        public override void PreviewRow<TPixel>(int y, int x, Span<TPixel> destination)
+        {
+            // Rows come in order from the region's top: the preview is built afresh when they start over.
+            if (y <= _previewRow || _preview is null)
+            {
+                _preview = state.BuildPreview();
+            }
+
+            _previewRow = y;
+            PixelConvert.Convert<Rgba8, TPixel>(_preview.Row(y).Slice(x, destination.Length), destination);
+        }
 
         public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination)
         {

@@ -82,6 +82,19 @@ internal abstract class RowSource : IDisposable
     /// <summary>Moves to the next frame: the first call moves to frame 0. Returns its metadata, or <see langword="null"/> after the last.</summary>
     public abstract FrameMetadata? NextFrame();
 
+    /// <summary>Gets whether <see cref="PreviewRow"/> can show the frame in progress before its rows can be read.</summary>
+    public virtual bool CanPreview => false;
+
+    /// <summary>
+    /// Converts a row of a preview of the frame in progress: what has arrived so far, each known pixel repeated over the block it
+    /// stands for. Rows come in order but the decode does not move on; nothing is consumed.
+    /// </summary>
+    public virtual void PreviewRow<TPixel>(int y, int x, Span<TPixel> destination)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        throw new NotSupportedException("The format has no preview.");
+    }
+
     /// <summary>
     /// Says no more rows of the current frame are needed, so the source can skip the rest of its data without decoding it and,
     /// after the last frame, read what follows the image. Called again, it does nothing.
@@ -229,5 +242,50 @@ internal sealed class BufferedRowSource : RowSource
     internal static long Bytes(Raster raster)
     {
         return (long)raster.Width * raster.Height * raster.Layout.BytesPerPixel * raster.FrameCount;
+    }
+}
+
+/// <summary>
+/// Marks a reader whose row source can decode while bytes are still arriving: it says when the header has arrived, and its
+/// source waits (with <see cref="NeedsInputException"/>) instead of treating missing bytes as the end of the data.
+/// </summary>
+internal interface IIncrementalFormatReader
+{
+    /// <summary>
+    /// Returns whether every byte <see cref="IRowFormatReader.Open"/> reads has arrived, looking ahead without consuming. A reader
+    /// that would not stream with <paramref name="options"/> returns <see langword="false"/>, so the decode waits for the end.
+    /// </summary>
+    bool HeaderArrived(EgamiInput input, ReaderOptions options);
+}
+
+/// <summary>A source whose rows are another source's preview rows, so the row stage can crop and reduce a preview too.</summary>
+internal sealed class PreviewSource(RowSource inner) : RowSource
+{
+    public override int StoredWidth => inner.StoredWidth;
+
+    public override int StoredHeight => inner.StoredHeight;
+
+    public override int NativeScale => inner.NativeScale;
+
+    public override int MaxNativeScale => inner.MaxNativeScale;
+
+    public override PixelLayoutInfo Layout => inner.Layout;
+
+    public override RasterMetadata Metadata => inner.Metadata;
+
+    public override int? FrameCount => inner.FrameCount;
+
+    public override RasterAccess Access => inner.Access;
+
+    public override long WorkingBytes => inner.WorkingBytes;
+
+    public override TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor) => inner.WithNaturalType(visitor);
+
+    public override FrameMetadata? NextFrame() => throw new NotSupportedException();
+
+    public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination) => inner.PreviewRow(y, x, destination);
+
+    protected override void Dispose(bool disposing)
+    {
     }
 }

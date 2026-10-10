@@ -85,7 +85,7 @@ internal sealed class PngUnpacker
         && _header.ColorType is PngColorType.Gray or PngColorType.GrayAlpha or PngColorType.Rgb or PngColorType.Rgba;
 
     /// <summary>Gets the number of palette indices seen that were outside the palette.</summary>
-    internal int BadIndices { get; private set; }
+    internal int BadIndices { get; set; }
 
     /// <summary>Reports palette indices that were outside the palette: an error in strict mode, a warning otherwise.</summary>
     internal void ThrowIfBadIndices(PngChunkReader chunks, long offset)

@@ -11,7 +11,7 @@ namespace Egami.Formats.Png;
 /// When the compressed data is damaged, the decompressor throws for a whole block, so in lenient mode up to one block of rows
 /// before the damage can be lost, compared with reading row by row.
 /// </remarks>
-internal sealed class InflatedReader(Stream inflater, int scanlineBytes) : IDisposable
+internal sealed class InflatedReader(Stream inflater, int scanlineBytes, IdatStream? source = null) : IDisposable
 {
     private readonly byte[] _buffer = ArrayPool<byte>.Shared.Rent(Math.Max(64 * 1024, scanlineBytes));
     private int _start;
@@ -48,6 +48,48 @@ internal sealed class InflatedReader(Stream inflater, int scanlineBytes) : IDisp
         return _start == _end && !Fill() && Problem is null;
     }
 
+    /// <summary>Gets whether the last fill found nothing because the compressed data has not all arrived yet.</summary>
+    public bool Waiting => source is { Dry: true } && !_ended;
+
+    /// <summary>
+    /// Inflates until <paramref name="count"/> bytes are ready without consuming any, so a scanline is read whole or not at all.
+    /// Returns whether they are; if not, <see cref="Waiting"/> says whether more data may still bring them.
+    /// </summary>
+    public bool Ensure(int count)
+    {
+        while (_end - _start < count && !_ended)
+        {
+            if (_start > 0)
+            {
+                _buffer.AsSpan(_start, _end - _start).CopyTo(_buffer);
+                _end -= _start;
+                _start = 0;
+            }
+
+            int read;
+            try
+            {
+                read = inflater.Read(_buffer.AsSpan(_end));
+            }
+            catch (InvalidDataException e)
+            {
+                Problem = $"The compressed image data is damaged ({e.Message}).";
+                _ended = true;
+                break;
+            }
+
+            if (read == 0)
+            {
+                _ended = source is not { Dry: true };
+                break;
+            }
+
+            _end += read;
+        }
+
+        return _end - _start >= count;
+    }
+
     public void Dispose()
     {
         ArrayPool<byte>.Shared.Return(_buffer);
@@ -71,7 +113,8 @@ internal sealed class InflatedReader(Stream inflater, int scanlineBytes) : IDisp
             Problem = $"The compressed image data is damaged ({e.Message}).";
         }
 
-        _ended = _end == 0;
-        return !_ended;
+        // An incremental decode that has run dry is not at the end: more compressed bytes may come.
+        _ended = _end == 0 && source is not { Dry: true };
+        return _end > 0;
     }
 }

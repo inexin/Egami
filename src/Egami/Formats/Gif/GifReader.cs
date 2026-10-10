@@ -10,7 +10,7 @@ namespace Egami.Formats.Gif;
 /// Reads GIF87a and GIF89a files, written from the GIF89a specification. Frames are LZW-decoded into a pooled index buffer and
 /// drawn onto a shared <see cref="AnimationCanvas{TCanvas}"/>, which every kept frame is copied out of at full size.
 /// </summary>
-internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatReader
+internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatReader, Streaming.IIncrementalFormatReader
 {
     internal static readonly GifReader Instance = new();
 
@@ -95,6 +95,9 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatRea
         private int _end;
         private int _served;
         private FrameMetadata? _composed;
+        private PixelPlane<Rgba8>? _preview;
+        private LzwDecoder? _previewLzw;
+        private bool _awaiting = true;
 
         // The Graphic Control Extension applies to the next image only.
         private bool _hasControl;
@@ -145,8 +148,15 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatRea
                 _pendingEnd = false;
             }
 
+            _awaiting = true;
             while (!_finished)
             {
+                if (!_stopped && !BlockArrived())
+                {
+                    // An incremental decode reads a block once all of it has arrived.
+                    throw new Streaming.NeedsInputException();
+                }
+
                 if (_stopped || !Step(_first, _end))
                 {
                     _finished = true;
@@ -162,6 +172,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatRea
                 {
                     _composed = null;
                     _served++;
+                    _awaiting = false;
                     return frame;
                 }
 
@@ -174,6 +185,134 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatRea
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns whether the next block has arrived whole: the trailer, an extension and its sub-blocks, or an image descriptor,
+        /// its color table and its sub-blocks. Always true outside an incremental decode or once the input has ended.
+        /// </summary>
+        internal bool BlockArrived()
+        {
+            if (!_input.Incremental || _input.AtEndOfInput)
+            {
+                return true;
+            }
+
+            Span<byte> head = stackalloc byte[10];
+            if (!_input.TryPeekAt(0, head[..1]))
+            {
+                return false;
+            }
+
+            switch (head[0])
+            {
+                case 0x21:
+                    return SubBlocksArrived(2);
+                case 0x2C:
+                    if (!_input.TryPeekAt(0, head))
+                    {
+                        return false;
+                    }
+
+                    int table = (head[9] & 0x80) != 0 ? 3 * (2 << (head[9] & 7)) : 0;
+                    return SubBlocksArrived(10L + table + 1);
+                default:
+                    return true;
+            }
+        }
+
+        /// <summary>Returns whether the sub-blocks starting <paramref name="offset"/> bytes ahead have arrived, through their terminator.</summary>
+        private bool SubBlocksArrived(long offset)
+        {
+            Span<byte> size = stackalloc byte[1];
+            while (true)
+            {
+                if (!_input.TryPeekAt(offset, size))
+                {
+                    return false;
+                }
+
+                offset += 1 + size[0];
+                if (size[0] == 0)
+                {
+                    return true;
+                }
+
+                if (_input.Available < offset)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Looks ahead, without reading, for the next image descriptor: its offset from the read position and the transparent index a
+        /// graphic control extension before it gives. Returns <see langword="false"/> if none has started to arrive.
+        /// </summary>
+        private bool NextImage(out long at, out int transparent)
+        {
+            at = 0;
+            transparent = _hasControl ? _transparent : -1;
+            Span<byte> head = stackalloc byte[6];
+            Span<byte> size = stackalloc byte[1];
+            while (_input.TryPeekAt(at, head[..1]))
+            {
+                if (head[0] == 0x2C)
+                {
+                    return _input.TryPeekAt(at, head[..1]) && _input.Available >= at + 11;
+                }
+
+                if (head[0] != 0x21 || !_input.TryPeekAt(at, head[..2]))
+                {
+                    return false;
+                }
+
+                if (head[1] == 0xF9 && _input.TryPeekAt(at, head))
+                {
+                    transparent = (head[3] & 1) != 0 && _input.TryPeekAt(at + 6, head[..1]) ? head[0] : -1;
+                }
+
+                // Skip the extension's sub-blocks.
+                long offset = at + 2;
+                while (true)
+                {
+                    if (!_input.TryPeekAt(offset, size))
+                    {
+                        return false;
+                    }
+
+                    offset += 1 + size[0];
+                    if (size[0] == 0)
+                    {
+                        break;
+                    }
+                }
+
+                at = offset;
+            }
+
+            return false;
+        }
+
+        /// <summary>Returns the image row a stored row of an interlaced frame lands on, and how many rows it stands for until a later pass fills them.</summary>
+        private static (int Row, int Rows) InterlacedBlock(int stored, int height)
+        {
+            int pass1 = (height + 7) / 8;
+            int pass2 = (height + 3) / 8;
+            int pass3 = (height + 1) / 4;
+            int rows = stored < pass1 ? 8 : stored < pass1 + pass2 ? 4 : stored < pass1 + pass2 + pass3 ? 2 : 1;
+            return (InterlacedRow(stored, height), rows);
+        }
+
+        private static Rgb8[] ReadTable(ReadOnlySpan<byte> bytes)
+        {
+            Rgb8[] palette = new Rgb8[bytes.Length / 3];
+            for (int i = 0; i < palette.Length; i++)
+            {
+                palette[i] = new Rgb8(bytes[i * 3], bytes[(i * 3) + 1], bytes[(i * 3) + 2]);
+            }
+
+            return palette;
         }
 
         internal void Run()
@@ -283,8 +422,124 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatRea
             return new Raster<TPixel>(frames, Metadata, _input.Context);
         }
 
+        /// <summary>
+        /// Builds a preview of the frame in progress: the canvas as the next frame starts from, with as much of that frame as has
+        /// arrived drawn on it, interlaced rows repeated over the rows they stand for. The decode does not move on.
+        /// </summary>
+        internal PixelPlane<Rgba8> BuildPreview()
+        {
+            PixelPlane<Rgba8> preview = _preview ??= PixelPlane.Allocate<Rgba8>(Width, Height, _input.Memory, ClearMode.Zero);
+            if (_canvas is null)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    preview.Row(y).Clear();
+                }
+            }
+            else
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    _canvas.Row(y).CopyTo(preview.Row(y));
+                }
+            }
+
+            // A frame composed and handed out is the frame in progress; only while the next one is awaited is it drawn as it arrives.
+            if (!_awaiting || _finished || !NextImage(out long at, out int transparent))
+            {
+                return preview;
+            }
+
+            Span<byte> descriptor = stackalloc byte[10];
+            _input.TryPeekAt(at, descriptor);
+            int left = descriptor[1] | (descriptor[2] << 8);
+            int top = descriptor[3] | (descriptor[4] << 8);
+            int width = descriptor[5] | (descriptor[6] << 8);
+            int height = descriptor[7] | (descriptor[8] << 8);
+            byte packed = descriptor[9];
+            bool interlaced = (packed & 0x40) != 0;
+            int tableBytes = (packed & 0x80) != 0 ? 3 * (2 << (packed & 7)) : 0;
+            Span<byte> table = stackalloc byte[768];
+            Span<byte> minCode = stackalloc byte[1];
+            if (width == 0 || height == 0 || (long)width * height > int.MaxValue || !_input.TryPeekAt(at + 10, table[..tableBytes])
+                || !_input.TryPeekAt(at + 10 + tableBytes, minCode) || minCode[0] is < 1 or > 8)
+            {
+                return preview;
+            }
+
+            // The sub-blocks that have arrived, without their lengths.
+            byte[] data = ArrayPool<byte>.Shared.Rent(4096);
+            byte[] indices = ArrayPool<byte>.Shared.Rent(width * height);
+            try
+            {
+                int length = 0;
+                long offset = at + 11 + tableBytes;
+                Span<byte> size = stackalloc byte[1];
+                while (_input.TryPeekAt(offset, size) && size[0] > 0)
+                {
+                    int n = (int)Math.Min(size[0], _input.Available - offset - 1);
+                    if (n <= 0)
+                    {
+                        break;
+                    }
+
+                    if (length + n > data.Length)
+                    {
+                        byte[] larger = ArrayPool<byte>.Shared.Rent(data.Length * 2);
+                        data.AsSpan(0, length).CopyTo(larger);
+                        ArrayPool<byte>.Shared.Return(data);
+                        data = larger;
+                    }
+
+                    _input.TryPeekAt(offset + 1, data.AsSpan(length, n));
+                    length += n;
+                    offset += 1 + size[0];
+                }
+
+                _previewLzw ??= new LzwDecoder();
+                _previewLzw.Decode(minCode[0], data.AsSpan(0, length), indices.AsSpan(0, width * height), out int written);
+                Rgba8[] colors = new Rgba8[256];
+                Rgb8[] palette = tableBytes > 0 ? ReadTable(table[..tableBytes]) : _global;
+                for (int i = 0; i < palette.Length; i++)
+                {
+                    colors[i] = new Rgba8(palette[i].R, palette[i].G, palette[i].B, 255);
+                }
+
+                int right = Math.Min(left + width, Width);
+                for (int r = 0; (r + 1) * width <= written; r++)
+                {
+                    (int y, int rows) = interlaced ? InterlacedBlock(r, height) : (r, 1);
+                    ReadOnlySpan<byte> row = indices.AsSpan(r * width, width);
+                    for (int k = 0; k < rows && y + k < height; k++)
+                    {
+                        int target = top + y + k;
+                        if (target >= Height || left >= Width)
+                        {
+                            continue;
+                        }
+
+                        // A transparent pixel shows the canvas under it, also where an earlier pass's row was repeated.
+                        Span<Rgba8> line = preview.Row(target);
+                        for (int x = 0; x < right - left; x++)
+                        {
+                            line[left + x] = row[x] != transparent ? colors[row[x]] : _canvas is null ? default : _canvas.Row(target)[left + x];
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+                ArrayPool<byte>.Shared.Return(indices);
+            }
+
+            return preview;
+        }
+
         public void Dispose()
         {
+            _preview?.Dispose();
+            _previewLzw?.Dispose();
             foreach (Frame<TPixel> frame in _frames)
             {
                 frame.Plane.Dispose();

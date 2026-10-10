@@ -21,22 +21,43 @@ namespace Egami;
 /// </example>
 public sealed class RasterDecoder : IDisposable
 {
-    private readonly RowSource _source;
-    private readonly ReadPlan _plan;
-    private readonly RowStage _stage;
     private readonly EgamiContext _context;
+    private readonly ReaderOptions _options;
     private readonly IDisposable? _owned;
+    private readonly AppendBuffer? _append;
+    private EgamiInput? _input;
+    private RowSource? _source;
+    private ReadPlan? _plan;
+    private RowStage? _stage;
+    private RasterInfo? _info;
     private FrameMetadata? _frame;
     private RasterMetadata? _upkept;
     private bool _upkeptComplete;
     private bool _started;
+    private bool _advancing;
+    private bool _waiting;
     private bool _disposed;
 
     private RasterDecoder(RowSource source, FormatInfo format, EgamiContext context, ReaderOptions options, IDisposable? owned)
     {
-        _source = source;
         _context = context;
+        _options = options;
         _owned = owned;
+        Initialize(source, format);
+    }
+
+    private RasterDecoder(EgamiContext context, ReaderOptions options)
+    {
+        _context = context;
+        _options = options;
+        _append = new AppendBuffer();
+    }
+
+    /// <summary>Sets the decoder up over an opened source: the plan, the row stage and what <see cref="Info"/> says.</summary>
+    private void Initialize(RowSource source, FormatInfo format)
+    {
+        _source = source;
+        ReaderOptions options = _options;
         _plan = ReadPlan.Create(source.StoredWidth, source.StoredHeight, options.Region, options.MinimumSize, source.MaxNativeScale);
         if (_plan.NativeScale != source.NativeScale)
         {
@@ -46,7 +67,7 @@ public sealed class RasterDecoder : IDisposable
         _stage = new RowStage(source, _plan);
         RasterMetadata metadata = Metadata;
         Size output = _plan.Output;
-        Info = new RasterInfo
+        _info = new RasterInfo
         {
             Format = format,
             Width = output.Width,
@@ -66,25 +87,53 @@ public sealed class RasterDecoder : IDisposable
     /// Gets what the decoder produces: the size after <see cref="ReaderOptions.Region"/> and <see cref="ReaderOptions.MinimumSize"/>,
     /// the natural pixel layout, the frame count when known, and how rows are produced.
     /// </summary>
-    public RasterInfo Info { get; }
+    /// <exception cref="InvalidOperationException">An incremental decode has not received the header yet; see <see cref="HeaderRead"/>.</exception>
+    public RasterInfo Info => _info ?? throw NoHeader();
+
+    /// <summary>Gets whether the header has been read, so <see cref="Info"/> and <see cref="Metadata"/> can be used. Always true unless the decode is incremental.</summary>
+    public bool HeaderRead => _source is not null;
+
+    /// <summary>
+    /// Gets where the decode stands: rows can be read, it needs more bytes (incremental decodes only), the current frame has been
+    /// read, or every frame has.
+    /// </summary>
+    public DecodeStatus Status
+    {
+        get
+        {
+            if (_source is null || _waiting)
+            {
+                return DecodeStatus.NeedsInput;
+            }
+
+            if (_started && _frame is null)
+            {
+                return DecodeStatus.Completed;
+            }
+
+            return _started && (_advancing || _stage!.Remaining == 0) ? DecodeStatus.FrameEnded : DecodeStatus.RowsAvailable;
+        }
+    }
 
     /// <summary>
     /// Gets the metadata read so far; see <see cref="IsMetadataComplete"/>. When the region or reduction changes the size, the
     /// EXIF dimensions follow it and the EXIF thumbnail is dropped, as a crop or resize would.
     /// </summary>
+    /// <exception cref="InvalidOperationException">An incremental decode has not received the header yet; see <see cref="HeaderRead"/>.</exception>
     public RasterMetadata Metadata
     {
         get
         {
-            if (!_plan.ChangesGeometry)
+            RowSource source = _source ?? throw NoHeader();
+            if (!_plan!.ChangesGeometry)
             {
-                return _source.Metadata;
+                return source.Metadata;
             }
 
-            if (_upkept is null || _upkeptComplete != _source.MetadataComplete)
+            if (_upkept is null || _upkeptComplete != source.MetadataComplete)
             {
-                _upkeptComplete = _source.MetadataComplete;
-                _upkept = _source.Metadata.Copy();
+                _upkeptComplete = source.MetadataComplete;
+                _upkept = source.Metadata.Copy();
                 ExifUpkeep.Dimensions(_upkept, _plan.Output);
                 ExifUpkeep.DropThumbnail(_upkept);
             }
@@ -97,15 +146,14 @@ public sealed class RasterDecoder : IDisposable
     /// Gets whether <see cref="Metadata"/> holds everything the file has. PNG and GIF may put text, EXIF and comments after the
     /// image data, which arrive once the last frame has been read.
     /// </summary>
-    public bool IsMetadataComplete => _source.MetadataComplete;
+    public bool IsMetadataComplete => _source?.MetadataComplete ?? false;
 
-    /// <summary>Gets the metadata of the frame being read, or <see langword="null"/> after the last frame.</summary>
+    /// <summary>Gets the metadata of the frame being read, or <see langword="null"/> after the last frame (or while an incremental decode waits for it).</summary>
     public FrameMetadata? CurrentFrame
     {
         get
         {
-            Start();
-            return _frame is null ? null : FrameOut(_frame);
+            return Run(() => Start(), finishMove: false) && _frame is not null && !_advancing ? FrameOut(_frame) : null;
         }
     }
 
@@ -170,6 +218,56 @@ public sealed class RasterDecoder : IDisposable
     }
 
     /// <summary>
+    /// Starts an incremental decode: bytes are given with <see cref="Append"/> as they arrive, and rows, frames and previews come
+    /// out as far as the bytes reach. <see cref="Status"/> says when more bytes are needed and <see cref="HeaderRead"/> when
+    /// <see cref="Info"/> is known; <see cref="EndOfInput"/> says the last byte has come.
+    /// </summary>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <returns>The decoder. The caller must dispose it.</returns>
+    /// <remarks>
+    /// PNG, APNG and GIF decode as their bytes arrive, keeping only the bytes since the step they are in. Other formats wait for
+    /// <see cref="EndOfInput"/> and are then read whole.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="incremental"/>
+    /// </example>
+    public static RasterDecoder OpenIncremental(EgamiContext? context = null, ReaderOptions? options = null)
+    {
+        return new RasterDecoder(context ?? EgamiContext.Default, options ?? ReaderOptions.Default);
+    }
+
+    /// <summary>Gives an incremental decode the next bytes of the file, and reads the header once it has all arrived.</summary>
+    /// <param name="data">The bytes, in order after those appended before. They are copied.</param>
+    /// <exception cref="InvalidOperationException">The decoder is not incremental, or <see cref="EndOfInput"/> was called.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
+    /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
+    /// <exception cref="LimitExceededException">The header breaks a safety limit.</exception>
+    /// <exception cref="ObjectDisposedException">The decoder has been disposed.</exception>
+    public void Append(ReadOnlySpan<byte> data)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        AppendBuffer append = _append ?? throw new InvalidOperationException("Only a decoder from OpenIncremental takes appended bytes.");
+        append.Append(data);
+        _waiting = false;
+        TryOpen();
+    }
+
+    /// <summary>Says the last byte has been appended: from now on, missing bytes are the end of the file, as in a normal read.</summary>
+    /// <exception cref="InvalidOperationException">The decoder is not incremental.</exception>
+    /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
+    /// <exception cref="CorruptDataException">The header breaks the format's rules or is cut off.</exception>
+    /// <exception cref="ObjectDisposedException">The decoder has been disposed.</exception>
+    public void EndOfInput()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        AppendBuffer append = _append ?? throw new InvalidOperationException("Only a decoder from OpenIncremental takes EndOfInput.");
+        append.End();
+        _waiting = false;
+        TryOpen();
+    }
+
+    /// <summary>
     /// Fills <paramref name="band"/> from its top row with the next rows of the current frame, converting while decoding.
     /// </summary>
     /// <typeparam name="TPixel">The pixel type to produce; it may differ from call to call.</typeparam>
@@ -181,24 +279,34 @@ public sealed class RasterDecoder : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         ArgumentNullException.ThrowIfNull(band);
+        if (_source is null)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return 0;
+        }
+
         if (band.Width != Info.Width)
         {
             throw new ArgumentException($"The band is {band.Width} pixels wide but the image is {Info.Width}.", nameof(band));
         }
 
-        Start();
-        if (_frame is null)
+        int rows = 0;
+        Run(() =>
         {
-            return 0;
-        }
+            Start();
+            if (_frame is null || _advancing)
+            {
+                return;
+            }
 
-        int rows = Math.Min(band.Height, _stage.Remaining);
-        for (int y = 0; y < rows; y++)
-        {
-            _stage.Read(band.Row(y));
-        }
+            int count = Math.Min(band.Height, _stage!.Remaining);
+            for (; rows < count; rows++)
+            {
+                _stage.Read(band.Row(rows));
+            }
 
-        EndFrameIfDone();
+            EndFrameIfDone();
+        }, finishMove: false);
         return rows;
     }
 
@@ -210,15 +318,19 @@ public sealed class RasterDecoder : IDisposable
     public int SkipRows(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
-        Start();
-        if (_frame is null)
+        int skipped = 0;
+        Run(() =>
         {
-            return 0;
-        }
+            Start();
+            if (_frame is null || _advancing)
+            {
+                return;
+            }
 
-        int skipped = Math.Min(count, _stage.Remaining);
-        _stage.Skip(skipped);
-        EndFrameIfDone();
+            skipped = Math.Min(count, _stage!.Remaining);
+            _stage.Skip(skipped);
+            EndFrameIfDone();
+        }, finishMove: false);
         return skipped;
     }
 
@@ -227,15 +339,17 @@ public sealed class RasterDecoder : IDisposable
     /// <exception cref="ObjectDisposedException">The decoder has been disposed.</exception>
     public bool NextFrame()
     {
-        Start();
-        if (_frame is not null)
+        // A move that ReadFrame started and had to wait on is finished first, and is the move asked for.
+        bool pending = _advancing;
+        bool done = Run(() =>
         {
-            _source.EndFrame();
-            _frame = _source.NextFrame();
-            _stage.Reset();
-        }
-
-        return _frame is not null;
+            Start();
+            if (!pending && _frame is not null)
+            {
+                Advance();
+            }
+        });
+        return done && _frame is not null;
     }
 
     /// <summary>
@@ -254,20 +368,32 @@ public sealed class RasterDecoder : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         ArgumentNullException.ThrowIfNull(target);
-        CheckSize(target, nameof(target));
-        Start();
-        if (_frame is null)
+        if (_source is null)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             return null;
         }
 
-        FrameMetadata frame = FrameOut(_frame);
-        while (_stage.Remaining > 0)
+        CheckSize(target, nameof(target));
+        FrameMetadata? frame = null;
+        Run(() =>
         {
-            _stage.Read(target.Row(_stage.Row));
-        }
+            Start();
+            if (_frame is null || _advancing)
+            {
+                return;
+            }
 
-        NextFrame();
+            while (_stage!.Remaining > 0)
+            {
+                _stage.Read(target.Row(_stage.Row));
+            }
+
+            // The frame is complete: it is handed out even if moving on to the next one has to wait for more bytes.
+            frame = FrameOut(_frame);
+            _advancing = true;
+            Advance();
+        });
         return frame;
     }
 
@@ -279,8 +405,13 @@ public sealed class RasterDecoder : IDisposable
     public Raster<TPixel>? ReadFrame<TPixel>()
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        Start();
-        if (_frame is null)
+        if (_source is null)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return null;
+        }
+
+        if (!Run(() => Start()) || _frame is null || _advancing)
         {
             return null;
         }
@@ -289,9 +420,17 @@ public sealed class RasterDecoder : IDisposable
         Raster<TPixel> raster = new([new Frame<TPixel>(plane, FrameOut(_frame))], Metadata.Copy(), _context);
         try
         {
-            while (_stage.Remaining > 0)
+            if (!Run(() =>
             {
-                _stage.Read(raster.Row(_stage.Row));
+                while (_stage!.Remaining > 0)
+                {
+                    _stage.Read(raster.Row(_stage.Row));
+                }
+            }))
+            {
+                // An incremental decode keeps its place; ReadFrame(target) gives the rows already read.
+                raster.Dispose();
+                return null;
             }
         }
         catch
@@ -300,8 +439,43 @@ public sealed class RasterDecoder : IDisposable
             throw;
         }
 
-        NextFrame();
+        // Moving to the next frame is the pending move that Run finishes first; an incremental decode may leave it for later.
+        _advancing = true;
+        Run(() => { });
         return raster;
+    }
+
+    /// <summary>
+    /// Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a GIF frame from the rows
+    /// received so far (interlaced ones repeated over the rows they stand for), each later pass sharpening it. Region and
+    /// reduction apply as to rows. The decode does not move on.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type to draw in.</typeparam>
+    /// <param name="target">Where to draw: <see cref="Info"/>'s size. Only its first frame is written.</param>
+    /// <returns>Whether a preview was drawn; <see langword="false"/> before the header or for files that hand out finished rows instead.</returns>
+    /// <exception cref="ArgumentException"><paramref name="target"/> is not <see cref="Info"/>'s size.</exception>
+    /// <exception cref="ObjectDisposedException">The decoder has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="incremental"/>
+    /// </example>
+    public bool RenderPreview<TPixel>(Raster<TPixel> target)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_source is not { CanPreview: true } source)
+        {
+            return false;
+        }
+
+        CheckSize(target, nameof(target));
+        RowStage stage = new(new PreviewSource(source), _plan!);
+        for (int y = 0; y < target.Height; y++)
+        {
+            stage.Read(target.Row(y));
+        }
+
+        return true;
     }
 
     /// <summary>Returns the source's buffers and closes the file when the decoder opened it.</summary>
@@ -310,7 +484,8 @@ public sealed class RasterDecoder : IDisposable
         if (!_disposed)
         {
             _disposed = true;
-            _source.Dispose();
+            _source?.Dispose();
+            _input?.Dispose();
             _owned?.Dispose();
         }
     }
@@ -347,7 +522,7 @@ public sealed class RasterDecoder : IDisposable
     internal Raster<TPixel> ReadAll<TPixel>()
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        if (!_started && !_plan.ChangesGeometry && _source is BufferedRowSource { Raster: Raster<TPixel> })
+        if (!_started && !_plan!.ChangesGeometry && _source is BufferedRowSource { Raster: Raster<TPixel> })
         {
             return (Raster<TPixel>)((BufferedRowSource)_source).Take();
         }
@@ -360,12 +535,12 @@ public sealed class RasterDecoder : IDisposable
             {
                 Frame<TPixel> frame = new(Allocate<TPixel>(), FrameOut(_frame));
                 frames.Add(frame);
-                while (_stage.Remaining > 0)
+                while (_stage!.Remaining > 0)
                 {
                     _stage.Read(frame.Plane.Row(_stage.Row));
                 }
 
-                NextFrame();
+                Advance();
             }
 
             if (frames.Count == 0)
@@ -389,7 +564,7 @@ public sealed class RasterDecoder : IDisposable
     /// <summary>Decodes every remaining frame into one raster in the natural pixel type. See <see cref="ReadAll{TPixel}"/>.</summary>
     internal Raster ReadAll()
     {
-        return _source.WithNaturalType(new ReadAllVisitor(this));
+        return _source!.WithNaturalType(new ReadAllVisitor(this));
     }
 
     /// <summary>Throws unless <paramref name="target"/> is <see cref="Info"/>'s size.</summary>
@@ -401,11 +576,99 @@ public sealed class RasterDecoder : IDisposable
         }
     }
 
+    private static InvalidOperationException NoHeader()
+    {
+        return new InvalidOperationException("The header has not arrived yet; append more bytes until HeaderRead is true.");
+    }
+
+    /// <summary>
+    /// Runs a step of the decode. In an incremental decode the step can run out of bytes: it then leaves the decode where it was,
+    /// <see cref="Status"/> says <see cref="DecodeStatus.NeedsInput"/>, and the result is <see langword="false"/>.
+    /// </summary>
+    private bool Run(Action step, bool finishMove = true)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_source is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            // A move to the next frame that had to wait is finished by the frame-level calls; row calls leave it to NextFrame.
+            if (_advancing && finishMove)
+            {
+                Advance();
+            }
+
+            step();
+            _waiting = false;
+            return true;
+        }
+        catch (NeedsInputException)
+        {
+            _waiting = true;
+            return false;
+        }
+    }
+
+    /// <summary>Finishes the current frame and moves to the next; an incremental decode may resume it after more bytes.</summary>
+    private void Advance()
+    {
+        _advancing = true;
+        _source!.EndFrame();
+        _frame = _source.NextFrame();
+        _stage!.Reset();
+        _advancing = false;
+    }
+
+    /// <summary>Opens the source of an incremental decode once the format can be told and its header has arrived.</summary>
+    private void TryOpen()
+    {
+        if (_source is not null)
+        {
+            return;
+        }
+
+        AppendBuffer append = _append!;
+        EgamiInput input = _input ??= new EgamiInput(append, _context, CancellationToken.None);
+        int signature = 0;
+        foreach (FormatInfo known in _context.Formats)
+        {
+            signature = Math.Max(signature, known.SignatureLength);
+        }
+
+        if (!append.Ended && input.Available < signature)
+        {
+            return;
+        }
+
+        FormatInfo format = FormatPipeline.Detect(input, _context);
+        input.SetFormat(format);
+        if (!append.Ended && (format.Reader is not IIncrementalFormatReader incremental || !incremental.HeaderArrived(input, _options)))
+        {
+            // Formats that cannot decode while bytes arrive wait for the end and are then read whole.
+            return;
+        }
+
+        _input = null;
+        RowSource source = FormatPipeline.OpenSource(input, format, _options);
+        try
+        {
+            Initialize(source, format);
+        }
+        catch
+        {
+            source.Dispose();
+            throw;
+        }
+    }
+
     private void EndFrameIfDone()
     {
-        if (_stage.Remaining == 0)
+        if (_stage!.Remaining == 0)
         {
-            _source.EndFrame();
+            _source!.EndFrame();
         }
     }
 
@@ -414,8 +677,8 @@ public sealed class RasterDecoder : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (!_started)
         {
+            _frame = _source!.NextFrame();
             _started = true;
-            _frame = _source.NextFrame();
         }
     }
 
@@ -431,7 +694,7 @@ public sealed class RasterDecoder : IDisposable
     private FrameMetadata FrameOut(FrameMetadata frame)
     {
         FrameMetadata copy = frame.Copy();
-        if (_plan.ChangesGeometry)
+        if (_plan!.ChangesGeometry)
         {
             copy.Bounds = null;
             copy.FormatDetails = null;
@@ -448,4 +711,23 @@ public sealed class RasterDecoder : IDisposable
             return decoder.ReadAll<TPixel>();
         }
     }
+}
+
+/// <summary>Where a <see cref="RasterDecoder"/> stands, as <see cref="RasterDecoder.Status"/> reports it.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Streaming.cs" region="incremental"/>
+/// </example>
+public enum DecodeStatus
+{
+    /// <summary>Rows of the current frame can be read.</summary>
+    RowsAvailable,
+
+    /// <summary>An incremental decode needs more bytes to go on: the header, or the next rows or frame. Append them.</summary>
+    NeedsInput,
+
+    /// <summary>Every row of the current frame has been read; <see cref="RasterDecoder.NextFrame"/> moves to the next.</summary>
+    FrameEnded,
+
+    /// <summary>Every frame has been read.</summary>
+    Completed,
 }

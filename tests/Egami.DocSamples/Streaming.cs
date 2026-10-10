@@ -64,6 +64,43 @@ public class Streaming
     }
 
     [Fact]
+    public void Incremental()
+    {
+        using SampleFiles files = new();
+        byte[] file = File.ReadAllBytes("egret.png");
+        int rowsSoFar = 0;
+
+        #region incremental
+        // Decode while the bytes arrive, a chunk at a time, as from a download.
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+        Raster<Rgb8>? band = null;
+        foreach (ReadOnlyMemory<byte> chunk in file.Chunk(4096).Select(c => new ReadOnlyMemory<byte>(c)))
+        {
+            decoder.Append(chunk.Span);
+            if (decoder.HeaderRead)
+            {
+                band ??= Raster.Create<Rgb8>(decoder.Info.Width, 16);
+                int rows;
+                while ((rows = decoder.ReadRows(band)) > 0)
+                {
+                    rowsSoFar += rows; // the rows finished so far; an interlaced file shows RenderPreview instead
+                }
+            }
+        }
+
+        decoder.EndOfInput();
+        while (decoder.ReadRows(band!) is int rest and > 0)
+        {
+            rowsSoFar += rest;
+        }
+
+        band?.Dispose();
+        #endregion
+
+        Assert.Equal(640, rowsSoFar);
+    }
+
+    [Fact]
     public void Frames()
     {
         using SampleFiles files = new();

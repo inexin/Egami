@@ -49,6 +49,12 @@ internal sealed class IdatStream : Stream
     /// <summary>Gets a value indicating whether the file ended inside the IDAT run.</summary>
     internal bool Truncated { get; private set; }
 
+    /// <summary>
+    /// Gets whether the last read returned nothing because an incremental decode has not received the next bytes yet, rather
+    /// than because the data ended.
+    /// </summary>
+    internal bool Dry { get; private set; }
+
     /// <summary>Gets the last four data bytes read, big-endian: after a full drain, the zlib stream's Adler-32 checksum.</summary>
     internal uint Tail { get; private set; }
 
@@ -69,12 +75,18 @@ internal sealed class IdatStream : Stream
 
     public override int Read(Span<byte> buffer)
     {
+        Dry = false;
         while (!_ended && _remaining == 0)
         {
+            if (WaitingForNextChunk())
+            {
+                return 0;
+            }
+
             Advance();
         }
 
-        if (_ended || buffer.IsEmpty)
+        if (_ended || buffer.IsEmpty || Waiting(1))
         {
             return 0;
         }
@@ -125,6 +137,44 @@ internal sealed class IdatStream : Stream
         throw new NotSupportedException();
     }
 
+    /// <summary>
+    /// Returns whether an incremental decode must wait: fewer than <paramref name="bytes"/> bytes have arrived and more may come.
+    /// Sets <see cref="Dry"/> when so.
+    /// </summary>
+    private bool Waiting(int bytes)
+    {
+        EgamiInput input = _chunks.Input;
+        if (input.Incremental && !input.AtEndOfInput && input.Available < bytes)
+        {
+            Dry = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns whether an incremental decode must wait before moving to the next chunk: the CRC and the next chunk's header, and
+    /// for another fdAT its sequence number, have not all arrived.
+    /// </summary>
+    private bool WaitingForNextChunk()
+    {
+        EgamiInput input = _chunks.Input;
+        if (!input.Incremental || input.AtEndOfInput)
+        {
+            return false;
+        }
+
+        Span<byte> next = stackalloc byte[12];
+        if (!input.TryPeekAt(0, next))
+        {
+            Dry = true;
+            return true;
+        }
+
+        return BinaryPrimitives.ReadUInt32BigEndian(next[8..]) == _type && _sequence is not null && Waiting(16);
+    }
+
     private void Begin(uint length)
     {
         _remaining = length;
@@ -159,11 +209,26 @@ internal sealed class IdatStream : Stream
     /// </summary>
     internal void SkipRest()
     {
+        Dry = false;
         while (!_ended)
         {
+            EgamiInput input = _chunks.Input;
+            if (input.Incremental && !input.AtEndOfInput)
+            {
+                // Skip what has arrived; the rest waits for more bytes.
+                long step = Math.Min(_remaining, input.Available);
+                input.Skip(step);
+                _remaining -= step;
+                if (_remaining > 0 || WaitingForNextChunk())
+                {
+                    Dry = true;
+                    return;
+                }
+            }
+
             try
             {
-                _chunks.Input.Skip(_remaining);
+                input.Skip(_remaining);
                 _remaining = 0;
             }
             catch (CorruptDataException e) when (e.IsTruncation)

@@ -35,6 +35,13 @@ independent, and readers, writers and contexts can be shared freely.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#frames)]
 
+`RasterDecoder.OpenIncremental` decodes while the bytes are still arriving: `Append` each chunk as it comes, read the rows
+finished so far, and call `EndOfInput` after the last. `Status` (a `DecodeStatus`) says whether rows are ready, more bytes are
+needed, or the frame or image is done, and `RenderPreview` draws an interlaced PNG or a GIF frame as far as it has arrived.
+PNG, APNG and GIF decode as their bytes arrive; other formats wait for the end.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#incremental)]
+
 ## Pixel memory
 
 Pixel memory never lives on the garbage-collected heap as large arrays. `PooledPixelMemorySource.Shared` hands out pooled arrays

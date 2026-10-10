@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
@@ -37,6 +38,88 @@ internal sealed partial class PngReader
             PngNaturalType.Rgba8 => new ImageRows<Rgba8>(state, static (u, s, d) => u.Unpack(s, d)),
             _ => new ImageRows<Rgba16>(state, static (u, s, d) => u.Unpack(s, d)),
         };
+    }
+
+    public bool HeaderArrived(EgamiInput input, ReaderOptions options)
+    {
+        if (!Streams(options))
+        {
+            return false;
+        }
+
+        // The signature, then every chunk up to the header of the first IDAT, which is where Open stops.
+        Span<byte> header = stackalloc byte[8];
+        long offset = 8;
+        while (true)
+        {
+            if (!input.TryPeekAt(offset, header))
+            {
+                return false;
+            }
+
+            uint length = BinaryPrimitives.ReadUInt32BigEndian(header);
+            uint type = BinaryPrimitives.ReadUInt32BigEndian(header[4..]);
+            if (type is PngChunkType.Idat or PngChunkType.Iend || length > int.MaxValue)
+            {
+                return true;
+            }
+
+            offset += 12L + length;
+        }
+    }
+
+    /// <summary>
+    /// Returns whether the chunks from <paramref name="current"/> (whose header was read) on have all arrived: through IEND, or
+    /// with <paramref name="untilFrame"/>, through the next <paramref name="frames"/> runs of image data (IDAT or fdAT) and the
+    /// header of the chunk after the last. Always true outside an incremental decode or once the input has ended.
+    /// </summary>
+    private static bool ChunksArrived(EgamiInput input, (uint Length, uint Type)? current, bool untilFrame, int frames = 1)
+    {
+        if (!input.Incremental || input.AtEndOfInput || current is not (uint, uint) chunk)
+        {
+            return true;
+        }
+
+        Span<byte> header = stackalloc byte[8];
+        (uint length, uint type) = chunk;
+        long offset = 0;
+        bool imageData = false;
+        while (true)
+        {
+            imageData |= type is PngChunkType.Idat or PngChunkType.Fdat;
+            offset += length + 4L;
+            if (input.Available < offset)
+            {
+                return false;
+            }
+
+            if (type == PngChunkType.Iend)
+            {
+                return true;
+            }
+
+            if (!input.TryPeekAt(offset, header))
+            {
+                return false;
+            }
+
+            length = BinaryPrimitives.ReadUInt32BigEndian(header);
+            type = BinaryPrimitives.ReadUInt32BigEndian(header[4..]);
+            offset += 8;
+            if (untilFrame && imageData && type is not (PngChunkType.Idat or PngChunkType.Fdat))
+            {
+                imageData = false;
+                if (--frames == 0)
+                {
+                    return true;
+                }
+            }
+
+            if (length > int.MaxValue)
+            {
+                return true;
+            }
+        }
     }
 
     /// <summary>Returns whether <see cref="Open"/> streams with these options, rather than reading every frame first.</summary>
@@ -190,11 +273,20 @@ internal sealed partial class PngReader
         private InflatedReader? _inflated;
         private IMemoryOwner<byte>? _lines;
         private IMemoryOwner<byte>? _natural;
+        private readonly byte[] _zlib = new byte[2];
         private uint _adler = 1;
         private int _frame = -1;
         private int _next;
         private int _current;
+        private int _zlibRead;
+        private int _pass;
+        private int _passRow;
+        private int _line;
+        private int _endStep;
+        private bool _checkAdler;
+        private bool _allRows;
         private bool _started;
+        private bool _passesDone;
         private bool _failed;
         private bool _ended;
 
@@ -271,44 +363,62 @@ internal sealed partial class PngReader
                 return;
             }
 
-            _ended = true;
+            // In steps, each done once, so an incremental decode that runs dry can come back to the one it stopped in.
             Start();
-            int rows = State.Header.Height;
-            bool allRows = State.Header.Interlaced ? !_failed : _next == rows;
-            bool checkAdler = allRows && _inflated is not null && IsEndOfImageData(State, _inflated);
-            _inflated?.Dispose();
-            _inflated = null;
-            _deflate?.Dispose();
-            _deflate = null;
-            try
-            {
-                if (allRows || _failed)
-                {
-                    _idat.Drain();
-                }
-                else
-                {
-                    // The rows below the last one asked for are not needed: skip their data without inflating it.
-                    _idat.SkipRest();
-                }
-            }
-            catch (CorruptDataException e) when (e.IsTruncation)
-            {
-                // Reported below.
-            }
-
             EgamiInput input = State.Input;
-            if (_idat.Truncated)
+            if (_endStep == 0)
             {
-                State.Chunks.Recoverable(input.Position, "The file ends inside the image data.");
-            }
-            else if (checkAdler && _idat.Tail != _adler)
-            {
-                State.Chunks.Recoverable(input.Position, $"The image data's Adler-32 checksum is 0x{_idat.Tail:X8} but the data gives 0x{_adler:X8}.");
+                int rows = State.Header.Height;
+                _allRows = State.Header.Interlaced ? !_failed : _next == rows;
+                if (_allRows && _inflated is not null)
+                {
+                    Wait(_inflated.Ensure(1) || !_inflated.Waiting);
+                    _checkAdler = IsEndOfImageData(State, _inflated);
+                }
+
+                _inflated?.Dispose();
+                _inflated = null;
+                _deflate?.Dispose();
+                _deflate = null;
+                _endStep = 1;
             }
 
-            State.Unpacker.ThrowIfBadIndices(State.Chunks, input.Position);
-            State.NextChunk = _idat.Ended && !_idat.Truncated && _idat.NextType != 0 ? (_idat.NextLength, _idat.NextType) : null;
+            if (_endStep == 1)
+            {
+                try
+                {
+                    if (_allRows || _failed)
+                    {
+                        _idat.Drain();
+                    }
+                    else
+                    {
+                        // The rows below the last one asked for are not needed: skip their data without inflating it.
+                        _idat.SkipRest();
+                    }
+                }
+                catch (CorruptDataException e) when (e.IsTruncation)
+                {
+                    // Reported below.
+                }
+
+                Wait(!_idat.Dry);
+                if (_idat.Truncated)
+                {
+                    State.Chunks.Recoverable(input.Position, "The file ends inside the image data.");
+                }
+                else if (_checkAdler && _idat.Tail != _adler)
+                {
+                    State.Chunks.Recoverable(input.Position, $"The image data's Adler-32 checksum is 0x{_idat.Tail:X8} but the data gives 0x{_adler:X8}.");
+                }
+
+                State.Unpacker.ThrowIfBadIndices(State.Chunks, input.Position);
+                State.NextChunk = _idat.Ended && !_idat.Truncated && _idat.NextType != 0 ? (_idat.NextLength, _idat.NextType) : null;
+                _endStep = 2;
+            }
+
+            // The chunks after the image data are read once they have all arrived, through IEND.
+            Wait(ChunksArrived(input, State.NextChunk, untilFrame: false));
             try
             {
                 ReadTrailingChunks(State);
@@ -318,6 +428,7 @@ internal sealed partial class PngReader
                 State.Metadata.WarningList.Add("The file ends inside a chunk after the image data. That chunk was ignored.");
             }
 
+            _ended = true;
             Publish(complete: true);
             Release();
         }
@@ -341,28 +452,45 @@ internal sealed partial class PngReader
 
         private void Start()
         {
-            if (_started)
+            if (!_started)
             {
-                return;
+                EgamiInput input = State.Input;
+                _lines ??= input.RentScratch(LinesBytes, ClearMode.Zero);
+                if (NaturalBytes > 0)
+                {
+                    _natural ??= input.RentScratch(NaturalBytes);
+                }
+
+                bool collected = input.Incremental && !input.AtEndOfInput;
+                if (collected)
+                {
+                    // The two zlib header bytes are collected as they arrive, then read from here.
+                    while (_zlibRead < 2)
+                    {
+                        int n = _idat.Read(_zlib.AsSpan(_zlibRead));
+                        Wait(n > 0 || !_idat.Dry);
+                        if (n == 0)
+                        {
+                            break;
+                        }
+
+                        _zlibRead += n;
+                    }
+                }
+
+                _started = true;
+                if (!(collected ? CheckZlibHeader(State, _zlib, _zlibRead) : ReadZlibHeader(State, _idat)))
+                {
+                    _failed = true;
+                    _passesDone = true;
+                    return;
+                }
+
+                _deflate = new DeflateStream(_idat, CompressionMode.Decompress, leaveOpen: true);
+                _inflated = new InflatedReader(_deflate, _rowBytes + 1, _idat);
             }
 
-            _started = true;
-            EgamiInput input = State.Input;
-            _lines = input.RentScratch(LinesBytes, ClearMode.Zero);
-            if (NaturalBytes > 0)
-            {
-                _natural = input.RentScratch(NaturalBytes);
-            }
-
-            if (!ReadZlibHeader(State, _idat))
-            {
-                _failed = true;
-                return;
-            }
-
-            _deflate = new DeflateStream(_idat, CompressionMode.Decompress, leaveOpen: true);
-            _inflated = new InflatedReader(_deflate, _rowBytes + 1);
-            if (State.Header.Interlaced)
+            if (State.Header.Interlaced && !_passesDone)
             {
                 DecodePasses();
             }
@@ -370,11 +498,21 @@ internal sealed partial class PngReader
 
         private Span<byte> Line(int index) => _lines!.Memory.Span.Slice(index * (_rowBytes + 1), _rowBytes + 1);
 
+        /// <summary>Waits for more data unless <paramref name="ready"/>: an incremental decode stops here and comes back later.</summary>
+        private static void Wait(bool ready)
+        {
+            if (!ready)
+            {
+                throw new NeedsInputException();
+            }
+        }
+
         /// <summary>Decodes the next scanline into the line the previous one is not in.</summary>
         private void Advance()
         {
             int target = 1 - _current;
-            if (!ReadScanline(State, _inflated!, Line(target), Line(_current)[1..], _next, ref _adler))
+            Wait(_inflated!.Ensure(_rowBytes + 1) || !_inflated.Waiting);
+            if (!ReadScanline(State, _inflated, Line(target), Line(_current)[1..], _next, ref _adler))
             {
                 _failed = true;
                 return;
@@ -401,13 +539,16 @@ internal sealed partial class PngReader
             return natural;
         }
 
-        /// <summary>Decodes all seven passes, keeping the region's rows of each at the file's bit depth.</summary>
+        /// <summary>
+        /// Decodes all seven passes, keeping the region's rows of each at the file's bit depth. Where it is in the passes is kept in
+        /// fields, so an incremental decode that runs dry carries on from the same scanline.
+        /// </summary>
         private void DecodePasses()
         {
             int width = State.Header.Width;
-            int line = 0;
-            for (int pass = 0; pass < 7; pass++)
+            for (; _pass < 7; _pass++, _passRow = 0)
             {
+                int pass = _pass;
                 int columns = Adam7.Columns(pass, width);
                 int rows = Adam7.Rows(pass, State.Header.Height);
                 if (columns == 0 || rows == 0)
@@ -417,20 +558,28 @@ internal sealed partial class PngReader
 
                 int rowBytes = (int)State.Header.RowBytes(columns);
                 (int first, int count) = StoredRows(State.Header, _region, pass);
-                _firstStored[pass] = first;
-                RowStore? store = count > 0 ? new RowStore(State.Input, rowBytes, count) : null;
-                _passes[pass] = store;
-                Line(_current).Clear();
-                for (int r = 0; r < rows; r++)
+                if (_passRow == 0)
                 {
+                    _firstStored[pass] = first;
+                    _passes[pass] ??= count > 0 ? new RowStore(State.Input, rowBytes, count) : null;
+                    Line(_current).Clear();
+                }
+
+                RowStore? store = _passes[pass];
+                for (; _passRow < rows; _passRow++)
+                {
+                    int r = _passRow;
                     int target = 1 - _current;
                     Span<byte> current = Line(target)[..(rowBytes + 1)];
-                    if (!ReadScanline(State, _inflated!, current, Line(_current).Slice(1, rowBytes), line++, ref _adler))
+                    Wait(_inflated!.Ensure(rowBytes + 1) || !_inflated.Waiting);
+                    if (!ReadScanline(State, _inflated, current, Line(_current).Slice(1, rowBytes), _line, ref _adler))
                     {
                         _failed = true;
+                        _passesDone = true;
                         return;
                     }
 
+                    _line++;
                     _current = target;
                     _decoded[pass] = r + 1;
                     if (store is not null && r >= first && r < first + count)
@@ -438,6 +587,77 @@ internal sealed partial class PngReader
                         current[1..].CopyTo(store.Row(r - first));
                     }
                 }
+            }
+
+            _passesDone = true;
+        }
+
+        public override bool CanPreview => State.Header.Interlaced && !_ended;
+
+        /// <summary>
+        /// Builds a preview row of an Adam7 image from the passes decoded so far: each pass's pixel fills the block it stands for
+        /// (8 by 8 for the first pass down to 1 by 1 for the last), so the preview sharpens pass by pass and ends as the image.
+        /// </summary>
+        public override void PreviewRow<TPixel>(int y, int x, Span<TPixel> destination)
+        {
+            destination.Clear();
+            try
+            {
+                // Decode the passes as far as the bytes go; the rows themselves are still read in order later.
+                Start();
+            }
+            catch (NeedsInputException)
+            {
+            }
+
+            if (!_started)
+            {
+                return;
+            }
+
+            ReadOnlySpan<int> blockWidth = [8, 4, 4, 2, 2, 1, 1];
+            ReadOnlySpan<int> blockHeight = [8, 8, 4, 4, 2, 2, 1];
+            int width = State.Header.Width;
+            int bad = State.Unpacker.BadIndices;
+            TPixel[] pixels = ArrayPool<TPixel>.Shared.Rent(width);
+            try
+            {
+                for (int pass = 0; pass < 7; pass++)
+                {
+                    int dy = y - Adam7.YStart[pass];
+                    int columns = Adam7.Columns(pass, width);
+                    if (columns == 0 || dy < 0 || dy % Adam7.YStep[pass] >= blockHeight[pass])
+                    {
+                        continue;
+                    }
+
+                    int r = dy / Adam7.YStep[pass];
+                    int stored = r - _firstStored[pass];
+                    if (r >= _decoded[pass] || _passes[pass] is not RowStore store || stored < 0 || stored >= store.Rows)
+                    {
+                        continue;
+                    }
+
+                    Span<TPixel> converted = pixels.AsSpan(0, columns);
+                    PixelConvert.Convert(Unpack(store.Row(stored), columns), converted);
+                    int xStart = Adam7.XStart[pass];
+                    int xStep = Adam7.XStep[pass];
+                    for (int i = 0; i < columns; i++)
+                    {
+                        int from = Math.Max(xStart + (i * xStep), x);
+                        int to = Math.Min(xStart + (i * xStep) + blockWidth[pass], x + destination.Length);
+                        if (from < to)
+                        {
+                            destination[(from - x)..(to - x)].Fill(converted[i]);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                // A preview does not count palette problems; the decode reports those once.
+                State.Unpacker.BadIndices = bad;
+                ArrayPool<TPixel>.Shared.Return(pixels);
             }
         }
 
@@ -531,6 +751,18 @@ internal sealed partial class PngReader
 
             while (!_finished)
             {
+                if (!_stopped && _index < _end)
+                {
+                    // An incremental decode composes a frame once all of its chunks have arrived.
+                    // Before the first frame: its image data, and the first fdAT frame too when the IDAT image is not a frame.
+                    (uint, uint)? next = _begun ? _next : (State.FirstIdatLength, PngChunkType.Idat);
+                    int frames = !_begun && State.FirstControl is null ? 2 : 1;
+                    if (!ChunksArrived(State.Input, next, untilFrame: true, frames))
+                    {
+                        throw new NeedsInputException();
+                    }
+                }
+
                 if (ComposeNext() is not FrameControl control)
                 {
                     Finish();
@@ -702,6 +934,7 @@ internal sealed partial class PngReader
 
         public RowStore(EgamiInput input, int rowBytes, int rows)
         {
+            Rows = rows;
             _rowBytes = Math.Max(1, rowBytes);
             _rowsPerBlock = Math.Max(1, BlockBytes / _rowBytes);
             _blocks = new IMemoryOwner<byte>[(rows + _rowsPerBlock - 1) / _rowsPerBlock];
@@ -719,6 +952,9 @@ internal sealed partial class PngReader
                 throw;
             }
         }
+
+        /// <summary>Gets the number of rows held.</summary>
+        public int Rows { get; }
 
         public Span<byte> Row(int index)
         {
