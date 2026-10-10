@@ -14,7 +14,7 @@ namespace Egami.Formats.Png;
 /// Reads static PNG images, written from the W3C PNG Specification (Third Edition) and RFC 1950/1951.
 /// The reader streams: it holds two scanlines and writes each finished row straight into the raster.
 /// </summary>
-internal sealed partial class PngReader : IFormatReader, Streaming.IRowFormatReader, Streaming.IIncrementalFormatReader
+internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceReader, Streaming.IIncrementalFormatReader
 {
     internal static readonly PngReader Instance = new();
 

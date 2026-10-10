@@ -11,7 +11,7 @@ namespace Egami.Formats.Pnm;
 /// Streaming: PBM, PGM, PPM and PAM rows, binary or plain text, decode in order, one row held. PFM stores its rows bottom-up, so it
 /// is decoded into a buffer first.
 /// </content>
-internal sealed partial class PnmReader : IRowFormatReader, IIncrementalFormatReader
+internal sealed partial class PnmReader : IRowSourceReader, IIncrementalFormatReader
 {
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {

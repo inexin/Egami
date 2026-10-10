@@ -8,7 +8,7 @@ namespace Egami.Streaming;
 /// The reader interface the Phase 2.2 format tasks implement: a format that can hand out rows opens a <see cref="RowSource"/>
 /// instead of returning a whole raster. Formats without it are read whole by <see cref="BufferedRowSource"/>.
 /// </summary>
-internal interface IRowFormatReader
+internal interface IRowSourceReader
 {
     /// <summary>
     /// Reads the header and the metadata before the image data, and returns a source positioned before the first frame. The source
@@ -123,7 +123,7 @@ internal abstract class RowSource : IDisposable
 }
 
 /// <summary>
-/// The fallback for formats without <see cref="IRowFormatReader"/>: the reader's <see cref="IFormatReader.Read(EgamiInput, ReaderOptions)"/>
+/// The fallback for formats without <see cref="IRowSourceReader"/>: the reader's <see cref="IFormatReader.Read(EgamiInput, ReaderOptions)"/>
 /// decodes the whole image in its natural pixel type, and rows are served from it. Converting a natural row gives the same
 /// pixels as reading straight into the target type, which the streaming tests check.
 /// </summary>
@@ -248,10 +248,10 @@ internal sealed class BufferedRowSource : RowSource
 /// <summary>Where the header of an incremental decode stands, as <see cref="IIncrementalFormatReader.HeaderStatus"/> tells it.</summary>
 internal enum HeaderState
 {
-    /// <summary>Not every byte <see cref="IRowFormatReader.Open"/> reads has arrived yet.</summary>
+    /// <summary>Not every byte <see cref="IRowSourceReader.Open"/> reads has arrived yet.</summary>
     NotYet,
 
-    /// <summary>Every byte <see cref="IRowFormatReader.Open"/> reads has arrived: the source can be opened.</summary>
+    /// <summary>Every byte <see cref="IRowSourceReader.Open"/> reads has arrived: the source can be opened.</summary>
     Arrived,
 
     /// <summary>
@@ -303,5 +303,43 @@ internal sealed class PreviewSource(RowSource inner) : RowSource
 
     protected override void Dispose(bool disposing)
     {
+    }
+}
+
+/// <summary>A source over a public <see cref="RowReader"/> from a plugin's <see cref="IRowFormatReader"/>, at the stored size.</summary>
+internal sealed class PluginRowSource(RowReader reader, EgamiInput input) : RowSource
+{
+    public override int StoredWidth => reader.Width;
+
+    public override int StoredHeight => reader.Height;
+
+    public override int NativeScale => 1;
+
+    public override int MaxNativeScale => 1;
+
+    public override PixelLayoutInfo Layout => reader.Layout;
+
+    public override RasterMetadata Metadata => reader.Metadata;
+
+    public override int? FrameCount => reader.FrameCount;
+
+    public override RasterAccess Access => reader.Access;
+
+    public override long WorkingBytes => reader.WorkingBytes;
+
+    public override bool MetadataComplete => reader.IsMetadataComplete;
+
+    public override TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor) => reader.WithNaturalType(visitor);
+
+    public override FrameMetadata? NextFrame() => reader.NextFrame();
+
+    public override void EndFrame() => reader.EndFrame();
+
+    public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination) => reader.ReadRow(y, x, destination);
+
+    protected override void Dispose(bool disposing)
+    {
+        reader.Dispose();
+        input.Dispose();
     }
 }

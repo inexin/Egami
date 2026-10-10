@@ -4,106 +4,6 @@ using Egami.Pixels;
 
 namespace Egami.Streaming;
 
-/// <summary>
-/// Marks a writer whose encoder takes rows and frames one at a time, so <see cref="RasterEncoder{TPixel}"/> streams it and Save
-/// and SaveAsync write through the same code. A writer without it is fed the gathered image at the end.
-/// </summary>
-internal interface IRowFormatWriter
-{
-    /// <summary>
-    /// Starts an encode into <paramref name="output"/>. Throws <see cref="NotSupportedException"/> for an option that needs every
-    /// pixel when <see cref="EncodeStart{TPixel}.Whole"/> is <see langword="null"/>, before writing anything.
-    /// </summary>
-    RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
-        where TPixel : unmanaged, IPixelType<TPixel>;
-}
-
-/// <summary>What an encode starts from: the size, metadata and options, and the whole image when Save has one.</summary>
-internal sealed class EncodeStart<TPixel>
-    where TPixel : unmanaged, IPixelType<TPixel>
-{
-    public required int Width { get; init; }
-
-    public required int Height { get; init; }
-
-    public required RasterMetadata Metadata { get; init; }
-
-    public required WriterOptions Options { get; init; }
-
-    public required EgamiContext Context { get; init; }
-
-    /// <summary>
-    /// Gets the whole image when Save writes one: choices may then look at every pixel, and <see cref="RowEncoder{TPixel}.WriteWhole"/>
-    /// takes rows in the file's order. <see langword="null"/> when streaming, where rows come top-down as the caller has them.
-    /// </summary>
-    public Raster<TPixel>? Whole { get; init; }
-
-    /// <summary>Gets whether the output can seek back: when streaming, bottom-up rows then land in place and counts are patched at the end.</summary>
-    public bool Seekable { get; init; }
-
-    /// <summary>Gets whether this is a streamed encode, without the whole image.</summary>
-    public bool Streaming => Whole is null;
-
-    /// <summary>
-    /// Throws, for a streamed encode, that <paramref name="what"/> needs every pixel before the first byte, and says what to set
-    /// instead.
-    /// </summary>
-    public void Refuse(string format, string what, string instead)
-    {
-        if (Streaming)
-        {
-            throw new NotSupportedException($"{format}: {what} needs every pixel before the first byte, so it cannot be streamed. {instead}");
-        }
-    }
-}
-
-/// <summary>
-/// One encode in progress: a still image's rows top-down with <see cref="WriteRow"/>, or whole frames with <see cref="WriteFrame"/>,
-/// then <see cref="Complete"/>.
-/// </summary>
-internal abstract class RowEncoder<TPixel> : IDisposable
-    where TPixel : unmanaged, IPixelType<TPixel>
-{
-    /// <summary>Gets whether the format holds more than one frame, so <see cref="WriteFrame"/> takes them all.</summary>
-    public virtual bool Animates => false;
-
-    /// <summary>Writes the next row of the still image, top-down.</summary>
-    public abstract void WriteRow(ReadOnlySpan<TPixel> row);
-
-    /// <summary>Writes the next frame of an animation. Only called when <see cref="Animates"/>.</summary>
-    public virtual void WriteFrame(Frame<TPixel> frame) => throw new NotSupportedException();
-
-    /// <summary>Writes what follows the image data. Every row or frame has been written.</summary>
-    public abstract void Complete();
-
-    /// <summary>
-    /// Writes the whole image Save was given, in steps: SaveAsync writes out the bytes so far at each one. By default the rows of
-    /// the first frame top-down, 64 at a time.
-    /// </summary>
-    public virtual IEnumerable<int> WriteWhole(Raster<TPixel> raster)
-    {
-        for (int y = 0; y < raster.Height; y++)
-        {
-            WriteRow(raster.Row(y));
-            if ((y & 63) == 63)
-            {
-                yield return y;
-            }
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>Returns the encoder's buffers.</summary>
-    protected virtual void Dispose(bool disposing)
-    {
-    }
-}
-
 /// <summary>Writes a whole raster through a format's row encoder, as Save does.</summary>
 internal static class RowEncoding
 {
@@ -123,15 +23,7 @@ internal static class RowEncoding
     public static EncodeStart<TPixel> Whole<TPixel>(Raster<TPixel> raster, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        return new EncodeStart<TPixel>
-        {
-            Width = raster.Width,
-            Height = raster.Height,
-            Metadata = raster.Metadata,
-            Options = options,
-            Context = raster.Context,
-            Whole = raster,
-        };
+        return new EncodeStart<TPixel>(raster.Width, raster.Height, raster.Metadata, options, raster.Context, raster, seekable: false);
     }
 }
 

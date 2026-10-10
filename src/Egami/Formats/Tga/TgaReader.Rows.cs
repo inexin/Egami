@@ -13,7 +13,7 @@ namespace Egami.Formats.Tga;
 /// where it is stored. Bottom-up run-length files, bottom-up files on a stream that cannot seek, and files whose alpha meaning is
 /// only known from a footer after the pixels are decoded into a buffer first.
 /// </content>
-internal sealed partial class TgaReader : IRowFormatReader, IIncrementalFormatReader
+internal sealed partial class TgaReader : IRowSourceReader, IIncrementalFormatReader
 {
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {

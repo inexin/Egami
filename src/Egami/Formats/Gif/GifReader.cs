@@ -10,7 +10,7 @@ namespace Egami.Formats.Gif;
 /// Reads GIF87a and GIF89a files, written from the GIF89a specification. Frames are LZW-decoded into a pooled index buffer and
 /// drawn onto a shared <see cref="AnimationCanvas{TCanvas}"/>, which every kept frame is copied out of at full size.
 /// </summary>
-internal sealed partial class GifReader : IFormatReader, Streaming.IRowFormatReader, Streaming.IIncrementalFormatReader
+internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceReader, Streaming.IIncrementalFormatReader
 {
     internal static readonly GifReader Instance = new();
 

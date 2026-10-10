@@ -67,7 +67,7 @@ internal static class FormatPipeline
         bool owned = false;
         try
         {
-            if (format.Reader is Streaming.IRowFormatReader rows)
+            if (format.Reader is Streaming.IRowSourceReader rows)
             {
                 Streaming.RowSource source = rows.Open(input, options);
                 if (source is not Streaming.BufferedRowSource buffered)
@@ -78,6 +78,13 @@ internal static class FormatPipeline
 
                 buffered.Raster.Metadata.FormatName ??= format.Name;
                 input.ReturnUnreadBytes();
+                return source;
+            }
+
+            if (format.Reader is IRowFormatReader plugin)
+            {
+                Streaming.RowSource source = new Streaming.PluginRowSource(plugin.Open(input, options), input);
+                owned = true;
                 return source;
             }
 
@@ -122,7 +129,7 @@ internal static class FormatPipeline
         }
 
         RasterInfo info = reader.ReadInfo(input, read);
-        if (reader is Streaming.IRowFormatReader && info.Access == RasterAccess.Streamed)
+        if (reader is Streaming.IRowSourceReader or IRowFormatReader && info.Access == RasterAccess.Streamed)
         {
             // A streaming reader reports its own working set.
             Streaming.ReadPlan streamed = Streaming.ReadPlan.Create(info.Width, info.Height, options.Region, options.MinimumSize, maxScale);
@@ -161,7 +168,7 @@ internal static class FormatPipeline
     {
         raster.ThrowIfDisposed();
         IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
-        if (writer is not Streaming.IRowFormatWriter rows)
+        if (writer is not IRowFormatWriter rows)
         {
             using PooledBufferStream buffer = new();
             writer.Write(raster, buffer, options);
@@ -170,7 +177,7 @@ internal static class FormatPipeline
         }
 
         using Streaming.EncodeOutput output = new(stream) { Hold = true };
-        using (Streaming.RowEncoder<TPixel> encoder = rows.Start(output, Streaming.RowEncoding.Whole(raster, options)))
+        using (RowEncoder<TPixel> encoder = rows.Start(output, Streaming.RowEncoding.Whole(raster, options)))
         {
             foreach (int _ in encoder.WriteWhole(raster))
             {

@@ -9,7 +9,7 @@ using Egami.Streaming;
 namespace Egami.Formats.Qoi;
 
 /// <content>Streaming: QOI rows decode in order, the 64-entry index and the run carried from one row to the next.</content>
-internal sealed partial class QoiReader : IRowFormatReader, IIncrementalFormatReader
+internal sealed partial class QoiReader : IRowSourceReader, IIncrementalFormatReader
 {
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options) => input.Available >= HeaderLength ? HeaderState.Arrived : HeaderState.NotYet;
 

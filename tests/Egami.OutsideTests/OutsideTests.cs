@@ -158,4 +158,135 @@ public class OutsideTests
         _ = EgamiContext.Default;
         Assert.Throws<InvalidOperationException>(() => EgamiContext.SetDefault(new EgamiContext()));
     }
+
+    [Fact]
+    public void AnOutsideFormatStreamsRowsBothWays()
+    {
+        EgamiContext context = EgamiContext.Default.WithFormat(TestFormat.Info);
+        using Raster<Rgba8> image = Pattern(50, 37);
+        using MemoryStream saved = new();
+        image.Save(saved, TestFormat.Info);
+        byte[] data = saved.ToArray();
+
+        // Rows out, with a region the decoder cuts from the rows the format hands it.
+        using (RasterDecoder decoder = RasterDecoder.Open(data, context, new ReaderOptions { Region = new Rect(5, 3, 30, 20) }))
+        {
+            Assert.Equal(RasterAccess.Streamed, decoder.Info.Access);
+            using Raster<Rgba8> region = Raster.Create<Rgba8>(30, 20);
+            decoder.ReadFrame(region);
+            for (int y = 0; y < 20; y++)
+            {
+                Assert.True(region.Row(y).SequenceEqual(image.Row(y + 3).Slice(5, 30)));
+            }
+        }
+
+        // Rows in: a band at a time gives Save's bytes.
+        using MemoryStream streamed = new();
+        using (RasterEncoder<Rgba8> encoder = RasterEncoder.Create<Rgba8>(streamed, TestFormat.Info, 50, 37, context: context))
+        {
+            using Raster<Rgba8> band = Raster.Create<Rgba8>(50, 8);
+            for (int y = 0; y < 37; y += 8)
+            {
+                int rows = Math.Min(8, 37 - y);
+                for (int r = 0; r < rows; r++)
+                {
+                    image.Row(y + r).CopyTo(band.Row(r));
+                }
+
+                encoder.WriteRows(band, rows);
+            }
+
+            encoder.Complete();
+        }
+
+        Assert.Equal(data, streamed.ToArray());
+
+        // Both at once.
+        using MemoryStream thumbnail = new();
+        Raster.Transcode(new MemoryStream(data), thumbnail, TestFormat.Info, x => x.Fit(20, 20).Invert(), context: context);
+        using Raster<Rgba8> expected = Raster.Load<Rgba8>(data, context, new ReaderOptions { MinimumSize = new Size(20, 15) }).Derive(x => x.Fit(20, 20).Invert(), Ct);
+        using Raster<Rgba8> got = Raster.Load<Rgba8>(thumbnail.ToArray(), context);
+        Assert.Equal((expected.Width, expected.Height), (got.Width, got.Height));
+        for (int y = 0; y < got.Height; y++)
+        {
+            Assert.True(got.Row(y).SequenceEqual(expected.Row(y)));
+        }
+    }
+
+    [Fact]
+    public void AnOutsideAnimatedFormatStreamsFrames()
+    {
+        EgamiContext context = EgamiContext.Default.WithFormat(AnimatedTestFormat.Info);
+        using Raster<Rgba8> source = Pattern(12, 9);
+        source.Frames.Add(source.Frames[0]).Metadata.Delay = TimeSpan.FromMilliseconds(50);
+        source.Frames[1].Row(8)[11] = new Rgba8(1, 2, 3, 255);
+        using MemoryStream saved = new();
+        source.Save(saved, AnimatedTestFormat.Info);
+        byte[] data = saved.ToArray();
+
+        using (RasterDecoder decoder = RasterDecoder.Open(data, context))
+        {
+            using Raster<Rgba8> canvas = Raster.Create<Rgba8>(12, 9);
+            int frames = 0;
+            while (decoder.ReadFrame(canvas) is Metadata.FrameMetadata frame)
+            {
+                Assert.True(canvas.Row(8).SequenceEqual(source.Frames[frames].Row(8)));
+                Assert.Equal(source.Frames[frames].Metadata.Delay, frame.Delay);
+                frames++;
+            }
+
+            Assert.Equal(2, frames);
+        }
+
+        using MemoryStream streamed = new();
+        using (RasterEncoder<Rgba8> encoder = RasterEncoder.Create<Rgba8>(streamed, AnimatedTestFormat.Info, 12, 9, context: context))
+        {
+            for (int f = 0; f < 2; f++)
+            {
+                using Raster<Rgba8> frame = source.CopyFrame(f);
+                encoder.WriteFrame(frame);
+            }
+
+            encoder.Complete();
+        }
+
+        Assert.Equal(data, streamed.ToArray());
+    }
+
+    [Fact]
+    public void AnOutsideFormatDecodesIncrementallyOnceItsBytesHaveCome()
+    {
+        EgamiContext context = EgamiContext.Default.WithFormat(TestFormat.Info);
+        using Raster<Rgba8> image = Pattern(20, 10);
+        using MemoryStream saved = new();
+        image.Save(saved, TestFormat.Info);
+        byte[] data = saved.ToArray();
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental(context);
+        for (int i = 0; i < data.Length; i += 100)
+        {
+            decoder.Append(data.AsSpan(i, Math.Min(100, data.Length - i)));
+        }
+
+        decoder.EndOfInput();
+        using Raster<Rgba8> decoded = decoder.ReadFrame<Rgba8>()!;
+        for (int y = 0; y < 10; y++)
+        {
+            Assert.True(decoded.Row(y).SequenceEqual(image.Row(y)));
+        }
+    }
+
+    private static Raster<Rgba8> Pattern(int width, int height)
+    {
+        Raster<Rgba8> image = Raster.Create<Rgba8>(width, height);
+        for (int y = 0; y < height; y++)
+        {
+            Span<Rgba8> row = image.Row(y);
+            for (int x = 0; x < width; x++)
+            {
+                row[x] = new Rgba8((byte)(x * 5), (byte)(y * 7), (byte)(x ^ y), 255);
+            }
+        }
+
+        return image;
+    }
 }

@@ -355,6 +355,12 @@ public sealed class Raster<TPixel> : Raster
     private protected override void WriteWith(Formats.IFormatWriter writer, Stream output, Formats.WriterOptions options)
     {
         ThrowIfDisposed();
+        if (writer is Formats.IRowFormatWriter rows)
+        {
+            Streaming.RowEncoding.Save(rows, this, output, options);
+            return;
+        }
+
         writer.Write(this, output, options);
     }
 

@@ -270,7 +270,7 @@ public sealed class DisposalCounter : IDisposable
 
 /// <summary>
 /// A tiny single-frame format: "EGT1", width and height as big-endian 32-bit numbers, then RGBA8 rows. Probe, Load and Save all
-/// go through Egami's pipeline.
+/// go through Egami's pipeline, and it streams rows both ways through the optional row interfaces.
 /// </summary>
 public static class TestFormat
 {
@@ -284,12 +284,18 @@ public static class TestFormat
         Writer = new Writer(),
     };
 
-    private sealed class Reader : IFormatReader
+    private sealed class Reader : IFormatReader, IRowFormatReader
     {
         public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
         {
             (int width, int height) = Header(input);
-            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height, Access = RasterAccess.Streamed, WorkingBytes = 4L * width };
+        }
+
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new Rows(input, width, height);
         }
 
         public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
@@ -330,8 +336,53 @@ public static class TestFormat
         }
     }
 
-    private sealed class Writer : IFormatWriter
+    /// <summary>The open image: rows are read from the input as they are asked for, skipping the ones in between.</summary>
+    private sealed class Rows(EgamiInput input, int width, int height) : RowReader<Rgba8>
     {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private readonly Egami.Metadata.RasterMetadata _metadata = new();
+        private int _next;
+        private bool _started;
+
+        public override int Width => width;
+
+        public override int Height => height;
+
+        public override Egami.Metadata.RasterMetadata Metadata => _metadata;
+
+        public override long WorkingBytes => 4L * width;
+
+        public override Egami.Metadata.FrameMetadata? NextFrame()
+        {
+            if (_started)
+            {
+                return null;
+            }
+
+            _started = true;
+            return new Egami.Metadata.FrameMetadata();
+        }
+
+        public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination)
+        {
+            while (_next <= y)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+                _next++;
+            }
+
+            PixelConvert.Convert<Rgba8, TPixel>(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            return new Encoder<TPixel>(output, start.Width, start.Height);
+        }
+
         public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
             where TPixel : unmanaged, IPixelType<TPixel>
         {
@@ -347,6 +398,35 @@ public static class TestFormat
                 output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
             }
         }
+    }
+}
+
+/// <summary>Writes EGT1 a row at a time.</summary>
+internal sealed class Encoder<TPixel> : RowEncoder<TPixel>
+    where TPixel : unmanaged, IPixelType<TPixel>
+{
+    private readonly Stream _output;
+    private readonly Rgba8[] _row;
+
+    public Encoder(Stream output, int width, int height)
+    {
+        _output = output;
+        _row = new Rgba8[width];
+        Span<byte> header = stackalloc byte[12];
+        "EGT1"u8.CopyTo(header);
+        BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)width);
+        BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)height);
+        output.Write(header);
+    }
+
+    public override void WriteRow(ReadOnlySpan<TPixel> row)
+    {
+        PixelConvert.Convert<TPixel, Rgba8>(row, _row);
+        _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+    }
+
+    public override void Complete()
+    {
     }
 }
 
@@ -366,12 +446,19 @@ public static class AnimatedTestFormat
         Writer = new Writer(),
     };
 
-    private sealed class Reader : IFormatReader
+    private sealed class Reader : IFormatReader, IRowFormatReader
     {
         public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
         {
             (int width, int height, int frames) = Header(input);
-            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = frames, EstimatedBytes = 4L * width * height * frames };
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = frames, EstimatedBytes = 4L * width * height * frames, Access = RasterAccess.Streamed, WorkingBytes = 4L * width };
+        }
+
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height, int frames) = Header(input);
+            input.CheckFrameCount(frames);
+            return new Rows(input, width, height, frames);
         }
 
         public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
@@ -417,8 +504,136 @@ public static class AnimatedTestFormat
         }
     }
 
-    private sealed class Writer : IFormatWriter
+    /// <summary>The open animation: each frame's delay, then its rows, read as they are asked for.</summary>
+    private sealed class Rows(EgamiInput input, int width, int height, int frames) : RowReader<Rgba8>
     {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private readonly Egami.Metadata.RasterMetadata _metadata = new();
+        private int _frame = -1;
+        private int _next;
+
+        public override int Width => width;
+
+        public override int Height => height;
+
+        public override int? FrameCount => frames;
+
+        public override Egami.Metadata.RasterMetadata Metadata => _metadata;
+
+        public override Egami.Metadata.FrameMetadata? NextFrame()
+        {
+            if (_frame >= 0)
+            {
+                // Skip what the caller did not read of the frame before.
+                while (_next < height)
+                {
+                    input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+                    _next++;
+                }
+            }
+
+            if (++_frame >= frames)
+            {
+                return null;
+            }
+
+            _next = 0;
+            return new Egami.Metadata.FrameMetadata { Delay = TimeSpan.FromMilliseconds(input.ReadUInt32BigEndian()) };
+        }
+
+        public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination)
+        {
+            while (_next <= y)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+                _next++;
+            }
+
+            PixelConvert.Convert<Rgba8, TPixel>(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    /// <summary>
+    /// Writes EGA1 a frame at a time. The frame count comes before the frames: Save knows it, and a streamed encode fills it in at
+    /// the end on a seekable stream.
+    /// </summary>
+    private sealed class FrameEncoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly Stream _output;
+        private readonly Rgba8[] _row;
+        private readonly long _countAt;
+        private readonly bool _patch;
+        private int _frames;
+
+        public FrameEncoder(Stream output, EncodeStart<TPixel> start)
+        {
+            _output = output;
+            _row = new Rgba8[start.Width];
+            _patch = start.Streaming;
+            if (_patch && !start.Seekable)
+            {
+                throw new NotSupportedException("EGA1 stores its frame count first, so streaming it needs a seekable stream.");
+            }
+
+            Span<byte> header = stackalloc byte[16];
+            "EGA1"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)start.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)start.Height);
+            BinaryPrimitives.WriteUInt32BigEndian(header[12..], (uint)(start.Whole?.FrameCount ?? 0));
+            _countAt = _patch ? output.Position + 12 : 0;
+            output.Write(header);
+        }
+
+        public override bool Animates => true;
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row) => throw new NotSupportedException("EGA1 takes frames.");
+
+        public override void WriteFrame(Frame<TPixel> frame)
+        {
+            Span<byte> delay = stackalloc byte[4];
+            BinaryPrimitives.WriteUInt32BigEndian(delay, (uint)frame.Metadata.Delay.TotalMilliseconds);
+            _output.Write(delay);
+            for (int y = 0; y < frame.Plane.Height; y++)
+            {
+                PixelConvert.Convert<TPixel, Rgba8>(frame.Row(y), _row);
+                _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+            }
+
+            _frames++;
+        }
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            for (int f = 0; f < raster.FrameCount; f++)
+            {
+                WriteFrame(raster.Frames[f]);
+                yield return f;
+            }
+        }
+
+        public override void Complete()
+        {
+            if (_patch)
+            {
+                long end = _output.Position;
+                _output.Position = _countAt;
+                Span<byte> count = stackalloc byte[4];
+                BinaryPrimitives.WriteUInt32BigEndian(count, (uint)_frames);
+                _output.Write(count);
+                _output.Position = end;
+            }
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            return new FrameEncoder<TPixel>(output, start);
+        }
+
         public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
             where TPixel : unmanaged, IPixelType<TPixel>
         {

@@ -13,7 +13,7 @@ namespace Egami.Formats.Bmp;
 /// is stored. Run-length and embedded PNG or JPEG files, bottom-up files on a stream that cannot seek, and 32-bit files whose alpha
 /// counts only if some pixel uses it (unless the stream can seek to check first) are decoded into a buffer first.
 /// </content>
-internal sealed partial class BmpReader : IRowFormatReader, IIncrementalFormatReader
+internal sealed partial class BmpReader : IRowSourceReader, IIncrementalFormatReader
 {
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {

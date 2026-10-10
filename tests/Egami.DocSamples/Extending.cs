@@ -104,6 +104,106 @@ public static class Raw8Format
 }
 #endregion
 
+#region row-format
+/// <summary>The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.</summary>
+public static class StreamingRaw8Format
+{
+    public static FormatInfo Info { get; } = Raw8Format.Info with { Reader = new Reader(), Writer = new Writer() };
+
+    private sealed class Reader : IFormatReader, IRowFormatReader
+    {
+        private static readonly IFormatReader Whole = Raw8Format.Info.Reader!;
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) => Whole.ReadInfo(input, options) with { Access = RasterAccess.Streamed };
+
+        public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType<TPixel> => Whole.Read<TPixel>(input, options);
+
+        public Raster Read(EgamiInput input, ReaderOptions options) => Whole.Read(input, options);
+
+        // The open image reads each row when it is asked for; the decoder crops, reduces and converts after it.
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(4);
+            int width = (int)input.ReadUInt32BigEndian();
+            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Rows(EgamiInput input, int width, int height) : RowReader<Rgba8>
+    {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private int _next;
+        private bool _started;
+
+        public override int Width => width;
+
+        public override int Height => height;
+
+        public override Metadata.RasterMetadata Metadata { get; } = new();
+
+        public override Metadata.FrameMetadata? NextFrame()
+        {
+            if (_started)
+            {
+                return null;
+            }
+
+            _started = true;
+            return new Metadata.FrameMetadata();
+        }
+
+        public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination)
+        {
+            for (; _next <= y; _next++)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+            }
+
+            PixelConvert.Convert<Rgba8, TPixel>(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType<TPixel> => Raw8Format.Info.Writer!.Write(raster, output, options);
+
+        // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
+        public RowEncoder<TPixel> Start<TPixel>(Stream output, EncodeStart<TPixel> start)
+            where TPixel : unmanaged, IPixelType<TPixel> => new Encoder<TPixel>(output, start.Width, start.Height);
+    }
+
+    private sealed class Encoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly Stream _output;
+        private readonly Rgba8[] _row;
+
+        public Encoder(Stream output, int width, int height)
+        {
+            _output = output;
+            _row = new Rgba8[width];
+            Span<byte> header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)height);
+            output.Write(header);
+        }
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            PixelConvert.Convert<TPixel, Rgba8>(row, _row);
+            _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+        }
+
+        public override void Complete()
+        {
+        }
+    }
+}
+#endregion
+
 [Collection("Samples")]
 public class Extending
 {
@@ -142,5 +242,26 @@ public class Extending
         #endregion
 
         Assert.Equal(image.Width, back.Width);
+    }
+
+    [Fact]
+    public void UseRowFormat()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = EgamiContext.Default.WithFormat(StreamingRaw8Format.Info);
+        using (FileStream raw = File.Create("duck.raw8"))
+        {
+            Raster.Transcode(File.OpenRead("duck.png"), raw, StreamingRaw8Format.Info, x => x.Fit(64, 64));
+        }
+
+        using (FileStream input = File.OpenRead("duck.raw8"))
+        using (FileStream small = File.Create("small.raw8"))
+        {
+            Raster.Transcode(input, small, StreamingRaw8Format.Info, x => x.Fit(32, 32), context: context);
+        }
+
+        using RasterDecoder decoder = RasterDecoder.Open("small.raw8", context);
+        Assert.Equal(RasterAccess.Streamed, decoder.Info.Access);
+        Assert.Equal(32, Math.Max(decoder.Info.Width, decoder.Info.Height));
     }
 }

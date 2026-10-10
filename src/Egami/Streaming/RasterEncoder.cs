@@ -141,15 +141,7 @@ public sealed class RasterEncoder<TPixel> : IDisposable
         {
             if (writer is IRowFormatWriter rows)
             {
-                _encoder = rows.Start(_output, new EncodeStart<TPixel>
-                {
-                    Width = width,
-                    Height = height,
-                    Metadata = _metadata,
-                    Options = options,
-                    Context = context,
-                    Seekable = target.CanSeek,
-                });
+                _encoder = rows.Start(_output, new EncodeStart<TPixel>(width, height, _metadata, options, context, whole: null, seekable: target.CanSeek));
             }
             else
             {

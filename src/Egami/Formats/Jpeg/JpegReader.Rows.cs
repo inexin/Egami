@@ -9,7 +9,7 @@ namespace Egami.Formats.Jpeg;
 /// keeps every coefficient until its last scan, then transforms MCU rows as they are asked for. Either way only the region's
 /// blocks go through the IDCT, upsampling and color conversion, and the output pixels are the ones Load gives.
 /// </content>
-internal sealed partial class JpegReader : IRowFormatReader, IIncrementalFormatReader
+internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatReader
 {
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
