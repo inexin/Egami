@@ -41,6 +41,9 @@ little each time, so keep a lossless master if you edit repeatedly.
 The components, color space and estimated quality are in `JpegDetails`. `JpegReaderOptions.FastUpsampling` trades a little chroma
 sharpness for speed; `JpegColorType.Gray` writes one channel.
 
+CMYK and YCCK files load as RGB by the plain formula, R = (1 − C)(1 − K). `Raster.Load<Cmyk8>` returns the file's ink amounts
+instead, without the RGB step; print-accurate color needs the embedded ICC profile, which Egami keeps but does not apply yet.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#jpeg-details)]
 
 ## Run it

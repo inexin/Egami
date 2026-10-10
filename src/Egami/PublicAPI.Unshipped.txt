@@ -50,6 +50,27 @@ Egami.Pixels.Bgra4444.R.get -> int
 Egami.Pixels.Bgra4444.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.Bgra4444.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.Bgra4444.Value -> ushort
+Egami.Pixels.Cmyk16
+Egami.Pixels.Cmyk16.C -> ushort
+Egami.Pixels.Cmyk16.Cmyk16() -> void
+Egami.Pixels.Cmyk16.Cmyk16(ushort c, ushort m, ushort y, ushort k) -> void
+Egami.Pixels.Cmyk16.Equals(Egami.Pixels.Cmyk16 other) -> bool
+Egami.Pixels.Cmyk16.K -> ushort
+Egami.Pixels.Cmyk16.M -> ushort
+Egami.Pixels.Cmyk16.ToRgba16() -> Egami.Pixels.Rgba16
+Egami.Pixels.Cmyk16.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Cmyk16.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Cmyk16.Y -> ushort
+Egami.Pixels.Cmyk8
+Egami.Pixels.Cmyk8.C -> byte
+Egami.Pixels.Cmyk8.Cmyk8() -> void
+Egami.Pixels.Cmyk8.Cmyk8(byte c, byte m, byte y, byte k) -> void
+Egami.Pixels.Cmyk8.Equals(Egami.Pixels.Cmyk8 other) -> bool
+Egami.Pixels.Cmyk8.K -> byte
+Egami.Pixels.Cmyk8.M -> byte
+Egami.Pixels.Cmyk8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Cmyk8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Cmyk8.Y -> byte
 Egami.Pixels.Gray16.ToRgba16() -> Egami.Pixels.Rgba16
 Egami.Pixels.GrayAlpha16
 Egami.Pixels.GrayAlpha16.A -> ushort
@@ -136,6 +157,12 @@ override Egami.Pixels.Bgr565.ToString() -> string!
 override Egami.Pixels.Bgra4444.Equals(object? obj) -> bool
 override Egami.Pixels.Bgra4444.GetHashCode() -> int
 override Egami.Pixels.Bgra4444.ToString() -> string!
+override Egami.Pixels.Cmyk16.Equals(object? obj) -> bool
+override Egami.Pixels.Cmyk16.GetHashCode() -> int
+override Egami.Pixels.Cmyk16.ToString() -> string!
+override Egami.Pixels.Cmyk8.Equals(object? obj) -> bool
+override Egami.Pixels.Cmyk8.GetHashCode() -> int
+override Egami.Pixels.Cmyk8.ToString() -> string!
 override Egami.Pixels.GrayAlpha16.Equals(object? obj) -> bool
 override Egami.Pixels.GrayAlpha16.GetHashCode() -> int
 override Egami.Pixels.GrayAlpha16.ToString() -> string!
@@ -179,6 +206,17 @@ static Egami.Pixels.Bgra4444.FromScaled(System.Numerics.Vector4 rgba) -> Egami.P
 static Egami.Pixels.Bgra4444.Layout.get -> Egami.Pixels.PixelLayoutInfo
 static Egami.Pixels.Bgra4444.operator !=(Egami.Pixels.Bgra4444 left, Egami.Pixels.Bgra4444 right) -> bool
 static Egami.Pixels.Bgra4444.operator ==(Egami.Pixels.Bgra4444 left, Egami.Pixels.Bgra4444 right) -> bool
+static Egami.Pixels.Cmyk16.FromRgba16(Egami.Pixels.Rgba16 value) -> Egami.Pixels.Cmyk16
+static Egami.Pixels.Cmyk16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Cmyk16
+static Egami.Pixels.Cmyk16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Cmyk16
+static Egami.Pixels.Cmyk16.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Cmyk16.operator !=(Egami.Pixels.Cmyk16 left, Egami.Pixels.Cmyk16 right) -> bool
+static Egami.Pixels.Cmyk16.operator ==(Egami.Pixels.Cmyk16 left, Egami.Pixels.Cmyk16 right) -> bool
+static Egami.Pixels.Cmyk8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Cmyk8
+static Egami.Pixels.Cmyk8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Cmyk8
+static Egami.Pixels.Cmyk8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Cmyk8.operator !=(Egami.Pixels.Cmyk8 left, Egami.Pixels.Cmyk8 right) -> bool
+static Egami.Pixels.Cmyk8.operator ==(Egami.Pixels.Cmyk8 left, Egami.Pixels.Cmyk8 right) -> bool
 static Egami.Pixels.GrayAlpha16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.GrayAlpha16
 static Egami.Pixels.GrayAlpha16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.GrayAlpha16
 static Egami.Pixels.GrayAlpha16.Layout.get -> Egami.Pixels.PixelLayoutInfo

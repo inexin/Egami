@@ -26,7 +26,7 @@ public class PixelConvertTests
         typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8),
         typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(RgbaF32), typeof(Rgb16), typeof(GrayAlpha16),
         typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32), typeof(GrayF32),
-        typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2),
+        typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2), typeof(Cmyk8), typeof(Cmyk16),
     ];
 
     public static TheoryData<string, string> AllPairs()
@@ -46,7 +46,7 @@ public class PixelConvertTests
     [Fact]
     public void AllPairsCoversEveryCombination()
     {
-        Assert.Equal(400, AllPairs().Count);
+        Assert.Equal(484, AllPairs().Count);
     }
 
     [Theory]
@@ -80,6 +80,8 @@ public class PixelConvertTests
         Assert.Equal(2, Size<Bgr565>());
         Assert.Equal(2, Size<Bgra4444>());
         Assert.Equal(4, Size<Rgb10A2>());
+        Assert.Equal(4, Size<Cmyk8>());
+        Assert.Equal(8, Size<Cmyk16>());
 
         static int Size<T>()
             where T : unmanaged, IPixelType<T>
@@ -198,6 +200,11 @@ public class PixelConvertTests
             double[] got = Channels(actual[i]);
             double tolerance = typeof(TTo) == typeof(RgbaF16) ? 1.0 / 2048 : typeof(TTo) == typeof(RgbaF32) || typeof(TTo) == typeof(RgbF32) || typeof(TTo) == typeof(GrayF32) ? 1e-6 : 0;
 
+            if (typeof(TTo) == typeof(Cmyk8) || typeof(TTo) == typeof(Cmyk16))
+            {
+                tolerance = 1.001 / 255;
+            }
+
             // Half-precision palette values can land within float rounding of a 16-bit step, so allow one level there.
             if (typeof(TFrom) == typeof(RgbaF16) && tolerance == 0)
             {
@@ -221,6 +228,11 @@ public class PixelConvertTests
         double max = typeof(T) == typeof(Rgba16) || typeof(T) == typeof(Gray16) || typeof(T) == typeof(Rgb16) || typeof(T) == typeof(GrayAlpha16) ? 65535 : typeof(T) == typeof(RgbaF32) || typeof(T) == typeof(RgbaF16) || typeof(T) == typeof(RgbF32) || typeof(T) == typeof(GrayF32) ? 0 : 255;
 
         double[] result = (double[])rgba.Clone();
+        if (typeof(T) == typeof(Cmyk8) || typeof(T) == typeof(Cmyk16))
+        {
+            return CmykRoundTrip(rgba, typeof(T) == typeof(Cmyk8) ? 255 : 65535);
+        }
+
         if (typeof(T) == typeof(Alpha8))
         {
             result[0] = result[1] = result[2] = 0;
@@ -261,9 +273,26 @@ public class PixelConvertTests
         };
     }
 
+    /// <summary>The RGB a CMYK type holds for a color: inks by the plain formula, rounded to the type's levels, then back.</summary>
+    private static double[] CmykRoundTrip(double[] rgba, double levels)
+    {
+        double max = Math.Max(rgba[0], Math.Max(rgba[1], rgba[2]));
+        double Q(double v) => Math.Floor((v * levels) + 0.5) / levels;
+        double k = Q(1 - max);
+        double[] result = new double[4];
+        for (int c = 0; c < 3; c++)
+        {
+            double ink = max <= 0 ? 0 : Q((max - rgba[c]) / max);
+            result[c] = (1 - ink) * (1 - k);
+        }
+
+        result[3] = 1;
+        return result;
+    }
+
     private static bool T_HasAlpha<T>()
     {
-        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32) && typeof(T) != typeof(Bgr565);
+        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32) && typeof(T) != typeof(Bgr565) && typeof(T) != typeof(Cmyk8) && typeof(T) != typeof(Cmyk16);
     }
 
     private static double LumaExact(double r, double g, double b)
@@ -307,6 +336,8 @@ public class PixelConvertTests
             nameof(Bgr565) => new Bgr565(Level(c.R, 31), Level(c.G, 63), Level(c.B, 31)),
             nameof(Bgra4444) => new Bgra4444(Level(c.R, 15), Level(c.G, 15), Level(c.B, 15), Level(c.A, 15)),
             nameof(Rgb10A2) => new Rgb10A2(Level(c.R, 1023), Level(c.G, 1023), Level(c.B, 1023), Level(c.A, 3)),
+            nameof(Cmyk8) => Inks(c, 255, v => new Cmyk8((byte)v[0], (byte)v[1], (byte)v[2], (byte)v[3])),
+            nameof(Cmyk16) => Inks(c, 65535, v => new Cmyk16((ushort)v[0], (ushort)v[1], (ushort)v[2], (ushort)v[3])),
             _ => throw new ArgumentOutOfRangeException(nameof(T)),
         };
         return (T)pixel;
@@ -337,8 +368,18 @@ public class PixelConvertTests
             Bgr565 p => [p.R / 31.0, p.G / 63.0, p.B / 31.0, 1],
             Bgra4444 p => [p.R / 15.0, p.G / 15.0, p.B / 15.0, p.A / 15.0],
             Rgb10A2 p => [p.R / 1023.0, p.G / 1023.0, p.B / 1023.0, p.A / 3.0],
+            Cmyk8 p => [(1 - (p.C / 255.0)) * (1 - (p.K / 255.0)), (1 - (p.M / 255.0)) * (1 - (p.K / 255.0)), (1 - (p.Y / 255.0)) * (1 - (p.K / 255.0)), 1],
+            Cmyk16 p => [(1 - (p.C / 65535.0)) * (1 - (p.K / 65535.0)), (1 - (p.M / 65535.0)) * (1 - (p.K / 65535.0)), (1 - (p.Y / 65535.0)) * (1 - (p.K / 65535.0)), 1],
             _ => throw new ArgumentOutOfRangeException(nameof(pixel)),
         };
+    }
+
+    /// <summary>Inks for a palette color, by the plain formula worked out by hand.</summary>
+    private static object Inks((byte R, byte G, byte B, byte A, byte Luma) c, int levels, Func<int[], object> make)
+    {
+        double max = Math.Max(c.R, Math.Max(c.G, c.B)) / 255.0;
+        int Ink(byte v) => max == 0 ? 0 : (int)Math.Round((max - (v / 255.0)) / max * levels);
+        return make([Ink(c.R), Ink(c.G), Ink(c.B), (int)Math.Round((1 - max) * levels)]);
     }
 
     private static int Level(byte value, int levels)

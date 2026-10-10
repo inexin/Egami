@@ -36,6 +36,7 @@ to work in, and rows come back as spans of it.
 | `RgbaF32`, `RgbF32`, `GrayF32` | 32-bit float color or gray | High-precision processing, PFM, depth maps |
 | `RgbaF16` | 16-bit half-float color with alpha | HDR and GPU textures |
 | `Bgr565`, `Bgra4444`, `Rgb10A2` | Packed 16 and 32-bit color | Embedded displays, legacy textures, 10-bit displays |
+| `Cmyk8`, `Cmyk16` | Cyan, magenta, yellow and black ink | CMYK JPEG, TIFF and PSD |
 
 Values are sRGB-encoded with straight (not premultiplied) alpha. `raster.As<TPixel>()` converts a whole raster;
 `PixelConvert.Convert` converts a span.

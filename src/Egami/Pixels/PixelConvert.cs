@@ -57,6 +57,12 @@ public static class PixelConvert
         where TFrom : unmanaged, IPixelType<TFrom>
         where TTo : unmanaged, IPixelType<TTo>
     {
+        if (CmykInk.Is<TFrom>() && CmykInk.Is<TTo>())
+        {
+            ConvertInks(source, destination);
+            return;
+        }
+
         switch (Route(TFrom.Layout, TTo.Layout))
         {
             case ConvertRoute.Rgba8:
@@ -106,6 +112,37 @@ public static class PixelConvert
     {
         return layout.ChannelType == PixelChannelType.Unorm16
             || (layout.ChannelType == PixelChannelType.Packed && layout.MaxChannelBits > 8);
+    }
+
+    /// <summary>Converts between 8 and 16-bit CMYK channel by channel, so no ink is rebuilt.</summary>
+    private static void ConvertInks<TFrom, TTo>(ReadOnlySpan<TFrom> source, Span<TTo> destination)
+        where TFrom : unmanaged, IPixelType<TFrom>
+        where TTo : unmanaged, IPixelType<TTo>
+    {
+        bool fromWide = TFrom.Layout.ChannelType == PixelChannelType.Unorm16;
+        bool toWide = TTo.Layout.ChannelType == PixelChannelType.Unorm16;
+        if (fromWide == toWide)
+        {
+            MemoryMarshal.AsBytes(source).CopyTo(MemoryMarshal.AsBytes(destination));
+        }
+        else if (toWide)
+        {
+            ReadOnlySpan<byte> narrow = MemoryMarshal.AsBytes(source);
+            Span<ushort> wide = MemoryMarshal.Cast<TTo, ushort>(destination);
+            for (int i = 0; i < narrow.Length; i++)
+            {
+                wide[i] = Scale.Widen(narrow[i]);
+            }
+        }
+        else
+        {
+            ReadOnlySpan<ushort> wide = MemoryMarshal.Cast<TFrom, ushort>(source);
+            Span<byte> narrow = MemoryMarshal.AsBytes(destination);
+            for (int i = 0; i < wide.Length; i++)
+            {
+                narrow[i] = Scale.Narrow(wide[i]);
+            }
+        }
     }
 
     private static void ConvertThroughRgba16<TFrom, TTo>(ReadOnlySpan<TFrom> source, Span<TTo> destination)

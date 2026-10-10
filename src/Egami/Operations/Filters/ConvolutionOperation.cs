@@ -159,9 +159,13 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
         private readonly int _ringLength;
         private readonly int _block;
 
+        // CMYK rows carry black where other types carry alpha, so "keep alpha" must not freeze the black channel.
+        private readonly bool _preserveAlpha;
+
         internal Band(ConvolutionOperation op, OperationInput<TPixel> input)
         {
             _op = op;
+            _preserveAlpha = op._preserveAlpha && !RowConverter<TPixel>.Ink;
             _input = input;
             _converter = new RowConverter<TPixel>(op._linear);
             _width = input.Source.Width;
@@ -224,7 +228,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
                     {
                         int y = y0 + j;
                         Span<float> output = outputs.Slice(j * rowFloats, rowFloats);
-                        bool allOpaque = _op._edge != EdgeMode.Transparent && !_op._preserveAlpha;
+                        bool allOpaque = _op._edge != EdgeMode.Transparent && !_preserveAlpha;
                         for (int v = y - ry; v <= y + ry && allOpaque; v++)
                         {
                             allOpaque &= opaque[Slot(v)];
@@ -276,7 +280,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
             else
             {
                 opaque = _converter.Load(_input.Source.Row(row), middle);
-                if (_op._preserveAlpha)
+                if (_preserveAlpha)
                 {
                     ResizeKernels.Unpremultiply(middle, opaque);
                 }
@@ -374,7 +378,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane
                 }
             }
 
-            if (_op._preserveAlpha)
+            if (_preserveAlpha)
             {
                 // The color was convolved straight; take the source pixel's alpha and premultiply by it.
                 bool centerOpaque = _converter.Load(_input.Source.Row(y), center);

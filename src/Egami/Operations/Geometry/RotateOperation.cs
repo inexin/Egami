@@ -142,6 +142,13 @@ internal sealed class RotateOperation(double degrees, ResampleFilter filter, Rgb
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         Vector4 p;
+        if (RowConverter<TPixel>.Ink)
+        {
+            Span<float> ink = stackalloc float[4];
+            CmykInk.Load(new ReadOnlySpan<TPixel>(in pixel), ink);
+            return new Vector4(ink[0], ink[1], ink[2], ink[3]);
+        }
+
         if (typeof(TPixel) == typeof(Rgba8) || typeof(TPixel) == typeof(Bgra8))
         {
             Vector128<byte> bytes = Vector128.CreateScalarUnsafe(Unsafe.As<TPixel, uint>(ref Unsafe.AsRef(in pixel))).AsByte();

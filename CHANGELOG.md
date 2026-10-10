@@ -17,6 +17,10 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `Bgr565`, `Bgra4444` and `Rgb10A2`: packed 16 and 32-bit color in the DXGI and Vulkan layouts. Widening and narrowing both
   round to nearest, so every route gives the same pixel and every packed value round-trips; SIMD kernels convert 5-6-5 to
   and from `Rgba8` and `Bgra8`.
+- `Cmyk8` and `Cmyk16`: ink amounts, 0 meaning none, converted to and from RGB with the plain formula until color profiles
+  arrive. `Raster.Load<Cmyk8>` of a CMYK or YCCK JPEG returns the file's inks without the RGB step. Resize, blur, sharpen,
+  convolution and rotation filter the four inks, so black stays black; `DrawImage` blends inks; color adjustments go through
+  RGB and rebuild black.
 - `Alpha8`: an alpha-only mask. It reads as black with that alpha; converting a color to it keeps only the alpha.
 
 ### Pixel layouts

@@ -113,6 +113,12 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
                 {
                     source.ReadRow(sy + y - area.Y, sx, top);
                     Span<TPixel> destination = input.Destination.Row(y).Slice(area.X, area.Width);
+                    if (CmykInk.Is<TPixel>())
+                    {
+                        ComposeKernels.SourceOverInk(top, destination, MemoryMarshal.Cast<RgbaF32, float>(under), opacity);
+                        continue;
+                    }
+
                     PixelConvert.Convert<TPixel, RgbaF32>(destination, under);
                     ComposeKernels.SourceOverFloat(top, under, opacity);
                     PixelConvert.Convert<RgbaF32, TPixel>(under, destination);
@@ -129,6 +135,30 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
 /// <summary>Source-over blending of rows.</summary>
 internal static class ComposeKernels
 {
+    /// <summary>
+    /// Blends RGBA source pixels onto CMYK pixels: each source color becomes inks with the plain formula, then every ink mixes as
+    /// ink = source × a + destination × (1 − a), with a the source alpha times <paramref name="opacity"/>.
+    /// </summary>
+    internal static void SourceOverInk<TPixel>(ReadOnlySpan<RgbaF32> source, Span<TPixel> destination, Span<float> scratch, float opacity)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Span<float> inks = scratch[..(destination.Length * 4)];
+        CmykInk.Load<TPixel>(destination, inks);
+        for (int i = 0; i < destination.Length; i++)
+        {
+            RgbaF32 s = source[i];
+            float a = Math.Clamp(s.A * opacity, 0f, 1f);
+            System.Numerics.Vector4 ink = CmykInk.FromRgb(s.ToScaled());
+            int o = i * 4;
+            inks[o] += (ink.X - inks[o]) * a;
+            inks[o + 1] += (ink.Y - inks[o + 1]) * a;
+            inks[o + 2] += (ink.Z - inks[o + 2]) * a;
+            inks[o + 3] += (ink.W - inks[o + 3]) * a;
+        }
+
+        CmykInk.Store<TPixel>(inks, destination);
+    }
+
     /// <summary>
     /// Blends 4-byte pixels with alpha last (Rgba8 or Bgra8, both rows in the same order) in exact integer math: every result is
     /// the true value rounded to nearest. <paramref name="opacity255"/> scales the source alpha, 255 being fully opaque.

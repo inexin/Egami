@@ -310,11 +310,20 @@ internal sealed class RowConverter<TPixel>(bool linear)
     private static readonly bool EightBit = TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
     internal static readonly bool FourByte = typeof(TPixel) == typeof(Rgba8) || typeof(TPixel) == typeof(Bgra8);
 
+    /// <summary>CMYK types filter their four inks as numbers, so black stays black instead of being rebuilt from RGB.</summary>
+    internal static readonly bool Ink = CmykInk.Is<TPixel>();
+
     /// <summary>Converts <paramref name="source"/> to working pixels at the start of <paramref name="destination"/>.</summary>
     /// <returns><see langword="true"/> if every pixel is opaque, so nothing was premultiplied.</returns>
     internal bool Load(ReadOnlySpan<TPixel> source, Span<float> destination)
     {
         Span<float> pixels = destination[..(source.Length * 4)];
+        if (Ink)
+        {
+            CmykInk.Load(source, pixels);
+            return true;
+        }
+
         if (FourByte && !linear)
         {
             return ResizeKernels.Load8(MemoryMarshal.AsBytes(source), pixels);
@@ -351,6 +360,12 @@ internal sealed class RowConverter<TPixel>(bool linear)
     internal void Store(Span<float> source, Span<TPixel> destination, bool opaque)
     {
         Span<float> pixels = source[..(destination.Length * 4)];
+        if (Ink)
+        {
+            CmykInk.Store<TPixel>(pixels, destination);
+            return;
+        }
+
         opaque |= !HasAlpha;
         if (FourByte && !linear)
         {

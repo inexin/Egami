@@ -1109,6 +1109,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             return;
         }
 
+        if (_header.Details.ColorSpace is JpegColorSpace.Cmyk or JpegColorSpace.Ycck && CmykInk.Is<TPixel>())
+        {
+            Span<byte> inks = typeof(TPixel) == typeof(Cmyk8) ? MemoryMarshal.AsBytes(target) : _rowBuffer.AsSpan(0, width * 4);
+            JpegColor.ToInk(_header.Details.ColorSpace, a, b, c, k, inks);
+            if (typeof(TPixel) != typeof(Cmyk8))
+            {
+                PixelConvert.Convert(MemoryMarshal.Cast<byte, Cmyk8>(inks), target);
+            }
+
+            return;
+        }
+
         Span<byte> rgb = typeof(TPixel) == typeof(Rgb8) ? MemoryMarshal.AsBytes(target) : _rowBuffer.AsSpan(0, width * 3);
         JpegColor.ToRgb(_header.Details.ColorSpace, a, b, c, k, rgb);
         if (typeof(TPixel) != typeof(Rgb8))
@@ -1337,6 +1349,30 @@ internal static class JpegColor
                 int done = Avx2.IsSupported ? YCbCrAvx2(a, b, c, rgb) : 0;
                 YCbCrScalar(a, b, c, rgb, done);
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Converts a row of CMYK or YCCK samples, stored inverted as Adobe writes them, to ink amounts (0 = no ink), four bytes per
+    /// pixel. Converting these inks to RGB with the plain formula gives exactly what <see cref="ToRgb"/> gives.
+    /// </summary>
+    internal static void ToInk(JpegColorSpace space, ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, ReadOnlySpan<byte> c, ReadOnlySpan<byte> k, Span<byte> cmyk)
+    {
+        int width = cmyk.Length / 4;
+        for (int x = 0; x < width; x++)
+        {
+            int c0 = a[x], m0 = b[x], y0 = c[x];
+            if (space == JpegColorSpace.Ycck)
+            {
+                c0 = 255 - Clamp(a[x] + CrToR[c[x]]);
+                m0 = 255 - Clamp(a[x] + ((CbToG[b[x]] + CrToG[c[x]]) >> ScaleBits));
+                y0 = 255 - Clamp(a[x] + CbToB[b[x]]);
+            }
+
+            cmyk[4 * x] = (byte)(255 - c0);
+            cmyk[(4 * x) + 1] = (byte)(255 - m0);
+            cmyk[(4 * x) + 2] = (byte)(255 - y0);
+            cmyk[(4 * x) + 3] = (byte)(255 - k[x]);
         }
     }
 

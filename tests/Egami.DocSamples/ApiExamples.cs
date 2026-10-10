@@ -405,6 +405,7 @@ public class ApiExamples
         RgbaF16 hdr = RgbaF16.FromScaled(new Vector4(4f, 2f, 0.5f, 1f)); // half floats keep values above 1
         GrayF32 depth = new(12.5f);                              // floats hold any value until written to an integer type
         Bgr565 packed = Bgr565.FromRgba8(orange);                // 5-6-5 levels in one ushort; rounds to the nearest level
+        Cmyk8 ink = Cmyk8.FromRgba8(orange);                     // inks by the plain formula: (0, 127, 255, 0)
         RgbaF32 linear = RgbaF32.FromScaled(orange.ToScaled());
 
         Rgba8[] row = [orange, Rgba8.Transparent];
@@ -414,7 +415,7 @@ public class ApiExamples
 
         Assert.Equal(orange, wide.ToRgba8());
         Assert.Equal(255, bgr.R);
-        Assert.True(deep.L > 0 && linear.A == 1 && grayAlpha.A == 128 && wideOpaque.G == 32896 && deepMask.A == 32768 && alphaFirst.A == 255 && mask.A == 255 && (float)hdr.R == 4f && depth.L == 12.5f && packed.R == 31);
+        Assert.True(deep.L > 0 && linear.A == 1 && grayAlpha.A == 128 && wideOpaque.G == 32896 && deepMask.A == 32768 && alphaFirst.A == 255 && mask.A == 255 && (float)hdr.R == 4f && depth.L == 12.5f && packed.R == 31 && ink.Y == 255);
     }
 
     [Fact]

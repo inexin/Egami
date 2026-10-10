@@ -124,6 +124,12 @@ public sealed class OperationCoverageTests : IDisposable
             Assert.Equal((expected.Width, expected.Height), (b565Result.Width, b565Result.Height));
             Assert.Equal((expected.Width, expected.Height), (b4444Result.Width, b4444Result.Height));
             Assert.Equal((expected.Width, expected.Height), (r1010102Result.Width, r1010102Result.Height));
+            using Raster<Cmyk8> cmyk = contiguous.As<Cmyk8>();
+            using Raster<Cmyk8> cmykResult = cmyk.Derive(chain, Ct);
+            using Raster<Cmyk16> cmyk16 = contiguous.As<Cmyk16>();
+            using Raster<Cmyk16> cmyk16Result = cmyk16.Derive(chain, Ct);
+            Assert.Equal((expected.Width, expected.Height), (cmykResult.Width, cmykResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (cmyk16Result.Width, cmyk16Result.Height));
         }
     }
 
