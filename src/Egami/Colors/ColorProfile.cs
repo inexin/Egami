@@ -178,6 +178,17 @@ public sealed class ColorProfile
     }
 
     /// <summary>
+    /// Returns an ICC profile for this encoding: the bytes it was read from, or a small version 4 profile written for it (4.3 with
+    /// parametric curves for SDR encodings, 4.4 with a <c>cicp</c> tag for PQ and HLG), which Little CMS, browsers and image
+    /// tools read.
+    /// </summary>
+    /// <returns>A new array holding the profile.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="to-icc"/>
+    /// </example>
+    public byte[] ToIcc() => Icc is IccData icc ? icc.ToBytes().ToArray() : IccWriter.Write(this);
+
+    /// <summary>
     /// Returns the RGB encoding that H.273 code points name, or <see langword="null"/> when Egami does not implement the primaries
     /// or the transfer they name, or when the matrix code is not RGB (0).
     /// </summary>

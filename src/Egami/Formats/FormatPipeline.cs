@@ -9,6 +9,11 @@ internal static class FormatPipeline
 {
     internal static Raster Load(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
+        if (options.ConvertColorTo is Colors.ColorProfile target)
+        {
+            return ColorLoad.Natural(Load(stream, context, options with { ConvertColorTo = null }, cancellationToken), target);
+        }
+
         if (Reshapes(options))
         {
             using RasterDecoder decoder = RasterDecoder.Open(stream, context, options, owned: null);
@@ -21,6 +26,11 @@ internal static class FormatPipeline
     internal static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        if (options.ConvertColorTo is Colors.ColorProfile target)
+        {
+            return ColorLoad.Typed<TPixel>(Load(stream, context, options with { ConvertColorTo = null }, cancellationToken), target);
+        }
+
         if (Reshapes(options))
         {
             using RasterDecoder decoder = RasterDecoder.Open(stream, context, options, owned: null);
@@ -253,6 +263,11 @@ internal static class FormatPipeline
     internal static async Task<Raster<TPixel>> LoadAsync<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        if (options.ConvertColorTo is Colors.ColorProfile target)
+        {
+            return ColorLoad.Typed<TPixel>(await LoadAsync(stream, context, options with { ConvertColorTo = null }, cancellationToken).ConfigureAwait(false), target);
+        }
+
         if (stream.CanSeek)
         {
             return await RunBufferedAsync(stream, context, s => Load<TPixel>(s, context, options, cancellationToken), cancellationToken).ConfigureAwait(false);
@@ -266,6 +281,11 @@ internal static class FormatPipeline
     /// <summary>Loads asynchronously in the natural pixel type. See <see cref="LoadAsync{TPixel}"/>.</summary>
     internal static async Task<Raster> LoadAsync(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
+        if (options.ConvertColorTo is Colors.ColorProfile target)
+        {
+            return ColorLoad.Natural(await LoadAsync(stream, context, options with { ConvertColorTo = null }, cancellationToken).ConfigureAwait(false), target);
+        }
+
         if (stream.CanSeek)
         {
             return await RunBufferedAsync(stream, context, s => Load(s, context, options, cancellationToken), cancellationToken).ConfigureAwait(false);

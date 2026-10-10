@@ -301,6 +301,26 @@ public sealed class RasterOps
     }
 
     /// <summary>
+    /// Converts the pixels from the encoding the raster is in (<see cref="Metadata.RasterMetadata.GetColorProfile"/>, or the
+    /// target of an earlier ConvertColor in the chain) to <paramref name="target"/>, in place, and records the new encoding in the
+    /// metadata: no profile for sRGB, the target's ICC profile otherwise. The pixel type stays the same, so the target must have
+    /// the pixels' model (an RGB target for gray pixels uses its curve); use <see cref="Raster.ConvertColor{TTo}"/> to
+    /// change model, as from CMYK to RGB.
+    /// </summary>
+    /// <param name="target">The encoding to convert to.</param>
+    /// <param name="options">The intent and black point compensation, or <see langword="null"/> for the defaults.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="target"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="convert"/>
+    /// </example>
+    public RasterOps ConvertColor(Colors.ColorProfile target, Colors.ColorTransformOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        return Add(new Color.ConvertColorOperation(target, options ?? Colors.ColorTransformOptions.Default));
+    }
+
+    /// <summary>
     /// Applies a color matrix to straight RGBA and clamps the result. Adjacent color steps are multiplied into one matrix before
     /// anything runs, so the chain clamps once, at its end.
     /// </summary>

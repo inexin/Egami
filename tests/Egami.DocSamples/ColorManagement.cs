@@ -1,4 +1,6 @@
 using Egami.Colors;
+using Egami.Formats;
+using Egami.Pixels;
 
 namespace Egami.DocSamples;
 
@@ -71,6 +73,77 @@ public class ColorManagement
 
         Assert.True(isP3);
         Assert.Same(icc, profile.Icc);
+    }
+
+    [Fact]
+    public void Convert()
+    {
+        using Raster<Rgba8> raster = Raster.Create<Rgba8>(4, 4, new Rgba8(200, 80, 40, 255));
+        raster.Metadata.IccProfile = ColorProfile.DisplayP3.ToIcc();
+
+        #region convert
+        // What the pixels mean, from the file's ICC profile, tags and gamma; sRGB when it said nothing.
+        ColorProfile stored = raster.Metadata.GetColorProfile();
+
+        // Convert in place to sRGB for the web: the metadata then says sRGB, so no profile is written.
+        raster.Apply(ops => ops.ConvertColor(ColorProfile.Srgb));
+        #endregion
+
+        Assert.True(stored.IsEquivalentTo(ColorProfile.DisplayP3) && raster.Metadata.IccProfile.IsEmpty);
+    }
+
+    [Fact]
+    public void ConvertType()
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "images", "duck-cmyk.jpg");
+
+        #region convert-type
+        // A CMYK image becomes RGB through its profile (or the plain formula if it has none), as a new raster.
+        using Raster<Cmyk8> print = Raster.Load<Cmyk8>(path);
+        using Raster<Rgb8> screen = print.ConvertColor<Rgb8>(ColorProfile.Srgb, new ColorTransformOptions { Intent = RenderingIntent.RelativeColorimetric, BlackPointCompensation = true });
+        #endregion
+
+        Assert.Equal(print.Width, screen.Width);
+    }
+
+    [Fact]
+    public void ConvertOnLoad()
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "images", "duck-cmyk.jpg");
+
+        #region convert-on-load
+        // Load straight into sRGB: the same pixels as loading and then calling ConvertColor.
+        using Raster web = Raster.Load(path, options: new ReaderOptions { ConvertColorTo = ColorProfile.Srgb });
+        #endregion
+
+        Assert.Equal(PixelChannelOrder.Rgb, web.Layout.ChannelOrder);
+    }
+
+    [Fact]
+    public void Transform()
+    {
+        #region transform
+        // A transform is compiled once (and cached), then applied to spans of any pixel type, in place or into another type.
+        ColorTransform transform = ColorTransform.Create(ColorProfile.DisplayP3, ColorProfile.Srgb, new ColorTransformOptions { Intent = RenderingIntent.Perceptual });
+        Rgba8[] pixels = [new(255, 0, 0, 255), new(0, 128, 255, 128)];
+        transform.Apply<Rgba8>(pixels);
+        RgbaF32[] wide = new RgbaF32[pixels.Length];
+        transform.Apply<Rgba8, RgbaF32>(pixels, wide);   // float types keep values outside 0..1
+        #endregion
+
+        Assert.Equal(128, pixels[1].A);
+    }
+
+    [Fact]
+    public void ToIcc()
+    {
+        #region to-icc
+        // Any RGB or gray encoding as a small ICC profile, for files and other software.
+        byte[] p3 = ColorProfile.DisplayP3.ToIcc();
+        bool same = ColorProfile.FromIcc(p3).IsEquivalentTo(ColorProfile.DisplayP3);
+        #endregion
+
+        Assert.True(same);
     }
 
     [Fact]

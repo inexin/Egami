@@ -82,6 +82,11 @@ public abstract class FormatDetails
     /// <summary>Returns a deep copy.</summary>
     /// <returns>The copy.</returns>
     public abstract FormatDetails Copy();
+
+    /// <summary>Forgets what the details say about color, once the pixels have been converted to another encoding.</summary>
+    internal virtual void ClearColorTags()
+    {
+    }
 }
 
 /// <summary>
@@ -131,6 +136,61 @@ public sealed class RasterMetadata
 
     /// <summary>Gets the warnings for readers to add to; outside readers use <see cref="Formats.EgamiInput.Warn"/>.</summary>
     internal List<string> WarningList { get; } = [];
+
+    /// <summary>
+    /// Returns what the raster's pixel values mean, resolved from everything the file said: the embedded ICC profile, then an
+    /// sRGB or linear tag, then a gamma, and sRGB when the file said nothing. A damaged or unsupported profile counts as saying
+    /// nothing. The result is an RGB encoding unless the profile is gray or CMYK; <see cref="Raster.ConvertColor{TTo}"/>
+    /// and <see cref="Operations.RasterOps.ConvertColor"/> read gray pixels with the gray form of an RGB curve.
+    /// </summary>
+    /// <returns>The encoding.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="convert"/>
+    /// </example>
+    public Colors.ColorProfile GetColorProfile()
+    {
+        if (!IccProfile.IsEmpty)
+        {
+            try
+            {
+                return Colors.ColorProfile.FromIcc(IccProfile.Span);
+            }
+            catch (EgamiException)
+            {
+                // A profile conversion cannot use is treated as no profile, as the design says for damaged ones.
+            }
+        }
+
+        return ColorSpace switch
+        {
+            ColorSpaceHint.Linear => Colors.ColorProfile.LinearSrgb,
+            ColorSpaceHint.Gamma when Gamma is double g && double.IsFinite(g) && g > 0 =>
+                Colors.ColorProfile.Create(Colors.ColorPrimaries.Rec709, Colors.TransferFunction.Gamma(g), $"Gamma {g:0.###}"),
+            _ => Colors.ColorProfile.Srgb,
+        };
+    }
+
+    /// <summary>
+    /// Records that the pixels are now in <paramref name="profile"/>: no ICC profile and the sRGB or linear hint for those two,
+    /// otherwise the profile's ICC bytes. Format details that described the old encoding (PNG gAMA, cHRM, sRGB, cICP) are cleared.
+    /// </summary>
+    internal void SetColorProfile(Colors.ColorProfile profile)
+    {
+        Gamma = null;
+        FormatDetails?.ClearColorTags();
+        Colors.ColorProfile? plain = profile.Model == Colors.ColorModel.Gray
+            ? (profile.IsEquivalentTo(Colors.ColorProfile.GraySrgb) ? Colors.ColorProfile.Srgb : profile.IsEquivalentTo(Colors.ColorProfile.GrayLinear) ? Colors.ColorProfile.LinearSrgb : null)
+            : profile.IsEquivalentTo(Colors.ColorProfile.Srgb) ? Colors.ColorProfile.Srgb : profile.IsEquivalentTo(Colors.ColorProfile.LinearSrgb) ? Colors.ColorProfile.LinearSrgb : null;
+        if (plain is not null)
+        {
+            IccProfile = default;
+            ColorSpace = plain == Colors.ColorProfile.Srgb ? ColorSpaceHint.Srgb : ColorSpaceHint.Linear;
+            return;
+        }
+
+        IccProfile = profile.ToIcc();
+        ColorSpace = ColorSpaceHint.EmbeddedIcc;
+    }
 
     /// <summary>Returns a deep copy.</summary>
     /// <returns>The copy.</returns>

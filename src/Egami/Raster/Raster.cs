@@ -1,3 +1,4 @@
+using Egami.Colors;
 using Egami.Metadata;
 using Egami.Operations;
 using Egami.Pixels;
@@ -138,6 +139,28 @@ public abstract partial class Raster : IDisposable
         return ConvertTo<TTo>();
     }
 
+    /// <summary>
+    /// Returns a new raster of <typeparamref name="TTo"/> with every frame converted from the encoding this raster is in
+    /// (<see cref="RasterMetadata.GetColorProfile"/>) to <paramref name="target"/>, and metadata that says so. This is how a CMYK
+    /// image becomes RGB through its profile, or RGB becomes CMYK for print; <see cref="As{TTo}"/> converts numerically instead.
+    /// </summary>
+    /// <typeparam name="TTo">The pixel type to convert to. Its model need not be the target's: see <see cref="ColorTransform"/>.</typeparam>
+    /// <param name="target">The encoding to convert to.</param>
+    /// <param name="options">The intent and black point compensation, or <see langword="null"/> for the defaults.</param>
+    /// <returns>The new raster. The caller must dispose it.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="target"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="UnsupportedFormatException">The target is an ICC profile with no tables for converting to it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="convert-type"/>
+    /// </example>
+    public Raster<TTo> ConvertColor<TTo>(ColorProfile target, ColorTransformOptions? options = null)
+        where TTo : unmanaged, IPixelType<TTo>
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        return ConvertColorTo<TTo>(target, options ?? ColorTransformOptions.Default);
+    }
+
     /// <summary>Returns the raster's memory to its source. Calling it again does nothing.</summary>
     public void Dispose()
     {
@@ -200,6 +223,9 @@ public abstract partial class Raster : IDisposable
     internal abstract bool HasPlane(object plane);
 
     /// <summary>Implements <see cref="As{TTo}"/>.</summary>
+    private protected abstract Raster<TTo> ConvertColorTo<TTo>(ColorProfile target, ColorTransformOptions options)
+        where TTo : unmanaged, IPixelType<TTo>;
+
     private protected abstract Raster<TTo> ConvertTo<TTo>()
         where TTo : unmanaged, IPixelType<TTo>;
 

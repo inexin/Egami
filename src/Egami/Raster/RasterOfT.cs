@@ -323,6 +323,43 @@ public sealed class Raster<TPixel> : Raster
         return false;
     }
 
+    private protected override Raster<TTo> ConvertColorTo<TTo>(Colors.ColorProfile target, Colors.ColorTransformOptions options)
+    {
+        ThrowIfDisposed();
+        Colors.ColorProfile from = Operations.Color.ConvertColorOperation.ForPixels(Metadata.GetColorProfile(), Colors.ColorTransform.ModelOf<TPixel>() ?? Colors.ColorModel.Rgb);
+        Colors.ColorProfile to = Operations.Color.ConvertColorOperation.ForPixels(target, Colors.ColorTransform.ModelOf<TTo>() ?? Colors.ColorModel.Rgb);
+        Colors.ColorTransform transform = Colors.ColorTransform.Create(from, to, options, Context);
+        List<Frame<TTo>> frames = new(_frames.Count);
+        try
+        {
+            foreach (Frame<TPixel> frame in _frames)
+            {
+                PixelPlane<TTo> plane = PixelPlane.Allocate<TTo>(Width, Height, Context.Memory);
+                frames.Add(new Frame<TTo>(plane, frame.Metadata.Copy()));
+                Operations.RowRunner.Run(Height, (long)Width * System.Runtime.CompilerServices.Unsafe.SizeOf<TTo>(), Context.MaxParallelism, (start, end) =>
+                {
+                    for (int y = start; y < end; y++)
+                    {
+                        transform.Apply<TPixel, TTo>(frame.Plane.Row(y), plane.Row(y));
+                    }
+                }, CancellationToken.None);
+            }
+        }
+        catch
+        {
+            foreach (Frame<TTo> frame in frames)
+            {
+                frame.Plane.Dispose();
+            }
+
+            throw;
+        }
+
+        RasterMetadata metadata = Metadata.Copy();
+        metadata.SetColorProfile(target);
+        return new Raster<TTo>(frames, metadata, Context);
+    }
+
     private protected override Raster<TTo> ConvertTo<TTo>()
     {
         ThrowIfDisposed();

@@ -91,6 +91,16 @@ public sealed class PngDetails : FormatDetails
     public IList<PngChunk> OtherChunks { get; } = [];
 
     /// <inheritdoc/>
+    internal override void ClearColorTags()
+    {
+        FileGamma = null;
+        Chromaticities = default;
+        SrgbRenderingIntent = null;
+        CodingIndependentCodePoints = default;
+        IccProfileName = null;
+    }
+
+    /// <inheritdoc/>
     public override FormatDetails Copy()
     {
         PngDetails copy = new()

@@ -16,16 +16,30 @@ internal static class OperationPipeline
     /// <returns>The planned steps and the size after each one.</returns>
     internal static Plan Build(Action<RasterOps> build, Size size, RasterMetadata? metadata = null)
     {
-        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal);
+        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal, metadata is null ? null : metadata.GetColorProfile);
     }
 
-    /// <summary>Records and plans the chain for an image stored with <paramref name="orientation"/>.</summary>
-    internal static Plan Build(Action<RasterOps> build, Size size, ImageOrientation orientation)
+    /// <summary>
+    /// Records and plans the chain for an image stored with <paramref name="orientation"/>, whose pixels are in the encoding
+    /// <paramref name="colorProfile"/> returns (sRGB when <see langword="null"/>); it is asked only if the chain converts color.
+    /// </summary>
+    internal static Plan Build(Action<RasterOps> build, Size size, ImageOrientation orientation, Func<Colors.ColorProfile>? colorProfile = null)
     {
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
         build(ops);
         List<IRasterOperation> steps = Planner.Plan(ops.Steps, orientation);
+        Colors.ColorProfile? current = null;
+        for (int i = 0; i < steps.Count; i++)
+        {
+            if (steps[i] is Color.ConvertColorOperation convert)
+            {
+                current ??= colorProfile?.Invoke() ?? Colors.ColorProfile.Srgb;
+                steps[i] = convert.Bind(current);
+                current = convert.Target;
+            }
+        }
+
         Size[] sizes = new Size[steps.Count];
         for (int i = 0; i < steps.Count; i++)
         {
@@ -131,7 +145,11 @@ internal static class OperationPipeline
         {
             for (int i = 0; i < Steps.Count; i++)
             {
-                if (Steps[i] is IUpdatesMetadata updates)
+                if (Steps[i] is Color.IUpdatesColor color)
+                {
+                    color.UpdateMetadata(metadata);
+                }
+                else if (Steps[i] is IUpdatesMetadata updates)
                 {
                     updates.UpdateMetadata(metadata, input, Sizes[i]);
                 }

@@ -33,6 +33,19 @@ public record ReaderOptions
     /// <summary>Gets whether metadata such as EXIF, ICC, XMP and text is read. Defaults to <see langword="true"/>.</summary>
     public bool ReadMetadata { get; init; } = true;
 
+    /// <summary>
+    /// Gets the encoding to convert the pixels to while loading, or <see langword="null"/> (the default) to load them as stored.
+    /// Loading with it gives the same pixels and metadata as loading without it and then calling
+    /// <see cref="Raster.ConvertColor{TTo}"/> with the type asked for; loading in the natural type keeps the type when the model
+    /// stays the same, and otherwise picks the target model's type of the same depth (a CMYK JPEG converted to sRGB loads as
+    /// <see cref="Pixels.Rgb8"/>). Conversion uses <see cref="Colors.ColorTransformOptions.Default"/>.
+    /// </summary>
+    /// <remarks>Streaming reads through RasterDecoder rows do not convert yet.</remarks>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="convert-on-load"/>
+    /// </example>
+    public Colors.ColorProfile? ConvertColorTo { get; init; }
+
     /// <summary>Gets the frames to read. Defaults to all of them. Use <c>..1</c> for only the first frame.</summary>
     public Range Frames { get; init; } = Range.All;
 

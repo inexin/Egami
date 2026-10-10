@@ -41,6 +41,38 @@ for one of the built-ins, and a version 4.4 `cicp` tag naming PQ or HLG wins ove
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#icc)]
 
+## Converting
+
+Nothing converts unless asked. `RasterMetadata.GetColorProfile` says what a raster's pixels mean, from its ICC profile, its sRGB
+or linear tag or its gamma, and sRGB when the file said nothing. `RasterOps.ConvertColor` converts in place to another encoding of
+the same model and records the result: no profile for sRGB, the target's ICC profile otherwise.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert)]
+
+`Raster.ConvertColor<TTo>` converts into a new raster of another pixel type, which is how a CMYK image becomes RGB through its
+profile. `ColorTransformOptions` choose the rendering intent (perceptual by default) and black point compensation (off by
+default, as in Little CMS and Pillow).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-type)]
+
+`ReaderOptions.ConvertColorTo` converts while loading. In the natural pixel type the type is kept when the model stays the same;
+a CMYK file converted to sRGB loads as `Rgb8`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-on-load)]
+
+## Transforms on pixel spans
+
+`ColorTransform` compiles a conversion once and applies it to spans of any pixel type, in place or into another type. Transforms
+are cached per `EgamiContext`. Matrix encodings (sRGB, Display P3, Adobe RGB, matrix ICC profiles, gray) run as curves and one
+matrix; table profiles and CMYK are sampled onto a 33 or 17 point grid and interpolated. 8-bit pixels take a fast path; float
+and half types keep values outside 0..1.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#transform)]
+
+`ColorProfile.ToIcc` writes an encoding as a small version 4 ICC profile, the one embedded after a conversion.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#to-icc)]
+
 ## Code points
 
 `ColorCodePoints` holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami
