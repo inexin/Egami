@@ -418,7 +418,12 @@ internal sealed class PnmReader : IFormatReader
                     {
                         ReadWide(bytes, wide);
                         Span<ushort> samples = wide.AsSpan(0, _samples);
-                        if (header.Depth == 1)
+                        if ((header.Depth == 3 && typeof(TPixel) == typeof(Rgb16)) || (header.Depth == 2 && typeof(TPixel) == typeof(GrayAlpha16)))
+                        {
+                            // The scaled 16-bit samples are the row, in the same order.
+                            samples.CopyTo(MemoryMarshal.Cast<TPixel, ushort>(raster.Row(y)));
+                        }
+                        else if (header.Depth == 1)
                         {
                             if (TPixel.Layout.ChannelType == PixelChannelType.Unorm8)
                             {

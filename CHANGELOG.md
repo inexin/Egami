@@ -27,6 +27,11 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   `DrawImage` about 35% faster than on `Rgba8`.
 - `Alpha8`: an alpha-only mask. It reads as black with that alpha; converting a color to it keeps only the alpha.
 
+### Formats
+
+- PNG and PNM read and write `Rgb16` and `GrayAlpha16` directly, and BMP reads 5-6-5 and 4-4-4-4 bit fields straight into
+  `Bgr565` and `Bgra4444`, with no intermediate type. Natural types (what `Raster.Load` returns without a type) are unchanged.
+
 ### Pixel layouts
 
 - New enum values, for code that switches on them: `PixelChannelOrder.Argb`, `Abgr`, `Alpha` and `Cmyk`;

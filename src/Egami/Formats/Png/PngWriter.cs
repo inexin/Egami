@@ -863,6 +863,9 @@ internal sealed class PngWriter : IFormatWriter
                 case (PngColorType.GrayAlpha, 8):
                     Convert<GrayAlpha8, byte>(row).CopyTo(scanline);
                     break;
+                case (PngColorType.GrayAlpha, 16) when typeof(TPixel) == typeof(GrayAlpha16):
+                    BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<TPixel, ushort>(row), MemoryMarshal.Cast<byte, ushort>(scanline));
+                    break;
                 case (PngColorType.GrayAlpha, _):
                     Span<Gray16> gray = _gray16.AsSpan(0, width);
                     PixelConvert.Convert<TPixel, Gray16>(row, gray);
@@ -876,6 +879,9 @@ internal sealed class PngWriter : IFormatWriter
                     break;
                 case (PngColorType.Rgb, 8):
                     Convert<Rgb8, byte>(row).CopyTo(scanline);
+                    break;
+                case (PngColorType.Rgb, 16) when typeof(TPixel) == typeof(Rgb16):
+                    BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<TPixel, ushort>(row), MemoryMarshal.Cast<byte, ushort>(scanline));
                     break;
                 case (PngColorType.Rgb, _):
                     ReadOnlySpan<ushort> rgba = Convert<Rgba16, ushort>(row);

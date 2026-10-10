@@ -272,6 +272,13 @@ internal sealed class PnmWriter : IFormatWriter
         {
             int width = raster.Width;
             Span<ushort> samples = _wide.AsSpan(0, width * depth);
+
+            // 16-bit RGB and gray-alpha rows already hold the samples in file order.
+            if ((depth == 3 && typeof(TPixel) == typeof(Rgb16)) || (depth == 2 && typeof(TPixel) == typeof(GrayAlpha16)))
+            {
+                return MemoryMarshal.Cast<TPixel, ushort>(raster.Row(y));
+            }
+
             if (depth == 1)
             {
                 PixelConvert.Convert<TPixel, Gray16>(raster.Row(y), MemoryMarshal.Cast<ushort, Gray16>(samples));

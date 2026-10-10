@@ -537,6 +537,11 @@ internal sealed class BmpReader : IFormatReader
             Bgra8[] natural = ArrayPool<Bgra8>.Shared.Rent(width);
             Channel red = new(header.Masks.Red), green = new(header.Masks.Green), blue = new(header.Masks.Blue), alpha = new(header.Masks.Alpha);
             bool standard32 = header.Bits == 32 && header.Masks is (0x00FF_0000, 0x0000_FF00, 0x0000_00FF, 0xFF00_0000 or 0);
+
+            // 16-bit 5-6-5 and 4-4-4-4 bit fields are the memory of Bgr565 and Bgra4444: rows read straight into them.
+            bool packed16 = header.Bits == 16
+                && ((typeof(TPixel) == typeof(Bgr565) && header.Masks is (0xF800, 0x07E0, 0x001F, 0))
+                    || (typeof(TPixel) == typeof(Bgra4444) && header.Masks is (0x0F00, 0x00F0, 0x000F, 0xF000)));
             bool anyAlpha = false;
             bool pastPalette = false;
             int fileRow = 0;
@@ -547,6 +552,13 @@ internal sealed class BmpReader : IFormatReader
                     input.CancellationToken.ThrowIfCancellationRequested();
                     Span<TPixel> target = raster.Row(header.RowOf(fileRow));
                     if (header.Bits == 24 && typeof(TPixel) == typeof(Bgr8))
+                    {
+                        input.ReadExactly(MemoryMarshal.AsBytes(target));
+                        input.Skip(stride - used);
+                        continue;
+                    }
+
+                    if (packed16)
                     {
                         input.ReadExactly(MemoryMarshal.AsBytes(target));
                         input.Skip(stride - used);

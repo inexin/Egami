@@ -643,6 +643,17 @@ internal sealed class PngReader : IFormatReader
     private static Raster<TPixel> DecodeImage<TPixel>(State state)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        // 16-bit RGB and gray-alpha files decode straight into the matching 16-bit types, with no Rgba16 row in between.
+        if (state.Header.BitDepth == 16 && typeof(TPixel) == typeof(Rgb16) && state.Header.ColorType == PngColorType.Rgb)
+        {
+            return Decode<Rgb16, TPixel>(state, static (_, s, d) => PngUnpacker.Unpack(s, d));
+        }
+
+        if (state.Header.BitDepth == 16 && typeof(TPixel) == typeof(GrayAlpha16) && state.Header.ColorType == PngColorType.GrayAlpha)
+        {
+            return Decode<GrayAlpha16, TPixel>(state, static (_, s, d) => PngUnpacker.Unpack(s, d));
+        }
+
         return state.Unpacker.Natural switch
         {
             PngNaturalType.Gray8 => Decode<Gray8, TPixel>(state, static (u, s, d) => u.Unpack(s, d)),

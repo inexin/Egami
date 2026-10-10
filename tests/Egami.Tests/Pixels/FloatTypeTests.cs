@@ -4,7 +4,11 @@ using Egami.Pixels;
 
 namespace Egami.Tests.Pixels;
 
-/// <summary>RgbaF16, RgbF32 and GrayF32 (Phase 2.1.1 task 5), and the half-float kernels.</summary>
+/// <summary>
+/// RgbaF16, RgbF32 and GrayF32 (Phase 2.1.1 task 5), and the half-float kernels. The exhaustive float test fills every core, so
+/// the class runs on its own rather than starving the thread pool under tests that measure allocations.
+/// </summary>
+[Collection(ExhaustiveGroup.Name)]
 public class FloatTypeTests
 {
     [Fact]
@@ -146,4 +150,11 @@ public class FloatTypeTests
         return BitConverter.HalfToUInt16Bits(p.R) | ((ulong)BitConverter.HalfToUInt16Bits(p.G) << 16)
             | ((ulong)BitConverter.HalfToUInt16Bits(p.B) << 32) | ((ulong)BitConverter.HalfToUInt16Bits(p.A) << 48);
     }
+}
+
+/// <summary>Tests that use every core for a while; they run alone, after the parallel ones.</summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class ExhaustiveGroup
+{
+    public const string Name = "Exhaustive";
 }

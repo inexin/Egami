@@ -163,6 +163,18 @@ internal sealed class PngUnpacker
         BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<byte, ushort>(scanline[..(destination.Length * 2)]), MemoryMarshal.Cast<Gray16, ushort>(destination));
     }
 
+    /// <summary>Unpacks 16-bit RGB samples straight into <see cref="Rgb16"/> (a tRNS key needs alpha, so it is not used here).</summary>
+    internal static void Unpack(ReadOnlySpan<byte> scanline, Span<Rgb16> destination)
+    {
+        BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<byte, ushort>(scanline[..(destination.Length * 6)]), MemoryMarshal.Cast<Rgb16, ushort>(destination));
+    }
+
+    /// <summary>Unpacks 16-bit gray and alpha samples straight into <see cref="GrayAlpha16"/>.</summary>
+    internal static void Unpack(ReadOnlySpan<byte> scanline, Span<GrayAlpha16> destination)
+    {
+        BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<byte, ushort>(scanline[..(destination.Length * 4)]), MemoryMarshal.Cast<GrayAlpha16, ushort>(destination));
+    }
+
     internal void Unpack(ReadOnlySpan<byte> scanline, Span<Rgb8> destination)
     {
         if (_header.ColorType == PngColorType.Rgb)
