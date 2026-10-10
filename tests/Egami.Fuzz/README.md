@@ -11,6 +11,7 @@ Targets:
 | `png` | PNG files: loaded leniently and strictly, converted, probed | `tests/images/pngsuite/*.png` |
 | `jpeg` | JPEG files: probed and loaded leniently, strictly, with fast upsampling and at reduced scale, then auto-oriented and saved as JPEG | `tests/images/jpeg/*.jpg` |
 | `exif` | Raw EXIF (TIFF) blocks: parsed, every value read, edited and rebuilt; parsing must never throw at all | `tests/images/fuzz/exif-seeds/*.tiff` |
+| `icc` | ICC profiles: parsed (must never throw), then made into a ColorProfile (may fail only with an EgamiException) | `tests/images/icc/*/*.icc` |
 
 ## Running locally (Linux or WSL)
 

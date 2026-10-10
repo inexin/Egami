@@ -1,4 +1,5 @@
 using Egami;
+using Egami.Colors;
 using Egami.Formats;
 using Egami.Formats.Jpeg;
 using Egami.Metadata;
@@ -11,7 +12,8 @@ using SharpFuzz;
 //
 // Fuzz targets, one per reader. Each must load any input or fail with an EgamiException: any other exception is a crash,
 // and AFL++ reports hangs. Limits are lowered so a valid but huge image cannot exhaust the fuzzer's memory. The exif target
-// parses raw TIFF blocks, which must never throw at all.
+// parses raw TIFF blocks, which must never throw at all; the icc target parses ICC profiles the same way, and building a color
+// profile from one may fail only with an EgamiException.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -42,6 +44,7 @@ static Action<Stream> Target(string name) => name switch
     "png" => LoadPng,
     "jpeg" => LoadJpeg,
     "exif" => ParseExif,
+    "icc" => ParseIcc,
     "gif" => LoadGif,
     "apng" => LoadApng,
     "lzw" => DecodeLzw,
@@ -51,7 +54,7 @@ static Action<Stream> Target(string name) => name switch
     "pnm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
     "pfm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
     "detect" => Detect,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, icc, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect."),
 };
 
 static EgamiContext Context()
@@ -219,6 +222,26 @@ static void DecodeLzw(Stream stream)
     if (written > output.Length)
     {
         throw new InvalidOperationException("The decoder wrote past its output.");
+    }
+}
+
+static void ParseIcc(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    IccData icc = IccData.Parse(data, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
+    _ = (icc.Version, icc.ProfileClass, icc.Model, icc.Created, icc.Description, icc.Copyright, icc.CodePoints, icc.ToString());
+    foreach (IccTag tag in icc.Tags)
+    {
+        _ = icc.TryGetTag(tag.Signature, out _);
+    }
+
+    try
+    {
+        ColorProfile profile = ColorProfile.FromIcc(icc);
+        _ = (profile.Primaries, profile.White, profile.Transfer?.ToLinear(0.5), profile.IsEquivalentTo(ColorProfile.Srgb));
+    }
+    catch (EgamiException)
+    {
     }
 }
 

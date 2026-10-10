@@ -27,6 +27,20 @@ highlights are values above 1.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#transfer)]
 
+## ICC profiles
+
+`IccData` parses an ICC profile (versions 2 and 4): the header fields (version, `IccProfileClass`, data and connection spaces,
+the suggested `RenderingIntent`, creation date), the description and copyright text, and every tag with its bytes. Like `ExifData`, it never throws: offsets or sizes outside the profile, a missing `acsp` signature or more bytes than
+`SafetyLimits.MaxMetadataBytes` mark it damaged, with `Warnings` saying why, and what could be read stays available.
+
+`ColorProfile.FromIcc` turns a profile into an encoding. Egami converts with RGB, gray and CMYK profiles of the input, display,
+output and color space classes, whether they convert through a matrix and curves or through `lut8`, `lut16`, `lutAtoB` and
+`lutBtoA` tables; a damaged tag that conversion needs throws `CorruptDataException`, and other classes or data spaces throw
+`UnsupportedFormatException`. A matrix profile gets its primaries and curve, so `IsEquivalentTo` recognizes an ICC profile written
+for one of the built-ins, and a version 4.4 `cicp` tag naming PQ or HLG wins over the rest.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#icc)]
+
 ## Code points
 
 `ColorCodePoints` holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami

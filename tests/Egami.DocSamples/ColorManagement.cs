@@ -50,6 +50,30 @@ public class ColorManagement
     }
 
     [Fact]
+    public void Icc()
+    {
+        byte[] bytes = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "DisplayP3.icc"));
+
+        #region icc
+        // IccData reads a profile's header and tags; it never throws, and says what was wrong with a damaged one.
+        IccData icc = IccData.Parse(bytes);
+        Console.WriteLine($"{icc.Description}: version {icc.Version}, {icc.ProfileClass}, {icc.DataSpace} to {icc.ConnectionSpace}, damaged: {icc.IsDamaged}");
+        foreach (IccTag tag in icc.Tags)
+        {
+            Console.WriteLine($"  {tag.Signature} ({tag.Type}), {tag.Data.Length} bytes");
+        }
+
+        // ColorProfile.FromIcc makes an encoding from it: a matrix profile gets its primaries and curve, so an ICC profile written
+        // for Display P3 is equivalent to the built-in.
+        ColorProfile profile = ColorProfile.FromIcc(icc);
+        bool isP3 = profile.IsEquivalentTo(ColorProfile.DisplayP3);
+        #endregion
+
+        Assert.True(isP3);
+        Assert.Same(icc, profile.Icc);
+    }
+
+    [Fact]
     public void CodePoints()
     {
         #region code-points

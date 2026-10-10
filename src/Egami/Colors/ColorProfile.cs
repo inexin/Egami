@@ -25,9 +25,9 @@ public enum ColorModel
 /// </example>
 public sealed class ColorProfile
 {
-    private ColorProfile(string name, ColorModel model, ColorPrimaries? primaries, Chromaticity white, TransferFunction? transfer)
+    private ColorProfile(string name, ColorModel model, ColorPrimaries? primaries, Chromaticity white, TransferFunction? transfer, IccData? icc = null, IccModel? iccModel = null)
     {
-        (Name, Model, Primaries, White, Transfer) = (name, model, primaries, white, transfer);
+        (Name, Model, Primaries, White, Transfer, Icc, IccModel) = (name, model, primaries, white, transfer, icc, iccModel);
     }
 
     /// <summary>Gets sRGB (IEC 61966-2-1): BT.709 primaries, D65, the sRGB curve. What a file without color information means.</summary>
@@ -66,14 +66,23 @@ public sealed class ColorProfile
     /// <summary>Gets the color model.</summary>
     public ColorModel Model { get; }
 
-    /// <summary>Gets the primaries of an RGB encoding, or <see langword="null"/> for gray and CMYK.</summary>
+    /// <summary>
+    /// Gets the primaries of an RGB encoding, or <see langword="null"/> for gray, CMYK, and ICC profiles that convert through
+    /// tables rather than a matrix.
+    /// </summary>
     public ColorPrimaries? Primaries { get; }
 
     /// <summary>Gets the white point.</summary>
     public Chromaticity White { get; }
 
-    /// <summary>Gets the transfer function of an RGB or gray encoding, or <see langword="null"/> for CMYK.</summary>
+    /// <summary>
+    /// Gets the transfer function of an RGB or gray encoding, or <see langword="null"/> for CMYK, ICC profiles that convert
+    /// through tables, and ICC profiles whose three curves differ.
+    /// </summary>
     public TransferFunction? Transfer { get; }
+
+    /// <summary>Gets the ICC profile this encoding was read from, or <see langword="null"/>.</summary>
+    public IccData? Icc { get; }
 
     /// <summary>Gets a value indicating whether the encoding is HDR (a PQ or HLG curve).</summary>
     public bool IsHdr => Transfer?.IsHdr == true;
@@ -107,6 +116,65 @@ public sealed class ColorProfile
     {
         ArgumentNullException.ThrowIfNull(transfer);
         return new ColorProfile(name ?? $"Gray, {transfer}", ColorModel.Gray, null, white ?? Chromaticity.D65, transfer);
+    }
+
+    /// <summary>Reads an ICC profile: <see cref="FromIcc(IccData)"/> of <see cref="IccData.Parse"/>.</summary>
+    /// <param name="profile">The profile's bytes.</param>
+    /// <returns>The encoding.</returns>
+    /// <exception cref="CorruptDataException">The profile is damaged where conversion needs it.</exception>
+    /// <exception cref="UnsupportedFormatException">The profile is not an RGB, gray or CMYK input, display, output or color space profile.</exception>
+    public static ColorProfile FromIcc(ReadOnlySpan<byte> profile) => FromIcc(IccData.Parse(profile));
+
+    /// <summary>
+    /// Returns the encoding an ICC profile describes. A matrix-shaper profile gets its primaries (un-adapted from D50 by its
+    /// <c>chad</c> tag or its white point) and its curve, so <see cref="IsEquivalentTo"/> recognizes sRGB, Display P3 and the
+    /// other built-ins written as ICC; a version 4.4 <c>cicp</c> tag naming a known encoding wins over the rest, as it does for
+    /// HDR profiles. Profiles that convert through tables, and CMYK, keep only the model and white.
+    /// </summary>
+    /// <param name="icc">The parsed profile.</param>
+    /// <returns>The encoding, with <see cref="Icc"/> set.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="icc"/> is <see langword="null"/>.</exception>
+    /// <exception cref="CorruptDataException">The profile is damaged where conversion needs it.</exception>
+    /// <exception cref="UnsupportedFormatException">The profile is not an RGB, gray or CMYK input, display, output or color space profile.</exception>
+    public static ColorProfile FromIcc(IccData icc)
+    {
+        ArgumentNullException.ThrowIfNull(icc);
+        IccModel model = IccModel.Read(icc);
+        string name = string.IsNullOrWhiteSpace(icc.Description) ? "ICC profile" : icc.Description;
+        if (model.Model == ColorModel.Rgb && icc.CodePoints is ColorCodePoints codePoints && FromCodePoints(codePoints) is ColorProfile coded)
+        {
+            return new ColorProfile(name, ColorModel.Rgb, coded.Primaries, coded.White, coded.Transfer, icc, model);
+        }
+
+        // The adopted white: chad maps it to D50; without chad, a version 2 profile's media white is it, and version 4 means D50.
+        Vector3d whiteXyz = model.Adaptation is Matrix3d chad ? chad.Inverse() * PcsWhite
+            : icc.Version.Major < 4 && model.MediaWhite.Y > 0 ? model.MediaWhite * (1 / model.MediaWhite.Y) : PcsWhite;
+        Chromaticity white = Chromaticity.FromXyz(whiteXyz);
+        if (!model.IsMatrixShaper)
+        {
+            return new ColorProfile(name, model.Model, null, white, null, icc, model);
+        }
+
+        IccCurve[] curves = model.Curves!;
+        TransferFunction? transfer = curves.All(c => c.SameAs(curves[0])) ? curves[0].ToTransferFunction() : null;
+        if (model.Model == ColorModel.Gray)
+        {
+            return new ColorProfile(name, ColorModel.Gray, null, white, transfer, icc, model);
+        }
+
+        // Undo the adaptation to D50 to get the colorants under the adopted white, then their chromaticities.
+        Matrix3d toAdopted = model.Adaptation is Matrix3d a ? a.Inverse() : Matrix3d.Bradford(PcsWhite, whiteXyz);
+        Matrix3d native = toAdopted * model.Colorants!.Value;
+        ColorPrimaries primaries = new(Column(native, 0), Column(native, 1), Column(native, 2), white);
+        if (!primaries.IsValid)
+        {
+            throw IccModel.Corrupt("rXYZ, gXYZ, bXYZ", "the colorants cannot form a color space");
+        }
+
+        return new ColorProfile(name, ColorModel.Rgb, primaries, white, transfer, icc, model);
+
+        // Red has z = 0 in Display P3 and Rec. 2020, so rounding in the profile can leave a Z just below 0.
+        static Chromaticity Column(Matrix3d m, int c) => Chromaticity.FromXyz(new Vector3d(m[0, c], m[1, c], Math.Max(m[2, c], 0)));
     }
 
     /// <summary>
@@ -179,16 +247,28 @@ public sealed class ColorProfile
             return false;
         }
 
-        if (Model == ColorModel.Rgb && (Primaries is null || other.Primaries is null || !Primaries.IsCloseTo(other.Primaries)))
+        if (Transfer is null || other.Transfer is null || (Model == ColorModel.Rgb && (Primaries is null || other.Primaries is null)))
+        {
+            // Tables, CMYK, or curves that differ per channel: only the same profile bytes are known to mean the same colors.
+            return Icc is not null && other.Icc is not null && Icc.ToBytes().Span.SequenceEqual(other.Icc.ToBytes().Span);
+        }
+
+        if (Model == ColorModel.Rgb && !Primaries!.IsCloseTo(other.Primaries!))
         {
             return false;
         }
 
-        return Transfer is not null && other.Transfer is not null && Transfer.IsCloseTo(other.Transfer);
+        return Transfer.IsCloseTo(other.Transfer);
     }
 
     /// <inheritdoc/>
     public override string ToString() => Name;
+
+    /// <summary>Gets the parsed tags of <see cref="Icc"/>, for conversion.</summary>
+    internal IccModel? IccModel { get; }
+
+    /// <summary>Gets the ICC connection space white, D50 as ICC headers give it.</summary>
+    private static Vector3d PcsWhite => new(0.9642, 1.0, 0.8249);
 
     /// <summary>The matrix from this encoding's linear RGB to XYZ relative to its own white.</summary>
     internal Matrix3d ToXyz() => Primaries!.ToXyz();

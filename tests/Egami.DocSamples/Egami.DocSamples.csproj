@@ -29,6 +29,7 @@
     <None Include="../images/jpeg/duck-420.jpg" Link="images/duck.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/duck-cmyk.jpg" Link="images/duck-cmyk.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

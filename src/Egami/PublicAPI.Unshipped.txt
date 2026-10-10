@@ -43,6 +43,7 @@ Egami.Colors.ColorPrimaries.Red.init -> void
 Egami.Colors.ColorPrimaries.White.get -> Egami.Colors.Chromaticity
 Egami.Colors.ColorPrimaries.White.init -> void
 Egami.Colors.ColorProfile
+Egami.Colors.ColorProfile.Icc.get -> Egami.Colors.IccData?
 Egami.Colors.ColorProfile.IsEquivalentTo(Egami.Colors.ColorProfile! other) -> bool
 Egami.Colors.ColorProfile.IsHdr.get -> bool
 Egami.Colors.ColorProfile.Model.get -> Egami.Colors.ColorModel
@@ -51,6 +52,47 @@ Egami.Colors.ColorProfile.Primaries.get -> Egami.Colors.ColorPrimaries?
 Egami.Colors.ColorProfile.ToCodePoints() -> Egami.Colors.ColorCodePoints?
 Egami.Colors.ColorProfile.Transfer.get -> Egami.Colors.TransferFunction?
 Egami.Colors.ColorProfile.White.get -> Egami.Colors.Chromaticity
+Egami.Colors.IccData
+Egami.Colors.IccData.CodePoints.get -> Egami.Colors.ColorCodePoints?
+Egami.Colors.IccData.ConnectionSpace.get -> string!
+Egami.Colors.IccData.Copyright.get -> string?
+Egami.Colors.IccData.Created.get -> System.DateTime?
+Egami.Colors.IccData.DataSpace.get -> string!
+Egami.Colors.IccData.Description.get -> string?
+Egami.Colors.IccData.IsDamaged.get -> bool
+Egami.Colors.IccData.Model.get -> Egami.Colors.ColorModel?
+Egami.Colors.IccData.ProfileClass.get -> Egami.Colors.IccProfileClass
+Egami.Colors.IccData.RenderingIntent.get -> Egami.Colors.RenderingIntent
+Egami.Colors.IccData.Tags.get -> System.Collections.Generic.IReadOnlyList<Egami.Colors.IccTag>!
+Egami.Colors.IccData.ToBytes() -> System.ReadOnlyMemory<byte>
+Egami.Colors.IccData.TryGetTag(string! signature, out Egami.Colors.IccTag tag) -> bool
+Egami.Colors.IccData.Version.get -> System.Version!
+Egami.Colors.IccData.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.Abstract = 6 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.ColorSpace = 5 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.DeviceLink = 4 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.Display = 2 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.Input = 1 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.NamedColor = 7 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.Output = 3 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccProfileClass.Unknown = 0 -> Egami.Colors.IccProfileClass
+Egami.Colors.IccTag
+Egami.Colors.IccTag.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Colors.IccTag.Data.init -> void
+Egami.Colors.IccTag.Deconstruct(out string! Signature, out string! Type, out System.ReadOnlyMemory<byte> Data) -> void
+Egami.Colors.IccTag.Equals(Egami.Colors.IccTag other) -> bool
+Egami.Colors.IccTag.IccTag() -> void
+Egami.Colors.IccTag.IccTag(string! Signature, string! Type, System.ReadOnlyMemory<byte> Data) -> void
+Egami.Colors.IccTag.Signature.get -> string!
+Egami.Colors.IccTag.Signature.init -> void
+Egami.Colors.IccTag.Type.get -> string!
+Egami.Colors.IccTag.Type.init -> void
+Egami.Colors.RenderingIntent
+Egami.Colors.RenderingIntent.AbsoluteColorimetric = 3 -> Egami.Colors.RenderingIntent
+Egami.Colors.RenderingIntent.Perceptual = 0 -> Egami.Colors.RenderingIntent
+Egami.Colors.RenderingIntent.RelativeColorimetric = 1 -> Egami.Colors.RenderingIntent
+Egami.Colors.RenderingIntent.Saturation = 2 -> Egami.Colors.RenderingIntent
 Egami.Colors.TransferFunction
 Egami.Colors.TransferFunction.Equals(Egami.Colors.TransferFunction? other) -> bool
 Egami.Colors.TransferFunction.FromLinear(double linear) -> double
@@ -274,6 +316,8 @@ override Egami.Colors.ColorPrimaries.Equals(object? obj) -> bool
 override Egami.Colors.ColorPrimaries.GetHashCode() -> int
 override Egami.Colors.ColorPrimaries.ToString() -> string!
 override Egami.Colors.ColorProfile.ToString() -> string!
+override Egami.Colors.IccData.ToString() -> string!
+override Egami.Colors.IccTag.GetHashCode() -> int
 override Egami.Colors.TransferFunction.Equals(object? obj) -> bool
 override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
@@ -346,6 +390,8 @@ static Egami.Colors.ColorProfile.Create(Egami.Colors.ColorPrimaries! primaries, 
 static Egami.Colors.ColorProfile.CreateGray(Egami.Colors.TransferFunction! transfer, Egami.Colors.Chromaticity? white = null, string? name = null) -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.DisplayP3.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.FromCodePoints(Egami.Colors.ColorCodePoints codePoints) -> Egami.Colors.ColorProfile?
+static Egami.Colors.ColorProfile.FromIcc(Egami.Colors.IccData! icc) -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.FromIcc(System.ReadOnlySpan<byte> profile) -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.GrayLinear.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.GraySrgb.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.LinearSrgb.get -> Egami.Colors.ColorProfile!
@@ -354,6 +400,9 @@ static Egami.Colors.ColorProfile.Rec2020.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.Rec2100Hlg.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.Rec2100Pq.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.Srgb.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.IccData.Parse(System.ReadOnlySpan<byte> profile, Egami.SafetyLimits? limits = null) -> Egami.Colors.IccData!
+static Egami.Colors.IccTag.operator !=(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
+static Egami.Colors.IccTag.operator ==(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
 static Egami.Colors.TransferFunction.Gamma(double gamma) -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Hlg.get -> Egami.Colors.TransferFunction!
 static Egami.Colors.TransferFunction.Linear.get -> Egami.Colors.TransferFunction!
@@ -457,3 +506,5 @@ static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, E
 ~override Egami.Colors.Chromaticity.ToString() -> string
 ~override Egami.Colors.ColorCodePoints.Equals(object obj) -> bool
 ~override Egami.Colors.ColorCodePoints.ToString() -> string
+~override Egami.Colors.IccTag.Equals(object obj) -> bool
+~override Egami.Colors.IccTag.ToString() -> string

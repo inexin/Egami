@@ -1,9 +1,38 @@
 namespace Egami.Colors;
 
-/// <summary>Three doubles: an XYZ or RGB triple in the color math.</summary>
+/// <summary>Three doubles: an XYZ, Lab or RGB triple in the color math.</summary>
 internal readonly record struct Vector3d(double X, double Y, double Z)
 {
     public static Vector3d operator *(Vector3d v, double s) => new(v.X * s, v.Y * s, v.Z * s);
+
+    public static Vector3d operator +(Vector3d a, Vector3d b) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+}
+
+/// <summary>CIE conversions between XYZ and L*a*b* (CIE 15), on <see cref="Vector3d"/> with Lab as (L, a, b).</summary>
+internal static class Cie
+{
+    /// <summary>The ICC connection space white, D50 as ICC headers and Little CMS give it.</summary>
+    public static readonly Vector3d D50 = new(0.9642, 1.0, 0.8249);
+
+    private const double Epsilon = 216.0 / 24389;
+    private const double Kappa = 24389.0 / 27;
+
+    public static Vector3d XyzToLab(Vector3d xyz, Vector3d white)
+    {
+        double fx = F(xyz.X / white.X), fy = F(xyz.Y / white.Y), fz = F(xyz.Z / white.Z);
+        return new Vector3d((116 * fy) - 16, 500 * (fx - fy), 200 * (fy - fz));
+
+        static double F(double t) => t > Epsilon ? Math.Cbrt(t) : ((Kappa * t) + 16) / 116;
+    }
+
+    public static Vector3d LabToXyz(Vector3d lab, Vector3d white)
+    {
+        double fy = (lab.X + 16) / 116;
+        double fx = fy + (lab.Y / 500), fz = fy - (lab.Z / 200);
+        return new Vector3d(white.X * G(fx), white.Y * G(fy), white.Z * G(fz));
+
+        static double G(double f) => f > 6.0 / 29 ? f * f * f : ((116 * f) - 16) / Kappa;
+    }
 }
 
 /// <summary>A 3×3 matrix of doubles, row-major, for color space conversion.</summary>

@@ -19,4 +19,11 @@ public readonly record struct Chromaticity(double X, double Y)
     {
         return new Vector3d(X / Y, 1.0, (1.0 - X - Y) / Y);
     }
+
+    /// <summary>Returns the chromaticity of an XYZ value; black gives (0, 0).</summary>
+    internal static Chromaticity FromXyz(Vector3d xyz)
+    {
+        double sum = xyz.X + xyz.Y + xyz.Z;
+        return sum == 0 ? default : new Chromaticity(xyz.X / sum, xyz.Y / sum);
+    }
 }
