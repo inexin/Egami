@@ -115,6 +115,15 @@ public sealed class OperationCoverageTests : IDisposable
             Assert.Equal((expected.Width, expected.Height), (halfResult.Width, halfResult.Height));
             Assert.Equal((expected.Width, expected.Height), (rgbFloatResult.Width, rgbFloatResult.Height));
             Assert.Equal((expected.Width, expected.Height), (grayFloatResult.Width, grayFloatResult.Height));
+            using Raster<Bgr565> b565 = contiguous.As<Bgr565>();
+            using Raster<Bgr565> b565Result = b565.Derive(chain, Ct);
+            using Raster<Bgra4444> b4444 = contiguous.As<Bgra4444>();
+            using Raster<Bgra4444> b4444Result = b4444.Derive(chain, Ct);
+            using Raster<Rgb10A2> r1010102 = contiguous.As<Rgb10A2>();
+            using Raster<Rgb10A2> r1010102Result = r1010102.Derive(chain, Ct);
+            Assert.Equal((expected.Width, expected.Height), (b565Result.Width, b565Result.Height));
+            Assert.Equal((expected.Width, expected.Height), (b4444Result.Width, b4444Result.Height));
+            Assert.Equal((expected.Width, expected.Height), (r1010102Result.Width, r1010102Result.Height));
         }
     }
 

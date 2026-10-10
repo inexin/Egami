@@ -26,6 +26,7 @@ public class PixelConvertTests
         typeof(Rgba8), typeof(Bgra8), typeof(Rgb8), typeof(Bgr8), typeof(Gray8),
         typeof(Gray16), typeof(GrayAlpha8), typeof(Rgba16), typeof(RgbaF32), typeof(Rgb16), typeof(GrayAlpha16),
         typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32), typeof(GrayF32),
+        typeof(Bgr565), typeof(Bgra4444), typeof(Rgb10A2),
     ];
 
     public static TheoryData<string, string> AllPairs()
@@ -45,7 +46,7 @@ public class PixelConvertTests
     [Fact]
     public void AllPairsCoversEveryCombination()
     {
-        Assert.Equal(289, AllPairs().Count);
+        Assert.Equal(400, AllPairs().Count);
     }
 
     [Theory]
@@ -76,6 +77,9 @@ public class PixelConvertTests
         Assert.Equal(8, Size<RgbaF16>());
         Assert.Equal(12, Size<RgbF32>());
         Assert.Equal(4, Size<GrayF32>());
+        Assert.Equal(2, Size<Bgr565>());
+        Assert.Equal(2, Size<Bgra4444>());
+        Assert.Equal(4, Size<Rgb10A2>());
 
         static int Size<T>()
             where T : unmanaged, IPixelType<T>
@@ -179,9 +183,17 @@ public class PixelConvertTests
         TTo[] actual = new TTo[source.Length];
         PixelConvert.Convert<TFrom, TTo>(source, actual);
 
+        ConvertRoute route = PixelConvert.Route(TFrom.Layout, TTo.Layout);
         for (int i = 0; i < source.Length; i++)
         {
+            // An exact route rounds to its intermediate first: packed levels are not all whole 8 or 16-bit values.
             double[] logical = Channels(source[i]);
+            double step = route == ConvertRoute.Rgba8 ? 255 : route == ConvertRoute.Rgba16 ? 65535 : 0;
+            if (step > 0)
+            {
+                logical = [.. logical.Select(v => Math.Floor((v * step) + 0.5) / step)];
+            }
+
             double[] expected = Expected<TTo>(logical);
             double[] got = Channels(actual[i]);
             double tolerance = typeof(TTo) == typeof(RgbaF16) ? 1.0 / 2048 : typeof(TTo) == typeof(RgbaF32) || typeof(TTo) == typeof(RgbF32) || typeof(TTo) == typeof(GrayF32) ? 1e-6 : 0;
@@ -229,16 +241,29 @@ public class PixelConvertTests
         {
             for (int c = 0; c < 4; c++)
             {
-                result[c] = Math.Floor((result[c] * max) + 0.5) / max;
+                double levels = Levels<T>(c, max);
+                result[c] = Math.Floor((result[c] * levels) + 0.5) / levels;
             }
         }
 
         return result;
     }
 
+    /// <summary>The number of steps in channel <paramref name="c"/> of a packed type, or <paramref name="max"/> for the others.</summary>
+    private static double Levels<T>(int c, double max)
+    {
+        return typeof(T).Name switch
+        {
+            nameof(Bgr565) => c == 1 ? 63 : c == 3 ? 1 : 31,
+            nameof(Bgra4444) => 15,
+            nameof(Rgb10A2) => c == 3 ? 3 : 1023,
+            _ => max,
+        };
+    }
+
     private static bool T_HasAlpha<T>()
     {
-        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32);
+        return typeof(T) != typeof(Rgb8) && typeof(T) != typeof(Bgr8) && typeof(T) != typeof(Gray8) && typeof(T) != typeof(Gray16) && typeof(T) != typeof(Rgb16) && typeof(T) != typeof(RgbF32) && typeof(T) != typeof(GrayF32) && typeof(T) != typeof(Bgr565);
     }
 
     private static double LumaExact(double r, double g, double b)
@@ -279,6 +304,9 @@ public class PixelConvertTests
             nameof(RgbaF16) => new RgbaF16((Half)(c.R / 255f), (Half)(c.G / 255f), (Half)(c.B / 255f), (Half)(c.A / 255f)),
             nameof(RgbF32) => new RgbF32(c.R / 255f, c.G / 255f, c.B / 255f),
             nameof(GrayF32) => new GrayF32(c.Luma / 255f),
+            nameof(Bgr565) => new Bgr565(Level(c.R, 31), Level(c.G, 63), Level(c.B, 31)),
+            nameof(Bgra4444) => new Bgra4444(Level(c.R, 15), Level(c.G, 15), Level(c.B, 15), Level(c.A, 15)),
+            nameof(Rgb10A2) => new Rgb10A2(Level(c.R, 1023), Level(c.G, 1023), Level(c.B, 1023), Level(c.A, 3)),
             _ => throw new ArgumentOutOfRangeException(nameof(T)),
         };
         return (T)pixel;
@@ -306,8 +334,16 @@ public class PixelConvertTests
             RgbaF16 p => [(double)p.R, (double)p.G, (double)p.B, (double)p.A],
             RgbF32 p => [p.R, p.G, p.B, 1],
             GrayF32 p => [p.L, p.L, p.L, 1],
+            Bgr565 p => [p.R / 31.0, p.G / 63.0, p.B / 31.0, 1],
+            Bgra4444 p => [p.R / 15.0, p.G / 15.0, p.B / 15.0, p.A / 15.0],
+            Rgb10A2 p => [p.R / 1023.0, p.G / 1023.0, p.B / 1023.0, p.A / 3.0],
             _ => throw new ArgumentOutOfRangeException(nameof(pixel)),
         };
+    }
+
+    private static int Level(byte value, int levels)
+    {
+        return (int)Math.Round(value * levels / 255.0);
     }
 
     private static Type PixelType(string name)

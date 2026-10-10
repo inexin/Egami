@@ -14,6 +14,9 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `Argb8` and `Abgr8`: alpha-first byte orders, with SIMD byte shuffles to and from `Rgba8` and `Bgra8`.
 - `RgbaF16`, `RgbF32` and `GrayF32`: half-float color, and float color and gray without alpha. Half conversions round as
   `(Half)f` does, with SIMD kernels identical to the casts for every one of the 2^32 float and 65,536 half values.
+- `Bgr565`, `Bgra4444` and `Rgb10A2`: packed 16 and 32-bit color in the DXGI and Vulkan layouts. Widening and narrowing both
+  round to nearest, so every route gives the same pixel and every packed value round-trips; SIMD kernels convert 5-6-5 to
+  and from `Rgba8` and `Bgra8`.
 - `Alpha8`: an alpha-only mask. It reads as black with that alpha; converting a color to it keeps only the alpha.
 
 ### Pixel layouts
