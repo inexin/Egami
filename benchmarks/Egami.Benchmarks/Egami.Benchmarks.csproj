@@ -10,6 +10,8 @@
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
     <!-- Builds interlaced PNGs independently of Egami's writer, which writes only non-interlaced files. -->
     <Compile Include="..\..\tests\Egami.Tests\Formats\Png\PngBuilder.cs" Link="PngBuilder.cs" />
+    <!-- The Phase 2.2 peak-memory harness, shared with the tests. -->
+    <Compile Include="..\..\tests\Egami.Tests\Memory\PeakMemory.cs" Link="PeakMemory.cs" />
   </ItemGroup>
 
   <ItemGroup>
