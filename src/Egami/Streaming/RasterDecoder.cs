@@ -75,6 +75,13 @@ public sealed class RasterDecoder : IDisposable
         }
 
         _stage = new RowStage(source, _plan);
+        PixelLayoutInfo layout = source.Layout;
+        if (options.ConvertColorTo is Colors.ColorProfile target)
+        {
+            _stage.Color = source.WithNaturalType(new ColorRows.Factory(source.Metadata.GetColorProfile(), target, _context));
+            layout = WithNaturalType(new LayoutVisitor());
+        }
+
         RasterMetadata metadata = Metadata;
         Size output = _plan.Output;
         _info = new RasterInfo
@@ -82,10 +89,10 @@ public sealed class RasterDecoder : IDisposable
             Format = format,
             Width = output.Width,
             Height = output.Height,
-            Layout = source.Layout,
+            Layout = layout,
             FrameCount = source.FrameCount,
             HasMetadata = metadata.Exif is not null || !metadata.IccProfile.IsEmpty || !metadata.Xmp.IsEmpty || metadata.Text.Count > 0,
-            EstimatedBytes = (long)output.Width * output.Height * source.Layout.BytesPerPixel * (source.FrameCount ?? 1),
+            EstimatedBytes = (long)output.Width * output.Height * layout.BytesPerPixel * (source.FrameCount ?? 1),
             Orientation = metadata.Exif?.Orientation ?? ImageOrientation.Normal,
             LoopCount = source.FrameCount > 1 ? metadata.LoopCount : null,
             Access = source.Access,
@@ -135,7 +142,8 @@ public sealed class RasterDecoder : IDisposable
         get
         {
             RowSource source = _source ?? throw NoHeader();
-            if (!_plan!.ChangesGeometry)
+            Colors.ColorProfile? target = _options.ConvertColorTo;
+            if (!_plan!.ChangesGeometry && target is null)
             {
                 return source.Metadata;
             }
@@ -144,8 +152,17 @@ public sealed class RasterDecoder : IDisposable
             {
                 _upkeptComplete = source.MetadataComplete;
                 _upkept = source.Metadata.Copy();
-                ExifUpkeep.Dimensions(_upkept, _plan.Output);
-                ExifUpkeep.DropThumbnail(_upkept);
+                if (_plan.ChangesGeometry)
+                {
+                    ExifUpkeep.Dimensions(_upkept, _plan.Output);
+                    ExifUpkeep.DropThumbnail(_upkept);
+                }
+
+                if (target is not null)
+                {
+                    // The rows are converted, so the metadata says what they now mean, as ConvertColor records it.
+                    _upkept.SetColorProfile(target);
+                }
             }
 
             return _upkept;
@@ -514,7 +531,26 @@ public sealed class RasterDecoder : IDisposable
     /// <summary>Calls <paramref name="visitor"/> with the natural pixel type, once the header has been read.</summary>
     internal TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor)
     {
-        return (_source ?? throw NoHeader()).WithNaturalType(visitor);
+        RowSource source = _source ?? throw NoHeader();
+        return _options.ConvertColorTo is Colors.ColorProfile target
+            ? source.WithNaturalType(new ConvertedTypeVisitor<TResult>(target, visitor))
+            : source.WithNaturalType(visitor);
+    }
+
+    /// <summary>Passes on the type a color-converting load gives for the source's natural type.</summary>
+    private sealed class ConvertedTypeVisitor<TResult>(Colors.ColorProfile target, INaturalTypeVisitor<TResult> visitor) : INaturalTypeVisitor<TResult>
+    {
+        public TResult Visit<TNatural>()
+            where TNatural : unmanaged, IPixelType<TNatural>
+        {
+            return ColorLoad.WithConvertedType<TNatural, TResult>(target, visitor);
+        }
+    }
+
+    private sealed class LayoutVisitor : INaturalTypeVisitor<PixelLayoutInfo>
+    {
+        public PixelLayoutInfo Visit<TPixel>()
+            where TPixel : unmanaged, IPixelType<TPixel> => TPixel.Layout;
     }
 
     private void CheckFeed()
@@ -870,7 +906,7 @@ public sealed class RasterDecoder : IDisposable
     /// <summary>Decodes every remaining frame into one raster in the natural pixel type. See <see cref="ReadAll{TPixel}"/>.</summary>
     internal Raster ReadAll()
     {
-        return _source!.WithNaturalType(new ReadAllVisitor(this));
+        return WithNaturalType(new ReadAllVisitor(this));
     }
 
     /// <summary>Throws unless <paramref name="target"/> is <see cref="Info"/>'s size.</summary>

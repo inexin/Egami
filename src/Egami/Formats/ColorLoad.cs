@@ -42,6 +42,43 @@ internal static class ColorLoad
         }
     }
 
+    /// <summary>
+    /// Calls <paramref name="visitor"/> with the pixel type <see cref="Natural"/> converts a <typeparamref name="TNatural"/> image
+    /// to, so a streamed decode hands out the type a load would.
+    /// </summary>
+    internal static TResult WithConvertedType<TNatural, TResult>(ColorProfile target, Streaming.INaturalTypeVisitor<TResult> visitor)
+        where TNatural : unmanaged, IPixelType<TNatural>
+    {
+        if (ColorTransform.ModelOf<TNatural>() is not ColorModel model || model == target.Model)
+        {
+            return visitor.Visit<TNatural>();
+        }
+
+        PixelLayoutInfo layout = TNatural.Layout;
+        int depth = layout.ChannelType switch
+        {
+            PixelChannelType.Unorm8 => 8,
+            PixelChannelType.Unorm16 => 16,
+            _ => 32,
+        };
+        return (target.Model, depth, layout.HasAlpha) switch
+        {
+            (ColorModel.Rgb, 8, false) => visitor.Visit<Rgb8>(),
+            (ColorModel.Rgb, 8, true) => visitor.Visit<Rgba8>(),
+            (ColorModel.Rgb, 16, false) => visitor.Visit<Rgb16>(),
+            (ColorModel.Rgb, 16, true) => visitor.Visit<Rgba16>(),
+            (ColorModel.Rgb, _, false) => visitor.Visit<RgbF32>(),
+            (ColorModel.Rgb, _, true) => visitor.Visit<RgbaF32>(),
+            (ColorModel.Gray, 8, false) => visitor.Visit<Gray8>(),
+            (ColorModel.Gray, 8, true) => visitor.Visit<GrayAlpha8>(),
+            (ColorModel.Gray, 16, false) => visitor.Visit<Gray16>(),
+            (ColorModel.Gray, 16, true) => visitor.Visit<GrayAlpha16>(),
+            (ColorModel.Gray, _, _) => visitor.Visit<GrayF32>(),
+            (_, 8, _) => visitor.Visit<Cmyk8>(),
+            _ => visitor.Visit<Cmyk16>(),
+        };
+    }
+
     private sealed class Visitor(ColorProfile target) : IRasterVisitor<Raster>
     {
         public Raster Visit<TPixel>(Raster<TPixel> raster)

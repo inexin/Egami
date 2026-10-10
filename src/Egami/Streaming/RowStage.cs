@@ -36,8 +36,27 @@ internal sealed class RowStage(RowSource source, ReadPlan plan)
         Row += Math.Min(count, Remaining);
     }
 
+    /// <summary>
+    /// Gets or sets the conversion to <see cref="Formats.ReaderOptions.ConvertColorTo"/>, run on each row in the natural pixel
+    /// type after cropping and reducing, as a load followed by ConvertColor does.
+    /// </summary>
+    public ColorRows? Color { get; set; }
+
     /// <summary>Writes the next output row into <paramref name="destination"/>, which is the output width.</summary>
     public void Read<TPixel>(Span<TPixel> destination)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        if (Color is ColorRows color)
+        {
+            color.Read(this, destination);
+            return;
+        }
+
+        ReadStored(destination);
+    }
+
+    /// <summary>Writes the next output row as stored: cropped, reduced and converted to the pixel type, with no color conversion.</summary>
+    internal void ReadStored<TPixel>(Span<TPixel> destination)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         Rect region = plan.Region;
@@ -103,5 +122,55 @@ internal sealed class RowStage(RowSource source, ReadPlan plan)
         }
 
         return new Vector4((float)(sum[0] / alpha), (float)(sum[1] / alpha), (float)(sum[2] / alpha), (float)(alpha / count));
+    }
+}
+
+/// <summary>Converts rows to <see cref="Formats.ReaderOptions.ConvertColorTo"/>; made for the source's natural pixel type.</summary>
+internal abstract class ColorRows
+{
+    /// <summary>Reads the stage's next row in the natural type and converts it into <paramref name="destination"/>.</summary>
+    public abstract void Read<TPixel>(RowStage stage, Span<TPixel> destination)
+        where TPixel : unmanaged, IPixelType<TPixel>;
+
+    /// <summary>Makes the conversion for a source whose natural type is the visited one.</summary>
+    internal sealed class Factory(Colors.ColorProfile source, Colors.ColorProfile target, EgamiContext context) : INaturalTypeVisitor<ColorRows>
+    {
+        public ColorRows Visit<TNatural>()
+            where TNatural : unmanaged, IPixelType<TNatural>
+        {
+            return new ColorRows<TNatural>(source, target, context);
+        }
+    }
+}
+
+/// <summary>
+/// The conversion for natural type <typeparamref name="TNatural"/>: the same transform Raster.ConvertColor builds, from the
+/// source's profile to the target at the destination's color model, kept per destination type.
+/// </summary>
+internal sealed class ColorRows<TNatural>(Colors.ColorProfile source, Colors.ColorProfile target, EgamiContext context) : ColorRows
+    where TNatural : unmanaged, IPixelType<TNatural>
+{
+    private TNatural[] _row = [];
+    private Type? _type;
+    private Colors.ColorTransform? _transform;
+
+    public override void Read<TPixel>(RowStage stage, Span<TPixel> destination)
+    {
+        if (_row.Length < destination.Length)
+        {
+            _row = new TNatural[destination.Length];
+        }
+
+        Span<TNatural> natural = _row.AsSpan(0, destination.Length);
+        stage.ReadStored(natural);
+        if (_type != typeof(TPixel))
+        {
+            Colors.ColorProfile from = Operations.Color.ConvertColorOperation.ForPixels(source, Colors.ColorTransform.ModelOf<TNatural>() ?? Colors.ColorModel.Rgb);
+            Colors.ColorProfile to = Operations.Color.ConvertColorOperation.ForPixels(target, Colors.ColorTransform.ModelOf<TPixel>() ?? Colors.ColorModel.Rgb);
+            _transform = Colors.ColorTransform.Create(from, to, Colors.ColorTransformOptions.Default, context);
+            _type = typeof(TPixel);
+        }
+
+        _transform!.Apply<TNatural, TPixel>(natural, destination);
     }
 }
