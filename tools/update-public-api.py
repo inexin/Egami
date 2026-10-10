@@ -1,4 +1,4 @@
-"""Brings PublicAPI.Unshipped.txt in line with the code: adds every symbol the public API analyzer reports as undeclared (RS0016)
+"""Brings PublicAPI.Unshipped.txt in line with the code (PublicAPI.Shipped.txt is the frozen 1.0 API; edit it by hand only at a release): adds every symbol the public API analyzer reports as undeclared (RS0016)
 and removes every declared one it cannot find (RS0017), such as a renamed or internalized member.
 
 Usage: python tools/update-public-api.py   (from the repo root)

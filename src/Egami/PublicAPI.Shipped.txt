@@ -1,1 +1,1253 @@
 #nullable enable
+abstract Egami.Metadata.FormatDetails.Copy() -> Egami.Metadata.FormatDetails!
+abstract Egami.Raster.FrameCount.get -> int
+abstract Egami.Raster.Layout.get -> Egami.Pixels.PixelLayoutInfo
+Egami.ClearMode
+Egami.ClearMode.None = 0 -> Egami.ClearMode
+Egami.ClearMode.Zero = 1 -> Egami.ClearMode
+Egami.CorruptDataException
+Egami.CorruptDataException.CorruptDataException(string! formatName, long offset, string! problem, System.Exception? innerException = null) -> void
+Egami.CorruptDataException.FormatName.get -> string!
+Egami.CorruptDataException.Offset.get -> long
+Egami.EgamiContext
+Egami.EgamiContext.<Clone>$() -> Egami.EgamiContext!
+Egami.EgamiContext.EgamiContext() -> void
+Egami.EgamiContext.Equals(Egami.EgamiContext? other) -> bool
+Egami.EgamiContext.Formats.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.FormatInfo!>!
+Egami.EgamiContext.Formats.init -> void
+Egami.EgamiContext.Limits.get -> Egami.SafetyLimits!
+Egami.EgamiContext.Limits.init -> void
+Egami.EgamiContext.MaxParallelism.get -> int
+Egami.EgamiContext.MaxParallelism.init -> void
+Egami.EgamiContext.Memory.get -> Egami.IPixelMemorySource!
+Egami.EgamiContext.Memory.init -> void
+Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo! format) -> Egami.EgamiContext!
+Egami.EgamiException
+Egami.EgamiException.EgamiException(string! message, System.Exception? innerException = null) -> void
+Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.AlphaBitfields = 5 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Bitfields = 4 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Jpeg = 6 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.None = 0 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Png = 7 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Rle24 = 3 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Rle4 = 2 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpCompression.Rle8 = 1 -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpDetails
+Egami.Formats.Bmp.BmpDetails.BitsPerPixel.get -> int
+Egami.Formats.Bmp.BmpDetails.BitsPerPixel.set -> void
+Egami.Formats.Bmp.BmpDetails.BmpDetails() -> void
+Egami.Formats.Bmp.BmpDetails.Compression.get -> Egami.Formats.Bmp.BmpCompression
+Egami.Formats.Bmp.BmpDetails.Compression.set -> void
+Egami.Formats.Bmp.BmpDetails.HeaderSize.get -> int
+Egami.Formats.Bmp.BmpDetails.HeaderSize.set -> void
+Egami.Formats.Bmp.BmpDetails.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Bmp.BmpDetails.Palette.set -> void
+Egami.Formats.Bmp.BmpDetails.TopDown.get -> bool
+Egami.Formats.Bmp.BmpDetails.TopDown.set -> void
+Egami.Formats.Bmp.BmpFormat
+Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Auto = 0 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Bgr24 = 5 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Bgra32 = 6 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Indexed1 = 1 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Indexed2 = 2 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Indexed4 = 3 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpPixelFormat.Indexed8 = 4 -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpWriterOptions
+Egami.Formats.Bmp.BmpWriterOptions.BmpWriterOptions() -> void
+Egami.Formats.Bmp.BmpWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Bmp.BmpWriterOptions.Palette.init -> void
+Egami.Formats.Bmp.BmpWriterOptions.PixelFormat.get -> Egami.Formats.Bmp.BmpPixelFormat
+Egami.Formats.Bmp.BmpWriterOptions.PixelFormat.init -> void
+Egami.Formats.EgamiInput
+Egami.Formats.EgamiInput.AddFrame<TPixel>(Egami.Raster<TPixel>! raster, Egami.ClearMode clear = Egami.ClearMode.None) -> Egami.Frame<TPixel>!
+Egami.Formats.EgamiInput.CancellationToken.get -> System.Threading.CancellationToken
+Egami.Formats.EgamiInput.CheckFrameCount(long frames) -> void
+Egami.Formats.EgamiInput.CheckMemory(long bytes) -> void
+Egami.Formats.EgamiInput.CheckMetadataBytes(long bytes) -> void
+Egami.Formats.EgamiInput.Context.get -> Egami.EgamiContext!
+Egami.Formats.EgamiInput.Corrupt(long offset, string! problem) -> Egami.CorruptDataException!
+Egami.Formats.EgamiInput.CreateRaster<TPixel>(long width, long height, Egami.ClearMode clear = Egami.ClearMode.None) -> Egami.Raster<TPixel>!
+Egami.Formats.EgamiInput.FormatName.get -> string!
+Egami.Formats.EgamiInput.Limits.get -> Egami.SafetyLimits!
+Egami.Formats.EgamiInput.Peek(int count) -> System.ReadOnlySpan<byte>
+Egami.Formats.EgamiInput.Position.get -> long
+Egami.Formats.EgamiInput.Read(System.Span<byte> destination) -> int
+Egami.Formats.EgamiInput.ReadByte() -> byte
+Egami.Formats.EgamiInput.ReadExactly(System.Span<byte> destination) -> void
+Egami.Formats.EgamiInput.ReadUInt16BigEndian() -> ushort
+Egami.Formats.EgamiInput.ReadUInt16LittleEndian() -> ushort
+Egami.Formats.EgamiInput.ReadUInt32BigEndian() -> uint
+Egami.Formats.EgamiInput.ReadUInt32LittleEndian() -> uint
+Egami.Formats.EgamiInput.RentScratch(int byteLength, Egami.ClearMode clear = Egami.ClearMode.None) -> System.Buffers.IMemoryOwner<byte>!
+Egami.Formats.EgamiInput.Skip(long count) -> void
+Egami.Formats.EgamiInput.Warn(Egami.Raster! raster, string! warning) -> void
+Egami.Formats.FormatInfo
+Egami.Formats.FormatInfo.<Clone>$() -> Egami.Formats.FormatInfo!
+Egami.Formats.FormatInfo.Equals(Egami.Formats.FormatInfo? other) -> bool
+Egami.Formats.FormatInfo.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.FormatInfo.Extensions.init -> void
+Egami.Formats.FormatInfo.FormatInfo() -> void
+Egami.Formats.FormatInfo.Matches.get -> Egami.Formats.SignatureMatcher!
+Egami.Formats.FormatInfo.Matches.init -> void
+Egami.Formats.FormatInfo.MimeTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.FormatInfo.MimeTypes.init -> void
+Egami.Formats.FormatInfo.Name.get -> string!
+Egami.Formats.FormatInfo.Name.init -> void
+Egami.Formats.FormatInfo.Reader.get -> Egami.Formats.IFormatReader?
+Egami.Formats.FormatInfo.Reader.init -> void
+Egami.Formats.FormatInfo.SignatureLength.get -> int
+Egami.Formats.FormatInfo.SignatureLength.init -> void
+Egami.Formats.FormatInfo.Writer.get -> Egami.Formats.IFormatWriter?
+Egami.Formats.FormatInfo.Writer.init -> void
+Egami.Formats.Gif.GifApplicationExtension
+Egami.Formats.Gif.GifApplicationExtension.<Clone>$() -> Egami.Formats.Gif.GifApplicationExtension!
+Egami.Formats.Gif.GifApplicationExtension.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Gif.GifApplicationExtension.Data.init -> void
+Egami.Formats.Gif.GifApplicationExtension.Deconstruct(out string! Identifier, out System.ReadOnlyMemory<byte> Data) -> void
+Egami.Formats.Gif.GifApplicationExtension.Equals(Egami.Formats.Gif.GifApplicationExtension? other) -> bool
+Egami.Formats.Gif.GifApplicationExtension.GifApplicationExtension(string! Identifier, System.ReadOnlyMemory<byte> Data) -> void
+Egami.Formats.Gif.GifApplicationExtension.Identifier.get -> string!
+Egami.Formats.Gif.GifApplicationExtension.Identifier.init -> void
+Egami.Formats.Gif.GifDetails
+Egami.Formats.Gif.GifDetails.BackgroundIndex.get -> byte
+Egami.Formats.Gif.GifDetails.BackgroundIndex.set -> void
+Egami.Formats.Gif.GifDetails.GifDetails() -> void
+Egami.Formats.Gif.GifDetails.GlobalPalette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Gif.GifDetails.GlobalPalette.set -> void
+Egami.Formats.Gif.GifDetails.OtherExtensions.get -> System.Collections.Generic.IList<Egami.Formats.Gif.GifApplicationExtension!>!
+Egami.Formats.Gif.GifDetails.PixelAspectRatio.get -> double?
+Egami.Formats.Gif.GifDetails.PixelAspectRatio.set -> void
+Egami.Formats.Gif.GifDetails.RepetitionCount.get -> int?
+Egami.Formats.Gif.GifDetails.RepetitionCount.set -> void
+Egami.Formats.Gif.GifDetails.Version.get -> string!
+Egami.Formats.Gif.GifDetails.Version.set -> void
+Egami.Formats.Gif.GifFormat
+Egami.Formats.Gif.GifFrameDetails
+Egami.Formats.Gif.GifFrameDetails.GifFrameDetails() -> void
+Egami.Formats.Gif.GifFrameDetails.Interlaced.get -> bool
+Egami.Formats.Gif.GifFrameDetails.Interlaced.set -> void
+Egami.Formats.Gif.GifFrameDetails.LocalPalette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgb8>
+Egami.Formats.Gif.GifFrameDetails.LocalPalette.set -> void
+Egami.Formats.Gif.GifFrameDetails.TransparentIndex.get -> int?
+Egami.Formats.Gif.GifFrameDetails.TransparentIndex.set -> void
+Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifPaletteScope.Auto = 0 -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifPaletteScope.Global = 1 -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifPaletteScope.PerFrame = 2 -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifWriterOptions
+Egami.Formats.Gif.GifWriterOptions.GifWriterOptions() -> void
+Egami.Formats.Gif.GifWriterOptions.OptimizeFrames.get -> bool
+Egami.Formats.Gif.GifWriterOptions.OptimizeFrames.init -> void
+Egami.Formats.Gif.GifWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Gif.GifWriterOptions.Palette.init -> void
+Egami.Formats.Gif.GifWriterOptions.PaletteScope.get -> Egami.Formats.Gif.GifPaletteScope
+Egami.Formats.Gif.GifWriterOptions.PaletteScope.init -> void
+Egami.Formats.IFormatReader
+Egami.Formats.IFormatReader.Read(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Raster!
+Egami.Formats.IFormatReader.Read<TPixel>(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Raster<TPixel>!
+Egami.Formats.IFormatReader.ReadInfo(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Formats.RasterInfo!
+Egami.Formats.IFormatWriter
+Egami.Formats.IFormatWriter.Write<TPixel>(Egami.Raster<TPixel>! raster, System.IO.Stream! output, Egami.Formats.WriterOptions! options) -> void
+Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Subsample420 = 0 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Subsample422 = 1 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.ChromaSubsampling.Subsample444 = 2 -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorSpace.Cmyk = 3 -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorSpace.Gray = 0 -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorSpace.Rgb = 2 -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorSpace.YCbCr = 1 -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorSpace.Ycck = 4 -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegColorType.Auto = 0 -> Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegColorType.Gray = 1 -> Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegComponent
+Egami.Formats.Jpeg.JpegComponent.<Clone>$() -> Egami.Formats.Jpeg.JpegComponent!
+Egami.Formats.Jpeg.JpegComponent.Deconstruct(out int Id, out int HorizontalSampling, out int VerticalSampling) -> void
+Egami.Formats.Jpeg.JpegComponent.Equals(Egami.Formats.Jpeg.JpegComponent? other) -> bool
+Egami.Formats.Jpeg.JpegComponent.HorizontalSampling.get -> int
+Egami.Formats.Jpeg.JpegComponent.HorizontalSampling.init -> void
+Egami.Formats.Jpeg.JpegComponent.Id.get -> int
+Egami.Formats.Jpeg.JpegComponent.Id.init -> void
+Egami.Formats.Jpeg.JpegComponent.JpegComponent(int Id, int HorizontalSampling, int VerticalSampling) -> void
+Egami.Formats.Jpeg.JpegComponent.VerticalSampling.get -> int
+Egami.Formats.Jpeg.JpegComponent.VerticalSampling.init -> void
+Egami.Formats.Jpeg.JpegDetails
+Egami.Formats.Jpeg.JpegDetails.ColorSpace.get -> Egami.Formats.Jpeg.JpegColorSpace
+Egami.Formats.Jpeg.JpegDetails.ColorSpace.set -> void
+Egami.Formats.Jpeg.JpegDetails.Components.get -> System.Collections.Generic.IList<Egami.Formats.Jpeg.JpegComponent!>!
+Egami.Formats.Jpeg.JpegDetails.EstimatedQuality.get -> int?
+Egami.Formats.Jpeg.JpegDetails.EstimatedQuality.set -> void
+Egami.Formats.Jpeg.JpegDetails.ExtendedXmp.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Jpeg.JpegDetails.ExtendedXmp.set -> void
+Egami.Formats.Jpeg.JpegDetails.JpegDetails() -> void
+Egami.Formats.Jpeg.JpegDetails.Progressive.get -> bool
+Egami.Formats.Jpeg.JpegDetails.Progressive.set -> void
+Egami.Formats.Jpeg.JpegDetails.RestartInterval.get -> int
+Egami.Formats.Jpeg.JpegDetails.RestartInterval.set -> void
+Egami.Formats.Jpeg.JpegDetails.ScaleDenominator.get -> int
+Egami.Formats.Jpeg.JpegDetails.ScaleDenominator.set -> void
+Egami.Formats.Jpeg.JpegFormat
+Egami.Formats.Jpeg.JpegReaderOptions
+Egami.Formats.Jpeg.JpegReaderOptions.Equals(Egami.Formats.Jpeg.JpegReaderOptions? other) -> bool
+Egami.Formats.Jpeg.JpegReaderOptions.FastUpsampling.get -> bool
+Egami.Formats.Jpeg.JpegReaderOptions.FastUpsampling.init -> void
+Egami.Formats.Jpeg.JpegReaderOptions.JpegReaderOptions() -> void
+Egami.Formats.Jpeg.JpegWriterOptions
+Egami.Formats.Jpeg.JpegWriterOptions.Background.get -> Egami.Pixels.Rgba8?
+Egami.Formats.Jpeg.JpegWriterOptions.Background.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.ColorType.get -> Egami.Formats.Jpeg.JpegColorType
+Egami.Formats.Jpeg.JpegWriterOptions.ColorType.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.JpegWriterOptions() -> void
+Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman.get -> bool
+Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Quality.get -> int
+Egami.Formats.Jpeg.JpegWriterOptions.Quality.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.RestartInterval.get -> int
+Egami.Formats.Jpeg.JpegWriterOptions.RestartInterval.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.Subsampling.get -> Egami.Formats.Jpeg.ChromaSubsampling
+Egami.Formats.Jpeg.JpegWriterOptions.Subsampling.init -> void
+Egami.Formats.Png.PngChunk
+Egami.Formats.Png.PngChunk.<Clone>$() -> Egami.Formats.Png.PngChunk!
+Egami.Formats.Png.PngChunk.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngChunk.Data.init -> void
+Egami.Formats.Png.PngChunk.Deconstruct(out string! Type, out System.ReadOnlyMemory<byte> Data, out Egami.Formats.Png.PngChunkPosition Position) -> void
+Egami.Formats.Png.PngChunk.Equals(Egami.Formats.Png.PngChunk? other) -> bool
+Egami.Formats.Png.PngChunk.PngChunk(string! Type, System.ReadOnlyMemory<byte> Data, Egami.Formats.Png.PngChunkPosition Position) -> void
+Egami.Formats.Png.PngChunk.Position.get -> Egami.Formats.Png.PngChunkPosition
+Egami.Formats.Png.PngChunk.Position.init -> void
+Egami.Formats.Png.PngChunk.Type.get -> string!
+Egami.Formats.Png.PngChunk.Type.init -> void
+Egami.Formats.Png.PngChunkPosition
+Egami.Formats.Png.PngChunkPosition.AfterImageData = 2 -> Egami.Formats.Png.PngChunkPosition
+Egami.Formats.Png.PngChunkPosition.BeforeImageData = 1 -> Egami.Formats.Png.PngChunkPosition
+Egami.Formats.Png.PngChunkPosition.BeforePalette = 0 -> Egami.Formats.Png.PngChunkPosition
+Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngColorType.Gray = 0 -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngColorType.GrayAlpha = 4 -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngColorType.Palette = 3 -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngColorType.Rgb = 2 -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngColorType.Rgba = 6 -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngCompressionStrategy.Auto = 0 -> Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngCompressionStrategy.Filtered = 2 -> Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngCompressionStrategy.HuffmanOnly = 3 -> Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngCompressionStrategy.RunLengthEncoding = 4 -> Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngCompressionStrategy.Standard = 1 -> Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngDetails
+Egami.Formats.Png.PngDetails.Animated.get -> bool
+Egami.Formats.Png.PngDetails.Animated.set -> void
+Egami.Formats.Png.PngDetails.BitDepth.get -> int
+Egami.Formats.Png.PngDetails.BitDepth.set -> void
+Egami.Formats.Png.PngDetails.Chromaticities.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngDetails.Chromaticities.set -> void
+Egami.Formats.Png.PngDetails.CodingIndependentCodePoints.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngDetails.CodingIndependentCodePoints.set -> void
+Egami.Formats.Png.PngDetails.ColorType.get -> Egami.Formats.Png.PngColorType
+Egami.Formats.Png.PngDetails.ColorType.set -> void
+Egami.Formats.Png.PngDetails.DefaultImageIsFrame.get -> bool
+Egami.Formats.Png.PngDetails.DefaultImageIsFrame.set -> void
+Egami.Formats.Png.PngDetails.FileGamma.get -> uint?
+Egami.Formats.Png.PngDetails.FileGamma.set -> void
+Egami.Formats.Png.PngDetails.IccProfileName.get -> string?
+Egami.Formats.Png.PngDetails.IccProfileName.set -> void
+Egami.Formats.Png.PngDetails.Interlaced.get -> bool
+Egami.Formats.Png.PngDetails.Interlaced.set -> void
+Egami.Formats.Png.PngDetails.OtherChunks.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngChunk!>!
+Egami.Formats.Png.PngDetails.Palette.get -> System.ReadOnlyMemory<Egami.Pixels.Rgba8>
+Egami.Formats.Png.PngDetails.Palette.set -> void
+Egami.Formats.Png.PngDetails.PngDetails() -> void
+Egami.Formats.Png.PngDetails.ResolutionHasUnit.get -> bool?
+Egami.Formats.Png.PngDetails.ResolutionHasUnit.set -> void
+Egami.Formats.Png.PngDetails.SrgbRenderingIntent.get -> byte?
+Egami.Formats.Png.PngDetails.SrgbRenderingIntent.set -> void
+Egami.Formats.Png.PngDetails.TextSources.get -> System.Collections.Generic.IList<Egami.Formats.Png.PngTextSource!>!
+Egami.Formats.Png.PngDetails.Transparency.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Png.PngDetails.Transparency.set -> void
+Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Adaptive = 0 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Average = 4 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.None = 1 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Paeth = 5 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Sub = 2 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFilterMode.Up = 3 -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngFormat
+Egami.Formats.Png.PngTextSource
+Egami.Formats.Png.PngTextSource.<Clone>$() -> Egami.Formats.Png.PngTextSource!
+Egami.Formats.Png.PngTextSource.ChunkType.get -> string!
+Egami.Formats.Png.PngTextSource.ChunkType.init -> void
+Egami.Formats.Png.PngTextSource.Compressed.get -> bool
+Egami.Formats.Png.PngTextSource.Compressed.init -> void
+Egami.Formats.Png.PngTextSource.Deconstruct(out string! ChunkType, out bool Compressed) -> void
+Egami.Formats.Png.PngTextSource.Equals(Egami.Formats.Png.PngTextSource? other) -> bool
+Egami.Formats.Png.PngTextSource.PngTextSource(string! ChunkType, bool Compressed) -> void
+Egami.Formats.Png.PngWriterOptions
+Egami.Formats.Png.PngWriterOptions.BitDepth.get -> int?
+Egami.Formats.Png.PngWriterOptions.BitDepth.init -> void
+Egami.Formats.Png.PngWriterOptions.ColorType.get -> Egami.Formats.Png.PngColorType?
+Egami.Formats.Png.PngWriterOptions.ColorType.init -> void
+Egami.Formats.Png.PngWriterOptions.CompressionLevel.get -> int
+Egami.Formats.Png.PngWriterOptions.CompressionLevel.init -> void
+Egami.Formats.Png.PngWriterOptions.CompressionStrategy.get -> Egami.Formats.Png.PngCompressionStrategy
+Egami.Formats.Png.PngWriterOptions.CompressionStrategy.init -> void
+Egami.Formats.Png.PngWriterOptions.Filter.get -> Egami.Formats.Png.PngFilterMode
+Egami.Formats.Png.PngWriterOptions.Filter.init -> void
+Egami.Formats.Png.PngWriterOptions.FirstFrameOnly.get -> bool
+Egami.Formats.Png.PngWriterOptions.FirstFrameOnly.init -> void
+Egami.Formats.Png.PngWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Png.PngWriterOptions.Palette.init -> void
+Egami.Formats.Png.PngWriterOptions.PngWriterOptions() -> void
+Egami.Formats.Png.PngWriterOptions.Reduce.get -> bool
+Egami.Formats.Png.PngWriterOptions.Reduce.init -> void
+Egami.Formats.Pnm.PnmDetails
+Egami.Formats.Pnm.PnmDetails.Kind.get -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmDetails.Kind.set -> void
+Egami.Formats.Pnm.PnmDetails.MaxValue.get -> int
+Egami.Formats.Pnm.PnmDetails.MaxValue.set -> void
+Egami.Formats.Pnm.PnmDetails.PlainText.get -> bool
+Egami.Formats.Pnm.PnmDetails.PlainText.set -> void
+Egami.Formats.Pnm.PnmDetails.PnmDetails() -> void
+Egami.Formats.Pnm.PnmDetails.TupleType.get -> string?
+Egami.Formats.Pnm.PnmDetails.TupleType.set -> void
+Egami.Formats.Pnm.PnmFormat
+Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Auto = 0 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Bitmap = 1 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Graymap = 2 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Pam = 4 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmKind.Pixmap = 3 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmWriterOptions
+Egami.Formats.Pnm.PnmWriterOptions.Kind.get -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Pnm.PnmWriterOptions.Kind.init -> void
+Egami.Formats.Pnm.PnmWriterOptions.PlainText.get -> bool
+Egami.Formats.Pnm.PnmWriterOptions.PlainText.init -> void
+Egami.Formats.Pnm.PnmWriterOptions.PnmWriterOptions() -> void
+Egami.Formats.Qoi.QoiDetails
+Egami.Formats.Qoi.QoiDetails.Channels.get -> int
+Egami.Formats.Qoi.QoiDetails.Channels.set -> void
+Egami.Formats.Qoi.QoiDetails.Linear.get -> bool
+Egami.Formats.Qoi.QoiDetails.Linear.set -> void
+Egami.Formats.Qoi.QoiDetails.QoiDetails() -> void
+Egami.Formats.Qoi.QoiFormat
+Egami.Formats.Qoi.QoiWriterOptions
+Egami.Formats.Qoi.QoiWriterOptions.IncludeAlpha.get -> bool?
+Egami.Formats.Qoi.QoiWriterOptions.IncludeAlpha.init -> void
+Egami.Formats.Qoi.QoiWriterOptions.QoiWriterOptions() -> void
+Egami.Formats.RasterInfo
+Egami.Formats.RasterInfo.<Clone>$() -> Egami.Formats.RasterInfo!
+Egami.Formats.RasterInfo.Equals(Egami.Formats.RasterInfo? other) -> bool
+Egami.Formats.RasterInfo.EstimatedBytes.get -> long
+Egami.Formats.RasterInfo.EstimatedBytes.init -> void
+Egami.Formats.RasterInfo.Format.get -> Egami.Formats.FormatInfo!
+Egami.Formats.RasterInfo.Format.init -> void
+Egami.Formats.RasterInfo.FrameCount.get -> int?
+Egami.Formats.RasterInfo.FrameCount.init -> void
+Egami.Formats.RasterInfo.HasMetadata.get -> bool
+Egami.Formats.RasterInfo.HasMetadata.init -> void
+Egami.Formats.RasterInfo.Height.get -> int
+Egami.Formats.RasterInfo.Height.init -> void
+Egami.Formats.RasterInfo.Layout.get -> Egami.Pixels.PixelLayoutInfo
+Egami.Formats.RasterInfo.Layout.init -> void
+Egami.Formats.RasterInfo.LoopCount.get -> int?
+Egami.Formats.RasterInfo.LoopCount.init -> void
+Egami.Formats.RasterInfo.Orientation.get -> Egami.Metadata.ImageOrientation
+Egami.Formats.RasterInfo.Orientation.init -> void
+Egami.Formats.RasterInfo.RasterInfo() -> void
+Egami.Formats.RasterInfo.Width.get -> int
+Egami.Formats.RasterInfo.Width.init -> void
+Egami.Formats.ReaderOptions
+Egami.Formats.ReaderOptions.Frames.get -> System.Range
+Egami.Formats.ReaderOptions.Frames.init -> void
+Egami.Formats.ReaderOptions.MinimumSize.get -> Egami.Size?
+Egami.Formats.ReaderOptions.MinimumSize.init -> void
+Egami.Formats.ReaderOptions.ReaderOptions() -> void
+Egami.Formats.ReaderOptions.ReaderOptions(Egami.Formats.ReaderOptions! original) -> void
+Egami.Formats.ReaderOptions.ReadMetadata.get -> bool
+Egami.Formats.ReaderOptions.ReadMetadata.init -> void
+Egami.Formats.ReaderOptions.Recovery.get -> Egami.Formats.RecoveryMode
+Egami.Formats.ReaderOptions.Recovery.init -> void
+Egami.Formats.RecoveryMode
+Egami.Formats.RecoveryMode.Lenient = 0 -> Egami.Formats.RecoveryMode
+Egami.Formats.RecoveryMode.Strict = 1 -> Egami.Formats.RecoveryMode
+Egami.Formats.SignatureMatcher
+Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaAlphaType.None = 0 -> Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaAlphaType.Premultiplied = 4 -> Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaAlphaType.Straight = 3 -> Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaAlphaType.UndefinedIgnore = 1 -> Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaAlphaType.UndefinedKeep = 2 -> Egami.Formats.Tga.TgaAlphaType
+Egami.Formats.Tga.TgaDetails
+Egami.Formats.Tga.TgaDetails.AlphaType.get -> Egami.Formats.Tga.TgaAlphaType?
+Egami.Formats.Tga.TgaDetails.AlphaType.set -> void
+Egami.Formats.Tga.TgaDetails.AttributeBits.get -> int
+Egami.Formats.Tga.TgaDetails.AttributeBits.set -> void
+Egami.Formats.Tga.TgaDetails.BitsPerPixel.get -> int
+Egami.Formats.Tga.TgaDetails.BitsPerPixel.set -> void
+Egami.Formats.Tga.TgaDetails.ImageId.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Tga.TgaDetails.ImageId.set -> void
+Egami.Formats.Tga.TgaDetails.ImageType.get -> int
+Egami.Formats.Tga.TgaDetails.ImageType.set -> void
+Egami.Formats.Tga.TgaDetails.JobName.get -> string?
+Egami.Formats.Tga.TgaDetails.JobName.set -> void
+Egami.Formats.Tga.TgaDetails.Origin.get -> Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaDetails.Origin.set -> void
+Egami.Formats.Tga.TgaDetails.PixelAspectRatio.get -> double?
+Egami.Formats.Tga.TgaDetails.PixelAspectRatio.set -> void
+Egami.Formats.Tga.TgaDetails.Software.get -> string?
+Egami.Formats.Tga.TgaDetails.Software.set -> void
+Egami.Formats.Tga.TgaDetails.TgaDetails() -> void
+Egami.Formats.Tga.TgaDetails.Timestamp.get -> System.DateTime?
+Egami.Formats.Tga.TgaDetails.Timestamp.set -> void
+Egami.Formats.Tga.TgaFormat
+Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaOrigin.BottomLeft = 0 -> Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaOrigin.BottomRight = 1 -> Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaOrigin.TopLeft = 2 -> Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaOrigin.TopRight = 3 -> Egami.Formats.Tga.TgaOrigin
+Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaPixelFormat.Auto = 0 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaPixelFormat.Bgr24 = 3 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaPixelFormat.Bgra32 = 4 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaPixelFormat.Gray8 = 1 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaPixelFormat.Indexed8 = 2 -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaWriterOptions
+Egami.Formats.Tga.TgaWriterOptions.Palette.get -> Egami.Quantization.PaletteOptions!
+Egami.Formats.Tga.TgaWriterOptions.Palette.init -> void
+Egami.Formats.Tga.TgaWriterOptions.PixelFormat.get -> Egami.Formats.Tga.TgaPixelFormat
+Egami.Formats.Tga.TgaWriterOptions.PixelFormat.init -> void
+Egami.Formats.Tga.TgaWriterOptions.Rle.get -> bool
+Egami.Formats.Tga.TgaWriterOptions.Rle.init -> void
+Egami.Formats.Tga.TgaWriterOptions.TgaWriterOptions() -> void
+Egami.Formats.WriterOptions
+Egami.Formats.WriterOptions.StripMetadata.get -> bool
+Egami.Formats.WriterOptions.StripMetadata.init -> void
+Egami.Formats.WriterOptions.WriterOptions() -> void
+Egami.Frame<TPixel>
+Egami.Frame<TPixel>.Metadata.get -> Egami.Metadata.FrameMetadata!
+Egami.Frame<TPixel>.Plane.get -> Egami.PixelPlane<TPixel>!
+Egami.Frame<TPixel>.Row(int y) -> System.Span<TPixel>
+Egami.FrameList<TPixel>
+Egami.FrameList<TPixel>.Add(Egami.Frame<TPixel>! frame) -> Egami.Frame<TPixel>!
+Egami.FrameList<TPixel>.Count.get -> int
+Egami.FrameList<TPixel>.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Frame<TPixel>!>!
+Egami.FrameList<TPixel>.Insert(int index, Egami.Frame<TPixel>! frame) -> Egami.Frame<TPixel>!
+Egami.FrameList<TPixel>.Move(int from, int to) -> void
+Egami.FrameList<TPixel>.RemoveAt(int index) -> void
+Egami.FrameList<TPixel>.this[int index].get -> Egami.Frame<TPixel>!
+Egami.IPixelMemorySource
+Egami.IPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
+Egami.IPixelMemorySource.MaxBlockBytes.get -> int
+Egami.LimitExceededException
+Egami.LimitExceededException.Allowed.get -> long
+Egami.LimitExceededException.Found.get -> long
+Egami.LimitExceededException.LimitExceededException(string! limitName, long allowed, long found) -> void
+Egami.LimitExceededException.LimitName.get -> string!
+Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ColorSpaceHint.EmbeddedIcc = 4 -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ColorSpaceHint.Gamma = 3 -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ColorSpaceHint.Linear = 2 -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ColorSpaceHint.Srgb = 1 -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ColorSpaceHint.Unknown = 0 -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.ExifData
+Egami.Metadata.ExifData.CameraMake.get -> string?
+Egami.Metadata.ExifData.CameraModel.get -> string?
+Egami.Metadata.ExifData.Copy() -> Egami.Metadata.ExifData!
+Egami.Metadata.ExifData.DateTaken.get -> System.DateTime?
+Egami.Metadata.ExifData.Entries.get -> System.Collections.Generic.IReadOnlyList<Egami.Metadata.ExifEntry!>!
+Egami.Metadata.ExifData.ExifData() -> void
+Egami.Metadata.ExifData.IsBigEndian.get -> bool
+Egami.Metadata.ExifData.IsDamaged.get -> bool
+Egami.Metadata.ExifData.Location.get -> Egami.Metadata.GeoPosition?
+Egami.Metadata.ExifData.Orientation.get -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ExifData.Orientation.set -> void
+Egami.Metadata.ExifData.Remove(Egami.Metadata.ExifKey key) -> bool
+Egami.Metadata.ExifData.RemoveThumbnail() -> bool
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, Egami.Metadata.ExifType type, System.ReadOnlySpan<byte> value) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, params System.ReadOnlySpan<Egami.Metadata.ExifFraction> values) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, string! value) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, uint value) -> void
+Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey key, ushort value) -> void
+Egami.Metadata.ExifData.Thumbnail.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.ExifData.ToBytes() -> System.ReadOnlyMemory<byte>
+Egami.Metadata.ExifData.TryGet(Egami.Metadata.ExifKey key, out Egami.Metadata.ExifEntry? entry) -> bool
+Egami.Metadata.ExifData.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.ExifEntry
+Egami.Metadata.ExifEntry.AsDouble(int index = 0) -> double
+Egami.Metadata.ExifEntry.AsFraction(int index = 0) -> Egami.Metadata.ExifFraction
+Egami.Metadata.ExifEntry.AsInteger(int index = 0) -> long
+Egami.Metadata.ExifEntry.AsString() -> string!
+Egami.Metadata.ExifEntry.Count.get -> int
+Egami.Metadata.ExifEntry.IsBigEndian.get -> bool
+Egami.Metadata.ExifEntry.Key.get -> Egami.Metadata.ExifKey
+Egami.Metadata.ExifEntry.RawValue.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.ExifEntry.Type.get -> Egami.Metadata.ExifType
+Egami.Metadata.ExifFraction
+Egami.Metadata.ExifFraction.Deconstruct(out long Numerator, out long Denominator) -> void
+Egami.Metadata.ExifFraction.Denominator.get -> long
+Egami.Metadata.ExifFraction.Denominator.init -> void
+Egami.Metadata.ExifFraction.Equals(Egami.Metadata.ExifFraction other) -> bool
+Egami.Metadata.ExifFraction.ExifFraction() -> void
+Egami.Metadata.ExifFraction.ExifFraction(long Numerator, long Denominator) -> void
+Egami.Metadata.ExifFraction.Numerator.get -> long
+Egami.Metadata.ExifFraction.Numerator.init -> void
+Egami.Metadata.ExifFraction.ToDouble() -> double
+Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Exif = 1 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Gps = 2 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Interoperability = 3 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Primary = 0 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifIfd.Thumbnail = 4 -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifKey
+Egami.Metadata.ExifKey.Deconstruct(out ushort Tag, out Egami.Metadata.ExifIfd Ifd) -> void
+Egami.Metadata.ExifKey.Equals(Egami.Metadata.ExifKey other) -> bool
+Egami.Metadata.ExifKey.ExifKey() -> void
+Egami.Metadata.ExifKey.ExifKey(ushort Tag, Egami.Metadata.ExifIfd Ifd) -> void
+Egami.Metadata.ExifKey.Ifd.get -> Egami.Metadata.ExifIfd
+Egami.Metadata.ExifKey.Ifd.init -> void
+Egami.Metadata.ExifKey.Tag.get -> ushort
+Egami.Metadata.ExifKey.Tag.init -> void
+Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Ascii = 2 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Byte = 1 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Double = 12 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Float = 11 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Long = 4 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Rational = 5 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SByte = 6 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Short = 3 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SLong = 9 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SRational = 10 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.SShort = 8 -> Egami.Metadata.ExifType
+Egami.Metadata.ExifType.Undefined = 7 -> Egami.Metadata.ExifType
+Egami.Metadata.FormatDetails
+Egami.Metadata.FormatDetails.FormatDetails() -> void
+Egami.Metadata.FrameBlend
+Egami.Metadata.FrameBlend.Over = 1 -> Egami.Metadata.FrameBlend
+Egami.Metadata.FrameBlend.Source = 0 -> Egami.Metadata.FrameBlend
+Egami.Metadata.FrameDisposal
+Egami.Metadata.FrameDisposal.ClearToBackground = 1 -> Egami.Metadata.FrameDisposal
+Egami.Metadata.FrameDisposal.None = 0 -> Egami.Metadata.FrameDisposal
+Egami.Metadata.FrameDisposal.RestorePrevious = 2 -> Egami.Metadata.FrameDisposal
+Egami.Metadata.FrameMetadata
+Egami.Metadata.FrameMetadata.Blend.get -> Egami.Metadata.FrameBlend
+Egami.Metadata.FrameMetadata.Blend.set -> void
+Egami.Metadata.FrameMetadata.Bounds.get -> Egami.Rect?
+Egami.Metadata.FrameMetadata.Bounds.set -> void
+Egami.Metadata.FrameMetadata.Copy() -> Egami.Metadata.FrameMetadata!
+Egami.Metadata.FrameMetadata.Delay.get -> System.TimeSpan
+Egami.Metadata.FrameMetadata.Delay.set -> void
+Egami.Metadata.FrameMetadata.Disposal.get -> Egami.Metadata.FrameDisposal
+Egami.Metadata.FrameMetadata.Disposal.set -> void
+Egami.Metadata.FrameMetadata.FormatDetails.get -> Egami.Metadata.FormatDetails?
+Egami.Metadata.FrameMetadata.FormatDetails.set -> void
+Egami.Metadata.FrameMetadata.FrameMetadata() -> void
+Egami.Metadata.GeoPosition
+Egami.Metadata.GeoPosition.Altitude.get -> double?
+Egami.Metadata.GeoPosition.Altitude.init -> void
+Egami.Metadata.GeoPosition.Deconstruct(out double Latitude, out double Longitude, out double? Altitude) -> void
+Egami.Metadata.GeoPosition.Equals(Egami.Metadata.GeoPosition other) -> bool
+Egami.Metadata.GeoPosition.GeoPosition() -> void
+Egami.Metadata.GeoPosition.GeoPosition(double Latitude, double Longitude, double? Altitude) -> void
+Egami.Metadata.GeoPosition.Latitude.get -> double
+Egami.Metadata.GeoPosition.Latitude.init -> void
+Egami.Metadata.GeoPosition.Longitude.get -> double
+Egami.Metadata.GeoPosition.Longitude.init -> void
+Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.FlipHorizontal = 2 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.FlipVertical = 4 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Normal = 1 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Rotate180 = 3 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Rotate270 = 8 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Rotate90 = 6 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Transpose = 5 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Transverse = 7 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.ImageOrientation.Unknown = 0 -> Egami.Metadata.ImageOrientation
+Egami.Metadata.RasterMetadata
+Egami.Metadata.RasterMetadata.ColorSpace.get -> Egami.Metadata.ColorSpaceHint
+Egami.Metadata.RasterMetadata.ColorSpace.set -> void
+Egami.Metadata.RasterMetadata.Copy() -> Egami.Metadata.RasterMetadata!
+Egami.Metadata.RasterMetadata.Exif.get -> Egami.Metadata.ExifData?
+Egami.Metadata.RasterMetadata.Exif.set -> void
+Egami.Metadata.RasterMetadata.FormatDetails.get -> Egami.Metadata.FormatDetails?
+Egami.Metadata.RasterMetadata.FormatDetails.set -> void
+Egami.Metadata.RasterMetadata.FormatName.get -> string?
+Egami.Metadata.RasterMetadata.FormatName.set -> void
+Egami.Metadata.RasterMetadata.Gamma.get -> double?
+Egami.Metadata.RasterMetadata.Gamma.set -> void
+Egami.Metadata.RasterMetadata.IccProfile.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.RasterMetadata.IccProfile.set -> void
+Egami.Metadata.RasterMetadata.LoopCount.get -> int
+Egami.Metadata.RasterMetadata.LoopCount.set -> void
+Egami.Metadata.RasterMetadata.RasterMetadata() -> void
+Egami.Metadata.RasterMetadata.Resolution.get -> Egami.Metadata.Resolution?
+Egami.Metadata.RasterMetadata.Resolution.set -> void
+Egami.Metadata.RasterMetadata.Text.get -> System.Collections.Generic.IList<Egami.Metadata.TextEntry!>!
+Egami.Metadata.RasterMetadata.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.RasterMetadata.Xmp.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.RasterMetadata.Xmp.set -> void
+Egami.Metadata.Resolution
+Egami.Metadata.Resolution.Deconstruct(out double X, out double Y, out Egami.Metadata.ResolutionUnit Unit) -> void
+Egami.Metadata.Resolution.Equals(Egami.Metadata.Resolution other) -> bool
+Egami.Metadata.Resolution.Resolution() -> void
+Egami.Metadata.Resolution.Resolution(double X, double Y, Egami.Metadata.ResolutionUnit Unit) -> void
+Egami.Metadata.Resolution.ToPerInch() -> Egami.Metadata.Resolution
+Egami.Metadata.Resolution.Unit.get -> Egami.Metadata.ResolutionUnit
+Egami.Metadata.Resolution.Unit.init -> void
+Egami.Metadata.Resolution.X.get -> double
+Egami.Metadata.Resolution.X.init -> void
+Egami.Metadata.Resolution.Y.get -> double
+Egami.Metadata.Resolution.Y.init -> void
+Egami.Metadata.ResolutionUnit
+Egami.Metadata.ResolutionUnit.None = 0 -> Egami.Metadata.ResolutionUnit
+Egami.Metadata.ResolutionUnit.PerCentimeter = 2 -> Egami.Metadata.ResolutionUnit
+Egami.Metadata.ResolutionUnit.PerInch = 1 -> Egami.Metadata.ResolutionUnit
+Egami.Metadata.ResolutionUnit.PerMeter = 3 -> Egami.Metadata.ResolutionUnit
+Egami.Metadata.TextEntry
+Egami.Metadata.TextEntry.<Clone>$() -> Egami.Metadata.TextEntry!
+Egami.Metadata.TextEntry.Deconstruct(out string! Key, out string! Value, out string? Language) -> void
+Egami.Metadata.TextEntry.Equals(Egami.Metadata.TextEntry? other) -> bool
+Egami.Metadata.TextEntry.Key.get -> string!
+Egami.Metadata.TextEntry.Key.init -> void
+Egami.Metadata.TextEntry.Language.get -> string?
+Egami.Metadata.TextEntry.Language.init -> void
+Egami.Metadata.TextEntry.TextEntry(string! Key, string! Value, string? Language = null) -> void
+Egami.Metadata.TextEntry.Value.get -> string!
+Egami.Metadata.TextEntry.Value.init -> void
+Egami.Operations.Anchor
+Egami.Operations.Anchor.Bottom = 7 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.BottomLeft = 6 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.BottomRight = 8 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Center = 0 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Left = 4 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Right = 5 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.Top = 2 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.TopLeft = 1 -> Egami.Operations.Anchor
+Egami.Operations.Anchor.TopRight = 3 -> Egami.Operations.Anchor
+Egami.Operations.ColorMatrix
+Egami.Operations.ColorMatrix.ColorMatrix() -> void
+Egami.Operations.ColorMatrix.ColorMatrix(System.ReadOnlySpan<float> values) -> void
+Egami.Operations.ColorMatrix.Equals(Egami.Operations.ColorMatrix other) -> bool
+Egami.Operations.ColorMatrix.Then(Egami.Operations.ColorMatrix next) -> Egami.Operations.ColorMatrix
+Egami.Operations.ColorMatrix.this[int row, int column].get -> float
+Egami.Operations.ColorSpace
+Egami.Operations.ColorSpace.Encoded = 0 -> Egami.Operations.ColorSpace
+Egami.Operations.ColorSpace.Linear = 1 -> Egami.Operations.ColorSpace
+Egami.Operations.ConvolutionKernel
+Egami.Operations.ConvolutionKernel.ConvolutionKernel(int width, int height, System.ReadOnlySpan<float> values, float divisor = 1, float offset = 0) -> void
+Egami.Operations.ConvolutionKernel.Divisor.get -> float
+Egami.Operations.ConvolutionKernel.Height.get -> int
+Egami.Operations.ConvolutionKernel.Offset.get -> float
+Egami.Operations.ConvolutionKernel.this[int x, int y].get -> float
+Egami.Operations.ConvolutionKernel.Width.get -> int
+Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Clamp = 0 -> Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Mirror = 1 -> Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Transparent = 3 -> Egami.Operations.EdgeMode
+Egami.Operations.EdgeMode.Wrap = 2 -> Egami.Operations.EdgeMode
+Egami.Operations.IRasterOperation
+Egami.Operations.IRasterOperation.OutputSize(Egami.Size input) -> Egami.Size
+Egami.Operations.IRasterOperation.Run<TPixel>(Egami.Operations.OperationInput<TPixel>! input) -> void
+Egami.Operations.LumaWeights
+Egami.Operations.LumaWeights.Rec601 = 1 -> Egami.Operations.LumaWeights
+Egami.Operations.LumaWeights.Rec709 = 0 -> Egami.Operations.LumaWeights
+Egami.Operations.OperationInput<TPixel>
+Egami.Operations.OperationInput<TPixel>.CancellationToken.get -> System.Threading.CancellationToken
+Egami.Operations.OperationInput<TPixel>.Context.get -> Egami.EgamiContext!
+Egami.Operations.OperationInput<TPixel>.Destination.get -> Egami.PixelPlane<TPixel>!
+Egami.Operations.OperationInput<TPixel>.ForEachBand(Egami.Operations.RowBandAction! action) -> void
+Egami.Operations.OperationInput<TPixel>.FrameIndex.get -> int
+Egami.Operations.OperationInput<TPixel>.IsInPlace.get -> bool
+Egami.Operations.OperationInput<TPixel>.Source.get -> Egami.PixelPlane<TPixel>!
+Egami.Operations.RasterOps
+Egami.Operations.RasterOps.Add(Egami.Operations.IRasterOperation! operation) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.AutoOrient() -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Blur(float sigma, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.BoxBlur(int radius) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Brightness(float amount) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.ColorMatrix(Egami.Operations.ColorMatrix matrix) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Contrast(float amount) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Convolve(Egami.Operations.ConvolutionKernel! kernel, Egami.Operations.EdgeMode edge = Egami.Operations.EdgeMode.Clamp, bool preserveAlpha = false) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Cover(int width, int height, Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Crop(Egami.Rect rect) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Crop(int x, int y, int width, int height) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, float opacity = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, float opacity = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.FillColor(Egami.Pixels.Rgba8 color, Egami.Rect? rect = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded, bool enlarge = true) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.FlipHorizontal() -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.FlipVertical() -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Grayscale(Egami.Operations.LumaWeights mode = Egami.Operations.LumaWeights.Rec709, float amount = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.HueRotate(float degrees) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Invert(float amount = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Opacity(float amount) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Pad(int width, int height, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8), Egami.Operations.Anchor anchor = Egami.Operations.Anchor.Center) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Resize(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Rotate(float degrees, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8)) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Saturation(float amount) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Sepia(float amount = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Sharpen(float amount = 1, float sigma = 1) -> Egami.Operations.RasterOps!
+Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Bicubic = 0 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Bilinear = 3 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Box = 2 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Lanczos3 = 5 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Mitchell = 4 -> Egami.Operations.ResampleFilter
+Egami.Operations.ResampleFilter.Nearest = 1 -> Egami.Operations.ResampleFilter
+Egami.Operations.RowBandAction
+Egami.PixelMemoryLeakEventArgs
+Egami.PixelMemoryLeakEventArgs.Bytes.get -> long
+Egami.PixelMemoryLeakEventArgs.StackTrace.get -> string?
+Egami.PixelMemoryUsage
+Egami.PixelMemoryUsage.CaptureStackTraces.get -> bool
+Egami.PixelMemoryUsage.CaptureStackTraces.set -> void
+Egami.PixelMemoryUsage.LeakDetected -> System.EventHandler<Egami.PixelMemoryLeakEventArgs!>?
+Egami.PixelMemoryUsage.LiveBlocks.get -> long
+Egami.PixelMemoryUsage.LiveBytes.get -> long
+Egami.PixelMemoryUsage.TrackLeaks.get -> bool
+Egami.PixelMemoryUsage.TrackLeaks.set -> void
+Egami.PixelPlane<TPixel>
+Egami.PixelPlane<TPixel>.Height.get -> int
+Egami.PixelPlane<TPixel>.Row(int y) -> System.Span<TPixel>
+Egami.PixelPlane<TPixel>.TryGetContiguous(out System.Span<TPixel> pixels) -> bool
+Egami.PixelPlane<TPixel>.Width.get -> int
+Egami.Pixels.AlphaKind
+Egami.Pixels.AlphaKind.None = 0 -> Egami.Pixels.AlphaKind
+Egami.Pixels.AlphaKind.Straight = 1 -> Egami.Pixels.AlphaKind
+Egami.Pixels.Bgr8
+Egami.Pixels.Bgr8.B -> byte
+Egami.Pixels.Bgr8.Bgr8() -> void
+Egami.Pixels.Bgr8.Bgr8(byte b, byte g, byte r) -> void
+Egami.Pixels.Bgr8.Equals(Egami.Pixels.Bgr8 other) -> bool
+Egami.Pixels.Bgr8.G -> byte
+Egami.Pixels.Bgr8.R -> byte
+Egami.Pixels.Bgr8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Bgr8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Bgra8
+Egami.Pixels.Bgra8.A -> byte
+Egami.Pixels.Bgra8.B -> byte
+Egami.Pixels.Bgra8.Bgra8() -> void
+Egami.Pixels.Bgra8.Bgra8(byte b, byte g, byte r, byte a) -> void
+Egami.Pixels.Bgra8.Equals(Egami.Pixels.Bgra8 other) -> bool
+Egami.Pixels.Bgra8.G -> byte
+Egami.Pixels.Bgra8.R -> byte
+Egami.Pixels.Bgra8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Bgra8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Gray16
+Egami.Pixels.Gray16.Equals(Egami.Pixels.Gray16 other) -> bool
+Egami.Pixels.Gray16.Gray16() -> void
+Egami.Pixels.Gray16.Gray16(ushort l) -> void
+Egami.Pixels.Gray16.L -> ushort
+Egami.Pixels.Gray16.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Gray16.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Gray8
+Egami.Pixels.Gray8.Equals(Egami.Pixels.Gray8 other) -> bool
+Egami.Pixels.Gray8.Gray8() -> void
+Egami.Pixels.Gray8.Gray8(byte l) -> void
+Egami.Pixels.Gray8.L -> byte
+Egami.Pixels.Gray8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Gray8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.GrayAlpha8
+Egami.Pixels.GrayAlpha8.A -> byte
+Egami.Pixels.GrayAlpha8.Equals(Egami.Pixels.GrayAlpha8 other) -> bool
+Egami.Pixels.GrayAlpha8.GrayAlpha8() -> void
+Egami.Pixels.GrayAlpha8.GrayAlpha8(byte l, byte a) -> void
+Egami.Pixels.GrayAlpha8.L -> byte
+Egami.Pixels.GrayAlpha8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.GrayAlpha8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.IPixelType<TSelf>
+Egami.Pixels.IPixelType<TSelf>.FromRgba8(Egami.Pixels.Rgba8 value) -> TSelf
+Egami.Pixels.IPixelType<TSelf>.FromScaled(System.Numerics.Vector4 rgba) -> TSelf
+Egami.Pixels.IPixelType<TSelf>.Layout.get -> Egami.Pixels.PixelLayoutInfo
+Egami.Pixels.IPixelType<TSelf>.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.IPixelType<TSelf>.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Bgr = 4 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Bgra = 2 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Gray = 5 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.GrayAlpha = 6 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Other = 0 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Rgb = 3 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelOrder.Rgba = 1 -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelChannelType.Float32 = 3 -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelChannelType.Other = 0 -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelChannelType.Unorm16 = 2 -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelChannelType.Unorm8 = 1 -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelConvert
+Egami.Pixels.PixelLayoutInfo
+Egami.Pixels.PixelLayoutInfo.Alpha.get -> Egami.Pixels.AlphaKind
+Egami.Pixels.PixelLayoutInfo.Alpha.init -> void
+Egami.Pixels.PixelLayoutInfo.BitsPerChannel.get -> int
+Egami.Pixels.PixelLayoutInfo.BytesPerPixel.get -> int
+Egami.Pixels.PixelLayoutInfo.ChannelCount.get -> int
+Egami.Pixels.PixelLayoutInfo.ChannelOrder.get -> Egami.Pixels.PixelChannelOrder
+Egami.Pixels.PixelLayoutInfo.ChannelOrder.init -> void
+Egami.Pixels.PixelLayoutInfo.ChannelType.get -> Egami.Pixels.PixelChannelType
+Egami.Pixels.PixelLayoutInfo.ChannelType.init -> void
+Egami.Pixels.PixelLayoutInfo.Deconstruct(out Egami.Pixels.PixelChannelOrder ChannelOrder, out Egami.Pixels.PixelChannelType ChannelType, out Egami.Pixels.AlphaKind Alpha) -> void
+Egami.Pixels.PixelLayoutInfo.Equals(Egami.Pixels.PixelLayoutInfo other) -> bool
+Egami.Pixels.PixelLayoutInfo.HasAlpha.get -> bool
+Egami.Pixels.PixelLayoutInfo.PixelLayoutInfo() -> void
+Egami.Pixels.PixelLayoutInfo.PixelLayoutInfo(Egami.Pixels.PixelChannelOrder ChannelOrder, Egami.Pixels.PixelChannelType ChannelType, Egami.Pixels.AlphaKind Alpha) -> void
+Egami.Pixels.Rgb8
+Egami.Pixels.Rgb8.B -> byte
+Egami.Pixels.Rgb8.Equals(Egami.Pixels.Rgb8 other) -> bool
+Egami.Pixels.Rgb8.G -> byte
+Egami.Pixels.Rgb8.R -> byte
+Egami.Pixels.Rgb8.Rgb8() -> void
+Egami.Pixels.Rgb8.Rgb8(byte r, byte g, byte b) -> void
+Egami.Pixels.Rgb8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Rgb8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Rgba16
+Egami.Pixels.Rgba16.A -> ushort
+Egami.Pixels.Rgba16.B -> ushort
+Egami.Pixels.Rgba16.Equals(Egami.Pixels.Rgba16 other) -> bool
+Egami.Pixels.Rgba16.G -> ushort
+Egami.Pixels.Rgba16.R -> ushort
+Egami.Pixels.Rgba16.Rgba16() -> void
+Egami.Pixels.Rgba16.Rgba16(ushort r, ushort g, ushort b, ushort a) -> void
+Egami.Pixels.Rgba16.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Rgba16.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.Rgba8
+Egami.Pixels.Rgba8.A -> byte
+Egami.Pixels.Rgba8.B -> byte
+Egami.Pixels.Rgba8.Equals(Egami.Pixels.Rgba8 other) -> bool
+Egami.Pixels.Rgba8.G -> byte
+Egami.Pixels.Rgba8.R -> byte
+Egami.Pixels.Rgba8.Rgba8() -> void
+Egami.Pixels.Rgba8.Rgba8(byte r, byte g, byte b, byte a) -> void
+Egami.Pixels.Rgba8.ToHex() -> string!
+Egami.Pixels.Rgba8.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.Rgba8.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.RgbaF32
+Egami.Pixels.RgbaF32.A -> float
+Egami.Pixels.RgbaF32.B -> float
+Egami.Pixels.RgbaF32.Equals(Egami.Pixels.RgbaF32 other) -> bool
+Egami.Pixels.RgbaF32.G -> float
+Egami.Pixels.RgbaF32.R -> float
+Egami.Pixels.RgbaF32.RgbaF32() -> void
+Egami.Pixels.RgbaF32.RgbaF32(float r, float g, float b, float a) -> void
+Egami.Pixels.RgbaF32.ToRgba8() -> Egami.Pixels.Rgba8
+Egami.Pixels.RgbaF32.ToScaled() -> System.Numerics.Vector4
+Egami.Point
+Egami.Point.Deconstruct(out int X, out int Y) -> void
+Egami.Point.Equals(Egami.Point other) -> bool
+Egami.Point.Point() -> void
+Egami.Point.Point(int X, int Y) -> void
+Egami.Point.X.get -> int
+Egami.Point.X.init -> void
+Egami.Point.Y.get -> int
+Egami.Point.Y.init -> void
+Egami.PooledPixelMemorySource
+Egami.PooledPixelMemorySource.Allocate(int byteLength, Egami.ClearMode clear) -> System.Buffers.IMemoryOwner<byte>!
+Egami.PooledPixelMemorySource.MaxBlockBytes.get -> int
+Egami.PooledPixelMemorySource.MaxBlockBytes.init -> void
+Egami.PooledPixelMemorySource.MaxRetainedBytes.get -> long
+Egami.PooledPixelMemorySource.MaxRetainedBytes.init -> void
+Egami.PooledPixelMemorySource.PooledPixelMemorySource() -> void
+Egami.PooledPixelMemorySource.RetainedBytes.get -> long
+Egami.PooledPixelMemorySource.Trim() -> void
+Egami.PooledPixelMemorySource.Usage.get -> Egami.PixelMemoryUsage!
+Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.FloydSteinberg = 0 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.None = 2 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Ordered = 1 -> Egami.Quantization.DitherMode
+Egami.Quantization.PaletteOptions
+Egami.Quantization.PaletteOptions.<Clone>$() -> Egami.Quantization.PaletteOptions!
+Egami.Quantization.PaletteOptions.AlphaThreshold.get -> byte
+Egami.Quantization.PaletteOptions.AlphaThreshold.init -> void
+Egami.Quantization.PaletteOptions.Dither.get -> Egami.Quantization.DitherMode
+Egami.Quantization.PaletteOptions.Dither.init -> void
+Egami.Quantization.PaletteOptions.Equals(Egami.Quantization.PaletteOptions? other) -> bool
+Egami.Quantization.PaletteOptions.MaxColors.get -> int
+Egami.Quantization.PaletteOptions.MaxColors.init -> void
+Egami.Quantization.PaletteOptions.PaletteOptions() -> void
+Egami.Raster
+Egami.Raster.Apply(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.Raster.As<TTo>() -> Egami.Raster<TTo>!
+Egami.Raster.Derive(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster!
+Egami.Raster.Dispose() -> void
+Egami.Raster.Height.get -> int
+Egami.Raster.Metadata.get -> Egami.Metadata.RasterMetadata!
+Egami.Raster.Save(string! path, Egami.Formats.WriterOptions? options = null) -> void
+Egami.Raster.Save(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null) -> void
+Egami.Raster.Save(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options = null) -> void
+Egami.Raster.SaveAsync(string! path, Egami.Formats.WriterOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Egami.Raster.SaveAsync(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Egami.Raster.SaveAsync(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Egami.Raster.Width.get -> int
+Egami.Raster<TPixel>
+Egami.Raster<TPixel>.Apply(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.Raster<TPixel>.Copy() -> Egami.Raster<TPixel>!
+Egami.Raster<TPixel>.CopyFrame(int index) -> Egami.Raster<TPixel>!
+Egami.Raster<TPixel>.CopyPixelsFrom(System.ReadOnlySpan<byte> source) -> void
+Egami.Raster<TPixel>.CopyPixelsFrom(System.ReadOnlySpan<TPixel> source) -> void
+Egami.Raster<TPixel>.CopyPixelsTo(System.Span<byte> destination) -> void
+Egami.Raster<TPixel>.CopyPixelsTo(System.Span<TPixel> destination) -> void
+Egami.Raster<TPixel>.Derive(System.Action<Egami.Operations.RasterOps!>! build, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<TPixel>!
+Egami.Raster<TPixel>.ForEachRow(Egami.RowAction<TPixel>! action, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.Raster<TPixel>.Frames.get -> Egami.FrameList<TPixel>!
+Egami.Raster<TPixel>.GetPixel(int x, int y) -> TPixel
+Egami.Raster<TPixel>.Row(int y) -> System.Span<TPixel>
+Egami.Raster<TPixel>.SetPixel(int x, int y, TPixel value) -> void
+Egami.Raster<TPixel>.TryGetContiguous(out System.Span<TPixel> pixels) -> bool
+Egami.Rect
+Egami.Rect.Bottom.get -> int
+Egami.Rect.Contains(Egami.Point point) -> bool
+Egami.Rect.Contains(Egami.Rect other) -> bool
+Egami.Rect.Deconstruct(out int X, out int Y, out int Width, out int Height) -> void
+Egami.Rect.Equals(Egami.Rect other) -> bool
+Egami.Rect.Height.get -> int
+Egami.Rect.Height.init -> void
+Egami.Rect.Intersect(Egami.Rect other) -> Egami.Rect
+Egami.Rect.IsEmpty.get -> bool
+Egami.Rect.Position.get -> Egami.Point
+Egami.Rect.Rect() -> void
+Egami.Rect.Rect(Egami.Point position, Egami.Size size) -> void
+Egami.Rect.Rect(int X, int Y, int Width, int Height) -> void
+Egami.Rect.Right.get -> int
+Egami.Rect.Size.get -> Egami.Size
+Egami.Rect.Width.get -> int
+Egami.Rect.Width.init -> void
+Egami.Rect.X.get -> int
+Egami.Rect.X.init -> void
+Egami.Rect.Y.get -> int
+Egami.Rect.Y.init -> void
+Egami.RowAction<TPixel>
+Egami.SafetyLimits
+Egami.SafetyLimits.<Clone>$() -> Egami.SafetyLimits!
+Egami.SafetyLimits.Equals(Egami.SafetyLimits? other) -> bool
+Egami.SafetyLimits.MaxFrames.get -> int
+Egami.SafetyLimits.MaxFrames.init -> void
+Egami.SafetyLimits.MaxHeight.get -> int
+Egami.SafetyLimits.MaxHeight.init -> void
+Egami.SafetyLimits.MaxMetadataBytes.get -> long
+Egami.SafetyLimits.MaxMetadataBytes.init -> void
+Egami.SafetyLimits.MaxPixels.get -> long
+Egami.SafetyLimits.MaxPixels.init -> void
+Egami.SafetyLimits.MaxTotalBytes.get -> long
+Egami.SafetyLimits.MaxTotalBytes.init -> void
+Egami.SafetyLimits.MaxWidth.get -> int
+Egami.SafetyLimits.MaxWidth.init -> void
+Egami.SafetyLimits.SafetyLimits() -> void
+Egami.Size
+Egami.Size.Deconstruct(out int Width, out int Height) -> void
+Egami.Size.Equals(Egami.Size other) -> bool
+Egami.Size.Height.get -> int
+Egami.Size.Height.init -> void
+Egami.Size.Size() -> void
+Egami.Size.Size(int Width, int Height) -> void
+Egami.Size.Width.get -> int
+Egami.Size.Width.init -> void
+Egami.UnsupportedFormatException
+Egami.UnsupportedFormatException.UnsupportedFormatException(string! message, System.Exception? innerException = null) -> void
+override Egami.EgamiContext.Equals(object? obj) -> bool
+override Egami.EgamiContext.GetHashCode() -> int
+override Egami.EgamiContext.ToString() -> string!
+override Egami.Formats.Bmp.BmpDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.FormatInfo.Equals(object? obj) -> bool
+override Egami.Formats.FormatInfo.GetHashCode() -> int
+override Egami.Formats.FormatInfo.ToString() -> string!
+override Egami.Formats.Gif.GifApplicationExtension.Equals(object? obj) -> bool
+override Egami.Formats.Gif.GifApplicationExtension.GetHashCode() -> int
+override Egami.Formats.Gif.GifApplicationExtension.ToString() -> string!
+override Egami.Formats.Gif.GifDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Gif.GifFrameDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Jpeg.JpegComponent.Equals(object? obj) -> bool
+override Egami.Formats.Jpeg.JpegComponent.GetHashCode() -> int
+override Egami.Formats.Jpeg.JpegComponent.ToString() -> string!
+override Egami.Formats.Jpeg.JpegDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Jpeg.JpegReaderOptions.<Clone>$() -> Egami.Formats.Jpeg.JpegReaderOptions!
+override Egami.Formats.Jpeg.JpegReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Jpeg.JpegReaderOptions.GetHashCode() -> int
+override Egami.Formats.Jpeg.JpegReaderOptions.ToString() -> string!
+override Egami.Formats.Png.PngChunk.Equals(object? obj) -> bool
+override Egami.Formats.Png.PngChunk.GetHashCode() -> int
+override Egami.Formats.Png.PngChunk.ToString() -> string!
+override Egami.Formats.Png.PngDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Png.PngTextSource.Equals(object? obj) -> bool
+override Egami.Formats.Png.PngTextSource.GetHashCode() -> int
+override Egami.Formats.Png.PngTextSource.ToString() -> string!
+override Egami.Formats.Pnm.PnmDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Qoi.QoiDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.RasterInfo.Equals(object? obj) -> bool
+override Egami.Formats.RasterInfo.GetHashCode() -> int
+override Egami.Formats.RasterInfo.ToString() -> string!
+override Egami.Formats.ReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.ReaderOptions.GetHashCode() -> int
+override Egami.Formats.ReaderOptions.ToString() -> string!
+override Egami.Formats.Tga.TgaDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Metadata.ExifEntry.ToString() -> string!
+override Egami.Metadata.ExifFraction.GetHashCode() -> int
+override Egami.Metadata.ExifFraction.ToString() -> string!
+override Egami.Metadata.ExifKey.GetHashCode() -> int
+override Egami.Metadata.ExifKey.ToString() -> string!
+override Egami.Metadata.GeoPosition.GetHashCode() -> int
+override Egami.Metadata.Resolution.GetHashCode() -> int
+override Egami.Metadata.TextEntry.Equals(object? obj) -> bool
+override Egami.Metadata.TextEntry.GetHashCode() -> int
+override Egami.Metadata.TextEntry.ToString() -> string!
+override Egami.Operations.ColorMatrix.Equals(object? obj) -> bool
+override Egami.Operations.ColorMatrix.GetHashCode() -> int
+override Egami.Operations.ColorMatrix.ToString() -> string!
+override Egami.Pixels.Bgr8.Equals(object? obj) -> bool
+override Egami.Pixels.Bgr8.GetHashCode() -> int
+override Egami.Pixels.Bgr8.ToString() -> string!
+override Egami.Pixels.Bgra8.Equals(object? obj) -> bool
+override Egami.Pixels.Bgra8.GetHashCode() -> int
+override Egami.Pixels.Bgra8.ToString() -> string!
+override Egami.Pixels.Gray16.Equals(object? obj) -> bool
+override Egami.Pixels.Gray16.GetHashCode() -> int
+override Egami.Pixels.Gray16.ToString() -> string!
+override Egami.Pixels.Gray8.Equals(object? obj) -> bool
+override Egami.Pixels.Gray8.GetHashCode() -> int
+override Egami.Pixels.Gray8.ToString() -> string!
+override Egami.Pixels.GrayAlpha8.Equals(object? obj) -> bool
+override Egami.Pixels.GrayAlpha8.GetHashCode() -> int
+override Egami.Pixels.GrayAlpha8.ToString() -> string!
+override Egami.Pixels.PixelLayoutInfo.GetHashCode() -> int
+override Egami.Pixels.Rgb8.Equals(object? obj) -> bool
+override Egami.Pixels.Rgb8.GetHashCode() -> int
+override Egami.Pixels.Rgb8.ToString() -> string!
+override Egami.Pixels.Rgba16.Equals(object? obj) -> bool
+override Egami.Pixels.Rgba16.GetHashCode() -> int
+override Egami.Pixels.Rgba16.ToString() -> string!
+override Egami.Pixels.Rgba8.Equals(object? obj) -> bool
+override Egami.Pixels.Rgba8.GetHashCode() -> int
+override Egami.Pixels.Rgba8.ToString() -> string!
+override Egami.Pixels.RgbaF32.Equals(object? obj) -> bool
+override Egami.Pixels.RgbaF32.GetHashCode() -> int
+override Egami.Pixels.RgbaF32.ToString() -> string!
+override Egami.Point.GetHashCode() -> int
+override Egami.Quantization.PaletteOptions.Equals(object? obj) -> bool
+override Egami.Quantization.PaletteOptions.GetHashCode() -> int
+override Egami.Quantization.PaletteOptions.ToString() -> string!
+override Egami.Raster<TPixel>.FrameCount.get -> int
+override Egami.Raster<TPixel>.Layout.get -> Egami.Pixels.PixelLayoutInfo
+override Egami.Rect.GetHashCode() -> int
+override Egami.SafetyLimits.Equals(object? obj) -> bool
+override Egami.SafetyLimits.GetHashCode() -> int
+override Egami.SafetyLimits.ToString() -> string!
+override Egami.Size.GetHashCode() -> int
+override sealed Egami.Formats.Jpeg.JpegReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.EgamiContext.Default.get -> Egami.EgamiContext!
+static Egami.EgamiContext.operator !=(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
+static Egami.EgamiContext.operator ==(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
+static Egami.EgamiContext.SetDefault(Egami.EgamiContext! context) -> void
+static Egami.Formats.Bmp.BmpFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Bmp.BmpWriterOptions.Default.get -> Egami.Formats.Bmp.BmpWriterOptions!
+static Egami.Formats.FormatInfo.operator !=(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
+static Egami.Formats.FormatInfo.operator ==(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
+static Egami.Formats.Gif.GifApplicationExtension.operator !=(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool
+static Egami.Formats.Gif.GifApplicationExtension.operator ==(Egami.Formats.Gif.GifApplicationExtension? left, Egami.Formats.Gif.GifApplicationExtension? right) -> bool
+static Egami.Formats.Gif.GifFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Gif.GifWriterOptions.Default.get -> Egami.Formats.Gif.GifWriterOptions!
+static Egami.Formats.Jpeg.JpegComponent.operator !=(Egami.Formats.Jpeg.JpegComponent? left, Egami.Formats.Jpeg.JpegComponent? right) -> bool
+static Egami.Formats.Jpeg.JpegComponent.operator ==(Egami.Formats.Jpeg.JpegComponent? left, Egami.Formats.Jpeg.JpegComponent? right) -> bool
+static Egami.Formats.Jpeg.JpegFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Jpeg.JpegReaderOptions.Default.get -> Egami.Formats.Jpeg.JpegReaderOptions!
+static Egami.Formats.Jpeg.JpegReaderOptions.operator !=(Egami.Formats.Jpeg.JpegReaderOptions? left, Egami.Formats.Jpeg.JpegReaderOptions? right) -> bool
+static Egami.Formats.Jpeg.JpegReaderOptions.operator ==(Egami.Formats.Jpeg.JpegReaderOptions? left, Egami.Formats.Jpeg.JpegReaderOptions? right) -> bool
+static Egami.Formats.Jpeg.JpegWriterOptions.Default.get -> Egami.Formats.Jpeg.JpegWriterOptions!
+static Egami.Formats.Png.PngChunk.operator !=(Egami.Formats.Png.PngChunk? left, Egami.Formats.Png.PngChunk? right) -> bool
+static Egami.Formats.Png.PngChunk.operator ==(Egami.Formats.Png.PngChunk? left, Egami.Formats.Png.PngChunk? right) -> bool
+static Egami.Formats.Png.PngFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Png.PngTextSource.operator !=(Egami.Formats.Png.PngTextSource? left, Egami.Formats.Png.PngTextSource? right) -> bool
+static Egami.Formats.Png.PngTextSource.operator ==(Egami.Formats.Png.PngTextSource? left, Egami.Formats.Png.PngTextSource? right) -> bool
+static Egami.Formats.Png.PngWriterOptions.Default.get -> Egami.Formats.Png.PngWriterOptions!
+static Egami.Formats.Pnm.PnmFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Pnm.PnmWriterOptions.Default.get -> Egami.Formats.Pnm.PnmWriterOptions!
+static Egami.Formats.Qoi.QoiFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Qoi.QoiWriterOptions.Default.get -> Egami.Formats.Qoi.QoiWriterOptions!
+static Egami.Formats.RasterInfo.operator !=(Egami.Formats.RasterInfo? left, Egami.Formats.RasterInfo? right) -> bool
+static Egami.Formats.RasterInfo.operator ==(Egami.Formats.RasterInfo? left, Egami.Formats.RasterInfo? right) -> bool
+static Egami.Formats.ReaderOptions.Default.get -> Egami.Formats.ReaderOptions!
+static Egami.Formats.ReaderOptions.operator !=(Egami.Formats.ReaderOptions? left, Egami.Formats.ReaderOptions? right) -> bool
+static Egami.Formats.ReaderOptions.operator ==(Egami.Formats.ReaderOptions? left, Egami.Formats.ReaderOptions? right) -> bool
+static Egami.Formats.Tga.TgaFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Tga.TgaWriterOptions.Default.get -> Egami.Formats.Tga.TgaWriterOptions!
+static Egami.Formats.WriterOptions.Default.get -> Egami.Formats.WriterOptions!
+static Egami.Metadata.ExifData.Parse(System.ReadOnlySpan<byte> tiff, Egami.SafetyLimits? limits = null) -> Egami.Metadata.ExifData!
+static Egami.Metadata.ExifFraction.operator !=(Egami.Metadata.ExifFraction left, Egami.Metadata.ExifFraction right) -> bool
+static Egami.Metadata.ExifFraction.operator ==(Egami.Metadata.ExifFraction left, Egami.Metadata.ExifFraction right) -> bool
+static Egami.Metadata.ExifKey.operator !=(Egami.Metadata.ExifKey left, Egami.Metadata.ExifKey right) -> bool
+static Egami.Metadata.ExifKey.operator ==(Egami.Metadata.ExifKey left, Egami.Metadata.ExifKey right) -> bool
+static Egami.Metadata.GeoPosition.operator !=(Egami.Metadata.GeoPosition left, Egami.Metadata.GeoPosition right) -> bool
+static Egami.Metadata.GeoPosition.operator ==(Egami.Metadata.GeoPosition left, Egami.Metadata.GeoPosition right) -> bool
+static Egami.Metadata.Resolution.operator !=(Egami.Metadata.Resolution left, Egami.Metadata.Resolution right) -> bool
+static Egami.Metadata.Resolution.operator ==(Egami.Metadata.Resolution left, Egami.Metadata.Resolution right) -> bool
+static Egami.Metadata.TextEntry.operator !=(Egami.Metadata.TextEntry? left, Egami.Metadata.TextEntry? right) -> bool
+static Egami.Metadata.TextEntry.operator ==(Egami.Metadata.TextEntry? left, Egami.Metadata.TextEntry? right) -> bool
+static Egami.Operations.ColorMatrix.Brightness(float amount) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.Contrast(float amount) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.Grayscale(Egami.Operations.LumaWeights mode = Egami.Operations.LumaWeights.Rec709, float amount = 1) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.HueRotate(float degrees) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.Identity.get -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.Invert(float amount = 1) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.Opacity(float amount) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.operator !=(Egami.Operations.ColorMatrix left, Egami.Operations.ColorMatrix right) -> bool
+static Egami.Operations.ColorMatrix.operator ==(Egami.Operations.ColorMatrix left, Egami.Operations.ColorMatrix right) -> bool
+static Egami.Operations.ColorMatrix.Saturation(float amount) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ColorMatrix.Sepia(float amount = 1) -> Egami.Operations.ColorMatrix
+static Egami.Operations.ConvolutionKernel.Separable(System.ReadOnlySpan<float> row, System.ReadOnlySpan<float> column, float divisor = 1, float offset = 0) -> Egami.Operations.ConvolutionKernel!
+static Egami.Pixels.Bgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Bgr8
+static Egami.Pixels.Bgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Bgr8
+static Egami.Pixels.Bgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Bgr8.operator !=(Egami.Pixels.Bgr8 left, Egami.Pixels.Bgr8 right) -> bool
+static Egami.Pixels.Bgr8.operator ==(Egami.Pixels.Bgr8 left, Egami.Pixels.Bgr8 right) -> bool
+static Egami.Pixels.Bgra8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Bgra8
+static Egami.Pixels.Bgra8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Bgra8
+static Egami.Pixels.Bgra8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Bgra8.operator !=(Egami.Pixels.Bgra8 left, Egami.Pixels.Bgra8 right) -> bool
+static Egami.Pixels.Bgra8.operator ==(Egami.Pixels.Bgra8 left, Egami.Pixels.Bgra8 right) -> bool
+static Egami.Pixels.Gray16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Gray16
+static Egami.Pixels.Gray16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Gray16
+static Egami.Pixels.Gray16.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Gray16.operator !=(Egami.Pixels.Gray16 left, Egami.Pixels.Gray16 right) -> bool
+static Egami.Pixels.Gray16.operator ==(Egami.Pixels.Gray16 left, Egami.Pixels.Gray16 right) -> bool
+static Egami.Pixels.Gray8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Gray8
+static Egami.Pixels.Gray8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Gray8
+static Egami.Pixels.Gray8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Gray8.operator !=(Egami.Pixels.Gray8 left, Egami.Pixels.Gray8 right) -> bool
+static Egami.Pixels.Gray8.operator ==(Egami.Pixels.Gray8 left, Egami.Pixels.Gray8 right) -> bool
+static Egami.Pixels.GrayAlpha8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.GrayAlpha8
+static Egami.Pixels.GrayAlpha8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.GrayAlpha8
+static Egami.Pixels.GrayAlpha8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.GrayAlpha8.operator !=(Egami.Pixels.GrayAlpha8 left, Egami.Pixels.GrayAlpha8 right) -> bool
+static Egami.Pixels.GrayAlpha8.operator ==(Egami.Pixels.GrayAlpha8 left, Egami.Pixels.GrayAlpha8 right) -> bool
+static Egami.Pixels.PixelConvert.Convert<TFrom, TTo>(System.ReadOnlySpan<TFrom> source, System.Span<TTo> destination) -> void
+static Egami.Pixels.PixelLayoutInfo.operator !=(Egami.Pixels.PixelLayoutInfo left, Egami.Pixels.PixelLayoutInfo right) -> bool
+static Egami.Pixels.PixelLayoutInfo.operator ==(Egami.Pixels.PixelLayoutInfo left, Egami.Pixels.PixelLayoutInfo right) -> bool
+static Egami.Pixels.Rgb8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Rgb8
+static Egami.Pixels.Rgb8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Rgb8
+static Egami.Pixels.Rgb8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Rgb8.operator !=(Egami.Pixels.Rgb8 left, Egami.Pixels.Rgb8 right) -> bool
+static Egami.Pixels.Rgb8.operator ==(Egami.Pixels.Rgb8 left, Egami.Pixels.Rgb8 right) -> bool
+static Egami.Pixels.Rgba16.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Rgba16
+static Egami.Pixels.Rgba16.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Rgba16
+static Egami.Pixels.Rgba16.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Rgba16.operator !=(Egami.Pixels.Rgba16 left, Egami.Pixels.Rgba16 right) -> bool
+static Egami.Pixels.Rgba16.operator ==(Egami.Pixels.Rgba16 left, Egami.Pixels.Rgba16 right) -> bool
+static Egami.Pixels.Rgba8.Black.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Blue.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Cyan.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.FromHex(System.ReadOnlySpan<char> hex) -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Gray.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Green.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.Rgba8.Lime.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Magenta.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Maroon.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Navy.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Olive.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.operator !=(Egami.Pixels.Rgba8 left, Egami.Pixels.Rgba8 right) -> bool
+static Egami.Pixels.Rgba8.operator ==(Egami.Pixels.Rgba8 left, Egami.Pixels.Rgba8 right) -> bool
+static Egami.Pixels.Rgba8.Purple.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Red.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Silver.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Teal.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Transparent.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.TryFromHex(System.ReadOnlySpan<char> hex, out Egami.Pixels.Rgba8 color) -> bool
+static Egami.Pixels.Rgba8.White.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.Rgba8.Yellow.get -> Egami.Pixels.Rgba8
+static Egami.Pixels.RgbaF32.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.RgbaF32
+static Egami.Pixels.RgbaF32.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.RgbaF32
+static Egami.Pixels.RgbaF32.Layout.get -> Egami.Pixels.PixelLayoutInfo
+static Egami.Pixels.RgbaF32.operator !=(Egami.Pixels.RgbaF32 left, Egami.Pixels.RgbaF32 right) -> bool
+static Egami.Pixels.RgbaF32.operator ==(Egami.Pixels.RgbaF32 left, Egami.Pixels.RgbaF32 right) -> bool
+static Egami.Point.operator !=(Egami.Point left, Egami.Point right) -> bool
+static Egami.Point.operator ==(Egami.Point left, Egami.Point right) -> bool
+static Egami.PooledPixelMemorySource.Shared.get -> Egami.PooledPixelMemorySource!
+static Egami.Quantization.PaletteOptions.Default.get -> Egami.Quantization.PaletteOptions!
+static Egami.Quantization.PaletteOptions.operator !=(Egami.Quantization.PaletteOptions? left, Egami.Quantization.PaletteOptions? right) -> bool
+static Egami.Quantization.PaletteOptions.operator ==(Egami.Quantization.PaletteOptions? left, Egami.Quantization.PaletteOptions? right) -> bool
+static Egami.Raster.Create<TPixel>(int width, int height, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.Create<TPixel>(int width, int height, TPixel fill, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster!
+static Egami.Raster.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster!
+static Egami.Raster.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster!
+static Egami.Raster.Load<TPixel>(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.Load<TPixel>(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.Load<TPixel>(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.LoadAsync(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Raster!>!
+static Egami.Raster.LoadAsync(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Raster!>!
+static Egami.Raster.LoadAsync<TPixel>(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Raster<TPixel>!>!
+static Egami.Raster.LoadAsync<TPixel>(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Raster<TPixel>!>!
+static Egami.Raster.Probe(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.RasterInfo!
+static Egami.Raster.Probe(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.RasterInfo!
+static Egami.Raster.Probe(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.RasterInfo!
+static Egami.Raster.ProbeAsync(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Formats.RasterInfo!>!
+static Egami.Raster.ProbeAsync(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Formats.RasterInfo!>!
+static Egami.Raster.Wrap<TPixel>(System.Memory<byte> memory, int width, int height, int byteStride, System.IDisposable? owner = null, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.Wrap<TPixel>(System.Memory<TPixel> memory, int width, int height, int stride = 0, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
+static Egami.Rect.operator !=(Egami.Rect left, Egami.Rect right) -> bool
+static Egami.Rect.operator ==(Egami.Rect left, Egami.Rect right) -> bool
+static Egami.SafetyLimits.Default.get -> Egami.SafetyLimits!
+static Egami.SafetyLimits.operator !=(Egami.SafetyLimits? left, Egami.SafetyLimits? right) -> bool
+static Egami.SafetyLimits.operator ==(Egami.SafetyLimits? left, Egami.SafetyLimits? right) -> bool
+static Egami.Size.operator !=(Egami.Size left, Egami.Size right) -> bool
+static Egami.Size.operator ==(Egami.Size left, Egami.Size right) -> bool
+static readonly Egami.Metadata.ExifKey.Artist -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ColorSpace -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Copyright -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.DateTime -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.DateTimeDigitized -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.DateTimeOriginal -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExifInfo -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExifVersion -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExposureBias -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExposureProgram -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ExposureTime -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Flash -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.FNumber -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.FocalLength -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.FocalLengthIn35mmFilm -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsAltitude -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsAltitudeRef -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsInfo -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLatitude -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLatitudeRef -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLongitude -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsLongitudeRef -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ImageDescription -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.IsoSpeed -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.LensMake -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.LensModel -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Make -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.MakerNote -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.MeteringMode -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Model -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.OffsetTimeOriginal -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Orientation -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.PixelXDimension -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.PixelYDimension -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.ResolutionUnit -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.Software -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.UserComment -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XResolution -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.YResolution -> Egami.Metadata.ExifKey
+virtual Egami.Formats.ReaderOptions.<Clone>$() -> Egami.Formats.ReaderOptions!
+virtual Egami.Formats.ReaderOptions.EqualityContract.get -> System.Type!
+virtual Egami.Formats.ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+virtual Egami.Formats.ReaderOptions.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Egami.Formats.SignatureMatcher.Invoke(System.ReadOnlySpan<byte> header) -> bool
+virtual Egami.Operations.RowBandAction.Invoke(int start, int end) -> void
+virtual Egami.RowAction<TPixel>.Invoke(System.Span<TPixel> row, int y) -> void
+~override Egami.Metadata.ExifFraction.Equals(object obj) -> bool
+~override Egami.Metadata.ExifKey.Equals(object obj) -> bool
+~override Egami.Metadata.GeoPosition.Equals(object obj) -> bool
+~override Egami.Metadata.GeoPosition.ToString() -> string
+~override Egami.Metadata.Resolution.Equals(object obj) -> bool
+~override Egami.Metadata.Resolution.ToString() -> string
+~override Egami.Pixels.PixelLayoutInfo.Equals(object obj) -> bool
+~override Egami.Pixels.PixelLayoutInfo.ToString() -> string
+~override Egami.Point.Equals(object obj) -> bool
+~override Egami.Point.ToString() -> string
+~override Egami.Rect.Equals(object obj) -> bool
+~override Egami.Rect.ToString() -> string
+~override Egami.Size.Equals(object obj) -> bool
+~override Egami.Size.ToString() -> string
