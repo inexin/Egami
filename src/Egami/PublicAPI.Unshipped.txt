@@ -1,4 +1,65 @@
 #nullable enable
+Egami.Colors.Chromaticity
+Egami.Colors.Chromaticity.Chromaticity() -> void
+Egami.Colors.Chromaticity.Chromaticity(double X, double Y) -> void
+Egami.Colors.Chromaticity.Deconstruct(out double X, out double Y) -> void
+Egami.Colors.Chromaticity.Equals(Egami.Colors.Chromaticity other) -> bool
+Egami.Colors.Chromaticity.X.get -> double
+Egami.Colors.Chromaticity.X.init -> void
+Egami.Colors.Chromaticity.Y.get -> double
+Egami.Colors.Chromaticity.Y.init -> void
+Egami.Colors.ColorCodePoints
+Egami.Colors.ColorCodePoints.ColorCodePoints() -> void
+Egami.Colors.ColorCodePoints.ColorCodePoints(byte Primaries, byte TransferCharacteristics, byte MatrixCoefficients, bool FullRange) -> void
+Egami.Colors.ColorCodePoints.Deconstruct(out byte Primaries, out byte TransferCharacteristics, out byte MatrixCoefficients, out bool FullRange) -> void
+Egami.Colors.ColorCodePoints.Equals(Egami.Colors.ColorCodePoints other) -> bool
+Egami.Colors.ColorCodePoints.FullRange.get -> bool
+Egami.Colors.ColorCodePoints.FullRange.init -> void
+Egami.Colors.ColorCodePoints.GetPrimaries() -> Egami.Colors.ColorPrimaries?
+Egami.Colors.ColorCodePoints.GetTransferFunction() -> Egami.Colors.TransferFunction?
+Egami.Colors.ColorCodePoints.MatrixCoefficients.get -> byte
+Egami.Colors.ColorCodePoints.MatrixCoefficients.init -> void
+Egami.Colors.ColorCodePoints.Primaries.get -> byte
+Egami.Colors.ColorCodePoints.Primaries.init -> void
+Egami.Colors.ColorCodePoints.TransferCharacteristics.get -> byte
+Egami.Colors.ColorCodePoints.TransferCharacteristics.init -> void
+Egami.Colors.ColorModel
+Egami.Colors.ColorModel.Cmyk = 2 -> Egami.Colors.ColorModel
+Egami.Colors.ColorModel.Gray = 1 -> Egami.Colors.ColorModel
+Egami.Colors.ColorModel.Rgb = 0 -> Egami.Colors.ColorModel
+Egami.Colors.ColorPrimaries
+Egami.Colors.ColorPrimaries.<Clone>$() -> Egami.Colors.ColorPrimaries!
+Egami.Colors.ColorPrimaries.Blue.get -> Egami.Colors.Chromaticity
+Egami.Colors.ColorPrimaries.Blue.init -> void
+Egami.Colors.ColorPrimaries.ColorPrimaries(Egami.Colors.Chromaticity Red, Egami.Colors.Chromaticity Green, Egami.Colors.Chromaticity Blue, Egami.Colors.Chromaticity White) -> void
+Egami.Colors.ColorPrimaries.Deconstruct(out Egami.Colors.Chromaticity Red, out Egami.Colors.Chromaticity Green, out Egami.Colors.Chromaticity Blue, out Egami.Colors.Chromaticity White) -> void
+Egami.Colors.ColorPrimaries.Equals(Egami.Colors.ColorPrimaries? other) -> bool
+Egami.Colors.ColorPrimaries.Green.get -> Egami.Colors.Chromaticity
+Egami.Colors.ColorPrimaries.Green.init -> void
+Egami.Colors.ColorPrimaries.IsCloseTo(Egami.Colors.ColorPrimaries! other, double tolerance = 0.0001) -> bool
+Egami.Colors.ColorPrimaries.IsValid.get -> bool
+Egami.Colors.ColorPrimaries.Red.get -> Egami.Colors.Chromaticity
+Egami.Colors.ColorPrimaries.Red.init -> void
+Egami.Colors.ColorPrimaries.White.get -> Egami.Colors.Chromaticity
+Egami.Colors.ColorPrimaries.White.init -> void
+Egami.Colors.ColorProfile
+Egami.Colors.ColorProfile.IsEquivalentTo(Egami.Colors.ColorProfile! other) -> bool
+Egami.Colors.ColorProfile.IsHdr.get -> bool
+Egami.Colors.ColorProfile.Model.get -> Egami.Colors.ColorModel
+Egami.Colors.ColorProfile.Name.get -> string!
+Egami.Colors.ColorProfile.Primaries.get -> Egami.Colors.ColorPrimaries?
+Egami.Colors.ColorProfile.ToCodePoints() -> Egami.Colors.ColorCodePoints?
+Egami.Colors.ColorProfile.Transfer.get -> Egami.Colors.TransferFunction?
+Egami.Colors.ColorProfile.White.get -> Egami.Colors.Chromaticity
+Egami.Colors.TransferFunction
+Egami.Colors.TransferFunction.Equals(Egami.Colors.TransferFunction? other) -> bool
+Egami.Colors.TransferFunction.FromLinear(double linear) -> double
+Egami.Colors.TransferFunction.FromLinear(System.ReadOnlySpan<float> source, System.Span<float> destination) -> void
+Egami.Colors.TransferFunction.IsCloseTo(Egami.Colors.TransferFunction! other, double tolerance = 0.0001) -> bool
+Egami.Colors.TransferFunction.IsHdr.get -> bool
+Egami.Colors.TransferFunction.IsLinear.get -> bool
+Egami.Colors.TransferFunction.ToLinear(double encoded) -> double
+Egami.Colors.TransferFunction.ToLinear(System.ReadOnlySpan<float> source, System.Span<float> destination) -> void
 Egami.DecodeStatus
 Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
 Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
@@ -207,6 +268,15 @@ Egami.RasterDecoder.ReadRows<TPixel>(Egami.Raster<TPixel>! band) -> int
 Egami.RasterDecoder.RenderPreview<TPixel>(Egami.Raster<TPixel>! target) -> bool
 Egami.RasterDecoder.SkipRows(int count) -> int
 Egami.RasterDecoder.Status.get -> Egami.DecodeStatus
+override Egami.Colors.Chromaticity.GetHashCode() -> int
+override Egami.Colors.ColorCodePoints.GetHashCode() -> int
+override Egami.Colors.ColorPrimaries.Equals(object? obj) -> bool
+override Egami.Colors.ColorPrimaries.GetHashCode() -> int
+override Egami.Colors.ColorPrimaries.ToString() -> string!
+override Egami.Colors.ColorProfile.ToString() -> string!
+override Egami.Colors.TransferFunction.Equals(object? obj) -> bool
+override Egami.Colors.TransferFunction.GetHashCode() -> int
+override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Abgr8.GetHashCode() -> int
 override Egami.Pixels.Abgr8.ToString() -> string!
@@ -255,6 +325,43 @@ override Egami.Pixels.RgbaF16.ToString() -> string!
 override Egami.Pixels.RgbF32.Equals(object? obj) -> bool
 override Egami.Pixels.RgbF32.GetHashCode() -> int
 override Egami.Pixels.RgbF32.ToString() -> string!
+static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
+static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
+static Egami.Colors.Chromaticity.operator !=(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
+static Egami.Colors.Chromaticity.operator ==(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
+static Egami.Colors.ColorCodePoints.operator !=(Egami.Colors.ColorCodePoints left, Egami.Colors.ColorCodePoints right) -> bool
+static Egami.Colors.ColorCodePoints.operator ==(Egami.Colors.ColorCodePoints left, Egami.Colors.ColorCodePoints right) -> bool
+static Egami.Colors.ColorCodePoints.Rec2100Hlg.get -> Egami.Colors.ColorCodePoints
+static Egami.Colors.ColorCodePoints.Rec2100Pq.get -> Egami.Colors.ColorCodePoints
+static Egami.Colors.ColorCodePoints.Srgb.get -> Egami.Colors.ColorCodePoints
+static Egami.Colors.ColorPrimaries.AdobeRgb.get -> Egami.Colors.ColorPrimaries!
+static Egami.Colors.ColorPrimaries.DisplayP3.get -> Egami.Colors.ColorPrimaries!
+static Egami.Colors.ColorPrimaries.operator !=(Egami.Colors.ColorPrimaries? left, Egami.Colors.ColorPrimaries? right) -> bool
+static Egami.Colors.ColorPrimaries.operator ==(Egami.Colors.ColorPrimaries? left, Egami.Colors.ColorPrimaries? right) -> bool
+static Egami.Colors.ColorPrimaries.ProPhoto.get -> Egami.Colors.ColorPrimaries!
+static Egami.Colors.ColorPrimaries.Rec2020.get -> Egami.Colors.ColorPrimaries!
+static Egami.Colors.ColorPrimaries.Rec709.get -> Egami.Colors.ColorPrimaries!
+static Egami.Colors.ColorProfile.AdobeRgb.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.Create(Egami.Colors.ColorPrimaries! primaries, Egami.Colors.TransferFunction! transfer, string? name = null) -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.CreateGray(Egami.Colors.TransferFunction! transfer, Egami.Colors.Chromaticity? white = null, string? name = null) -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.DisplayP3.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.FromCodePoints(Egami.Colors.ColorCodePoints codePoints) -> Egami.Colors.ColorProfile?
+static Egami.Colors.ColorProfile.GrayLinear.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.GraySrgb.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.LinearSrgb.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.ProPhotoRgb.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.Rec2020.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.Rec2100Hlg.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.Rec2100Pq.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.Srgb.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.TransferFunction.Gamma(double gamma) -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Hlg.get -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Linear.get -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Parametric(double g, double a, double b, double c, double d, double e, double f) -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Pq.get -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Rec709.get -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Srgb.get -> Egami.Colors.TransferFunction!
+static Egami.Colors.TransferFunction.Table(System.ReadOnlySpan<float> linear) -> Egami.Colors.TransferFunction!
 static Egami.Pixels.Abgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
@@ -346,3 +453,7 @@ static Egami.RasterDecoder.Open(string! path, Egami.EgamiContext? context = null
 static Egami.RasterDecoder.Open(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.Open(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
+~override Egami.Colors.Chromaticity.Equals(object obj) -> bool
+~override Egami.Colors.Chromaticity.ToString() -> string
+~override Egami.Colors.ColorCodePoints.Equals(object obj) -> bool
+~override Egami.Colors.ColorCodePoints.ToString() -> string

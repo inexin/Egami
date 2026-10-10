@@ -10,6 +10,8 @@
       href: guides/pixel-types.md
     - name: Color
       href: guides/color.md
+    - name: Color management
+      href: guides/color-management.md
     - name: Filters
       href: guides/filters.md
     - name: Compositing
