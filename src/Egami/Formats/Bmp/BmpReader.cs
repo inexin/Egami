@@ -14,7 +14,7 @@ namespace Egami.Formats.Bmp;
 /// header layout. Rows decode one at a time into <see cref="Bgr8"/> or <see cref="Bgra8"/> and convert to the target type;
 /// embedded PNG and JPEG data goes to Egami's own readers.
 /// </summary>
-internal sealed class BmpReader : IFormatReader
+internal sealed partial class BmpReader : IFormatReader
 {
     internal static readonly BmpReader Instance = new();
 
@@ -39,6 +39,7 @@ internal sealed class BmpReader : IFormatReader
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
+        bool streams = Streams(input, options);
         Header header = ReadHeader(input, options);
         PixelLayoutInfo layout = header.Natural;
         if (header.Embedded)
@@ -56,6 +57,8 @@ internal sealed class BmpReader : IFormatReader
             FrameCount = 1,
             HasMetadata = header.ProfileSize > 0,
             EstimatedBytes = (long)header.Width * header.Height * layout.BytesPerPixel,
+            Access = streams ? RasterAccess.Streamed : RasterAccess.Buffered,
+            WorkingBytes = streams ? WorkingBytes(header) : 0,
         };
     }
 
@@ -403,7 +406,10 @@ internal sealed class BmpReader : IFormatReader
             }
             else
             {
-                new RowDecoder<TPixel>(input, header, raster, strict).Run();
+                // On a seekable stream, whether a 32-bit file's alpha counts is checked first, so no pixel goes through a lossy
+                // round trip to drop its alpha afterwards.
+                bool? opaque = header.Bits == 32 && header.AlphaUnlessAllZero ? KnownOpaque(input, header, input.Position) : null;
+                new RowDecoder<TPixel>(input, header, raster, strict, opaque).Run();
             }
 
             ApplyMetadata(input, header, raster.Metadata, options);
@@ -413,6 +419,49 @@ internal sealed class BmpReader : IFormatReader
         {
             raster.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// For a 32-bit file whose alpha counts only if some pixel uses it: reads the stored rows ahead, on a seekable stream holding
+    /// them all, and returns whether every pixel is opaque; <see langword="null"/> when that cannot be known before decoding. Only
+    /// standard BGRA rows are looked at, as the decoder does; others count as having no alpha.
+    /// </summary>
+    private static bool? KnownOpaque(EgamiInput input, Header header, long pixels)
+    {
+        long stride = Stride(header);
+        if (input.Length is not long length || pixels + (stride * header.Height) > length)
+        {
+            return null;
+        }
+
+        if (header.Masks is not (0x00FF_0000, 0x0000_FF00, 0x0000_00FF, 0xFF00_0000))
+        {
+            return true;
+        }
+
+        int used = header.Width * 4;
+        byte[] row = ArrayPool<byte>.Shared.Rent(used);
+        try
+        {
+            for (int y = 0; y < header.Height; y++)
+            {
+                if (!input.TryReadAt(pixels + (y * stride), row.AsSpan(0, used)))
+                {
+                    return null;
+                }
+
+                if (MemoryMarshal.Cast<byte, uint>(row.AsSpan(0, used)).IndexOfAnyInRange(0x0100_0000u, uint.MaxValue) >= 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(row);
         }
     }
 
@@ -523,7 +572,7 @@ internal sealed class BmpReader : IFormatReader
     }
 
     /// <summary>Decodes uncompressed rows: palette indices, 16 and 32-bit bit fields, or 24-bit BGR.</summary>
-    private sealed class RowDecoder<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict)
+    private sealed class RowDecoder<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict, bool? opaque)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private uint[]? _table;
@@ -569,7 +618,7 @@ internal sealed class BmpReader : IFormatReader
                     {
                         Span<uint> words = MemoryMarshal.Cast<TPixel, uint>(target);
                         input.ReadExactly(MemoryMarshal.AsBytes(words));
-                        if (header.Masks.Alpha == 0)
+                        if (header.Masks.Alpha == 0 || opaque == true)
                         {
                             SetOpaque(words);
                         }
@@ -591,7 +640,7 @@ internal sealed class BmpReader : IFormatReader
                             continue;
                         case 32 when standard32:
                             MemoryMarshal.Cast<byte, Bgra8>(bytes[..used]).CopyTo(pixels);
-                            if (header.Masks.Alpha == 0)
+                            if (header.Masks.Alpha == 0 || opaque == true)
                             {
                                 SetOpaque(MemoryMarshal.Cast<Bgra8, uint>(pixels));
                             }
@@ -605,7 +654,7 @@ internal sealed class BmpReader : IFormatReader
                             for (int x = 0; x < width; x++)
                             {
                                 uint p = BinaryPrimitives.ReadUInt32LittleEndian(bytes[(4 * x)..]);
-                                pixels[x] = new Bgra8(blue.Read(p, 0), green.Read(p, 0), red.Read(p, 0), alpha.Read(p, 255));
+                                pixels[x] = new Bgra8(blue.Read(p, 0), green.Read(p, 0), red.Read(p, 0), opaque == true ? (byte)255 : alpha.Read(p, 255));
                             }
 
                             break;
@@ -630,7 +679,7 @@ internal sealed class BmpReader : IFormatReader
                     raster.Metadata.WarningList.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
                 }
 
-                if (header.Bits == 32 && header.AlphaUnlessAllZero && !anyAlpha && TPixel.Layout.HasAlpha)
+                if (header.Bits == 32 && header.AlphaUnlessAllZero && opaque is null && !anyAlpha && TPixel.Layout.HasAlpha)
                 {
                     MakeOpaque(natural);
                 }

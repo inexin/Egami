@@ -13,7 +13,7 @@ namespace Egami.Formats.Pnm;
 /// Reads PBM, PGM, PPM (plain and binary) and PAM, written from the Netpbm format pages. Only the first image of a stream is read.
 /// Samples are scaled to the pixel type exactly, as round(v × 255 / maxval), or × 65535 above maxval 255.
 /// </summary>
-internal sealed class PnmReader : IFormatReader
+internal sealed partial class PnmReader : IFormatReader
 {
     internal static readonly PnmReader Instance = new();
 
@@ -68,6 +68,8 @@ internal sealed class PnmReader : IFormatReader
             FrameCount = 1,
             HasMetadata = header.Comments.Count > 0,
             EstimatedBytes = (long)header.Width * header.Height * layout.BytesPerPixel,
+            Access = RasterAccess.Streamed,
+            WorkingBytes = WorkingBytes(header),
         };
     }
 
@@ -136,7 +138,8 @@ internal sealed class PnmReader : IFormatReader
                 metadata.WarningList.Add(warning);
             }
 
-            new Decoder<TPixel>(input, header, raster, options.Recovery == RecoveryMode.Strict).Run();
+            using Decoder<TPixel> decoder = new(input, header, options.Recovery == RecoveryMode.Strict);
+            decoder.Run(raster);
             return raster;
         }
         catch
@@ -402,100 +405,33 @@ internal sealed class PnmReader : IFormatReader
     }
 
     /// <summary>Decodes the samples row by row into the raster.</summary>
-    private sealed class Decoder<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict)
+    /// <summary>Decodes the rows of a PNM image in order, one at a time, into any pixel type.</summary>
+    private sealed class Decoder<TPixel>(EgamiInput input, Header header, bool strict) : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly int _samples = checked(header.Width * header.Depth);
         private readonly ByteReader? _text = header.Plain ? new ByteReader(input) : null;
+        private byte[] _bytes = ArrayPool<byte>.Shared.Rent(header.Wide ? checked(header.Width * header.Depth) * 2 : Math.Max(checked(header.Width * header.Depth), (header.Width + 7) / 8));
+        private ushort[] _wide = header.Wide ? ArrayPool<ushort>.Shared.Rent(checked(header.Width * header.Depth)) : [];
+        private Rgba16[] _expanded = header.Wide && header.Depth > 1 ? ArrayPool<Rgba16>.Shared.Rent(header.Width) : [];
         private bool _clamped;
+        private bool _disposed;
 
-        public void Run()
+        /// <summary>Gets the table that scales 8-bit samples below maxval 255, or an empty one.</summary>
+        private byte[] Lut { get; } = !header.Wide && !header.Bitmap && header.MaxValue != 255 ? ScaleTable(header.MaxValue) : [];
+
+        /// <summary>Decodes every row into <paramref name="raster"/>, keeping the rows before damage (Lenient).</summary>
+        public void Run(Raster<TPixel> raster)
         {
-            int width = header.Width;
-            byte[] bytes = ArrayPool<byte>.Shared.Rent(header.Wide ? _samples * 2 : Math.Max(_samples, (width + 7) / 8));
-            ushort[] wide = header.Wide ? ArrayPool<ushort>.Shared.Rent(_samples) : [];
-            Rgba16[] expanded = header.Wide && header.Depth > 1 ? ArrayPool<Rgba16>.Shared.Rent(width) : [];
-            byte[] lut = !header.Wide && !header.Bitmap && header.MaxValue != 255 ? ScaleTable(header.MaxValue) : [];
-            // Binary 8-bit samples at maxval 255 are already the natural type's bytes: read them straight into its rows.
-            bool direct = !header.Wide && !header.Plain && !header.Bitmap && lut.Length == 0 && TPixel.Layout == LayoutOf(header.Natural);
             int y = 0;
             try
             {
                 for (; y < header.Height; y++)
                 {
-                    input.CancellationToken.ThrowIfCancellationRequested();
-                    if (header.Wide)
-                    {
-                        ReadWide(bytes, wide);
-                        Span<ushort> samples = wide.AsSpan(0, _samples);
-                        if ((header.Depth == 3 && typeof(TPixel) == typeof(Rgb16)) || (header.Depth == 2 && typeof(TPixel) == typeof(GrayAlpha16)))
-                        {
-                            // The scaled 16-bit samples are the row, in the same order.
-                            samples.CopyTo(MemoryMarshal.Cast<TPixel, ushort>(raster.Row(y)));
-                        }
-                        else if (header.Depth == 1)
-                        {
-                            if (TPixel.Layout.ChannelType == PixelChannelType.Unorm8)
-                            {
-                                // Narrow to 8 bits first, then take the fast 8-bit conversions.
-                                Span<byte> narrow = bytes.AsSpan(0, width);
-                                Narrow(samples, narrow);
-                                PixelConvert.Convert<Gray8, TPixel>(MemoryMarshal.Cast<byte, Gray8>(narrow), raster.Row(y));
-                            }
-                            else
-                            {
-                                PixelConvert.Convert<Gray16, TPixel>(MemoryMarshal.Cast<ushort, Gray16>(samples), raster.Row(y));
-                            }
-                        }
-                        else
-                        {
-                            Expand(samples, expanded.AsSpan(0, width));
-                            PixelConvert.Convert<Rgba16, TPixel>(expanded.AsSpan(0, width), raster.Row(y));
-                        }
-
-                        continue;
-                    }
-
-                    Span<byte> row = bytes.AsSpan(0, _samples);
-                    if (direct)
-                    {
-                        input.ReadExactly(MemoryMarshal.AsBytes(raster.Row(y)));
-                        continue;
-                    }
-
-                    ReadNarrow(row, lut);
-                    switch (header.Depth)
-                    {
-                        case 1:
-                            PixelConvert.Convert<Gray8, TPixel>(MemoryMarshal.Cast<byte, Gray8>(row), raster.Row(y));
-                            break;
-                        case 2:
-                            PixelConvert.Convert<GrayAlpha8, TPixel>(MemoryMarshal.Cast<byte, GrayAlpha8>(row), raster.Row(y));
-                            break;
-                        case 3:
-                            PixelConvert.Convert<Rgb8, TPixel>(MemoryMarshal.Cast<byte, Rgb8>(row), raster.Row(y));
-                            break;
-                        default:
-                            PixelConvert.Convert<Rgba8, TPixel>(MemoryMarshal.Cast<byte, Rgba8>(row), raster.Row(y));
-                            break;
-                    }
+                    DecodeRow(raster.Row(y));
                 }
 
-                _text?.Finish();
-                if (_clamped)
-                {
-                    raster.Metadata.WarningList.Add($"Some samples are above the maxval {header.MaxValue}; they were clamped.");
-                }
-
-                ReadOnlySpan<byte> rest = input.Peek(4096);
-                foreach (byte b in rest)
-                {
-                    if (!IsSpace(b))
-                    {
-                        raster.Metadata.WarningList.Add("More data follows the image; only the first image is read.");
-                        break;
-                    }
-                }
+                Finish(raster.Metadata.WarningList);
             }
             catch (CorruptDataException e) when (!strict)
             {
@@ -504,22 +440,125 @@ internal sealed class PnmReader : IFormatReader
                     raster.Row(rest).Clear();
                 }
 
-                raster.Metadata.WarningList.Add($"{e.Message} The {header.Height - y} rows from row {y} are left black.");
+                raster.Metadata.WarningList.Add(Damaged(e, y));
             }
-            finally
+        }
+
+        /// <summary>Returns the warning for damage found at row <paramref name="y"/>.</summary>
+        public string Damaged(CorruptDataException e, int y)
+        {
+            return $"{e.Message} The {header.Height - y} rows from row {y} are left black.";
+        }
+
+        /// <summary>Decodes the next row into <paramref name="target"/>, which is the image's width.</summary>
+        public void DecodeRow(Span<TPixel> target)
+        {
+            input.CancellationToken.ThrowIfCancellationRequested();
+            int width = header.Width;
+            byte[] bytes = _bytes;
+            byte[] lut = Lut;
+
+            // Binary 8-bit samples at maxval 255 are already the natural type's bytes: read them straight into its rows.
+            bool direct = !header.Wide && !header.Plain && !header.Bitmap && lut.Length == 0 && TPixel.Layout == LayoutOf(header.Natural);
+            if (header.Wide)
             {
-                _text?.Finish();
-                _text?.Release();
-                ArrayPool<byte>.Shared.Return(bytes);
-                if (wide.Length > 0)
+                ReadWide(bytes, _wide);
+                Span<ushort> samples = _wide.AsSpan(0, _samples);
+                if ((header.Depth == 3 && typeof(TPixel) == typeof(Rgb16)) || (header.Depth == 2 && typeof(TPixel) == typeof(GrayAlpha16)))
                 {
-                    ArrayPool<ushort>.Shared.Return(wide);
+                    // The scaled 16-bit samples are the row, in the same order.
+                    samples.CopyTo(MemoryMarshal.Cast<TPixel, ushort>(target));
+                }
+                else if (header.Depth == 1)
+                {
+                    if (TPixel.Layout.ChannelType == PixelChannelType.Unorm8)
+                    {
+                        // Narrow to 8 bits first, then take the fast 8-bit conversions.
+                        Span<byte> narrow = bytes.AsSpan(0, width);
+                        Narrow(samples, narrow);
+                        PixelConvert.Convert<Gray8, TPixel>(MemoryMarshal.Cast<byte, Gray8>(narrow), target);
+                    }
+                    else
+                    {
+                        PixelConvert.Convert<Gray16, TPixel>(MemoryMarshal.Cast<ushort, Gray16>(samples), target);
+                    }
+                }
+                else
+                {
+                    Expand(samples, _expanded.AsSpan(0, width));
+                    PixelConvert.Convert<Rgba16, TPixel>(_expanded.AsSpan(0, width), target);
                 }
 
-                if (expanded.Length > 0)
+                return;
+            }
+
+            Span<byte> row = bytes.AsSpan(0, _samples);
+            if (direct)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(target));
+                return;
+            }
+
+            ReadNarrow(row, lut);
+            switch (header.Depth)
+            {
+                case 1:
+                    PixelConvert.Convert<Gray8, TPixel>(MemoryMarshal.Cast<byte, Gray8>(row), target);
+                    break;
+                case 2:
+                    PixelConvert.Convert<GrayAlpha8, TPixel>(MemoryMarshal.Cast<byte, GrayAlpha8>(row), target);
+                    break;
+                case 3:
+                    PixelConvert.Convert<Rgb8, TPixel>(MemoryMarshal.Cast<byte, Rgb8>(row), target);
+                    break;
+                default:
+                    PixelConvert.Convert<Rgba8, TPixel>(MemoryMarshal.Cast<byte, Rgba8>(row), target);
+                    break;
+            }
+        }
+
+        /// <summary>After the last row: reports clamped samples and data after the image.</summary>
+        public void Finish(List<string> warnings)
+        {
+            _text?.Finish();
+            if (_clamped)
+            {
+                warnings.Add($"Some samples are above the maxval {header.MaxValue}; they were clamped.");
+            }
+
+            ReadOnlySpan<byte> rest = input.Peek(4096);
+            foreach (byte b in rest)
+            {
+                if (!IsSpace(b))
                 {
-                    ArrayPool<Rgba16>.Shared.Return(expanded);
+                    warnings.Add("More data follows the image; only the first image is read.");
+                    break;
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _text?.Finish();
+            _text?.Release();
+            ArrayPool<byte>.Shared.Return(_bytes);
+            _bytes = [];
+            if (_wide.Length > 0)
+            {
+                ArrayPool<ushort>.Shared.Return(_wide);
+                _wide = [];
+            }
+
+            if (_expanded.Length > 0)
+            {
+                ArrayPool<Rgba16>.Shared.Return(_expanded);
+                _expanded = [];
             }
         }
 

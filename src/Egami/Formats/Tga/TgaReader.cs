@@ -14,7 +14,7 @@ namespace Egami.Formats.Tga;
 /// run-length encoded, 8 to 32 bits, all four origins, and the 2.0 footer and extension area. Packets may cross row ends but
 /// not the end of the image.
 /// </summary>
-internal sealed class TgaReader : IFormatReader
+internal sealed partial class TgaReader : IFormatReader
 {
     internal static readonly TgaReader Instance = new();
 
@@ -60,6 +60,7 @@ internal sealed class TgaReader : IFormatReader
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
+        bool streams = Streams(input, options);
         Header header = ReadHeader(input, options, probe: true);
         PixelLayoutInfo layout = header.Natural;
         return new RasterInfo
@@ -71,6 +72,8 @@ internal sealed class TgaReader : IFormatReader
             FrameCount = 1,
             HasMetadata = header.ImageId.Length > 0 || header.Extension is not null,
             EstimatedBytes = (long)header.Width * header.Height * layout.BytesPerPixel,
+            Access = streams ? RasterAccess.Streamed : RasterAccess.Buffered,
+            WorkingBytes = streams ? WorkingBytes(header) : 0,
         };
     }
 
@@ -198,12 +201,12 @@ internal sealed class TgaReader : IFormatReader
         try
         {
             bool strict = options.Recovery == RecoveryMode.Strict;
-            Decoder<TPixel> decoder = new(input, header, raster, strict);
-            decoder.Run();
+            using Decoder<TPixel> decoder = new(input, header, strict);
+            decoder.Run(raster);
             if (header.FooterAfterPixels)
             {
                 ReadTrailingFooter(input, header);
-                decoder.FixAlphaAfterwards();
+                decoder.FixAlphaAfterwards(raster);
             }
 
             ApplyMetadata(header, raster.Metadata, options);
@@ -396,23 +399,26 @@ internal sealed class TgaReader : IFormatReader
             : HasAlphaBits ? Bgra8.Layout : Bgr8.Layout;
     }
 
-    /// <summary>Decodes raw or run-length encoded pixels row by row into the raster.</summary>
-    private sealed class Decoder<TPixel>(EgamiInput input, Header header, Raster<TPixel> raster, bool strict)
+    /// <summary>Decodes raw or run-length encoded pixels row by row.</summary>
+    private sealed class Decoder<TPixel>(EgamiInput input, Header header, bool strict) : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly ByteReader? _bytes = header.Rle ? new ByteReader(input) : null;
+        private readonly byte[] _packet = new byte[4];
+        private byte[] _stored = ArrayPool<byte>.Shared.Rent(header.Width * header.BytesPerPixel);
+        private Bgra8[] _color = ArrayPool<Bgra8>.Shared.Rent(header.Width);
+        private GrayAlpha8[] _gray = ArrayPool<GrayAlpha8>.Shared.Rent(header.Width);
         private int _remaining;
         private bool _repeat;
         private bool _pastPalette;
+        private bool _disposed;
 
-        public void Run()
+        /// <summary>Gets the bytes of one stored row.</summary>
+        public Span<byte> Stored => _stored.AsSpan(0, header.Width * header.BytesPerPixel);
+
+        public void Run(Raster<TPixel> raster)
         {
-            int width = header.Width;
             int bpp = header.BytesPerPixel;
-            byte[] bytes = ArrayPool<byte>.Shared.Rent(width * bpp);
-            Bgra8[] color = ArrayPool<Bgra8>.Shared.Rent(width);
-            GrayAlpha8[] gray = ArrayPool<GrayAlpha8>.Shared.Rent(width);
-            Span<byte> packet = stackalloc byte[4];
             bool direct = !header.Gray && !header.Mapped && !header.RightToLeft
                 && ((header.Depth == 32 && (typeof(TPixel) == typeof(Bgra8) || typeof(TPixel) == typeof(Rgba8))) || (header.Depth == 24 && typeof(TPixel) == typeof(Bgr8)));
             int row = 0;
@@ -426,15 +432,7 @@ internal sealed class TgaReader : IFormatReader
                         // The stored layout is the target's: read straight into the row.
                         Span<TPixel> row0 = raster.Row(header.TopDown ? row : header.Height - 1 - row);
                         Span<byte> into = MemoryMarshal.AsBytes(row0);
-                        if (header.Rle)
-                        {
-                            ReadPackets(into, packet[..bpp]);
-                        }
-                        else
-                        {
-                            input.ReadExactly(into);
-                        }
-
+                        ReadStored(into);
                         if (bpp == 4)
                         {
                             Span<Bgra8> pixels = MemoryMarshal.Cast<byte, Bgra8>(into);
@@ -456,62 +454,12 @@ internal sealed class TgaReader : IFormatReader
                         continue;
                     }
 
-                    Span<byte> stored = bytes.AsSpan(0, width * bpp);
-                    if (header.Rle)
-                    {
-                        ReadPackets(stored, packet[..bpp]);
-                    }
-                    else
-                    {
-                        input.ReadExactly(stored);
-                    }
-
-                    Span<TPixel> target = raster.Row(header.TopDown ? row : header.Height - 1 - row);
-                    if (header.Gray)
-                    {
-                        Span<GrayAlpha8> pixels = gray.AsSpan(0, width);
-                        Gray(stored, pixels);
-                        if (header.RightToLeft)
-                        {
-                            pixels.Reverse();
-                        }
-
-                        PixelConvert.Convert<GrayAlpha8, TPixel>(pixels, target);
-                    }
-                    else if (header.Depth == 32 && !header.Mapped && header.UsesAlpha && header.AlphaType != TgaAlphaType.Premultiplied && !header.RightToLeft)
-                    {
-                        // Straight 32-bit BGRA: convert from the stored bytes without a copy.
-                        PixelConvert.Convert<Bgra8, TPixel>(MemoryMarshal.Cast<byte, Bgra8>(stored), target);
-                    }
-                    else
-                    {
-                        Span<Bgra8> pixels = color.AsSpan(0, width);
-                        Color(stored, pixels);
-                        if (header.RightToLeft)
-                        {
-                            pixels.Reverse();
-                        }
-
-                        PixelConvert.Convert<Bgra8, TPixel>(pixels, target);
-                    }
+                    Span<byte> stored = Stored;
+                    ReadStored(stored);
+                    Convert(stored, raster.Row(header.TopDown ? row : header.Height - 1 - row));
                 }
 
-                if (_remaining > 0)
-                {
-                    Problem("A run-length packet goes past the end of the image; the rest of it was ignored.");
-                    if (!_repeat)
-                    {
-                        for (int i = 0; i < _remaining * bpp; i++)
-                        {
-                            _bytes!.Next();
-                        }
-                    }
-                }
-
-                if (_pastPalette)
-                {
-                    header.Warnings.Add("Some pixels use indices outside the color map; they are drawn black.");
-                }
+                FinishRows();
             }
             catch (CorruptDataException e) when (!strict)
             {
@@ -520,24 +468,118 @@ internal sealed class TgaReader : IFormatReader
                     raster.Row(header.TopDown ? rest : header.Height - 1 - rest).Clear();
                 }
 
-                header.Warnings.Add($"{e.Message} The {header.Height - row} rows not decoded are left black.");
-                header.FooterAfterPixels = false;
+                Damaged(e, row);
             }
             finally
             {
+                // Hand back the bytes read ahead, so a footer after the pixels is found.
                 _bytes?.Finish();
-                _bytes?.Release();
-                ArrayPool<byte>.Shared.Return(bytes);
-                ArrayPool<Bgra8>.Shared.Return(color);
-                ArrayPool<GrayAlpha8>.Shared.Return(gray);
             }
+        }
+
+        /// <summary>Hands back the bytes the packet reader read ahead.</summary>
+        public void FinishBytes()
+        {
+            _bytes?.Finish();
+        }
+
+        /// <summary>Notes damage found at stored row <paramref name="row"/>: the rows from there on are left black.</summary>
+        public void Damaged(CorruptDataException e, int row)
+        {
+            header.Warnings.Add($"{e.Message} The {header.Height - row} rows not decoded are left black.");
+            header.FooterAfterPixels = false;
+        }
+
+        /// <summary>Reads the next stored row, from packets that may continue from the row before, or raw.</summary>
+        public void ReadStored(Span<byte> stored)
+        {
+            if (header.Rle)
+            {
+                ReadPackets(stored, _packet.AsSpan(0, header.BytesPerPixel));
+            }
+            else
+            {
+                input.ReadExactly(stored);
+            }
+        }
+
+        /// <summary>Converts one stored row to <paramref name="target"/>, mirrored when the image is stored right to left.</summary>
+        public void Convert(Span<byte> stored, Span<TPixel> target)
+        {
+            int width = header.Width;
+            if (header.Gray)
+            {
+                Span<GrayAlpha8> pixels = _gray.AsSpan(0, width);
+                Gray(stored, pixels);
+                if (header.RightToLeft)
+                {
+                    pixels.Reverse();
+                }
+
+                PixelConvert.Convert<GrayAlpha8, TPixel>(pixels, target);
+            }
+            else if (header.Depth == 32 && !header.Mapped && header.UsesAlpha && header.AlphaType != TgaAlphaType.Premultiplied && !header.RightToLeft)
+            {
+                // Straight 32-bit BGRA: convert from the stored bytes without a copy.
+                PixelConvert.Convert<Bgra8, TPixel>(MemoryMarshal.Cast<byte, Bgra8>(stored), target);
+            }
+            else
+            {
+                Span<Bgra8> pixels = _color.AsSpan(0, width);
+                Color(stored, pixels);
+                if (header.RightToLeft)
+                {
+                    pixels.Reverse();
+                }
+
+                PixelConvert.Convert<Bgra8, TPixel>(pixels, target);
+            }
+        }
+
+        /// <summary>After the last row: reports a packet running past the image and indices outside the color map.</summary>
+        public void FinishRows()
+        {
+            if (_remaining > 0)
+            {
+                Problem("A run-length packet goes past the end of the image; the rest of it was ignored.");
+                if (!_repeat)
+                {
+                    for (int i = 0; i < _remaining * header.BytesPerPixel; i++)
+                    {
+                        _bytes!.Next();
+                    }
+                }
+            }
+
+            if (_pastPalette)
+            {
+                header.Warnings.Add("Some pixels use indices outside the color map; they are drawn black.");
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _bytes?.Finish();
+            _bytes?.Release();
+            ArrayPool<byte>.Shared.Return(_stored);
+            ArrayPool<Bgra8>.Shared.Return(_color);
+            ArrayPool<GrayAlpha8>.Shared.Return(_gray);
+            _stored = [];
+            _color = [];
+            _gray = [];
         }
 
         /// <summary>
         /// Applies a footer found only after the pixels (a stream that cannot seek): an alpha type of none makes the pixels opaque,
         /// and premultiplied alpha is divided out, through 8-bit BGRA.
         /// </summary>
-        public void FixAlphaAfterwards()
+        public void FixAlphaAfterwards(Raster<TPixel> raster)
         {
             TgaAlphaType? type = header.AlphaType;
             bool opaque = header.HasAlphaBits && header.AttributeBits > 0 && type is TgaAlphaType.None or TgaAlphaType.UndefinedIgnore;

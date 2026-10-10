@@ -143,6 +143,11 @@ public class RasterDecoderTests
         CheckFrames<Bgra8>(data);
         CheckFrames<Gray16>(data);
         CheckFrames<Cmyk8>(data);
+        CheckFrames<Rgb16>(data);
+        CheckFrames<GrayAlpha16>(data);
+        CheckFrames<Bgr565>(data);
+        CheckFrames<Bgra4444>(data);
+        CheckFrames<PremulRgba8>(data);
     }
 
     [Theory]
@@ -406,11 +411,12 @@ public class RegionAndReductionTests
     [Fact]
     public void ProbeReportsTheWorkingBytesOfTheBuffer()
     {
-        byte[] data = StreamingCorpus.Read("bmp/rgb24.bmp");
+        // A run-length BMP is bottom-up, so it is decoded into a buffer first.
+        byte[] data = StreamingCorpus.Read("bmp/os2-rle24.bmp");
         RasterInfo full = Raster.Probe(data);
         Assert.Equal(RasterAccess.Buffered, full.Access);
-        Assert.Equal(64L * 48 * full.Layout.BytesPerPixel, full.WorkingBytes);
-        RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(16, 12) });
+        Assert.Equal((long)full.Width * full.Height * full.Layout.BytesPerPixel, full.WorkingBytes);
+        RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(full.Width / 4, full.Height / 4) });
         Assert.True(reduced.WorkingBytes > full.WorkingBytes);
         byte[] jpeg = StreamingCorpus.Read("jpeg/egret-420.jpg");
         RasterInfo jpegFull = Raster.Probe(jpeg);

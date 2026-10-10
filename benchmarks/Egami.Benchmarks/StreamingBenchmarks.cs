@@ -22,6 +22,7 @@ public class StreamingBenchmarks
     [
         "png:Photo-RGBA8", "png:Screenshot-RGB8", "png:Palette8", "png:Adam7-RGBA8",
         "jpeg:photo-420.jpg", "jpeg:photo-progressive.jpg", "large:jpeg-8000.jpg", "large:jpeg-8000-restart.jpg",
+        .. SimpleFiles.DecodeScenarios.Select(s => "simple:" + s),
     ];
 
     [GlobalSetup]
@@ -32,6 +33,7 @@ public class StreamingBenchmarks
         {
             "png" => BenchImages.Png(parts[1]),
             "jpeg" => BenchFiles.Jpeg(parts[1]),
+            "simple" => SimpleFiles.File(parts[1]),
             _ => BenchFiles.Large(parts[1]),
         };
     }

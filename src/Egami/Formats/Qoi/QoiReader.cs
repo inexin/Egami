@@ -12,7 +12,7 @@ namespace Egami.Formats.Qoi;
 /// Reads QOI, written from the QOI specification 1.0. Chunks decode into packed RGBA words, straight into the frame for
 /// <see cref="Rgba8"/> targets and through one pooled row otherwise.
 /// </summary>
-internal sealed class QoiReader : IFormatReader
+internal sealed partial class QoiReader : IFormatReader
 {
     internal static readonly QoiReader Instance = new();
 
@@ -59,6 +59,8 @@ internal sealed class QoiReader : IFormatReader
             Layout = layout,
             FrameCount = 1,
             EstimatedBytes = (long)header.Width * header.Height * layout.BytesPerPixel,
+            Access = RasterAccess.Streamed,
+            WorkingBytes = WorkingBytes(header),
         };
     }
 
