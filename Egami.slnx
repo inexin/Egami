@@ -13,6 +13,7 @@
     <Project Path="samples/Jpeg/Jpeg.csproj" />
     <Project Path="samples/MemoryAndThreading/MemoryAndThreading.csproj" />
     <Project Path="samples/Metadata/Metadata.csproj" />
+    <Project Path="samples/PixelTypes/PixelTypes.csproj" />
     <Project Path="samples/Security/Security.csproj" />
   </Folder>
   <Folder Name="/src/">

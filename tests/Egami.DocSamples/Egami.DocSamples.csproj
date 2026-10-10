@@ -28,6 +28,7 @@
     <None Include="../images/jpeg/exif-orientation-6.jpg" Link="images/sideways.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/duck-420.jpg" Link="images/duck.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jpeg/duck-cmyk.jpg" Link="images/duck-cmyk.jpg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +43,7 @@
     <ProjectReference Include="..\..\samples\Jpeg\Jpeg.csproj" />
     <ProjectReference Include="..\..\samples\MemoryAndThreading\MemoryAndThreading.csproj" />
     <ProjectReference Include="..\..\samples\Metadata\Metadata.csproj" />
+    <ProjectReference Include="..\..\samples\PixelTypes\PixelTypes.csproj" />
     <ProjectReference Include="..\..\samples\Security\Security.csproj" />
   </ItemGroup>
 

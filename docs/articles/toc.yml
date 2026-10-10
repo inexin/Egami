@@ -6,6 +6,8 @@
       href: guides/formats.md
     - name: Resizing and geometry
       href: guides/resizing-and-geometry.md
+    - name: Pixel types
+      href: guides/pixel-types.md
     - name: Color
       href: guides/color.md
     - name: Filters

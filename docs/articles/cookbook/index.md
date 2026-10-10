@@ -29,6 +29,18 @@ counted against `MaxTotalBytes`, so a slow client never holds a thread.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#gif-from-frames)]
 
+## Read a CMYK JPEG's inks
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#cmyk-inks)]
+
+## Draw into a premultiplied BGRA surface
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#premultiplied-surface)]
+
+## Fill a 16-bit display framebuffer
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#packed-framebuffer)]
+
 ## Strip metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]

@@ -16,6 +16,7 @@ public sealed class SampleApps
         { "Jpeg", Egami.Samples.Jpeg.Sample.Run },
         { "MemoryAndThreading", Egami.Samples.MemoryAndThreading.Sample.Run },
         { "Metadata", Egami.Samples.Metadata.Sample.Run },
+        { "PixelTypes", Egami.Samples.PixelTypes.Sample.Run },
         { "Security", Egami.Samples.Security.Sample.Run },
     };
 
