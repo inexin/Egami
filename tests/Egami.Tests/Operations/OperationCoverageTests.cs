@@ -19,7 +19,7 @@ public sealed class OperationCoverageTests : IDisposable
     public static TheoryData<string> Operations() => [.. Chains.Keys];
 
     /// <summary>One chain per operation and mode, each sized relative to its input so it runs on any shape.</summary>
-    private static readonly Dictionary<string, Func<Size, Raster<Rgba8>, Action<RasterOps>>> Chains = new()
+    internal static readonly Dictionary<string, Func<Size, Raster<Rgba8>, Action<RasterOps>>> Chains = new()
     {
         ["Resize-Nearest"] = (s, _) => ops => ops.Resize(Half(s.Width), Half(s.Height), ResampleFilter.Nearest),
         ["Resize-Box"] = (s, _) => ops => ops.Resize(Half(s.Width), Half(s.Height), ResampleFilter.Box),
@@ -94,51 +94,6 @@ public sealed class OperationCoverageTests : IDisposable
             Assert.Equal((expected.Width, expected.Height), (rgbResult.Width, rgbResult.Height));
             Assert.Equal((expected.Width, expected.Height), (grayResult.Width, grayResult.Height));
             Assert.Equal((expected.Width, expected.Height), (floatResult.Width, floatResult.Height));
-            using Raster<Rgb16> rgb16 = contiguous.As<Rgb16>();
-            using Raster<Rgb16> rgb16Result = rgb16.Derive(chain, Ct);
-            using Raster<GrayAlpha16> grayAlpha = contiguous.As<GrayAlpha16>();
-            using Raster<GrayAlpha16> grayAlphaResult = grayAlpha.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (rgb16Result.Width, rgb16Result.Height));
-            Assert.Equal((expected.Width, expected.Height), (grayAlphaResult.Width, grayAlphaResult.Height));
-            using Raster<Argb8> argb = contiguous.As<Argb8>();
-            using Raster<Argb8> argbResult = argb.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (argbResult.Width, argbResult.Height));
-            using Raster<Alpha8> mask = contiguous.As<Alpha8>();
-            using Raster<Alpha8> maskResult = mask.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (maskResult.Width, maskResult.Height));
-            using Raster<RgbaF16> half = contiguous.As<RgbaF16>();
-            using Raster<RgbaF16> halfResult = half.Derive(chain, Ct);
-            using Raster<RgbF32> rgbFloat = contiguous.As<RgbF32>();
-            using Raster<RgbF32> rgbFloatResult = rgbFloat.Derive(chain, Ct);
-            using Raster<GrayF32> grayFloat = contiguous.As<GrayF32>();
-            using Raster<GrayF32> grayFloatResult = grayFloat.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (halfResult.Width, halfResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (rgbFloatResult.Width, rgbFloatResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (grayFloatResult.Width, grayFloatResult.Height));
-            using Raster<Bgr565> b565 = contiguous.As<Bgr565>();
-            using Raster<Bgr565> b565Result = b565.Derive(chain, Ct);
-            using Raster<Bgra4444> b4444 = contiguous.As<Bgra4444>();
-            using Raster<Bgra4444> b4444Result = b4444.Derive(chain, Ct);
-            using Raster<Rgb10A2> r1010102 = contiguous.As<Rgb10A2>();
-            using Raster<Rgb10A2> r1010102Result = r1010102.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (b565Result.Width, b565Result.Height));
-            Assert.Equal((expected.Width, expected.Height), (b4444Result.Width, b4444Result.Height));
-            Assert.Equal((expected.Width, expected.Height), (r1010102Result.Width, r1010102Result.Height));
-            using Raster<Cmyk8> cmyk = contiguous.As<Cmyk8>();
-            using Raster<Cmyk8> cmykResult = cmyk.Derive(chain, Ct);
-            using Raster<Cmyk16> cmyk16 = contiguous.As<Cmyk16>();
-            using Raster<Cmyk16> cmyk16Result = cmyk16.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (cmykResult.Width, cmykResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (cmyk16Result.Width, cmyk16Result.Height));
-            using Raster<PremulRgba8> premul = contiguous.As<PremulRgba8>();
-            using Raster<PremulRgba8> premulResult = premul.Derive(chain, Ct);
-            using Raster<PremulBgra8> premulBgra = contiguous.As<PremulBgra8>();
-            using Raster<PremulBgra8> premulBgraResult = premulBgra.Derive(chain, Ct);
-            using Raster<PremulRgbaF32> premulFloat = contiguous.As<PremulRgbaF32>();
-            using Raster<PremulRgbaF32> premulFloatResult = premulFloat.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (premulResult.Width, premulResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (premulBgraResult.Width, premulBgraResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (premulFloatResult.Width, premulFloatResult.Height));
         }
     }
 
@@ -191,7 +146,7 @@ public sealed class OperationCoverageTests : IDisposable
         }
     }
 
-    private static Raster<Rgba8> Noise(int width, int height, EgamiContext context)
+    internal static Raster<Rgba8> Noise(int width, int height, EgamiContext context)
     {
         Raster<Rgba8> raster = Raster.Create<Rgba8>(width, height, context);
         Random random = new((width * 7) + height);
@@ -207,7 +162,7 @@ public sealed class OperationCoverageTests : IDisposable
         return raster;
     }
 
-    private static Raster<Rgba8> Logo()
+    internal static Raster<Rgba8> Logo()
     {
         Raster<Rgba8> logo = Raster.Create<Rgba8>(40, 30);
         for (int y = 0; y < 30; y++)
