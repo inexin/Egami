@@ -99,6 +99,12 @@ public class FilterReferenceTests
         ["erode-mask"] = (o => o.Morphology(MorphologyOp.Erode, Corner), Gate.Identical),
         ["dilate-mask"] = (o => o.Morphology(MorphologyOp.Dilate, Corner), Gate.Identical),
         ["close-square-3"] = (o => o.Morphology(MorphologyOp.Close, StructuringElement.Square(3)), Gate.Identical),
+
+        // ImageMagick centers its ellipse on pixel (w/2, h/2), half a pixel past the image's middle, and blurs a drawn ellipse;
+        // Egami's analytic edge is within the closeness gate of it while the ellipse stays inside the image.
+        ["vignette-96"] = (o => o.Vignette(96 / (120 * MathF.Sqrt(2)), 0.4f, center: new System.Numerics.Vector2(120.5f, 90.5f)), Gate.Close),
+        ["vignette-100"] = (o => o.Vignette(100 / (120 * MathF.Sqrt(2)), 0.5f, center: new System.Numerics.Vector2(120.5f, 90.5f)), Gate.Close),
+        ["vignette-96-tall"] = (o => o.Vignette(72 / (90 * MathF.Sqrt(2)), 0.4f, center: new System.Numerics.Vector2(90.5f, 120.5f)), Gate.Close),
     };
 
     /// <summary>ImageMagick's kernel 3x3+0+1:1,1,-,-,1,1,1,-,-: lopsided, so dilation and erosion read it differently.</summary>

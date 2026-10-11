@@ -153,6 +153,11 @@ CASES = [
     ("shapes", "dilate-mask", 8, "-morphology Dilate 3x3+0+1:1,1,-,-,1,1,1,-,-"),
     ("duck16", "dilate-disk-2", 16, "-morphology Dilate Disk:2"),
     ("duck16", "close-square-3", 16, "-morphology Close Square:3"),
+    # Vignette(r, s, center): IM's ellipse has semi-axes w/2 - x and h/2 - y (whole pixels) and edge sigma; the test picks r and s
+    # so that r * half-size * sqrt(2) are those semi-axes and s * r * half-diagonal / 4 is sigma.
+    ("duck", "vignette-96", 8, "-background black -vignette 0x8.48528+24+18"),
+    ("duck", "vignette-100", 8, "-background black -vignette 0x11.04854+20+15"),
+    ("egret", "vignette-96-tall", 8, "-background black -vignette 0x8.48528+18+24"),
 ]
 
 # Options the magick command no longer runs, so their cases go through its legacy convert parser.

@@ -56,3 +56,6 @@ shapes.erode-mask 8 200 150 -morphology Erode 3x3+0+1:1,1,-,-,1,1,1,-,-
 shapes.dilate-mask 8 200 150 -morphology Dilate 3x3+0+1:1,1,-,-,1,1,1,-,-
 duck16.dilate-disk-2 16 240 180 -morphology Dilate Disk:2
 duck16.close-square-3 16 240 180 -morphology Close Square:3
+duck.vignette-96 8 240 180 -background black -vignette 0x8.48528+24+18
+duck.vignette-100 8 240 180 -background black -vignette 0x11.04854+20+15
+egret.vignette-96-tall 8 180 240 -background black -vignette 0x8.48528+18+24
