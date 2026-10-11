@@ -23,3 +23,12 @@ duck.despeckle 8 240 180 -channel RGB -despeckle
 noisy.despeckle 8 240 180 -channel RGB -despeckle
 duck16.despeckle 16 240 180 -channel RGB -despeckle
 steps.bilateral-gray-3-0.1 8 160 120 -bilateral-blur 13x13+25.5+3
+duck.shade-30x30 8 240 180 -channel RGB -shade 30x30 +channel
+duck.shade-120x45 8 240 180 -channel RGB -shade 120x45 +channel
+egret.shade-300x15 8 180 240 -channel RGB -shade 300x15 +channel
+shapes.shade-30x30 8 200 150 -channel RGB -shade 30x30 +channel
+duck.shade-colored-30x30 8 240 180 -channel RGB +shade 30x30 +channel
+egret.shade-colored-210x60 8 180 240 -channel RGB +shade 210x60 +channel
+shapes.shade-colored-30x30 8 200 150 -channel RGB +shade 30x30 +channel
+duck.emboss 8 240 180 -emboss 0x1
+egret.emboss 8 180 240 -emboss 0x1

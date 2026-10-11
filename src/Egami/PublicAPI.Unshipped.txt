@@ -7,6 +7,7 @@ abstract Egami.Formats.RowReader.Metadata.get -> Egami.Metadata.RasterMetadata!
 abstract Egami.Formats.RowReader.NextFrame() -> Egami.Metadata.FrameMetadata?
 abstract Egami.Formats.RowReader.ReadRow<TPixel>(int y, int x, System.Span<TPixel> destination) -> void
 abstract Egami.Formats.RowReader.Width.get -> int
+abstract Egami.Operations.Light.<Clone>$() -> Egami.Operations.Light!
 abstract Egami.YuvRaster.HasAlpha.get -> bool
 const Egami.Metadata.XmpNamespaces.CameraRaw = "http://ns.adobe.com/camera-raw-settings/1.0/" -> string!
 const Egami.Metadata.XmpNamespaces.DublinCore = "http://purl.org/dc/elements/1.1/" -> string!
@@ -780,6 +781,16 @@ Egami.Operations.Compositor
 Egami.Operations.Connectivity
 Egami.Operations.Connectivity.Eight = 1 -> Egami.Operations.Connectivity
 Egami.Operations.Connectivity.Four = 0 -> Egami.Operations.Connectivity
+Egami.Operations.DistantLight
+Egami.Operations.DistantLight.Azimuth.get -> float
+Egami.Operations.DistantLight.Azimuth.init -> void
+Egami.Operations.DistantLight.DistantLight(float azimuth, float elevation) -> void
+Egami.Operations.DistantLight.Elevation.get -> float
+Egami.Operations.DistantLight.Elevation.init -> void
+Egami.Operations.DistantLight.Equals(Egami.Operations.DistantLight? other) -> bool
+Egami.Operations.HeightSource
+Egami.Operations.HeightSource.Alpha = 0 -> Egami.Operations.HeightSource
+Egami.Operations.HeightSource.Luminance = 1 -> Egami.Operations.HeightSource
 Egami.Operations.Homography
 Egami.Operations.Homography.Determinant.get -> double
 Egami.Operations.Homography.Equals(Egami.Operations.Homography other) -> bool
@@ -815,6 +826,26 @@ Egami.Operations.LensBlurOptions.HighlightThreshold.init -> void
 Egami.Operations.LensBlurOptions.LensBlurOptions() -> void
 Egami.Operations.LensBlurOptions.Rotation.get -> float
 Egami.Operations.LensBlurOptions.Rotation.init -> void
+Egami.Operations.Light
+Egami.Operations.Light.Color.get -> Egami.Pixels.Rgba8
+Egami.Operations.Light.Color.init -> void
+Egami.Operations.Light.Light(Egami.Operations.Light! original) -> void
+Egami.Operations.LightingModel
+Egami.Operations.LightingModel.Constant.get -> float
+Egami.Operations.LightingModel.Equals(Egami.Operations.LightingModel other) -> bool
+Egami.Operations.LightingModel.IsSpecular.get -> bool
+Egami.Operations.LightingModel.LightingModel() -> void
+Egami.Operations.LightingModel.Shininess.get -> float
+Egami.Operations.LightingOptions
+Egami.Operations.LightingOptions.<Clone>$() -> Egami.Operations.LightingOptions!
+Egami.Operations.LightingOptions.Blend.get -> Egami.Operations.BlendMode?
+Egami.Operations.LightingOptions.Blend.init -> void
+Egami.Operations.LightingOptions.Equals(Egami.Operations.LightingOptions? other) -> bool
+Egami.Operations.LightingOptions.Height.get -> Egami.Operations.HeightSource
+Egami.Operations.LightingOptions.Height.init -> void
+Egami.Operations.LightingOptions.LightingOptions() -> void
+Egami.Operations.LightingOptions.SurfaceScale.get -> float
+Egami.Operations.LightingOptions.SurfaceScale.init -> void
 Egami.Operations.Mask
 Egami.Operations.Mask.Channel.get -> Egami.Operations.MaskChannel
 Egami.Operations.Mask.Channel.init -> void
@@ -852,6 +883,11 @@ Egami.Operations.PixelMath.Multiply = 2 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Pow = 4 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Set = 8 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Subtract = 1 -> Egami.Operations.PixelMath
+Egami.Operations.PointLight
+Egami.Operations.PointLight.Equals(Egami.Operations.PointLight? other) -> bool
+Egami.Operations.PointLight.PointLight(System.Numerics.Vector3 position) -> void
+Egami.Operations.PointLight.Position.get -> System.Numerics.Vector3
+Egami.Operations.PointLight.Position.init -> void
 Egami.Operations.RasterOps.AddNoise(Egami.Operations.NoiseKind kind, float amount = 1, bool monochrome = false, ulong seed = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.AlphaToGray() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Arithmetic(Egami.Operations.PixelMath op, float value, Egami.Operations.ColorChannels channels = Egami.Operations.ColorChannels.Color) -> Egami.Operations.RasterOps!
@@ -866,10 +902,12 @@ Egami.Operations.RasterOps.Displace(Egami.Raster! map, float scaleX, float scale
 Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Emboss(float angle = 135, float depth = 1, float sigma = 1, bool grayscale = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.EntropyCrop(float threshold = 0.5) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LensBlur(float radius, Egami.Operations.LensBlurOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Lighting(Egami.Operations.Light! light, Egami.Operations.LightingModel model, Egami.Operations.LightingOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MakeTransparent(Egami.Pixels.Rgba8 color, float tolerance = 0, float softness = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Median(int radius, bool includeAlpha = false) -> Egami.Operations.RasterOps!
@@ -879,6 +917,7 @@ Egami.Operations.RasterOps.OnChannels(Egami.Operations.ColorChannels channels, S
 Egami.Operations.RasterOps.QuadDistort(System.Numerics.Vector2 topLeft, System.Numerics.Vector2 topRight, System.Numerics.Vector2 bottomRight, System.Numerics.Vector2 bottomLeft, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ReplaceColor(Egami.Pixels.Rgba8 from, Egami.Pixels.Rgba8 to, float tolerance = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.RotationalBlur(float degrees, System.Numerics.Vector2? center = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Shade(float azimuth = 30, float elevation = 30, bool colored = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ShuffleChannels(Egami.Operations.ChannelSource red, Egami.Operations.ChannelSource green, Egami.Operations.ChannelSource blue, Egami.Operations.ChannelSource alpha) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Skew(float degreesX, float degreesY, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Tile(int width, int height, Egami.Point origin = default(Egami.Point), Egami.Rect? source = null) -> Egami.Operations.RasterOps!
@@ -906,6 +945,17 @@ Egami.Operations.SamplingOptions.Filter.get -> Egami.Operations.ResampleFilter
 Egami.Operations.SamplingOptions.Filter.init -> void
 Egami.Operations.SamplingOptions.SamplingOptions() -> void
 Egami.Operations.SamplingOptions.SamplingOptions(Egami.Operations.SamplingOptions! original) -> void
+Egami.Operations.SpotLight
+Egami.Operations.SpotLight.ConeAngle.get -> float
+Egami.Operations.SpotLight.ConeAngle.init -> void
+Egami.Operations.SpotLight.Equals(Egami.Operations.SpotLight? other) -> bool
+Egami.Operations.SpotLight.Exponent.get -> float
+Egami.Operations.SpotLight.Exponent.init -> void
+Egami.Operations.SpotLight.Position.get -> System.Numerics.Vector3
+Egami.Operations.SpotLight.Position.init -> void
+Egami.Operations.SpotLight.SpotLight(System.Numerics.Vector3 position, System.Numerics.Vector3 target, float exponent = 1, float coneAngle = 90) -> void
+Egami.Operations.SpotLight.Target.get -> System.Numerics.Vector3
+Egami.Operations.SpotLight.Target.init -> void
 Egami.Operations.StackMode
 Egami.Operations.StackMode.Max = 3 -> Egami.Operations.StackMode
 Egami.Operations.StackMode.Mean = 0 -> Egami.Operations.StackMode
@@ -1298,16 +1348,35 @@ override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!
 override Egami.Metadata.XmpName.GetHashCode() -> int
 override Egami.Metadata.XmpName.ToString() -> string!
+override Egami.Operations.DistantLight.<Clone>$() -> Egami.Operations.DistantLight!
+override Egami.Operations.DistantLight.Equals(object? obj) -> bool
+override Egami.Operations.DistantLight.GetHashCode() -> int
+override Egami.Operations.DistantLight.ToString() -> string!
 override Egami.Operations.Homography.Equals(object? obj) -> bool
 override Egami.Operations.Homography.GetHashCode() -> int
 override Egami.Operations.Homography.ToString() -> string!
 override Egami.Operations.LensBlurOptions.Equals(object? obj) -> bool
 override Egami.Operations.LensBlurOptions.GetHashCode() -> int
 override Egami.Operations.LensBlurOptions.ToString() -> string!
+override Egami.Operations.Light.Equals(object? obj) -> bool
+override Egami.Operations.Light.GetHashCode() -> int
+override Egami.Operations.Light.ToString() -> string!
+override Egami.Operations.LightingModel.GetHashCode() -> int
+override Egami.Operations.LightingOptions.Equals(object? obj) -> bool
+override Egami.Operations.LightingOptions.GetHashCode() -> int
+override Egami.Operations.LightingOptions.ToString() -> string!
 override Egami.Operations.Mask.GetHashCode() -> int
+override Egami.Operations.PointLight.<Clone>$() -> Egami.Operations.PointLight!
+override Egami.Operations.PointLight.Equals(object? obj) -> bool
+override Egami.Operations.PointLight.GetHashCode() -> int
+override Egami.Operations.PointLight.ToString() -> string!
 override Egami.Operations.SamplingOptions.Equals(object? obj) -> bool
 override Egami.Operations.SamplingOptions.GetHashCode() -> int
 override Egami.Operations.SamplingOptions.ToString() -> string!
+override Egami.Operations.SpotLight.<Clone>$() -> Egami.Operations.SpotLight!
+override Egami.Operations.SpotLight.Equals(object? obj) -> bool
+override Egami.Operations.SpotLight.GetHashCode() -> int
+override Egami.Operations.SpotLight.ToString() -> string!
 override Egami.Operations.TransformOptions.<Clone>$() -> Egami.Operations.TransformOptions!
 override Egami.Operations.TransformOptions.Equals(object? obj) -> bool
 override Egami.Operations.TransformOptions.GetHashCode() -> int
@@ -1373,6 +1442,9 @@ override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
 override sealed Egami.Formats.Tiff.TiffReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+override sealed Egami.Operations.DistantLight.Equals(Egami.Operations.Light? other) -> bool
+override sealed Egami.Operations.PointLight.Equals(Egami.Operations.Light? other) -> bool
+override sealed Egami.Operations.SpotLight.Equals(Egami.Operations.Light? other) -> bool
 override sealed Egami.Operations.TransformOptions.Equals(Egami.Operations.SamplingOptions? other) -> bool
 static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
@@ -1502,6 +1574,8 @@ static Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode mode, Egami.
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, Egami.Pixels.Rgba8 color, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
+static Egami.Operations.DistantLight.operator !=(Egami.Operations.DistantLight? left, Egami.Operations.DistantLight? right) -> bool
+static Egami.Operations.DistantLight.operator ==(Egami.Operations.DistantLight? left, Egami.Operations.DistantLight? right) -> bool
 static Egami.Operations.Homography.CreateRotation(double radians) -> Egami.Operations.Homography
 static Egami.Operations.Homography.CreateRotation(double radians, System.Numerics.Vector2 center) -> Egami.Operations.Homography
 static Egami.Operations.Homography.CreateScale(double scaleX, double scaleY) -> Egami.Operations.Homography
@@ -1522,10 +1596,22 @@ static Egami.Operations.Homography.operator ==(Egami.Operations.Homography left,
 static Egami.Operations.LensBlurOptions.Default.get -> Egami.Operations.LensBlurOptions!
 static Egami.Operations.LensBlurOptions.operator !=(Egami.Operations.LensBlurOptions? left, Egami.Operations.LensBlurOptions? right) -> bool
 static Egami.Operations.LensBlurOptions.operator ==(Egami.Operations.LensBlurOptions? left, Egami.Operations.LensBlurOptions? right) -> bool
+static Egami.Operations.Light.operator !=(Egami.Operations.Light? left, Egami.Operations.Light? right) -> bool
+static Egami.Operations.Light.operator ==(Egami.Operations.Light? left, Egami.Operations.Light? right) -> bool
+static Egami.Operations.LightingModel.Diffuse(float kd = 1) -> Egami.Operations.LightingModel
+static Egami.Operations.LightingModel.operator !=(Egami.Operations.LightingModel left, Egami.Operations.LightingModel right) -> bool
+static Egami.Operations.LightingModel.operator ==(Egami.Operations.LightingModel left, Egami.Operations.LightingModel right) -> bool
+static Egami.Operations.LightingModel.Specular(float ks = 1, float shininess = 1) -> Egami.Operations.LightingModel
+static Egami.Operations.LightingOptions.operator !=(Egami.Operations.LightingOptions? left, Egami.Operations.LightingOptions? right) -> bool
+static Egami.Operations.LightingOptions.operator ==(Egami.Operations.LightingOptions? left, Egami.Operations.LightingOptions? right) -> bool
 static Egami.Operations.Mask.operator !=(Egami.Operations.Mask left, Egami.Operations.Mask right) -> bool
 static Egami.Operations.Mask.operator ==(Egami.Operations.Mask left, Egami.Operations.Mask right) -> bool
+static Egami.Operations.PointLight.operator !=(Egami.Operations.PointLight? left, Egami.Operations.PointLight? right) -> bool
+static Egami.Operations.PointLight.operator ==(Egami.Operations.PointLight? left, Egami.Operations.PointLight? right) -> bool
 static Egami.Operations.SamplingOptions.operator !=(Egami.Operations.SamplingOptions? left, Egami.Operations.SamplingOptions? right) -> bool
 static Egami.Operations.SamplingOptions.operator ==(Egami.Operations.SamplingOptions? left, Egami.Operations.SamplingOptions? right) -> bool
+static Egami.Operations.SpotLight.operator !=(Egami.Operations.SpotLight? left, Egami.Operations.SpotLight? right) -> bool
+static Egami.Operations.SpotLight.operator ==(Egami.Operations.SpotLight? left, Egami.Operations.SpotLight? right) -> bool
 static Egami.Operations.TransformOptions.operator !=(Egami.Operations.TransformOptions? left, Egami.Operations.TransformOptions? right) -> bool
 static Egami.Operations.TransformOptions.operator ==(Egami.Operations.TransformOptions? left, Egami.Operations.TransformOptions? right) -> bool
 static Egami.Operations.Warp.FromFunction(System.Func<System.Numerics.Vector2, System.Numerics.Vector2>! map, Egami.Size? outputSize = null) -> Egami.Operations.IWarp!
@@ -1721,6 +1807,9 @@ virtual Egami.Formats.RowReader.EndFrame() -> void
 virtual Egami.Formats.RowReader.FrameCount.get -> int?
 virtual Egami.Formats.RowReader.IsMetadataComplete.get -> bool
 virtual Egami.Formats.RowReader.WorkingBytes.get -> long
+virtual Egami.Operations.Light.EqualityContract.get -> System.Type!
+virtual Egami.Operations.Light.Equals(Egami.Operations.Light? other) -> bool
+virtual Egami.Operations.Light.PrintMembers(System.Text.StringBuilder! builder) -> bool
 virtual Egami.Operations.SamplingOptions.<Clone>$() -> Egami.Operations.SamplingOptions!
 virtual Egami.Operations.SamplingOptions.EqualityContract.get -> System.Type!
 virtual Egami.Operations.SamplingOptions.Equals(Egami.Operations.SamplingOptions? other) -> bool
@@ -1751,6 +1840,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Colors.YCbCrColor.ToString() -> string
 ~override Egami.Metadata.IptcKey.Equals(object obj) -> bool
 ~override Egami.Metadata.XmpName.Equals(object obj) -> bool
+~override Egami.Operations.LightingModel.Equals(object obj) -> bool
+~override Egami.Operations.LightingModel.ToString() -> string
 ~override Egami.Operations.Mask.Equals(object obj) -> bool
 ~override Egami.Operations.Mask.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool

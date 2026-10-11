@@ -262,7 +262,9 @@ internal static class ScopeRunner
             PixelPlane<TPixel> source = read, target = a;
             for (int i = first; i <= last; i++)
             {
-                steps[i].Run(new OperationInput<TPixel>(source, target, input.Context, input.FrameIndex, input.CancellationToken) { Memory = input.Memory });
+                // A step in the raster's coordinates (a point light) moves with the band.
+                IRasterOperation step = steps[i] is IAreaTranslatable translatable && translatable.InArea(band) is IRasterOperation moved ? moved : steps[i];
+                step.Run(new OperationInput<TPixel>(source, target, input.Context, input.FrameIndex, input.CancellationToken) { Memory = input.Memory });
                 source = target;
                 target = ReferenceEquals(target, a) ? b! : a;
             }

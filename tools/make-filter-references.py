@@ -116,7 +116,22 @@ CASES = [
     ("noisy", "despeckle", 8, "-channel RGB -despeckle"),
     ("duck16", "despeckle", 16, "-channel RGB -despeckle"),
     ("steps", "bilateral-gray-3-0.1", 8, "-bilateral-blur 13x13+25.5+3"),
+    # Shade keeps alpha in Egami, so ImageMagick shades only RGB; +shade needs the legacy parser (see LEGACY).
+    ("duck", "shade-30x30", 8, "-channel RGB -shade 30x30 +channel"),
+    ("duck", "shade-120x45", 8, "-channel RGB -shade 120x45 +channel"),
+    ("egret", "shade-300x15", 8, "-channel RGB -shade 300x15 +channel"),
+    ("shapes", "shade-30x30", 8, "-channel RGB -shade 30x30 +channel"),
+    ("duck", "shade-colored-30x30", 8, "-channel RGB +shade 30x30 +channel"),
+    ("egret", "shade-colored-210x60", 8, "-channel RGB +shade 210x60 +channel"),
+    ("shapes", "shade-colored-30x30", 8, "-channel RGB +shade 30x30 +channel"),
+    # ImageMagick's -emboss is a diagonal sharpening kernel followed by histogram equalization, not a directional relief, so
+    # Egami's Emboss is only compared with it and the PSNR reported.
+    ("duck", "emboss", 8, "-emboss 0x1"),
+    ("egret", "emboss", 8, "-emboss 0x1"),
 ]
+
+# Options the magick command no longer runs, so their cases go through its legacy convert parser.
+LEGACY = ("+shade",)
 
 
 def main():
@@ -134,8 +149,9 @@ def main():
     outputs = []
     for name, case, bits, args in CASES:
         out = f"{CACHE}/{name}.{case}.rgba{bits}"
-        script.append(f"magick {IMAGES}/{name}.png {args} -depth {bits} -endian MSB RGBA:{out}")
-        script.append(f"echo \"{name}.{case} {bits} $(magick {IMAGES}/{name}.png {args} -format '%w %h' info:) {args}\" >> {CACHE}/manifest.txt")
+        tool = "magick convert" if any(option in args.split() for option in LEGACY) else "magick"
+        script.append(f"{tool} {IMAGES}/{name}.png {args} -depth {bits} -endian MSB RGBA:{out}")
+        script.append(f"echo \"{name}.{case} {bits} $({tool} {IMAGES}/{name}.png {args} -format '%w %h' info:) {args}\" >> {CACHE}/manifest.txt")
         outputs.append(out)
 
     with open(os.path.join(CACHE, "run.sh"), "w", newline="\n") as f:

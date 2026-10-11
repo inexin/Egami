@@ -25,17 +25,20 @@ public class FilterReferenceTests
         internal static readonly Gate Identical = new(0, double.PositiveInfinity);
         internal static readonly Gate Close = new(8, 40);
 
-        // BilateralBlur weighs neighbours by their RGB difference (design question 4); ImageMagick weighs by the 8-bit difference
-        // of their intensity. On gray images the two agree (Close); on photos they differ at a few color edges, so only the PSNR
-        // is gated; on colored salt-and-pepper noise, which intensity cannot tell from its surroundings, they differ by design.
         // ImageMagick rounds each motion and rotational sample to the nearest pixel; Egami reads between pixels with 2.5.2's
         // bilinear sampler (design question 5), which smooths diagonal streaks. With rounded offsets Egami's motion streaks are
         // the same to within float rounding (the "-rounded" cases, one level); the bilinear results are gated by PSNR alone.
         internal static readonly Gate Sampled = new(255, 30);
         internal static readonly Gate Rounded = new(1, 90);
 
+        // BilateralBlur weighs neighbours by their RGB difference (design question 4); ImageMagick weighs by the 8-bit difference
+        // of their intensity. On gray images the two agree (Close); on photos they differ at a few color edges, so only the PSNR
+        // is gated; on colored salt-and-pepper noise, which intensity cannot tell from its surroundings, they differ by design.
         internal static readonly Gate BilateralColor = new(255, 40);
         internal static readonly Gate BilateralNoise = new(255, 20);
+
+        /// <summary>No gate: the definitions differ by design, and the PSNR is only written to the test output.</summary>
+        internal static readonly Gate Reported = new(255, 0);
     }
 
     private static readonly Dictionary<string, (Action<RasterOps> Chain, Gate Gate)> Chains = new()
@@ -58,6 +61,15 @@ public class FilterReferenceTests
         ["rotational-4"] = (o => o.RotationalBlur(4), Gate.Sampled),
         ["despeckle"] = (o => o.Despeckle(), Gate.Identical),
         ["bilateral-noise-2-0.2"] = (o => o.BilateralBlur(2, 0.2f), Gate.BilateralNoise),
+        ["shade-30x30"] = (o => o.Shade(30, 30), Gate.Identical),
+        ["shade-120x45"] = (o => o.Shade(120, 45), Gate.Identical),
+        ["shade-300x15"] = (o => o.Shade(300, 15), Gate.Identical),
+        ["shade-colored-30x30"] = (o => o.Shade(30, 30, colored: true), Gate.Identical),
+        ["shade-colored-210x60"] = (o => o.Shade(210, 60, colored: true), Gate.Identical),
+
+        // ImageMagick's -emboss sharpens along a diagonal and then equalizes the histogram; Egami's is a directional relief on
+        // mid gray (design question 11), so the two only share a name (about 9 dB).
+        ["emboss"] = (o => o.Emboss(grayscale: false), Gate.Reported),
     };
 
     public static TheoryData<string> Cases()
@@ -112,6 +124,7 @@ public class FilterReferenceTests
 
         double max = (1 << bits) - 1;
         double psnr = squares == 0 ? double.PositiveInfinity : 10 * Math.Log10(max * max / (squares / actual.Length));
+        TestContext.Current.TestOutputHelper?.WriteLine($"{name}: worst {worst}, PSNR {psnr:F2} dB");
         int levels = bits == 16 ? gate.MaxLevels * 257 : gate.MaxLevels;
         Assert.True(
             worst <= levels && psnr >= gate.MinPsnr,
