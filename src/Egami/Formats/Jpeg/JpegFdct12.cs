@@ -1,17 +1,20 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
-/// The forward DCT for 12-bit samples (T.81 A.3.3), in double precision: rows then columns with the cosine matrix, and
-/// quantization with rounding to nearest. The 8-bit encoder's fixed-point transform packs 16-bit lanes, which 12-bit samples would
-/// overflow; 12-bit files are rare enough that the plain separable form is fast enough.
+/// The forward DCT for 12-bit samples (T.81 A.3.3), in single precision: rows then columns with the cosine matrix, eight
+/// frequencies at a time in one vector, and quantization with rounding to nearest. The 8-bit encoder's fixed-point transform packs
+/// 16-bit lanes, which 12-bit samples would overflow. Products and sums stay separate (never fused), so every machine computes the
+/// same coefficients.
 /// </summary>
 internal static class JpegFdct12
 {
     /// <summary>The largest coefficient magnitude 12-bit Huffman coding takes: 15 bits for DC differences, 14 for AC (T.81 F.1.2).</summary>
     private const int MaxMagnitude = (1 << 14) - 1;
 
-    /// <summary>Basis[u * 8 + x] = C(u) / 2 × cos((2x + 1)uπ / 16), so one pass over rows and one over columns give the 2-D DCT.</summary>
-    private static readonly double[] Basis = CreateBasis();
+    /// <summary>Columns[x] holds C(u) / 2 × cos((2x + 1)uπ / 16) for u = 0 to 7: one row pass is the sum of sample x times it.</summary>
+    private static readonly Vector256<float>[] Columns = CreateColumns();
 
     /// <summary>
     /// Transforms 8 rows of 8 samples (0 to 4095, <paramref name="stride"/> apart) and quantizes them with <paramref name="quant"/>
@@ -19,52 +22,55 @@ internal static class JpegFdct12
     /// </summary>
     internal static void Forward(ReadOnlySpan<ushort> samples, int stride, ReadOnlySpan<ushort> quant, Span<short> output)
     {
-        Span<double> rows = stackalloc double[64];
-        ReadOnlySpan<double> basis = Basis;
+        Vector256<float>[] columns = Columns;
+
+        // Rows: rows[y] holds the 1-D DCT of sample row y, frequency u in lane u.
+        Span<Vector256<float>> rows = stackalloc Vector256<float>[8];
         for (int y = 0; y < 8; y++)
         {
             ReadOnlySpan<ushort> s = samples.Slice(y * stride, 8);
-            for (int u = 0; u < 8; u++)
+            Vector256<float> sum = Vector256<float>.Zero;
+            for (int x = 0; x < 8; x++)
             {
-                double sum = 0;
-                for (int x = 0; x < 8; x++)
-                {
-                    sum += basis[(u * 8) + x] * (s[x] - 2048);
-                }
-
-                rows[(y * 8) + u] = sum;
+                sum += columns[x] * Vector256.Create((float)(s[x] - 2048));
             }
+
+            rows[y] = sum;
         }
 
-        for (int u = 0; u < 8; u++)
+        // Columns: frequency v is the sum over y of the basis value (v, y) times row y.
+        for (int v = 0; v < 8; v++)
         {
-            for (int v = 0; v < 8; v++)
+            Vector256<float> sum = Vector256<float>.Zero;
+            for (int y = 0; y < 8; y++)
             {
-                double sum = 0;
-                for (int y = 0; y < 8; y++)
-                {
-                    sum += basis[(v * 8) + y] * rows[(y * 8) + u];
-                }
+                sum += rows[y] * Vector256.Create(columns[y].GetElement(v));
+            }
 
+            for (int u = 0; u < 8; u++)
+            {
                 int n = (v * 8) + u;
-                int value = (int)Math.Round(sum / quant[n], MidpointRounding.AwayFromZero);
+                int value = (int)MathF.Round(sum.GetElement(u) / quant[n], MidpointRounding.AwayFromZero);
                 output[n] = (short)Math.Clamp(value, -MaxMagnitude, MaxMagnitude);
             }
         }
     }
 
-    private static double[] CreateBasis()
+    private static Vector256<float>[] CreateColumns()
     {
-        double[] basis = new double[64];
-        for (int u = 0; u < 8; u++)
+        Vector256<float>[] columns = new Vector256<float>[8];
+        Span<float> lanes = stackalloc float[8];
+        for (int x = 0; x < 8; x++)
         {
-            double scale = u == 0 ? Math.Sqrt(0.5) / 2 : 0.5;
-            for (int x = 0; x < 8; x++)
+            for (int u = 0; u < 8; u++)
             {
-                basis[(u * 8) + x] = scale * Math.Cos(((2 * x) + 1) * u * Math.PI / 16);
+                double scale = u == 0 ? Math.Sqrt(0.5) / 2 : 0.5;
+                lanes[u] = (float)(scale * Math.Cos(((2 * x) + 1) * u * Math.PI / 16));
             }
+
+            columns[x] = Vector256.Create<float>(lanes);
         }
 
-        return basis;
+        return columns;
     }
 }

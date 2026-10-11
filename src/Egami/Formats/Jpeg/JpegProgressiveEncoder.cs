@@ -1,4 +1,7 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Jpeg;
 
@@ -6,7 +9,8 @@ namespace Egami.Formats.Jpeg;
 /// Writes the scans of a progressive file (T.81 annex G) from quantized blocks held for the whole image: libjpeg's
 /// <c>jpeg_simple_progression</c> script of spectral selection and successive approximation, each scan coded twice, first only
 /// counting symbols so it gets its own optimal Huffman tables, then for real. Restart markers follow the restart interval in MCUs,
-/// as in a sequential file.
+/// as in a sequential file. The blocks are put in zigzag order first, so each scan finds a block's coefficients in its band, and
+/// those it codes, from bit masks.
 /// </summary>
 internal sealed class JpegProgressiveEncoder
 {
@@ -83,9 +87,13 @@ internal sealed class JpegProgressiveEncoder
         return [.. scans];
     }
 
-    /// <summary>Writes every scan: DHT for the tables it uses, SOS and its entropy-coded data, then the next.</summary>
+    /// <summary>
+    /// Writes every scan: DHT for the tables it uses, SOS and its entropy-coded data, then the next. The rows' blocks are left in
+    /// zigzag order.
+    /// </summary>
     internal void Write(JpegBitWriter writer, Scan[] script, SegmentWriter segment)
     {
+        ToZigZag();
         foreach (Scan scan in script)
         {
             bool dc = scan.Ss == 0;
@@ -126,6 +134,45 @@ internal sealed class JpegProgressiveEncoder
             writer.Align();
         }
     }
+
+    /// <summary>Reorders every block of every MCU row from natural to zigzag order, in place.</summary>
+    private void ToZigZag()
+    {
+        Span<short> natural = stackalloc short[64];
+        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
+        int blocks = _mcusX * _blocksPerMcu;
+        for (int my = 0; my < _mcusY; my++)
+        {
+            short[] row = _rows(my);
+            for (int b = 0; b < blocks; b++)
+            {
+                Span<short> block = row.AsSpan(b * 64, 64);
+                block.CopyTo(natural);
+                for (int k = 0; k < 64; k++)
+                {
+                    block[k] = natural[zigzag[k]];
+                }
+            }
+        }
+    }
+
+    /// <summary>Returns a bit for each coefficient whose magnitude is at least <paramref name="threshold"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ulong AtLeast(ReadOnlySpan<short> block, int threshold)
+    {
+        ref short first = ref MemoryMarshal.GetReference(block);
+        Vector256<short> below = Vector256.Create((short)(threshold - 1));
+        Vector256<short> a = Vector256.GreaterThan(Vector256.Abs(Vector256.LoadUnsafe(ref first)), below);
+        Vector256<short> b = Vector256.GreaterThan(Vector256.Abs(Vector256.LoadUnsafe(ref first, 16)), below);
+        Vector256<short> c = Vector256.GreaterThan(Vector256.Abs(Vector256.LoadUnsafe(ref first, 32)), below);
+        Vector256<short> d = Vector256.GreaterThan(Vector256.Abs(Vector256.LoadUnsafe(ref first, 48)), below);
+        ulong low = Vector256.Narrow(a, b).ExtractMostSignificantBits();
+        ulong high = Vector256.Narrow(c, d).ExtractMostSignificantBits();
+        return low | (high << 32);
+    }
+
+    /// <summary>Returns the bits <paramref name="ss"/> to <paramref name="se"/>.</summary>
+    private static ulong Band(int ss, int se) => (se == 63 ? ulong.MaxValue : (1UL << (se + 1)) - 1) & ~((1UL << ss) - 1);
 
     private static void AddBands(List<Scan> scans, int components, int ss, int se, int ah, int al)
     {
@@ -235,18 +282,12 @@ internal sealed class JpegProgressiveEncoder
     /// <summary>An AC first scan's block: zero runs, sizes and values of the point-transformed band, with runs of empty bands (G.1.2.2).</summary>
     private void AcFirst(Scan scan, ReadOnlySpan<short> block)
     {
-        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
-        int run = 0;
-        for (int k = scan.Ss; k <= scan.Se; k++)
+        ulong coded = AtLeast(block, 1 << scan.Al) & Band(scan.Ss, scan.Se);
+        int last = scan.Ss - 1;
+        while (coded != 0)
         {
-            int coefficient = block[zigzag[k]];
-            int magnitude = Math.Abs(coefficient) >> scan.Al;
-            if (magnitude == 0)
-            {
-                run++;
-                continue;
-            }
-
+            int k = BitOperations.TrailingZeroCount(coded);
+            int run = k - last - 1;
             EmitEobRun();
             while (run > 15)
             {
@@ -254,13 +295,16 @@ internal sealed class JpegProgressiveEncoder
                 run -= 16;
             }
 
+            int coefficient = block[k];
+            int magnitude = Math.Abs(coefficient) >> scan.Al;
             int size = Size(magnitude);
             Symbol((run << 4) | size);
             Bits(coefficient < 0 ? ~magnitude : magnitude, size);
-            run = 0;
+            last = k;
+            coded &= coded - 1;
         }
 
-        if (run > 0)
+        if (last < scan.Se)
         {
             _eobRun++;
             if (_eobRun == 0x7FFF)
@@ -277,29 +321,19 @@ internal sealed class JpegProgressiveEncoder
     /// </summary>
     private void AcRefine(Scan scan, ReadOnlySpan<short> block)
     {
-        ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
-        Span<int> magnitudes = stackalloc int[64];
-        int end = 0;
-        for (int k = scan.Ss; k <= scan.Se; k++)
-        {
-            magnitudes[k] = Math.Abs((int)block[zigzag[k]]) >> scan.Al;
-            if (magnitudes[k] == 1)
-            {
-                end = k;
-            }
-        }
-
+        ulong band = Band(scan.Ss, scan.Se);
+        ulong coded = AtLeast(block, 1 << scan.Al) & band;
+        ulong fresh = coded & ~AtLeast(block, 2 << scan.Al);
+        int end = fresh == 0 ? 0 : 63 - BitOperations.LeadingZeroCount(fresh);
         int run = 0;
         int corrections = 0;
-        for (int k = scan.Ss; k <= scan.Se; k++)
+        int last = scan.Ss - 1;
+        while (coded != 0)
         {
-            int magnitude = magnitudes[k];
-            if (magnitude == 0)
-            {
-                run++;
-                continue;
-            }
-
+            int k = BitOperations.TrailingZeroCount(coded);
+            coded &= coded - 1;
+            run += k - last - 1;
+            last = k;
             while (run > 15 && k <= end)
             {
                 EmitEobRun();
@@ -309,20 +343,21 @@ internal sealed class JpegProgressiveEncoder
                 corrections = 0;
             }
 
-            if (magnitude > 1)
+            if ((fresh & (1UL << k)) == 0)
             {
-                _blockCorrections[corrections++] = (byte)(magnitude & 1);
+                _blockCorrections[corrections++] = (byte)((Math.Abs(block[k]) >> scan.Al) & 1);
                 continue;
             }
 
             EmitEobRun();
             Symbol((run << 4) | 1);
-            Bits(block[zigzag[k]] < 0 ? 0 : 1, 1);
+            Bits(block[k] < 0 ? 0 : 1, 1);
             EmitCorrections(_blockCorrections, corrections);
             corrections = 0;
             run = 0;
         }
 
+        run += scan.Se - last;
         if (run > 0 || corrections > 0)
         {
             _eobRun++;
