@@ -62,6 +62,11 @@ internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScali
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         fastUpsampling |= options is JpegReaderOptions { FastUpsampling: true };
+        if (header.Lossless)
+        {
+            return DecodeLossless<TPixel>(input, header, options, fastUpsampling);
+        }
+
         int scale = JpegSegmentReader.ScaleFor(header, options);
         Raster<TPixel> raster = input.CreateRaster<TPixel>(JpegDecoder<TPixel>.ScaledSize(header.Width, scale), JpegDecoder<TPixel>.ScaledSize(header.Height, scale));
         try
@@ -70,6 +75,38 @@ internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScali
             using (JpegDecoder<TPixel> decoder = new(header, options, raster, fastUpsampling, scale) { ForcePipeline = forcePipeline })
             {
                 decoder.Decode(input);
+            }
+
+            CopyMetadata(header, raster.Metadata);
+            return raster;
+        }
+        catch
+        {
+            raster.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Decodes a lossless file at full size: every scan into the planes, then each row converted into the raster.</summary>
+    private static Raster<TPixel> DecodeLossless<TPixel>(EgamiInput input, JpegHeader header, ReaderOptions options, bool fastUpsampling)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Raster<TPixel> raster = input.CreateRaster<TPixel>(header.Width, header.Height);
+        try
+        {
+            header.Details.ScaleDenominator = 1;
+            using (JpegLosslessDecoder decoder = new(header, options, raster.Metadata.WarningList, fastUpsampling))
+            {
+                decoder.Decode(input);
+                for (int y = 0; y < raster.Height; y++)
+                {
+                    if ((y & 63) == 0)
+                    {
+                        input.CancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    decoder.ReadRow(y, 0, raster.Row(y));
+                }
             }
 
             CopyMetadata(header, raster.Metadata);

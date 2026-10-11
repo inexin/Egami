@@ -87,7 +87,7 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
         JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
-        ReadPlan plan = ReadPlan.Create(header.Width, header.Height, options.Region, options.MinimumSize, MaxNativeScale);
+        ReadPlan plan = ReadPlan.Create(header.Width, header.Height, options.Region, options.MinimumSize, header.Lossless ? 1 : MaxNativeScale);
         header.Details.ScaleDenominator = plan.NativeScale;
         return new JpegRows(header, input, options, plan);
     }
@@ -95,6 +95,11 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
     /// <summary>Returns the bytes a row source holds for this header at this scale.</summary>
     private static long WorkingBytes(JpegHeader header, ReaderOptions options, int scale)
     {
+        if (header.Lossless)
+        {
+            return JpegLosslessDecoder.WorkingBytes(header);
+        }
+
         using JpegDecoder<Rgb8> decoder = new(header, options, [], fastUpsampling: false, scale);
         return decoder.WorkingBytes(Buffered(header));
     }
@@ -108,6 +113,7 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
         private readonly EgamiInput _input;
         private readonly Rect _region;
         private JpegDecoder<Rgb8>? _decoder;
+        private JpegLosslessDecoder? _lossless;
         private bool _begun;
         private int _frame = -1;
         private bool _disposed;
@@ -120,8 +126,16 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
             NativeScale = plan.NativeScale;
             CopyMetadata(header, Metadata);
             bool fast = options is JpegReaderOptions { FastUpsampling: true };
-            _decoder = new JpegDecoder<Rgb8>(header, options, Metadata.WarningList, fast, NativeScale) { ForcePipeline = ForcePullPipeline };
-            WorkingBytes = _decoder.WorkingBytes(Buffered(header));
+            if (header.Lossless)
+            {
+                _lossless = new JpegLosslessDecoder(header, options, Metadata.WarningList, fast);
+                WorkingBytes = JpegLosslessDecoder.WorkingBytes(header);
+            }
+            else
+            {
+                _decoder = new JpegDecoder<Rgb8>(header, options, Metadata.WarningList, fast, NativeScale) { ForcePipeline = ForcePullPipeline };
+                WorkingBytes = _decoder.WorkingBytes(Buffered(header));
+            }
         }
 
         public override int StoredWidth => _header.Width;
@@ -130,7 +144,7 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
 
         public override int NativeScale { get; }
 
-        public override int MaxNativeScale => 8;
+        public override int MaxNativeScale => _header.Lossless ? 1 : 8;
 
         public override PixelLayoutInfo Layout => JpegSegmentReader.Layout(_header);
 
@@ -185,6 +199,19 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
 
         public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination)
         {
+            if (_header.Lossless)
+            {
+                JpegLosslessDecoder lossless = _lossless ?? throw new InvalidOperationException("The frame has ended.");
+                if (!_begun)
+                {
+                    _begun = true;
+                    lossless.Begin(_input);
+                }
+
+                lossless.ReadRow(y, x, destination);
+                return;
+            }
+
             JpegDecoder<Rgb8> decoder = _decoder ?? throw new InvalidOperationException("The frame has ended.");
             Begin(decoder);
             decoder.ReadRow(y, x, destination);
@@ -205,6 +232,8 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
             // JPEG keeps nothing after its image data, so the rest of the file is not read; the buffers go back now.
             _decoder?.Dispose();
             _decoder = null;
+            _lossless?.Dispose();
+            _lossless = null;
         }
 
         protected override void Dispose(bool disposing)
@@ -214,6 +243,8 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
                 _disposed = true;
                 _decoder?.Dispose();
                 _decoder = null;
+                _lossless?.Dispose();
+                _lossless = null;
                 _input.ReturnUnreadBytes();
                 _input.Dispose();
             }

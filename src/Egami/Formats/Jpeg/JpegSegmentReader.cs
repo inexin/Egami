@@ -26,15 +26,18 @@ internal static class JpegSegmentReader
 
     private static ReadOnlySpan<byte> AdobeId => "Adobe"u8;
 
-    /// <summary>Reads from the SOI marker up to and including the first SOS header.</summary>
-    internal static JpegHeader ReadHeader(EgamiInput input, ReaderOptions options)
+    /// <summary>
+    /// Reads from the SOI marker up to and including the first SOS header, into <paramref name="seed"/> when given: a header that
+    /// already holds tables, such as those of a TIFF file's JPEGTables (see <see cref="ReadTables"/>).
+    /// </summary>
+    internal static JpegHeader ReadHeader(EgamiInput input, ReaderOptions options, JpegHeader? seed = null)
     {
         if (input.ReadByte() != 0xFF || input.ReadByte() != JpegMarker.Soi)
         {
             throw input.Corrupt(0, "The file does not start with a JPEG start-of-image marker.");
         }
 
-        JpegHeader header = new();
+        JpegHeader header = seed ?? new();
         bool strict = options.Recovery == RecoveryMode.Strict;
         bool readMetadata = options.ReadMetadata;
         long kept = 0;
@@ -102,6 +105,57 @@ internal static class JpegSegmentReader
     }
 
     /// <summary>
+    /// Reads an abbreviated table stream (T.81 B.5): SOI, then table and restart segments up to EOI, as TIFF stores in its
+    /// JPEGTables tag for every tile to share. Other segments are skipped.
+    /// </summary>
+    internal static void ReadTables(EgamiInput input, JpegHeader header)
+    {
+        if (input.ReadByte() != 0xFF || input.ReadByte() != JpegMarker.Soi)
+        {
+            throw input.Corrupt(0, "The JPEG tables do not start with a start-of-image marker.");
+        }
+
+        while (true)
+        {
+            long at = input.Position;
+            byte marker = NextMarker(input, strict: false);
+            if (marker == JpegMarker.Eoi)
+            {
+                return;
+            }
+
+            if (JpegMarker.IsStandalone(marker))
+            {
+                continue;
+            }
+
+            int length = input.ReadUInt16BigEndian() - 2;
+            if (length < 0)
+            {
+                throw input.Corrupt(at, $"Segment FF{marker:X2} has an invalid length.");
+            }
+
+            byte[] payload = new byte[length];
+            input.ReadExactly(payload);
+            switch (marker)
+            {
+                case JpegMarker.Dht:
+                    ReadHuffmanTables(input, header, payload, at);
+                    break;
+                case JpegMarker.Dqt:
+                    ReadQuantTables(input, header, payload, at);
+                    break;
+                case JpegMarker.Dac:
+                    ReadArithmeticConditioning(input, header, payload, at);
+                    break;
+                case JpegMarker.Dri:
+                    header.RestartInterval = payload.Length >= 2 ? BinaryPrimitives.ReadUInt16BigEndian(payload) : throw input.Corrupt(at, "The restart interval segment is too short.");
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
     /// Returns the frame's natural layout: for 8-bit samples Gray8 for one component and Rgb8 otherwise (CMYK and YCCK convert to
     /// RGB); for deeper samples Gray16, Rgb16, or Cmyk16 for four components.
     /// </summary>
@@ -116,10 +170,13 @@ internal static class JpegSegmentReader
         return count == 1 ? Pixels.Gray8.Layout : Pixels.Rgb8.Layout;
     }
 
-    /// <summary>Returns whether the decoder keeps every coefficient until the last scan: progressive, 12-bit, or a scan per component.</summary>
+    /// <summary>
+    /// Returns whether the decoder holds the whole image until the last scan: the coefficients of a progressive or 12-bit file or
+    /// one with a scan per component, or the samples of a lossless file.
+    /// </summary>
     internal static bool Buffered(JpegHeader header)
     {
-        return header.Progressive || header.Wide || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length);
+        return header.Progressive || header.Wide || header.Lossless || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length);
     }
 
     /// <summary>
@@ -131,6 +188,11 @@ internal static class JpegSegmentReader
         long width = (header.Width + scale - 1) / scale;
         long height = (header.Height + scale - 1) / scale;
         long bytes = width * height * Layout(header).BytesPerPixel;
+        if (header.Lossless)
+        {
+            return bytes + JpegLosslessDecoder.WorkingBytes(header);
+        }
+
         if (Buffered(header))
         {
             long mcusX = (header.Width + (8 * header.MaxH) - 1) / (8 * header.MaxH);
@@ -147,6 +209,12 @@ internal static class JpegSegmentReader
     /// <summary>Returns the decode scale the streaming path chose for this size, or else the one <see cref="ReaderOptions.MinimumSize"/> gives.</summary>
     internal static int ScaleFor(JpegHeader header, ReaderOptions options)
     {
+        if (header.Lossless)
+        {
+            // No DCT, so no reduced decode: the generic reduction follows the full one.
+            return 1;
+        }
+
         return options.NativeScale is { } choose ? choose(header.Width, header.Height) : ScaleFor(header, options.MinimumSize);
     }
 
@@ -306,7 +374,7 @@ internal static class JpegSegmentReader
             throw input.Corrupt(at, "The frame width is 0.");
         }
 
-        if (count is not (1 or 3 or 4))
+        if (count is not (1 or 3 or 4) && !(header.Raw && count is >= 1 and <= 4))
         {
             throw new UnsupportedFormatException($"JPEG with {count} components is not supported; 1, 3 and 4 are.");
         }
@@ -430,6 +498,81 @@ internal static class JpegSegmentReader
         }
 
         return scan;
+    }
+
+    /// <summary>
+    /// Reads the segments after a scan up to the next scan header and returns it, or null at the end of the image. Tables and the
+    /// restart interval may change between scans; anything else is skipped. Damage goes to <paramref name="problem"/>.
+    /// </summary>
+    internal static JpegScan? NextScan(EgamiInput input, JpegHeader header, JpegBitReader reader, Action<string> problem)
+    {
+        int marker = reader.EndScan();
+        while (true)
+        {
+            if (marker == JpegBitReader.EndOfFile)
+            {
+                problem("The file ends before its end-of-image marker; the scans so far were decoded.");
+                return null;
+            }
+
+            if (marker == JpegMarker.Eoi)
+            {
+                return null;
+            }
+
+            if (!JpegMarker.IsStandalone((byte)marker))
+            {
+                int high = reader.ReadSegmentByte();
+                int low = reader.ReadSegmentByte();
+                int length = (high << 8) + low - 2;
+                if (low < 0 || length < 0)
+                {
+                    problem("A segment between scans is cut off or has an invalid length.");
+                    return null;
+                }
+
+                byte[] payload = new byte[length];
+                for (int i = 0; i < length; i++)
+                {
+                    int b = reader.ReadSegmentByte();
+                    if (b < 0)
+                    {
+                        problem("A segment between scans is cut off.");
+                        return null;
+                    }
+
+                    payload[i] = (byte)b;
+                }
+
+                switch (marker)
+                {
+                    case JpegMarker.Sos:
+                        return JpegSegmentReader.ParseScan(input, header, payload, -1);
+                    case JpegMarker.Dht:
+                        JpegSegmentReader.ReadHuffmanTables(input, header, payload, -1);
+                        break;
+                    case JpegMarker.Dqt:
+                        JpegSegmentReader.ReadQuantTables(input, header, payload, -1);
+                        break;
+                    case JpegMarker.Dac:
+                        JpegSegmentReader.ReadArithmeticConditioning(input, header, payload, -1);
+                        break;
+                    case JpegMarker.Dri:
+                        header.RestartInterval = payload.Length >= 2 ? (payload[0] << 8) | payload[1] : throw input.Corrupt(-1, "The restart interval segment is too short.");
+                        break;
+                    case JpegMarker.Dnl:
+                        break;
+                    case >= JpegMarker.Sof0 and <= JpegMarker.Sof15 when marker is not (JpegMarker.Dht or JpegMarker.Dac or 0xC8):
+                        throw input.Corrupt(-1, "The file has more than one frame header (SOF).");
+                }
+            }
+
+            marker = reader.NextMarker(out bool junk);
+            if (junk)
+            {
+                problem("There are stray bytes between segments after a scan; they were skipped.");
+            }
+        }
     }
 
     /// <summary>Parses DHT tables into the header. Also used by the decoder for tables between scans.</summary>

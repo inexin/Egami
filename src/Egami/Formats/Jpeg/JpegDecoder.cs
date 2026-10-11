@@ -1459,79 +1459,10 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         return true;
     }
 
-    /// <summary>
-    /// Reads the segments after a scan up to the next scan header and returns it, or null at the end of the image. Tables and the
-    /// restart interval may change between scans; anything else is skipped.
-    /// </summary>
+    /// <summary>Reads the segments after a scan up to the next scan header, as <see cref="JpegSegmentReader.NextScan"/> does.</summary>
     private JpegScan? NextScan(EgamiInput input, JpegBitReader reader)
     {
-        int marker = reader.EndScan();
-        while (true)
-        {
-            if (marker == JpegBitReader.EndOfFile)
-            {
-                Problem("The file ends before its end-of-image marker; the scans so far were decoded.");
-                return null;
-            }
-
-            if (marker == JpegMarker.Eoi)
-            {
-                return null;
-            }
-
-            if (!JpegMarker.IsStandalone((byte)marker))
-            {
-                int high = reader.ReadSegmentByte();
-                int low = reader.ReadSegmentByte();
-                int length = (high << 8) + low - 2;
-                if (low < 0 || length < 0)
-                {
-                    Problem("A segment between scans is cut off or has an invalid length.");
-                    return null;
-                }
-
-                byte[] payload = new byte[length];
-                for (int i = 0; i < length; i++)
-                {
-                    int b = reader.ReadSegmentByte();
-                    if (b < 0)
-                    {
-                        Problem("A segment between scans is cut off.");
-                        return null;
-                    }
-
-                    payload[i] = (byte)b;
-                }
-
-                switch (marker)
-                {
-                    case JpegMarker.Sos:
-                        return JpegSegmentReader.ParseScan(input, _header, payload, -1);
-                    case JpegMarker.Dht:
-                        JpegSegmentReader.ReadHuffmanTables(input, _header, payload, -1);
-                        break;
-                    case JpegMarker.Dqt:
-                        JpegSegmentReader.ReadQuantTables(input, _header, payload, -1);
-                        break;
-                    case JpegMarker.Dac:
-                        JpegSegmentReader.ReadArithmeticConditioning(input, _header, payload, -1);
-                        break;
-                    case JpegMarker.Dri:
-                        _header.RestartInterval = payload.Length >= 2 ? (payload[0] << 8) | payload[1] : throw input.Corrupt(-1, "The restart interval segment is too short.");
-                        break;
-                    case JpegMarker.Dnl:
-                        break;
-                    case >= JpegMarker.Sof0 and <= JpegMarker.Sof15 when marker is not (JpegMarker.Dht or JpegMarker.Dac or 0xC8):
-                        throw input.Corrupt(-1, "The file has more than one frame header (SOF).");
-                }
-            }
-
-            marker = reader.NextMarker(out bool junk);
-            if (junk)
-            {
-                Problem("There are stray bytes between segments after a scan; they were skipped.");
-            }
-        }
+        return JpegSegmentReader.NextScan(input, _header, reader, Problem);
     }
 
     /// <summary>Returns the blocks a non-interleaved scan codes across a dimension: those the full-size component covers.</summary>

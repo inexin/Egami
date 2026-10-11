@@ -22,16 +22,13 @@ public class JpegDepthTests
 
     public static TheoryData<string> Supported()
     {
-        return [.. Manifest().Where(e => !e.TryGetProperty("unsupported", out _) && Decodable(e)).Select(e => e.GetProperty("file").GetString()!)];
+        return [.. Manifest().Where(e => !e.TryGetProperty("unsupported", out _)).Select(e => e.GetProperty("file").GetString()!)];
     }
-
-    /// <summary>Returns whether this step of 2.4.2 decodes the file yet.</summary>
-    private static bool Decodable(JsonElement e) => !Flag(e, "lossless");
 
     public static TheoryData<string, int> WithScaledReferences()
     {
         TheoryData<string, int> data = [];
-        foreach (JsonElement e in Manifest().Where(e => e.TryGetProperty("scaled", out _) && Decodable(e)))
+        foreach (JsonElement e in Manifest().Where(e => e.TryGetProperty("scaled", out _)))
         {
             foreach (JsonProperty scale in e.GetProperty("scaled").EnumerateObject())
             {
@@ -44,7 +41,7 @@ public class JpegDepthTests
 
     public static TheoryData<string> WithFastReference()
     {
-        return [.. Manifest().Where(e => e.TryGetProperty("fast", out _) && Decodable(e)).Select(e => e.GetProperty("file").GetString()!)];
+        return [.. Manifest().Where(e => e.TryGetProperty("fast", out _)).Select(e => e.GetProperty("file").GetString()!)];
     }
 
     [Fact]

@@ -113,6 +113,12 @@ internal sealed class JpegHeader
 
     internal bool HasJfif { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the stream is embedded in another format whose samples are decoded raw (TIFF compression 7, DNG), so
+    /// the two-component frames such files use are accepted.
+    /// </summary>
+    internal bool Raw { get; set; }
+
     /// <summary>Gets or sets the first scan's header, read when parsing stopped at it.</summary>
     internal JpegScan? FirstScan { get; set; }
 
