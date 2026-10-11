@@ -366,6 +366,8 @@ Egami.Formats.RowReader<TNatural>
 Egami.Formats.RowReader<TNatural>.RowReader() -> void
 Egami.Formats.WriterOptions.OmitSrgbProfile.get -> bool
 Egami.Formats.WriterOptions.OmitSrgbProfile.init -> void
+Egami.Metadata.ExifData.ReadThumbnail(Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.Rgb8>?
+Egami.Metadata.ExifData.SetThumbnail(Egami.Raster! raster, int maxSide = 160, int quality = 75) -> void
 Egami.Metadata.IptcData
 Egami.Metadata.IptcData.Add(Egami.Metadata.IptcKey key, string! value) -> void
 Egami.Metadata.IptcData.Bylines.get -> System.Collections.Generic.IReadOnlyList<string!>!

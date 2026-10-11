@@ -51,11 +51,11 @@ public class MetadataCorpusTests
     }
 
     /// <summary>
-    /// The stale-thumbnail gap the design asked task 1 to confirm or rule out: auto-orienting a phone photo (orientation 6) keeps
-    /// the IFD1 thumbnail, still in the old orientation, while IFD0 now says 1. Confirmed; task 8 drops the thumbnail there.
+    /// The stale-thumbnail gap task 1 confirmed: auto-orienting a phone photo (orientation 6) kept the IFD1 thumbnail, still in
+    /// the old orientation, while IFD0 said 1. Task 8 drops it (the Stale thumbnail fix gate: no IFD1 left after save).
     /// </summary>
     [Fact]
-    public void AutoOrientKeepsAStaleThumbnail()
+    public void AutoOrientDropsTheStaleThumbnail()
     {
         using Raster raster = Raster.Load(MetadataCorpus.Bytes("synthetic/phone-orientation6.jpg"));
         Assert.False(raster.Metadata.Exif!.Thumbnail.IsEmpty);
@@ -65,7 +65,8 @@ public class MetadataCorpusTests
         using Raster again = Raster.Load(saved.ToArray());
         ExifData exif = again.Metadata.Exif!;
         Assert.Equal(ImageOrientation.Normal, exif.Orientation);
-        Assert.False(exif.Thumbnail.IsEmpty);
+        Assert.True(exif.Thumbnail.IsEmpty);
+        Assert.DoesNotContain(exif.Entries, e => e.Key.Ifd == ExifIfd.Thumbnail);
     }
 }
 

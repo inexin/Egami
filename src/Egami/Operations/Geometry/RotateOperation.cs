@@ -19,6 +19,7 @@ internal sealed class RotateOperation(double degrees, ResampleFilter filter, Rgb
     {
         ExifUpkeep.Upright(metadata);
         ExifUpkeep.Dimensions(metadata, output);
+        ExifUpkeep.DropThumbnail(metadata);
     }
 
     /// <summary>

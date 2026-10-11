@@ -263,6 +263,60 @@ public sealed class ExifData
         _edited = true;
     }
 
+    /// <summary>
+    /// Decodes the IFD1 thumbnail with Egami's JPEG reader under the context's safety limits. The pixels are as stored: apply the
+    /// main image's orientation (<see cref="Orientation"/>) to show it upright.
+    /// </summary>
+    /// <param name="context">The context whose limits apply. Defaults to <see cref="EgamiContext.Default"/>.</param>
+    /// <returns>The thumbnail, or <see langword="null"/> when there is no JPEG thumbnail (uncompressed ones are kept as bytes). The caller must dispose it.</returns>
+    /// <exception cref="CorruptDataException">The thumbnail is damaged.</exception>
+    /// <exception cref="LimitExceededException">The thumbnail is larger than the context's limits allow.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-thumbnail"/>
+    /// </example>
+    public Raster<Pixels.Rgb8>? ReadThumbnail(EgamiContext? context = null)
+    {
+        ReadOnlySpan<byte> jpeg = Thumbnail.Span;
+        if (jpeg.Length < 4 || jpeg[0] != 0xFF || jpeg[1] != 0xD8)
+        {
+            return null;
+        }
+
+        return Raster.Load<Pixels.Rgb8>(Thumbnail, context);
+    }
+
+    /// <summary>
+    /// Makes a thumbnail from <paramref name="raster"/>: converted to sRGB, resized to fit <paramref name="maxSide"/> (never
+    /// enlarged), encoded as a baseline 4:2:0 JPEG and stored in IFD1 with compression 6. 160 pixels is the DCF thumbnail size.
+    /// Operations drop a thumbnail that no longer matches the image; this rebuilds it in one line.
+    /// </summary>
+    /// <param name="raster">The image, usually the one this block belongs to after its operations. Its first frame is used.</param>
+    /// <param name="maxSide">The longest side, in pixels. Defaults to 160.</param>
+    /// <param name="quality">The JPEG quality, 1 to 100. Defaults to 75.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="raster"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxSide"/> is below 1, or <paramref name="quality"/> is outside 1 to 100.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="exif-thumbnail"/>
+    /// </example>
+    public void SetThumbnail(Raster raster, int maxSide = 160, int quality = 75)
+    {
+        ArgumentNullException.ThrowIfNull(raster);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxSide, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(quality, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(quality, 100);
+        double scale = Math.Min(1.0, (double)maxSide / Math.Max(raster.Width, raster.Height));
+        int width = Math.Max(1, (int)Math.Round(raster.Width * scale)), height = Math.Max(1, (int)Math.Round(raster.Height * scale));
+        using Raster<Pixels.Rgb8> small = raster.ConvertColor<Pixels.Rgb8>(Colors.ColorProfile.Srgb);
+        if (width != small.Width || height != small.Height)
+        {
+            small.Apply(ops => ops.Resize(width, height));
+        }
+
+        using MemoryStream jpeg = new();
+        small.Save(jpeg, Formats.Jpeg.JpegFormat.Info, new Formats.Jpeg.JpegWriterOptions { Quality = quality, StripMetadata = true });
+        SetThumbnail(jpeg.ToArray());
+    }
+
     /// <summary>Removes the thumbnail and the rest of IFD1, as operations do once the image no longer matches it.</summary>
     /// <returns>Whether there was one.</returns>
     public bool RemoveThumbnail()

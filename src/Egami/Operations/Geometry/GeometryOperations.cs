@@ -27,9 +27,10 @@ internal interface IUpdatesMetadata
 }
 
 /// <summary>
-/// The EXIF changes operations make (JPEG design, "What operations do to EXIF"): turning and mirroring set the orientation to
-/// Normal, size changes update PixelXDimension and PixelYDimension where the block has them, and crops and resizes drop the
-/// IFD1 thumbnail, which no longer matches.
+/// The EXIF changes operations make (JPEG design, "What operations do to EXIF"; Metadata design, "Keeping metadata in step"):
+/// turning and mirroring set the orientation to Normal, size changes update PixelXDimension and PixelYDimension where the block
+/// has them, and crops, resizes, flips and turns drop the IFD1 thumbnail, which no longer matches (a turned image would show
+/// its thumbnail sideways once the orientation says Normal).
 /// </summary>
 internal static class ExifUpkeep
 {
@@ -213,6 +214,7 @@ internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOpe
     public void UpdateMetadata(RasterMetadata metadata, Size input, Size output)
     {
         ExifUpkeep.Upright(metadata);
+        ExifUpkeep.DropThumbnail(metadata);
     }
 
     public Size OutputSize(Size input)
@@ -325,6 +327,7 @@ internal sealed class RotateQuarterOperation(bool fromLastRow, bool reversed) : 
         ExifUpkeep.Upright(metadata);
         ExifUpkeep.Dimensions(metadata, output);
         ExifUpkeep.SwapResolution(metadata);
+        ExifUpkeep.DropThumbnail(metadata);
     }
 
     public bool NeedsNewPlane(Size input)

@@ -29,7 +29,8 @@ its own, capped by `SafetyLimits.MaxMetadataBytes`.
 
 ## What operations do to metadata
 
-- Rotating, flipping and `AutoOrient` set the EXIF orientation to `Normal`.
+- Rotating, flipping and `AutoOrient` set the EXIF orientation to `Normal` and drop the embedded thumbnail, which would
+  otherwise show sideways.
 - Resizing and cropping, including your own operations that change the size, update the EXIF pixel dimensions and drop the
   embedded thumbnail, which no longer matches.
 - Color operations change nothing in the metadata.
@@ -41,6 +42,15 @@ its own, capped by `SafetyLimits.MaxMetadataBytes`.
 ## Typed EXIF values
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#exif-values)]
+
+The IFD1 thumbnail decodes as a raster, and a new one is made from any raster. Crops, resizes, flips and turns drop the
+thumbnail, since it no longer shows the image:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#exif-thumbnail)]
+
+The Windows XP tags (`ExifKey.XPTitle`, `XPComment`, `XPAuthor`, `XPKeywords`, `XPSubject`) and the encoded strings
+(`ExifKey.UserComment`, `GpsProcessingMethod`, `GpsAreaInformation`) read and write as text through `ExifEntry.AsString` and
+`ExifData.Set`, in the encodings Windows Explorer and cameras use.
 
 EXIF stored somewhere else, such as a database, parses on its own:
 

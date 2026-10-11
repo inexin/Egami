@@ -198,6 +198,31 @@ public class ApiExamples
     }
 
     [Fact]
+    public void ExifThumbnail()
+    {
+        using SampleFiles files = new();
+
+        #region exif-thumbnail
+        using Raster photo = Raster.Load("sideways.jpg");
+
+        // The thumbnail as stored, if the file has one; ReadThumbnail returns null otherwise.
+        using (Raster<Rgb8>? stored = photo.Metadata.Exif?.ReadThumbnail())
+        {
+            Console.WriteLine(stored is null ? "No thumbnail" : $"Thumbnail {stored.Width} x {stored.Height}");
+        }
+
+        // Turning the image drops the thumbnail, which would show sideways; make a new one from the result.
+        photo.Apply(ops => ops.AutoOrient());
+        photo.Metadata.Exif?.SetThumbnail(photo);
+        photo.Save("upright.jpg");
+        #endregion
+
+        using Raster saved = Raster.Load("upright.jpg");
+        using Raster<Rgb8>? thumbnail = saved.Metadata.Exif!.ReadThumbnail();
+        Assert.NotNull(thumbnail);
+    }
+
+    [Fact]
     public void ExifParse()
     {
         using SampleFiles files = new();
