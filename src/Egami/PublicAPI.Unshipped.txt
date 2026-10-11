@@ -7,6 +7,19 @@ abstract Egami.Formats.RowReader.Metadata.get -> Egami.Metadata.RasterMetadata!
 abstract Egami.Formats.RowReader.NextFrame() -> Egami.Metadata.FrameMetadata?
 abstract Egami.Formats.RowReader.ReadRow<TPixel>(int y, int x, System.Span<TPixel> destination) -> void
 abstract Egami.Formats.RowReader.Width.get -> int
+const Egami.Metadata.XmpNamespaces.CameraRaw = "http://ns.adobe.com/camera-raw-settings/1.0/" -> string!
+const Egami.Metadata.XmpNamespaces.DublinCore = "http://purl.org/dc/elements/1.1/" -> string!
+const Egami.Metadata.XmpNamespaces.Exif = "http://ns.adobe.com/exif/1.0/" -> string!
+const Egami.Metadata.XmpNamespaces.ExifCipa = "http://cipa.jp/exif/1.0/" -> string!
+const Egami.Metadata.XmpNamespaces.IptcCore = "http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" -> string!
+const Egami.Metadata.XmpNamespaces.IptcExtension = "http://iptc.org/std/Iptc4xmpExt/2008-02-29/" -> string!
+const Egami.Metadata.XmpNamespaces.Photoshop = "http://ns.adobe.com/photoshop/1.0/" -> string!
+const Egami.Metadata.XmpNamespaces.Rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#" -> string!
+const Egami.Metadata.XmpNamespaces.Tiff = "http://ns.adobe.com/tiff/1.0/" -> string!
+const Egami.Metadata.XmpNamespaces.Xml = "http://www.w3.org/XML/1998/namespace" -> string!
+const Egami.Metadata.XmpNamespaces.XmpBasic = "http://ns.adobe.com/xap/1.0/" -> string!
+const Egami.Metadata.XmpNamespaces.XmpMediaManagement = "http://ns.adobe.com/xap/1.0/mm/" -> string!
+const Egami.Metadata.XmpNamespaces.XmpRights = "http://ns.adobe.com/xap/1.0/rights/" -> string!
 Egami.Colors.Chromaticity
 Egami.Colors.Chromaticity.Chromaticity() -> void
 Egami.Colors.Chromaticity.Chromaticity(double X, double Y) -> void
@@ -398,6 +411,87 @@ Egami.Metadata.RasterMetadata.Iptc.get -> Egami.Metadata.IptcData?
 Egami.Metadata.RasterMetadata.Iptc.set -> void
 Egami.Metadata.RasterMetadata.Primaries.get -> Egami.Colors.ColorPrimaries?
 Egami.Metadata.RasterMetadata.Primaries.set -> void
+Egami.Metadata.XmpArray
+Egami.Metadata.XmpArray.Add(Egami.Metadata.XmpArray! item) -> void
+Egami.Metadata.XmpArray.Add(Egami.Metadata.XmpStruct! item) -> void
+Egami.Metadata.XmpArray.Add(string! item) -> void
+Egami.Metadata.XmpArray.Clear() -> void
+Egami.Metadata.XmpArray.Copy() -> Egami.Metadata.XmpArray!
+Egami.Metadata.XmpArray.Count.get -> int
+Egami.Metadata.XmpArray.GetLanguage(string! language) -> string?
+Egami.Metadata.XmpArray.Kind.get -> Egami.Metadata.XmpArrayKind
+Egami.Metadata.XmpArray.LanguageAt(int index) -> string?
+Egami.Metadata.XmpArray.RemoveAt(int index) -> void
+Egami.Metadata.XmpArray.SetLanguage(string! language, string! text) -> void
+Egami.Metadata.XmpArray.Texts.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.XmpArray.this[int index].get -> object!
+Egami.Metadata.XmpArray.XmpArray(Egami.Metadata.XmpArrayKind kind) -> void
+Egami.Metadata.XmpArrayKind
+Egami.Metadata.XmpArrayKind.Alternative = 2 -> Egami.Metadata.XmpArrayKind
+Egami.Metadata.XmpArrayKind.Bag = 0 -> Egami.Metadata.XmpArrayKind
+Egami.Metadata.XmpArrayKind.Sequence = 1 -> Egami.Metadata.XmpArrayKind
+Egami.Metadata.XmpData
+Egami.Metadata.XmpData.City.get -> string?
+Egami.Metadata.XmpData.City.set -> void
+Egami.Metadata.XmpData.Copy() -> Egami.Metadata.XmpData!
+Egami.Metadata.XmpData.Country.get -> string?
+Egami.Metadata.XmpData.Country.set -> void
+Egami.Metadata.XmpData.CreateDate.get -> System.DateTimeOffset?
+Egami.Metadata.XmpData.CreateDate.set -> void
+Egami.Metadata.XmpData.Creators.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.XmpData.Creators.set -> void
+Egami.Metadata.XmpData.CreatorTool.get -> string?
+Egami.Metadata.XmpData.CreatorTool.set -> void
+Egami.Metadata.XmpData.Credit.get -> string?
+Egami.Metadata.XmpData.Credit.set -> void
+Egami.Metadata.XmpData.Description.get -> string?
+Egami.Metadata.XmpData.Description.set -> void
+Egami.Metadata.XmpData.Headline.get -> string?
+Egami.Metadata.XmpData.Headline.set -> void
+Egami.Metadata.XmpData.IsDamaged.get -> bool
+Egami.Metadata.XmpData.Keywords.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.XmpData.Keywords.set -> void
+Egami.Metadata.XmpData.Label.get -> string?
+Egami.Metadata.XmpData.Label.set -> void
+Egami.Metadata.XmpData.ModifyDate.get -> System.DateTimeOffset?
+Egami.Metadata.XmpData.ModifyDate.set -> void
+Egami.Metadata.XmpData.Orientation.get -> Egami.Metadata.ImageOrientation?
+Egami.Metadata.XmpData.Orientation.set -> void
+Egami.Metadata.XmpData.Rating.get -> int?
+Egami.Metadata.XmpData.Rating.set -> void
+Egami.Metadata.XmpData.Rights.get -> string?
+Egami.Metadata.XmpData.Rights.set -> void
+Egami.Metadata.XmpData.Source.get -> string?
+Egami.Metadata.XmpData.Source.set -> void
+Egami.Metadata.XmpData.Title.get -> string?
+Egami.Metadata.XmpData.Title.set -> void
+Egami.Metadata.XmpData.ToBytes() -> System.ReadOnlyMemory<byte>
+Egami.Metadata.XmpData.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.XmpData.XmpData() -> void
+Egami.Metadata.XmpName
+Egami.Metadata.XmpName.Deconstruct(out string! Namespace, out string! Name) -> void
+Egami.Metadata.XmpName.Equals(Egami.Metadata.XmpName other) -> bool
+Egami.Metadata.XmpName.Name.get -> string!
+Egami.Metadata.XmpName.Name.init -> void
+Egami.Metadata.XmpName.Namespace.get -> string!
+Egami.Metadata.XmpName.Namespace.init -> void
+Egami.Metadata.XmpName.XmpName() -> void
+Egami.Metadata.XmpName.XmpName(string! Namespace, string! Name) -> void
+Egami.Metadata.XmpNamespaces
+Egami.Metadata.XmpStruct
+Egami.Metadata.XmpStruct.CopyStruct() -> Egami.Metadata.XmpStruct!
+Egami.Metadata.XmpStruct.Count.get -> int
+Egami.Metadata.XmpStruct.GetText(Egami.Metadata.XmpName name) -> string?
+Egami.Metadata.XmpStruct.Names.get -> System.Collections.Generic.IReadOnlyList<Egami.Metadata.XmpName>!
+Egami.Metadata.XmpStruct.Remove(Egami.Metadata.XmpName name) -> bool
+Egami.Metadata.XmpStruct.Set(Egami.Metadata.XmpName name, Egami.Metadata.XmpArray! value) -> void
+Egami.Metadata.XmpStruct.Set(Egami.Metadata.XmpName name, Egami.Metadata.XmpStruct! value) -> void
+Egami.Metadata.XmpStruct.Set(Egami.Metadata.XmpName name, string! value) -> void
+Egami.Metadata.XmpStruct.TryGet(Egami.Metadata.XmpName name, out object? value) -> bool
+Egami.Metadata.XmpStruct.TryGetDate(Egami.Metadata.XmpName name, out System.DateTimeOffset value) -> bool
+Egami.Metadata.XmpStruct.TryGetInt(Egami.Metadata.XmpName name, out long value) -> bool
+Egami.Metadata.XmpStruct.TryGetRational(Egami.Metadata.XmpName name, out double value) -> bool
+Egami.Metadata.XmpStruct.XmpStruct() -> void
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, double? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Pixels.Abgr8
@@ -646,6 +740,8 @@ override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayou
 override Egami.Metadata.IptcEntry.ToString() -> string!
 override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!
+override Egami.Metadata.XmpName.GetHashCode() -> int
+override Egami.Metadata.XmpName.ToString() -> string!
 override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Abgr8.GetHashCode() -> int
 override Egami.Pixels.Abgr8.ToString() -> string!
@@ -799,6 +895,10 @@ static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.C
 static Egami.Metadata.IptcData.Parse(System.ReadOnlySpan<byte> iim, Egami.SafetyLimits? limits = null) -> Egami.Metadata.IptcData!
 static Egami.Metadata.IptcKey.operator !=(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool
 static Egami.Metadata.IptcKey.operator ==(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool
+static Egami.Metadata.XmpArray.Of(Egami.Metadata.XmpArrayKind kind, params System.Collections.Generic.IEnumerable<string!>! items) -> Egami.Metadata.XmpArray!
+static Egami.Metadata.XmpData.Parse(System.ReadOnlySpan<byte> packet, Egami.SafetyLimits? limits = null) -> Egami.Metadata.XmpData!
+static Egami.Metadata.XmpName.operator !=(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
+static Egami.Metadata.XmpName.operator ==(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
 static Egami.Pixels.Abgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
@@ -955,3 +1055,4 @@ virtual Egami.Formats.RowReader.WorkingBytes.get -> long
 ~override Egami.Colors.YCbCrColor.Equals(object obj) -> bool
 ~override Egami.Colors.YCbCrColor.ToString() -> string
 ~override Egami.Metadata.IptcKey.Equals(object obj) -> bool
+~override Egami.Metadata.XmpName.Equals(object obj) -> bool

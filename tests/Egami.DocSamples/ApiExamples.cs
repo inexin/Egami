@@ -261,6 +261,47 @@ public class ApiExamples
     }
 
     [Fact]
+    public void XmpValues()
+    {
+        #region xmp-values
+        XmpData xmp = new()
+        {
+            Title = "Harbour at dawn",
+            Creators = ["A. Photographer"],
+            Keywords = ["harbour", "Bergen"],
+            Rating = 4,
+        };
+
+        // Any property, by namespace URI and local name; structures and arrays nest.
+        XmpStruct contact = new();
+        contact.Set(new XmpName(XmpNamespaces.IptcCore, "CiEmailWork"), "photo@example.com");
+        xmp.Set(new XmpName(XmpNamespaces.IptcCore, "CreatorContactInfo"), contact);
+        if (xmp.TryGet(new XmpName(XmpNamespaces.DublinCore, "title"), out object? title) && title is XmpArray languages)
+        {
+            languages.SetLanguage("nb-NO", "Havn ved daggry");
+        }
+
+        ReadOnlyMemory<byte> packet = xmp.ToBytes();   // canonical RDF/XML with padding
+        #endregion
+
+        Assert.Equal("Havn ved daggry", (XmpData.Parse(packet.Span).TryGet(new XmpName(XmpNamespaces.DublinCore, "title"), out object? read) ? (XmpArray)read : null)!.GetLanguage("nb-NO"));
+    }
+
+    [Fact]
+    public void XmpParse()
+    {
+        ReadOnlyMemory<byte> packet = new XmpData { Label = "Red" }.ToBytes();
+
+        #region xmp-parse
+        // An XMP packet from a sidecar file or a database; DTDs are refused and nothing outside it is read.
+        XmpData xmp = XmpData.Parse(packet.Span, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
+        Console.WriteLine(xmp.IsDamaged ? string.Join(" ", xmp.Warnings) : $"Label: {xmp.Label}");
+        #endregion
+
+        Assert.Equal("Red", xmp.Label);
+    }
+
+    [Fact]
     public async Task ProbeAsync()
     {
         using SampleFiles files = new();

@@ -58,6 +58,17 @@ IPTC stored somewhere else parses on its own:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#iptc-parse)]
 
+## XMP
+
+`XmpData` is a parsed XMP packet. Properties are addressed by `XmpName` (a namespace URI from `XmpNamespaces` and a local
+name), never by prefix. A property is a simple value, an `XmpArray` (bag, sequence or language alternatives, an
+`XmpArrayKind`) or an `XmpStruct`; typed properties cover the Dublin Core, XMP Basic, Photoshop and TIFF values apps use most.
+An edited packet is written as canonical RDF/XML with padding; properties Egami does not know are kept.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-values)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-parse)]
+
 ## Color space
 
 `RasterMetadata.ColorSpace` says what the file declared about its colors. Egami keeps the declaration and the profile bytes;
