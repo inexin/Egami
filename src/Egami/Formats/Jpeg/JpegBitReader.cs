@@ -45,6 +45,9 @@ internal sealed class JpegBitReader : IDisposable
     /// <summary>Gets the marker that stopped the data (the byte after 0xFF), or 0 while none has; <see cref="EndOfFile"/> at the end of the file.</summary>
     internal int Marker { get; private set; }
 
+    /// <summary>Gets where the next byte comes from in the bytes of a reader over memory.</summary>
+    internal int Offset => _position;
+
     /// <summary>Gets the number (0 to 7) of the last restart marker <see cref="Restart"/> resumed at.</summary>
     internal int LastRestart { get; private set; } = -1;
 

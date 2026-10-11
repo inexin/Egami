@@ -18,6 +18,12 @@ internal sealed partial class JpegDecoder<TPixel>
     /// <summary>Restart intervals each core should have at least, so the one it may decode twice stays small.</summary>
     private const int MinIntervalsPerCore = 2;
 
+    /// <summary>
+    /// The most cores a pipelined decode of scans uses. Its critical path is one chain of refinement scans, so more cores only add
+    /// contention: on a 12-core machine with two threads per core, 8 decode the progressive benchmark photo fastest.
+    /// </summary>
+    private const int MaxPipelineCores = 8;
+
     /// <summary>The most scan bytes read into memory for a restart split; larger scans take the pipeline.</summary>
     private const int MaxScanBytes = 1 << 30;
 
@@ -96,11 +102,12 @@ internal sealed partial class JpegDecoder<TPixel>
     /// Transforms and converts MCU rows <paramref name="first"/> to <paramref name="end"/> (exclusive). The row above the first is
     /// transformed too, without being written, since upsampling looks at it; so is the row below the last.
     /// </summary>
-    private void FinishRows(EgamiInput input, int first, int end)
+    private void FinishRows(EgamiInput input, int first, int end, ScanFollower? follower = null)
     {
         for (int my = Math.Max(0, first - 1); my <= Math.Min(end, _mcusY - 1); my++)
         {
             input.CancellationToken.ThrowIfCancellationRequested();
+            follower?.Wait(my);
             TransformBufferedRow(my);
             if (my - 1 >= first)
             {
@@ -299,6 +306,208 @@ internal sealed partial class JpegDecoder<TPixel>
         }
     }
 
+    /// <summary>
+    /// Decodes the scans of a buffered Huffman-coded file on several cores at once, when the image is large and the rest of the
+    /// file can be read into memory. Every scan is located first, with the tables it uses; then each core takes the next scan in
+    /// file order, and a scan that refines coefficients an earlier one codes follows it block row by block row, so a chain of
+    /// refinement scans runs as a pipeline. Returns false to decode one scan at a time as before; a parallel decode that met
+    /// anything but clean data is undone, and <paramref name="reader"/> then reads the bytes already in memory.
+    /// </summary>
+    private bool DecodeScansTogether(EgamiInput input, ref JpegBitReader reader, JpegScan first)
+    {
+        int cores = Math.Min(Math.Min(input.Context.MaxParallelism, Environment.ProcessorCount), MaxPipelineCores);
+        if (cores < 2 || (!ForcePipeline && (long)_width * _height < ParallelPixels)
+            || input.Incremental || input.Length is not long length || length - input.Position is <= 0 or > MaxScanBytes)
+        {
+            return false;
+        }
+
+        int size = (int)(length - input.Position);
+        input.CheckMemory(size);
+        byte[] bytes = _scanBytes = ArrayPool<byte>.Shared.Rent(size);
+        size = input.Read(bytes.AsSpan(0, size));
+        reader.Dispose();
+        reader = new JpegBitReader(bytes, 0, size);
+
+        // The tables a later scan may replace, to go back to if the parallel decode is abandoned.
+        JpegHuffmanSpec?[] dcTables = (JpegHuffmanSpec?[])_header.DcTables.Clone();
+        JpegHuffmanSpec?[] acTables = (JpegHuffmanSpec?[])_header.AcTables.Clone();
+        ushort[]?[] quantTables = (ushort[]?[])_header.QuantTables.Clone();
+        int restart = _header.RestartInterval;
+        _speculative = true;
+        try
+        {
+            List<PlannedScan> plan = Plan(input, bytes, size, first);
+            for (int i = 0; i < _components.Length; i++)
+            {
+                // A component no scan reached is all zeros, mid-gray, and still needs a table.
+                LatchQuant(i);
+            }
+
+            RunPlan(input, bytes, size, plan, cores);
+            _speculative = false;
+            return true;
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            // Damaged or unusual data: undo everything and decode one scan at a time, which reports it as it always has.
+            _speculative = false;
+            dcTables.CopyTo(_header.DcTables, 0);
+            acTables.CopyTo(_header.AcTables, 0);
+            quantTables.CopyTo(_header.QuantTables, 0);
+            _header.RestartInterval = restart;
+            foreach (Component c in _components)
+            {
+                c.Quant = null;
+                c.ClearCoefficients();
+            }
+
+            reader = new JpegBitReader(bytes, 0, size);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Walks the scans from the first one's data on, as the one-thread decode reads them: each scan with the tables and restart
+    /// interval it uses and where its data starts. Quantization tables latch in file order, and the decoding tables are built here,
+    /// before any core needs them.
+    /// </summary>
+    private List<PlannedScan> Plan(EgamiInput input, byte[] bytes, int size, JpegScan first)
+    {
+        List<PlannedScan> plan = [];
+        using JpegBitReader walker = new(bytes, 0, size);
+        JpegScan? scan = first;
+        int start = 0;
+        while (scan is not null)
+        {
+            if (plan.Count == MaxScans)
+            {
+                throw new SpeculationFailedException();
+            }
+
+            bool progressive = _header.Progressive;
+            int kind = !progressive ? 0 : scan.SpectralStart == 0 ? (scan.ApproxHigh == 0 ? 1 : 2) : (scan.ApproxHigh == 0 ? 3 : 4);
+            foreach (JpegScanComponent sc in scan.Components)
+            {
+                LatchQuant(sc.ComponentIndex);
+                if (kind is 0 or 1 && _header.DcTables[sc.DcTable] is JpegHuffmanSpec dc)
+                {
+                    _ = Table(dc);
+                }
+
+                if (kind is 0 or 3 or 4 && _header.AcTables[sc.AcTable] is JpegHuffmanSpec ac)
+                {
+                    _ = Table(ac).FastAc;
+                }
+            }
+
+            plan.Add(new PlannedScan(scan, (JpegHuffmanSpec?[])_header.DcTables.Clone(), (JpegHuffmanSpec?[])_header.AcTables.Clone(), _header.RestartInterval, start));
+            walker.BeginScan();
+            scan = NextScan(input, walker);
+            start = walker.Offset;
+        }
+
+        return plan;
+    }
+
+    /// <summary>
+    /// Runs the planned scans on <paramref name="cores"/> cores, then the last pass in runs of MCU rows, each run following every
+    /// scan so it converts rows as soon as the last scan has passed them. Each core takes the next piece of work in that order, so
+    /// a piece only ever waits for pieces that have started already, and none waits for a later one: the pipeline cannot deadlock.
+    /// </summary>
+    private void RunPlan(EgamiInput input, byte[] bytes, int size, List<PlannedScan> plan, int cores)
+    {
+        int runs = Math.Max(1, Math.Min(cores, _mcusY / MinRowsPerCore));
+        PipelineState state = new(input.CancellationToken);
+        ScanFollower[] followers = new ScanFollower[plan.Count];
+        for (int s = 0; s < plan.Count; s++)
+        {
+            JpegScan scan = plan[s].Scan;
+            List<(ScanFollower Scan, int V)> waits = [];
+            for (int t = 0; t < s; t++)
+            {
+                JpegScan earlier = plan[t].Scan;
+                bool overlap = earlier.SpectralStart <= scan.SpectralEnd && scan.SpectralStart <= earlier.SpectralEnd;
+                foreach (JpegScanComponent sc in scan.Components)
+                {
+                    if (overlap && earlier.Components.Any(e => e.ComponentIndex == sc.ComponentIndex))
+                    {
+                        waits.Add((followers[t], _components[sc.ComponentIndex].V));
+                    }
+                }
+            }
+
+            followers[s] = new ScanFollower(state, scan.Components.Length > 1, [.. waits]);
+        }
+
+        // The last pass follows every scan of every component, MCU row by MCU row.
+        List<(ScanFollower Scan, int V)> all = [];
+        for (int s = 0; s < plan.Count; s++)
+        {
+            foreach (JpegScanComponent sc in plan[s].Scan.Components)
+            {
+                all.Add((followers[s], _components[sc.ComponentIndex].V));
+            }
+        }
+
+        ScanFollower last = new(state, interleaved: true, [.. all]);
+        JpegDecoder<TPixel>[] twins = new JpegDecoder<TPixel>[runs];
+        try
+        {
+            for (int i = 0; i < runs; i++)
+            {
+                twins[i] = new JpegDecoder<TPixel>(this);
+            }
+
+            int next = -1;
+            int work = plan.Count + runs;
+            ParallelOptions options = new() { MaxDegreeOfParallelism = Math.Min(cores, work), CancellationToken = input.CancellationToken };
+            Parallel.For(0, Math.Min(cores, work), options, _ =>
+            {
+                int item;
+                while (!state.Failed && (item = Interlocked.Increment(ref next)) < work)
+                {
+                    try
+                    {
+                        if (item >= plan.Count)
+                        {
+                            int run = item - plan.Count;
+                            twins[run].FinishRows(input, Share(_mcusY, run, runs), Share(_mcusY, run + 1, runs), last);
+                            continue;
+                        }
+
+                        PlannedScan p = plan[item];
+                        bool skip = _header.Progressive && p.Scan.SpectralStart > 0 && _components[p.Scan.Components[0].ComponentIndex].BlockSize == 1;
+                        if (!skip)
+                        {
+                            using JpegBitReader scanReader = new(bytes, p.Start, size);
+                            DecodeBufferedScan(scanReader, p.Scan, p.DcTables, p.AcTables, p.RestartInterval, followers[item]);
+                        }
+
+                        followers[item].Finish();
+                    }
+                    catch
+                    {
+                        state.Failed = true;
+                        throw;
+                    }
+                }
+            });
+        }
+        finally
+        {
+            foreach (JpegDecoder<TPixel>? twin in twins)
+            {
+                twin?.Dispose();
+            }
+        }
+
+        if (state.Failed)
+        {
+            throw new SpeculationFailedException();
+        }
+    }
+
     /// <summary>Returns the start of part <paramref name="index"/> of <paramref name="count"/> even parts of <paramref name="total"/>.</summary>
     private static int Share(int total, int index, int count)
     {
@@ -317,5 +526,111 @@ internal sealed partial class JpegDecoder<TPixel>
     /// <summary>Thrown inside a parallel decode that met damaged data, to start over on one thread.</summary>
     private sealed class SpeculationFailedException : Exception
     {
+    }
+
+    /// <summary>One scan of a pipelined decode: its header, the tables and restart interval in force for it, and where its data starts.</summary>
+    private sealed record PlannedScan(JpegScan Scan, JpegHuffmanSpec?[] DcTables, JpegHuffmanSpec?[] AcTables, int RestartInterval, int Start);
+
+    /// <summary>What every scan of a pipelined decode shares: whether one failed, and the load's cancellation.</summary>
+    private sealed class PipelineState(CancellationToken cancellationToken)
+    {
+        private volatile bool _failed;
+
+        internal bool Failed
+        {
+            get => _failed;
+            set => _failed = value;
+        }
+
+        internal CancellationToken CancellationToken => cancellationToken;
+    }
+
+    /// <summary>
+    /// How far one scan of a pipelined decode has come, in its own rows (MCU rows when it interleaves components, block rows of
+    /// its component otherwise), and the earlier scans it must stay behind: those that code some of the same coefficients. A
+    /// scan that has to wait spins briefly, then sleeps until the earlier scan says it has moved on, so waiting costs no core.
+    /// </summary>
+    private sealed class ScanFollower(PipelineState state, bool interleaved, (ScanFollower Scan, int V)[] waits)
+    {
+        private readonly object _gate = new();
+        private int _rows;
+        private int _sleepers;
+
+        /// <summary>Says that the scan has decoded <paramref name="rows"/> rows, waking any scan waiting for them.</summary>
+        internal void Publish(int rows)
+        {
+            // A full fence between the write and the read, so a scan going to sleep either sees the rows or is seen.
+            Interlocked.Exchange(ref _rows, rows);
+            if (Volatile.Read(ref _sleepers) > 0)
+            {
+                lock (_gate)
+                {
+                    Monitor.PulseAll(_gate);
+                }
+            }
+        }
+
+        /// <summary>Says that the scan is done, so no later scan waits for it.</summary>
+        internal void Finish()
+        {
+            Publish(int.MaxValue);
+        }
+
+        /// <summary>Waits until every earlier scan this one follows has decoded the block rows of row <paramref name="row"/>.</summary>
+        internal void Wait(int row)
+        {
+            foreach ((ScanFollower earlier, int v) in waits)
+            {
+                long needed = interleaved ? (row + 1L) * v : row + 1L;
+                if (earlier.BlockRows(v) < needed)
+                {
+                    earlier.WaitFor(needed, v, state);
+                }
+            }
+        }
+
+        private void WaitFor(long needed, int v, PipelineState state)
+        {
+            SpinWait spin = default;
+            while (!spin.NextSpinWillYield)
+            {
+                spin.SpinOnce();
+                if (BlockRows(v) >= needed)
+                {
+                    return;
+                }
+            }
+
+            lock (_gate)
+            {
+                Interlocked.Increment(ref _sleepers);
+                try
+                {
+                    while (BlockRows(v) < needed)
+                    {
+                        if (state.Failed)
+                        {
+                            throw new SpeculationFailedException();
+                        }
+
+                        state.CancellationToken.ThrowIfCancellationRequested();
+
+                        // The timeout only bounds how late a failure elsewhere or a cancellation is noticed.
+                        Monitor.Wait(_gate, 20);
+                    }
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _sleepers);
+                }
+            }
+        }
+
+        /// <summary>Returns the block rows of a component sampled <paramref name="v"/> rows per MCU that this scan has finished.</summary>
+        private long BlockRows(int v)
+        {
+            int rows = Volatile.Read(ref _rows);
+            return rows == int.MaxValue ? long.MaxValue : interleaved ? (long)rows * v : rows;
+        }
     }
 }

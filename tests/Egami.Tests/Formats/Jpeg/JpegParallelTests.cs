@@ -8,8 +8,8 @@ using Egami.Pixels;
 namespace Egami.Tests.Formats.Jpeg;
 
 /// <summary>
-/// Parallel decoding (the restart-interval split of sequential scans and the split last pass of buffered files) gives the pixels
-/// and warnings one thread gives, at every core count, for clean and damaged files alike.
+/// Parallel decoding (the restart-interval split of sequential scans, the pipelined scans of buffered files and their split last
+/// pass) gives the pixels and warnings one thread gives, at every core count, for clean and damaged files alike.
 /// </summary>
 public class JpegParallelTests
 {
@@ -54,7 +54,10 @@ public class JpegParallelTests
     [InlineData("duck-restart-rows.jpg")]
     [InlineData("duck-restart-blocks.jpg")]
     [InlineData("depth/arith-444-restart.jpg")]
-    public void DamagedIntervalsDecodeAsOneThreadDoes(string file)
+    [InlineData("duck-progressive.jpg")]
+    [InlineData("duck-progressive-restart.jpg")]
+    [InlineData("depth/p12-progressive.jpg")]
+    public void DamagedFilesDecodeAsOneThreadDoes(string file)
     {
         byte[] clean = File.ReadAllBytes(Path.Combine(Images, file));
         int scan = ScanStart(clean);

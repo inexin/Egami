@@ -181,7 +181,20 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     /// <summary>Decodes the image data from the first scan, whose header has just been read, to the end, filling the raster.</summary>
     internal void Decode(EgamiInput input)
     {
-        using JpegBitReader reader = new(input);
+        JpegBitReader reader = new(input);
+        try
+        {
+            DecodeScans(input, ref reader);
+        }
+        finally
+        {
+            reader.Dispose();
+        }
+    }
+
+    /// <summary>Decodes every scan with <paramref name="reader"/>, which a parallel decode may replace with one over the bytes in memory.</summary>
+    private void DecodeScans(EgamiInput input, ref JpegBitReader reader)
+    {
         _arithmetic = _header.Arithmetic ? new JpegArithmeticDecoder(reader, _header) : null;
         JpegScan scan = _header.FirstScan!;
         if (!_wide && !_header.Progressive && scan.Components.Length == _components.Length)
@@ -193,6 +206,11 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         foreach (Component c in _components)
         {
             c.AllocateCoefficients(input.Memory, _mcusX * c.H, _mcusY * c.V);
+        }
+
+        if (_arithmetic is null && DecodeScansTogether(input, ref reader, scan))
+        {
+            return;
         }
 
         int scans = 0;
@@ -1323,8 +1341,17 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     /// Decodes one scan into the coefficient buffer. Returns false if the data ended early, so no scan can follow; the coefficients
     /// so far are kept, as libjpeg does.
     /// </summary>
-    private bool DecodeBufferedScan(JpegBitReader reader, JpegScan scan)
+    /// <param name="reader">The scan's data.</param>
+    /// <param name="scan">The scan header.</param>
+    /// <param name="dcTables">The DC tables as they stood for this scan, or null for the header's current ones.</param>
+    /// <param name="acTables">The AC tables as they stood for this scan, or null for the header's current ones.</param>
+    /// <param name="restartInterval">The restart interval for this scan, or null for the header's current one.</param>
+    /// <param name="follower">In a pipelined decode, where the scan waits for earlier ones and says how far it has come.</param>
+    private bool DecodeBufferedScan(
+        JpegBitReader reader, JpegScan scan, JpegHuffmanSpec?[]? dcTables = null, JpegHuffmanSpec?[]? acTables = null, int? restartInterval = null, ScanFollower? follower = null)
     {
+        dcTables ??= _header.DcTables;
+        acTables ??= _header.AcTables;
         int count = scan.Components.Length;
         int ss = scan.SpectralStart;
         int se = scan.SpectralEnd;
@@ -1353,12 +1380,12 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
 
             if (kind is 0 or 1)
             {
-                dc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+                dc[i] = Table(dcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
             }
 
             if (kind is 0 or 3 or 4)
             {
-                ac[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+                ac[i] = Table(acTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
             }
         }
 
@@ -1368,7 +1395,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         Span<int> predictors = stackalloc int[count];
         Span<short> natural = stackalloc short[64];
         int eobRun = 0;
-        int restart = _header.RestartInterval;
+        int restart = restartInterval ?? _header.RestartInterval;
         int nextRestart = 0;
         int mcu = 0;
 
@@ -1381,6 +1408,8 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         reader.Load(out ulong bits, out int available);
         for (int uy = 0; uy < unitsY; uy++)
         {
+            follower?.Wait(uy);
+
             // A non-interleaved scan walks one block row of its component.
             Span<short> row = single ? order[0].BlockRow(uy) : default;
             for (int ux = 0; ux < unitsX; ux++, mcu++)
@@ -1455,6 +1484,8 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
                     return false;
                 }
             }
+
+            follower?.Publish(uy + 1);
         }
 
         reader.Store(bits, available);
@@ -1936,6 +1967,15 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
                 _rowsPerChunk = _rowsPerChunk,
                 _shared = true,
             };
+        }
+
+        /// <summary>Sets every coefficient back to zero, after a parallel decode that was abandoned.</summary>
+        internal void ClearCoefficients()
+        {
+            foreach (IMemoryOwner<byte>? chunk in _chunks)
+            {
+                chunk?.Memory.Span.Clear();
+            }
         }
 
         /// <summary>Allocates zeroed coefficients for <paramref name="blocksX"/> × <paramref name="blocksY"/> blocks, within the load's memory budget.</summary>
