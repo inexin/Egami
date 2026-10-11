@@ -32,3 +32,27 @@ egret.shade-colored-210x60 8 180 240 -channel RGB +shade 210x60 +channel
 shapes.shade-colored-30x30 8 200 150 -channel RGB +shade 30x30 +channel
 duck.emboss 8 240 180 -emboss 0x1
 egret.emboss 8 180 240 -emboss 0x1
+duck.canny-1 8 240 180 -canny 0x1+10%+30%
+egret.canny-1 8 180 240 -canny 0x1+10%+30%
+steps.canny-1 8 160 120 -canny 0x1+10%+30%
+duck.canny-1.4 8 240 180 -canny 0x1.4+5%+20%
+noisy.canny-2 8 240 180 -canny 0x2+10%+30%
+steps.dilate-disk-3 8 160 120 -morphology Dilate Disk:3
+duck.dilate-square-5 8 240 180 -morphology Dilate Square:5
+duck.erode-square-5 8 240 180 -morphology Erode Square:5
+duck.dilate-square-25 8 240 180 -morphology Dilate Square:25
+duck.dilate-rect-4x2 8 240 180 -morphology Dilate Rectangle:9x5
+duck.erode-rect-1x3 8 240 180 -morphology Erode Rectangle:3x7
+duck.erode-disk-12 8 240 180 -morphology Erode Disk:12
+duck.open-disk-2 8 240 180 -morphology Open Disk:2
+duck.close-diamond-3 8 240 180 -morphology Close Diamond:3
+duck.close-cross-2-x2 8 240 180 -morphology Close:2 Plus:2
+noisy.open-square-1 8 240 180 -morphology Open Square:1
+duck.gradient-disk-2 8 240 180 -channel RGB -morphology Edge Disk:2
+duck.tophat-disk-4 8 240 180 -channel RGB -morphology TopHat Disk:4
+duck.bottomhat-square-3 8 240 180 -channel RGB -morphology BottomHat Square:3
+shapes.dilate-disk-4 8 200 150 -morphology Dilate Disk:4
+shapes.erode-mask 8 200 150 -morphology Erode 3x3+0+1:1,1,-,-,1,1,1,-,-
+shapes.dilate-mask 8 200 150 -morphology Dilate 3x3+0+1:1,1,-,-,1,1,1,-,-
+duck16.dilate-disk-2 16 240 180 -morphology Dilate Disk:2
+duck16.close-square-3 16 240 180 -morphology Close Square:3

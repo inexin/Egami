@@ -37,6 +37,13 @@ internal static class FilterTiming
         ["Lighting-Distant"] = o => o.Lighting(new DistantLight(225, 40), LightingModel.Diffuse(), new LightingOptions { SurfaceScale = 4 }),
         ["Lighting-Spot"] = o => o.Lighting(new SpotLight(new System.Numerics.Vector3(400, 300, 600), new System.Numerics.Vector3(1200, 1400, 0), 4, 35), LightingModel.Specular(1, 20), new LightingOptions { SurfaceScale = 4 }),
         ["Edges-Sobel"] = o => o.Edges(),
+        ["CannyEdges-1"] = o => o.CannyEdges(1),
+        ["Dilate-5"] = o => o.Dilate(5),
+        ["Dilate-25"] = o => o.Dilate(25),
+        ["Erode-5"] = o => o.Erode(5),
+        ["Erode-25"] = o => o.Erode(25),
+        ["Dilate-Disk-5"] = o => o.Morphology(MorphologyOp.Dilate, StructuringElement.Disk(5)),
+        ["Dilate-Disk-25"] = o => o.Morphology(MorphologyOp.Dilate, StructuringElement.Disk(25)),
     };
 
     internal static void Run(string[] names)

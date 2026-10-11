@@ -128,6 +128,31 @@ CASES = [
     # Egami's Emboss is only compared with it and the PSNR reported.
     ("duck", "emboss", 8, "-emboss 0x1"),
     ("egret", "emboss", 8, "-emboss 0x1"),
+    # Edges and morphology (stage B). Canny's maps are gated by the edge-map rule in the tests, not by identity.
+    ("duck", "canny-1", 8, "-canny 0x1+10%+30%"),
+    ("egret", "canny-1", 8, "-canny 0x1+10%+30%"),
+    ("steps", "canny-1", 8, "-canny 0x1+10%+30%"),
+    ("duck", "canny-1.4", 8, "-canny 0x1.4+5%+20%"),
+    ("noisy", "canny-2", 8, "-canny 0x2+10%+30%"),
+    ("steps", "dilate-disk-3", 8, "-morphology Dilate Disk:3"),
+    ("duck", "dilate-square-5", 8, "-morphology Dilate Square:5"),
+    ("duck", "erode-square-5", 8, "-morphology Erode Square:5"),
+    ("duck", "dilate-square-25", 8, "-morphology Dilate Square:25"),
+    ("duck", "dilate-rect-4x2", 8, "-morphology Dilate Rectangle:9x5"),
+    ("duck", "erode-rect-1x3", 8, "-morphology Erode Rectangle:3x7"),
+    ("duck", "erode-disk-12", 8, "-morphology Erode Disk:12"),
+    ("duck", "open-disk-2", 8, "-morphology Open Disk:2"),
+    ("duck", "close-diamond-3", 8, "-morphology Close Diamond:3"),
+    ("duck", "close-cross-2-x2", 8, "-morphology Close:2 Plus:2"),
+    ("noisy", "open-square-1", 8, "-morphology Open Square:1"),
+    ("duck", "gradient-disk-2", 8, "-channel RGB -morphology Edge Disk:2"),
+    ("duck", "tophat-disk-4", 8, "-channel RGB -morphology TopHat Disk:4"),
+    ("duck", "bottomhat-square-3", 8, "-channel RGB -morphology BottomHat Square:3"),
+    ("shapes", "dilate-disk-4", 8, "-morphology Dilate Disk:4"),
+    ("shapes", "erode-mask", 8, "-morphology Erode 3x3+0+1:1,1,-,-,1,1,1,-,-"),
+    ("shapes", "dilate-mask", 8, "-morphology Dilate 3x3+0+1:1,1,-,-,1,1,1,-,-"),
+    ("duck16", "dilate-disk-2", 16, "-morphology Dilate Disk:2"),
+    ("duck16", "close-square-3", 16, "-morphology Close Square:3"),
 ]
 
 # Options the magick command no longer runs, so their cases go through its legacy convert parser.
