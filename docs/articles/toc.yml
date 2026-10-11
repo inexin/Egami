@@ -24,6 +24,8 @@
       href: guides/metadata.md
     - name: JPEG
       href: guides/jpeg.md
+    - name: Planar YUV
+      href: guides/planar-yuv.md
     - name: Custom operations and formats
       href: guides/extending.md
     - name: Memory and threading

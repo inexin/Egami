@@ -47,6 +47,9 @@ public abstract partial class YuvRaster
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
     public static YuvRaster Load(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using FileStream stream = Raster.OpenRead(path);
@@ -62,6 +65,9 @@ public abstract partial class YuvRaster
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The data breaks the format's rules.</exception>
     /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
     public static YuvRaster Load(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using MemoryStream stream = Raster.AsStream(data);
@@ -106,6 +112,9 @@ public abstract partial class YuvRaster
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
     /// <exception cref="FileNotFoundException">The file does not exist.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
     public static YuvRasterInfo Probe(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using FileStream stream = Raster.OpenRead(path);
@@ -119,6 +128,9 @@ public abstract partial class YuvRaster
     /// <returns>What the header says.</returns>
     /// <exception cref="UnsupportedFormatException">No registered format matches the data.</exception>
     /// <exception cref="CorruptDataException">The header breaks the format's rules.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
     public static YuvRasterInfo Probe(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
         using MemoryStream stream = Raster.AsStream(data);
@@ -169,6 +181,9 @@ public abstract partial class YuvRaster
     /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
     /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
     public void Save(Stream stream, string formatNameOrExtension, WriterOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(formatNameOrExtension);
@@ -184,6 +199,9 @@ public abstract partial class YuvRaster
     /// <exception cref="UnsupportedFormatException">No registered format uses the extension, or it has no writer.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="IOException">The file cannot be written.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
     public void Save(string path, WriterOptions? options = null)
     {
         FormatInfo format = FormatPipeline.FormatForPath(Context, path);

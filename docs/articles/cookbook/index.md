@@ -29,6 +29,16 @@ counted against `MaxTotalBytes`, so a slow client never holds a thread.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#gif-from-frames)]
 
+## Show video frames
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#reuse)]
+
+Decoder frames in NV12 or P010 copy into the planes first; see [planar YUV](../guides/planar-yuv.md#interleaved-layouts).
+
+## Read and write JPEG planes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#jpeg)]
+
 ## Read a CMYK JPEG's inks
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#cmyk-inks)]

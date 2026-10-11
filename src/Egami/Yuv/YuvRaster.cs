@@ -191,6 +191,9 @@ public abstract partial class YuvRaster : IDisposable
     /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The bit depth is not 10, 12 or 16.</exception>
     /// <exception cref="ObjectDisposedException"><paramref name="source"/> has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="convert"/>
+    /// </example>
     public static YuvRaster<ushort> FromRaster(Raster source, ChromaFormat chromaFormat, int bitDepth, YuvColor color, YuvConvertOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -218,6 +221,9 @@ public abstract partial class YuvRaster : IDisposable
     /// <returns>The new raster, with a copy of the metadata. The caller must dispose it.</returns>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="LimitExceededException">The new raster breaks the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="convert"/>
+    /// </example>
     public Raster<TPixel> ToRaster<TPixel>(YuvConvertOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -282,6 +288,9 @@ public abstract partial class YuvRaster : IDisposable
     /// <exception cref="ArgumentException">The source is not the same size.</exception>
     /// <exception cref="ObjectDisposedException">Either raster has been disposed.</exception>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="reuse"/>
+    /// </example>
     public void CopyFrom<TPixel>(Raster<TPixel> source, YuvConvertOptions? options = null, CancellationToken cancellationToken = default)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
