@@ -113,4 +113,20 @@ public class Transforms
 
         Assert.Equal(640, onTable.Width);
     }
+
+    [Fact]
+    public void RotateARegion()
+    {
+        using SampleFiles files = new();
+        using Raster photo = Raster.Load("duck.png");
+
+        #region rotate-region
+        // Turn a 200 × 200 square of the photo by 30° about its own center; the rest of the photo stays as it was.
+        Rect area = new(380, 40, 200, 200);
+        Matrix3x2 turn = Matrix3x2.CreateRotation(MathF.PI / 6, new Vector2(100, 100));
+        using Raster turned = photo.Derive(ops => ops.Within(area, s => s.Transform(turn, new TransformOptions { Viewport = new Rect(0, 0, 200, 200), Edges = EdgeMode.Clamp })), Ct);
+        #endregion
+
+        Assert.Equal(photo.Width, turned.Width);
+    }
 }

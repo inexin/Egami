@@ -7,6 +7,25 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Geometry
+
+- `Transform` takes an affine `Matrix3x2`, a perspective `Homography` or a `Matrix4x4` projected as CSS `matrix3d` draws a flat
+  element; `Skew` and `QuadDistort` build one. `Homography` is a double-precision 3 × 3 matrix with `FromQuad`, the usual factories,
+  `TryInvert` and `Map`. `TransformOptions` chooses the filter, the color space, the edges (transparent, clamp, mirror, wrap), the
+  background and a viewport; without one the result is the transformed bounding box.
+- Where a transform shrinks or tilts the image, each pixel averages the ellipse its footprint covers (elliptical weighted
+  averaging, capped at 32 source pixels), within 40 dB of ImageMagick's `-distort`; elsewhere it samples exactly as `Rotate` does.
+  A pure scale equals `Resize` and a pure rotation equals `Rotate`, pixel for pixel.
+- `Warp` runs any `IWarp` (or `Warp.FromFunction`). `Warps` holds ImageMagick's Barrel, BarrelInverse, Polar, DePolar, Arc, Swirl,
+  Wave and Implode, with its parameters, whose points land where ImageMagick's do, and Skia's Magnifier. `Displace`, `Offset` and
+  `Tile` move pixels by a map, by whole pixels, and in repeats.
+- `Trim` and `EntropyCrop` crop to the content, `Deskew` straightens a page, and `Raster.TrimBounds`, `Raster.EntropyBounds` and
+  `Raster.DetectSkew` measure without changing anything. Their size depends on the pixels: the chain runs up to them, measures every
+  frame and plans the rest from the real size. Trim's rectangles equal ImageMagick's `-trim -fuzz` at 8 and 16 bits.
+- `ResampleFilter` gains `Lanczos2`, `Hermite`, `Gaussian` and `Spline`, with ImageMagick's definitions, everywhere a filter is taken.
+- `MipChain` makes many sizes from one image fast, each from the smallest halved level at least twice its size.
+- `Raster.Append`, `Raster.Grid` and `SpriteSheet.Pack` build strips, contact sheets and packed sprite sheets.
+
 ### Planar YUV
 
 - `YuvRaster<TSample>` holds a picture as Y, U and V planes and an optional alpha plane: 4:2:0, 4:2:2, 4:4:4 and 4:0:0, 8 bits

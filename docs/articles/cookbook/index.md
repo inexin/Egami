@@ -129,6 +129,56 @@ Raise the tolerance until the screen is gone, then add softness for clean hair a
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Arithmetic.cs#stack)]
 
+## Straighten a photographed document
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#homography)]
+
+Give the page's four corners in the photo, top-left first and clockwise; the perspective maps them onto an upright canvas.
+
+## Skew a banner
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#skew)]
+
+## Rotate a region in place
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#rotate-region)]
+
+A viewport the size of the area keeps the size, so the transform runs inside `Within`.
+
+## Correct a wide-angle lens, swirl a region
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Warps.cs#warps)]
+
+Barrel takes the PanoTools coefficients a lens database such as lensfun gives for the camera and focal length.
+
+## Ripple with a displacement map
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Warps.cs#displace)]
+
+## Check that a texture tiles seamlessly
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Warps.cs#offset-tile)]
+
+## Trim a scan
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#trim)]
+
+## Straighten a page
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#deskew)]
+
+## A responsive image set from one mip chain
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#mip-chain)]
+
+## A contact sheet
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Combining.cs#grid)]
+
+## A sprite sheet with its JSON
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Combining.cs#sprite-sheet)]
+
 ## Strip metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]
