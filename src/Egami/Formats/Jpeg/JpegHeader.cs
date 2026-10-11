@@ -10,6 +10,9 @@ internal static class JpegMarker
     internal const byte Sof2 = 0xC2;
     internal const byte Sof3 = 0xC3;
     internal const byte Dht = 0xC4;
+    internal const byte Sof9 = 0xC9;
+    internal const byte Sof10 = 0xCA;
+    internal const byte Sof11 = 0xCB;
     internal const byte Sof15 = 0xCF;
     internal const byte Dac = 0xCC;
     internal const byte Rst0 = 0xD0;
@@ -62,7 +65,20 @@ internal sealed class JpegHeader
 
     internal JpegFrameComponent[] Components { get; set; } = [];
 
-    internal bool Progressive => FrameMarker == JpegMarker.Sof2;
+    /// <summary>Gets whether the frame is progressive (SOF2, or SOF10 with arithmetic coding).</summary>
+    internal bool Progressive => FrameMarker is JpegMarker.Sof2 or JpegMarker.Sof10;
+
+    /// <summary>Gets whether the scans are arithmetic-coded (SOF9 to SOF11) rather than Huffman-coded.</summary>
+    internal bool Arithmetic => FrameMarker is JpegMarker.Sof9 or JpegMarker.Sof10 or JpegMarker.Sof11;
+
+    /// <summary>Gets whether the frame is lossless (SOF3, or SOF11 with arithmetic coding): predicted samples, no DCT.</summary>
+    internal bool Lossless => FrameMarker is JpegMarker.Sof3 or JpegMarker.Sof11;
+
+    /// <summary>Gets or sets the sample precision in bits: 8 or 12 for DCT frames, 2 to 16 for lossless ones.</summary>
+    internal int Precision { get; set; } = 8;
+
+    /// <summary>Gets whether the samples are deeper than 8 bits, so the frame decodes through the 16-bit path.</summary>
+    internal bool Wide => Precision > 8;
 
     internal int MaxH => Components.Max(c => c.H);
 
@@ -76,6 +92,18 @@ internal sealed class JpegHeader
     internal JpegHuffmanSpec?[] AcTables { get; } = new JpegHuffmanSpec?[4];
 
     internal int RestartInterval { get; set; }
+
+    /// <summary>
+    /// Gets the arithmetic conditioning of DC (and lossless) tables 0 to 3 (T.81 F.1.4.4.1.4): the lower bound L of each, 0 by
+    /// default; a DAC segment may change it.
+    /// </summary>
+    internal byte[] ArithmeticLower { get; } = [0, 0, 0, 0];
+
+    /// <summary>Gets the upper bound U of each DC conditioning table, 1 by default.</summary>
+    internal byte[] ArithmeticUpper { get; } = [1, 1, 1, 1];
+
+    /// <summary>Gets Kx of each AC conditioning table (T.81 F.1.4.4.2.1), 5 by default.</summary>
+    internal byte[] ArithmeticKx { get; } = [5, 5, 5, 5];
 
     /// <summary>Gets or sets the Adobe APP14 transform flag (0, 1 or 2), or -1 with no Adobe segment.</summary>
     internal int AdobeTransform { get; set; } = -1;
@@ -95,9 +123,14 @@ internal sealed class JpegHeader
     internal bool HasMetadata { get; set; }
 
     /// <summary>Gets the color model, from the component count and the JFIF and Adobe segments, as libjpeg decides it.</summary>
+    /// <remarks>
+    /// A lossless frame of three components is RGB unless a JFIF segment or an Adobe transform other than 0 says YCbCr, since
+    /// lossless files are usually stored without a color transform.
+    /// </remarks>
     internal JpegColorSpace ColorSpace => Components.Length switch
     {
         1 => JpegColorSpace.Gray,
+        3 when Lossless => AdobeTransform == 0 || (AdobeTransform < 0 && !HasJfif) ? JpegColorSpace.Rgb : JpegColorSpace.YCbCr,
         3 => AdobeTransform == 0 || (AdobeTransform < 0 && !HasJfif && IsRgbIds()) ? JpegColorSpace.Rgb : JpegColorSpace.YCbCr,
         _ => AdobeTransform == 2 ? JpegColorSpace.Ycck : JpegColorSpace.Cmyk,
     };

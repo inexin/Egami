@@ -28,7 +28,7 @@ jpeg/duck-*.jpg, jpeg/egret-*.jpg, jpeg/odd-*.jpg, jpeg/exif-*.jpg
   Made by tools/make-jpeg-references.py from ops/duck.png and ops/egret.png above (libjpeg-turbo's cjpeg, or Pillow for the
   CMYK and EXIF files). Public domain, as their sources.
 
-jpeg/testorig.jpg, jpeg/testimgint.jpg, jpeg/testimgari.jpg, jpeg/testorig12.jpg
+jpeg/testorig.jpg, jpeg/testimgint.jpg, jpeg/testimgari.jpg, jpeg/depth/testorig12.jpg
   Test images from libjpeg-turbo 3.1.4 (https://github.com/libjpeg-turbo/libjpeg-turbo/tree/3.1.4/testimages), copyright the
   Independent JPEG Group, under the IJG license; its text is in jpeg/README.ijg, included unaltered as that license asks.
   These files are test data only: Egami contains no IJG code.
@@ -38,6 +38,15 @@ jpeg/testorig.jpg, jpeg/testimgint.jpg, jpeg/testimgari.jpg, jpeg/testorig12.jpg
   the EXIF blocks, and manifest.json, made by tools/make-jpeg-references.py. Same licenses as the files they come from.
   encode/ holds the encoder sources (the duck and egret above, reduced or cropped, as PNG) and cjpeg's encodes of them;
   public domain, as their sources.
+
+jpeg/depth/ (all but testorig12.jpg)
+  Made by tools/make-jpeg-depth-references.py from ops/duck.png above, with libjpeg-turbo's cjpeg (arithmetic, 12-bit and
+  lossless files) and Thomas Richter's libjpeg (arithmetic lossless, odd precisions and the hierarchical file). Public domain, as
+  their source. The tools run in Docker as oracles only; Egami contains none of their code.
+
+../reference/jpeg/depth/
+  Decodes of the files above by djpeg, or by Richter's libjpeg for the ones libjpeg-turbo cannot read, and manifest.json, made by
+  tools/make-jpeg-depth-references.py. Same licenses as the files they come from.
 
 fuzz/exif-seeds/
   Seed EXIF blocks for the exif fuzz target: two taken from jpeg/exif-tags.jpg and jpeg/exif-orientation-6.jpg above, and one

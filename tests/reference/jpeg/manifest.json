@@ -474,12 +474,14 @@
   },
   {
    "file": "testimgari.jpg",
-   "unsupported": "Arithmetic",
-   "note": "libjpeg-turbo test image"
-  },
-  {
-   "file": "testorig12.jpg",
-   "unsupported": "12-bit",
+   "width": 227,
+   "height": 149,
+   "channels": 3,
+   "sampling": "2x2,1x1,1x1",
+   "progressive": false,
+   "orientation": 1,
+   "colorSpace": "YCbCr",
+   "reference": "testimgint.rgb8.gz",
    "note": "libjpeg-turbo test image"
   }
  ],

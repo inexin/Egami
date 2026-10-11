@@ -205,15 +205,15 @@ internal static class JpegSegmentReader
     {
         switch (marker)
         {
-            case JpegMarker.Sof0 or JpegMarker.Sof1 or JpegMarker.Sof2:
+            case JpegMarker.Sof0 or JpegMarker.Sof1 or JpegMarker.Sof2 or JpegMarker.Sof3 or JpegMarker.Sof9 or JpegMarker.Sof10 or JpegMarker.Sof11:
                 ReadFrame(input, header, marker, payload, at);
                 break;
-            case JpegMarker.Sof3:
-                throw new UnsupportedFormatException("Lossless JPEG (SOF3) is not supported.");
             case > JpegMarker.Sof3 and <= JpegMarker.Sof15 when marker is not (JpegMarker.Dht or JpegMarker.Dac or 0xC8):
-                throw new UnsupportedFormatException(marker is >= 0xC9 ? "Arithmetic-coded JPEG is not supported." : "Hierarchical JPEG is not supported.");
+                // SOF5 to SOF7 and SOF13 to SOF15: differential frames, which only hierarchical files have.
+                throw new UnsupportedFormatException("Hierarchical JPEG is not supported.");
             case JpegMarker.Dac:
-                throw new UnsupportedFormatException("Arithmetic-coded JPEG is not supported.");
+                ReadArithmeticConditioning(input, header, payload, at);
+                break;
             case JpegMarker.Dhp or JpegMarker.Exp:
                 throw new UnsupportedFormatException("Hierarchical JPEG is not supported.");
             case JpegMarker.Dht:
@@ -270,9 +270,12 @@ internal static class JpegSegmentReader
         }
 
         int precision = payload[0];
-        if (precision != 8)
+        bool lossless = marker is JpegMarker.Sof3 or JpegMarker.Sof11;
+        if (lossless ? precision is < 2 or > 16 : precision is not (8 or 12))
         {
-            throw new UnsupportedFormatException($"{precision}-bit JPEG is not supported; only 8-bit samples are.");
+            throw new UnsupportedFormatException(lossless
+                ? $"{precision}-bit lossless JPEG is not supported; 2 to 16 bits are."
+                : $"{precision}-bit JPEG is not supported; 8 and 12 bits are.");
         }
 
         int height = BinaryPrimitives.ReadUInt16BigEndian(payload[1..]);
@@ -321,10 +324,14 @@ internal static class JpegSegmentReader
         }
 
         header.FrameMarker = marker;
+        header.Precision = precision;
         header.Width = width;
         header.Height = height;
         header.Components = components;
-        header.Details.Progressive = marker == JpegMarker.Sof2;
+        header.Details.Progressive = header.Progressive;
+        header.Details.Precision = precision;
+        header.Details.Arithmetic = header.Arithmetic;
+        header.Details.Lossless = lossless;
         foreach (JpegFrameComponent component in components)
         {
             header.Details.Components.Add(new JpegComponent(component.Id, component.H, component.V));
@@ -385,6 +392,17 @@ internal static class JpegSegmentReader
 
         ReadOnlySpan<byte> tail = payload.Slice(1 + (2 * count), 3);
         JpegScan scan = new(components, tail[0], tail[1], tail[2] >> 4, tail[2] & 15);
+        if (header.Lossless)
+        {
+            // Ss is the predictor (T.81 H.1.2.1; 0 is for hierarchical files only) and Al the point transform.
+            if (scan.SpectralStart is < 1 or > 7 || scan.ApproxLow >= header.Precision)
+            {
+                throw input.Corrupt(at, $"The lossless scan's predictor ({scan.SpectralStart}) or point transform ({scan.ApproxLow}) is invalid.");
+            }
+
+            return scan with { SpectralEnd = 0, ApproxHigh = 0 };
+        }
+
         if (!header.Progressive && (scan.SpectralStart != 0 || scan.SpectralEnd != 63 || scan.ApproxHigh != 0 || scan.ApproxLow != 0))
         {
             // Sequential files must code all 64 coefficients; libjpeg only warns, so a lenient read would accept it.
@@ -431,6 +449,46 @@ internal static class JpegSegmentReader
             JpegHuffmanSpec spec = new(counts, payload.Slice(17, total).ToArray());
             (tc == 0 ? header.DcTables : header.AcTables)[th] = spec;
             payload = payload[(17 + total)..];
+        }
+    }
+
+    /// <summary>
+    /// Parses a DAC segment (T.81 B.2.4.3) into the header: the L and U bounds of a DC table, or Kx of an AC one. Also used by the
+    /// decoder for conditioning between scans.
+    /// </summary>
+    internal static void ReadArithmeticConditioning(EgamiInput input, JpegHeader header, ReadOnlySpan<byte> payload, long at)
+    {
+        for (; payload.Length >= 2; payload = payload[2..])
+        {
+            int tc = payload[0] >> 4;
+            int tb = payload[0] & 15;
+            int cs = payload[1];
+            if (tc > 1 || tb > 3)
+            {
+                throw input.Corrupt(at, "An arithmetic conditioning table has an invalid class or slot.");
+            }
+
+            if (tc == 0)
+            {
+                int lower = cs & 15;
+                int upper = cs >> 4;
+                if (lower > upper)
+                {
+                    throw input.Corrupt(at, "An arithmetic conditioning table has its lower bound above its upper one.");
+                }
+
+                header.ArithmeticLower[tb] = (byte)lower;
+                header.ArithmeticUpper[tb] = (byte)upper;
+            }
+            else
+            {
+                header.ArithmeticKx[tb] = cs is >= 1 and <= 63 ? (byte)cs : throw input.Corrupt(at, $"An arithmetic conditioning table has Kx {cs}, outside 1 to 63.");
+            }
+        }
+
+        if (payload.Length != 0)
+        {
+            throw input.Corrupt(at, "The arithmetic conditioning segment has a stray byte.");
         }
     }
 

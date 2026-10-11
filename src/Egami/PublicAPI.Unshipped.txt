@@ -344,8 +344,14 @@ Egami.Formats.IRowFormatReader
 Egami.Formats.IRowFormatReader.Open(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Formats.RowReader!
 Egami.Formats.IRowFormatWriter
 Egami.Formats.IRowFormatWriter.Start<TPixel>(System.IO.Stream! output, Egami.Formats.EncodeStart<TPixel>! start) -> Egami.Formats.RowEncoder<TPixel>!
+Egami.Formats.Jpeg.JpegDetails.Arithmetic.get -> bool
+Egami.Formats.Jpeg.JpegDetails.Arithmetic.set -> void
+Egami.Formats.Jpeg.JpegDetails.Lossless.get -> bool
+Egami.Formats.Jpeg.JpegDetails.Lossless.set -> void
 Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.get -> System.ReadOnlyMemory<byte>
 Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.set -> void
+Egami.Formats.Jpeg.JpegDetails.Precision.get -> int
+Egami.Formats.Jpeg.JpegDetails.Precision.set -> void
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Png.PngWriterOptions.Interlace.get -> bool

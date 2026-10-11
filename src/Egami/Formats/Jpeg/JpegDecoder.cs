@@ -62,6 +62,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private int[] _pullFirstBlock = [];
     private EntropyState? _pullState;
     private EntropyState? _saved;
+    private JpegArithmeticDecoder? _arithmetic;
+    private JpegArithmeticDecoder? _savedArithmetic;
     private short[]? _pullCoefficients;
     private byte[]? _pullHasAc;
     private int _pullBlocks;
@@ -166,6 +168,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     internal void Decode(EgamiInput input)
     {
         using JpegBitReader reader = new(input);
+        _arithmetic = _header.Arithmetic ? new JpegArithmeticDecoder(reader, _header) : null;
         JpegScan scan = _header.FirstScan!;
         if (!_header.Progressive && scan.Components.Length == _components.Length)
         {
@@ -231,6 +234,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     {
         _input = input;
         _reader = new JpegBitReader(input);
+        _arithmetic = _header.Arithmetic ? new JpegArithmeticDecoder(_reader, _header) : null;
         _firstNeeded = Math.Max(0, (region.Y / _mcuRows) - 1);
         foreach (Component c in _components)
         {
@@ -254,13 +258,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 JpegScanComponent sc = scan.Components[i];
                 _pullOrder[i] = _components[sc.ComponentIndex];
                 LatchQuant(sc.ComponentIndex);
-                _pullDc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
-                _pullAc[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+                if (_arithmetic is null)
+                {
+                    _pullDc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+                    _pullAc[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+                }
+
                 _pullFirstBlock[i] = _pullBlocks;
                 _pullBlocks += _mcusX * _pullOrder[i].H * _pullOrder[i].V;
             }
 
             _reader.BeginScan();
+            _arithmetic?.BeginScan(scan);
             _pullState = new EntropyState(count);
 
             // A large image read whole and from the top entropy-decodes on another thread a few MCU rows ahead, as Load does,
@@ -455,6 +464,11 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 JpegBitReader.Checkpoint mark = incremental ? _reader!.Mark() : default;
                 EntropyState state = _pullState!;
                 EntropyState? saved = incremental ? state.CopyTo(_saved ??= new EntropyState(state.Predictors.Length)) : null;
+                if (incremental && _arithmetic is not null)
+                {
+                    _arithmetic.CopyTo(_savedArithmetic ??= new JpegArithmeticDecoder(_reader!, _header));
+                }
+
                 int warnings = _warnings.Count;
                 bool warned = _warned;
                 try
@@ -476,7 +490,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     else
                     {
                         RowSlot slot = PullSlot(0);
-                        DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, state, slot);
+                        DecodeRow(_reader!, _arithmetic, _pullDc, _pullAc, _pullOrder, state, slot);
                         TransformRow(next, _pullOrder, slot);
                     }
                 }
@@ -484,6 +498,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 {
                     _reader!.Rewind(mark);
                     state.Restore(saved!);
+                    _arithmetic?.Restore(_savedArithmetic!);
                     _warnings.RemoveRange(warnings, _warnings.Count - warnings);
                     _warned = warned;
                     throw;
@@ -518,7 +533,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     return;
                 }
 
-                DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, _pullState!, PullSlot(my));
+                DecodeRow(_reader!, _arithmetic, _pullDc, _pullAc, _pullOrder, _pullState!, PullSlot(my));
                 _filled!.Release();
             }
         }
@@ -579,7 +594,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         if (target < 0)
         {
             RowSlot slot = new(_pullCoefficients!, 0, _pullHasAc!, 0, _pullFirstBlock);
-            DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, state, slot);
+            DecodeRow(_reader!, _arithmetic, _pullDc, _pullAc, _pullOrder, state, slot);
             return from + 1;
         }
 
@@ -601,6 +616,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         state.NextRestart = _reader!.LastRestart >= 0 ? _reader.LastRestart + 1 : (int)wanted;
         state.Resynced = true;
         Array.Clear(state.Predictors);
+        _arithmetic?.Restart();
         return target;
     }
 
@@ -1067,13 +1083,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             JpegScanComponent sc = scan.Components[i];
             order[i] = _components[sc.ComponentIndex];
             LatchQuant(sc.ComponentIndex);
-            dc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
-            ac[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+            if (_arithmetic is null)
+            {
+                dc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
+                ac[i] = Table(_header.AcTables[sc.AcTable] ?? throw Missing("AC", sc.AcTable));
+            }
+
             firstBlock[i] = blocks;
             blocks += _mcusX * order[i].H * order[i].V;
         }
 
         reader.BeginScan();
+        _arithmetic?.BeginScan(scan);
         EntropyState state = new(count);
         // A scaled decode leaves too little work after the entropy decoder for a second thread to pay off.
         bool parallel = input.Context.MaxParallelism > 1 && _mcusY >= 4 && (ForcePipeline || (_blockSize == 8 && (long)_header.Width * _header.Height >= ParallelPixels));
@@ -1093,7 +1114,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 for (int my = 0; my < _mcusY; my++)
                 {
                     input.CancellationToken.ThrowIfCancellationRequested();
-                    DecodeRow(reader, dc, ac, order, state, Slot(my));
+                    DecodeRow(reader, _arithmetic, dc, ac, order, state, Slot(my));
                     TransformRow(my, order, Slot(my));
                     if (my > 0)
                     {
@@ -1154,7 +1175,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                         break;
                     }
 
-                    DecodeRow(reader, dc, ac, order, state, Slot(my));
+                    DecodeRow(reader, _arithmetic, dc, ac, order, state, Slot(my));
                     filled.Release();
                 }
             }
@@ -1183,8 +1204,11 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         }
     }
 
-    /// <summary>Entropy-decodes MCU row the next of the scan into <paramref name="slot"/>.</summary>
-    private void DecodeRow(JpegBitReader reader, JpegHuffmanTable[] dc, JpegHuffmanTable[] ac, Component[] order, EntropyState state, RowSlot slot)
+    /// <summary>
+    /// Entropy-decodes the next MCU row of the scan into <paramref name="slot"/>, with <paramref name="arithmetic"/> when the file
+    /// is arithmetic-coded and the Huffman tables otherwise.
+    /// </summary>
+    private void DecodeRow(JpegBitReader reader, JpegArithmeticDecoder? arithmetic, JpegHuffmanTable[] dc, JpegHuffmanTable[] ac, Component[] order, EntropyState state, RowSlot slot)
     {
         int restart = _header.RestartInterval;
         for (int mx = 0; mx < _mcusX; mx++, state.Mcu++)
@@ -1195,6 +1219,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 state.Ended = !RestartInterval(reader, ref next);
                 state.NextRestart = next;
                 Array.Clear(state.Predictors);
+                arithmetic?.Restart();
             }
 
             for (int i = 0; i < order.Length; i++)
@@ -1213,6 +1238,10 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                             block.Clear();
                             slot.HasAc[slot.FlagStart + b] = 0;
                         }
+                        else if (arithmetic is not null)
+                        {
+                            slot.HasAc[slot.FlagStart + b] = arithmetic.DecodeBlock(i, ref state.Predictors[i], block, natural: true) ? (byte)1 : (byte)0;
+                        }
                         else
                         {
                             slot.HasAc[slot.FlagStart + b] = DecodeBlock(reader, dc[i], ac[i], ref state.Predictors[i], block) ? (byte)1 : (byte)0;
@@ -1221,7 +1250,9 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                 }
             }
 
-            state.Ended = state.Ended || EndedEarly(reader, "The image data ends early. The rest of the image is gray.");
+            state.Ended = state.Ended || (arithmetic is null
+                ? EndedEarly(reader, "The image data ends early. The rest of the image is gray.")
+                : ArithmeticFailed(reader, arithmetic, "The arithmetic-coded data is damaged. The rest of the image is gray."));
         }
     }
 
@@ -1281,6 +1312,11 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             JpegScanComponent sc = scan.Components[i];
             order[i] = _components[sc.ComponentIndex];
             LatchQuant(sc.ComponentIndex);
+            if (_arithmetic is not null)
+            {
+                continue;
+            }
+
             if (kind is 0 or 1)
             {
                 dc[i] = Table(_header.DcTables[sc.DcTable] ?? throw Missing("DC", sc.DcTable));
@@ -1293,6 +1329,8 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         }
 
         reader.BeginScan();
+        JpegArithmeticDecoder? arithmetic = _arithmetic;
+        arithmetic?.BeginScan(scan);
         Span<int> predictors = stackalloc int[count];
         Span<short> natural = stackalloc short[64];
         int eobRun = 0;
@@ -1324,6 +1362,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     reader.Load(out bits, out available);
                     predictors.Clear();
                     eobRun = 0;
+                    arithmetic?.Restart();
                 }
 
                 for (int i = 0; i < count; i++)
@@ -1336,6 +1375,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                         for (int h = 0; h < blocksX; h++)
                         {
                             Span<short> block = single ? row.Slice(ux * 64, 64) : c.Block((ux * c.H) + h, (uy * c.V) + v);
+                            if (arithmetic is not null)
+                            {
+                                DecodeArithmetic(arithmetic, kind, i, ref predictors[i], block, ss, se, al);
+                                continue;
+                            }
+
                             switch (kind)
                             {
                                 case 0:
@@ -1365,10 +1410,14 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                     }
                 }
 
-                if (reader.PastEndWith(available) && !reader.AtRestartMarker)
+                if (arithmetic is not null ? ArithmeticFailed(reader, arithmetic, Ended) : reader.PastEndWith(available) && !reader.AtRestartMarker)
                 {
                     reader.Store(bits, available);
-                    Problem(Ended);
+                    if (arithmetic is null)
+                    {
+                        Problem(Ended);
+                    }
+
                     return false;
                 }
             }
@@ -1431,6 +1480,9 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                         break;
                     case JpegMarker.Dqt:
                         JpegSegmentReader.ReadQuantTables(input, _header, payload, -1);
+                        break;
+                    case JpegMarker.Dac:
+                        JpegSegmentReader.ReadArithmeticConditioning(input, _header, payload, -1);
                         break;
                     case JpegMarker.Dri:
                         _header.RestartInterval = payload.Length >= 2 ? (payload[0] << 8) | payload[1] : throw input.Corrupt(-1, "The restart interval segment is too short.");
@@ -1511,6 +1563,50 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         {
             Problem(message);
             return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Decodes one block of a buffered scan of <paramref name="kind"/> (0 sequential to 4 AC refinement) with arithmetic coding.</summary>
+    private static void DecodeArithmetic(JpegArithmeticDecoder arithmetic, int kind, int index, ref int predictor, Span<short> block, int ss, int se, int al)
+    {
+        switch (kind)
+        {
+            case 0:
+                _ = arithmetic.DecodeBlock(index, ref predictor, block, natural: false);
+                break;
+            case 1:
+                arithmetic.DecodeDcFirst(index, ref predictor, block, al);
+                break;
+            case 2:
+                arithmetic.DecodeDcRefine(block, al);
+                break;
+            case 3:
+                arithmetic.DecodeAcFirst(block, ss, se, al);
+                break;
+            default:
+                arithmetic.DecodeAcRefine(block, ss, se, al);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Returns whether arithmetic-coded data went wrong in the MCU just decoded: a magnitude no coefficient can have, which ends the
+    /// data with <paramref name="message"/>. Reaching the end of the file only warns; the decoder reads on as zeros, as T.81 has it
+    /// read past a marker.
+    /// </summary>
+    private bool ArithmeticFailed(JpegBitReader reader, JpegArithmeticDecoder arithmetic, string message)
+    {
+        if (arithmetic.Failed)
+        {
+            Problem(message);
+            return true;
+        }
+
+        if (reader.Marker == JpegBitReader.EndOfFile)
+        {
+            Problem("The file ends inside the image data; the rest was decoded as if zeros followed.");
         }
 
         return false;

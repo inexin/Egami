@@ -42,6 +42,15 @@ public sealed class JpegDetails : FormatDetails
     /// <summary>Gets or sets whether the file is progressive rather than baseline (sequential).</summary>
     public bool Progressive { get; set; }
 
+    /// <summary>Gets or sets the sample precision in bits: 8 or 12 for DCT files, 2 to 16 for lossless ones.</summary>
+    public int Precision { get; set; } = 8;
+
+    /// <summary>Gets or sets whether the file is arithmetic-coded rather than Huffman-coded.</summary>
+    public bool Arithmetic { get; set; }
+
+    /// <summary>Gets or sets whether the file is lossless JPEG (predicted samples, no DCT), as in DNG tiles and DICOM.</summary>
+    public bool Lossless { get; set; }
+
     /// <summary>Gets or sets the color model the components are stored in.</summary>
     public JpegColorSpace ColorSpace { get; set; }
 
@@ -79,6 +88,9 @@ public sealed class JpegDetails : FormatDetails
         JpegDetails copy = new()
         {
             Progressive = Progressive,
+            Precision = Precision,
+            Arithmetic = Arithmetic,
+            Lossless = Lossless,
             ColorSpace = ColorSpace,
             RestartInterval = RestartInterval,
             EstimatedQuality = EstimatedQuality,

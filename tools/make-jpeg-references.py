@@ -7,7 +7,7 @@ Corpus (tests/images/jpeg; licenses in tests/images/LICENSES):
     odd sizes down to 1 × 1.
   - CMYK (Adobe) written by Pillow. No common tool writes YCCK, so the decoder tests build that case by hand.
   - EXIF files written by Pillow: the photo tagged with each of the 8 orientations, and one with many typed tags.
-  - libjpeg-turbo's own test images (IJG license), including an arithmetic-coded and a 12-bit file the reader must reject.
+  - libjpeg-turbo's own test images (IJG license), including the arithmetic-coded testimgari.jpg.
 
 References (tests/reference/jpeg), all from libjpeg-turbo's djpeg with its defaults (accurate integer IDCT, fancy upsampling):
   <file>.rgb8.gz / .gray8.gz          the decoded pixels, raw, row by row, gzipped
@@ -43,7 +43,7 @@ OPS = "tests/images/ops"
 # From libjpeg-turbo 3.1.4 (IJG license, README.ijg at the repository root):
 # curl -L -o .cache/jpeg-sources/<name> https://raw.githubusercontent.com/libjpeg-turbo/libjpeg-turbo/3.1.4/testimages/<name>
 # curl -L -o .cache/jpeg-sources/README.ijg https://raw.githubusercontent.com/libjpeg-turbo/libjpeg-turbo/3.1.4/README.ijg
-LIBJPEG_TURBO_FILES = ["testorig.jpg", "testimgint.jpg", "testimgari.jpg", "testorig12.jpg", "README.ijg"]
+LIBJPEG_TURBO_FILES = ["testorig.jpg", "testimgint.jpg", "testimgari.jpg", "README.ijg"]
 
 # EXIF orientation -> the lossless jpegtran transform that shows the image upright.
 UPRIGHT = {2: ["-flip", "horizontal"], 3: ["-rotate", "180"], 4: ["-flip", "vertical"], 5: ["-transpose"],
@@ -274,7 +274,9 @@ def inside():
     entries[-1]["exif"] = exif_json(rich)
 
     # libjpeg-turbo's test images.
-    for name in ("testorig.jpg", "testimgint.jpg"):
+    # testimgari.jpg is testimgint.jpg arithmetic-coded, so its reference is the same file; 12-bit testorig12.jpg is in the 2.4.2
+    # corpus (tools/make-jpeg-depth-references.py).
+    for name in ("testorig.jpg", "testimgint.jpg", "testimgari.jpg"):
         path = os.path.join(CORPUS, name)
         shutil.copy(os.path.join(CACHE, name), path)
         with Image.open(path) as im:
@@ -282,9 +284,6 @@ def inside():
             sampling = ",".join(f"{h}x{v}" for _, h, v, _ in im.layer)
             progressive = bool(im.info.get("progressive") or im.info.get("progression"))
         add(path, sampling=sampling, progressive=progressive, scales=name == "testorig.jpg", note="libjpeg-turbo test image")
-    for name, reason in (("testimgari.jpg", "Arithmetic"), ("testorig12.jpg", "12-bit")):
-        shutil.copy(os.path.join(CACHE, name), os.path.join(CORPUS, name))
-        entries.append({"file": name, "unsupported": reason, "note": "libjpeg-turbo test image"})
 
     dedupe(entries)
     encodes = encode_references(work, duck, duck_gray)

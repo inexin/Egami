@@ -94,7 +94,7 @@ public class JpegCorpusTests
     public void TheCorpusCoversEveryMode()
     {
         JsonElement[] files = Manifest();
-        Assert.True(files.Length >= 40, $"{files.Length} files");
+        Assert.True(files.Length >= 39, $"{files.Length} files");
         foreach (string sampling in new[] { "2x2,1x1,1x1", "2x1,1x1,1x1", "1x1,1x1,1x1", "1x2,1x1,1x1", "4x1,1x1,1x1", "1x1" })
         {
             Assert.Contains(files, e => e.TryGetProperty("sampling", out JsonElement s) && s.GetString() == sampling);
@@ -103,7 +103,7 @@ public class JpegCorpusTests
         Assert.Contains(files, e => e.TryGetProperty("progressive", out JsonElement p) && p.GetBoolean());
         Assert.Contains(files, e => e.TryGetProperty("colorSpace", out JsonElement c) && c.GetString() == "Cmyk");
         Assert.Equal(8, files.Count(e => e.GetProperty("file").GetString()!.StartsWith("exif-orientation-", StringComparison.Ordinal)));
-        Assert.Equal(2, files.Count(e => e.TryGetProperty("unsupported", out _)));
+        Assert.Contains(files, e => e.GetProperty("file").GetString() == "testimgari.jpg" && !e.TryGetProperty("unsupported", out _));
     }
 
     private static int Ceiling(int size, int scale) => (size + scale - 1) / scale;

@@ -78,12 +78,16 @@ public class JpegHeaderTests
     }
 
     [Theory]
-    [InlineData(0xC3, 8, "Lossless")]
     [InlineData(0xC5, 8, "Hierarchical")]
-    [InlineData(0xC9, 8, "Arithmetic")]
-    [InlineData(0xCA, 8, "Arithmetic")]
-    [InlineData(0xC1, 12, "12-bit")]
-    [InlineData(0xC2, 12, "12-bit")]
+    [InlineData(0xC6, 8, "Hierarchical")]
+    [InlineData(0xC7, 8, "Hierarchical")]
+    [InlineData(0xCD, 8, "Hierarchical")]
+    [InlineData(0xCE, 8, "Hierarchical")]
+    [InlineData(0xCF, 8, "Hierarchical")]
+    [InlineData(0xC1, 16, "16-bit")]
+    [InlineData(0xCA, 10, "10-bit")]
+    [InlineData(0xC3, 1, "1-bit lossless")]
+    [InlineData(0xCB, 17, "17-bit lossless")]
     public void UnsupportedModesThrow(byte marker, int precision, string message)
     {
         byte[] file = new JpegBuilder().Frame(marker, precision, 8, 8, (1, 1, 1)).Scan(1);
@@ -94,10 +98,28 @@ public class JpegHeaderTests
     [Fact]
     public void OtherUnsupportedFilesThrow()
     {
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(new JpegBuilder().Segment(0xCC, [0, 0x11]).Frame(0xC0, 8, 8, 8, (1, 1, 1)).Scan(1)));
         Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(new JpegBuilder().Frame(0xC0, 8, 8, 0, (1, 1, 1)).Scan(1)));
         Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(new JpegBuilder().Frame(0xC0, 8, 8, 8, (1, 1, 1), (2, 1, 1)).Scan(1)));
         Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(new JpegBuilder().Segment(0xDE, [0, 0, 0, 8, 0, 8, 1]).Scan(1)));
+    }
+
+    [Fact]
+    public void ArithmeticConditioningIsRead()
+    {
+        // DC table 1 with L = 2 and U = 5, AC table 2 with Kx = 9.
+        byte[] file = new JpegBuilder().Segment(0xCC, [0x01, 0x52, 0x12, 9]).Frame(0xC9, 8, 8, 8, (1, 1, 1)).Scan(1);
+        using MemoryStream stream = new(file);
+        JpegHeader header = JpegSegmentReader.ReadHeader(new EgamiInput(stream, EgamiContext.Default, TestContext.Current.CancellationToken), ReaderOptions.Default);
+        Assert.True(header.Arithmetic);
+        Assert.Equal((2, 5), (header.ArithmeticLower[1], header.ArithmeticUpper[1]));
+        Assert.Equal(9, header.ArithmeticKx[2]);
+        Assert.Equal((0, 1, 5), (header.ArithmeticLower[0], header.ArithmeticUpper[0], header.ArithmeticKx[0]));
+
+        // L above U, Kx 0, a table class or slot out of range, and a stray byte are damage.
+        foreach (byte[] dac in (byte[][])[[0x00, 0x13], [0x10, 0], [0x20, 1], [0x04, 1], [0x00, 0x10, 0x01]])
+        {
+            Assert.Throws<CorruptDataException>(() => Raster.Probe(new JpegBuilder().Segment(0xCC, dac).Frame(0xC9, 8, 8, 8, (1, 1, 1)).Scan(1)));
+        }
     }
 
     [Fact]

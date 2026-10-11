@@ -119,6 +119,27 @@ internal sealed class JpegBitReader : IDisposable
         return inOrder;
     }
 
+    /// <summary>
+    /// Returns the next byte of arithmetic-coded data (T.81 D.2.6, Byte_in): a stuffed FF 00 is the byte 0xFF, and once a marker
+    /// or the end of the file stops the data every byte is 0, which the decoder reads past the end as T.81 requires.
+    /// </summary>
+    internal int ArithmeticByte()
+    {
+        if (Marker != 0)
+        {
+            return 0;
+        }
+
+        int b = NextByte();
+        if (b < 0)
+        {
+            Marker = EndOfFile;
+            return 0;
+        }
+
+        return b == 0xFF && !ReadMarkerByte() ? 0 : b;
+    }
+
     /// <summary>Copies the bit buffer out, for a hot loop to keep in registers; <see cref="Store"/> puts it back.</summary>
     internal void Load(out ulong bits, out int count)
     {
