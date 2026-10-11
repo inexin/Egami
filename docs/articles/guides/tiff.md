@@ -26,7 +26,7 @@ reduced-resolution pages and SubIFDs come too, each after the page it belongs to
 | JPEG, old-style JPEG | 8-bit pages, through Egami's JPEG decoder; old-style JPEG is best effort |
 | ThunderScan | 4-bit gray |
 | SGILog, SGILog24 | LogL and LogLuv pages, as linear `GrayF32` or `RgbF32` |
-| WebP | Lossless; lossy WebP comes with the WebP decoder's lossy stage |
+| WebP | Lossless and lossy, through Egami's WebP decoder |
 | ZSTD, LZMA, LERC, JPEG XL | Not yet: `NotSupportedException` names the code. Added on real demand |
 
 Each page loads in the pixel type that fits it. Depths Egami has no type for widen to the next: 2 and 4 bits to 8, 10 to 14 bits

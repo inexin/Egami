@@ -58,13 +58,6 @@ public class TiffReaderTests
             return;
         }
 
-        if (compression == 50001 && file.Contains("lossy", StringComparison.Ordinal))
-        {
-            // Lossy WebP comes with 2.3.1's VP8 decoder.
-            Assert.Throws<NotSupportedException>(() => Raster.Load(corpus.Read(file), options: new TiffReaderOptions { Page = pageNumber }));
-            return;
-        }
-
         using Raster raster = Raster.Load(corpus.Read(file), options: new TiffReaderOptions { Page = pageNumber });
         Assert.Equal("TIFF", raster.Metadata.FormatName);
         Assert.Equal(page.GetProperty("width").GetInt32(), raster.Width);
