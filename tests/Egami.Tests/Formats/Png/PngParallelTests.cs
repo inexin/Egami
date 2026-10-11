@@ -107,7 +107,12 @@ public class PngParallelTests
         {
             PngWriterOptions options = new()
             {
-                ColorType = colorType, BitDepth = depth, Interlace = interlace, ParallelCompression = true, ParallelThreshold = 0, ParallelBandSize = 50,
+                ColorType = colorType,
+                BitDepth = depth,
+                Interlace = interlace,
+                ParallelCompression = true,
+                ParallelThreshold = 0,
+                ParallelBandSize = 50,
             };
             using Raster<Rgba16> loaded = Raster.Load<Rgba16>(PngWriterTests.Save(original, options), options: Strict);
             for (int y = 0; y < original.Height; y++)

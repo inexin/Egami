@@ -67,7 +67,12 @@ public class WriterInteropFiles
         {
             PngWriterOptions Options(PngColorType? colorType = null, int? depth = null) => new()
             {
-                ColorType = colorType, BitDepth = depth, Interlace = interlace, ParallelCompression = parallel, ParallelThreshold = 0, ParallelBandSize = 1500,
+                ColorType = colorType,
+                BitDepth = depth,
+                Interlace = interlace,
+                ParallelCompression = parallel,
+                ParallelThreshold = 0,
+                ParallelBandSize = 1500,
             };
             Write(directory!, $"png-{mode}-rgba.png", rgba, PngFormat.Info, Options());
             Write(directory!, $"png-{mode}-rgb.png", rgb, PngFormat.Info, Options());
