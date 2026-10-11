@@ -351,6 +351,42 @@ Egami.Formats.RowReader<TNatural>
 Egami.Formats.RowReader<TNatural>.RowReader() -> void
 Egami.Formats.WriterOptions.OmitSrgbProfile.get -> bool
 Egami.Formats.WriterOptions.OmitSrgbProfile.init -> void
+Egami.Metadata.IptcData
+Egami.Metadata.IptcData.Add(Egami.Metadata.IptcKey key, string! value) -> void
+Egami.Metadata.IptcData.Bylines.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.IptcData.Caption.get -> string?
+Egami.Metadata.IptcData.Copy() -> Egami.Metadata.IptcData!
+Egami.Metadata.IptcData.Copyright.get -> string?
+Egami.Metadata.IptcData.Credit.get -> string?
+Egami.Metadata.IptcData.DateCreated.get -> System.DateTimeOffset?
+Egami.Metadata.IptcData.Entries.get -> System.Collections.Generic.IReadOnlyList<Egami.Metadata.IptcEntry!>!
+Egami.Metadata.IptcData.Get(Egami.Metadata.IptcKey key) -> string?
+Egami.Metadata.IptcData.GetAll(Egami.Metadata.IptcKey key) -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.IptcData.Headline.get -> string?
+Egami.Metadata.IptcData.IptcData() -> void
+Egami.Metadata.IptcData.IsDamaged.get -> bool
+Egami.Metadata.IptcData.IsUtf8.get -> bool
+Egami.Metadata.IptcData.Keywords.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.IptcData.Remove(Egami.Metadata.IptcKey key) -> bool
+Egami.Metadata.IptcData.Set(Egami.Metadata.IptcKey key, string! value) -> void
+Egami.Metadata.IptcData.ToBytes() -> System.ReadOnlyMemory<byte>
+Egami.Metadata.IptcData.TryGet(Egami.Metadata.IptcKey key, out Egami.Metadata.IptcEntry? entry) -> bool
+Egami.Metadata.IptcData.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.IptcEntry
+Egami.Metadata.IptcEntry.AsString() -> string!
+Egami.Metadata.IptcEntry.Key.get -> Egami.Metadata.IptcKey
+Egami.Metadata.IptcEntry.RawValue.get -> System.ReadOnlyMemory<byte>
+Egami.Metadata.IptcKey
+Egami.Metadata.IptcKey.Dataset.get -> byte
+Egami.Metadata.IptcKey.Dataset.init -> void
+Egami.Metadata.IptcKey.Deconstruct(out byte Record, out byte Dataset) -> void
+Egami.Metadata.IptcKey.Equals(Egami.Metadata.IptcKey other) -> bool
+Egami.Metadata.IptcKey.IptcKey() -> void
+Egami.Metadata.IptcKey.IptcKey(byte Record, byte Dataset) -> void
+Egami.Metadata.IptcKey.IsRepeatable.get -> bool
+Egami.Metadata.IptcKey.MaxLength.get -> int?
+Egami.Metadata.IptcKey.Record.get -> byte
+Egami.Metadata.IptcKey.Record.init -> void
 Egami.Metadata.RasterMetadata.CodePoints.get -> Egami.Colors.ColorCodePoints?
 Egami.Metadata.RasterMetadata.CodePoints.set -> void
 Egami.Metadata.RasterMetadata.GetColorProfile() -> Egami.Colors.ColorProfile!
@@ -603,6 +639,9 @@ override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
+override Egami.Metadata.IptcEntry.ToString() -> string!
+override Egami.Metadata.IptcKey.GetHashCode() -> int
+override Egami.Metadata.IptcKey.ToString() -> string!
 override Egami.Pixels.Abgr8.Equals(object? obj) -> bool
 override Egami.Pixels.Abgr8.GetHashCode() -> int
 override Egami.Pixels.Abgr8.ToString() -> string!
@@ -753,6 +792,9 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Metadata.IptcData.Parse(System.ReadOnlySpan<byte> iim, Egami.SafetyLimits? limits = null) -> Egami.Metadata.IptcData!
+static Egami.Metadata.IptcKey.operator !=(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool
+static Egami.Metadata.IptcKey.operator ==(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool
 static Egami.Pixels.Abgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo
@@ -851,6 +893,29 @@ static Egami.RasterDecoder.OpenAsync(System.IO.Stream! stream, Egami.EgamiContex
 static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterEncoder.Create<TPixel>(string! path, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
 static Egami.RasterEncoder.Create<TPixel>(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
+static readonly Egami.Metadata.IptcKey.Byline -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.BylineTitle -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Caption -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.CaptionWriter -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Category -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.City -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.CodedCharacterSet -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.CopyrightNotice -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Country -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.CountryCode -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Credit -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.DateCreated -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Headline -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Keywords -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.ObjectName -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.OriginalTransmissionReference -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.ProvinceState -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Source -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.SpecialInstructions -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.SubLocation -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.SupplementalCategory -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.TimeCreated -> Egami.Metadata.IptcKey
+static readonly Egami.Metadata.IptcKey.Urgency -> Egami.Metadata.IptcKey
 virtual Egami.Formats.RowEncoder<TPixel>.Animates.get -> bool
 virtual Egami.Formats.RowEncoder<TPixel>.Dispose(bool disposing) -> void
 virtual Egami.Formats.RowEncoder<TPixel>.WriteFrame(Egami.Frame<TPixel>! frame) -> void
@@ -885,3 +950,4 @@ virtual Egami.Formats.RowReader.WorkingBytes.get -> long
 ~override Egami.Colors.XyzColor.ToString() -> string
 ~override Egami.Colors.YCbCrColor.Equals(object obj) -> bool
 ~override Egami.Colors.YCbCrColor.ToString() -> string
+~override Egami.Metadata.IptcKey.Equals(object obj) -> bool

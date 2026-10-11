@@ -217,6 +217,43 @@ public class ApiExamples
     }
 
     [Fact]
+    public void IptcValues()
+    {
+        #region iptc-values
+        IptcData iptc = new();
+        iptc.Set(IptcKey.Headline, "Harbour at dawn");
+        iptc.Add(IptcKey.Keywords, "harbour");
+        iptc.Add(IptcKey.Keywords, "Bergen");
+
+        // Text that is not ASCII sets the coded character set (1:90) to UTF-8, so other programs read it right.
+        iptc.Set(IptcKey.Caption, "Fishing boats at Bryggen, Bergen — first light");
+        foreach (IptcEntry entry in iptc.Entries)
+        {
+            Console.WriteLine($"{entry.Key} {entry.AsString()}");
+        }
+        #endregion
+
+        Assert.True(iptc.IsUtf8);
+        Assert.Equal(["harbour", "Bergen"], iptc.Keywords);
+    }
+
+    [Fact]
+    public void IptcParse()
+    {
+        IptcData source = new();
+        source.Set(IptcKey.ObjectName, "harbour-0412");
+        ReadOnlyMemory<byte> iim = source.ToBytes();
+
+        #region iptc-parse
+        // IPTC datasets from somewhere other than an image file, with a cap on the bytes of values read.
+        IptcData iptc = IptcData.Parse(iim.Span, SafetyLimits.Default with { MaxMetadataBytes = 64 * 1024 });
+        Console.WriteLine($"{iptc.Get(IptcKey.ObjectName)}: {iptc.Entries.Count} datasets, damaged: {iptc.IsDamaged}");
+        #endregion
+
+        Assert.Equal("harbour-0412", iptc.Get(IptcKey.ObjectName));
+    }
+
+    [Fact]
     public async Task ProbeAsync()
     {
         using SampleFiles files = new();

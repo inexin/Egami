@@ -45,6 +45,19 @@ EXIF stored somewhere else, such as a database, parses on its own:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#exif-parse)]
 
+## IPTC
+
+`IptcData` holds IPTC-IIM datasets, as news agencies, stock libraries and Lightroom write them. Each `IptcEntry` has an
+`IptcKey` (record and dataset, such as 2:25 for keywords), and typed getters cover the common ones. Values longer than the
+IIM specification allows are refused on `Set` and `Add`; long text belongs in XMP. Text that is not ASCII switches the block
+to UTF-8.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#iptc-values)]
+
+IPTC stored somewhere else parses on its own:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#iptc-parse)]
+
 ## Color space
 
 `RasterMetadata.ColorSpace` says what the file declared about its colors. Egami keeps the declaration and the profile bytes;
