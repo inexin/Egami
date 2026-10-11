@@ -1,3 +1,6 @@
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+
 using Egami.Pixels;
 
 namespace Egami.Formats.Tiff;
@@ -16,6 +19,20 @@ internal static class TiffReduce
             or TiffStore.PremulRgba8 or TiffStore.PremulRgbaF32)
         {
             return (store, []);
+        }
+
+        if (typeof(TPixel) == typeof(Gray8))
+        {
+            // Gray8 is bilevel when every value is 0 or 255, else it stays Gray8: a palette never beats gray.
+            for (int y = 0; y < raster.Height; y++)
+            {
+                if (MemoryMarshal.AsBytes(raster.Row(y)).IndexOfAnyExcept((byte)0, (byte)255) >= 0)
+                {
+                    return (TiffStore.Gray8, []);
+                }
+            }
+
+            return (TiffStore.Bilevel, []);
         }
 
         bool opaque = true;
@@ -81,6 +98,12 @@ internal static class TiffReduce
     public static void Pack<TPixel>(ReadOnlySpan<TPixel> row, Span<byte> target, TiffPlan plan, Dictionary<int, int>? lookup, Span<Rgb8> scratch)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        if (plan.Store == TiffStore.Bilevel && typeof(TPixel) == typeof(Gray8))
+        {
+            PackGray(MemoryMarshal.AsBytes(row), target);
+            return;
+        }
+
         PixelConvert.Convert(row, scratch);
         target.Clear();
         int bits = plan.Bits;
@@ -90,6 +113,30 @@ internal static class TiffReduce
             int value = plan.Store == TiffStore.Bilevel ? (p.R < 128 ? 1 : 0) : lookup![(p.R << 16) | (p.G << 8) | p.B];
             int bit = x * bits;
             target[bit >> 3] |= (byte)(value << (8 - bits - (bit & 7)));
+        }
+    }
+
+    /// <summary>Packs gray bytes 8 to a byte, a value below 128 a 1 bit.</summary>
+    private static void PackGray(ReadOnlySpan<byte> gray, Span<byte> target)
+    {
+        int x = 0;
+        int at = 0;
+        for (; x + 8 <= gray.Length; x += 8)
+        {
+            // Each byte's high bit (white) gathered into the top byte, the first pixel highest; inverted, black is a 1 bit.
+            ulong white = (BinaryPrimitives.ReadUInt64BigEndian(gray[x..]) & 0x8080808080808080UL) * 0x0002040810204081UL;
+            target[at++] = (byte)~(white >> 56);
+        }
+
+        if (x < gray.Length)
+        {
+            int last = 0;
+            for (int bit = 7; x < gray.Length; x++, bit--)
+            {
+                last |= (gray[x] < 128 ? 1 : 0) << bit;
+            }
+
+            target[at] = (byte)last;
         }
     }
 

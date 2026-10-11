@@ -1,3 +1,6 @@
+using System.Buffers.Binary;
+using System.Numerics;
+
 namespace Egami.Formats.Tiff;
 
 /// <summary>
@@ -68,15 +71,39 @@ internal static class CcittEncoder
     /// <summary>Lists where a row changes color, starting from white; returns how many changes there are.</summary>
     private static int Changes(ReadOnlySpan<byte> row, int width, int[] changes)
     {
+        // 64 pixels at a time: XOR with the current color leaves 1 bits where the color changes; runs of one color skip a word.
         int count = 0;
-        bool black = false;
-        for (int x = 0; x < width; x++)
+        ulong color = 0;
+        Span<byte> tail = stackalloc byte[8];
+        for (int at = 0; at < row.Length; at += 8)
         {
-            bool pixel = ((row[x >> 3] >> (7 - (x & 7))) & 1) != 0;
-            if (pixel != black)
+            ulong word;
+            if (at + 8 <= row.Length)
             {
+                word = BinaryPrimitives.ReadUInt64BigEndian(row[at..]);
+            }
+            else
+            {
+                tail.Clear();
+                row[at..].CopyTo(tail);
+                word = BinaryPrimitives.ReadUInt64BigEndian(tail);
+            }
+
+            ulong differs = word ^ color;
+            while (differs != 0)
+            {
+                int bit = BitOperations.LeadingZeroCount(differs);
+                int x = (at * 8) + bit;
+                if (x >= width)
+                {
+                    return count;
+                }
+
                 changes[count++] = x;
-                black = pixel;
+                color = ~color;
+
+                // Past this change, compare with the new color.
+                differs = ~differs & (bit == 63 ? 0 : ulong.MaxValue >> (bit + 1));
             }
         }
 
