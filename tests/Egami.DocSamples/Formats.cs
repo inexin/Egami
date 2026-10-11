@@ -30,6 +30,23 @@ public class Formats
     }
 
     [Fact]
+    public void PngLarge()
+    {
+        using SampleFiles files = new();
+        using Raster image = Raster.Load("duck.png");
+
+        #region png-large
+        image.Save("duck-large.png", new PngWriterOptions
+        {
+            ParallelCompression = true, // big images compress on several cores; the same file at any thread count
+            Interlace = true,           // Adam7: a coarse image shows before the whole file has arrived
+        });
+        #endregion
+
+        Assert.True(((PngDetails)Raster.Load("duck-large.png").Metadata.FormatDetails!).Interlaced);
+    }
+
+    [Fact]
     public void Bmp()
     {
         using SampleFiles files = new();

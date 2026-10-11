@@ -11,7 +11,8 @@ that passes none; `EgamiContext.SetDefault` replaces it once, at startup, before
 
 Operations split the image into bands of rows and run them on up to `MaxParallelism` threads (the processor count by default).
 Small images run on one thread, where splitting would cost more than it saves. Decoding is mostly sequential by nature; JPEG
-decodes in parallel bands, and animated formats map frames in parallel.
+decodes in parallel bands, and animated formats map frames in parallel. PNG compresses large images on several threads when
+`PngWriterOptions.ParallelCompression` is set, with the same bytes at any thread count.
 
 Rasters are not thread-safe: do not run two chains on the same raster at once. Separate rasters, contexts and loads are
 independent, and readers, writers and contexts can be shared freely.
@@ -51,6 +52,7 @@ such as a request body, no longer holds the whole file while it decodes:
 Options that need every pixel before the first byte, such as an automatic palette, PNG's `Reduce` or choosing alpha by looking
 at the pixels, throw `NotSupportedException` at `Create` and say what to set instead. BMP and TGA store rows bottom-up: on a
 stream that cannot seek they are written top-down, as is run-length TGA, and an APNG there needs `PngWriterOptions.FrameCount`.
+An interlaced PNG (`PngWriterOptions.Interlace`) holds the rows until the last one, since its first pass needs the whole height.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Streaming.cs#encode-rows)]
 

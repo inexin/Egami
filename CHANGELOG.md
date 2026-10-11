@@ -126,6 +126,14 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - PNG and PNM read and write `Rgb16` and `GrayAlpha16` directly, and BMP reads 5-6-5 and 4-4-4-4 bit fields straight into
   `Bgr565` and `Bgra4444`, with no intermediate type. Natural types (what `Raster.Load` returns without a type) are unchanged.
 
+### PNG writing
+
+- `PngWriterOptions.Interlace` writes Adam7 interlaced PNG and APNG, for every color type, bit depth and palette. Off by default,
+  and not taken from an interlaced source. A streamed encode holds the rows until the last one.
+- `PngWriterOptions.ParallelCompression` compresses images with more than 4 MiB of image data in fixed 1 MiB bands on up to
+  `MaxParallelism` threads. The bytes are the same at any thread count; files were 0.1% to 0.3% larger, and a 24-megapixel
+  photo saved 8 times as fast on 12 cores. Off by default; with it off, or below the threshold, files are unchanged.
+
 ### Pixel layouts
 
 - New enum values, for code that switches on them: `PixelChannelOrder.Argb`, `Abgr`, `Alpha` and `Cmyk`;

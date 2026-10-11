@@ -15,7 +15,7 @@ import os
 import subprocess
 import sys
 
-SEEDS = {"png": "tests/images/pngsuite/*.png", "jpeg": "tests/images/jpeg/*.jpg", "exif": "tests/images/fuzz/exif-seeds/*.tiff", "icc": "tests/images/icc/*/*.icc",
+SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png", "jpeg": "tests/images/jpeg/*.jpg", "exif": "tests/images/fuzz/exif-seeds/*.tiff", "icc": "tests/images/icc/*/*.icc",
          "iptc": "tests/images/fuzz/iptc-seeds/*", "psd": "tests/images/fuzz/psd-seeds/*", "xmp": "tests/images/fuzz/xmp-seeds/*",
          "rawprofile": "tests/images/fuzz/rawprofile-seeds/*",
          "gif": "tests/images/gif/*.gif", "apng": "tests/images/apng/*.png", "lzw": "tests/images/fuzz/lzw-seeds/*.bin",
@@ -51,7 +51,7 @@ def main():
             name = f"egami-afl-{target}" + (f"-{i}" if instances > 1 else "")
             role = "" if instances == 1 else "-M main" if i == 0 else f"-S secondary{i}"
             subprocess.run(["docker", "rm", "-f", name], capture_output=True)
-            script = SCRIPT.format(seeds="/src/" + SEEDS[target], seconds=int(hours * 3600), target=target, role=role)
+            script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role)
             # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
             subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)
