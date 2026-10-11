@@ -81,6 +81,7 @@ static Action<Stream> Target(string name) => name switch
 {
     "png" => LoadPng,
     "jpeg" => LoadJpeg,
+    "jpeg-depth" => LoadJpegDepth,
     "exif" => ParseExif,
     "icc" => ParseIcc,
     "gif" => LoadGif,
@@ -97,7 +98,7 @@ static Action<Stream> Target(string name) => name switch
     "rawprofile" => DecodeRawProfile,
     "detect" => Detect,
     "stream" => DecodeStreaming,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream."),
 };
 
 static EgamiContext Context()
@@ -130,6 +131,72 @@ static void LoadPng(Stream stream)
         catch (EgamiException)
         {
         }
+    }
+}
+
+// Phase 2.4.2: arithmetic, 12-bit and lossless files, the restart-interval split and the scan pipeline. Besides loading every
+// way the jpeg target does, the pixels on one core must equal those on four, whatever the damage, and the raw entry point for
+// TIFF and DNG must read the same stream with its tables split off.
+static void LoadJpegDepth(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    foreach (ReaderOptions options in new ReaderOptions[]
+    {
+        new() { Recovery = RecoveryMode.Lenient },
+        new() { Recovery = RecoveryMode.Strict },
+        new JpegReaderOptions { FastUpsampling = true },
+        new() { MinimumSize = new Size(1, 1) },
+        new() { Region = new Rect(3, 2, 17, 9) },
+    })
+    {
+        try
+        {
+            Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster<Rgba16> converted = raster.As<Rgba16>();
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+
+    byte[]? serial = DecodeAt(data, 1);
+    byte[]? parallel = DecodeAt(data, 4);
+    if ((serial is null) != (parallel is null) || (serial is not null && !serial.AsSpan().SequenceEqual(parallel)))
+    {
+        throw new InvalidOperationException("One core and four cores decode differently.");
+    }
+
+    try
+    {
+        _ = JpegEmbedded.DecodeLosslessSamples(default, data, context, out _);
+    }
+    catch (EgamiException)
+    {
+    }
+}
+
+// Decodes through the parallel paths even for small files, or returns null if the file is refused.
+static byte[]? DecodeAt(byte[] data, int cores)
+{
+    try
+    {
+        using MemoryStream stream = new(data);
+        EgamiInput input = new(stream, Context() with { MaxParallelism = cores }, CancellationToken.None);
+        JpegHeader header = JpegSegmentReader.ReadHeader(input, ReaderOptions.Default);
+        using Raster<Rgba16> raster = JpegReader.Decode<Rgba16>(input, header, ReaderOptions.Default, forcePipeline: cores > 1);
+        byte[] pixels = new byte[raster.Width * raster.Height * 8];
+        for (int y = 0; y < raster.Height; y++)
+        {
+            System.Runtime.InteropServices.MemoryMarshal.AsBytes(raster.Row(y)).CopyTo(pixels.AsSpan(y * raster.Width * 8));
+        }
+
+        return pixels;
+    }
+    catch (EgamiException)
+    {
+        return null;
     }
 }
 
