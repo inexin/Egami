@@ -26,6 +26,8 @@
       href: guides/metadata.md
     - name: JPEG
       href: guides/jpeg.md
+    - name: WebP
+      href: guides/webp.md
     - name: Planar YUV
       href: guides/planar-yuv.md
     - name: Custom operations and formats

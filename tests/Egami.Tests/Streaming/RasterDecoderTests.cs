@@ -47,7 +47,7 @@ internal static class StreamingCorpus
             using Raster raster = Raster.Load(Path.Combine(Root, file));
             return true;
         }
-        catch (Exception e) when (e is CorruptDataException or UnsupportedFormatException or LimitExceededException)
+        catch (Exception e) when (e is CorruptDataException or UnsupportedFormatException or LimitExceededException or NotSupportedException)
         {
             return false;
         }

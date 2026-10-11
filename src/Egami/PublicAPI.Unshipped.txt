@@ -376,6 +376,63 @@ Egami.Formats.RowReader.Dispose() -> void
 Egami.Formats.RowReader.RowReader() -> void
 Egami.Formats.RowReader<TNatural>
 Egami.Formats.RowReader<TNatural>.RowReader() -> void
+Egami.Formats.Webp.WebpChunk
+Egami.Formats.Webp.WebpChunk.<Clone>$() -> Egami.Formats.Webp.WebpChunk!
+Egami.Formats.Webp.WebpChunk.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Webp.WebpChunk.Data.init -> void
+Egami.Formats.Webp.WebpChunk.Deconstruct(out string! Type, out System.ReadOnlyMemory<byte> Data, out Egami.Formats.Webp.WebpChunkPosition Position) -> void
+Egami.Formats.Webp.WebpChunk.Equals(Egami.Formats.Webp.WebpChunk? other) -> bool
+Egami.Formats.Webp.WebpChunk.Position.get -> Egami.Formats.Webp.WebpChunkPosition
+Egami.Formats.Webp.WebpChunk.Position.init -> void
+Egami.Formats.Webp.WebpChunk.Type.get -> string!
+Egami.Formats.Webp.WebpChunk.Type.init -> void
+Egami.Formats.Webp.WebpChunk.WebpChunk(string! Type, System.ReadOnlyMemory<byte> Data, Egami.Formats.Webp.WebpChunkPosition Position) -> void
+Egami.Formats.Webp.WebpChunkPosition
+Egami.Formats.Webp.WebpChunkPosition.AfterImageData = 1 -> Egami.Formats.Webp.WebpChunkPosition
+Egami.Formats.Webp.WebpChunkPosition.BeforeImageData = 0 -> Egami.Formats.Webp.WebpChunkPosition
+Egami.Formats.Webp.WebpDetails
+Egami.Formats.Webp.WebpDetails.BackgroundColor.get -> Egami.Pixels.Rgba8
+Egami.Formats.Webp.WebpDetails.BackgroundColor.set -> void
+Egami.Formats.Webp.WebpDetails.Extended.get -> bool
+Egami.Formats.Webp.WebpDetails.Extended.set -> void
+Egami.Formats.Webp.WebpDetails.HasAlpha.get -> bool
+Egami.Formats.Webp.WebpDetails.HasAlpha.set -> void
+Egami.Formats.Webp.WebpDetails.Lossless.get -> bool
+Egami.Formats.Webp.WebpDetails.Lossless.set -> void
+Egami.Formats.Webp.WebpDetails.OtherChunks.get -> System.Collections.Generic.IList<Egami.Formats.Webp.WebpChunk!>!
+Egami.Formats.Webp.WebpDetails.WebpDetails() -> void
+Egami.Formats.Webp.WebpFormat
+Egami.Formats.Webp.WebpFrameDetails
+Egami.Formats.Webp.WebpFrameDetails.Lossless.get -> bool
+Egami.Formats.Webp.WebpFrameDetails.Lossless.set -> void
+Egami.Formats.Webp.WebpFrameDetails.WebpFrameDetails() -> void
+Egami.Formats.Webp.WebpReaderOptions
+Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.Webp.WebpReaderOptions? other) -> bool
+Egami.Formats.Webp.WebpReaderOptions.FastUpsampling.get -> bool
+Egami.Formats.Webp.WebpReaderOptions.FastUpsampling.init -> void
+Egami.Formats.Webp.WebpReaderOptions.UseBackgroundColor.get -> bool
+Egami.Formats.Webp.WebpReaderOptions.UseBackgroundColor.init -> void
+Egami.Formats.Webp.WebpReaderOptions.WebpReaderOptions() -> void
+Egami.Formats.Webp.WebpWriterOptions
+Egami.Formats.Webp.WebpWriterOptions.AlphaQuality.get -> int
+Egami.Formats.Webp.WebpWriterOptions.AlphaQuality.init -> void
+Egami.Formats.Webp.WebpWriterOptions.Effort.get -> int
+Egami.Formats.Webp.WebpWriterOptions.Effort.init -> void
+Egami.Formats.Webp.WebpWriterOptions.FirstFrameOnly.get -> bool
+Egami.Formats.Webp.WebpWriterOptions.FirstFrameOnly.init -> void
+Egami.Formats.Webp.WebpWriterOptions.KeepTransparentColors.get -> bool
+Egami.Formats.Webp.WebpWriterOptions.KeepTransparentColors.init -> void
+Egami.Formats.Webp.WebpWriterOptions.Lossless.get -> bool?
+Egami.Formats.Webp.WebpWriterOptions.Lossless.init -> void
+Egami.Formats.Webp.WebpWriterOptions.MixedFrames.get -> bool
+Egami.Formats.Webp.WebpWriterOptions.MixedFrames.init -> void
+Egami.Formats.Webp.WebpWriterOptions.NearLossless.get -> int
+Egami.Formats.Webp.WebpWriterOptions.NearLossless.init -> void
+Egami.Formats.Webp.WebpWriterOptions.Quality.get -> int
+Egami.Formats.Webp.WebpWriterOptions.Quality.init -> void
+Egami.Formats.Webp.WebpWriterOptions.SharpYuv.get -> bool
+Egami.Formats.Webp.WebpWriterOptions.SharpYuv.init -> void
+Egami.Formats.Webp.WebpWriterOptions.WebpWriterOptions() -> void
 Egami.Formats.WriterOptions.OmitSrgbProfile.get -> bool
 Egami.Formats.WriterOptions.OmitSrgbProfile.init -> void
 Egami.Metadata.ExifData.ReadThumbnail(Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.Rgb8>?
@@ -955,6 +1012,15 @@ override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
+override Egami.Formats.Webp.WebpChunk.Equals(object? obj) -> bool
+override Egami.Formats.Webp.WebpChunk.GetHashCode() -> int
+override Egami.Formats.Webp.WebpChunk.ToString() -> string!
+override Egami.Formats.Webp.WebpDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Webp.WebpFrameDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Webp.WebpReaderOptions.<Clone>$() -> Egami.Formats.Webp.WebpReaderOptions!
+override Egami.Formats.Webp.WebpReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Webp.WebpReaderOptions.GetHashCode() -> int
+override Egami.Formats.Webp.WebpReaderOptions.ToString() -> string!
 override Egami.Metadata.IptcEntry.ToString() -> string!
 override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!
@@ -1017,6 +1083,7 @@ override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
+override sealed Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.operator !=(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
@@ -1119,6 +1186,13 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Formats.Webp.WebpChunk.operator !=(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
+static Egami.Formats.Webp.WebpChunk.operator ==(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
+static Egami.Formats.Webp.WebpFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Webp.WebpReaderOptions.Default.get -> Egami.Formats.Webp.WebpReaderOptions!
+static Egami.Formats.Webp.WebpReaderOptions.operator !=(Egami.Formats.Webp.WebpReaderOptions? left, Egami.Formats.Webp.WebpReaderOptions? right) -> bool
+static Egami.Formats.Webp.WebpReaderOptions.operator ==(Egami.Formats.Webp.WebpReaderOptions? left, Egami.Formats.Webp.WebpReaderOptions? right) -> bool
+static Egami.Formats.Webp.WebpWriterOptions.Default.get -> Egami.Formats.Webp.WebpWriterOptions!
 static Egami.Metadata.IptcData.Parse(System.ReadOnlySpan<byte> iim, Egami.SafetyLimits? limits = null) -> Egami.Metadata.IptcData!
 static Egami.Metadata.IptcKey.operator !=(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool
 static Egami.Metadata.IptcKey.operator ==(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool

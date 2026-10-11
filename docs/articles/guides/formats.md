@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map). Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map). Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -11,6 +11,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 | APNG | Every PNG color type and depth, every disposal and blend | Any raster with more than one frame, changed rectangles only | `Rgba8`, or `Rgba16` for 16-bit |
 | JPEG | Baseline and progressive, 8-bit, any subsampling, gray, CMYK, YCCK, scaled decode, EXIF, XMP, ICC | Baseline, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0 or gray, optimized Huffman tables | `Gray8` or `Rgb8` |
 | GIF | 87a and 89a, every disposal, interlaced, transparency, loop count, comments, XMP, ICC | 89a, exact or quantized palettes, global or per frame, dithering, frame optimization | `Rgba8` |
+| WebP | Lossless (VP8L) with every transform, color cache and meta prefix codes; ICC, EXIF, XMP; see the [WebP guide](webp.md) | Lossless at effort 0 to 6, exact transparent colors; ICC, EXIF with resolution, XMP | `Rgb8`, or `Rgba8` with alpha |
 | BMP | Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24; bit fields; embedded PNG and JPEG; V5 ICC | 24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes; resolution and ICC | `Bgr8`, or `Bgra8` with alpha |
 | TGA | Color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, all origins, TGA 2.0 footer and extension area | 8-bit gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer | `Bgr8`, `Bgra8`, `Gray8` or `GrayAlpha8` |
 | QOI | The whole format, 3 or 4 channels, both colorspaces | 3 or 4 channels, byte-identical to the reference encoder | `Rgb8` or `Rgba8` |
@@ -22,7 +23,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## Detection
 
-Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, BMP, QOI, PNM,
+Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
 then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:
