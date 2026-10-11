@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Formats;
+using Egami.Formats.Jpeg;
 using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Tests.Memory;
@@ -377,7 +378,8 @@ public class RegionAndReductionTests
                 Rect r = region is Rect given ? Clip(given, info.Width, info.Height) : new Rect(0, 0, info.Width, info.Height);
                 int n = ExpectedFactor(r.Size, minimum);
                 int scale = n >= 8 ? 8 : n >= 4 ? 4 : n >= 2 ? 2 : 1;
-                using Raster<Rgb8> scaled = Raster.Load<Rgb8>(data, options: new ReaderOptions
+                // In the natural type: a 12-bit file is reduced in 16 bits, then rounded to the 8 bits asked for.
+                using Raster scaled = Raster.Load(data, options: new ReaderOptions
                 {
                     MinimumSize = new Size((info.Width + scale - 1) / scale, (info.Height + scale - 1) / scale),
                 });
@@ -543,5 +545,22 @@ public class RegionAndReductionTests
         return StreamingCorpus.Bounds(Math.Max(0, r.X), Math.Max(0, r.Y), Math.Min(width, r.Right), Math.Min(height, r.Bottom));
     }
 
-    private static bool IsJpeg(string file) => file.StartsWith("jpeg/", StringComparison.Ordinal) || file.EndsWith(".jpg", StringComparison.Ordinal);
+    /// <summary>Returns whether a file is a JPEG the IDCT can reduce: any but a lossless one, which has no DCT.</summary>
+    private static bool IsJpeg(string file)
+    {
+        if (!file.StartsWith("jpeg/", StringComparison.Ordinal) && !file.EndsWith(".jpg", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        try
+        {
+            using MemoryStream stream = new(StreamingCorpus.Read(file));
+            return !JpegSegmentReader.ReadHeader(new EgamiInput(stream, EgamiContext.Default, CancellationToken.None), ReaderOptions.Default).Lossless;
+        }
+        catch (UnsupportedFormatException)
+        {
+            return true;
+        }
+    }
 }
