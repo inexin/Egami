@@ -115,6 +115,20 @@ A soft mask gives a soft transition; blur the mask raster first to feather a har
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#alpha)]
 
+## Remove a green screen
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Keying.cs#green-screen)]
+
+Raise the tolerance until the screen is gone, then add softness for clean hair and edges.
+
+## Select by color, then edit
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Keying.cs#select-by-color)]
+
+## Average a burst of photos
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Arithmetic.cs#stack)]
+
 ## Strip metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]

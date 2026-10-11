@@ -50,6 +50,14 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `AlphaToGray`, `LuminanceToAlpha`, `CopyAlpha` and `Flatten` match ImageMagick's -alpha extract, copy and remove; the JPEG
   writer's Background option now runs on Flatten's arithmetic, with unchanged bytes.
 
+### Keying and arithmetic (in progress)
+
+- `MakeTransparent`, `ReplaceColor` and `FloodFill` equal ImageMagick's -transparent, -opaque and -floodfill with -fuzz at 8 and
+  16 bits; the tolerance is ImageMagick's color distance, and `MakeTransparent`'s softness ramps alpha for clean edges. `FloodFill`
+  is four-connected by default (`Connectivity`). `ColorMask` and `FloodMask` return selections for `Within(Mask, …)`.
+- `Arithmetic` applies a `PixelMath` operator with a constant, identical to ImageMagick's -evaluate at 8 and 16 bits.
+  `Raster.Stack` combines several rasters by mean, median, min or max (`StackMode`) a few rows at a time.
+
 ### Streaming decode (in progress)
 
 - `RasterDecoder`: open an image and read it a band of rows (`ReadRows`) or a frame (`ReadFrame`) at a time, in any pixel

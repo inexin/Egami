@@ -805,6 +805,121 @@ public sealed class RasterOps
     // Rec. 709 luminance weights as ImageMagick computes intensity, so LuminanceToAlpha equals -alpha copy at 8 and 16 bits.
     private const float LumaR = 0.212656f, LumaG = 0.715158f, LumaB = 0.072186f;
 
+    /// <summary>
+    /// Makes pixels within <paramref name="tolerance"/> of <paramref name="color"/> transparent, keeping their color, by ImageMagick's
+    /// -fuzz distance, so with no softness the result equals ImageMagick's -fuzz with -transparent. <paramref name="softness"/> ramps
+    /// alpha up over the next band of distance, for antialiased edges and green screens.
+    /// </summary>
+    /// <param name="color">The color to remove, with its alpha (opaque for most keys).</param>
+    /// <param name="tolerance">The color distance that becomes fully transparent, from 0 (the exact color) to 1 (every color).</param>
+    /// <param name="softness">The band of distance beyond the tolerance over which alpha returns to full; 0 for a hard edge.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="tolerance"/> is outside 0..1, or <paramref name="softness"/> is negative or not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Keying.cs" region="green-screen"/>
+    /// </example>
+    public RasterOps MakeTransparent(Rgba8 color, float tolerance = 0, float softness = 0)
+    {
+        CheckTolerance(tolerance, nameof(tolerance));
+        if (!(softness >= 0) || !float.IsFinite(softness))
+        {
+            throw new ArgumentOutOfRangeException(nameof(softness), softness, "Softness must be 0 or more and finite.");
+        }
+
+        return Add(new MakeTransparentOperation(color, tolerance, softness));
+    }
+
+    /// <summary>
+    /// Replaces every pixel within <paramref name="tolerance"/> of <paramref name="from"/> with <paramref name="to"/>, by ImageMagick's
+    /// -fuzz distance, as ImageMagick's -fill with -opaque does.
+    /// </summary>
+    /// <param name="from">The color to replace, with its alpha.</param>
+    /// <param name="to">The color to put in its place.</param>
+    /// <param name="tolerance">The color distance, from 0 (the exact color) to 1 (every color).</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="tolerance"/> is outside 0..1.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Keying.cs" region="replace"/>
+    /// </example>
+    public RasterOps ReplaceColor(Rgba8 from, Rgba8 to, float tolerance = 0)
+    {
+        CheckTolerance(tolerance, nameof(tolerance));
+        return Add(new ReplaceColorOperation(from, to, tolerance));
+    }
+
+    /// <summary>
+    /// Fills the region connected to <paramref name="seed"/> whose colors lie within <paramref name="tolerance"/> of the seed's own with
+    /// <paramref name="fill"/>, as ImageMagick's -fuzz with -floodfill does. Each frame is filled from the same seed.
+    /// </summary>
+    /// <param name="seed">Where the fill starts. It must lie inside the image, which is checked before any pixel changes.</param>
+    /// <param name="fill">The color to fill with.</param>
+    /// <param name="tolerance">The color distance, from 0 (the seed's exact color) to 1 (every color).</param>
+    /// <param name="connectivity">Whether the fill spreads to the four side neighbours (the default) or also the diagonal ones.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="tolerance"/> is outside 0..1, <paramref name="connectivity"/> is not defined, or the seed lies outside the image
+    /// when the chain runs.
+    /// </exception>
+    /// <remarks>The fill keeps a visited set of one bit a pixel, which counts against MaxTotalBytes.</remarks>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Keying.cs" region="flood-fill"/>
+    /// </example>
+    public RasterOps FloodFill(Point seed, Rgba8 fill, float tolerance = 0, Connectivity connectivity = Connectivity.Four)
+    {
+        CheckTolerance(tolerance, nameof(tolerance));
+        CheckConnectivity(connectivity);
+        return Add(new FloodFillOperation(seed, fill, tolerance, connectivity));
+    }
+
+    internal static void CheckTolerance(float tolerance, string name)
+    {
+        if (!(tolerance >= 0 && tolerance <= 1))
+        {
+            throw new ArgumentOutOfRangeException(name, tolerance, "The tolerance must be from 0 to 1.");
+        }
+    }
+
+    internal static void CheckConnectivity(Connectivity connectivity)
+    {
+        if (!Enum.IsDefined(connectivity))
+        {
+            throw new ArgumentOutOfRangeException(nameof(connectivity), connectivity, "The connectivity is not defined.");
+        }
+    }
+
+    /// <summary>
+    /// Applies <paramref name="op"/> with <paramref name="value"/> to every value of <paramref name="channels"/>, on values scaled 0 to 1
+    /// and clamped back to 0..1, as ImageMagick's -evaluate defines each operator. 8-bit and 16-bit pixels are evaluated as 16-bit
+    /// samples and rounded as ImageMagick's Q16 build rounds them, through a table per call, so results are identical to -evaluate.
+    /// </summary>
+    /// <param name="op">The operator.</param>
+    /// <param name="value">The constant, on the same 0 to 1 scale for Add, Subtract, Min, Max and Set.</param>
+    /// <param name="channels">The channels to change. Defaults to <see cref="ColorChannels.Color"/>; alpha changes only when included.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="op"/> is not defined, <paramref name="value"/> is not finite, or <paramref name="channels"/> holds values that are not channels.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Arithmetic.cs" region="arithmetic"/>
+    /// </example>
+    public RasterOps Arithmetic(PixelMath op, float value, ColorChannels channels = ColorChannels.Color)
+    {
+        if (!Enum.IsDefined(op))
+        {
+            throw new ArgumentOutOfRangeException(nameof(op), op, "The operator is not defined.");
+        }
+
+        if (!float.IsFinite(value))
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be finite.");
+        }
+
+        if ((channels & ~ColorChannels.All) != 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(channels), channels, "Only Red, Green, Blue and Alpha are channels.");
+        }
+
+        return Add(new Color.ArithmeticOperation(op, value, channels));
+    }
+
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
     internal const float LargeSigma = 100;
 

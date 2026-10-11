@@ -18,6 +18,8 @@
       href: guides/compositing.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
+    - name: Keying and arithmetic
+      href: guides/keying-and-arithmetic.md
     - name: Animation
       href: guides/animation.md
     - name: Metadata
