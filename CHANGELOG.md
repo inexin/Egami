@@ -38,6 +38,17 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   `WebpDetails` and `WebpFrameDetails` say what a file held and keep unknown chunks (`WebpChunk`, `WebpChunkPosition`) for round
   trips. ICC, EXIF and XMP are read and written; the resolution travels in EXIF.
 
+### JBIG2
+
+- `Jbig2Format` reads JBIG2 (T.88): generic, refinement, text, symbol dictionary, pattern and halftone segments, arithmetic and
+  Huffman coded, with MMR and custom code tables, from standalone files (sequential or random access) and from the embedded
+  streams PDF holds, with `Jbig2ReaderOptions.Globals` (`Jbig2Globals.Parse`) and `Page`. Every page in the test corpus decodes
+  bit for bit as PDFium and jbig2dec do, two to seventeen times faster than PdfPig. Pages load as `Gray8` and stream a stripe at
+  a time; `Jbig2Details` says how a page was coded. Damaged regions are skipped with a warning; decoding stays within
+  `SafetyLimits`.
+- `Raster.Load`, `LoadAll`, `Probe` and `RasterDecoder.Open` take a `FormatInfo` to read data in a known format without
+  detection, as PDF's JBIG2 streams need.
+
 ### Several images in one file
 
 - `Raster.LoadAll` and `LoadAllAsync` return a `RasterList` of every image in a file, each at its own size and pixel type;
