@@ -14,6 +14,12 @@
       href: guides/color-management.md
     - name: Filters
       href: guides/filters.md
+    - name: Edges and morphology
+      href: guides/edges-and-morphology.md
+    - name: Lighting and relief
+      href: guides/lighting-and-relief.md
+    - name: Effects and shadows
+      href: guides/effects.md
     - name: Compositing
       href: guides/compositing.md
     - name: Regions, masks and channels

@@ -25,6 +25,7 @@ internal sealed class BilateralBlurOperation : IRasterOperation, INeedsNewPlane,
     private readonly float _rangeScale;
     private readonly (int Dx, int Dy, float Weight)[] _taps;
 
+    /// <summary>Precomputes the window's taps and their spatial weights.</summary>
     /// <param name="spatialSigma">The spatial sigma.</param>
     /// <param name="rangeSigma">The range sigma.</param>
     /// <param name="radius">The window radius.</param>

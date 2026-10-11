@@ -94,45 +94,45 @@ internal sealed class NoiseOperation : IRasterOperation, INeedsNewPlane, Scopes.
             case NoiseKind.Uniform:
                 return v + (a / 64 * (Uniform(key, 0) - 0.5));
             case NoiseKind.Gaussian:
-            {
-                // Box–Muller: one radius, its cosine and sine two independent normals, as ImageMagick draws them.
-                (double s, double t) = Normals(key);
-                return v + (a / 64 * s * Math.Sqrt(Math.Max(v, 0) / 65536)) + (5 * a / 64 * t);
-            }
-
-            case NoiseKind.Impulse:
-            {
-                double alpha = Uniform(key, 0);
-                return alpha < 0.05 * a ? 0 : alpha >= 1 - (0.05 * a) ? 1 : v;
-            }
-
-            case NoiseKind.Laplacian:
-            {
-                double alpha = Uniform(key, 0), scale = 5 * a / 128;
-                if (alpha <= 0.5)
                 {
-                    return alpha <= 0 ? v - 1 : v + (scale * Math.Log(2 * alpha));
+                    // Box–Muller: one radius, its cosine and sine two independent normals, as ImageMagick draws them.
+                    (double s, double t) = Normals(key);
+                    return v + (a / 64 * s * Math.Sqrt(Math.Max(v, 0) / 65536)) + (5 * a / 64 * t);
                 }
 
-                double beta = 1 - alpha;
-                return v - (scale * Math.Log(2 * beta));
-            }
+            case NoiseKind.Impulse:
+                {
+                    double alpha = Uniform(key, 0);
+                    return alpha < 0.05 * a ? 0 : alpha >= 1 - (0.05 * a) ? 1 : v;
+                }
+
+            case NoiseKind.Laplacian:
+                {
+                    double alpha = Uniform(key, 0), scale = 5 * a / 128;
+                    if (alpha <= 0.5)
+                    {
+                        return alpha <= 0 ? v - 1 : v + (scale * Math.Log(2 * alpha));
+                    }
+
+                    double beta = 1 - alpha;
+                    return v - (scale * Math.Log(2 * beta));
+                }
 
             case NoiseKind.Multiplicative:
                 return v * (1 + (a / 4 * Normals(key).Cos));
             default:
-            {
-                // Knuth's multiplication method: count uniforms until their product drops below e^−λ.
-                double lambda = 12.5 * a * Math.Max(v, 0), limit = Math.Exp(-lambda), product = Uniform(key, 0);
-                int count = 0;
-                while (product > limit)
                 {
-                    count++;
-                    product *= Uniform(key, count);
-                }
+                    // Knuth's multiplication method: count uniforms until their product drops below e^−λ.
+                    double lambda = 12.5 * a * Math.Max(v, 0), limit = Math.Exp(-lambda), product = Uniform(key, 0);
+                    int count = 0;
+                    while (product > limit)
+                    {
+                        count++;
+                        product *= Uniform(key, count);
+                    }
 
-                return count / (12.5 * a);
-            }
+                    return count / (12.5 * a);
+                }
         }
     }
 

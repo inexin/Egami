@@ -1,6 +1,9 @@
 namespace Egami.Operations;
 
 /// <summary>How <see cref="RasterOps.Blur(float, ColorSpace, BlurMethod)"/> computes a Gaussian blur.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Filters.cs" region="fast-blur"/>
+/// </example>
 public enum BlurMethod
 {
     /// <summary>The exact Gaussian kernel, radius ceil(3σ): what <see cref="RasterOps.Blur(float, ColorSpace)"/> does. Its cost grows with σ.</summary>

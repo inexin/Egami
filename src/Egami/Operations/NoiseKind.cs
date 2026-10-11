@@ -4,6 +4,9 @@ namespace Egami.Operations;
 /// The noise <see cref="RasterOps.AddNoise"/> adds: ImageMagick's +noise kinds, with values on 0..1 and the amount as
 /// ImageMagick's -attenuate. At amount 1 the formulas are ImageMagick's Q16 ones.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Filters.cs" region="noise"/>
+/// </example>
 public enum NoiseKind
 {
     /// <summary>Normal noise of standard deviation 5/64 × amount (about 20 of 255 levels at amount 1), plus a small part that grows with the value.</summary>

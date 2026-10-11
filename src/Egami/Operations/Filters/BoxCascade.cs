@@ -194,6 +194,7 @@ internal sealed class BoxCascade
         private readonly float[] _zeros;
         private int _length;
 
+        /// <summary>Rents the rings for rows of up to <paramref name="capacity"/> floats.</summary>
         /// <param name="cascade">The vertical passes.</param>
         /// <param name="capacity">The most floats in a row.</param>
         protected Vertical(BoxCascade cascade, int capacity)

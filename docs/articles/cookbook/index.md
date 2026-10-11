@@ -160,6 +160,44 @@ edge between the sharp subject and the blurred background.
 
 For heavy salt-and-pepper noise use `Median(1)` or `Median(2)` instead; both keep edges, and both give ImageMagick's pixels.
 
+## Find edges
+
+[!code-csharp[](../../../tests/Egami.DocSamples/EdgesAndMorphology.cs#edges)]
+
+See [Edges and morphology](../guides/edges-and-morphology.md) for the nine operators.
+
+## A selection from Canny
+
+[!code-csharp[](../../../tests/Egami.DocSamples/EdgesAndMorphology.cs#canny)]
+
+Canny's white-on-black map works directly as a `Mask`; thicken it with `Dilate` first to catch the pixels beside each edge.
+
+## Clean a scanned form with Close
+
+[!code-csharp[](../../../tests/Egami.DocSamples/EdgesAndMorphology.cs#morphology)]
+
+## A bevelled logo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Lighting.cs#bevel)]
+
+## Embossed text
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Lighting.cs#emboss)]
+
+## A drop shadow for a logo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#logo-shadow)]
+
+The canvas grows to hold the shadow; pass `Expand = false` to keep the size, as inside `Within`.
+
+## Pixelate a face
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#blur-face)]
+
+## An oil-paint look
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#oil-look)]
+
 ## Edit only the sky
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Scopes.cs#within-mask)]
