@@ -16,6 +16,9 @@ public enum ClipOp
 }
 
 /// <summary>How <see cref="Canvas.DrawPoints"/> reads its points.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="chart-axes"/>
+/// </example>
 public enum PointMode
 {
     /// <summary>Each point is drawn as a dot: a square, or a circle with <see cref="LineCap.Round"/>, of the stroke's width.</summary>

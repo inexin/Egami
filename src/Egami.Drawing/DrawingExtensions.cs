@@ -47,6 +47,9 @@ public static class DrawingExtensions
     /// <param name="draw">The drawing, called once per frame with its index.</param>
     /// <param name="options">The canvas settings, or <see langword="null"/> for the defaults.</param>
     /// <returns>The chain.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="pipeline"/>
+    /// </example>
     public static RasterOps Draw(this RasterOps operations, Action<Canvas, int> draw, CanvasOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(operations);

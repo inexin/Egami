@@ -119,6 +119,22 @@ IPTC too:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#packed-framebuffer)]
 
+## Draw a rounded badge
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#badge)]
+
+Drawing at twice the size through `Scale(2)` keeps every shape's coordinates as designed. See [Drawing](../guides/drawing.md).
+
+## Draw chart axes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#chart-axes)]
+
+Hairlines on half-pixel coordinates fill exactly one column or row of pixels.
+
+## Clip a photo to a circle
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#clipped-photo)]
+
 ## Watermark with Multiply
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#watermark-multiply)]

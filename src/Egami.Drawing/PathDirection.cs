@@ -1,6 +1,9 @@
 namespace Egami.Drawing;
 
 /// <summary>The direction a shape's outline runs, on a y-down screen.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="paths"/>
+/// </example>
 public enum PathDirection
 {
     /// <summary>Clockwise on screen. The default for added shapes.</summary>

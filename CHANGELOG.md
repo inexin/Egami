@@ -91,6 +91,31 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   arithmetic composite, k1·S·D + k2·S + k3·D + k4.
 - `Compositor.Blend` blends spans of any pixel type, with per-pixel coverage for antialiased edges or one color through coverage,
   for custom operations and rasterizers. It allocates nothing once warm and runs on many threads at once.
+- `Compositor.Blend` also takes an `RgbaF32` color, kept at full precision on float and 16-bit rows. `Raster.Context` is public, so
+  code outside Egami (a canvas) uses a raster's memory source and `MaxParallelism`.
+- Fixed: a one-pixel straight `Rgba8` or `Bgra8` source row blended as if premultiplied (Multiply of a half-transparent gray gave
+  178 where 139 is right).
+
+### Egami.Drawing 1.0.0-preview.1
+
+A new package, over Egami's public API only, that draws antialiased paths, shapes, strokes, clips and images on a canvas. A
+preview: its API may change before 1.0. See the [Drawing guide](docs/articles/guides/drawing.md).
+
+- `Canvas` is abstract: public calls are checked and tracked (transform, clip bounds, save stack) and each ends in one protected
+  hook, so other backends (a PDF page, a recorder) see shapes and pens as data. `RasterCanvas<TPixel>` draws into any pixel type;
+  `raster.CreateCanvas()` and the `Draw` operation step (per frame, inside `Within`) are the ways in.
+- `Path` (immutable lines, quadratics and cubics with a `FillRule`) and `PathBuilder` with SVG endpoint arcs, tangent arcs, rectangles,
+  round rectangles with per-corner radii (`RoundRect`, scaled as CSS does), ovals and polygons; `Contains`, `TightBounds`,
+  `IsConvex`, `Reverse` and `Transform` by a matrix or a homography.
+- Exact-area antialiasing: every pixel gets its covered area to 1/255, abutting shapes leave no seams, and results are identical at
+  any core count. Fills are within a mean level of SkiaSharp and closer than SkiaSharp to the exact area.
+- `Stroke` with butt, round and square caps, miter, round and bevel joins and a miter limit; width 0 is a one-pixel hairline.
+- Antialiased clips by rectangle, round rectangle or path, intersecting or cutting out; pixel-aligned rectangles are free, and a
+  fill through a mask costs about 1.16 times the plain fill.
+- `DrawImage` under the transform and clip with Egami's samplers; at whole-pixel placement it equals `DrawImage` in a chain.
+- Faster than the reference drawing library 2.1.7 in every scenario timed (ms, 1 thread): 1,000 small shapes 4.0 against 11.1, a 4000×4000
+  star 19.8 against 49.4 (4.8 on 24 cores against 47.6), 10,000 icons 109 against 312, 200 thick curves 40 against 360, 10,000
+  hairlines 48 against 208.
 
 ### Regions and masks (in progress)
 

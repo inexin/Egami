@@ -31,6 +31,9 @@ public sealed class RasterCanvas<TPixel> : Canvas
     /// <summary>Initializes a new instance of the <see cref="RasterCanvas{TPixel}"/> class over a raster's first frame.</summary>
     /// <param name="raster">The raster to draw on.</param>
     /// <param name="options">The settings, or <see langword="null"/> for <see cref="CanvasOptions.Default"/>.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="canvas"/>
+    /// </example>
     public RasterCanvas(Raster<TPixel> raster, CanvasOptions? options = null)
         : this(Plane(raster), raster.Context, options)
     {

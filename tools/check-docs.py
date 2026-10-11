@@ -6,7 +6,7 @@
 - a public type is mentioned in no guide, cookbook page or getting-started page, and is not listed in REFERENCE_ONLY below;
 - a guide links a sample in samples/ that does not exist.
 
-Usage: python tools/check-docs.py   (from the repo root; builds src/Egami in Release first)
+Usage: python tools/check-docs.py [src/Egami.Drawing]   (from the repo root; builds src/Egami, or the package given, in Release first)
 """
 import glob
 import os
@@ -15,9 +15,11 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-PROJECT = "src/Egami/Egami.csproj"
-XML = "src/Egami/bin/Release/net10.0/Egami.xml"
-API_FILES = ["src/Egami/PublicAPI.Shipped.txt", "src/Egami/PublicAPI.Unshipped.txt"]
+FOLDER = sys.argv[1].rstrip("/\\") if len(sys.argv) > 1 else "src/Egami"
+NAME = os.path.basename(FOLDER)
+PROJECT = f"{FOLDER}/{NAME}.csproj"
+XML = f"{FOLDER}/bin/Release/net10.0/{NAME}.xml"
+API_FILES = [f"{FOLDER}/PublicAPI.Shipped.txt", f"{FOLDER}/PublicAPI.Unshipped.txt"]
 
 # Types the API reference covers alone: details a guide would only list, not explain.
 REFERENCE_ONLY = {
@@ -72,6 +74,8 @@ def main():
     for method in sorted(methods):
         owner, name = method.rsplit(".", 1)
         name = re.sub(r"<.*", "", name)
+        if name == re.sub(r"<.*", "", owner.rsplit(".", 1)[1]):
+            name = "#ctor"
         prefix = f"M:{doc_id(owner)}.{name}"
         overloads = [m for k, m in members.items() if k == prefix or k.startswith(prefix + "(") or k.startswith(prefix + "``")]
         overloads = [m for m in overloads if re.search(r"Options|SafetyLimits", m.get("name"))]
@@ -81,7 +85,7 @@ def main():
             if m.find("example") is None:
                 problems.append(f"{m.get('name')}: no <example>")
 
-    for source in glob.glob("src/Egami/**/*.cs", recursive=True):
+    for source in glob.glob(f"{FOLDER}/**/*.cs", recursive=True):
         try:
             text = open(source, encoding="utf-8").read()
         except UnicodeDecodeError:

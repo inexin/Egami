@@ -3,6 +3,9 @@ using System.Numerics;
 namespace Egami.Drawing;
 
 /// <summary>What a <see cref="RoundRect"/> reduces to, so backends and the rasterizer can take a shortcut.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="shapes"/>
+/// </example>
 public enum RoundRectKind
 {
     /// <summary>The bounds are empty: nothing is drawn.</summary>

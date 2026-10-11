@@ -6,6 +6,10 @@
         {
           "src": "../src/Egami",
           "files": [ "Egami.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Drawing",
+          "files": [ "Egami.Drawing.csproj" ]
         }
       ],
       "dest": "api",

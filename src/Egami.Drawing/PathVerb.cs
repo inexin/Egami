@@ -1,6 +1,9 @@
 namespace Egami.Drawing;
 
 /// <summary>One drawing command of a <see cref="Path"/>; the comment on each says how many points it takes.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="paths"/>
+/// </example>
 public enum PathVerb : byte
 {
     /// <summary>Starts a contour at one point.</summary>

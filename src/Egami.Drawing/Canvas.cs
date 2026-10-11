@@ -494,6 +494,9 @@ public abstract class Canvas : IDisposable
     /// <param name="destination">Where it goes.</param>
     /// <param name="sampling">How the image is sampled; Egami's default sampling when <see langword="null"/>.</param>
     /// <param name="paint">The blend mode, opacity and antialiasing; its color is not used.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="images"/>
+    /// </example>
     public void DrawImage(Raster image, RectF destination, SamplingOptions? sampling = null, Paint? paint = null)
     {
         ArgumentNullException.ThrowIfNull(image);
@@ -632,6 +635,9 @@ public abstract class Canvas : IDisposable
     /// <param name="path">The path in local coordinates.</param>
     /// <param name="stroke">The pen, or <see langword="null"/> to fill.</param>
     /// <param name="paint">The paint.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="backend"/>
+    /// </example>
     protected abstract void OnDrawPath(Path path, Stroke? stroke, Paint paint);
 
     /// <summary>Draws points, lines or a polyline. By default each dot or line goes to <see cref="OnDrawPath"/>, the polyline as one path.</summary>
@@ -670,6 +676,9 @@ public abstract class Canvas : IDisposable
     /// <param name="destination">Where it goes, in local coordinates.</param>
     /// <param name="sampling">How it is sampled.</param>
     /// <param name="paint">The blend mode, opacity and antialiasing, or <see langword="null"/> for source-over.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="backend"/>
+    /// </example>
     protected abstract void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint);
 
     /// <summary>
@@ -783,4 +792,7 @@ public abstract class Canvas : IDisposable
 /// <summary>A drawing call rendered into pixels by <c>Canvas.RasterizeFallback</c>, for a backend to place as an image.</summary>
 /// <param name="Image">The pixels, straight-alpha float, over transparency.</param>
 /// <param name="DeviceBounds">The device rectangle the image covers.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="canvas"/>
+/// </example>
 public sealed record class FallbackImage(Raster<RgbaF32> Image, RectF DeviceBounds);

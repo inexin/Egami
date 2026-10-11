@@ -22,6 +22,8 @@
       href: guides/effects.md
     - name: Compositing
       href: guides/compositing.md
+    - name: Drawing
+      href: guides/drawing.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic
