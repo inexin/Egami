@@ -1,7 +1,23 @@
 using System.Collections.Concurrent;
+using System.Numerics;
 using System.Runtime.ExceptionServices;
 
 namespace Egami.Formats.Jpeg2000;
+
+internal static class Timing
+{
+    internal static double T2, Alloc, T1, Dwt, Store, Pixels;
+
+    internal static long Prep, Passes, Write;
+
+    internal static string Report()
+    {
+        double f = 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+        string r = $"t2 {T2:F0} alloc {Alloc:F0} t1 {T1:F0} (prep {Prep * f:F0} passes {Passes * f:F0} write {Write * f:F0}) dwt {Dwt:F0} store {Store:F0} pixels {Pixels:F0}";
+        Prep = Passes = Write = 0;
+        return r;
+    }
+}
 
 /// <summary>A decoded JPEG 2000 image: one plane of samples per component, at each component's own (reduced) size.</summary>
 internal sealed class J2kImage
@@ -90,8 +106,10 @@ internal sealed class J2kDecoder
     /// <summary>Decodes one tile into the image's planes; returns whether its data ended early.</summary>
     private bool DecodeTile(J2kTileData tile, J2kImage image)
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         J2kTier2 tier2 = new(_stream, tile, _keepLayers);
         tier2.ReadPackets(_cancellationToken);
+        Timing.T2 += sw.Elapsed.TotalMilliseconds; sw.Restart();
         J2kTileComponent[] components = tier2.Components;
         int count = components.Length;
         int[]?[] integers = new int[count][];
@@ -148,7 +166,9 @@ internal sealed class J2kDecoder
             }
         }
 
+        Timing.Alloc += sw.Elapsed.TotalMilliseconds; sw.Restart();
         RunTier1(work, components, integers, floats, tops);
+        Timing.T1 += sw.Elapsed.TotalMilliseconds; sw.Restart();
         ForEach(count, c =>
         {
             J2kTileComponent tc = components[c];
@@ -163,6 +183,7 @@ internal sealed class J2kDecoder
             }
         });
 
+        Timing.Dwt += sw.Elapsed.TotalMilliseconds; sw.Restart();
         bool transform = components[0].Style.Mct == 1 && count >= 3 && SameSize(components, tops);
         if (transform)
         {
@@ -185,6 +206,7 @@ internal sealed class J2kDecoder
             Store(components[c], tops[c], c, integers[c], floats[c], image);
         }
 
+        Timing.Store += sw.Elapsed.TotalMilliseconds;
         return tier2.Truncated;
     }
 
@@ -298,20 +320,67 @@ internal sealed class J2kDecoder
         int originY = J2kTier2.CeilShift(J2kTier2.CeilDiv(_stream.OffsetY, component.Dy), _reduce);
         int planeWidth = image.Widths[c];
         int[] plane = image.Planes[c];
-        int precision = Math.Min(component.Precision, 31);
+        int precision = Math.Min(component.Precision, 30);
         long shift = component.Signed ? 0 : 1L << (precision - 1);
         long min = component.Signed ? -(1L << (precision - 1)) : 0;
         long max = component.Signed ? (1L << (precision - 1)) - 1 : (1L << precision) - 1;
         int w = res.Width;
         for (int y = 0; y < res.Height; y++)
         {
-            int target = ((res.Y0 - originY + y) * planeWidth) + res.X0 - originX;
-            int source = y * w;
-            for (int x = 0; x < w; x++)
+            Span<int> target = plane.AsSpan(((res.Y0 - originY + y) * planeWidth) + res.X0 - originX, w);
+            if (integers is not null)
             {
-                long v = integers is not null ? integers[source + x] : (long)MathF.Round(floats![source + x]);
-                plane[target + x] = (int)Math.Clamp(v + shift, min, max);
+                StoreRow(integers.AsSpan(y * w, w), target, (int)shift, (int)min, (int)max);
             }
+            else
+            {
+                StoreRow(floats!.AsSpan(y * w, w), target, (int)shift, (int)min, (int)max);
+            }
+        }
+    }
+
+    /// <summary>Level-shifts and clamps a row of integer samples.</summary>
+    private static void StoreRow(ReadOnlySpan<int> source, Span<int> target, int shift, int min, int max)
+    {
+        int x = 0;
+        if (Vector.IsHardwareAccelerated)
+        {
+            Vector<int> add = new(shift);
+            Vector<int> low = new(min);
+            Vector<int> high = new(max);
+            for (; x + Vector<int>.Count <= source.Length; x += Vector<int>.Count)
+            {
+                Vector.Min(Vector.Max(new Vector<int>(source[x..]) + add, low), high).CopyTo(target[x..]);
+            }
+        }
+
+        for (; x < source.Length; x++)
+        {
+            target[x] = Math.Clamp(source[x] + shift, min, max);
+        }
+    }
+
+    /// <summary>Rounds (half to even), level-shifts and clamps a row of float samples.</summary>
+    private static void StoreRow(ReadOnlySpan<float> source, Span<int> target, int shift, int min, int max)
+    {
+        int x = 0;
+        if (Vector.IsHardwareAccelerated)
+        {
+            Vector<int> add = new(shift);
+            Vector<int> low = new(min);
+            Vector<int> high = new(max);
+            Vector<float> lowF = new(min - shift);
+            Vector<float> highF = new(max - shift);
+            for (; x + Vector<int>.Count <= source.Length; x += Vector<int>.Count)
+            {
+                Vector<float> v = Vector.Min(Vector.Max(Vector.Round(new Vector<float>(source[x..])), lowF), highF);
+                (Vector.ConvertToInt32(v) + add).CopyTo(target[x..]);
+            }
+        }
+
+        for (; x < source.Length; x++)
+        {
+            target[x] = (int)Math.Clamp(MathF.Round(source[x]) + (long)shift, min, max);
         }
     }
 }

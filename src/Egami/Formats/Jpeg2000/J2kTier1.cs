@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -43,7 +44,13 @@ internal sealed class J2kTier1
     /// <summary>The sign coding context and XOR bit (bit 5) by direct neighbours' significance and signs (Table D.3).</summary>
     private static readonly byte[] SignContexts = BuildSignContexts();
 
-    private readonly MqDecoder _mq = new();
+    // The MQ decoder's registers (T.800 C.3), kept in locals by the passes, and the end of the segment it decodes.
+    private uint _a;
+    private uint _c;
+    private int _ct;
+    private int _position;
+    private int _end;
+    private int _overrun;
     private readonly byte[] _contexts = new byte[19];
     private uint[] _flags = [];
     private int[] _magnitudes = [];
@@ -91,10 +98,17 @@ internal sealed class J2kTier1
         }
 
         passes = Math.Min(passes, (3 * planes) - 2);
+        long t0 = System.Diagnostics.Stopwatch.GetTimestamp();
         Prepare(width, height, (tc.Style.BlockStyle & 8) != 0);
         Gather(block);
+        long t1 = System.Diagnostics.Stopwatch.GetTimestamp();
         Run(block, band.Orientation, tc.Style.BlockStyle, planes, passes);
+        long t2 = System.Diagnostics.Stopwatch.GetTimestamp();
         Write(band, tc, integers, floats, offset, stride, reversible);
+        long t3 = System.Diagnostics.Stopwatch.GetTimestamp();
+        Timing.Prep += t1 - t0;
+        Timing.Passes += t2 - t1;
+        Timing.Write += t3 - t2;
     }
 
     private static void Clear(Span<int> integers, Span<float> floats, int offset, int stride, int width, int height, bool reversible)
@@ -128,31 +142,55 @@ internal sealed class J2kTier1
             _flags.AsSpan(0, flags).Clear();
         }
 
-        int samples = width * height;
-        if (_magnitudes.Length < samples)
+        if (_magnitudes.Length < flags)
         {
-            _magnitudes = new int[samples];
+            _magnitudes = new int[flags];
         }
         else
         {
-            _magnitudes.AsSpan(0, samples).Clear();
+            _magnitudes.AsSpan(0, flags).Clear();
         }
     }
 
-    /// <summary>Copies the block's chunks into one buffer, segment after segment.</summary>
+    /// <summary>
+    /// Copies the block's chunks into one buffer, segment after segment, each followed by 0xFF 0xFF: a marker, which the
+    /// decoders read as an endless run of 1-bits (C.3.4), so they never test for the end.
+    /// </summary>
     private void Gather(J2kCodeBlock block)
     {
-        if (_bytes.Length < block.Bytes + 2)
+        int size = block.Bytes + (2 * block.Segments.Count) + 2;
+        if (_bytes.Length < size)
         {
-            _bytes = new byte[Math.Max(block.Bytes + 2, _bytes.Length * 2)];
+            _bytes = new byte[Math.Max(size, _bytes.Length * 2)];
         }
 
+        int chunk = 0;
+        int offset = 0;
         int at = 0;
-        foreach (ReadOnlyMemory<byte> chunk in block.Chunks)
+        foreach (J2kSegment segment in block.Segments)
         {
-            chunk.Span.CopyTo(_bytes.AsSpan(at));
-            at += chunk.Length;
+            int remaining = segment.Length;
+            while (remaining > 0)
+            {
+                ReadOnlySpan<byte> bytes = block.Chunks[chunk].Span[offset..];
+                int take = Math.Min(remaining, bytes.Length);
+                bytes[..take].CopyTo(_bytes.AsSpan(at));
+                at += take;
+                remaining -= take;
+                offset += take;
+                if (offset == block.Chunks[chunk].Length)
+                {
+                    chunk++;
+                    offset = 0;
+                }
+            }
+
+            _bytes[at++] = 0xFF;
+            _bytes[at++] = 0xFF;
         }
+
+        _bytes[at] = 0xFF;
+        _bytes[at + 1] = 0xFF;
     }
 
     private void ResetContexts()
@@ -194,7 +232,7 @@ internal sealed class J2kTier1
                     }
                     else
                     {
-                        _mq.Start(_bytes, segmentStart, segment.Length);
+                        StartMq(segmentStart, segment.Length);
                     }
                 }
 
@@ -241,14 +279,37 @@ internal sealed class J2kTier1
 
             if (!raw)
             {
-                Overrun += _mq.Overrun;
+                Overrun += _overrun;
             }
 
-            segmentStart += segment.Length;
+            segmentStart += segment.Length + 2;
         }
     }
 
+    /// <summary>Says at compile time whether contexts ignore the stripe below (vertically causal mode, D.7).</summary>
+    private interface ICausal
+    {
+        static abstract bool On { get; }
+    }
+
+    private struct CausalMode : ICausal
+    {
+        public static bool On => true;
+    }
+
+    private struct NormalMode : ICausal
+    {
+        public static bool On => false;
+    }
+
+    /// <summary>Drops the south neighbours of a stripe's last row in vertically causal mode.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Masked<TMode>(uint f, int row)
+        where TMode : struct, ICausal
+    {
+        return TMode.On && row == 3 ? f & ~South : f;
+    }
+
     private uint Masked(uint f, int y) => _causal && (y & 3) == 3 ? f & ~South : f;
 
     /// <summary>Marks a coefficient significant and tells its neighbours.</summary>
@@ -271,39 +332,97 @@ internal sealed class J2kTier1
 
     /// <summary>Decodes a newly significant coefficient's sign with the MQ decoder (D.3.2).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool DecodeSign(ref MqRegisters r, uint f)
+    private static bool DecodeSign(ref uint a, ref uint c, ref int ct, ref int position, ref byte data, int end, ref int overrun, ref byte contexts, uint f)
     {
-        int sc = SignContexts[SignIndex(f)];
-        return (_mq.Decode(ref r, ref _contexts[sc & 0x1F]) ^ (sc >> 5)) != 0;
+        int sc = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(SignContexts), SignIndex(f));
+        return (Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, sc & 0x1F)) ^ (sc >> 5)) != 0;
     }
 
-    /// <summary>The significance propagation pass (D.3.1).</summary>
     private void Significance(int plane, int orientation)
+    {
+        if (_causal)
+        {
+            Significance<CausalMode>(plane, orientation);
+        }
+        else
+        {
+            Significance<NormalMode>(plane, orientation);
+        }
+    }
+
+    private void Refinement(int plane)
+    {
+        if (_causal)
+        {
+            Refinement<CausalMode>(plane);
+        }
+        else
+        {
+            Refinement<NormalMode>(plane);
+        }
+    }
+
+    private void Cleanup(int plane, int orientation, bool segmentation)
+    {
+        if (_causal)
+        {
+            Cleanup<CausalMode>(plane, orientation, segmentation);
+        }
+        else
+        {
+            Cleanup<NormalMode>(plane, orientation, segmentation);
+        }
+    }
+
+    /// <summary>
+    /// The significance propagation pass (D.3.1); a stripe column none of whose samples has a significant neighbour is skipped.
+    /// </summary>
+    private void Significance<TMode>(int plane, int orientation)
+        where TMode : struct, ICausal
     {
         int stride = _stride;
         int value = 3 << plane;
         ref uint flags0 = ref MemoryMarshal.GetArrayDataReference(_flags);
         ref int mag0 = ref MemoryMarshal.GetArrayDataReference(_magnitudes);
-        ReadOnlySpan<byte> zc = ZeroContexts.AsSpan(orientation << 8, 256);
-        MqRegisters r = _mq.Registers;
+        ref byte contexts = ref MemoryMarshal.GetArrayDataReference(_contexts);
+        ref byte zc = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(ZeroContexts), orientation << 8);
+        uint a = _a;
+        uint c = _c;
+        int ct = _ct;
+        int position = _position;
+        int end = _end;
+        int overrun = _overrun;
+        ref byte data = ref MemoryMarshal.GetArrayDataReference(_bytes);
         for (int y0 = 0; y0 < _height; y0 += 4)
         {
-            int y1 = Math.Min(y0 + 4, _height);
+            int rows = Math.Min(4, _height - y0);
+            int start = ((y0 + 1) * stride) + 1;
             for (int x = 0; x < _width; x++)
             {
-                for (int y = y0; y < y1; y++)
+                int at = start + x;
+                ref uint column = ref Unsafe.Add(ref flags0, at);
+                if (rows == 4)
                 {
-                    ref uint flags = ref Unsafe.Add(ref flags0, ((y + 1) * stride) + x + 1);
-                    uint f = Masked(flags, y);
+                    uint any = column | Unsafe.Add(ref column, stride) | Unsafe.Add(ref column, 2 * stride) | Unsafe.Add(ref column, 3 * stride);
+                    if ((any & Neighbours) == 0)
+                    {
+                        continue;
+                    }
+                }
+
+                for (int k = 0; k < rows; k++)
+                {
+                    ref uint flags = ref Unsafe.Add(ref column, k * stride);
+                    uint f = Masked<TMode>(flags, k);
                     if ((f & (Sig | Visit)) != 0 || (f & Neighbours) == 0)
                     {
                         continue;
                     }
 
-                    if (_mq.Decode(ref r, ref _contexts[zc[(int)(f & Neighbours)]]) != 0)
+                    if (Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, Unsafe.Add(ref zc, (int)(f & Neighbours)))) != 0)
                     {
-                        bool negative = DecodeSign(ref r, f);
-                        Unsafe.Add(ref mag0, (y * _width) + x) = value;
+                        bool negative = DecodeSign(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref contexts, f);
+                        Unsafe.Add(ref mag0, at + (k * stride)) = value;
                         Significant(ref flags, stride, negative);
                     }
 
@@ -312,94 +431,132 @@ internal sealed class J2kTier1
             }
         }
 
-        _mq.Registers = r;
+        _a = a;
+        _c = c;
+        _ct = ct;
+        _position = position;
+        _overrun = overrun;
     }
 
-    /// <summary>The magnitude refinement pass (D.3.3).</summary>
-    private void Refinement(int plane)
+    /// <summary>The magnitude refinement pass (D.3.3); a stripe column with nothing significant is skipped.</summary>
+    private void Refinement<TMode>(int plane)
+        where TMode : struct, ICausal
     {
         int stride = _stride;
         int half = 1 << plane;
         ref uint flags0 = ref MemoryMarshal.GetArrayDataReference(_flags);
         ref int mag0 = ref MemoryMarshal.GetArrayDataReference(_magnitudes);
-        MqRegisters r = _mq.Registers;
+        ref byte contexts = ref MemoryMarshal.GetArrayDataReference(_contexts);
+        uint a = _a;
+        uint c = _c;
+        int ct = _ct;
+        int position = _position;
+        int end = _end;
+        int overrun = _overrun;
+        ref byte data = ref MemoryMarshal.GetArrayDataReference(_bytes);
         for (int y0 = 0; y0 < _height; y0 += 4)
         {
-            int y1 = Math.Min(y0 + 4, _height);
+            int rows = Math.Min(4, _height - y0);
+            int start = ((y0 + 1) * stride) + 1;
             for (int x = 0; x < _width; x++)
             {
-                for (int y = y0; y < y1; y++)
+                int at = start + x;
+                ref uint column = ref Unsafe.Add(ref flags0, at);
+                if (rows == 4)
                 {
-                    ref uint flags = ref Unsafe.Add(ref flags0, ((y + 1) * stride) + x + 1);
+                    uint any = column | Unsafe.Add(ref column, stride) | Unsafe.Add(ref column, 2 * stride) | Unsafe.Add(ref column, 3 * stride);
+                    if ((any & Sig) == 0)
+                    {
+                        continue;
+                    }
+                }
+
+                for (int k = 0; k < rows; k++)
+                {
+                    ref uint flags = ref Unsafe.Add(ref column, k * stride);
                     uint f = flags;
                     if ((f & (Sig | Visit)) != Sig)
                     {
                         continue;
                     }
 
-                    int context = (f & Refined) != 0 ? 16 : (Masked(f, y) & Neighbours) != 0 ? 15 : 14;
-                    int bit = _mq.Decode(ref r, ref _contexts[context]);
-                    ref int m = ref Unsafe.Add(ref mag0, (y * _width) + x);
-                    m += bit != 0 ? half : -half;
+                    int context = (f & Refined) != 0 ? 16 : (Masked<TMode>(f, k) & Neighbours) != 0 ? 15 : 14;
+                    int bit = Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, context));
+                    Unsafe.Add(ref mag0, at + (k * stride)) += bit != 0 ? half : -half;
                     flags = f | Refined;
                 }
             }
         }
 
-        _mq.Registers = r;
+        _a = a;
+        _c = c;
+        _ct = ct;
+        _position = position;
+        _overrun = overrun;
     }
 
     /// <summary>The cleanup pass (D.3.4), with run-length decoding of insignificant columns, then the segmentation symbol.</summary>
-    private void Cleanup(int plane, int orientation, bool segmentation)
+    private void Cleanup<TMode>(int plane, int orientation, bool segmentation)
+        where TMode : struct, ICausal
     {
         int stride = _stride;
         int value = 3 << plane;
         ref uint flags0 = ref MemoryMarshal.GetArrayDataReference(_flags);
         ref int mag0 = ref MemoryMarshal.GetArrayDataReference(_magnitudes);
-        ReadOnlySpan<byte> zc = ZeroContexts.AsSpan(orientation << 8, 256);
-        MqRegisters r = _mq.Registers;
+        ref byte contexts = ref MemoryMarshal.GetArrayDataReference(_contexts);
+        ref byte zc = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(ZeroContexts), orientation << 8);
+        uint a = _a;
+        uint c = _c;
+        int ct = _ct;
+        int position = _position;
+        int end = _end;
+        int overrun = _overrun;
+        ref byte data = ref MemoryMarshal.GetArrayDataReference(_bytes);
         for (int y0 = 0; y0 < _height; y0 += 4)
         {
-            int y1 = Math.Min(y0 + 4, _height);
+            int rows = Math.Min(4, _height - y0);
+            int start = ((y0 + 1) * stride) + 1;
             for (int x = 0; x < _width; x++)
             {
-                ref uint top = ref Unsafe.Add(ref flags0, ((y0 + 1) * stride) + x + 1);
-                int y = y0;
-                if (y1 - y0 == 4
-                    && ((top | Unsafe.Add(ref top, stride) | Unsafe.Add(ref top, 2 * stride)) & (Sig | Visit | Neighbours)) == 0
-                    && (Masked(Unsafe.Add(ref top, 3 * stride), 3) & (Sig | Visit | Neighbours)) == 0)
+                int at = start + x;
+                ref uint column = ref Unsafe.Add(ref flags0, at);
+                int k = 0;
+                if (rows == 4
+                    && ((column | Unsafe.Add(ref column, stride) | Unsafe.Add(ref column, 2 * stride)) & (Sig | Visit | Neighbours)) == 0
+                    && (Masked<TMode>(Unsafe.Add(ref column, 3 * stride), 3) & (Sig | Visit | Neighbours)) == 0)
                 {
                     // Run-length mode: one decision says whether any of the four becomes significant.
-                    if (_mq.Decode(ref r, ref _contexts[RunContext]) == 0)
+                    if (Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, RunContext)) == 0)
                     {
                         continue;
                     }
 
-                    int run = _mq.Decode(ref r, ref _contexts[UniformContext]) << 1;
-                    run |= _mq.Decode(ref r, ref _contexts[UniformContext]);
-                    y = y0 + run;
-                    ref uint flags = ref Unsafe.Add(ref top, run * stride);
-                    bool negative = DecodeSign(ref r, Masked(flags, y));
-                    Unsafe.Add(ref mag0, (y * _width) + x) = value;
+                    int run = Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, UniformContext)) << 1;
+                    run |= Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, UniformContext));
+                    ref uint flags = ref Unsafe.Add(ref column, run * stride);
+                    bool negative = DecodeSign(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref contexts, Masked<TMode>(flags, run));
+                    Unsafe.Add(ref mag0, at + (run * stride)) = value;
                     Significant(ref flags, stride, negative);
-                    y++;
+                    k = run + 1;
                 }
 
-                for (; y < y1; y++)
+                for (; k < rows; k++)
                 {
-                    ref uint flags = ref Unsafe.Add(ref flags0, ((y + 1) * stride) + x + 1);
-                    uint f = Masked(flags, y);
-                    if ((f & (Sig | Visit)) == 0 && _mq.Decode(ref r, ref _contexts[zc[(int)(f & Neighbours)]]) != 0)
+                    ref uint flags = ref Unsafe.Add(ref column, k * stride);
+                    uint f = Masked<TMode>(flags, k);
+                    if ((f & (Sig | Visit)) == 0)
                     {
-                        bool negative = DecodeSign(ref r, f);
-                        Unsafe.Add(ref mag0, (y * _width) + x) = value;
-                        Significant(ref flags, stride, negative);
+                        if (Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, Unsafe.Add(ref zc, (int)(f & Neighbours)))) != 0)
+                        {
+                            bool negative = DecodeSign(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref contexts, f);
+                            Unsafe.Add(ref mag0, at + (k * stride)) = value;
+                            Significant(ref flags, stride, negative);
+                        }
                     }
-                }
-
-                for (y = y0; y < y1; y++)
-                {
-                    Unsafe.Add(ref top, (y - y0) * stride) &= ~Visit;
+                    else
+                    {
+                        flags &= ~Visit;
+                    }
                 }
             }
         }
@@ -408,11 +565,132 @@ internal sealed class J2kTier1
         {
             for (int i = 0; i < 4; i++)
             {
-                _mq.Decode(ref r, ref _contexts[UniformContext]);
+                Mq(ref a, ref c, ref ct, ref position, ref data, end, ref overrun, ref Unsafe.Add(ref contexts, UniformContext));
             }
         }
 
-        _mq.Registers = r;
+        _a = a;
+        _c = c;
+        _ct = ct;
+        _position = position;
+        _overrun = overrun;
+    }
+
+    /// <summary>Starts the MQ decoder on a segment (INITDEC, C.3.5).</summary>
+    private void StartMq(int start, int length)
+    {
+        _end = start + length;
+        _overrun = 0;
+        _position = start;
+        _c = (uint)_bytes[start] << 16;
+        _ct = 0;
+        ref byte data = ref MemoryMarshal.GetArrayDataReference(_bytes);
+        ByteIn(ref _c, ref _ct, ref _position, ref data, _end, ref _overrun);
+        _c <<= 7;
+        _ct -= 7;
+        _a = 0x8000;
+    }
+
+    /// <summary>
+    /// Decodes one decision (DECODE, C.3.2) with the registers in a pass's locals, renormalizing (RENORMD) with at most two
+    /// byte reads, which the segment's 0xFF 0xFF padding keeps in bounds.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Mq(ref uint a, ref uint c, ref int ct, ref int position, ref byte data, int end, ref int overrun, ref byte state)
+    {
+        uint s = state;
+        uint entry = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(MqDecoder.StateTable), (nint)s);
+        uint qe = entry & 0xFFFF;
+        a -= qe;
+        int d;
+        if ((c >> 16) < qe)
+        {
+            if (a < qe)
+            {
+                d = (int)(s & 1);
+                state = (byte)(entry >> 16);
+            }
+            else
+            {
+                d = (int)(s & 1) ^ 1;
+                state = (byte)(entry >> 24);
+            }
+
+            a = qe;
+        }
+        else
+        {
+            c -= qe << 16;
+            if ((a & 0x8000) != 0)
+            {
+                return (int)(s & 1);
+            }
+
+            if (a < qe)
+            {
+                d = (int)(s & 1) ^ 1;
+                state = (byte)(entry >> 24);
+            }
+            else
+            {
+                d = (int)(s & 1);
+                state = (byte)(entry >> 16);
+            }
+        }
+
+        int shift = BitOperations.LeadingZeroCount(a) - 16;
+        a <<= shift;
+        if (shift <= ct)
+        {
+            c <<= shift;
+            ct -= shift;
+            return d;
+        }
+
+        c <<= ct;
+        shift -= ct;
+        ByteIn(ref c, ref ct, ref position, ref data, end, ref overrun);
+        if (shift > ct)
+        {
+            c <<= ct;
+            shift -= ct;
+            ByteIn(ref c, ref ct, ref position, ref data, end, ref overrun);
+        }
+
+        c <<= shift;
+        ct -= shift;
+        return d;
+    }
+
+    /// <summary>Reads the next byte into C (BYTEIN, C.3.4): 7 bits after 0xFF, and 1-bits at a marker.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ByteIn(ref uint c, ref int ct, ref int position, ref byte data, int end, ref int overrun)
+    {
+        uint b1 = Unsafe.Add(ref data, position + 1);
+        if (Unsafe.Add(ref data, position) == 0xFF)
+        {
+            if (b1 > 0x8F)
+            {
+                c += 0xFF00;
+                ct = 8;
+                if (position >= end)
+                {
+                    overrun++;
+                }
+            }
+            else
+            {
+                position++;
+                c += b1 << 9;
+                ct = 7;
+            }
+        }
+        else
+        {
+            position++;
+            c += b1 << 8;
+            ct = 8;
+        }
     }
 
     private void StartRaw(int start, int length)
@@ -469,7 +747,7 @@ internal sealed class J2kTier1
                     if (RawBit() != 0)
                     {
                         bool negative = RawBit() != 0;
-                        _magnitudes[(y * _width) + x] = value;
+                        _magnitudes[((y + 1) * stride) + x + 1] = value;
                         Significant(ref flags, stride, negative);
                     }
 
@@ -497,7 +775,7 @@ internal sealed class J2kTier1
                         continue;
                     }
 
-                    _magnitudes[(y * _width) + x] += RawBit() != 0 ? half : -half;
+                    _magnitudes[((y + 1) * stride) + x + 1] += RawBit() != 0 ? half : -half;
                     flags |= Refined;
                 }
             }
@@ -513,7 +791,7 @@ internal sealed class J2kTier1
         int flagStride = _stride;
         for (int y = 0; y < _height; y++)
         {
-            ReadOnlySpan<int> magnitudes = _magnitudes.AsSpan(y * _width, _width);
+            ReadOnlySpan<int> magnitudes = _magnitudes.AsSpan(((y + 1) * flagStride) + 1, _width);
             ReadOnlySpan<uint> flags = _flags.AsSpan(((y + 1) * flagStride) + 1, _width);
             if (reversible)
             {

@@ -335,6 +335,22 @@ internal sealed class J2kPixels
                 int c = channel.Component;
                 ReadOnlySpan<int> plane = image.Planes[c].AsSpan(grid.Rows[c][y] * image.Widths[c], image.Widths[c]);
                 ReadOnlySpan<int> columns = grid.Columns[c].AsSpan(x0, width);
+                if (channel.Column < 0 && !channel.Signed && channel.Precision == _depth && grid.Columns[c][0] == 0 && image.Components[c].Dx == 1)
+                {
+                    // Stored at the pixel type's depth, one sample per pixel: a plain narrowing copy.
+                    ReadOnlySpan<int> samples = plane.Slice(x0, width);
+                    if (_depth == 8)
+                    {
+                        Narrow(samples, row, k, count);
+                    }
+                    else
+                    {
+                        Narrow(samples, MemoryMarshal.Cast<byte, ushort>(row), k, count);
+                    }
+
+                    continue;
+                }
+
                 if (_depth == 8)
                 {
                     Span<byte> target = row;
@@ -369,6 +385,32 @@ internal sealed class J2kPixels
             }
 
             Store(values, count, row, i);
+        }
+    }
+
+    private static void Narrow(ReadOnlySpan<int> samples, Span<byte> target, int k, int count)
+    {
+        if (count == 1)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                target[i] = (byte)samples[i];
+            }
+
+            return;
+        }
+
+        for (int i = 0, t = k; i < samples.Length; i++, t += count)
+        {
+            target[t] = (byte)samples[i];
+        }
+    }
+
+    private static void Narrow(ReadOnlySpan<int> samples, Span<ushort> target, int k, int count)
+    {
+        for (int i = 0, t = k; i < samples.Length; i++, t += count)
+        {
+            target[t] = (ushort)samples[i];
         }
     }
 

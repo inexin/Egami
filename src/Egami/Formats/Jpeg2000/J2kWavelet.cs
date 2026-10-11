@@ -1,5 +1,9 @@
 using System.Buffers;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Jpeg2000;
 
@@ -7,6 +11,12 @@ namespace Egami.Formats.Jpeg2000;
 /// The inverse discrete wavelet transforms of T.800 Annex F: the reversible 5/3 filter in integers and the irreversible 9/7
 /// filter in floats, by lifting with symmetric extension, rows first then columns at each level (2D_SR).
 /// </summary>
+/// <remarks>
+/// Lifting runs on the subbands as they lie, low samples then high ones, so every step is a plain vector loop: X(2n) less a
+/// multiple of X(2n−1) + X(2n+1) is L[k] less a multiple of H[k − 1] + H[k] (or H[k] + H[k + 1] when the row starts on an odd
+/// coordinate). Symmetric extension mirrors each band onto itself, so one guard sample at each end of each band, a copy of the
+/// band's edge sample, stands for it. The samples are interleaved once at the end.
+/// </remarks>
 internal static class J2kWavelet
 {
     private const float Alpha = -1.586134342059924f;
@@ -22,14 +32,7 @@ internal static class J2kWavelet
     /// </summary>
     internal static void Reverse53(Span<int> buffer, int stride, J2kResolution[] resolutions, int top)
     {
-        int max = 0;
-        for (int r = 1; r <= top; r++)
-        {
-            max = Math.Max(max, resolutions[r].Width * resolutions[r].Height);
-            max = Math.Max(max, resolutions[r].Width + resolutions[r].Height);
-        }
-
-        int[] temp = ArrayPool<int>.Shared.Rent(Math.Max(max, 1));
+        int[] temp = ArrayPool<int>.Shared.Rent(Scratch(resolutions, top));
         try
         {
             for (int r = 1; r <= top; r++)
@@ -43,17 +46,12 @@ internal static class J2kWavelet
                     continue;
                 }
 
-                int px = res.X0 & 1;
-                int py = res.Y0 & 1;
                 for (int y = 0; y < h; y++)
                 {
-                    Span<int> row = buffer.Slice(y * stride, w);
-                    Interleave(row, temp.AsSpan(0, w), low.Width, px);
-                    Lift53(temp.AsSpan(0, w), px);
-                    temp.AsSpan(0, w).CopyTo(row);
+                    Row53(buffer.Slice(y * stride, w), low.Width, res.X0 & 1, temp);
                 }
 
-                Columns53(buffer, stride, w, h, low.Height, py, temp);
+                Columns53(buffer, stride, w, h, low.Height, res.Y0 & 1, temp);
             }
         }
         finally
@@ -65,14 +63,7 @@ internal static class J2kWavelet
     /// <summary>Runs the inverse 9/7 transform in place; see <see cref="Reverse53"/>.</summary>
     internal static void Reverse97(Span<float> buffer, int stride, J2kResolution[] resolutions, int top)
     {
-        int max = 0;
-        for (int r = 1; r <= top; r++)
-        {
-            max = Math.Max(max, resolutions[r].Width * resolutions[r].Height);
-            max = Math.Max(max, resolutions[r].Width + resolutions[r].Height);
-        }
-
-        float[] temp = ArrayPool<float>.Shared.Rent(Math.Max(max, 1));
+        float[] temp = ArrayPool<float>.Shared.Rent(Scratch(resolutions, top));
         try
         {
             for (int r = 1; r <= top; r++)
@@ -86,17 +77,12 @@ internal static class J2kWavelet
                     continue;
                 }
 
-                int px = res.X0 & 1;
-                int py = res.Y0 & 1;
                 for (int y = 0; y < h; y++)
                 {
-                    Span<float> row = buffer.Slice(y * stride, w);
-                    Interleave(row, temp.AsSpan(0, w), low.Width, px);
-                    Lift97(temp.AsSpan(0, w), px);
-                    temp.AsSpan(0, w).CopyTo(row);
+                    Row97(buffer.Slice(y * stride, w), low.Width, res.X0 & 1, temp);
                 }
 
-                Columns97(buffer, stride, w, h, low.Height, py, temp);
+                Columns97(buffer, stride, w, h, low.Height, res.Y0 & 1, temp);
             }
         }
         finally
@@ -105,217 +91,153 @@ internal static class J2kWavelet
         }
     }
 
-    /// <summary>Interleaves a row's low samples (its first <paramref name="lowCount"/>) with its high ones (2D_INTERLEAVE).</summary>
-    private static void Interleave<T>(ReadOnlySpan<T> source, Span<T> target, int lowCount, int parity)
+    private static int Scratch(J2kResolution[] resolutions, int top)
     {
-        int n = target.Length;
-        for (int k = 0, i = parity; i < n; k++, i += 2)
+        int max = 8;
+        for (int r = 1; r <= top; r++)
         {
-            target[i] = source[k];
+            max = Math.Max(max, (resolutions[r].Width * resolutions[r].Height) + 8);
         }
 
-        for (int k = 0, i = 1 - parity; i < n; k++, i += 2)
-        {
-            target[i] = source[lowCount + k];
-        }
+        return max;
     }
 
-    /// <summary>The 1D 5/3 synthesis (F.3.8.1) on interleaved samples; <paramref name="parity"/> 1 when the first is a high one.</summary>
-    private static void Lift53(Span<int> x, int parity)
+    /// <summary>
+    /// One row of the 5/3 synthesis (F.3.8.1): <paramref name="lowCount"/> low samples then the high ones, interleaved back
+    /// into the row; <paramref name="parity"/> is 1 when the row starts on an odd coordinate, so with a high sample.
+    /// </summary>
+    private static void Row53(Span<int> row, int lowCount, int parity, int[] temp)
     {
-        int n = x.Length;
+        int n = row.Length;
         if (n == 1)
         {
             if (parity == 1)
             {
-                x[0] >>= 1;
+                row[0] >>= 1;
             }
 
             return;
         }
 
-        // Even (low) samples: X(2n) -= floor((X(2n-1) + X(2n+1) + 2) / 4), mirroring at both ends.
-        for (int i = parity; i < n; i += 2)
-        {
-            int left = i > 0 ? x[i - 1] : x[1];
-            int right = i + 1 < n ? x[i + 1] : x[i - 1];
-            x[i] -= (left + right + 2) >> 2;
-        }
+        int highCount = n - lowCount;
 
-        // Odd (high) samples: X(2n+1) += floor((X(2n) + X(2n+2)) / 2).
-        for (int i = 1 - parity; i < n; i += 2)
-        {
-            int left = i > 0 ? x[i - 1] : x[1];
-            int right = i + 1 < n ? x[i + 1] : x[i - 1];
-            x[i] += (left + right) >> 1;
-        }
+        // Bands with a guard at each end: [g L0 .. Ln-1 g][g H0 .. Hm-1 g].
+        Span<int> low = temp.AsSpan(1, lowCount);
+        Span<int> high = temp.AsSpan(lowCount + 3, highCount);
+        row[..lowCount].CopyTo(low);
+        row[lowCount..].CopyTo(high);
+        Guard(temp.AsSpan(0, lowCount + 2));
+        Guard(temp.AsSpan(lowCount + 2, highCount + 2));
+
+        // X(2n) -= floor((X(2n-1) + X(2n+1) + 2) / 4) on the low band, then X(2n+1) += floor((X(2n) + X(2n+2)) / 2) on the high.
+        ReadOnlySpan<int> highLeft = temp.AsSpan(lowCount + 2 + parity, lowCount);
+        ReadOnlySpan<int> highRight = temp.AsSpan(lowCount + 3 + parity, lowCount);
+        LowStep53(low, highLeft, highRight);
+        Guard(temp.AsSpan(0, lowCount + 2));
+        ReadOnlySpan<int> lowLeft = temp.AsSpan(1 - parity, highCount);
+        ReadOnlySpan<int> lowRight = temp.AsSpan(2 - parity, highCount);
+        HighStep53(high, lowLeft, lowRight);
+        Interleave(low, high, row, parity);
     }
 
-    /// <summary>The 1D 9/7 synthesis (F.3.8.2) on interleaved samples.</summary>
-    private static void Lift97(Span<float> x, int parity)
+    /// <summary>One row of the 9/7 synthesis (F.3.8.2); see <see cref="Row53"/>.</summary>
+    private static void Row97(Span<float> row, int lowCount, int parity, float[] temp)
     {
-        int n = x.Length;
+        int n = row.Length;
         if (n == 1)
         {
             if (parity == 1)
             {
-                x[0] *= 0.5f;
+                row[0] *= 0.5f;
             }
 
             return;
         }
 
-        for (int i = parity; i < n; i += 2)
-        {
-            x[i] *= K;
-        }
-
-        for (int i = 1 - parity; i < n; i += 2)
-        {
-            x[i] *= InverseK;
-        }
-
-        Step(x, parity, Delta);
-        Step(x, 1 - parity, Gamma);
-        Step(x, parity, Beta);
-        Step(x, 1 - parity, Alpha);
+        int highCount = n - lowCount;
+        Span<float> low = temp.AsSpan(1, lowCount);
+        Span<float> high = temp.AsSpan(lowCount + 3, highCount);
+        Scale(row[..lowCount], low, K);
+        Scale(row[lowCount..], high, InverseK);
+        Span<float> lowGuarded = temp.AsSpan(0, lowCount + 2);
+        Span<float> highGuarded = temp.AsSpan(lowCount + 2, highCount + 2);
+        Guard(highGuarded);
+        ReadOnlySpan<float> highLeft = temp.AsSpan(lowCount + 2 + parity, lowCount);
+        ReadOnlySpan<float> highRight = temp.AsSpan(lowCount + 3 + parity, lowCount);
+        ReadOnlySpan<float> lowLeft = temp.AsSpan(1 - parity, highCount);
+        ReadOnlySpan<float> lowRight = temp.AsSpan(2 - parity, highCount);
+        Lift(low, highLeft, highRight, Delta);
+        Guard(lowGuarded);
+        Lift(high, lowLeft, lowRight, Gamma);
+        Guard(highGuarded);
+        Lift(low, highLeft, highRight, Beta);
+        Guard(lowGuarded);
+        Lift(high, lowLeft, lowRight, Alpha);
+        Interleave(low, high, row, parity);
     }
 
-    /// <summary>One lifting step: every other sample from <paramref name="first"/> less <paramref name="c"/> times its neighbours' sum.</summary>
-    private static void Step(Span<float> x, int first, float c)
+    /// <summary>Sets a guarded band's guards to copies of its edge samples: symmetric extension of the band onto itself.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Guard<T>(Span<T> band)
     {
-        int n = x.Length;
-        for (int i = first; i < n; i += 2)
-        {
-            float left = i > 0 ? x[i - 1] : x[1];
-            float right = i + 1 < n ? x[i + 1] : x[i - 1];
-            x[i] -= c * (left + right);
-        }
+        band[0] = band[1];
+        band[^1] = band[^2];
     }
 
-    /// <summary>The vertical 5/3 synthesis over a level's columns, whole rows at a time.</summary>
-    private static void Columns53(Span<int> buffer, int stride, int w, int h, int lowCount, int parity, int[] temp)
-    {
-        if (h == 1)
-        {
-            if (parity == 1)
-            {
-                Span<int> row = buffer[..w];
-                for (int x = 0; x < w; x++)
-                {
-                    row[x] >>= 1;
-                }
-            }
-
-            return;
-        }
-
-        // Rows into interleaved order in the scratch buffer.
-        Span<int> rows = temp.AsSpan(0, w * h);
-        for (int k = 0, i = parity; i < h; k++, i += 2)
-        {
-            buffer.Slice(k * stride, w).CopyTo(rows.Slice(i * w, w));
-        }
-
-        for (int k = 0, i = 1 - parity; i < h; k++, i += 2)
-        {
-            buffer.Slice((lowCount + k) * stride, w).CopyTo(rows.Slice(i * w, w));
-        }
-
-        for (int i = parity; i < h; i += 2)
-        {
-            Span<int> row = rows.Slice(i * w, w);
-            ReadOnlySpan<int> above = rows.Slice((i > 0 ? i - 1 : 1) * w, w);
-            ReadOnlySpan<int> below = rows.Slice((i + 1 < h ? i + 1 : i - 1) * w, w);
-            Low53(row, above, below);
-        }
-
-        for (int i = 1 - parity; i < h; i += 2)
-        {
-            Span<int> row = rows.Slice(i * w, w);
-            ReadOnlySpan<int> above = rows.Slice((i > 0 ? i - 1 : 1) * w, w);
-            ReadOnlySpan<int> below = rows.Slice((i + 1 < h ? i + 1 : i - 1) * w, w);
-            High53(row, above, below);
-        }
-
-        for (int i = 0; i < h; i++)
-        {
-            rows.Slice(i * w, w).CopyTo(buffer.Slice(i * stride, w));
-        }
-    }
-
-    private static void Low53(Span<int> row, ReadOnlySpan<int> above, ReadOnlySpan<int> below)
+    private static void LowStep53(Span<int> target, ReadOnlySpan<int> left, ReadOnlySpan<int> right)
     {
         int x = 0;
         if (Vector.IsHardwareAccelerated)
         {
             Vector<int> two = new(2);
-            for (; x + Vector<int>.Count <= row.Length; x += Vector<int>.Count)
+            for (; x + Vector<int>.Count <= target.Length; x += Vector<int>.Count)
             {
-                Vector<int> sum = new Vector<int>(above[x..]) + new Vector<int>(below[x..]) + two;
-                (new Vector<int>(row[x..]) - Vector.ShiftRightArithmetic(sum, 2)).CopyTo(row[x..]);
+                Vector<int> sum = new Vector<int>(left[x..]) + new Vector<int>(right[x..]) + two;
+                (new Vector<int>(target[x..]) - Vector.ShiftRightArithmetic(sum, 2)).CopyTo(target[x..]);
             }
         }
 
-        for (; x < row.Length; x++)
+        for (; x < target.Length; x++)
         {
-            row[x] -= (above[x] + below[x] + 2) >> 2;
+            target[x] -= (left[x] + right[x] + 2) >> 2;
         }
     }
 
-    private static void High53(Span<int> row, ReadOnlySpan<int> above, ReadOnlySpan<int> below)
+    private static void HighStep53(Span<int> target, ReadOnlySpan<int> left, ReadOnlySpan<int> right)
     {
         int x = 0;
         if (Vector.IsHardwareAccelerated)
         {
-            for (; x + Vector<int>.Count <= row.Length; x += Vector<int>.Count)
+            for (; x + Vector<int>.Count <= target.Length; x += Vector<int>.Count)
             {
-                Vector<int> sum = new Vector<int>(above[x..]) + new Vector<int>(below[x..]);
-                (new Vector<int>(row[x..]) + Vector.ShiftRightArithmetic(sum, 1)).CopyTo(row[x..]);
+                Vector<int> sum = new Vector<int>(left[x..]) + new Vector<int>(right[x..]);
+                (new Vector<int>(target[x..]) + Vector.ShiftRightArithmetic(sum, 1)).CopyTo(target[x..]);
             }
         }
 
-        for (; x < row.Length; x++)
+        for (; x < target.Length; x++)
         {
-            row[x] += (above[x] + below[x]) >> 1;
+            target[x] += (left[x] + right[x]) >> 1;
         }
     }
 
-    /// <summary>The vertical 9/7 synthesis over a level's columns, whole rows at a time.</summary>
-    private static void Columns97(Span<float> buffer, int stride, int w, int h, int lowCount, int parity, float[] temp)
+    /// <summary>One 9/7 lifting step: <paramref name="target"/> less <paramref name="c"/> times its two neighbours' sum.</summary>
+    private static void Lift(Span<float> target, ReadOnlySpan<float> left, ReadOnlySpan<float> right, float c)
     {
-        if (h == 1)
+        int x = 0;
+        if (Vector.IsHardwareAccelerated)
         {
-            if (parity == 1)
+            Vector<float> factor = new(c);
+            for (; x + Vector<float>.Count <= target.Length; x += Vector<float>.Count)
             {
-                Span<float> row = buffer[..w];
-                for (int x = 0; x < w; x++)
-                {
-                    row[x] *= 0.5f;
-                }
+                Vector<float> sum = new Vector<float>(left[x..]) + new Vector<float>(right[x..]);
+                (new Vector<float>(target[x..]) - (factor * sum)).CopyTo(target[x..]);
             }
-
-            return;
         }
 
-        Span<float> rows = temp.AsSpan(0, w * h);
-        for (int k = 0, i = parity; i < h; k++, i += 2)
+        for (; x < target.Length; x++)
         {
-            Scale(buffer.Slice(k * stride, w), rows.Slice(i * w, w), K);
-        }
-
-        for (int k = 0, i = 1 - parity; i < h; k++, i += 2)
-        {
-            Scale(buffer.Slice((lowCount + k) * stride, w), rows.Slice(i * w, w), InverseK);
-        }
-
-        RowStep(rows, w, h, parity, Delta);
-        RowStep(rows, w, h, 1 - parity, Gamma);
-        RowStep(rows, w, h, parity, Beta);
-        RowStep(rows, w, h, 1 - parity, Alpha);
-        for (int i = 0; i < h; i++)
-        {
-            rows.Slice(i * w, w).CopyTo(buffer.Slice(i * stride, w));
+            target[x] -= c * (left[x] + right[x]);
         }
     }
 
@@ -336,28 +258,170 @@ internal static class J2kWavelet
         }
     }
 
-    private static void RowStep(Span<float> rows, int w, int h, int first, float c)
+    /// <summary>Interleaves the low and high bands into a row (2D_INTERLEAVE), the first sample low unless <paramref name="parity"/> is 1.</summary>
+    private static void Interleave<T>(ReadOnlySpan<T> low, ReadOnlySpan<T> high, Span<T> row, int parity)
+        where T : unmanaged
     {
-        for (int i = first; i < h; i += 2)
+        ReadOnlySpan<T> even = parity == 0 ? low : high;
+        ReadOnlySpan<T> odd = parity == 0 ? high : low;
+        int pairs = Math.Min(even.Length, odd.Length);
+        int k = 0;
+        if (Sse2.IsSupported && Unsafe.SizeOf<T>() == 4)
         {
-            Span<float> row = rows.Slice(i * w, w);
-            ReadOnlySpan<float> above = rows.Slice((i > 0 ? i - 1 : 1) * w, w);
-            ReadOnlySpan<float> below = rows.Slice((i + 1 < h ? i + 1 : i - 1) * w, w);
-            int x = 0;
-            if (Vector.IsHardwareAccelerated)
+            ref float e = ref Unsafe.As<T, float>(ref MemoryMarshal.GetReference(even));
+            ref float o = ref Unsafe.As<T, float>(ref MemoryMarshal.GetReference(odd));
+            ref float t = ref Unsafe.As<T, float>(ref MemoryMarshal.GetReference(row));
+            for (; k + 4 <= pairs; k += 4)
             {
-                Vector<float> factor = new(c);
-                for (; x + Vector<float>.Count <= w; x += Vector<float>.Count)
+                Vector128<float> a = Vector128.LoadUnsafe(ref e, (nuint)k);
+                Vector128<float> b = Vector128.LoadUnsafe(ref o, (nuint)k);
+                Sse.UnpackLow(a, b).StoreUnsafe(ref t, (nuint)(2 * k));
+                Sse.UnpackHigh(a, b).StoreUnsafe(ref t, (nuint)((2 * k) + 4));
+            }
+        }
+
+        for (; k < pairs; k++)
+        {
+            row[2 * k] = even[k];
+            row[(2 * k) + 1] = odd[k];
+        }
+
+        if (even.Length > pairs)
+        {
+            row[2 * pairs] = even[pairs];
+        }
+    }
+
+    /// <summary>
+    /// The vertical 5/3 synthesis over a level's columns, a whole row at a time: lifting on the low rows (the first
+    /// <paramref name="lowCount"/>) and the high ones in place, then the rows interleaved through the scratch buffer.
+    /// </summary>
+    private static void Columns53(Span<int> buffer, int stride, int w, int h, int lowCount, int parity, int[] temp)
+    {
+        if (h == 1)
+        {
+            if (parity == 1)
+            {
+                Span<int> row = buffer[..w];
+                for (int x = 0; x < w; x++)
                 {
-                    Vector<float> sum = new Vector<float>(above[x..]) + new Vector<float>(below[x..]);
-                    (new Vector<float>(row[x..]) - (factor * sum)).CopyTo(row[x..]);
+                    row[x] >>= 1;
                 }
             }
 
-            for (; x < w; x++)
+            return;
+        }
+
+        int highCount = h - lowCount;
+        for (int k = 0; k < lowCount; k++)
+        {
+            (int a, int b) = Neighbours(k, parity, highCount);
+            LowStep53(buffer.Slice(k * stride, w), buffer.Slice((lowCount + a) * stride, w), buffer.Slice((lowCount + b) * stride, w));
+        }
+
+        for (int k = 0; k < highCount; k++)
+        {
+            (int a, int b) = Neighbours(k, 1 - parity, lowCount, high: true);
+            HighStep53(buffer.Slice((lowCount + k) * stride, w), buffer.Slice(a * stride, w), buffer.Slice(b * stride, w));
+        }
+
+        InterleaveRows(buffer, stride, w, h, lowCount, parity, temp.AsSpan(0, w * h));
+    }
+
+    /// <summary>The vertical 9/7 synthesis; see <see cref="Columns53"/>.</summary>
+    private static void Columns97(Span<float> buffer, int stride, int w, int h, int lowCount, int parity, float[] temp)
+    {
+        if (h == 1)
+        {
+            if (parity == 1)
             {
-                row[x] -= c * (above[x] + below[x]);
+                Span<float> row = buffer[..w];
+                for (int x = 0; x < w; x++)
+                {
+                    row[x] *= 0.5f;
+                }
             }
+
+            return;
+        }
+
+        int highCount = h - lowCount;
+        for (int k = 0; k < lowCount; k++)
+        {
+            Span<float> row = buffer.Slice(k * stride, w);
+            Scale(row, row, K);
+        }
+
+        for (int k = 0; k < highCount; k++)
+        {
+            Span<float> row = buffer.Slice((lowCount + k) * stride, w);
+            Scale(row, row, InverseK);
+        }
+
+        RowsStep(buffer, stride, w, lowCount, highCount, parity, Delta, lowTarget: true);
+        RowsStep(buffer, stride, w, lowCount, highCount, parity, Gamma, lowTarget: false);
+        RowsStep(buffer, stride, w, lowCount, highCount, parity, Beta, lowTarget: true);
+        RowsStep(buffer, stride, w, lowCount, highCount, parity, Alpha, lowTarget: false);
+        InterleaveRows(buffer, stride, w, h, lowCount, parity, temp.AsSpan(0, w * h));
+    }
+
+    private static void RowsStep(Span<float> buffer, int stride, int w, int lowCount, int highCount, int parity, float c, bool lowTarget)
+    {
+        if (lowTarget)
+        {
+            for (int k = 0; k < lowCount; k++)
+            {
+                (int a, int b) = Neighbours(k, parity, highCount);
+                Lift(buffer.Slice(k * stride, w), buffer.Slice((lowCount + a) * stride, w), buffer.Slice((lowCount + b) * stride, w), c);
+            }
+        }
+        else
+        {
+            for (int k = 0; k < highCount; k++)
+            {
+                (int a, int b) = Neighbours(k, 1 - parity, lowCount, high: true);
+                Lift(buffer.Slice((lowCount + k) * stride, w), buffer.Slice(a * stride, w), buffer.Slice(b * stride, w), c);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns the two rows of the other band next to row <paramref name="k"/> of a band, mirrored at the ends: for a low row
+    /// k they are high rows k − 1 and k (or k and k + 1 when the level starts on an odd row); for a high row, low rows k and
+    /// k + 1 (or k − 1 and k).
+    /// </summary>
+    private static (int A, int B) Neighbours(int k, int parity, int otherCount, bool high = false)
+    {
+        int a;
+        int b;
+        if (!high)
+        {
+            (a, b) = parity == 0 ? (k - 1, k) : (k, k + 1);
+        }
+        else
+        {
+            (a, b) = parity == 1 ? (k, k + 1) : (k - 1, k);
+        }
+
+        return (Math.Clamp(a, 0, otherCount - 1), Math.Clamp(b, 0, otherCount - 1));
+    }
+
+    /// <summary>Puts a level's low and high rows in coordinate order, through <paramref name="scratch"/>.</summary>
+    private static void InterleaveRows<T>(Span<T> buffer, int stride, int w, int h, int lowCount, int parity, Span<T> scratch)
+    {
+        for (int k = 0, i = parity; i < h; k++, i += 2)
+        {
+            buffer.Slice(k * stride, w).CopyTo(scratch.Slice(i * w, w));
+        }
+
+        for (int k = 0, i = 1 - parity; i < h; k++, i += 2)
+        {
+            buffer.Slice((lowCount + k) * stride, w).CopyTo(scratch.Slice(i * w, w));
+        }
+
+        for (int i = 0; i < h; i++)
+        {
+            scratch.Slice(i * w, w).CopyTo(buffer.Slice(i * stride, w));
         }
     }
 }

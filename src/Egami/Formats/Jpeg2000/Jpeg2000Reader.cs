@@ -112,7 +112,15 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             }
             else
             {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 Fill(raster, image, grid, pixels);
+                Timing.Pixels += sw.Elapsed.TotalMilliseconds;
+            }
+
+            if (Environment.GetEnvironmentVariable("J2K_TIMING") is not null)
+            {
+                Console.Error.WriteLine(Timing.Report());
+                Timing.T2 = Timing.Alloc = Timing.T1 = Timing.Dwt = Timing.Store = Timing.Pixels = 0;
             }
 
             Describe(raster.Metadata, file, stream, options);
