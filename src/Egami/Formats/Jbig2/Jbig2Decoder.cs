@@ -155,21 +155,21 @@ internal sealed class Jbig2Decoder
     /// <summary>Decodes the page whose information segment is at <paramref name="pageSegment"/>.</summary>
     internal Jbig2Page DecodePage(int pageSegment, CancellationToken cancellationToken)
     {
-        Jbig2Segment pageInfoSegment = _segments[pageSegment];
-        uint page = pageInfoSegment.Page;
-        Jbig2PageInfo info = PageInfo(pageSegment);
-        (int width, int knownHeight) = PageSize(pageSegment);
-        bool unknownHeight = info.HeightUnknown;
-        Jbig2Bitmap bitmap = _budget.Bitmap(width, unknownHeight ? 0 : knownHeight);
-        if (info.DefaultPixel != 0)
+        Jbig2PageSession session = OpenPage(pageSegment, striped: false);
+        while (session.Step(cancellationToken))
         {
-            bitmap.Fill(1);
         }
 
-        // A page of unknown height grows as regions and stripes arrive; its final height comes from the last end of stripe.
-        Jbig2Page result = new() { Bitmap = bitmap, Info = info };
+        return session.Finish();
+    }
 
-        // The page's own segments, and the dictionaries they need (transitively), decoded in stream order.
+    /// <summary>
+    /// Starts decoding a page. With <paramref name="striped"/> a page coded in stripes is kept one stripe at a time, each
+    /// stripe's rows final once <see cref="Jbig2PageSession.Step"/> returns; otherwise the whole page is kept.
+    /// </summary>
+    internal Jbig2PageSession OpenPage(int pageSegment, bool striped)
+    {
+        uint page = _segments[pageSegment].Page;
         int end = pageSegment + 1;
         while (end < _segments.Count && !(_segments[end].Page == page && _segments[end].Type == Jbig2Segment.EndOfPage)
             && !(_segments[end].Type == Jbig2Segment.PageInformation && _segments[end].Page != page))
@@ -177,146 +177,100 @@ internal sealed class Jbig2Decoder
             end++;
         }
 
+        // The page's own segments, and the dictionaries they need (transitively), are decoded in stream order.
         bool[] needed = new bool[_segments.Count];
-        for (int i = end - 1; i > pageSegment; i--)
+        for (int i = end - 1; i >= 0; i--)
         {
             Jbig2Segment segment = _segments[i];
-            if ((segment.Page == page && !segment.IsDictionary) || needed[i])
+            if ((i > pageSegment && segment.Page == page && !segment.IsDictionary) || needed[i])
             {
                 foreach (uint reference in segment.References)
-                {
-                    int j = Find(i, reference);
-                    needed[j] = true;
-                }
-            }
-        }
-
-        // Dictionaries before the page segment (global ones, or the page's own in a random-access file) are resolved first.
-        for (int i = pageSegment - 1; i >= 0; i--)
-        {
-            if (needed[i])
-            {
-                foreach (uint reference in _segments[i].References)
                 {
                     needed[Find(i, reference)] = true;
                 }
             }
         }
 
-        Dictionary<int, (Jbig2Bitmap Bitmap, Jbig2RegionInfo Info)> auxiliary = [];
-        int endRow = -1;
-        for (int i = 0; i < end; i++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            Jbig2Segment segment = _segments[i];
-            if (segment.IsDictionary)
-            {
-                if (needed[i] && !_results.ContainsKey(segment) && (_globals is null || i >= _firstOwn || !_globals.Results.ContainsKey(segment)))
-                {
-                    _results[segment] = DecodeDictionary(i);
-                }
-
-                continue;
-            }
-
-            if (i <= pageSegment || segment.Page != page)
-            {
-                continue;
-            }
-
-            switch (segment.Type)
-            {
-                case Jbig2Segment.EndOfStripe:
-                    if (segment.DataLength >= 4)
-                    {
-                        endRow = (int)Math.Min(BinaryPrimitives.ReadUInt32BigEndian(_data.AsSpan(segment.DataStart)), int.MaxValue - 1L);
-                        if (unknownHeight && endRow + 1 > result.Bitmap.Height)
-                        {
-                            Grow(result, endRow + 1, info.DefaultPixel);
-                        }
-                    }
-
-                    continue;
-                case Jbig2Segment.ColourPalette:
-                    result.Warnings.Add("A colour palette segment (T.88 Amendment 3) was skipped; the page decodes as bilevel.");
-                    continue;
-                case Jbig2Segment.Extension:
-                    Extension(segment, result);
-                    continue;
-                case Jbig2Segment.PageInformation or Jbig2Segment.EndOfPage or Jbig2Segment.EndOfFile or Jbig2Segment.Profiles:
-                    continue;
-            }
-
-            if (!segment.IsRegion)
-            {
-                if (segment.Type is not (1 or 2 or 3 or 5 or 8 or 9 or 10 or 11 or 12 or 13 or 14 or 15))
-                {
-                    result.Warnings.Add($"Segment {segment.Number} has the reserved type {segment.Type} and was skipped.");
-                }
-
-                continue;
-            }
-
-            try
-            {
-                Region(i, result, auxiliary, unknownHeight);
-            }
-            catch (InvalidDataException e) when (!_strict)
-            {
-                result.Warnings.Add($"Region segment {segment.Number} is damaged and was skipped: {e.Message}");
-            }
-            catch (EndOfStreamException e) when (!_strict)
-            {
-                result.Warnings.Add($"Region segment {segment.Number} is damaged and was skipped: {e.Message}");
-            }
-        }
-
-        if (unknownHeight)
-        {
-            int height = endRow + 1;
-            if (result.Bitmap.Height > height)
-            {
-                result.Bitmap = result.Bitmap.Crop(0, 0, width, height);
-            }
-            else if (result.Bitmap.Height < height)
-            {
-                Grow(result, height, info.DefaultPixel);
-            }
-        }
-
-        if (Stream.Truncated)
-        {
-            if (_strict)
-            {
-                throw new EndOfStreamException("The JBIG2 data ends inside a segment.");
-            }
-
-            result.Warnings.Add("The JBIG2 data ends inside a segment; what it holds was decoded.");
-        }
-
-        return result;
+        Jbig2PageInfo info = PageInfo(pageSegment);
+        (int width, int height) = PageSize(pageSegment);
+        return new Jbig2PageSession(this, pageSegment, end, needed, info, width, height, striped && info.Striped && info.MaxStripeSize > 0);
     }
 
-    private void Grow(Jbig2Page page, int height, int defaultPixel)
+    /// <summary>Processes segment <paramref name="i"/> of a page being decoded; returns whether it ended a stripe.</summary>
+    private bool Process(Jbig2PageSession session, int i)
     {
-        Jbig2Bitmap bitmap = page.Bitmap;
-        _budget.Reserve(bitmap.Width, height - bitmap.Height);
-        bitmap.GrowTo(height, defaultPixel);
+        Jbig2Segment segment = _segments[i];
+        if (segment.IsDictionary)
+        {
+            if (session.Needed[i] && !_results.ContainsKey(segment) && (_globals is null || i >= _firstOwn || !_globals.Results.ContainsKey(segment)))
+            {
+                _results[segment] = DecodeDictionary(i);
+            }
+
+            return false;
+        }
+
+        if (i <= session.PageSegment || segment.Page != session.Info.Number)
+        {
+            return false;
+        }
+
+        Jbig2Page page = session.Page;
+        switch (segment.Type)
+        {
+            case Jbig2Segment.EndOfStripe:
+                if (segment.DataLength >= 4)
+                {
+                    session.EndStripe((int)Math.Min(BinaryPrimitives.ReadUInt32BigEndian(_data.AsSpan(segment.DataStart)), int.MaxValue - 1L));
+                    return true;
+                }
+
+                return false;
+            case Jbig2Segment.ColourPalette:
+                page.Warnings.Add("A colour palette segment (T.88 Amendment 3) was skipped; the page decodes as bilevel.");
+                return false;
+            case Jbig2Segment.Extension:
+                Extension(segment, page);
+                return false;
+            case Jbig2Segment.PageInformation or Jbig2Segment.EndOfPage or Jbig2Segment.EndOfFile or Jbig2Segment.Profiles:
+                return false;
+        }
+
+        if (!segment.IsRegion)
+        {
+            if (segment.Type is not (1 or 2 or 3 or 5 or 8 or 9 or 10 or 11 or 12 or 13 or 14 or 15))
+            {
+                page.Warnings.Add($"Segment {segment.Number} has the reserved type {segment.Type} and was skipped.");
+            }
+
+            return false;
+        }
+
+        try
+        {
+            Region(i, session);
+        }
+        catch (InvalidDataException e) when (!_strict)
+        {
+            page.Warnings.Add($"Region segment {segment.Number} is damaged and was skipped: {e.Message}");
+        }
+        catch (EndOfStreamException e) when (!_strict)
+        {
+            page.Warnings.Add($"Region segment {segment.Number} is damaged and was skipped: {e.Message}");
+        }
+
+        return false;
     }
 
     /// <summary>Decodes a region segment and composes it as T.88 8.2 step 5 says.</summary>
-    private void Region(int index, Jbig2Page page, Dictionary<int, (Jbig2Bitmap Bitmap, Jbig2RegionInfo Info)> auxiliary, bool unknownHeight)
+    private void Region(int index, Jbig2PageSession session)
     {
+        Jbig2Page page = session.Page;
         Jbig2Segment segment = _segments[index];
         Jbig2RegionInfo info = Jbig2RegionInfo.Read(_data, segment);
         if (info.ColourExtension)
         {
             page.Warnings.Add($"Region segment {segment.Number} uses the colour extension; it decodes as bilevel.");
-        }
-
-        if (unknownHeight && (long)info.Y + info.Height > page.Bitmap.Height && info.Y >= 0)
-        {
-            Grow(page, (int)Math.Min((long)info.Y + info.Height, int.MaxValue), page.Info.DefaultPixel);
         }
 
         Jbig2Bitmap bitmap;
@@ -328,7 +282,7 @@ internal sealed class Jbig2Decoder
             Jbig2RegionInfo at = info;
             if (referred >= 0)
             {
-                if (!auxiliary.Remove(referred, out (Jbig2Bitmap Bitmap, Jbig2RegionInfo Info) aux))
+                if (!session.Auxiliary.Remove(referred, out (Jbig2Bitmap Bitmap, Jbig2RegionInfo Info) aux))
                 {
                     throw new InvalidDataException("A refinement region refers to a segment that has no intermediate region to refine.");
                 }
@@ -338,17 +292,25 @@ internal sealed class Jbig2Decoder
             }
             else
             {
-                reference = page.Bitmap.Crop(info.X, info.Y, info.Width, info.Height);
+                reference = session.Crop(info);
             }
 
             bitmap = RefinementRegion(segment, info, reference);
             if (segment.IsIntermediate)
             {
-                auxiliary[index] = (bitmap, at);
+                session.Auxiliary[index] = (bitmap, at);
                 return;
             }
 
-            page.Bitmap.Compose(bitmap, at.X, at.Y, referred >= 0 ? info.Combine : Jbig2Combine.Replace);
+            session.Compose(bitmap, at.X, at.Y, referred >= 0 ? info.Combine : Jbig2Combine.Replace);
+            return;
+        }
+
+        if (segment.Type is 6 or 7 && !info.ColourExtension && info.Combine == Jbig2Combine.Or && TextDrawsDirectly(segment))
+        {
+            // Symbols drawn straight onto the page, as composing the region with OR would.
+            session.EnsureRows(info.Y, info.Height);
+            TextRegion(index, info, page, session.Window, info.X, info.Y - session.Top);
             return;
         }
 
@@ -360,16 +322,193 @@ internal sealed class Jbig2Decoder
         };
         if (segment.IsIntermediate)
         {
-            auxiliary[index] = (bitmap, info);
+            session.Auxiliary[index] = (bitmap, info);
             return;
         }
 
-        if (info.X < 0 || info.Y < 0 || (long)info.X + bitmap.Width > page.Bitmap.Width || (long)info.Y + bitmap.Height > page.Bitmap.Height)
+        if (info.X < 0 || info.Y < 0 || (long)info.X + bitmap.Width > session.Width || (long)info.Y + bitmap.Height > session.Height)
         {
             page.Warnings.Add($"Region segment {segment.Number} lies partly outside the page and was clipped.");
         }
 
-        page.Bitmap.Compose(bitmap, info.X, info.Y, info.Combine);
+        session.Compose(bitmap, info.X, info.Y, info.Combine);
+    }
+
+    /// <summary>
+    /// One page being decoded: its segments run in order, regions composed onto a window of the page buffer. The window is the
+    /// whole page, or, for a striped page read in stripes, the rows below the last end row down to the maximum stripe size,
+    /// cleared to the default pixel at each new stripe (the second strategy of T.88 8.2 step 2).
+    /// </summary>
+    internal sealed class Jbig2PageSession
+    {
+        private readonly Jbig2Decoder _decoder;
+        private readonly int _end;
+        private readonly bool _striped;
+        private int _next;
+
+        internal Jbig2PageSession(Jbig2Decoder decoder, int pageSegment, int end, bool[] needed, Jbig2PageInfo info, int width, int height, bool striped)
+        {
+            _decoder = decoder;
+            PageSegment = pageSegment;
+            _end = end;
+            Needed = needed;
+            Info = info;
+            Width = width;
+            Height = height;
+            _striped = striped;
+            int rows = striped ? Math.Min(info.MaxStripeSize, height) : info.HeightUnknown ? 0 : height;
+            Window = decoder._budget.Bitmap(width, rows);
+            if (info.DefaultPixel != 0)
+            {
+                Window.Fill(1);
+            }
+
+            Page = new Jbig2Page { Bitmap = Window, Info = info };
+        }
+
+        internal int PageSegment { get; }
+
+        internal bool[] Needed { get; }
+
+        internal Jbig2PageInfo Info { get; }
+
+        internal Jbig2Page Page { get; }
+
+        /// <summary>Gets the page width.</summary>
+        internal int Width { get; }
+
+        /// <summary>Gets the page height, from the page information or, when it was unknown, the last end of stripe.</summary>
+        internal int Height { get; }
+
+        internal Dictionary<int, (Jbig2Bitmap Bitmap, Jbig2RegionInfo Info)> Auxiliary { get; } = [];
+
+        /// <summary>Gets the rows of the page buffer kept now: page rows <see cref="Top"/> on.</summary>
+        internal Jbig2Bitmap Window { get; private set; }
+
+        /// <summary>Gets the page row of the window's first row.</summary>
+        internal int Top { get; private set; }
+
+        /// <summary>Gets the last page row that no later segment can change, or -1.</summary>
+        internal int Final { get; private set; } = -1;
+
+        /// <summary>Gets the last end row of a stripe, or -1.</summary>
+        internal int EndRow { get; private set; } = -1;
+
+        /// <summary>Gets whether every segment of the page has run.</summary>
+        internal bool Done { get; private set; }
+
+        /// <summary>
+        /// Runs segments up to the next end of stripe (when kept in stripes) or the end of the page. Returns
+        /// <see langword="false"/> once the page is done.
+        /// </summary>
+        internal bool Step(CancellationToken cancellationToken)
+        {
+            if (Done)
+            {
+                return false;
+            }
+
+            if (_striped && EndRow >= Top)
+            {
+                // The rows down to the last end row are final and have been served: start the next stripe.
+                Top = EndRow + 1;
+                Window.Fill(Info.DefaultPixel);
+            }
+
+            while (_next < _end)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                int i = _next++;
+                if (_decoder.Process(this, i) && _striped)
+                {
+                    Final = EndRow;
+                    return true;
+                }
+            }
+
+            Done = true;
+            Final = Height - 1;
+            if (_decoder.Stream.Truncated)
+            {
+                if (_decoder._strict)
+                {
+                    throw new EndOfStreamException("The JBIG2 data ends inside a segment.");
+                }
+
+                Page.Warnings.Add("The JBIG2 data ends inside a segment; what it holds was decoded.");
+            }
+
+            return true;
+        }
+
+        /// <summary>Notes an end of stripe; a page of unknown height kept whole grows to it.</summary>
+        internal void EndStripe(int endRow)
+        {
+            EndRow = Math.Max(EndRow, endRow);
+            if (!_striped && Info.HeightUnknown)
+            {
+                Grow(Math.Min(endRow + 1, Height));
+            }
+        }
+
+        /// <summary>Combines a region with the page buffer at page coordinates, growing the window to hold it if it must.</summary>
+        internal void Compose(Jbig2Bitmap bitmap, int x, int y, Jbig2Combine op)
+        {
+            long bottom = Math.Min((long)y + bitmap.Height, Height);
+            if (bottom - Top > Window.Height)
+            {
+                Grow((int)(bottom - Top));
+            }
+
+            Window.Compose(bitmap, x, y - Top, op);
+        }
+
+        /// <summary>Grows the window, if it must, to hold page rows <paramref name="y"/> to <paramref name="y"/> + <paramref name="height"/> - 1.</summary>
+        internal void EnsureRows(int y, int height)
+        {
+            long bottom = Math.Min((long)y + height, Height);
+            if (bottom - Top > Window.Height)
+            {
+                Grow((int)(bottom - Top));
+            }
+        }
+
+        /// <summary>Returns a copy of the page buffer under a region, for a refinement of the page.</summary>
+        internal Jbig2Bitmap Crop(Jbig2RegionInfo info)
+        {
+            _decoder._budget.Reserve(info.Width, info.Height);
+            return Window.Crop(info.X, info.Y - Top, info.Width, info.Height);
+        }
+
+        /// <summary>Gets page row <paramref name="y"/>, which must be final and still kept, as packed words.</summary>
+        internal ReadOnlySpan<ulong> Row(int y) => Window.Row(y - Top);
+
+        /// <summary>Returns the decoded page, after <see cref="Step"/> has run every segment.</summary>
+        internal Jbig2Page Finish()
+        {
+            if (Window.Height > Height)
+            {
+                Window = Window.Crop(0, 0, Width, Height);
+            }
+            else if (Window.Height < Height)
+            {
+                Grow(Height);
+            }
+
+            Page.Bitmap = Window;
+            return Page;
+        }
+
+        private void Grow(int rows)
+        {
+            if (rows <= Window.Height)
+            {
+                return;
+            }
+
+            _decoder._budget.Reserve(Width, rows - Window.Height);
+            Window.GrowTo(rows, Info.DefaultPixel);
+        }
     }
 
     private Jbig2Bitmap GenericRegion(Jbig2Segment segment, Jbig2RegionInfo info, Jbig2Page page)
@@ -471,7 +610,19 @@ internal sealed class Jbig2Decoder
         return Jbig2Refinement.Decode(p, arith.Mq, arith.Gr);
     }
 
-    private Jbig2Bitmap TextRegion(int index, Jbig2RegionInfo info, Jbig2Page page)
+    /// <summary>Gets whether a text region's default pixel is 0 and its symbols combine with OR, so it can be drawn onto the page directly.</summary>
+    private bool TextDrawsDirectly(Jbig2Segment segment)
+    {
+        if (segment.DataLength < Jbig2RegionInfo.Length + 2)
+        {
+            return false;
+        }
+
+        int flags = BinaryPrimitives.ReadUInt16BigEndian(_data.AsSpan(segment.DataStart + Jbig2RegionInfo.Length));
+        return ((flags >> 7) & 3) == (int)Jbig2Combine.Or && ((flags >> 9) & 1) == 0;
+    }
+
+    private Jbig2Bitmap TextRegion(int index, Jbig2RegionInfo info, Jbig2Page page, Jbig2Bitmap? target = null, int targetX = 0, int targetY = 0)
     {
         page.Regions |= Jbig2RegionKinds.Text;
         Jbig2Segment segment = _segments[index];
@@ -637,7 +788,7 @@ internal sealed class Jbig2Decoder
             };
         }
 
-        Jbig2Bitmap bitmap = Jbig2Text.Decode(p, arith, bits, _budget);
+        Jbig2Bitmap bitmap = Jbig2Text.Decode(p, arith, bits, _budget, target, targetX, targetY);
         if (!huffman)
         {
             CheckOverrun(arith, segment, page);

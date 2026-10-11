@@ -21,7 +21,8 @@ using SharpFuzz;
 // bit streams and the encoders arbitrary pixels, whose lossless round trip must be exact. The jpeg-write target (Phase 2.4.3)
 // runs the JPEG writer: the input picks a pixel type, size, pixels and writer options (CMYK, YCCK, 12-bit, progressive among
 // them); the file must read back at its size, a progressive file must decode to the baseline file's pixels, and a streamed
-// encode must write what Save writes.
+// encode must write what Save writes. The jbig2 and jbig2codec targets (Phase 2.3.4) load JBIG2 files every way, standalone and
+// embedded with globals, and feed each of JBIG2's decoding procedures (regions, dictionaries, Huffman tables) raw bytes.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -109,7 +110,9 @@ static Action<Stream> Target(string name) => name switch
     "tiffcodec" => DecodeTiffCodec,
     "webp" => LoadWebp,
     "webpcodec" => DecodeWebpCodec,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec."),
+    "jbig2" => LoadJbig2,
+    "jbig2codec" => DecodeJbig2Codec,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec."),
 };
 
 static EgamiContext Context()
@@ -998,6 +1001,220 @@ static void WriteJpeg(Stream stream)
 
         raster.CopyPixelsFrom(pixels);
         return raster;
+    }
+}
+
+// Phase 2.3.4: JBIG2 files every way: standalone and, when the first byte is odd, embedded with the format named, the bytes
+// split at the second byte's place into a globals stream and a page stream. Probe's page count must match LoadAll's.
+static void LoadJbig2(Stream stream)
+{
+    EgamiContext context = Context() with { Limits = Context().Limits with { MaxFrames = 64 } };
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        try
+        {
+            Egami.Formats.Jbig2.Jbig2ReaderOptions options = new() { Recovery = recovery };
+            byte[] page = data;
+            Egami.Formats.FormatInfo? named = null;
+            if (data.Length > 2 && (data[0] & 1) != 0)
+            {
+                int split = Math.Min(data.Length - 1, 2 + (data[1] * 4));
+                named = Egami.Formats.Jbig2.Jbig2Format.Info;
+                page = data[split..];
+                try
+                {
+                    options = options with { Globals = Egami.Formats.Jbig2.Jbig2Globals.Parse(data.AsSpan(2, split - 2), context) };
+                }
+                catch (EgamiException)
+                {
+                }
+            }
+
+            RasterInfo info = named is null ? Raster.Probe(page, context, options) : Raster.Probe(page, named, context, options);
+            using Raster raster = named is null ? Raster.Load(page, context, options) : Raster.Load(page, named, context, options);
+            using RasterList pages = named is null ? Raster.LoadAll(page, context, options) : Raster.LoadAll(page, named, context, options);
+            if (pages.Count != info.ImageCount)
+            {
+                throw new InvalidOperationException($"LoadAll gave {pages.Count} images where Probe said {info.ImageCount}.");
+            }
+
+            using RasterDecoder decoder = named is null ? RasterDecoder.Open(page, context, options) : RasterDecoder.Open(page, named, context, options);
+            using Raster rows = decoder.ReadAll();
+            if (rows.Width != raster.Width || rows.Height != raster.Height)
+            {
+                throw new InvalidOperationException("Streaming gave another size than Load.");
+            }
+
+            Rect region = new(info.Width / 4, info.Height / 4, Math.Max(1, info.Width / 2), Math.Max(1, info.Height / 2));
+            using Raster<Gray8> cropped = named is null
+                ? Raster.Load<Gray8>(page, context, options with { Region = region, MinimumSize = new Size(Math.Max(1, info.Width / 5), 1) })
+                : Raster.Load<Gray8>(page, named, context, options with { Region = region, MinimumSize = new Size(Math.Max(1, info.Width / 5), 1) });
+        }
+        catch (EgamiException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+            // Extensions marked necessary that Egami does not read say so.
+        }
+    }
+}
+
+// Phase 2.3.4: JBIG2's procedures fed directly. The first byte picks one, the next eight its parameters, the rest is its data:
+// generic regions (every template, TPGDON, the extended template, AT pixels), MMR, refinement, code table segments and
+// their decoding, arithmetic and Huffman symbol dictionaries, text regions over fixed symbols, pattern dictionaries and
+// halftone regions. Nothing may throw but InvalidDataException, EndOfStreamException or LimitExceededException.
+static void DecodeJbig2Codec(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 9)
+    {
+        return;
+    }
+
+    byte[] rest = data[9..];
+    int width = 1 + (data[1] % 200);
+    int height = 1 + (data[2] % 120);
+    int template = data[3] & 3;
+    Egami.Formats.Jbig2.Jbig2Budget budget = new(Context().Limits with { MaxTotalBytes = 64L * 1024 * 1024 });
+    Egami.Formats.Jbig2.Jbig2ArithState arith = new()
+    {
+        Gb = new byte[Egami.Formats.Jbig2.Jbig2Generic.ContextCount(template)],
+        Gr = new byte[Egami.Formats.Jbig2.Jbig2Refinement.ContextCount(data[4] & 1)],
+    };
+    arith.Mq.Start(rest, 0, rest.Length);
+    int[] at = [(sbyte)data[5], (sbyte)data[6], (sbyte)data[7], (sbyte)data[8], -2, -2, 2, -1, 1, -2, 0, -1, -3, 0, -4, 0, 2, -2, 3, -1, -2, -2, -3, -1];
+    Egami.Formats.Jbig2.Jbig2Bitmap[] symbols = [new(3, 5), new(7, 2), new(1, 1), new(12, 9)];
+    symbols[3].Fill(1);
+    try
+    {
+        switch (data[0] % 9)
+        {
+            case 0:
+                Egami.Formats.Jbig2.Jbig2Generic.DecodeArithmetic(
+                    new() { Width = width, Height = height, Template = template, TypicalPrediction = (data[4] & 2) != 0, ExtendedTemplate = (data[4] & 4) != 0, At = at },
+                    arith.Mq,
+                    new byte[Egami.Formats.Jbig2.Jbig2Generic.ContextCount(template)]);
+                break;
+            case 1:
+                Egami.Formats.Jbig2.Jbig2Generic.DecodeMmr(width * 4, height, rest);
+                break;
+            case 2:
+                Egami.Formats.Jbig2.Jbig2Bitmap reference = new(width, height);
+                reference.Fill(data[4] & 1);
+                Egami.Formats.Jbig2.Jbig2Refinement.Decode(
+                    new() { Width = width + 3, Height = height, Template = data[4] & 1, Reference = reference, ReferenceDx = (sbyte)data[5] % 8, ReferenceDy = (sbyte)data[6] % 8, TypicalPrediction = (data[4] & 2) != 0, At = at[..4] },
+                    arith.Mq,
+                    arith.Gr);
+                break;
+            case 3:
+                Egami.Formats.Jbig2.Jbig2HuffmanTable table = Egami.Formats.Jbig2.Jbig2HuffmanTable.Read(rest, 0, rest.Length);
+                Egami.Formats.Jbig2.Jbig2BitReader bits = new(rest, Math.Min(rest.Length, 9), rest.Length);
+                for (int i = 0; i < 64; i++)
+                {
+                    table.Decode(bits);
+                }
+
+                break;
+            case 4:
+            case 5:
+                bool huffman = data[0] % 9 == 5;
+                Egami.Formats.Jbig2.Jbig2Dictionaries.DecodeSymbols(
+                    new()
+                    {
+                        Huffman = huffman,
+                        RefAgg = (data[4] & 1) != 0,
+                        Input = symbols,
+                        NewSymbols = data[2] % 20,
+                        Exported = data[3] % 24,
+                        HuffDh = huffman ? Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(4) : null,
+                        HuffDw = huffman ? Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(2) : null,
+                        HuffBmSize = huffman ? Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(1) : null,
+                        HuffAggInst = huffman ? Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(1) : null,
+                        Template = template,
+                        At = template == 0 ? at[..8] : at[..2],
+                        RefinementTemplate = data[4] & 1,
+                        RefinementAt = at[..4],
+                    },
+                    arith,
+                    huffman ? new Egami.Formats.Jbig2.Jbig2BitReader(rest, 0, rest.Length) : null,
+                    budget);
+                break;
+            case 6:
+            case 7:
+                bool huffmanText = data[0] % 9 == 7;
+                Egami.Formats.Jbig2.Jbig2BitReader textBits = new(rest, 0, rest.Length);
+                arith.Iaid = new Egami.Formats.Jbig2.Jbig2SymbolIdDecoder(2);
+                Egami.Formats.Jbig2.Jbig2Text.Decode(
+                    new()
+                    {
+                        Huffman = huffmanText,
+                        Refine = (data[4] & 1) != 0,
+                        Width = width,
+                        Height = height,
+                        Instances = data[3] % 40,
+                        Strips = 1 << (data[4] >> 6),
+                        Symbols = symbols,
+                        SymbolCodes = huffmanText ? Egami.Formats.Jbig2.Jbig2Text.ReadSymbolCodes(textBits, symbols.Length) : null,
+                        SymbolCodeLength = 2,
+                        DefaultPixel = (data[4] >> 1) & 1,
+                        Combine = (Egami.Formats.Jbig2.Jbig2Combine)(data[5] % 5),
+                        Transposed = (data[4] & 4) != 0,
+                        RefCorner = (data[4] >> 3) & 3,
+                        DsOffset = ((sbyte)data[6]) % 16,
+                        HuffFs = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(6),
+                        HuffDs = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(8),
+                        HuffDt = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(11),
+                        HuffRdw = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(15),
+                        HuffRdh = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(15),
+                        HuffRdx = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(15),
+                        HuffRdy = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(15),
+                        HuffRsize = Egami.Formats.Jbig2.Jbig2HuffmanTable.Standard(1),
+                        RefinementTemplate = data[4] & 1,
+                        RefinementAt = at[..4],
+                    },
+                    arith,
+                    textBits,
+                    budget);
+                break;
+            default:
+                Egami.Formats.Jbig2.Jbig2Bitmap[] patterns = Egami.Formats.Jbig2.Jbig2Dictionaries.DecodePatterns(
+                    (data[4] & 1) != 0, template, 1 + (data[5] % 16), 1 + (data[6] % 16), data[7] % 32, rest, 0, rest.Length / 2, arith, budget);
+                Egami.Formats.Jbig2.Jbig2Halftone.Decode(
+                    new()
+                    {
+                        Width = width,
+                        Height = height,
+                        Mmr = (data[4] & 1) != 0,
+                        Template = template,
+                        Patterns = patterns,
+                        DefaultPixel = (data[4] >> 1) & 1,
+                        Combine = (Egami.Formats.Jbig2.Jbig2Combine)(data[8] % 5),
+                        EnableSkip = (data[4] & 4) != 0,
+                        GridWidth = 1 + (data[1] % 40),
+                        GridHeight = 1 + (data[2] % 40),
+                        GridX = (sbyte)data[5] * 64,
+                        GridY = (sbyte)data[6] * 64,
+                        VectorX = data[7] * 16,
+                        VectorY = data[8] * 4,
+                    },
+                    rest,
+                    rest.Length / 2,
+                    rest.Length,
+                    arith,
+                    budget);
+                break;
+        }
+    }
+    catch (InvalidDataException)
+    {
+    }
+    catch (EndOfStreamException)
+    {
+    }
+    catch (LimitExceededException)
+    {
     }
 }
 

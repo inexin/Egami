@@ -11,6 +11,9 @@ exists (the T.88 attachment, with the ITU conformance streams Jbig2ConformanceTe
 
 Usage, from the repo root with Docker running:
   python tools/make-jbig2-references.py [--local]
+
+PDFium's and jbig2dec's decode times for the speed record (egami-compare's Jbig2DecodeBenchmarks times Egami and PdfPig):
+  docker run --rm -v "$PWD:/w" egami-codecref:2.3.4 python3 /w/tools/codecref/time_jbig2.py 40 /w/tests/images/jbig2/*.jb2
 """
 import os
 import re

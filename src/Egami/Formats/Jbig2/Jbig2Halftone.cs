@@ -167,6 +167,10 @@ internal static class Jbig2Halftone
             }
 
             previous = plane;
+            if (!p.Mmr)
+            {
+                arith.CheckExhausted(null);
+            }
         }
 
         return gray;

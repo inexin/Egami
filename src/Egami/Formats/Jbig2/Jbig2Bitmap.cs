@@ -119,12 +119,46 @@ internal sealed class Jbig2Bitmap
     /// Combines <paramref name="source"/> into this bitmap with its top left at (<paramref name="x"/>, <paramref name="y"/>),
     /// clipped to both bitmaps, a word at a time (T.88 6.4.5 step 3 c x, 7.4.6.4 and 8.2).
     /// </summary>
-    internal void Compose(Jbig2Bitmap source, int x, int y, Jbig2Combine op)
+    internal void Compose(Jbig2Bitmap source, int x, int y, Jbig2Combine op) => Compose(source, x, y, op, 0, 0, Width, Height);
+
+    /// <summary>Composes as <see cref="Compose(Jbig2Bitmap, int, int, Jbig2Combine)"/> does, changing only the pixels inside a clip rectangle.</summary>
+    internal void Compose(Jbig2Bitmap source, int x, int y, Jbig2Combine op, int clipLeft, int clipTop, int clipRight, int clipBottom)
     {
-        int sx0 = Math.Max(0, -x);
-        int sy0 = Math.Max(0, -y);
-        int sx1 = Math.Min(source.Width, Width - x);
-        int sy1 = Math.Min(source.Height, Height - y);
+        clipLeft = Math.Max(clipLeft, 0);
+        clipTop = Math.Max(clipTop, 0);
+        clipRight = Math.Min(clipRight, Width);
+        clipBottom = Math.Min(clipBottom, Height);
+        switch (op)
+        {
+            case Jbig2Combine.Or:
+                Compose<OrOp>(source, x, y, clipLeft, clipTop, clipRight, clipBottom);
+                break;
+            case Jbig2Combine.And:
+                Compose<AndOp>(source, x, y, clipLeft, clipTop, clipRight, clipBottom);
+                break;
+            case Jbig2Combine.Xor:
+                Compose<XorOp>(source, x, y, clipLeft, clipTop, clipRight, clipBottom);
+                break;
+            case Jbig2Combine.Xnor:
+                Compose<XnorOp>(source, x, y, clipLeft, clipTop, clipRight, clipBottom);
+                break;
+            default:
+                Compose<ReplaceOp>(source, x, y, clipLeft, clipTop, clipRight, clipBottom);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Composes with one operator, a row at a time: the source row is read as a run of 64-bit words shifted into the target's
+    /// word grid, the first and last target words masked to the clipped columns.
+    /// </summary>
+    private void Compose<TOp>(Jbig2Bitmap source, int x, int y, int clipLeft, int clipTop, int clipRight, int clipBottom)
+        where TOp : struct, ICombineOp
+    {
+        int sx0 = (int)Math.Max(0, (long)clipLeft - x);
+        int sy0 = (int)Math.Max(0, (long)clipTop - y);
+        int sx1 = (int)Math.Min(source.Width, (long)clipRight - x);
+        int sy1 = (int)Math.Min(source.Height, (long)clipBottom - y);
         if (sx0 >= sx1 || sy0 >= sy1)
         {
             return;
@@ -136,37 +170,69 @@ internal sealed class Jbig2Bitmap
         int lastWord = (dx1 - 1) >> 6;
         ulong firstMask = ulong.MaxValue >> (dx0 & 63);
         ulong lastMask = EdgeMask(dx1);
-        int shift = dx0 - sx0;
+        if (firstWord == lastWord)
+        {
+            firstMask &= lastMask;
+        }
+
+        // Target word w holds source bits from (w * 64 - x) on: source word k = (w * 64 - x) >> 6 shifted left by r, with the
+        // next source word's top bits after it.
+        int offset = (firstWord << 6) - x;
+        int r = offset & 63;
+        int k0 = offset >> 6;
+        ulong[] srcWords = source.Words;
+        ulong[] dstWords = Words;
+        int srcStride = source.Stride;
         for (int sy = sy0; sy < sy1; sy++)
         {
-            ReadOnlySpan<ulong> src = source.Words.AsSpan(sy * source.Stride, source.Stride);
-            Span<ulong> dst = Words.AsSpan((sy + y) * Stride, Stride);
-            for (int w = firstWord; w <= lastWord; w++)
+            int srcRow = sy * srcStride;
+            int dstRow = ((sy + y) * Stride) + firstWord;
+            int k = k0;
+            for (int w = 0, words = lastWord - firstWord + 1; w < words; w++, k++)
             {
-                ulong mask = ulong.MaxValue;
-                if (w == firstWord)
+                ulong high = (uint)k < (uint)srcStride ? srcWords[srcRow + k] : 0;
+                ulong bits = high << r;
+                if (r != 0 && (uint)(k + 1) < (uint)srcStride)
                 {
-                    mask &= firstMask;
+                    bits |= srcWords[srcRow + k + 1] >> (64 - r);
                 }
 
-                if (w == lastWord)
-                {
-                    mask &= lastMask;
-                }
-
-                ulong bits = Fetch(src, (w << 6) - shift);
-                ulong old = dst[w];
-                ulong combined = op switch
-                {
-                    Jbig2Combine.Or => old | bits,
-                    Jbig2Combine.And => old & bits,
-                    Jbig2Combine.Xor => old ^ bits,
-                    Jbig2Combine.Xnor => ~(old ^ bits),
-                    _ => bits,
-                };
-                dst[w] = (old & ~mask) | (combined & mask);
+                ref ulong target = ref dstWords[dstRow + w];
+                ulong mask = w == 0 ? firstMask : w == words - 1 ? lastMask : ulong.MaxValue;
+                ulong old = target;
+                target = (old & ~mask) | (TOp.Apply(old, bits) & mask);
             }
         }
+    }
+
+    private interface ICombineOp
+    {
+        static abstract ulong Apply(ulong old, ulong bits);
+    }
+
+    private struct OrOp : ICombineOp
+    {
+        public static ulong Apply(ulong old, ulong bits) => old | bits;
+    }
+
+    private struct AndOp : ICombineOp
+    {
+        public static ulong Apply(ulong old, ulong bits) => old & bits;
+    }
+
+    private struct XorOp : ICombineOp
+    {
+        public static ulong Apply(ulong old, ulong bits) => old ^ bits;
+    }
+
+    private struct XnorOp : ICombineOp
+    {
+        public static ulong Apply(ulong old, ulong bits) => ~(old ^ bits);
+    }
+
+    private struct ReplaceOp : ICombineOp
+    {
+        public static ulong Apply(ulong old, ulong bits) => bits;
     }
 
     /// <summary>Returns the 64 bits of a row starting at bit <paramref name="start"/>, which may be negative; bits outside the row are 0.</summary>

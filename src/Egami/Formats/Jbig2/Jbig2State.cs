@@ -2,11 +2,17 @@ namespace Egami.Formats.Jbig2;
 
 /// <summary>
 /// Counts the bytes of every bitmap a decode makes (regions, symbols, patterns, auxiliary buffers) against
-/// <see cref="SafetyLimits.MaxTotalBytes"/>, and checks each bitmap's size against the frame limits, before allocating.
+/// <see cref="SafetyLimits.MaxTotalBytes"/>, and checks each bitmap's size against the frame limits, before allocating. The
+/// pixels decoded in all are bounded too, at <see cref="WorkFactor"/> times <see cref="SafetyLimits.MaxPixels"/>: a few hundred
+/// bytes of arithmetic-coded data can describe millions of symbols, so memory alone does not bound the time a decode takes.
 /// </summary>
 internal sealed class Jbig2Budget(SafetyLimits limits)
 {
+    /// <summary>How many times <see cref="SafetyLimits.MaxPixels"/> one decode may decode in all; real pages stay far below.</summary>
+    internal const int WorkFactor = 8;
+
     private long _used;
+    private long _pixels;
 
     internal SafetyLimits Limits => limits;
 
@@ -31,6 +37,11 @@ internal sealed class Jbig2Budget(SafetyLimits limits)
         }
 
         Charge(((width + 63) >> 6) * 8 * height);
+        _pixels += width * height;
+        if (_pixels > limits.MaxPixels * WorkFactor)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels * WorkFactor, _pixels);
+        }
     }
 
     /// <summary>Counts bytes about to be allocated.</summary>
@@ -83,4 +94,16 @@ internal sealed class Jbig2ArithState
     internal Jbig2IntegerDecoder Iari { get; } = new();
 
     internal Jbig2SymbolIdDecoder? Iaid { get; set; }
+
+    /// <summary>
+    /// Throws when the data has run out: the MQ decoder has read far past its end (it feeds 1-bits forever), or the Huffman bits
+    /// have. A count read from a header (instances, symbols) can then not drive an endless decode.
+    /// </summary>
+    internal void CheckExhausted(Jbig2BitReader? bits)
+    {
+        if (Mq.Overrun > Jbig2Generic.MqDecoderExhausted || (bits is not null && bits.Overrun))
+        {
+            throw new EndOfStreamException("The data ends before everything its header counts was decoded.");
+        }
+    }
 }

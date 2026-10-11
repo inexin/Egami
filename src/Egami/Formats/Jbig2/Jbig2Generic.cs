@@ -1,5 +1,7 @@
 using System.Buffers.Binary;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Jbig2;
 
@@ -27,11 +29,16 @@ internal sealed class Jbig2GenericParams
     /// <summary>Returns the nominal AT pixels of a template (Table 5).</summary>
     internal static int[] NominalAt(int template, bool extended) => (template, extended) switch
     {
-        (0, true) => [-2, 0, 0, -2, -2, -1, -1, -2, 1, -2, 2, -1, -3, 0, -4, 0, 2, -2, 3, -1, -2, -2, -3, -1],
-        (0, false) => [3, -1, -3, -1, 2, -2, -2, -2],
-        (1, _) => [3, -1],
-        _ => [2, -1],
+        (0, true) => NominalExtended,
+        (0, false) => Nominal0,
+        (1, _) => Nominal1,
+        _ => Nominal2,
     };
+
+    private static readonly int[] NominalExtended = [-2, 0, 0, -2, -2, -1, -1, -2, 1, -2, 2, -1, -3, 0, -4, 0, 2, -2, 3, -1, -2, -2, -3, -1];
+    private static readonly int[] Nominal0 = [3, -1, -3, -1, 2, -2, -2, -2];
+    private static readonly int[] Nominal1 = [3, -1];
+    private static readonly int[] Nominal2 = [2, -1];
 }
 
 /// <summary>
@@ -42,6 +49,9 @@ internal sealed class Jbig2GenericParams
 /// </summary>
 internal static class Jbig2Generic
 {
+    /// <summary>The bytes an MQ decoder may read past its data before a region stops decoding.</summary>
+    internal const int MqDecoderExhausted = 64;
+
     /// <summary>Gets the number of contexts each template needs.</summary>
     internal static int ContextCount(int template) => template == 0 ? 1 << 16 : template == 1 ? 1 << 13 : 1 << 10;
 
@@ -66,9 +76,21 @@ internal static class Jbig2Generic
         int stride = bitmap.Stride;
         int width = p.Width;
         ulong[]? skip = p.Skip?.Words;
+        if (skip is null && layout.At.Length == 0)
+        {
+            FastRegion(mq, contexts, layout, bitmap, p.TypicalPrediction, sltp);
+            return bitmap;
+        }
+
         int ltp = 0;
         for (int y = 0; y < p.Height; y++)
         {
+            if (mq.Overrun > MqDecoderExhausted)
+            {
+                // The data ran out long ago: leave the rest of the region as it is rather than decode 1-bits for ever.
+                break;
+            }
+
             int row = y * stride;
             if (p.TypicalPrediction)
             {
@@ -86,6 +108,7 @@ internal static class Jbig2Generic
 
             int row1 = y >= 1 ? row - stride : -1;
             int row2 = y >= 2 ? row - (2 * stride) : -1;
+
             uint w2 = Start(words, row2, layout.Lo2, layout.Hi2, width);
             uint w1 = Start(words, row1, layout.Lo1, layout.Hi1, width);
             uint w0 = 0;
@@ -155,6 +178,209 @@ internal static class Jbig2Generic
         }
     }
 
+    /// <summary>
+    /// Decodes a region whose template pixels all lie in the row windows (the AT pixels at their nominal places) with nothing
+    /// skipped. The context is one register: each step shifts it left a pixel, the mask drops the bits that would cross from one
+    /// row's group into the next, and the new pixels of the rows above and the pixel just decoded come in at the bottom of their
+    /// groups. The rows above are read 64 pixels at a time, and the MQ decoder runs inline on locals for the whole region
+    /// (T.88 E.3: DECODE, RENORMD and BYTEIN), so a small symbol costs little more than its pixels. A long run of white pixels
+    /// whose context stays 0 is taken in one step, since every decision in it is the MPS without renormalization.
+    /// </summary>
+    private static void FastRegion(MqDecoder mq, byte[] contexts, Layout layout, Jbig2Bitmap bitmap, bool typicalPrediction, int sltp)
+    {
+        ulong[] words = bitmap.Words;
+        int stride = bitmap.Stride;
+        int width = bitmap.Width;
+        ref byte context0 = ref MemoryMarshal.GetArrayDataReference(contexts);
+        ref uint states = ref MemoryMarshal.GetArrayDataReference(MqDecoder.StateTable);
+        byte[] data = mq.Data;
+        int end = mq.End;
+        int overrun = 0;
+        uint a = mq.Registers.A;
+        uint c = mq.Registers.C;
+        int ct = mq.Registers.Ct;
+        int position = mq.Registers.Position;
+        uint keep = layout.Keep;
+        int shift1 = layout.Shift1;
+        int shift2 = layout.Shift2;
+        int lo1 = layout.Lo1;
+        int lo2 = layout.Lo2;
+        int width1 = layout.Hi1 - layout.Lo1 + 1;
+        int width2 = layout.Hi2 - layout.Lo2 + 1;
+        int start1 = layout.Hi1 + 1;
+        int start2 = layout.Hi2 + 1;
+        int ltp = 0;
+        for (int y = 0; y < bitmap.Height; y++)
+        {
+            if (mq.Overrun + overrun > MqDecoderExhausted)
+            {
+                // The data ran out long ago: leave the rest of the region as it is rather than decode 1-bits for ever.
+                break;
+            }
+
+            int row = y * stride;
+            if (typicalPrediction)
+            {
+                mq.Registers = new MqRegisters { A = a, C = c, Ct = ct, Position = position };
+                ltp ^= mq.Decode(ref contexts[sltp]);
+                (a, c, ct, position) = (mq.Registers.A, mq.Registers.C, mq.Registers.Ct, mq.Registers.Position);
+                if (ltp != 0)
+                {
+                    if (y > 0)
+                    {
+                        bitmap.CopyRow(y - 1, y);
+                    }
+
+                    continue;
+                }
+            }
+
+            ReadOnlySpan<ulong> above1 = y >= 1 ? words.AsSpan(row - stride, stride) : default;
+            ReadOnlySpan<ulong> above2 = y >= 2 && width2 > 0 ? words.AsSpan(row - (2 * stride), stride) : default;
+            uint context = (uint)(Jbig2Bitmap.Fetch(above1, lo1) >> (64 - width1)) << shift1;
+            if (width2 > 0)
+            {
+                context |= (uint)(Jbig2Bitmap.Fetch(above2, lo2) >> (64 - width2)) << shift2;
+            }
+
+            for (int x0 = 0; x0 < width; x0 += 64)
+            {
+                ulong bits1 = Jbig2Bitmap.Fetch(above1, x0 + start1);
+                ulong bits2 = Jbig2Bitmap.Fetch(above2, x0 + start2);
+                int count = Math.Min(64, width - x0);
+                ulong gathered = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    if (context == 0 && (context0 & 1) == 0)
+                    {
+                        // White on white: while the rows above stay white the context stays 0, and while A and C allow, every
+                        // decision is the MPS without renormalization, which changes nothing but A and C.
+                        int window = 1 + Math.Min(BitOperations.LeadingZeroCount(bits1), BitOperations.LeadingZeroCount(bits2));
+                        int run = Math.Min(window, count - i);
+                        if (run > 4)
+                        {
+                            uint qe0 = Unsafe.Add(ref states, (nint)context0) & 0xFFFF;
+                            run = (int)Math.Min((uint)run, Math.Min((c >> 16) / qe0, (a - 0x8000) / qe0));
+                            if (run > 1)
+                            {
+                                uint total = (uint)run * qe0;
+                                a -= total;
+                                c -= total << 16;
+                                gathered = run == 64 ? 0 : gathered << run;
+
+                                // The next context holds what came in after the last white pixel: the run's last incoming bits.
+                                ulong last1 = bits1 << (run - 1);
+                                ulong last2 = bits2 << (run - 1);
+                                context = ((uint)(last1 >> 63) << shift1) | ((uint)(last2 >> 63) << shift2);
+                                bits1 = last1 << 1;
+                                bits2 = last2 << 1;
+                                i += run - 1;
+                                continue;
+                            }
+                        }
+                    }
+
+                    ref byte cx = ref Unsafe.Add(ref context0, (nint)context);
+                    uint s = cx;
+                    uint entry = Unsafe.Add(ref states, (nint)s);
+                    uint qe = entry & 0xFFFF;
+                    a -= qe;
+                    uint d;
+                    if ((c >> 16) >= qe)
+                    {
+                        c -= qe << 16;
+                        if ((a & 0x8000) != 0)
+                        {
+                            d = s & 1;
+                            goto Decoded;
+                        }
+
+                        // MPS_EXCHANGE.
+                        if (a < qe)
+                        {
+                            d = (s & 1) ^ 1;
+                            cx = (byte)(entry >> 24);
+                        }
+                        else
+                        {
+                            d = s & 1;
+                            cx = (byte)(entry >> 16);
+                        }
+                    }
+                    else
+                    {
+                        // LPS_EXCHANGE.
+                        if (a < qe)
+                        {
+                            d = s & 1;
+                            cx = (byte)(entry >> 16);
+                        }
+                        else
+                        {
+                            d = (s & 1) ^ 1;
+                            cx = (byte)(entry >> 24);
+                        }
+
+                        a = qe;
+                    }
+
+                    // RENORMD with BYTEIN: when C holds enough bits, all the doublings at once.
+                    int shift = BitOperations.LeadingZeroCount(a) - 16;
+                    if (shift <= ct)
+                    {
+                        a <<= shift;
+                        c <<= shift;
+                        ct -= shift;
+                        goto Decoded;
+                    }
+
+                    do
+                    {
+                        if (ct == 0)
+                        {
+                            byte b = (uint)position < (uint)end ? data[position] : (byte)0xFF;
+                            byte next = (uint)(position + 1) < (uint)end ? data[position + 1] : (byte)0xFF;
+                            if (b != 0xFF)
+                            {
+                                position++;
+                                c += (uint)next << 8;
+                                ct = 8;
+                            }
+                            else if (next <= 0x8F)
+                            {
+                                position++;
+                                c += (uint)next << 9;
+                                ct = 7;
+                            }
+                            else
+                            {
+                                c += 0xFF00;
+                                ct = 8;
+                                overrun += position >= end ? 1 : 0;
+                            }
+                        }
+
+                        a <<= 1;
+                        c <<= 1;
+                        ct--;
+                    }
+                    while ((a & 0x8000) == 0);
+
+                Decoded:
+                    gathered = (gathered << 1) | d;
+                    context = ((context << 1) & keep) | d | ((uint)(bits1 >> 63) << shift1) | ((uint)(bits2 >> 63) << shift2);
+                    bits1 <<= 1;
+                    bits2 <<= 1;
+                }
+
+                words[row + (x0 >> 6)] = gathered << (64 - count);
+            }
+        }
+
+        mq.Registers = new MqRegisters { A = a, C = c, Ct = ct, Position = position };
+        mq.Overrun += overrun;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int Pixel(ulong[] words, int row, int x, int width)
     {
@@ -178,8 +404,9 @@ internal static class Jbig2Generic
         int bits = 0;
         foreach ((int dx, int dy, int bit) in at)
         {
+            // Rows below the current one are not decoded yet, so read as 0, as rows above the region do.
             int ay = y + dy;
-            if (ay >= 0)
+            if (ay >= 0 && ay <= y)
             {
                 bits |= Pixel(words, ay * stride, x + dx, width) << bit;
             }
@@ -214,7 +441,22 @@ internal static class Jbig2Generic
 
         internal int Shift0 { get; private init; }
 
+        /// <summary>
+        /// Gets the context bits that survive a shift of one pixel within their row's group: every group's bits but its top one,
+        /// moved up a place (the fast loop's mask).
+        /// </summary>
+        internal uint Keep { get; private init; }
+
         internal (int Dx, int Dy, int Bit)[] At { get; private init; } = [];
+
+        /// <summary>The layouts of the four templates with their AT pixels at the nominal places, made once.</summary>
+        private static readonly Layout[] Nominal =
+        [
+            Windows((-2, 2, 11), (-3, 3, 4), (4, 0), []),
+            Windows((-1, 2, 9), (-2, 3, 3), (3, 0), []),
+            Windows((-1, 1, 7), (-2, 2, 2), (2, 0), []),
+            Windows((0, -1, 0), (-3, 2, 4), (4, 0), []),
+        ];
 
         internal static Layout For(Jbig2GenericParams p)
         {
@@ -226,13 +468,7 @@ internal static class Jbig2Generic
             // nominal places covers exactly template 0's pixels, so it reads the same.
             if (isNominal)
             {
-                return p.Template switch
-                {
-                    0 => Windows((-2, 2, 11), (-3, 3, 4), (4, 0), []),
-                    1 => Windows((-1, 2, 9), (-2, 3, 3), (3, 0), []),
-                    2 => Windows((-1, 1, 7), (-2, 2, 2), (2, 0), []),
-                    _ => Windows((0, -1, 0), (-3, 2, 4), (4, 0), []),
-                };
+                return Nominal[p.Template];
             }
 
             (int, int, int)[] Ats(params int[] bits)
@@ -260,6 +496,8 @@ internal static class Jbig2Generic
             };
         }
 
+        private static uint Group(int bits, int shift) => bits <= 1 ? 0 : ((1u << (bits - 1)) - 1) << (shift + 1);
+
         private static Layout Windows((int Lo, int Hi, int Shift) row2, (int Lo, int Hi, int Shift) row1, (int Count, int Shift) row0, (int, int, int)[] at)
         {
             return new Layout
@@ -274,6 +512,7 @@ internal static class Jbig2Generic
                 Shift1 = row1.Shift,
                 Mask0 = (1u << row0.Count) - 1,
                 Shift0 = row0.Shift,
+                Keep = Group(row0.Count, row0.Shift) | Group(row1.Hi - row1.Lo + 1, row1.Shift) | Group(row2.Hi - row2.Lo + 1, row2.Shift),
                 At = at,
             };
         }

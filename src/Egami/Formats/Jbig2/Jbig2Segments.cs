@@ -75,6 +75,9 @@ internal readonly record struct Jbig2RegionInfo(int Width, int Height, int X, in
 /// <summary>The page information segment (T.88 7.4.8).</summary>
 internal sealed record Jbig2PageInfo(uint Width, uint Height, uint XResolution, uint YResolution, byte Flags, ushort Striping)
 {
+    /// <summary>Gets the page number the page information segment is associated with.</summary>
+    internal uint Number { get; init; }
+
     internal const uint UnknownHeight = 0xFFFFFFFF;
 
     internal bool HeightUnknown => Height == UnknownHeight;
@@ -103,7 +106,10 @@ internal sealed record Jbig2PageInfo(uint Width, uint Height, uint XResolution, 
             BinaryPrimitives.ReadUInt32BigEndian(d[8..]),
             BinaryPrimitives.ReadUInt32BigEndian(d[12..]),
             d[16],
-            BinaryPrimitives.ReadUInt16BigEndian(d[17..]));
+            BinaryPrimitives.ReadUInt16BigEndian(d[17..]))
+        {
+            Number = segment.Page,
+        };
     }
 }
 

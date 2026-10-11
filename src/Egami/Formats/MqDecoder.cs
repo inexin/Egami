@@ -1,6 +1,23 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats;
+
+/// <summary>The registers of an <see cref="MqDecoder"/>, which a hot loop copies into a local and decodes with directly.</summary>
+internal struct MqRegisters
+{
+    /// <summary>The interval register A.</summary>
+    internal uint A;
+
+    /// <summary>The code register C (Chigh and Clow).</summary>
+    internal uint C;
+
+    /// <summary>The bit counter CT.</summary>
+    internal int Ct;
+
+    /// <summary>The offset of the byte BP points to.</summary>
+    internal int Position;
+}
 
 /// <summary>
 /// The MQ adaptive binary arithmetic decoder that JBIG2 (ITU-T T.88 Annex E) and JPEG 2000 (ITU-T T.800 Annex C) share, written
@@ -9,7 +26,9 @@ namespace Egami.Formats;
 /// </summary>
 /// <remarks>
 /// Past the end of the data the decoder sees 0xFF bytes that read as a marker, so it feeds 1-bits as T.88 E.3.4 says for a
-/// terminating marker; <see cref="Overrun"/> counts how many bytes it would have read beyond the end, for damage checks.
+/// terminating marker; <see cref="Overrun"/> counts how many bytes it would have read beyond the end, for damage checks. Hot
+/// loops take the registers into a local with <see cref="Registers"/>, decode with <see cref="Decode(ref MqRegisters, ref byte)"/>
+/// and put them back.
 /// </remarks>
 internal sealed class MqDecoder
 {
@@ -20,45 +39,57 @@ internal sealed class MqDecoder
     private static readonly uint[] States = BuildStates();
 
     private byte[] _data = [];
-    private int _position;
     private int _end;
-    private uint _c;
-    private uint _a;
-    private int _ct;
 
-    /// <summary>Gets how many bytes the decoder asked for beyond the end of its data.</summary>
-    internal int Overrun { get; private set; }
+    /// <summary>The registers, which hot loops copy out and back.</summary>
+    internal MqRegisters Registers;
+
+    /// <summary>Gets or sets how many bytes the decoder asked for beyond the end of its data; a loop that inlines BYTEIN adds to it.</summary>
+    internal int Overrun { get; set; }
+
+    /// <summary>Gets the data being decoded, for loops that inline BYTEIN.</summary>
+    internal byte[] Data => _data;
+
+    /// <summary>Gets the offset just past the data being decoded.</summary>
+    internal int End => _end;
+
+    /// <summary>Gets the probability estimation table, by context state, for loops that inline DECODE.</summary>
+    internal static uint[] StateTable => States;
 
     /// <summary>Gets the offset of the next byte the decoder would read.</summary>
-    internal int Position => _position;
+    internal int Position => Registers.Position;
 
     /// <summary>Starts decoding <paramref name="length"/> bytes of <paramref name="data"/> from <paramref name="start"/> (INITDEC).</summary>
     internal void Start(byte[] data, int start, int length)
     {
         _data = data;
-        _position = start;
         _end = start + length;
         Overrun = 0;
-        _c = (uint)Byte(_position) << 16;
-        ByteIn();
-        _c <<= 7;
-        _ct -= 7;
-        _a = 0x8000;
+        Registers.Position = start;
+        Registers.C = (uint)Byte(start) << 16;
+        ByteIn(ref Registers);
+        Registers.C <<= 7;
+        Registers.Ct -= 7;
+        Registers.A = 0x8000;
     }
 
     /// <summary>Decodes one decision in the context whose state is <paramref name="state"/>, updating the state (DECODE).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int Decode(ref byte state)
+    internal int Decode(ref byte state) => Decode(ref Registers, ref state);
+
+    /// <summary>Decodes one decision with registers a hot loop holds in a local; see <see cref="Decode(ref byte)"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int Decode(ref MqRegisters r, ref byte state)
     {
         uint s = state;
-        uint entry = States[s];
+        uint entry = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(States), (nint)s);
         uint qe = entry & 0xFFFF;
-        _a -= qe;
-        if ((_c >> 16) < qe)
+        r.A -= qe;
+        int d;
+        if ((r.C >> 16) < qe)
         {
             // LPS path, with the conditional exchange (LPS_EXCHANGE).
-            int d;
-            if (_a < qe)
+            if (r.A < qe)
             {
                 d = (int)(s & 1);
                 state = (byte)(entry >> 16);
@@ -69,78 +100,83 @@ internal sealed class MqDecoder
                 state = (byte)(entry >> 24);
             }
 
-            _a = qe;
-            Renormalize();
-            return d;
-        }
-
-        _c -= qe << 16;
-        if ((_a & 0x8000) != 0)
-        {
-            return (int)(s & 1);
-        }
-
-        // MPS path needing renormalization, with the conditional exchange (MPS_EXCHANGE).
-        int decision;
-        if (_a < qe)
-        {
-            decision = (int)(s & 1) ^ 1;
-            state = (byte)(entry >> 24);
+            r.A = qe;
         }
         else
         {
-            decision = (int)(s & 1);
-            state = (byte)(entry >> 16);
-        }
-
-        Renormalize();
-        return decision;
-    }
-
-    /// <summary>Doubles A and C until A is at least 0x8000, reading bytes as C empties (RENORMD).</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Renormalize()
-    {
-        do
-        {
-            if (_ct == 0)
+            r.C -= qe << 16;
+            if ((r.A & 0x8000) != 0)
             {
-                ByteIn();
+                return (int)(s & 1);
             }
 
-            _a <<= 1;
-            _c <<= 1;
-            _ct--;
+            // MPS path needing renormalization, with the conditional exchange (MPS_EXCHANGE).
+            if (r.A < qe)
+            {
+                d = (int)(s & 1) ^ 1;
+                state = (byte)(entry >> 24);
+            }
+            else
+            {
+                d = (int)(s & 1);
+                state = (byte)(entry >> 16);
+            }
         }
-        while ((_a & 0x8000) == 0);
+
+        // RENORMD: double A and C until A is at least 0x8000, reading bytes as C empties; all at once when C holds enough bits.
+        int shift = System.Numerics.BitOperations.LeadingZeroCount(r.A) - 16;
+        if (shift <= r.Ct)
+        {
+            r.A <<= shift;
+            r.C <<= shift;
+            r.Ct -= shift;
+            return d;
+        }
+
+        do
+        {
+            if (r.Ct == 0)
+            {
+                ByteIn(ref r);
+            }
+
+            r.A <<= 1;
+            r.C <<= 1;
+            r.Ct--;
+        }
+        while ((r.A & 0x8000) == 0);
+
+        return d;
     }
 
     /// <summary>Reads the next byte into C, removing the stuffed bit after 0xFF and stopping at a marker (BYTEIN).</summary>
-    private void ByteIn()
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ByteIn(ref MqRegisters r)
     {
-        if (Byte(_position) == 0xFF)
+        int position = r.Position;
+        if (Byte(position) == 0xFF)
         {
-            if (Byte(_position + 1) > 0x8F)
+            if (Byte(position + 1) > 0x8F)
             {
-                _c += 0xFF00;
-                _ct = 8;
-                if (_position >= _end)
+                r.C += 0xFF00;
+                r.Ct = 8;
+                if (position >= _end)
                 {
                     Overrun++;
                 }
             }
             else
             {
-                _position++;
-                _c += (uint)Byte(_position) << 9;
-                _ct = 7;
+                r.Position = position + 1;
+                r.C += (uint)Byte(position + 1) << 9;
+                r.Ct = 7;
             }
         }
         else
         {
-            _position++;
-            _c += (uint)Byte(_position) << 8;
-            _ct = 8;
+            r.Position = position + 1;
+            r.C += (uint)Byte(position + 1) << 8;
+            r.Ct = 8;
         }
     }
 
@@ -170,7 +206,9 @@ internal sealed class MqDecoder
             1, 6, 9, 12, 29, 33, 6, 14, 14, 14, 17, 18, 20, 21, 14, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
             29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 46,
         ];
-        uint[] states = new uint[94];
+
+        // 256 entries, so any byte a context holds indexes the table: states past 93 never occur, but a bounds check costs more.
+        uint[] states = new uint[256];
         for (int i = 0; i < 47; i++)
         {
             bool switches = i is 0 or 6 or 14;

@@ -52,6 +52,7 @@ internal static class Jbig2Dictionaries
         int decoded = 0;
         while (decoded < p.NewSymbols)
         {
+            arith.CheckExhausted(bits);
             height += p.Huffman ? p.HuffDh!.DecodeInt(bits!) : arith.Iadh.DecodeInt(arith.Mq);
             if (height < 0 || height > budget.Limits.MaxHeight)
             {
@@ -93,6 +94,7 @@ internal static class Jbig2Dictionaries
                 }
 
                 decoded++;
+                arith.CheckExhausted(bits);
             }
 
             if (widths is not null)
@@ -129,6 +131,7 @@ internal static class Jbig2Dictionaries
 
             index += run;
             flag ^= 1;
+            arith.CheckExhausted(bits);
         }
 
         if (count != p.Exported)

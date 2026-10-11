@@ -45,6 +45,11 @@ internal static class Jbig2Refinement
         int ltp = 0;
         for (int y = 0; y < p.Height; y++)
         {
+            if (mq.Overrun > Jbig2Generic.MqDecoderExhausted)
+            {
+                break;
+            }
+
             if (p.TypicalPrediction)
             {
                 ltp ^= mq.Decode(ref contexts[sltp]);

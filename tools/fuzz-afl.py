@@ -23,7 +23,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "detect": "tests/images/fuzz/detect-seeds/*",
          "stream": "tests/images/fuzz/stream-seeds/*",
          "tiff": "tests/images/tiff/*.tif", "tiffcodec": "tests/images/fuzz/tiffcodec-seeds/*",
-         "webp": "tests/images/webp/*.webp", "webpcodec": "tests/images/fuzz/webpcodec-seeds/*"}
+         "webp": "tests/images/webp/*.webp", "webpcodec": "tests/images/fuzz/webpcodec-seeds/*",
+         "jbig2": "tests/images/jbig2/*", "jbig2codec": "tests/images/fuzz/jbig2codec-seeds/*"}
 
 SCRIPT = """
 set -e

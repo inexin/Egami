@@ -66,13 +66,21 @@ internal static class Jbig2Text
     /// Decodes a text region with arithmetic coding (<paramref name="arith"/>) or Huffman coding (<paramref name="bits"/>; the
     /// arithmetic state then serves only refinements).
     /// </summary>
-    internal static Jbig2Bitmap Decode(Jbig2TextParams p, Jbig2ArithState arith, Jbig2BitReader? bits, Jbig2Budget budget)
+    /// <remarks>
+    /// With <paramref name="target"/> the symbols are drawn straight into it, the region's top left at
+    /// (<paramref name="targetX"/>, <paramref name="targetY"/>) and clipped to the region: what composing a region of default
+    /// pixel 0 with OR gives, when the region's own operator is OR too (T.88 8.2 example 2).
+    /// </remarks>
+    internal static Jbig2Bitmap Decode(Jbig2TextParams p, Jbig2ArithState arith, Jbig2BitReader? bits, Jbig2Budget budget, Jbig2Bitmap? target = null, int targetX = 0, int targetY = 0)
     {
-        Jbig2Bitmap region = budget.Bitmap(p.Width, p.Height);
-        if (p.DefaultPixel != 0)
+        Jbig2Bitmap region = target ?? budget.Bitmap(p.Width, p.Height);
+        if (target is null && p.DefaultPixel != 0)
         {
             region.Fill(1);
         }
+
+        long clipRight = Math.Min((long)targetX + p.Width, int.MaxValue);
+        long clipBottom = Math.Min((long)targetY + p.Height, int.MaxValue);
 
         bool huffman = p.Huffman;
         int logStrips = p.Strips switch
@@ -152,7 +160,7 @@ internal static class Jbig2Text
 
                 if (x > -w && x < p.Width && y > -h && y < p.Height)
                 {
-                    region.Compose(symbol, (int)x, (int)y, p.Combine);
+                    region.Compose(symbol, (int)x + targetX, (int)y + targetY, p.Combine, targetX, targetY, (int)clipRight, (int)clipBottom);
                 }
 
                 if (!p.Transposed && p.RefCorner is TopLeft or BottomLeft)
@@ -165,6 +173,7 @@ internal static class Jbig2Text
                 }
 
                 instances++;
+                arith.CheckExhausted(bits);
                 if (Math.Abs(curS) > int.MaxValue || Math.Abs(stripT) > int.MaxValue)
                 {
                     throw new InvalidDataException("A text region's coordinates run out of range.");

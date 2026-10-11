@@ -136,4 +136,5 @@ def main():
             f.write(image.point(lambda v: 255 if v < 128 else 0).convert("1").tobytes())
 
 
-main()
+if __name__ == "__main__":
+    main()
