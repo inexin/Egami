@@ -54,6 +54,15 @@ internal static class BlendKernels
             vectorBits = HardwareBits;
         }
 
+        // A one-pixel source is used as a solid color, which the kernels take premultiplied: premultiply a straight one here.
+        if (straightSource && source.Length == 1)
+        {
+            uint v = source[0], a = v >> 24;
+            uint one = (a << 24) | (Premultiply((v >> 16) & 0xFF, a) << 16) | (Premultiply((v >> 8) & 0xFF, a) << 8) | Premultiply(v & 0xFF, a);
+            Blend8(mode, new ReadOnlySpan<uint>(in one), destination, coverage, opacity255, bgr, vectorBits);
+            return;
+        }
+
         Context c = new(mode, opacity255, bgr, source.Length == 1, !coverage.IsEmpty, straightSource && source.Length != 1);
         ref uint s = ref MemoryMarshal.GetReference(source);
         ref uint d = ref MemoryMarshal.GetReference(destination);
@@ -376,6 +385,9 @@ internal static class BlendKernels
 
         return i;
     }
+
+    /// <summary>Premultiplies one 8-bit channel as PixelConvert does: round(c·α / 255).</summary>
+    private static uint Premultiply(uint channel, uint alpha) => ((channel * alpha) + 127) / 255;
 
     private static TC Solid<TC>(uint color)
         where TC : struct, IChannelLanes<TC>

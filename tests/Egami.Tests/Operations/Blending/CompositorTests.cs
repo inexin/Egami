@@ -81,6 +81,25 @@ public class CompositorTests
         Assert.Equal(BlendOperationTests.Bytes(raster), BlendOperationTests.Bytes(rows));
     }
 
+    /// <summary>A one-pixel straight 8-bit row is premultiplied like a longer one, so it blends as premultiplied and float rows do.</summary>
+    [Theory]
+    [InlineData(BlendMode.Multiply)]
+    [InlineData(BlendMode.Screen)]
+    [InlineData(BlendMode.Darken)]
+    [InlineData(BlendMode.Hue)]
+    public void OnePixelStraightRowsArePremultiplied(BlendMode mode)
+    {
+        Rgba8 s = new(100, 180, 30, 128), d = new(200, 100, 50, 255);
+        Rgba8[] one = [d];
+        Compositor.Blend<Rgba8>(mode, [s], one);
+        Rgba8[] two = [d, d];
+        Compositor.Blend<Rgba8>(mode, [s, s], two);
+        Bgra8[] bgra = [Bgra8.FromRgba8(d)];
+        Compositor.Blend<Bgra8>(mode, [Bgra8.FromRgba8(s)], bgra);
+        Assert.Equal(two[0], one[0]);
+        Assert.Equal(two[0], bgra[0].ToRgba8());
+    }
+
     [Fact]
     public void OnePixelOverloadsMatchTheRows()
     {
