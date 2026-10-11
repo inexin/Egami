@@ -33,6 +33,8 @@
     <None Include="../images/jbig2/book-3pages-symbol.jb2" Link="images/book.jb2" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jbig2/book-pdf.sym" Link="images/book-globals.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jbig2/book-pdf.0000" Link="images/book-page1.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jpeg2000/rgb-layers.jp2" Link="images/photo.jp2" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jpeg2000/rgb-lossy.j2k" Link="images/photo.j2k" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/synthetic/cmyk-mab-v4.icc" Link="images/cmyk.icc" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), and TIFF, and reads JBIG2. Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), and TIFF, and reads JBIG2 and JPEG 2000. Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -17,6 +17,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 | QOI | The whole format, 3 or 4 channels, both colorspaces | 3 or 4 channels, byte-identical to the reference encoder | `Rgb8` or `Rgba8` |
 | TIFF | Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits; see the [TIFF guide](tiff.md) | Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, WebP | The page's own: `Gray8`, `Gray16`, `Rgb8`, `Rgb16`, `Cmyk8`, `Cmyk16`, float types and more |
 | JBIG2 | Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals; see the [JBIG2 guide](jbig2.md) | No | `Gray8`, black 0 and white 255 |
+| JPEG 2000 | All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes; see the [JPEG 2000 guide](jpeg2000.md) | No | `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8` or their 16-bit forms, by depth and color space |
 | PNM | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps | P1 to P7, plain or binary; PF and Pf | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16`; `RgbF32` or `GrayF32` for PFM |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
@@ -26,7 +27,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 ## Detection
 
 Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:
 
