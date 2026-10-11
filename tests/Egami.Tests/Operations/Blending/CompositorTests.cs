@@ -102,32 +102,35 @@ public class CompositorTests
         PremulRgba8[] ps = new PremulRgba8[1920], pd = new PremulRgba8[1920];
         RgbaF32[] fs = new RgbaF32[1920], fd = new RgbaF32[1920];
         byte[] coverage = new byte[1920];
-        void Run()
-        {
-            Compositor.Blend<Rgba8>(BlendMode.Multiply, s, d);
-            Compositor.Blend<Rgba8>(BlendMode.SourceOver, s, d, coverage);
-            Compositor.Blend<PremulRgba8>(BlendMode.Hue, ps, pd, coverage, 0.5f);
-            Compositor.Blend<RgbaF32>(BlendMode.Screen, fs, fd, 1, ColorSpace.Linear);
-            Compositor.Blend(BlendMode.Color, Rgba8.Red, pd.AsSpan(), coverage);
-            Compositor.Blend(BlendMode.Color, Rgba8.Red, fd.AsSpan(), coverage);
-        }
+        Action[] calls =
+        [
+            () => Compositor.Blend<Rgba8>(BlendMode.Multiply, s, d),
+            () => Compositor.Blend<Rgba8>(BlendMode.SourceOver, s, d, coverage),
+            () => Compositor.Blend<PremulRgba8>(BlendMode.Hue, ps, pd, coverage, 0.5f),
+            () => Compositor.Blend<RgbaF32>(BlendMode.Screen, fs, fd, 1, ColorSpace.Linear),
+            () => Compositor.Blend(BlendMode.Color, Rgba8.Red, pd.AsSpan(), coverage),
+            () => Compositor.Blend(BlendMode.Color, Rgba8.Red, fd.AsSpan(), coverage),
+        ];
 
-        // Warm enough that the JIT has finished tiering these methods, which allocates on the calling thread. Other tests run in
-        // parallel and can empty the shared array pool, so the fewest bytes over several tries is what the code itself allocates.
-        for (int i = 0; i < 300; i++)
+        // Warm enough that the JIT has finished tiering, which allocates on the calling thread. Other tests run in parallel and the
+        // runtime trims the shared array pool under memory pressure, so each call's fewest bytes over many tries is what it allocates.
+        foreach (Action call in calls)
         {
-            Run();
-        }
+            for (int i = 0; i < 300; i++)
+            {
+                call();
+            }
 
-        long fewest = long.MaxValue;
-        for (int i = 0; i < 10; i++)
-        {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            Run();
-            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-        }
+            long fewest = long.MaxValue;
+            for (int i = 0; i < 30 && fewest > 0; i++)
+            {
+                long before = GC.GetAllocatedBytesForCurrentThread();
+                call();
+                fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
+            }
 
-        Assert.Equal(0, fewest);
+            Assert.Equal(0, fewest);
+        }
     }
 
     [Fact]

@@ -30,6 +30,7 @@ internal readonly struct BlendRows<TPixel>
     private readonly RowConverter<TPixel>? _converter;
     private readonly RowConverter<RgbaF32>? _source;
 
+    /// <summary>Initializes a new instance of the <see cref="BlendRows{TPixel}"/> struct.</summary>
     /// <param name="mode">The mode.</param>
     /// <param name="opacity">Scales the source, 0 to 1.</param>
     /// <param name="curve">The curve to blend in linear light with, or <see langword="null"/> to blend the stored values.</param>

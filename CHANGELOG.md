@@ -21,6 +21,29 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   JPEG-colored planes encodes them straight, with libjpeg-turbo's bytes. `Save` writes any other format through a raster.
 - `Crop` (on chroma boundaries) and `Resize` work on the planes.
 
+### Blending
+
+- `BlendMode` names 31 modes: the twelve Porter–Duff operators, Plus, Modulate, the W3C separable and non-separable blend modes
+  (Multiply to Luminosity), Add and Subtract. `DrawImage` takes a mode, an opacity and a color space (stored values by default,
+  linear light as an option); only the overlap changes. `SourceOver` on stored values gives exactly what 1.0's `DrawImage` gives.
+- On 8-bit rasters the Porter–Duff operators, Plus, Modulate and the product-and-sum modes are exact integer math, equal bit for
+  bit to the W3C formulas rounded to nearest; ColorDodge, ColorBurn, SoftLight and the non-separable modes are within a level,
+  with alpha exact. Every mode is within a level of SkiaSharp (two for Difference and Exclusion, where Skia rounds) and within
+  two levels of the reference library's modes.
+- `BlendColor` blends one color over every pixel (tint with Multiply, colorize with Color). `DrawArithmetic` draws with SVG's
+  arithmetic composite, k1·S·D + k2·S + k3·D + k4.
+- `Compositor.Blend` blends spans of any pixel type, with per-pixel coverage for antialiased edges or one color through coverage,
+  for custom operations and rasterizers. It allocates nothing once warm and runs on many threads at once.
+
+### Regions and masks (in progress)
+
+- `Within(Rect, …)` runs any same-size chain so that only pixels inside the rectangle change. Filters read the real pixels
+  around it, so a blurred rectangle has no seam; flips mirror the rectangle; custom operations work unchanged. Steps that change
+  the size or the color encoding throw when the chain is recorded, naming the step.
+- `Within(Mask, …)` mixes the chain's result with the original by a `Mask`'s coverage: any raster's gray value, alpha or
+  luminance (`MaskChannel`), placed at an offset and optionally inverted. Coverage 0 and full are exact; 16-bit masks keep their
+  gradient on 16-bit images. Scopes nest.
+
 ### Streaming decode (in progress)
 
 - `RasterDecoder`: open an image and read it a band of rows (`ReadRows`) or a frame (`ReadFrame`) at a time, in any pixel
