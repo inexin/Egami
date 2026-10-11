@@ -18,6 +18,8 @@ internal static class JpegSegmentReader
 
     private static ReadOnlySpan<byte> XmpId => "http://ns.adobe.com/xap/1.0/\0"u8;
 
+    private static ReadOnlySpan<byte> PhotoshopId => "Photoshop 3.0\0"u8;
+
     private static ReadOnlySpan<byte> ExtendedXmpId => "http://ns.adobe.com/xmp/extension/\0"u8;
 
     private static ReadOnlySpan<byte> IccId => "ICC_PROFILE\0"u8;
@@ -233,6 +235,9 @@ internal static class JpegSegmentReader
                 break;
             case JpegMarker.App2:
                 ReadIcc(header, payload, iccChunks, ref iccCount);
+                break;
+            case JpegMarker.App13:
+                ReadPhotoshop(header, payload, input.Limits.MaxMetadataBytes);
                 break;
             case JpegMarker.App14:
                 if (payload.Length >= 12 && payload.StartsWith(AdobeId))
@@ -531,6 +536,26 @@ internal static class JpegSegmentReader
         return exif;
     }
 
+    // APP13 "Photoshop 3.0": a Photoshop resource block, split across segments when it is over 64 KB.
+    private static void ReadPhotoshop(JpegHeader header, ReadOnlySpan<byte> payload, long maxBytes)
+    {
+        if (!payload.StartsWith(PhotoshopId))
+        {
+            return;
+        }
+
+        header.PhotoshopBlock ??= new MemoryStream();
+        if (header.PhotoshopBlock.Length + payload.Length - PhotoshopId.Length > maxBytes)
+        {
+            header.Metadata.WarningList.Add("The Photoshop resource block is over the metadata limit. It was dropped.");
+            header.PhotoshopBlock = new MemoryStream();
+            return;
+        }
+
+        header.PhotoshopBlock.Write(payload[PhotoshopId.Length..]);
+        header.HasMetadata = true;
+    }
+
     private static void ReadIcc(JpegHeader header, ReadOnlySpan<byte> payload, Dictionary<int, byte[]> chunks, ref int count)
     {
         if (payload.Length < IccId.Length + 2 || !payload.StartsWith(IccId))
@@ -583,6 +608,17 @@ internal static class JpegSegmentReader
             else
             {
                 header.Metadata.WarningList.Add("The extended XMP packet is missing parts. It was dropped.");
+            }
+        }
+
+        if (header.PhotoshopBlock is { Length: > 0 } block)
+        {
+            ReadOnlyMemory<byte> resources = block.ToArray();
+            header.Details.PhotoshopResources = resources;
+            ReadOnlyMemory<byte> iptc = PhotoshopResources.FindIptc(resources, header.Metadata.WarningList);
+            if (!iptc.IsEmpty)
+            {
+                header.Metadata.SetIptcSource(iptc, long.MaxValue);
             }
         }
 

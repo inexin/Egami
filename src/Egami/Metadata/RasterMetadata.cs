@@ -102,6 +102,9 @@ public abstract class FormatDetails
 public sealed class RasterMetadata
 {
     private ParsedProfile? _parsed;
+    private IptcData? _iptc;
+    private ReadOnlyMemory<byte> _iptcSource;
+    private long _iptcLimit;
 
     /// <summary>Gets or sets the physical pixel density, if known.</summary>
     public Resolution? Resolution { get; set; }
@@ -111,6 +114,38 @@ public sealed class RasterMetadata
     /// byte.
     /// </summary>
     public ExifData? Exif { get; set; }
+
+    /// <summary>
+    /// Gets or sets the IPTC-IIM datasets, parsed on first use, or <see langword="null"/> if the file had none. JPEG keeps them in a
+    /// Photoshop resource block (APP13), PNG in a "Raw profile type iptc" text chunk. Unedited, they are written back byte for byte.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="iptc-values"/>
+    /// </example>
+    public IptcData? Iptc
+    {
+        get
+        {
+            if (_iptc is null && !_iptcSource.IsEmpty)
+            {
+                _iptc = IptcData.Parse(_iptcSource.Span, _iptcLimit);
+                foreach (string warning in _iptc.Warnings)
+                {
+                    WarningList.Add(warning + " The IPTC block is kept as it was.");
+                }
+
+                _iptcSource = default;
+            }
+
+            return _iptc;
+        }
+
+        set
+        {
+            _iptc = value;
+            _iptcSource = default;
+        }
+    }
 
     /// <summary>Gets or sets the embedded ICC profile. Egami keeps and writes it back but does not apply it. Empty if none.</summary>
     public ReadOnlyMemory<byte> IccProfile { get; set; }
@@ -270,6 +305,28 @@ public sealed class RasterMetadata
         ColorSpace = ColorSpaceHint.EmbeddedIcc;
     }
 
+    /// <summary>Gets whether there is IPTC, parsed or not.</summary>
+    internal bool HasIptc => _iptc is not null || !_iptcSource.IsEmpty;
+
+    /// <summary>Gets the IPTC bytes to write: the source bytes until parsed, then the parsed block's.</summary>
+    internal ReadOnlyMemory<byte> IptcBytes => _iptc?.ToBytes() ?? _iptcSource;
+
+    /// <summary>Keeps IPTC bytes a reader found, to parse on first use under <paramref name="maxBytes"/>.</summary>
+    internal void SetIptcSource(ReadOnlyMemory<byte> iim, long maxBytes)
+    {
+        _iptc = null;
+        _iptcSource = iim;
+        _iptcLimit = maxBytes;
+    }
+
+    /// <summary>Takes <paramref name="source"/>'s IPTC, parsed or not, sharing it.</summary>
+    internal void ShareIptc(RasterMetadata source)
+    {
+        _iptc = source._iptc;
+        _iptcSource = source._iptcSource;
+        _iptcLimit = source._iptcLimit;
+    }
+
     /// <summary>Returns a deep copy.</summary>
     /// <returns>The copy.</returns>
     public RasterMetadata Copy()
@@ -278,6 +335,9 @@ public sealed class RasterMetadata
         {
             Resolution = Resolution,
             Exif = Exif?.Copy(),
+            _iptc = _iptc?.Copy(),
+            _iptcSource = _iptcSource,
+            _iptcLimit = _iptcLimit,
             IccProfile = IccProfile.ToArray(),
             Xmp = Xmp.ToArray(),
             ColorSpace = ColorSpace,
@@ -307,6 +367,7 @@ public sealed class RasterMetadata
     {
         Resolution = source.Resolution;
         Exif = source.Exif;
+        ShareIptc(source);
         IccProfile = source.IccProfile;
         Xmp = source.Xmp;
         ColorSpace = source.ColorSpace;

@@ -80,6 +80,7 @@ internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScali
         target.FormatDetails = header.Details;
         target.Resolution = source.Resolution;
         target.Exif = source.Exif;
+        target.ShareIptc(source);
         target.Xmp = source.Xmp;
         target.IccProfile = source.IccProfile;
         target.ColorSpace = source.ColorSpace == ColorSpaceHint.Unknown ? ColorSpaceHint.Srgb : source.ColorSpace;

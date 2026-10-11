@@ -26,6 +26,8 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
     private static ReadOnlySpan<byte> XmpId => "http://ns.adobe.com/xap/1.0/\0"u8;
 
+    private static ReadOnlySpan<byte> PhotoshopId => "Photoshop 3.0\0"u8;
+
     private static ReadOnlySpan<byte> ExtendedXmpId => "http://ns.adobe.com/xmp/extension/\0"u8;
 
     private static ReadOnlySpan<byte> IccId => "ICC_PROFILE\0"u8;
@@ -136,7 +138,10 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
     private static ushort Density(double value) => (ushort)Math.Clamp(Math.Round(value), 1, ushort.MaxValue);
 
-    /// <summary>EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large) and comments, in that order.</summary>
+    /// <summary>
+    /// EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large), Photoshop resources with the IPTC (APP13) and
+    /// comments, in that order.
+    /// </summary>
     private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile)
     {
         // An EXIF block too large for one segment loses its thumbnail first; if it is still too large it is left out.
@@ -174,7 +179,9 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             }
         }
 
-        WriteXmp(writer, metadata.Xmp.Span, metadata.FormatDetails is JpegDetails details ? details.ExtendedXmp.Span : default);
+        JpegDetails? details = metadata.FormatDetails as JpegDetails;
+        WriteXmp(writer, metadata.Xmp.Span, details is null ? default : details.ExtendedXmp.Span);
+        WritePhotoshop(writer, metadata, details?.PhotoshopResources ?? default);
 
         foreach (TextEntry entry in metadata.Text)
         {
@@ -189,6 +196,27 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             {
                 Segment(writer, JpegMarker.Com, text.AsSpan(at, Math.Min(MaxComment, text.Length - at)));
             }
+        }
+    }
+
+    /// <summary>
+    /// The Photoshop resource block in APP13 segments of up to 64 KB: as read when the IPTC is unchanged, else with the IPTC
+    /// resource and its digest replaced; a new block when there was none and there is IPTC.
+    /// </summary>
+    private static void WritePhotoshop(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> resources)
+    {
+        ReadOnlySpan<byte> iim = metadata.IptcBytes.Span;
+        ReadOnlySpan<byte> block = resources.IsEmpty
+            ? (iim.IsEmpty ? default : PhotoshopResources.Create(iim))
+            : PhotoshopResources.FindIptc(resources, null).Span.SequenceEqual(iim) ? resources.Span : PhotoshopResources.WithIptc(resources.Span, iim);
+        const int MaxPart = ushort.MaxValue - 2 - 14;
+        for (int at = 0; at < block.Length; at += MaxPart)
+        {
+            ReadOnlySpan<byte> part = block.Slice(at, Math.Min(MaxPart, block.Length - at));
+            byte[] data = new byte[PhotoshopId.Length + part.Length];
+            PhotoshopId.CopyTo(data);
+            part.CopyTo(data.AsSpan(PhotoshopId.Length));
+            Segment(writer, JpegMarker.App13, data);
         }
     }
 

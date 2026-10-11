@@ -323,6 +323,8 @@ Egami.Formats.IRowFormatReader
 Egami.Formats.IRowFormatReader.Open(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Formats.RowReader!
 Egami.Formats.IRowFormatWriter
 Egami.Formats.IRowFormatWriter.Start<TPixel>(System.IO.Stream! output, Egami.Formats.EncodeStart<TPixel>! start) -> Egami.Formats.RowEncoder<TPixel>!
+Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.set -> void
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Pnm.PnmDetails.LittleEndian.get -> bool?
@@ -392,6 +394,8 @@ Egami.Metadata.RasterMetadata.CodePoints.set -> void
 Egami.Metadata.RasterMetadata.GetColorProfile() -> Egami.Colors.ColorProfile!
 Egami.Metadata.RasterMetadata.Hdr.get -> Egami.Colors.HdrMetadata?
 Egami.Metadata.RasterMetadata.Hdr.set -> void
+Egami.Metadata.RasterMetadata.Iptc.get -> Egami.Metadata.IptcData?
+Egami.Metadata.RasterMetadata.Iptc.set -> void
 Egami.Metadata.RasterMetadata.Primaries.get -> Egami.Colors.ColorPrimaries?
 Egami.Metadata.RasterMetadata.Primaries.set -> void
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!

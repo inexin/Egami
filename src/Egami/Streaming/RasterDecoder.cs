@@ -91,7 +91,7 @@ public sealed class RasterDecoder : IDisposable
             Height = output.Height,
             Layout = layout,
             FrameCount = source.FrameCount,
-            HasMetadata = metadata.Exif is not null || !metadata.IccProfile.IsEmpty || !metadata.Xmp.IsEmpty || metadata.Text.Count > 0,
+            HasMetadata = metadata.Exif is not null || metadata.HasIptc || !metadata.IccProfile.IsEmpty || !metadata.Xmp.IsEmpty || metadata.Text.Count > 0,
             EstimatedBytes = (long)output.Width * output.Height * layout.BytesPerPixel * (source.FrameCount ?? 1),
             Orientation = metadata.Exif?.Orientation ?? ImageOrientation.Normal,
             LoopCount = source.FrameCount > 1 ? metadata.LoopCount : null,

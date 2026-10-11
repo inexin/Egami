@@ -219,8 +219,11 @@ public class ApiExamples
     [Fact]
     public void IptcValues()
     {
+        using SampleFiles files = new();
+
         #region iptc-values
-        IptcData iptc = new();
+        using Raster photo = Raster.Load("sideways.jpg");
+        IptcData iptc = photo.Metadata.Iptc ?? new IptcData();
         iptc.Set(IptcKey.Headline, "Harbour at dawn");
         iptc.Add(IptcKey.Keywords, "harbour");
         iptc.Add(IptcKey.Keywords, "Bergen");
@@ -231,6 +234,10 @@ public class ApiExamples
         {
             Console.WriteLine($"{entry.Key} {entry.AsString()}");
         }
+
+        // JPEG saves it in its Photoshop resource block (APP13), with the digest Photoshop and Lightroom check.
+        photo.Metadata.Iptc = iptc;
+        photo.Save("captioned.jpg");
         #endregion
 
         Assert.True(iptc.IsUtf8);

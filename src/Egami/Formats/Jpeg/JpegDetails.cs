@@ -66,6 +66,13 @@ public sealed class JpegDetails : FormatDetails
     /// </summary>
     public ReadOnlyMemory<byte> ExtendedXmp { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Photoshop image resource block (APP13 "Photoshop 3.0"), joined from its segments, or empty. Egami parses
+    /// only its IPTC resource, into <see cref="RasterMetadata.Iptc"/>; on save the IPTC resource is replaced by the current IPTC,
+    /// its digest (0x0425) is updated to match, and every other resource is written back as it was.
+    /// </summary>
+    public ReadOnlyMemory<byte> PhotoshopResources { get; set; }
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
@@ -77,6 +84,7 @@ public sealed class JpegDetails : FormatDetails
             EstimatedQuality = EstimatedQuality,
             ScaleDenominator = ScaleDenominator,
             ExtendedXmp = ExtendedXmp.ToArray(),
+            PhotoshopResources = PhotoshopResources.ToArray(),
         };
         foreach (JpegComponent component in Components)
         {

@@ -25,6 +25,7 @@ internal static class JpegMarker
     internal const byte App0 = 0xE0;
     internal const byte App1 = 0xE1;
     internal const byte App2 = 0xE2;
+    internal const byte App13 = 0xED;
     internal const byte App14 = 0xEE;
     internal const byte App15 = 0xEF;
     internal const byte Com = 0xFE;
@@ -78,6 +79,9 @@ internal sealed class JpegHeader
 
     /// <summary>Gets or sets the Adobe APP14 transform flag (0, 1 or 2), or -1 with no Adobe segment.</summary>
     internal int AdobeTransform { get; set; } = -1;
+
+    /// <summary>The Photoshop resource block's parts, from APP13 segments in file order.</summary>
+    internal MemoryStream? PhotoshopBlock { get; set; }
 
     internal bool HasJfif { get; set; }
 
