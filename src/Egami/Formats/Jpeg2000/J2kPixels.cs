@@ -135,6 +135,31 @@ internal sealed class J2kPixels
         && _color[0].Component == 0 && _color[1].Component == 1 && _color[2].Component == 2
         && !_color[0].Signed && !_color[1].Signed && !_color[2].Signed;
 
+    /// <summary>
+    /// Returns which of <paramref name="count"/> components the pixels use, with the first three too when the component
+    /// transform <paramref name="mct"/> combines them.
+    /// </summary>
+    internal bool[] Needed(int count, bool mct)
+    {
+        bool[] needed = new bool[count];
+        foreach (Channel channel in _color)
+        {
+            needed[channel.Component] = true;
+        }
+
+        if (_alpha is { } alpha)
+        {
+            needed[alpha.Component] = true;
+        }
+
+        if (mct && count >= 3)
+        {
+            needed[0] = needed[1] = needed[2] = true;
+        }
+
+        return needed;
+    }
+
     /// <summary>Gets whether a signed component was offset to unsigned.</summary>
     internal bool OffsetSigned { get; private set; }
 
@@ -587,7 +612,7 @@ internal sealed class J2kGrid
     internal required int[][] Rows { get; init; }
 
     /// <summary>Maps each grid point of the image area at <paramref name="reduce"/> to each component's samples.</summary>
-    internal static J2kGrid Create(J2kCodestream stream, int reduce)
+    internal static J2kGrid Create(J2kCodestream stream, int reduce, bool[]? needed = null)
     {
         int x0 = J2kTier2.CeilShift(stream.OffsetX, reduce);
         int y0 = J2kTier2.CeilShift(stream.OffsetY, reduce);
@@ -598,6 +623,12 @@ internal sealed class J2kGrid
         int[][] rows = new int[count][];
         for (int c = 0; c < count; c++)
         {
+            if (needed is not null && !needed[c])
+            {
+                columns[c] = rows[c] = [];
+                continue;
+            }
+
             J2kComponent component = stream.Components[c];
             (int w, int h) = J2kDecoder.ComponentSize(stream, c, reduce);
             int cx0 = J2kTier2.CeilShift(J2kTier2.CeilDiv(stream.OffsetX, component.Dx), reduce);

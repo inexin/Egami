@@ -42,6 +42,7 @@ internal sealed class J2kDecoder
     private readonly int _keepLayers;
     private readonly int _parallelism;
     private readonly CancellationToken _cancellationToken;
+    private long _structures;
 
     internal J2kDecoder(J2kCodestream stream, int reduce, int keepLayers, int parallelism, CancellationToken cancellationToken)
     {
@@ -51,6 +52,12 @@ internal sealed class J2kDecoder
         _parallelism = Math.Max(1, parallelism);
         _cancellationToken = cancellationToken;
     }
+
+    /// <summary>
+    /// Gets which components to decode, or <see langword="null"/> for all: the ones the pixels use, and the first three when the
+    /// component transform combines them. The rest are still parsed, as their packets lie between the others'.
+    /// </summary>
+    internal bool[]? Needed { get; init; }
 
     /// <summary>Gets the size of component <paramref name="c"/> after dropping <paramref name="reduce"/> resolution levels.</summary>
     internal static (int Width, int Height) ComponentSize(J2kCodestream stream, int c, int reduce)
@@ -83,7 +90,7 @@ internal sealed class J2kDecoder
             offsets[c] = J2kTier2.CeilShift(J2kTier2.CeilDiv(y0, component.Dy), _reduce) - origin;
             heights[c] = J2kTier2.CeilShift(J2kTier2.CeilDiv(y1, component.Dy), _reduce) - origin - offsets[c];
             widths[c] = ComponentSize(_stream, c, _reduce).Width;
-            planes[c] = new int[(long)widths[c] * heights[c]];
+            planes[c] = Needed is null || Needed[c] ? new int[(long)widths[c] * heights[c]] : [];
         }
 
         J2kImage image = new() { Planes = planes, RowOffsets = offsets, Widths = widths, Heights = heights, Components = _stream.Components };
@@ -104,6 +111,14 @@ internal sealed class J2kDecoder
                 continue;
             }
 
+            // Every tile builds each component's resolutions, bands and precincts: a codestream of many components and many
+            // tiny tiles would build far more of them than the image has samples.
+            _structures += (long)_stream.Components.Length * (_stream.CodingStyle(tile, 0).Levels + 2);
+            if (_structures > (Samples() / 4) + (1 << 20))
+            {
+                throw new InvalidDataException("The codestream has far more tiles and components than its samples can fill.");
+            }
+
             if (DecodeTile(tile, image, window))
             {
                 image.Truncated = true;
@@ -112,6 +127,18 @@ internal sealed class J2kDecoder
 
         image.Truncated |= _stream.Truncated;
         return image;
+    }
+
+    private long Samples()
+    {
+        long samples = 0;
+        for (int c = 0; c < _stream.Components.Length; c++)
+        {
+            (int w, int h) = ComponentSize(_stream, c, 0);
+            samples += (long)w * h;
+        }
+
+        return samples;
     }
 
     /// <summary>Returns whether a tile's rectangle, reduced, meets the window.</summary>
@@ -125,7 +152,7 @@ internal sealed class J2kDecoder
     /// Returns whether a code-block of a band <paramref name="halvings"/> levels below the decoded resolution can affect the
     /// window, given in that resolution's coordinates: its rectangle, scaled up, widened by the synthesis filters' reach.
     /// </summary>
-    private static bool Needed(J2kCodeBlock block, int halvings, (int X0, int Y0, int X1, int Y1) window)
+    private static bool Reaches(J2kCodeBlock block, int halvings, (int X0, int Y0, int X1, int Y1) window)
     {
         // Each synthesis level reaches at most three samples either side of a sample's position at that level, so a band
         // sample reaches no further than six of its own steps; eight is a safe margin.
@@ -155,6 +182,11 @@ internal sealed class J2kDecoder
             }
 
             tops[c] = top;
+            if (Needed is not null && !Needed[c])
+            {
+                continue;
+            }
+
             J2kResolution highest = tc.Resolutions[top];
             J2kComponent component = _stream.Components[c];
             (int X0, int Y0, int X1, int Y1)? local = window is { } w
@@ -194,7 +226,7 @@ internal sealed class J2kDecoder
                             // The band's level below the decoded resolution: LL at resolution 0 lies top levels down, a
                             // detail band of resolution r one level below resolution r.
                             int halvings = r == 0 ? top : top - r + 1;
-                            if (local is { } l && !Needed(block, halvings, l))
+                            if (local is { } l && !Reaches(block, halvings, l))
                             {
                                 continue;
                             }
@@ -210,6 +242,11 @@ internal sealed class J2kDecoder
         RunTier1(work, components, integers, floats, tops);
         ForEach(count, c =>
         {
+            if (integers[c] is null && floats[c] is null)
+            {
+                return;
+            }
+
             J2kTileComponent tc = components[c];
             J2kResolution highest = tc.Resolutions[tops[c]];
             if (integers[c] is { } ints)
@@ -241,7 +278,10 @@ internal sealed class J2kDecoder
 
         for (int c = 0; c < count; c++)
         {
-            Store(components[c], tops[c], c, integers[c], floats[c], image);
+            if (integers[c] is not null || floats[c] is not null)
+            {
+                Store(components[c], tops[c], c, integers[c], floats[c], image);
+            }
         }
 
         return tier2.Truncated;

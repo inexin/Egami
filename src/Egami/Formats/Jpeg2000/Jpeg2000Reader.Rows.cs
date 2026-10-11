@@ -144,9 +144,10 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
             NativeScale = Math.Clamp(scale, 1, MaxNativeScale);
             _reduce = System.Numerics.BitOperations.Log2((uint)NativeScale);
             input.Limits.CheckFrameSize(Math.Max(1, StoredWidth), Math.Max(1, StoredHeight));
-            _grid = J2kGrid.Create(stream, _reduce);
+            bool[] needed = _pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1);
+            _grid = J2kGrid.Create(stream, _reduce, needed);
             int layers = options is Jpeg2000ReaderOptions { MaxQualityLayers: int n } ? Math.Max(n, 1) : 0;
-            _decoder = new J2kDecoder(stream, _reduce, layers, input.Context.MaxParallelism, input.CancellationToken);
+            _decoder = new J2kDecoder(stream, _reduce, layers, input.Context.MaxParallelism, input.CancellationToken) { Needed = needed };
             if (options.Region is Rect region)
             {
                 // The region, in reduced pixels, moved onto the reduced reference grid.
@@ -161,7 +162,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
 
             _yuv = _pixels.Model == J2kModel.Sycc && PlaneFormat(stream, _pixels) is (ChromaFormat format, _) && format != ChromaFormat.Yuv444;
             _bandStarts = Bands(stream, _reduce, !_yuv && Banded(stream));
-            long working = WorkingBytesOf(stream, _reduce, _bandStarts, _yuv);
+            long working = WorkingBytesOf(stream, _reduce, _bandStarts, _yuv, needed);
             if (working > input.Limits.MaxTotalBytes)
             {
                 throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), input.Limits.MaxTotalBytes, working);
@@ -404,7 +405,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
     }
 
     /// <summary>Returns what streaming holds: one band's samples of every component and one tile's coefficients.</summary>
-    private static long WorkingBytesOf(J2kCodestream stream, int reduce, int[] bands, bool whole)
+    private static long WorkingBytesOf(J2kCodestream stream, int reduce, int[] bands, bool whole, bool[] needed)
     {
         int tallest = 0;
         for (int b = 0; b + 1 < bands.Length; b++)
@@ -415,6 +416,11 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
         long samples = 0;
         for (int c = 0; c < stream.Components.Length; c++)
         {
+            if (!needed[c])
+            {
+                continue;
+            }
+
             (int w, int h) = J2kDecoder.ComponentSize(stream, c, reduce);
             samples += (long)w * Math.Min(h, tallest + 1);
         }

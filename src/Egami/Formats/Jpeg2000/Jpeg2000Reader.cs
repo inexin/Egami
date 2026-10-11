@@ -35,7 +35,7 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             HasMetadata = !file.Xmp.IsEmpty || !file.Icc.IsEmpty || file.Capture is not null || file.Display is not null,
             EstimatedBytes = (long)width * height * pixels.Layout.BytesPerPixel,
             Access = Streams(stream, pixels) ? RasterAccess.Streamed : RasterAccess.Buffered,
-            WorkingBytes = WorkingBytes(stream, 0),
+            WorkingBytes = WorkingBytes(stream, 0, pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1)),
         };
     }
 
@@ -81,11 +81,16 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
     private static Jpeg2000Components Mode(ReaderOptions options) => options is Jpeg2000ReaderOptions j ? j.Components : Jpeg2000Components.Color;
 
     /// <summary>Gets the most bytes a decode at <paramref name="reduce"/> holds: every component's samples, and a tile's coefficients.</summary>
-    internal static long WorkingBytes(J2kCodestream stream, int reduce)
+    internal static long WorkingBytes(J2kCodestream stream, int reduce, bool[]? needed = null)
     {
         long samples = 0;
         for (int c = 0; c < stream.Components.Length; c++)
         {
+            if (needed is not null && !needed[c])
+            {
+                continue;
+            }
+
             (int w, int h) = J2kDecoder.ComponentSize(stream, c, reduce);
             samples += (long)w * h;
         }
@@ -98,8 +103,9 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         J2kPixels pixels = J2kPixels.Create(file, stream.Components, Mode(options));
-        J2kImage image = Decode(input, stream, options);
-        J2kGrid grid = J2kGrid.Create(stream, 0);
+        bool[] needed = pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1);
+        J2kImage image = Decode(input, stream, options, needed);
+        J2kGrid grid = J2kGrid.Create(stream, 0, needed);
         Raster<TPixel> raster = input.CreateRaster<TPixel>(grid.Width, grid.Height);
         try
         {
@@ -134,16 +140,16 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
     }
 
     /// <summary>Decodes the codestream at full resolution, within the limits; a truncated codestream fails a strict read.</summary>
-    private static J2kImage Decode(EgamiInput input, J2kCodestream stream, ReaderOptions options)
+    private static J2kImage Decode(EgamiInput input, J2kCodestream stream, ReaderOptions options, bool[]? needed)
     {
-        long working = WorkingBytes(stream, 0);
+        long working = WorkingBytes(stream, 0, needed);
         if (working > input.Limits.MaxTotalBytes)
         {
             throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), input.Limits.MaxTotalBytes, working);
         }
 
         int layers = options is Jpeg2000ReaderOptions { MaxQualityLayers: int n } ? Math.Max(n, 1) : 0;
-        J2kImage image = new J2kDecoder(stream, 0, layers, input.Context.MaxParallelism, input.CancellationToken).Decode();
+        J2kImage image = new J2kDecoder(stream, 0, layers, input.Context.MaxParallelism, input.CancellationToken) { Needed = needed }.Decode();
         if (image.Truncated && options.Recovery == RecoveryMode.Strict)
         {
             throw new CorruptDataException(input.FormatName, -1, "The JPEG 2000 codestream ends before its last packet.") { IsTruncation = true };
