@@ -38,4 +38,23 @@ public sealed partial class RasterOps
 
         return Add(new FastBlurOperation(sigma, sigma, colorSpace == ColorSpace.Linear));
     }
+
+    /// <summary>
+    /// Replaces each channel with its median over the (2r + 1) square around the pixel, as ImageMagick's -statistic Median and
+    /// the reference library's MedianBlur do: removes salt-and-pepper noise while keeping edges. Works on stored values, so 8 and 16-bit
+    /// results are exact; edges repeat the edge pixel. The cost per pixel does not grow with the radius on byte types.
+    /// </summary>
+    /// <param name="radius">The radius in pixels, from 0 (changes nothing) to 100.</param>
+    /// <param name="includeAlpha">Whether alpha gets its own median too; by default it is kept.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="radius"/> is negative or above 100.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Filters.cs" region="median"/>
+    /// </example>
+    public RasterOps Median(int radius, bool includeAlpha = false)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(radius);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(radius, MedianOperation.MaxRadius);
+        return radius == 0 ? this : Add(new MedianOperation(radius, includeAlpha));
+    }
 }

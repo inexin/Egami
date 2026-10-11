@@ -847,6 +847,7 @@ Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operatio
 Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MakeTransparent(Egami.Pixels.Rgba8 color, float tolerance = 0, float softness = 0) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Median(int radius, bool includeAlpha = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Offset(int dx, int dy, Egami.Operations.EdgeMode edges = Egami.Operations.EdgeMode.Wrap, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8)) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.OnChannels(Egami.Operations.ColorChannels channels, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.QuadDistort(System.Numerics.Vector2 topLeft, System.Numerics.Vector2 topRight, System.Numerics.Vector2 bottomRight, System.Numerics.Vector2 bottomLeft, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!

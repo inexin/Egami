@@ -1,0 +1,11 @@
+# Version: ImageMagick 7.1.1-32 Q16-HDRI x86_64 22207 https://imagemagick.org, in alpine:3.20. Lines: <input>.<case> <bits> <width> <height> <ImageMagick arguments>
+duck.median-1 8 240 180 -statistic Median 3x3
+duck.median-2 8 240 180 -statistic Median 5x5
+duck.median-3 8 240 180 -statistic Median 7x7
+duck.median-10 8 240 180 -statistic Median 21x21
+noisy.median-2 8 240 180 -statistic Median 5x5
+noisy.median-4 8 240 180 -statistic Median 9x9
+duck16.median-2 16 240 180 -statistic Median 5x5
+duck16.median-3 16 240 180 -statistic Median 7x7
+shapes.median-2 8 200 150 -channel RGB -statistic Median 5x5
+shapes.median-3-alpha 8 200 150 -channel RGBA -statistic Median 7x7

@@ -17,6 +17,8 @@ internal static class FilterTiming
         ["Blur-Exact-20"] = o => o.Blur(20),
         ["Blur-Fast-20"] = o => o.Blur(20, ColorSpace.Encoded, BlurMethod.Fast),
         ["Blur-Fast-60"] = o => o.Blur(60, ColorSpace.Encoded, BlurMethod.Fast),
+        ["Median-2"] = o => o.Median(2),
+        ["Median-10"] = o => o.Median(10),
     };
 
     internal static void Run(string[] names)
