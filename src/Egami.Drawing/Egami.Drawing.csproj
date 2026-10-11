@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Drawing</RootNamespace>
+    <PackageId>Egami.Drawing</PackageId>
+    <Version>1.0.0-preview.1</Version>
+    <Description>Antialiased paths, shapes, strokes, clips and images on a canvas for Egami, with backends beyond the raster.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Egami's public API only: no InternalsVisibleTo from the core (2.6.1 question 1). -->
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Drawing.Tests" />
+    <InternalsVisibleTo Include="Egami.Drawing.Benchmarks" />
+  </ItemGroup>
+
+</Project>

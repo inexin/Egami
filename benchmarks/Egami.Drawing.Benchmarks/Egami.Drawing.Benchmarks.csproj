@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
+    <!-- The Phase 2.2 peak-memory harness, shared with Egami's tests. -->
+    <Compile Include="..\..\tests\Egami.Tests\Memory\PeakMemory.cs" Link="PeakMemory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/Egami.Benchmarks/Egami.Benchmarks.csproj" />
+    <Project Path="benchmarks/Egami.Drawing.Benchmarks/Egami.Drawing.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/Animation/Animation.csproj" />
@@ -18,10 +19,12 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Egami/Egami.csproj" />
+    <Project Path="src/Egami.Drawing/Egami.Drawing.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
     <Project Path="tests/Egami.DocSamples/Egami.DocSamples.csproj" />
+    <Project Path="tests/Egami.Drawing.Tests/Egami.Drawing.Tests.csproj" />
     <Project Path="tests/Egami.Fuzz/Egami.Fuzz.csproj" />
     <Project Path="tests/Egami.OutsideTests/Egami.OutsideTests.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />

@@ -1,0 +1,158 @@
+#nullable enable
+Egami.Drawing.CornerRadii
+Egami.Drawing.CornerRadii.BottomLeft.get -> System.Numerics.Vector2
+Egami.Drawing.CornerRadii.BottomLeft.init -> void
+Egami.Drawing.CornerRadii.BottomRight.get -> System.Numerics.Vector2
+Egami.Drawing.CornerRadii.BottomRight.init -> void
+Egami.Drawing.CornerRadii.CornerRadii() -> void
+Egami.Drawing.CornerRadii.CornerRadii(float radius) -> void
+Egami.Drawing.CornerRadii.CornerRadii(float radiusX, float radiusY) -> void
+Egami.Drawing.CornerRadii.CornerRadii(float topLeft, float topRight, float bottomRight, float bottomLeft) -> void
+Egami.Drawing.CornerRadii.CornerRadii(System.Numerics.Vector2 TopLeft, System.Numerics.Vector2 TopRight, System.Numerics.Vector2 BottomRight, System.Numerics.Vector2 BottomLeft) -> void
+Egami.Drawing.CornerRadii.Deconstruct(out System.Numerics.Vector2 TopLeft, out System.Numerics.Vector2 TopRight, out System.Numerics.Vector2 BottomRight, out System.Numerics.Vector2 BottomLeft) -> void
+Egami.Drawing.CornerRadii.Equals(Egami.Drawing.CornerRadii other) -> bool
+Egami.Drawing.CornerRadii.this[int index].get -> System.Numerics.Vector2
+Egami.Drawing.CornerRadii.TopLeft.get -> System.Numerics.Vector2
+Egami.Drawing.CornerRadii.TopLeft.init -> void
+Egami.Drawing.CornerRadii.TopRight.get -> System.Numerics.Vector2
+Egami.Drawing.CornerRadii.TopRight.init -> void
+Egami.Drawing.FillRule
+Egami.Drawing.FillRule.EvenOdd = 1 -> Egami.Drawing.FillRule
+Egami.Drawing.FillRule.NonZero = 0 -> Egami.Drawing.FillRule
+Egami.Drawing.Path
+Egami.Drawing.Path.Bounds.get -> Egami.Drawing.RectF
+Egami.Drawing.Path.Contains(System.Numerics.Vector2 point) -> bool
+Egami.Drawing.Path.Contours.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.Path!>!
+Egami.Drawing.Path.FillRule.get -> Egami.Drawing.FillRule
+Egami.Drawing.Path.IsConvex.get -> bool
+Egami.Drawing.Path.IsEmpty.get -> bool
+Egami.Drawing.Path.Points.get -> System.ReadOnlySpan<System.Numerics.Vector2>
+Egami.Drawing.Path.Reverse() -> Egami.Drawing.Path!
+Egami.Drawing.Path.TightBounds.get -> Egami.Drawing.RectF
+Egami.Drawing.Path.Transform(Egami.Operations.Homography homography) -> Egami.Drawing.Path!
+Egami.Drawing.Path.Transform(System.Numerics.Matrix3x2 matrix) -> Egami.Drawing.Path!
+Egami.Drawing.Path.Verbs.get -> System.ReadOnlySpan<Egami.Drawing.PathVerb>
+Egami.Drawing.Path.WithFillRule(Egami.Drawing.FillRule fillRule) -> Egami.Drawing.Path!
+Egami.Drawing.PathBuilder
+Egami.Drawing.PathBuilder.AddArc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddCircle(System.Numerics.Vector2 center, float radius, Egami.Drawing.PathDirection direction = Egami.Drawing.PathDirection.Clockwise) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddOval(Egami.Drawing.RectF oval, Egami.Drawing.PathDirection direction = Egami.Drawing.PathDirection.Clockwise) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddPath(Egami.Drawing.Path! path) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddPath(Egami.Drawing.Path! path, System.Numerics.Matrix3x2 transform) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddPolygon(System.ReadOnlySpan<System.Numerics.Vector2> points, bool close = true) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddRect(Egami.Drawing.RectF rect, Egami.Drawing.PathDirection direction = Egami.Drawing.PathDirection.Clockwise) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.AddRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Drawing.PathDirection direction = Egami.Drawing.PathDirection.Clockwise) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.ArcTo(System.Numerics.Vector2 corner, System.Numerics.Vector2 end, float radius) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.ArcTo(System.Numerics.Vector2 radii, float rotationDegrees, bool largeArc, bool clockwise, System.Numerics.Vector2 end) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.Close() -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.CubicTo(float control1X, float control1Y, float control2X, float control2Y, float x, float y) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.CubicTo(System.Numerics.Vector2 control1, System.Numerics.Vector2 control2, System.Numerics.Vector2 end) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.CurrentPoint.get -> System.Numerics.Vector2
+Egami.Drawing.PathBuilder.IsEmpty.get -> bool
+Egami.Drawing.PathBuilder.LineTo(float x, float y) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.LineTo(System.Numerics.Vector2 point) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.MoveTo(float x, float y) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.MoveTo(System.Numerics.Vector2 point) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.PathBuilder() -> void
+Egami.Drawing.PathBuilder.QuadTo(float controlX, float controlY, float x, float y) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.QuadTo(System.Numerics.Vector2 control, System.Numerics.Vector2 end) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.RelativeArcTo(System.Numerics.Vector2 radii, float rotationDegrees, bool largeArc, bool clockwise, System.Numerics.Vector2 end) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.RelativeCubicTo(System.Numerics.Vector2 control1, System.Numerics.Vector2 control2, System.Numerics.Vector2 end) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.RelativeLineTo(System.Numerics.Vector2 delta) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.RelativeMoveTo(System.Numerics.Vector2 delta) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.RelativeQuadTo(System.Numerics.Vector2 control, System.Numerics.Vector2 end) -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.Reset() -> Egami.Drawing.PathBuilder!
+Egami.Drawing.PathBuilder.ToPath(Egami.Drawing.FillRule fillRule = Egami.Drawing.FillRule.NonZero) -> Egami.Drawing.Path!
+Egami.Drawing.PathDirection
+Egami.Drawing.PathDirection.Clockwise = 0 -> Egami.Drawing.PathDirection
+Egami.Drawing.PathDirection.CounterClockwise = 1 -> Egami.Drawing.PathDirection
+Egami.Drawing.PathVerb
+Egami.Drawing.PathVerb.Close = 4 -> Egami.Drawing.PathVerb
+Egami.Drawing.PathVerb.Cubic = 3 -> Egami.Drawing.PathVerb
+Egami.Drawing.PathVerb.Line = 1 -> Egami.Drawing.PathVerb
+Egami.Drawing.PathVerb.Move = 0 -> Egami.Drawing.PathVerb
+Egami.Drawing.PathVerb.Quad = 2 -> Egami.Drawing.PathVerb
+Egami.Drawing.RectF
+Egami.Drawing.RectF.Bottom.get -> float
+Egami.Drawing.RectF.Center.get -> System.Numerics.Vector2
+Egami.Drawing.RectF.Contains(Egami.Drawing.RectF other) -> bool
+Egami.Drawing.RectF.Contains(System.Numerics.Vector2 point) -> bool
+Egami.Drawing.RectF.Deconstruct(out float X, out float Y, out float Width, out float Height) -> void
+Egami.Drawing.RectF.Equals(Egami.Drawing.RectF other) -> bool
+Egami.Drawing.RectF.Height.get -> float
+Egami.Drawing.RectF.Height.init -> void
+Egami.Drawing.RectF.Inflate(float dx, float dy) -> Egami.Drawing.RectF
+Egami.Drawing.RectF.Intersect(Egami.Drawing.RectF other) -> Egami.Drawing.RectF
+Egami.Drawing.RectF.IntersectsWith(Egami.Drawing.RectF other) -> bool
+Egami.Drawing.RectF.IsEmpty.get -> bool
+Egami.Drawing.RectF.IsFinite.get -> bool
+Egami.Drawing.RectF.Left.get -> float
+Egami.Drawing.RectF.Offset(System.Numerics.Vector2 offset) -> Egami.Drawing.RectF
+Egami.Drawing.RectF.Position.get -> System.Numerics.Vector2
+Egami.Drawing.RectF.RectF() -> void
+Egami.Drawing.RectF.RectF(float X, float Y, float Width, float Height) -> void
+Egami.Drawing.RectF.Right.get -> float
+Egami.Drawing.RectF.RoundOut() -> Egami.Rect
+Egami.Drawing.RectF.Size.get -> System.Numerics.Vector2
+Egami.Drawing.RectF.Top.get -> float
+Egami.Drawing.RectF.Union(Egami.Drawing.RectF other) -> Egami.Drawing.RectF
+Egami.Drawing.RectF.Width.get -> float
+Egami.Drawing.RectF.Width.init -> void
+Egami.Drawing.RectF.X.get -> float
+Egami.Drawing.RectF.X.init -> void
+Egami.Drawing.RectF.Y.get -> float
+Egami.Drawing.RectF.Y.init -> void
+Egami.Drawing.RoundRect
+Egami.Drawing.RoundRect.Bounds.get -> Egami.Drawing.RectF
+Egami.Drawing.RoundRect.Contains(System.Numerics.Vector2 point) -> bool
+Egami.Drawing.RoundRect.Equals(Egami.Drawing.RoundRect other) -> bool
+Egami.Drawing.RoundRect.Inflate(float delta) -> Egami.Drawing.RoundRect
+Egami.Drawing.RoundRect.IsEmpty.get -> bool
+Egami.Drawing.RoundRect.Kind.get -> Egami.Drawing.RoundRectKind
+Egami.Drawing.RoundRect.Offset(System.Numerics.Vector2 offset) -> Egami.Drawing.RoundRect
+Egami.Drawing.RoundRect.Radii.get -> Egami.Drawing.CornerRadii
+Egami.Drawing.RoundRect.RoundRect() -> void
+Egami.Drawing.RoundRect.RoundRect(Egami.Drawing.RectF bounds, Egami.Drawing.CornerRadii radii) -> void
+Egami.Drawing.RoundRect.RoundRect(Egami.Drawing.RectF bounds, float radius) -> void
+Egami.Drawing.RoundRect.RoundRect(Egami.Drawing.RectF bounds, float radiusX, float radiusY) -> void
+Egami.Drawing.RoundRectKind
+Egami.Drawing.RoundRectKind.Complex = 4 -> Egami.Drawing.RoundRectKind
+Egami.Drawing.RoundRectKind.Empty = 0 -> Egami.Drawing.RoundRectKind
+Egami.Drawing.RoundRectKind.Oval = 2 -> Egami.Drawing.RoundRectKind
+Egami.Drawing.RoundRectKind.Rect = 1 -> Egami.Drawing.RoundRectKind
+Egami.Drawing.RoundRectKind.Simple = 3 -> Egami.Drawing.RoundRectKind
+override Egami.Drawing.CornerRadii.GetHashCode() -> int
+override Egami.Drawing.Path.ToString() -> string!
+override Egami.Drawing.RectF.GetHashCode() -> int
+override Egami.Drawing.RoundRect.GetHashCode() -> int
+override Egami.Drawing.RoundRect.ToString() -> string!
+static Egami.Drawing.CornerRadii.operator !=(Egami.Drawing.CornerRadii left, Egami.Drawing.CornerRadii right) -> bool
+static Egami.Drawing.CornerRadii.operator ==(Egami.Drawing.CornerRadii left, Egami.Drawing.CornerRadii right) -> bool
+static Egami.Drawing.CornerRadii.Zero.get -> Egami.Drawing.CornerRadii
+static Egami.Drawing.Path.Arc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Circle(System.Numerics.Vector2 center, float radius) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Empty.get -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Line(System.Numerics.Vector2 start, System.Numerics.Vector2 end) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Oval(Egami.Drawing.RectF bounds) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Pie(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Polygon(System.ReadOnlySpan<System.Numerics.Vector2> points, bool close = true) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Rect(Egami.Drawing.RectF rect) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.RegularPolygon(System.Numerics.Vector2 center, float radius, int sides, float rotationDegrees = 0) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Ring(Egami.Drawing.RoundRect outer, Egami.Drawing.RoundRect inner) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.RoundRect(Egami.Drawing.RoundRect roundRect) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.Star(System.Numerics.Vector2 center, float outerRadius, float innerRadius, int points, float rotationDegrees = 0) -> Egami.Drawing.Path!
+static Egami.Drawing.RectF.Empty.get -> Egami.Drawing.RectF
+static Egami.Drawing.RectF.FromEdges(float left, float top, float right, float bottom) -> Egami.Drawing.RectF
+static Egami.Drawing.RectF.FromPoints(System.ReadOnlySpan<System.Numerics.Vector2> points) -> Egami.Drawing.RectF
+static Egami.Drawing.RectF.FromPosition(System.Numerics.Vector2 position, System.Numerics.Vector2 size) -> Egami.Drawing.RectF
+static Egami.Drawing.RectF.implicit operator Egami.Drawing.RectF(Egami.Rect rect) -> Egami.Drawing.RectF
+static Egami.Drawing.RectF.operator !=(Egami.Drawing.RectF left, Egami.Drawing.RectF right) -> bool
+static Egami.Drawing.RectF.operator ==(Egami.Drawing.RectF left, Egami.Drawing.RectF right) -> bool
+static Egami.Drawing.RoundRect.operator !=(Egami.Drawing.RoundRect left, Egami.Drawing.RoundRect right) -> bool
+static Egami.Drawing.RoundRect.operator ==(Egami.Drawing.RoundRect left, Egami.Drawing.RoundRect right) -> bool
+static Egami.Drawing.RoundRect.Oval(Egami.Drawing.RectF bounds) -> Egami.Drawing.RoundRect
+~override Egami.Drawing.CornerRadii.Equals(object obj) -> bool
+~override Egami.Drawing.CornerRadii.ToString() -> string
+~override Egami.Drawing.RectF.Equals(object obj) -> bool
+~override Egami.Drawing.RectF.ToString() -> string
+~override Egami.Drawing.RoundRect.Equals(object obj) -> bool

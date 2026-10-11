@@ -1,13 +1,16 @@
 """Brings PublicAPI.Unshipped.txt in line with the code (PublicAPI.Shipped.txt is the frozen 1.0 API; edit it by hand only at a release): adds every symbol the public API analyzer reports as undeclared (RS0016)
 and removes every declared one it cannot find (RS0017), such as a renamed or internalized member.
 
-Usage: python tools/update-public-api.py   (from the repo root)
+Usage: python tools/update-public-api.py [src/Egami.Drawing]   (from the repo root; src/Egami by default)
 """
+import os
 import re
 import subprocess
+import sys
 
-PROJECT = "src/Egami/Egami.csproj"
-API_FILE = "src/Egami/PublicAPI.Unshipped.txt"
+FOLDER = sys.argv[1].rstrip("/\\") if len(sys.argv) > 1 else "src/Egami"
+PROJECT = f"{FOLDER}/{os.path.basename(FOLDER)}.csproj"
+API_FILE = f"{FOLDER}/PublicAPI.Unshipped.txt"
 
 out = subprocess.run(["dotnet", "build", PROJECT, "-c", "Release", "--no-incremental"], capture_output=True, text=True).stdout
 symbols = set(re.findall(r"error RS0016: Symbol '(.+?)' is not part of the declared public API", out))
