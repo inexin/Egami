@@ -41,6 +41,21 @@ public readonly record struct ExifKey(ushort Tag, ExifIfd Ifd)
     /// <summary>The copyright notice (IFD0 0x8298).</summary>
     public static readonly ExifKey Copyright = new(0x8298, ExifIfd.Primary);
 
+    /// <summary>The title Windows Explorer shows, as UTF-16 (IFD0 0x9C9B, XPTitle).</summary>
+    public static readonly ExifKey XPTitle = new(0x9C9B, ExifIfd.Primary);
+
+    /// <summary>The comments Windows Explorer shows, as UTF-16 (IFD0 0x9C9C, XPComment).</summary>
+    public static readonly ExifKey XPComment = new(0x9C9C, ExifIfd.Primary);
+
+    /// <summary>The authors Windows Explorer shows, semicolon separated, as UTF-16 (IFD0 0x9C9D, XPAuthor).</summary>
+    public static readonly ExifKey XPAuthor = new(0x9C9D, ExifIfd.Primary);
+
+    /// <summary>The tags Windows Explorer shows, semicolon separated, as UTF-16 (IFD0 0x9C9E, XPKeywords).</summary>
+    public static readonly ExifKey XPKeywords = new(0x9C9E, ExifIfd.Primary);
+
+    /// <summary>The subject Windows Explorer shows, as UTF-16 (IFD0 0x9C9F, XPSubject).</summary>
+    public static readonly ExifKey XPSubject = new(0x9C9F, ExifIfd.Primary);
+
     /// <summary>The pointer to the GPS sub-IFD (IFD0 0x8825). Removing it removes the whole GPS IFD.</summary>
     public static readonly ExifKey GpsInfo = new(0x8825, ExifIfd.Primary);
 
@@ -124,6 +139,12 @@ public readonly record struct ExifKey(ushort Tag, ExifIfd Ifd)
 
     /// <summary>Meters, as a rational (GPS 0x0006).</summary>
     public static readonly ExifKey GpsAltitude = new(0x0006, ExifIfd.Gps);
+
+    /// <summary>How the position was found, such as "GPS" or "NETWORK", with an 8-byte character-code prefix (GPS 0x001B).</summary>
+    public static readonly ExifKey GpsProcessingMethod = new(0x001B, ExifIfd.Gps);
+
+    /// <summary>The name of the area, with an 8-byte character-code prefix (GPS 0x001C).</summary>
+    public static readonly ExifKey GpsAreaInformation = new(0x001C, ExifIfd.Gps);
 
     /// <inheritdoc/>
     public override string ToString() => $"{Ifd} 0x{Tag:X4}";

@@ -999,6 +999,13 @@ static Egami.RasterDecoder.OpenAsync(System.IO.Stream! stream, Egami.EgamiContex
 static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterEncoder.Create<TPixel>(string! path, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
 static Egami.RasterEncoder.Create<TPixel>(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
+static readonly Egami.Metadata.ExifKey.GpsAreaInformation -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.GpsProcessingMethod -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XPAuthor -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XPComment -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XPKeywords -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XPSubject -> Egami.Metadata.ExifKey
+static readonly Egami.Metadata.ExifKey.XPTitle -> Egami.Metadata.ExifKey
 static readonly Egami.Metadata.IptcKey.Byline -> Egami.Metadata.IptcKey
 static readonly Egami.Metadata.IptcKey.BylineTitle -> Egami.Metadata.IptcKey
 static readonly Egami.Metadata.IptcKey.Caption -> Egami.Metadata.IptcKey

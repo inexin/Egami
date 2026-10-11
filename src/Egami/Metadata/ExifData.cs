@@ -122,12 +122,31 @@ public sealed class ExifData
         return entry is not null;
     }
 
-    /// <summary>Sets a text value (ASCII type; other characters are stored as UTF-8, as many programs do).</summary>
+    /// <summary>
+    /// Sets a text value: ASCII type, with other characters stored as UTF-8, as many programs do. The Windows XP tags are stored
+    /// as UTF-16 in BYTE values, as Explorer writes them, and the encoded strings (<see cref="ExifKey.UserComment"/>,
+    /// <see cref="ExifKey.GpsProcessingMethod"/>, <see cref="ExifKey.GpsAreaInformation"/>) as UNDEFINED with an ASCII prefix when
+    /// the text is ASCII and a UNICODE one otherwise.
+    /// </summary>
     /// <param name="key">The tag and IFD.</param>
     /// <param name="value">The text.</param>
     public void Set(ExifKey key, string value)
     {
         ArgumentNullException.ThrowIfNull(value);
+        if (ExifStrings.IsXp(key))
+        {
+            byte[] utf16 = ExifStrings.EncodeXp(value);
+            Put(key, ExifType.Byte, utf16.Length, utf16);
+            return;
+        }
+
+        if (ExifStrings.IsEncoded(key))
+        {
+            byte[] encoded = ExifStrings.EncodeEncoded(value, IsBigEndian);
+            Put(key, ExifType.Undefined, encoded.Length, encoded);
+            return;
+        }
+
         byte[] bytes = [.. Encoding.UTF8.GetBytes(value), 0];
         Put(key, ExifType.Ascii, bytes.Length, bytes);
     }

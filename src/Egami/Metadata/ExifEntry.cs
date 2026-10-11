@@ -130,10 +130,26 @@ public sealed class ExifEntry
     /// <summary>Gets where the value was in the block it was read from, or -1 (kept for the maker note, whose own offsets refer to it).</summary>
     internal int Offset { get; }
 
-    /// <summary>Returns the value as text: ASCII up to the first zero byte, read as UTF-8 when it is valid UTF-8 and as Latin-1 otherwise.</summary>
+    /// <summary>
+    /// Returns the value as text. ASCII values up to the first zero byte, read as UTF-8 when they are valid UTF-8 and as Latin-1
+    /// otherwise. The Windows XP tags (<see cref="ExifKey.XPTitle"/> and the others) as UTF-16. The encoded strings
+    /// (<see cref="ExifKey.UserComment"/>, <see cref="ExifKey.GpsProcessingMethod"/>, <see cref="ExifKey.GpsAreaInformation"/>) by their
+    /// character-code prefix: ASCII, UNICODE (UTF-16, either byte order), JIS (Shift-JIS when the app registered the code page
+    /// provider) or undefined.
+    /// </summary>
     /// <returns>The text.</returns>
     public string AsString()
     {
+        if (ExifStrings.IsXp(Key) && Type is ExifType.Byte or ExifType.Undefined)
+        {
+            return ExifStrings.DecodeXp(_value);
+        }
+
+        if (ExifStrings.IsEncoded(Key) && Type is ExifType.Undefined or ExifType.Byte && ExifStrings.DecodeEncoded(_value, IsBigEndian) is string encoded)
+        {
+            return encoded;
+        }
+
         ReadOnlySpan<byte> bytes = _value;
         int end = bytes.IndexOf((byte)0);
         if (end >= 0)
