@@ -7,6 +7,7 @@ abstract Egami.Formats.RowReader.Metadata.get -> Egami.Metadata.RasterMetadata!
 abstract Egami.Formats.RowReader.NextFrame() -> Egami.Metadata.FrameMetadata?
 abstract Egami.Formats.RowReader.ReadRow<TPixel>(int y, int x, System.Span<TPixel> destination) -> void
 abstract Egami.Formats.RowReader.Width.get -> int
+abstract Egami.YuvRaster.HasAlpha.get -> bool
 const Egami.Metadata.XmpNamespaces.CameraRaw = "http://ns.adobe.com/camera-raw-settings/1.0/" -> string!
 const Egami.Metadata.XmpNamespaces.DublinCore = "http://purl.org/dc/elements/1.1/" -> string!
 const Egami.Metadata.XmpNamespaces.Exif = "http://ns.adobe.com/exif/1.0/" -> string!
@@ -20,6 +21,12 @@ const Egami.Metadata.XmpNamespaces.Xml = "http://www.w3.org/XML/1998/namespace" 
 const Egami.Metadata.XmpNamespaces.XmpBasic = "http://ns.adobe.com/xap/1.0/" -> string!
 const Egami.Metadata.XmpNamespaces.XmpMediaManagement = "http://ns.adobe.com/xap/1.0/mm/" -> string!
 const Egami.Metadata.XmpNamespaces.XmpRights = "http://ns.adobe.com/xap/1.0/rights/" -> string!
+Egami.ChromaDownsampling
+Egami.ChromaDownsampling.Average = 0 -> Egami.ChromaDownsampling
+Egami.ChromaDownsampling.Fast = 1 -> Egami.ChromaDownsampling
+Egami.ChromaUpsampling
+Egami.ChromaUpsampling.Bilinear = 0 -> Egami.ChromaUpsampling
+Egami.ChromaUpsampling.Nearest = 1 -> Egami.ChromaUpsampling
 Egami.Colors.Chromaticity
 Egami.Colors.Chromaticity.Chromaticity() -> void
 Egami.Colors.Chromaticity.Chromaticity(double X, double Y) -> void
@@ -608,6 +615,15 @@ Egami.Pixels.Bgra4444.R.get -> int
 Egami.Pixels.Bgra4444.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.Bgra4444.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.Bgra4444.Value -> ushort
+Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaFormat.Yuv400 = 3 -> Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaFormat.Yuv420 = 0 -> Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaFormat.Yuv422 = 1 -> Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaFormat.Yuv444 = 2 -> Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaSiting
+Egami.Pixels.ChromaSiting.Center = 0 -> Egami.Pixels.ChromaSiting
+Egami.Pixels.ChromaSiting.Left = 1 -> Egami.Pixels.ChromaSiting
+Egami.Pixels.ChromaSiting.TopLeft = 2 -> Egami.Pixels.ChromaSiting
 Egami.Pixels.Cmyk16
 Egami.Pixels.Cmyk16.C -> ushort
 Egami.Pixels.Cmyk16.Cmyk16() -> void
@@ -730,6 +746,18 @@ Egami.Pixels.RgbF32.RgbF32() -> void
 Egami.Pixels.RgbF32.RgbF32(float r, float g, float b) -> void
 Egami.Pixels.RgbF32.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Pixels.RgbF32.ToScaled() -> System.Numerics.Vector4
+Egami.Pixels.YuvColor
+Egami.Pixels.YuvColor.Deconstruct(out Egami.Pixels.YuvMatrix Matrix, out Egami.Pixels.YuvRange Range, out Egami.Pixels.ChromaSiting Siting) -> void
+Egami.Pixels.YuvColor.Equals(Egami.Pixels.YuvColor other) -> bool
+Egami.Pixels.YuvColor.Matrix.get -> Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvColor.Matrix.init -> void
+Egami.Pixels.YuvColor.Range.get -> Egami.Pixels.YuvRange
+Egami.Pixels.YuvColor.Range.init -> void
+Egami.Pixels.YuvColor.Siting.get -> Egami.Pixels.ChromaSiting
+Egami.Pixels.YuvColor.Siting.init -> void
+Egami.Pixels.YuvColor.ToH273() -> int
+Egami.Pixels.YuvColor.YuvColor() -> void
+Egami.Pixels.YuvColor.YuvColor(Egami.Pixels.YuvMatrix Matrix, Egami.Pixels.YuvRange Range, Egami.Pixels.ChromaSiting Siting) -> void
 Egami.Pixels.YuvMatrix
 Egami.Pixels.YuvMatrix.Bt2020Ncl = 2 -> Egami.Pixels.YuvMatrix
 Egami.Pixels.YuvMatrix.Bt601 = 0 -> Egami.Pixels.YuvMatrix
@@ -773,6 +801,37 @@ Egami.RasterEncoder<TPixel>.WriteFrameAsync(Egami.Raster<TPixel>! frame, Egami.M
 Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band) -> void
 Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band, int rows) -> void
 Egami.RasterEncoder<TPixel>.WriteRowsAsync(Egami.Raster<TPixel>! band, int rows, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Egami.YuvConvertOptions
+Egami.YuvConvertOptions.<Clone>$() -> Egami.YuvConvertOptions!
+Egami.YuvConvertOptions.Downsampling.get -> Egami.ChromaDownsampling
+Egami.YuvConvertOptions.Downsampling.init -> void
+Egami.YuvConvertOptions.Equals(Egami.YuvConvertOptions? other) -> bool
+Egami.YuvConvertOptions.Upsampling.get -> Egami.ChromaUpsampling
+Egami.YuvConvertOptions.Upsampling.init -> void
+Egami.YuvConvertOptions.YuvConvertOptions() -> void
+Egami.YuvPlane<TSample>
+Egami.YuvPlane<TSample>.AsGray8() -> Egami.PixelPlane<Egami.Pixels.Gray8>!
+Egami.YuvPlane<TSample>.Height.get -> int
+Egami.YuvPlane<TSample>.Row(int y) -> System.Span<TSample>
+Egami.YuvPlane<TSample>.TryGetContiguous(out System.Span<TSample> samples) -> bool
+Egami.YuvPlane<TSample>.Width.get -> int
+Egami.YuvRaster
+Egami.YuvRaster.BitDepth.get -> int
+Egami.YuvRaster.ChromaFormat.get -> Egami.Pixels.ChromaFormat
+Egami.YuvRaster.Color.get -> Egami.Pixels.YuvColor
+Egami.YuvRaster.CopyFrom<TPixel>(Egami.Raster<TPixel>! source, Egami.YuvConvertOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.YuvRaster.CopyTo<TPixel>(Egami.Raster<TPixel>! target, Egami.YuvConvertOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.YuvRaster.Dispose() -> void
+Egami.YuvRaster.Height.get -> int
+Egami.YuvRaster.Metadata.get -> Egami.Metadata.RasterMetadata!
+Egami.YuvRaster.ToRaster(Egami.YuvConvertOptions? options = null) -> Egami.Raster!
+Egami.YuvRaster.ToRaster<TPixel>(Egami.YuvConvertOptions? options = null) -> Egami.Raster<TPixel>!
+Egami.YuvRaster.Width.get -> int
+Egami.YuvRaster<TSample>
+Egami.YuvRaster<TSample>.A.get -> Egami.YuvPlane<TSample>?
+Egami.YuvRaster<TSample>.U.get -> Egami.YuvPlane<TSample>?
+Egami.YuvRaster<TSample>.V.get -> Egami.YuvPlane<TSample>?
+Egami.YuvRaster<TSample>.Y.get -> Egami.YuvPlane<TSample>!
 override Egami.Colors.Chromaticity.GetHashCode() -> int
 override Egami.Colors.CmykColor.GetHashCode() -> int
 override Egami.Colors.ColorCodePoints.GetHashCode() -> int
@@ -854,6 +913,11 @@ override Egami.Pixels.RgbaF16.ToString() -> string!
 override Egami.Pixels.RgbF32.Equals(object? obj) -> bool
 override Egami.Pixels.RgbF32.GetHashCode() -> int
 override Egami.Pixels.RgbF32.ToString() -> string!
+override Egami.Pixels.YuvColor.GetHashCode() -> int
+override Egami.YuvConvertOptions.Equals(object? obj) -> bool
+override Egami.YuvConvertOptions.GetHashCode() -> int
+override Egami.YuvConvertOptions.ToString() -> string!
+override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.operator !=(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
@@ -1054,6 +1118,13 @@ static Egami.Pixels.RgbF32.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pix
 static Egami.Pixels.RgbF32.Layout.get -> Egami.Pixels.PixelLayoutInfo
 static Egami.Pixels.RgbF32.operator !=(Egami.Pixels.RgbF32 left, Egami.Pixels.RgbF32 right) -> bool
 static Egami.Pixels.RgbF32.operator ==(Egami.Pixels.RgbF32 left, Egami.Pixels.RgbF32 right) -> bool
+static Egami.Pixels.YuvColor.Bt2020Limited.get -> Egami.Pixels.YuvColor
+static Egami.Pixels.YuvColor.Bt601Limited.get -> Egami.Pixels.YuvColor
+static Egami.Pixels.YuvColor.Bt709Limited.get -> Egami.Pixels.YuvColor
+static Egami.Pixels.YuvColor.Jpeg.get -> Egami.Pixels.YuvColor
+static Egami.Pixels.YuvColor.operator !=(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
+static Egami.Pixels.YuvColor.operator ==(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
+static Egami.Pixels.YuvColor.TryFromH273(int matrixCoefficients, bool fullRange, Egami.Pixels.ChromaSiting siting, out Egami.Pixels.YuvColor color) -> bool
 static Egami.Raster.LoadInto<TPixel>(string! path, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
 static Egami.Raster.LoadInto<TPixel>(System.IO.Stream! stream, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
 static Egami.Raster.LoadInto<TPixel>(System.ReadOnlyMemory<byte> data, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
@@ -1068,6 +1139,15 @@ static Egami.RasterDecoder.OpenAsync(System.IO.Stream! stream, Egami.EgamiContex
 static Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterDecoder!
 static Egami.RasterEncoder.Create<TPixel>(string! path, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
 static Egami.RasterEncoder.Create<TPixel>(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, int width, int height, Egami.Formats.WriterOptions? options = null, Egami.Metadata.RasterMetadata? metadata = null, Egami.EgamiContext? context = null) -> Egami.RasterEncoder<TPixel>!
+static Egami.YuvConvertOptions.Default.get -> Egami.YuvConvertOptions!
+static Egami.YuvConvertOptions.operator !=(Egami.YuvConvertOptions? left, Egami.YuvConvertOptions? right) -> bool
+static Egami.YuvConvertOptions.operator ==(Egami.YuvConvertOptions? left, Egami.YuvConvertOptions? right) -> bool
+static Egami.YuvRaster.Create(int width, int height, Egami.Pixels.ChromaFormat chromaFormat, Egami.Pixels.YuvColor color, bool alpha = false, Egami.EgamiContext? context = null) -> Egami.YuvRaster<byte>!
+static Egami.YuvRaster.Create(int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, bool alpha = false, Egami.EgamiContext? context = null) -> Egami.YuvRaster<ushort>!
+static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, Egami.Pixels.YuvColor color, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<byte>!
+static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<ushort>!
+static Egami.YuvRaster.Wrap<TSample>(System.Memory<TSample> y, int yStride, System.Memory<TSample> u, int uStride, System.Memory<TSample> v, int vStride, int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, System.IDisposable? owner = null, Egami.EgamiContext? context = null) -> Egami.YuvRaster<TSample>!
+static Egami.YuvRaster.Wrap<TSample>(System.Memory<TSample> y, int yStride, System.Memory<TSample> u, int uStride, System.Memory<TSample> v, int vStride, System.Memory<TSample> alpha, int alphaStride, int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, System.IDisposable? owner = null, Egami.EgamiContext? context = null) -> Egami.YuvRaster<TSample>!
 static readonly Egami.Metadata.ExifKey.GpsAreaInformation -> Egami.Metadata.ExifKey
 static readonly Egami.Metadata.ExifKey.GpsProcessingMethod -> Egami.Metadata.ExifKey
 static readonly Egami.Metadata.ExifKey.XPAuthor -> Egami.Metadata.ExifKey
@@ -1136,3 +1216,5 @@ virtual Egami.Formats.RowReader.WorkingBytes.get -> long
 ~override Egami.Metadata.XmpName.Equals(object obj) -> bool
 ~override Egami.Operations.Mask.Equals(object obj) -> bool
 ~override Egami.Operations.Mask.ToString() -> string
+~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
+~override Egami.Pixels.YuvColor.ToString() -> string

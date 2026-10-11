@@ -47,6 +47,12 @@ internal static class RowRunner
         });
     }
 
+    /// <summary>Returns whether <see cref="Run"/> would run every band on the calling thread.</summary>
+    internal static bool IsSequential(int rows, long rowBytes, int maxParallelism)
+    {
+        return maxParallelism <= 1 || rows <= BandRows(rowBytes) || rows * Math.Max(rowBytes, 1) < ParallelThresholdBytes;
+    }
+
     /// <summary>Returns the rows per band: about 64 KB of pixels, and never fewer than 16 rows.</summary>
     internal static int BandRows(long rowBytes)
     {

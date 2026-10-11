@@ -31,6 +31,7 @@ public sealed class PixelPlane<TPixel>
     private readonly int _x;
     private readonly int _y;
     private IDisposable? _owner;
+    private readonly Memory<byte>[]? _views;
     private IMemoryOwner<byte>[]? _blocks;
     private bool _disposed;
 
@@ -73,6 +74,16 @@ public sealed class PixelPlane<TPixel>
         _owner = owner;
     }
 
+    /// <summary>A view of blocks of whole rows that something else owns, such as a <see cref="YuvPlane{TSample}"/>.</summary>
+    internal PixelPlane(int width, int height, int rowsPerBlock, Memory<byte>[] views)
+    {
+        Width = width;
+        Height = height;
+        _stride = width;
+        _rowsPerBlock = rowsPerBlock;
+        _views = views;
+    }
+
     /// <summary>Gets the width in pixels.</summary>
     public int Width { get; }
 
@@ -80,10 +91,10 @@ public sealed class PixelPlane<TPixel>
     public int Height { get; }
 
     /// <summary>Gets a value indicating whether the plane owns its memory and frees it on dispose.</summary>
+    internal bool OwnsMemory => _wrapped.IsEmpty && _wrappedBytes.IsEmpty && _parent is null && _views is null;
+
     /// <summary>Gets the plane this one is a view of, or this plane.</summary>
     internal PixelPlane<TPixel> Root => _parent?.Root ?? this;
-
-    internal bool OwnsMemory => _wrapped.IsEmpty && _wrappedBytes.IsEmpty && _parent is null;
 
     /// <summary>Returns one row of pixels.</summary>
     /// <param name="y">The row index, 0 to <see cref="Height"/> - 1.</param>
@@ -103,6 +114,12 @@ public sealed class PixelPlane<TPixel>
             if (_parent is not null)
             {
                 return _parent.Row(_y + y).Slice(_x, Width);
+            }
+
+            if (_views is not null)
+            {
+                int view = y / _rowsPerBlock;
+                return MemoryMarshal.Cast<byte, TPixel>(_views[view].Span).Slice((y - (view * _rowsPerBlock)) * Width, Width);
             }
 
             return _wrappedBytes.IsEmpty
@@ -132,6 +149,12 @@ public sealed class PixelPlane<TPixel>
         if (!OwnsMemory)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_views is not null)
+            {
+                pixels = _views.Length == 1 ? MemoryMarshal.Cast<byte, TPixel>(_views[0].Span)[..(Width * Height)] : default;
+                return _views.Length == 1;
+            }
+
             if (!_wrappedBytes.IsEmpty)
             {
                 int rowBytes = Width * Unsafe.SizeOf<TPixel>();
