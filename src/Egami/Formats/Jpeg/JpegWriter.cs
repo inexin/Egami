@@ -51,6 +51,37 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     }
 
     /// <summary>
+    /// Encodes 8-bit planes straight, with no color conversion or chroma downsampling: the planes' chroma format sets the
+    /// sampling (4:0:0 or <see cref="JpegColorType.Gray"/> writes luma alone), and the planes are taken as JPEG's YCbCr.
+    /// </summary>
+    internal static void WritePlanes(YuvRaster<byte> planes, Stream output, JpegWriterOptions options)
+    {
+        if (planes.Width > ushort.MaxValue || planes.Height > ushort.MaxValue)
+        {
+            throw new InvalidOperationException($"JPEG holds at most 65,535 × 65,535 pixels; the image is {planes.Width} × {planes.Height}.");
+        }
+
+        EncodeStart<Rgb8> start = new(planes.Width, planes.Height, planes.Metadata, options, planes.Context, whole: null, seekable: false);
+        using Encoder<Rgb8> encoder = new(start, options, planes);
+        using JpegBitWriter writer = new(output);
+        writer.Marker(JpegMarker.Soi);
+        WriteJfif(writer, options.StripMetadata ? null : planes.Metadata.Resolution);
+        if (!options.StripMetadata)
+        {
+            WriteMetadata(writer, planes.Metadata, options.ProfileToWrite(planes.Metadata));
+        }
+
+        encoder.WriteHeaders(writer);
+        foreach (int _ in encoder.WriteScan(writer))
+        {
+        }
+
+        encoder.EndScan(writer);
+        writer.Marker(JpegMarker.Eoi);
+        writer.Flush();
+    }
+
+    /// <summary>
     /// Writes the markers before the scan at once; Save then codes the whole image, and a streamed encode codes each MCU row
     /// once its rows have come (keeping them all for the second pass when tables are optimized).
     /// </summary>
@@ -354,19 +385,28 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         private readonly int[] _predictors;
         private readonly TPixel[]? _window;
         private readonly List<short[]>? _kept;
+        private readonly YuvRaster<byte>? _yuv;
         private short[]? _blocks;
         private int _mcu;
         private int _restart;
         private int _rowsIn;
 
-        internal Encoder(EncodeStart<TPixel> start, JpegWriterOptions options)
+        internal Encoder(EncodeStart<TPixel> start, JpegWriterOptions options, YuvRaster<byte>? planes = null)
         {
             Raster<TPixel>? raster = start.Whole;
             _options = options;
             _width = start.Width;
             _height = start.Height;
-            _gray = options.ColorType == JpegColorType.Gray || TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
-            (_maxH, _maxV) = _gray ? (1, 1) : options.Subsampling switch
+            _yuv = planes;
+            _gray = options.ColorType == JpegColorType.Gray
+                || (planes is null ? TPixel.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha : planes.ChromaFormat == ChromaFormat.Yuv400);
+            (_maxH, _maxV) = _gray ? (1, 1) : planes is not null ? planes.ChromaFormat switch
+            {
+                ChromaFormat.Yuv444 => (1, 1),
+                ChromaFormat.Yuv422 => (2, 1),
+                _ => (2, 2),
+            }
+            : options.Subsampling switch
             {
                 ChromaSubsampling.Subsample444 => (1, 1),
                 ChromaSubsampling.Subsample422 => (2, 1),
@@ -388,12 +428,16 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
 
             // Large images transform MCU rows on other threads while this one Huffman-codes the rows before them. Streamed rows
             // come one MCU row at a time, so there is nothing to transform ahead.
-            _workers = raster is not null && start.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
+            _workers = (raster is not null || planes is not null) && start.Context.MaxParallelism > 1 && (long)_width * _height >= ParallelPixels && _mcusY > 1
                 ? Math.Min(start.Context.MaxParallelism - 1, MaxWorkers)
                 : 0;
             if (raster is not null)
             {
                 _rowAt = y => raster.Row(y);
+            }
+            else if (planes is not null)
+            {
+                _rowAt = _ => throw new InvalidOperationException("Planes are encoded without rows.");
             }
             else
             {
@@ -866,6 +910,12 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         /// </summary>
         private void ConvertRows(int first, int count, Workspace workspace)
         {
+            if (_yuv is not null)
+            {
+                CopyPlanes(_yuv, first, count, workspace);
+                return;
+            }
+
             Plane[] planes = workspace.Planes;
             Plane luma = planes[0];
             bool subsampled = !_gray && (_maxH > 1 || _maxV > 1);
@@ -901,6 +951,28 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             {
                 Downsample(workspace.FullCb, first, count, planes[1]);
                 Downsample(workspace.FullCr, first, count, planes[2]);
+            }
+        }
+
+        /// <summary>
+        /// Copies the image rows <paramref name="first"/> to <paramref name="first"/> + <paramref name="count"/> of each plane, and
+        /// the chroma rows they cover, into the component planes, repeating the last sample of each row and the last row of each
+        /// plane to fill whole MCUs, as libjpeg pads raw data.
+        /// </summary>
+        private void CopyPlanes(YuvRaster<byte> source, int first, int count, Workspace workspace)
+        {
+            Plane[] planes = workspace.Planes;
+            for (int i = 0; i < planes.Length; i++)
+            {
+                YuvPlane<byte> plane = i == 0 ? source.Y : i == 1 ? source.U! : source.V!;
+                int factorY = i == 0 ? 1 : _maxV, width = i == 0 ? _paddedWidth : _paddedWidth / _maxH;
+                for (int r = 0; r < count / factorY; r++)
+                {
+                    Span<byte> output = planes[i].Samples.AsSpan(r * planes[i].Stride, width);
+                    ReadOnlySpan<byte> row = plane.Row(Math.Min((first / factorY) + r, plane.Height - 1));
+                    row.CopyTo(output);
+                    output[row.Length..].Fill(row[^1]);
+                }
             }
         }
 

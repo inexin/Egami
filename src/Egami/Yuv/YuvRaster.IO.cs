@@ -125,6 +125,72 @@ public abstract partial class YuvRaster
         return Probe(stream, context, options);
     }
 
+    /// <summary>
+    /// Encodes the picture in <paramref name="format"/>. JPEG encodes the planes straight, with no color conversion or chroma
+    /// downsampling, when they are 8-bit BT.601 at full range (4:2:0, 4:2:2 and 4:4:4 keep their sampling, 4:0:0 is gray); other
+    /// planes are converted to that first. Other formats are saved from <see cref="ToRaster(YuvConvertOptions?)"/>.
+    /// </summary>
+    /// <param name="stream">Where to write, from its current position. It is left open.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults. JPEG's subsampling comes from the planes.</param>
+    /// <exception cref="UnsupportedFormatException">The format has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="format"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="jpeg"/>
+    /// </example>
+    public void Save(Stream stream, FormatInfo format, WriterOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(format);
+        ThrowIfDisposed();
+        if (format.Writer is Formats.Jpeg.JpegWriter)
+        {
+            Formats.Jpeg.JpegWriterOptions jpeg = options as Formats.Jpeg.JpegWriterOptions ?? new Formats.Jpeg.JpegWriterOptions { StripMetadata = options?.StripMetadata ?? false };
+            if (this is YuvRaster<byte> planes && Color.Matrix == YuvMatrix.Bt601 && Color.Range == YuvRange.Full)
+            {
+                Formats.Jpeg.JpegWriter.WritePlanes(planes, stream, jpeg);
+                return;
+            }
+
+            using Raster rgb = BitDepth == 8 ? ToRaster<Rgb8>() : ToRaster<Rgba16>();
+            using YuvRaster<byte> converted = FromRaster(rgb, ChromaFormat, YuvColor.Jpeg);
+            Formats.Jpeg.JpegWriter.WritePlanes(converted, stream, jpeg);
+            return;
+        }
+
+        using Raster raster = ToRaster();
+        raster.Save(stream, format, options);
+    }
+
+    /// <summary>Encodes the picture in the registered format with this name or file extension. See <see cref="Save(Stream, FormatInfo, WriterOptions?)"/>.</summary>
+    /// <param name="stream">Where to write, from its current position. It is left open.</param>
+    /// <param name="formatNameOrExtension">The format's name or one of its extensions, ignoring case.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <exception cref="UnsupportedFormatException">No registered format matches, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    public void Save(Stream stream, string formatNameOrExtension, WriterOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(formatNameOrExtension);
+        Save(stream, FormatPipeline.FormatForName(Context, formatNameOrExtension), options);
+    }
+
+    /// <summary>
+    /// Encodes the picture to a file, choosing the format from the extension. An existing file is replaced; if encoding fails,
+    /// the partly written file is deleted. See <see cref="Save(Stream, FormatInfo, WriterOptions?)"/>.
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    /// <param name="options">The format's options, or <see langword="null"/> for its defaults.</param>
+    /// <exception cref="UnsupportedFormatException">No registered format uses the extension, or it has no writer.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <exception cref="IOException">The file cannot be written.</exception>
+    public void Save(string path, WriterOptions? options = null)
+    {
+        FormatInfo format = FormatPipeline.FormatForPath(Context, path);
+        options = FormatPipeline.OptionsForPath(format, path, options);
+        Raster.WriteFile(path, stream => Save(stream, format, options));
+    }
+
     private static IYuvFormatReader Reader(FormatInfo format)
     {
         return format.Reader as IYuvFormatReader

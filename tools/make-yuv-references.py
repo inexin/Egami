@@ -12,7 +12,9 @@ References (tests/reference/yuv), all from tools/yuvref/yuvref.c, a small TurboJ
   <file>.s2/.s4/.s8.yuv.gz      the same at scaling factors 1/2, 1/4 and 1/8, for the files with scaled references in
                                 tests/reference/jpeg/manifest.json
   encode/<source>-q<n>.jpg      tj3CompressFromYUVPlanes8 from the decoded planes of <source>.jpg at quality n, with the
-                                source's subsampling: baseline, spec Huffman tables (no optimization), no restart markers
+                                source's subsampling: baseline, spec Huffman tables (no optimization), no restart markers.
+                                The planes are cut to the image area and padded by repeating edges (image_planes), so odd
+                                sizes encode the planes a YuvRaster holds rather than TurboJPEG's decoded padding
   manifest.json                 per file: width and height (of the scaled output), TurboJPEG's subsampling name (444, 422,
                                 420, gray, 440, 411, 441) and each plane's width and height (tj3YUVPlaneWidth/Height);
                                 "encodes" with the exact TurboJPEG parameters; "markersExample", the segments of one encode;
@@ -90,6 +92,29 @@ def markers(path):
     return result
 
 
+def image_planes(data, entry):
+    """
+    The decoded planes cut to the image area Egami keeps (luma width x height, chroma rounded up) and padded back to TurboJPEG's
+    plane sizes by repeating the last sample of each row and the last row, as an encoder pads: the planes a YuvRaster of the
+    image holds, laid out as tj3CompressFromYUVPlanes8 takes them.
+    """
+    w, h = entry["width"], entry["height"]
+    sub = entry["subsampling"]
+    sx = 2 if sub in ("420", "422") else 1
+    sy = 2 if sub == "420" else 1
+    out = bytearray()
+    offset = 0
+    for i, plane in enumerate(entry["planes"]):
+        pw, ph = plane["width"], plane["height"]
+        iw, ih = (w, h) if i == 0 else (-(-w // sx), -(-h // sy))
+        rows = [data[offset + y * pw:offset + y * pw + iw] for y in range(ih)]
+        offset += pw * ph
+        for y in range(ph):
+            row = rows[min(y, ih - 1)]
+            out += row + bytes([row[-1]]) * (pw - iw)
+    return bytes(out)
+
+
 def inside():
     subprocess.run(["gcc", "-O2", "-Wall", "-o", TOOL, "tools/yuvref/yuvref.c", "-lturbojpeg"], check=True)
     os.makedirs(os.path.join(TARGET, "encode"), exist_ok=True)
@@ -148,7 +173,7 @@ def inside():
         entry = next(e for e in entries if e["file"] == f"{source}.jpg" and e["scale"] == "1/1")
         raw = "/tmp/source.yuv"
         with gzip.open(os.path.join(TARGET, entry["reference"]), "rb") as f, open(raw, "wb") as out:
-            out.write(f.read())
+            out.write(image_planes(f.read(), entry))
         for quality in qualities:
             name = f"encode/{source}-q{quality}.jpg"
             result = yuvref("encode", raw, entry["width"], entry["height"], entry["subsampling"], quality,

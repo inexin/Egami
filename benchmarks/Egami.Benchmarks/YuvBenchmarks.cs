@@ -17,6 +17,7 @@ public class YuvBenchmarks
     private YuvRaster<ushort> _yuv10 = null!;
     private Raster<Rgba8> _rgba8 = null!;
     private Raster<Rgba16> _rgba16 = null!;
+    private YuvRaster<byte> _jpegPlanes = null!;
     private byte[] _nv12 = [];
 
     [Params(1, 0)]
@@ -40,6 +41,7 @@ public class YuvBenchmarks
         }
 
         _yuv8 = YuvRaster.FromRaster(_rgba8, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+        _jpegPlanes = YuvRaster.FromRaster(_rgba8, ChromaFormat.Yuv420, YuvColor.Jpeg);
         _yuv10 = YuvRaster.Create(1920, 1080, ChromaFormat.Yuv420, 10, YuvColor.Bt2020Limited, context: context);
         foreach (YuvPlane<ushort> plane in new[] { _yuv10.Y, _yuv10.U!, _yuv10.V! })
         {
@@ -62,6 +64,7 @@ public class YuvBenchmarks
     public void Cleanup()
     {
         _yuv8.Dispose();
+        _jpegPlanes.Dispose();
         _yuv10.Dispose();
         _rgba8.Dispose();
         _rgba16.Dispose();
@@ -75,6 +78,18 @@ public class YuvBenchmarks
 
     [Benchmark]
     public void Yuv420TenBitToRgba16() => _yuv10.CopyTo(_rgba16);
+
+    /// <summary>Phase 2.1.4 task 9: JPEG straight from 4:2:0 BT.601 full-range planes, with no conversion or downsampling.</summary>
+    [Benchmark]
+    public void SaveJpegFromPlanes() => _jpegPlanes.Save(Stream.Null, Formats.Jpeg.JpegFormat.Info);
+
+    /// <summary>JPEG from BT.709 limited planes, which are converted first.</summary>
+    [Benchmark]
+    public void SaveJpegFromVideoPlanes() => _yuv8.Save(Stream.Null, Formats.Jpeg.JpegFormat.Info);
+
+    /// <summary>The same picture saved from RGB, for comparison.</summary>
+    [Benchmark]
+    public void SaveJpegFromRgba8() => _rgba8.Save(Stream.Null, Formats.Jpeg.JpegFormat.Info);
 
     /// <summary>Phase 2.1.4 task 7: a decoder's NV12 frame into planes (single-threaded by design: one pass over memory).</summary>
     [Benchmark]

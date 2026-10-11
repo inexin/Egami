@@ -569,7 +569,7 @@ public abstract partial class Raster
             : new MemoryStream(data.ToArray(), writable: false);
     }
 
-    private static void WriteFile(string path, Action<Stream> write)
+    internal static void WriteFile(string path, Action<Stream> write)
     {
         try
         {
