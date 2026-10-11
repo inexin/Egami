@@ -48,6 +48,19 @@ profiles while they decode; files with no color information are taken as sRGB an
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#tone-map)]
 
+## Keyword and rate a photo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-live)]
+
+Lightroom, Bridge and Windows read the keywords and rating from XMP. For news and stock workflows, set the same keywords in
+IPTC too:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#iptc-values)]
+
+## Keep the thumbnail upright
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#exif-thumbnail)]
+
 ## Draw into a premultiplied BGRA surface
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#premultiplied-surface)]
