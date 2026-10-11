@@ -141,13 +141,25 @@ static void LoadJpegDepth(Stream stream)
 {
     EgamiContext context = Context();
     byte[] data = ReadAll(stream);
+
+    // A region inside the image, since one that misses it is the caller's mistake and throws ArgumentOutOfRangeException.
+    Rect region = new(0, 0, 1, 1);
+    try
+    {
+        RasterInfo info = Raster.Probe(data, context);
+        region = new Rect(info.Width / 4, info.Height / 3, Math.Max(1, info.Width / 2), Math.Max(1, info.Height / 2));
+    }
+    catch (EgamiException)
+    {
+    }
+
     foreach (ReaderOptions options in new ReaderOptions[]
     {
         new() { Recovery = RecoveryMode.Lenient },
         new() { Recovery = RecoveryMode.Strict },
         new JpegReaderOptions { FastUpsampling = true },
         new() { MinimumSize = new Size(1, 1) },
-        new() { Region = new Rect(3, 2, 17, 9) },
+        new() { Region = region },
     })
     {
         try
