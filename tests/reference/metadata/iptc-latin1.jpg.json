@@ -1,0 +1,23 @@
+[{
+  "SourceFile": "iptc-latin1.jpg",
+  "File:FileType": "JPEG",
+  "File:FileTypeExtension": "JPG",
+  "File:MIMEType": "image/jpeg",
+  "File:CurrentIPTCDigest": "8a161b58a12b624115bc3e03b84a05c9",
+  "File:ImageWidth": 160,
+  "File:ImageHeight": 120,
+  "File:EncodingProcess": 0,
+  "File:BitsPerSample": 8,
+  "File:ColorComponents": 3,
+  "File:YCbCrSubSampling": "1 1",
+  "JFIF:JFIFVersion": "1 1",
+  "JFIF:ResolutionUnit": 0,
+  "JFIF:XResolution": 1,
+  "JFIF:YResolution": 1,
+  "IPTC:Keywords": "sjø",
+  "IPTC:City": "Tromsø",
+  "IPTC:Caption-Abstract": "Fjord, æøå ÆØÅ",
+  "IPTC:ApplicationRecordVersion": 4,
+  "Composite:ImageSize": "160 120",
+  "Composite:Megapixels": 0.0192
+}]

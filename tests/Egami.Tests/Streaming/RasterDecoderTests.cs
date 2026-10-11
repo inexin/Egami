@@ -543,5 +543,5 @@ public class RegionAndReductionTests
         return StreamingCorpus.Bounds(Math.Max(0, r.X), Math.Max(0, r.Y), Math.Min(width, r.Right), Math.Min(height, r.Bottom));
     }
 
-    private static bool IsJpeg(string file) => file.StartsWith("jpeg/", StringComparison.Ordinal);
+    private static bool IsJpeg(string file) => file.StartsWith("jpeg/", StringComparison.Ordinal) || file.EndsWith(".jpg", StringComparison.Ordinal);
 }

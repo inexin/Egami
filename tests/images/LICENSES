@@ -95,3 +95,13 @@ hdr/
   pattern-pq.png and pattern-hlg.png: ramps from 0 to 4,000 cd/m² of gray and saturated Rec. 2020 colors; duck-pq.png and
   duck-hlg.png: ops/duck.png reduced, with its highlights stretched to about 2,000 cd/m². Written by Egami as 16-bit Rec. 2100
   PQ and HLG PNGs with cICP, mDCV and cLLI, by tools/make-hdr-images. Public domain, as their source.
+
+metadata/synthetic/
+  JPEG, PNG and GIF files made from ops/duck.png by tools/make-metadata-references.py with ExifTool 12.80 and ImageMagick
+  7.1.1: IPTC, Photoshop resources, XMP in every RDF form, Windows XP tags, UserComment encodings, SubjectArea and an IFD1
+  thumbnail, ImageMagick's PNG text chunks, and legacy "Raw profile type" PNG chunks written by the script. All metadata
+  values are invented. Public domain, as their source.
+
+../reference/metadata/
+  ExifTool's reading of every file above (exiftool -j -a -G1 -struct -n), made by tools/make-metadata-references.py. Public
+  domain, as the files.

@@ -1,0 +1,38 @@
+[{
+  "SourceFile": "xmp-structures.jpg",
+  "File:FileType": "JPEG",
+  "File:FileTypeExtension": "JPG",
+  "File:MIMEType": "image/jpeg",
+  "File:ImageWidth": 160,
+  "File:ImageHeight": 120,
+  "File:EncodingProcess": 0,
+  "File:BitsPerSample": 8,
+  "File:ColorComponents": 3,
+  "File:YCbCrSubSampling": "1 1",
+  "JFIF:JFIFVersion": "1 1",
+  "JFIF:ResolutionUnit": 0,
+  "JFIF:XResolution": 1,
+  "JFIF:YResolution": 1,
+  "XMP-iptcCore:CreatorContactInfo": {
+    "CiAdrCity": "Bergen",
+    "CiEmailWork": "photo@example.com"
+  },
+  "XMP-iptcExt:LocationCreated": [{
+    "City": "Bergen",
+    "CountryName": "Norway"
+  },{
+    "City": "Oslo"
+  }],
+  "XMP-iptcExt:ArtworkOrObject": [{
+    "AOCreator": "Egami",
+    "AOTitle": "Duck study"
+  }],
+  "XMP-xmpRights:WebStatement": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "XMP-egami:Note": "Unknown namespace, kept through edits",
+  "XMP-egami:Point": {
+    "X": 0.25,
+    "Y": 0.75
+  },
+  "Composite:ImageSize": "160 120",
+  "Composite:Megapixels": 0.0192
+}]
