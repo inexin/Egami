@@ -51,8 +51,11 @@ public abstract partial class Raster : IDisposable
     /// <summary>Gets the raster's metadata.</summary>
     public RasterMetadata Metadata { get; }
 
-    /// <summary>Gets the context the raster allocates from.</summary>
-    internal EgamiContext Context { get; }
+    /// <summary>
+    /// Gets the context the raster allocates from: its memory source, limits and <see cref="EgamiContext.MaxParallelism"/>, for
+    /// code outside Egami that works on the raster's pixels, such as a canvas drawing onto it.
+    /// </summary>
+    public EgamiContext Context { get; }
 
     /// <summary>Creates a raster with one frame, with every byte zero (transparent black for types with alpha).</summary>
     /// <typeparam name="TPixel">The pixel type.</typeparam>

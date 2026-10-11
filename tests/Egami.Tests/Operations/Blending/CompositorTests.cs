@@ -100,6 +100,35 @@ public class CompositorTests
         Assert.Equal(two[0], bgra[0].ToRgba8());
     }
 
+    /// <summary>A float color blends on 8-bit rows exactly as its 8-bit rounding does, and on float rows as a row of that color does.</summary>
+    [Theory]
+    [InlineData(BlendMode.SourceOver)]
+    [InlineData(BlendMode.Multiply)]
+    [InlineData(BlendMode.Xor)]
+    public void AFloatColorBlendsAsItsRoundingOn8BitAndInFullOnFloat(BlendMode mode)
+    {
+        (_, Rgba8[] d) = BlendCorpus.Layers(64, 1);
+        byte[] coverage = new byte[64];
+        for (int i = 0; i < coverage.Length; i++)
+        {
+            coverage[i] = (byte)(i * 4);
+        }
+
+        RgbaF32 color = new(0.2f, 0.55f, 0.9f, 0.7f);
+        Rgba8[] bytes = (Rgba8[])d.Clone(), floats = (Rgba8[])d.Clone();
+        Compositor.Blend<Rgba8>(mode, color.ToRgba8(), bytes, coverage, 0.8f);
+        Compositor.Blend<Rgba8>(mode, color, floats, coverage, 0.8f);
+        Assert.Equal(bytes, floats);
+
+        RgbaF32 bright = new(0.3f, 0.6f, 0.25f, 0.45f);
+        RgbaF32[] solid = [new(0.5f, 0.1f, 0.9f, 1), new(0.2f, 0.2f, 0.2f, 0.5f)], row = (RgbaF32[])solid.Clone();
+        Compositor.Blend<RgbaF32>(mode, bright, solid, [255, 128], 0.9f);
+        Compositor.Blend<RgbaF32>(mode, [bright, bright], row, [255, 128], 0.9f);
+        Assert.Equal(row, solid);
+        RgbaF32[] hdr = [new(0, 0, 0, 1)];
+        Assert.Throws<ArgumentException>(() => Compositor.Blend<RgbaF32>(BlendMode.SourceOver, new RgbaF32(float.NaN, 0, 0, 1), hdr, [255]));
+    }
+
     [Fact]
     public void OnePixelOverloadsMatchTheRows()
     {

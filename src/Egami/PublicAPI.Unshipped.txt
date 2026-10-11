@@ -1228,6 +1228,7 @@ Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
 Egami.Raster.ColorMask(Egami.Pixels.Rgba8 color, float tolerance = 0) -> Egami.Raster<Egami.Pixels.Gray8>!
+Egami.Raster.Context.get -> Egami.EgamiContext!
 Egami.Raster.ConvertColor<TTo>(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Raster<TTo>!
 Egami.Raster.DetectSkew(float maxAngle = 15) -> float
 Egami.Raster.EntropyBounds(float threshold = 0.5) -> Egami.Rect
@@ -1625,6 +1626,7 @@ static Egami.MipChain.Build(Egami.Raster! source, Egami.Operations.ColorSpace co
 static Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode mode, Egami.Pixels.Rgba8 source, Egami.Pixels.Rgba8 destination) -> Egami.Pixels.Rgba8
 static Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode mode, Egami.Pixels.RgbaF32 source, Egami.Pixels.RgbaF32 destination) -> Egami.Pixels.RgbaF32
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, Egami.Pixels.Rgba8 color, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
+static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, Egami.Pixels.RgbaF32 color, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Operations.DistantLight.operator !=(Egami.Operations.DistantLight? left, Egami.Operations.DistantLight? right) -> bool

@@ -111,6 +111,49 @@ public static class Compositor
         new BlendRows<TPixel>(mode, opacity, Curve(colorSpace)).BlendSolid(color, destination, coverage);
     }
 
+    /// <summary>
+    /// Blends one float color onto every pixel of <paramref name="destination"/> through per-pixel coverage. The color keeps its
+    /// full precision: a float or 16-bit destination blends it as it is, values above 1 included, and an 8-bit destination
+    /// blends it rounded to 8 bits, exactly as the <see cref="Rgba8"/> overload does.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type of the row.</typeparam>
+    /// <param name="mode">How the color combines with each pixel.</param>
+    /// <param name="color">The color, with straight alpha.</param>
+    /// <param name="destination">The pixels to change.</param>
+    /// <param name="coverage">One coverage value per pixel, 0 to 255; the same length as <paramref name="destination"/>.</param>
+    /// <param name="opacity">Multiplies the color's alpha before the mode: 1 uses it as it is.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <exception cref="ArgumentException">The coverage differs in length from the row, or the color is not finite.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="opacity"/> is outside 0..1, or an enum value is not defined.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Blending.cs" region="compositor"/>
+    /// </example>
+    public static void Blend<TPixel>(
+        BlendMode mode, RgbaF32 color, Span<TPixel> destination, ReadOnlySpan<byte> coverage, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Check(mode, opacity, colorSpace);
+        CheckLength(coverage.Length, destination.Length, nameof(coverage));
+        if (!(float.IsFinite(color.R) && float.IsFinite(color.G) && float.IsFinite(color.B) && float.IsFinite(color.A)))
+        {
+            throw new ArgumentException("The color's channels must be finite.", nameof(color));
+        }
+
+        if (mode == BlendMode.Destination || (opacity == 0 && BlendReference.KeepsDestinationAtZeroOpacity(mode)))
+        {
+            return;
+        }
+
+        BlendRows<TPixel> rows = new(mode, opacity, Curve(colorSpace));
+        if (rows.UsesBytes)
+        {
+            rows.BlendSolid(color.ToRgba8(), destination, coverage);
+            return;
+        }
+
+        rows.BlendStraight([color], destination, coverage);
+    }
+
     /// <summary>Blends one pixel onto another and returns the result, as DrawImage would for that pair.</summary>
     /// <param name="mode">How the pixels combine.</param>
     /// <param name="source">The pixel on top.</param>
