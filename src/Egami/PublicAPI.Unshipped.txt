@@ -486,6 +486,26 @@ Egami.Formats.Tiff.TiffTag.Type.get -> Egami.Metadata.ExifType
 Egami.Formats.Tiff.TiffTag.Type.init -> void
 Egami.Formats.Tiff.TiffTag.Value.get -> System.ReadOnlyMemory<byte>
 Egami.Formats.Tiff.TiffTag.Value.init -> void
+Egami.Formats.Tiff.TiffWriterOptions
+Egami.Formats.Tiff.TiffWriterOptions.AssociatedAlpha.get -> bool
+Egami.Formats.Tiff.TiffWriterOptions.AssociatedAlpha.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.Compression.get -> Egami.Formats.Tiff.TiffCompression?
+Egami.Formats.Tiff.TiffWriterOptions.Compression.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.CompressionLevel.get -> int
+Egami.Formats.Tiff.TiffWriterOptions.CompressionLevel.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.Layout.get -> Egami.Formats.Tiff.TiffLayout
+Egami.Formats.Tiff.TiffWriterOptions.Layout.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.ParallelCompression.get -> bool
+Egami.Formats.Tiff.TiffWriterOptions.ParallelCompression.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.Predictor.get -> Egami.Formats.Tiff.TiffPredictor?
+Egami.Formats.Tiff.TiffWriterOptions.Predictor.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.Quality.get -> int
+Egami.Formats.Tiff.TiffWriterOptions.Quality.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.Reduce.get -> bool
+Egami.Formats.Tiff.TiffWriterOptions.Reduce.init -> void
+Egami.Formats.Tiff.TiffWriterOptions.TiffWriterOptions() -> void
+Egami.Formats.Tiff.TiffWriterOptions.TileSize.get -> int?
+Egami.Formats.Tiff.TiffWriterOptions.TileSize.init -> void
 Egami.Formats.Webp.WebpChunk
 Egami.Formats.Webp.WebpChunk.<Clone>$() -> Egami.Formats.Webp.WebpChunk!
 Egami.Formats.Webp.WebpChunk.Data.get -> System.ReadOnlyMemory<byte>
@@ -1366,6 +1386,7 @@ static Egami.Formats.Tiff.TiffReaderOptions.operator !=(Egami.Formats.Tiff.TiffR
 static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffTag.operator !=(Egami.Formats.Tiff.TiffTag? left, Egami.Formats.Tiff.TiffTag? right) -> bool
 static Egami.Formats.Tiff.TiffTag.operator ==(Egami.Formats.Tiff.TiffTag? left, Egami.Formats.Tiff.TiffTag? right) -> bool
+static Egami.Formats.Tiff.TiffWriterOptions.Default.get -> Egami.Formats.Tiff.TiffWriterOptions!
 static Egami.Formats.Webp.WebpChunk.operator !=(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
 static Egami.Formats.Webp.WebpChunk.operator ==(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
 static Egami.Formats.Webp.WebpFormat.Info.get -> Egami.Formats.FormatInfo!

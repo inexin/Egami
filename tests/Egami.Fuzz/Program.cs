@@ -15,7 +15,8 @@ using SharpFuzz;
 // parses raw TIFF blocks, which must never throw at all; the icc target parses ICC profiles the same way, and building a color
 // profile from one may fail only with an EgamiException. The iptc, psd, xmp and rawprofile targets (Phase 2.1.3) parse IPTC
 // datasets, Photoshop resource blocks, XMP packets and PNG "Raw profile type" text, which must never throw, and check that
-// what Egami writes after an edit reads back undamaged.
+// what Egami writes after an edit reads back undamaged. The tiff and tiffcodec targets (Phase 2.3.2) load TIFF files every way
+// and feed TIFF's decompressors and predictors raw bytes.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -98,7 +99,9 @@ static Action<Stream> Target(string name) => name switch
     "rawprofile" => DecodeRawProfile,
     "detect" => Detect,
     "stream" => DecodeStreaming,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream."),
+    "tiff" => LoadTiff,
+    "tiffcodec" => DecodeTiffCodec,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec."),
 };
 
 static EgamiContext Context()
@@ -513,6 +516,81 @@ static ulong Mix(ulong hash, Raster<Rgba8> band, int rows)
 }
 
 // The LZW decoder alone: the first byte is the minimum code size, the rest the data. Bad codes are reported, never thrown.
+// Phase 2.3.2: TIFF files probed, loaded leniently and strictly, every page and SubIFD, from a stream that cannot seek, reduced
+// (through a pyramid when there is one) and cropped.
+static void LoadTiff(Stream stream)
+{
+    EgamiContext context = Context() with { Formats = [Egami.Formats.Tiff.TiffFormat.Info], Limits = Context().Limits with { MaxFrames = 64 } };
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        Egami.Formats.Tiff.TiffReaderOptions options = new() { Recovery = recovery, IncludeReducedPages = true };
+        try
+        {
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster<Rgba8> converted = Raster.Load<Rgba8>(new ForwardOnlyStream(data), context, options);
+            using RasterList pages = Raster.LoadAll(data, context, options);
+            if (pages.Count != info.ImageCount)
+            {
+                throw new InvalidOperationException($"LoadAll gave {pages.Count} images where Probe said {info.ImageCount}.");
+            }
+
+            using Raster<Rgba16> reduced = Raster.Load<Rgba16>(data, context, options with { MinimumSize = new Size(Math.Max(1, info.Width / 3), Math.Max(1, info.Height / 3)) });
+            using Raster<Gray8> cropped = Raster.Load<Gray8>(data, context, options with { Region = new Rect(info.Width / 4, info.Height / 4, Math.Max(1, info.Width / 2), Math.Max(1, info.Height / 2)) });
+        }
+        catch (EgamiException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+            // Compressions and layouts Egami does not read say so.
+        }
+    }
+}
+
+// Phase 2.3.2: TIFF's decompressors and predictors fed directly: the first byte picks the codec and the next two the row width.
+// No decoder may throw or write past its output.
+static void DecodeTiffCodec(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 3)
+    {
+        return;
+    }
+
+    int width = 1 + (((data[1] << 8) | data[2]) % 2048);
+    ReadOnlySpan<byte> input = data.AsSpan(3);
+    byte[] output = new byte[64 * 1024];
+    int rows = Math.Max(1, output.Length / ((width + 7) / 8) / 2);
+    int written = (data[0] % 9) switch
+    {
+        0 => Egami.Formats.Tiff.TiffLzw.Decode(input, output),
+        1 => Egami.Formats.PackBits.Decode(input, output, out _),
+        2 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 2, 0),
+        3 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 3, 0),
+        4 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 3, 1),
+        5 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 4, 0),
+        6 => Egami.Formats.Tiff.SgiLog.DecodeStrip(input, output, Math.Min(width, 256), 8, data[1] % 2 == 0, data[2] % 2 == 0),
+        7 => Predict(input, output, width),
+        _ => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 32771, 0),
+    };
+    if (written < 0 || written > output.Length)
+    {
+        throw new InvalidOperationException($"The decoder wrote {written} bytes into {output.Length}.");
+    }
+
+    static int Predict(ReadOnlySpan<byte> input, byte[] output, int width)
+    {
+        int n = Math.Min(input.Length, output.Length) & ~7;
+        input[..n].CopyTo(output);
+        int samples = 1 + (width % 4);
+        Egami.Formats.Tiff.TiffDecoder.UndoHorizontal(output.AsSpan(0, n), samples, 8 << (width % 4));
+        Egami.Formats.Tiff.TiffDecoder.UndoFloatPredictor(output.AsSpan(0, n), samples, 4);
+        return n;
+    }
+}
+
 static void DecodeLzw(Stream stream)
 {
     byte[] data = ReadAll(stream);

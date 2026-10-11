@@ -17,6 +17,7 @@ public static class TiffFormat
         SignatureLength = TiffReader.SignatureLength,
         Matches = TiffReader.Matches,
         Reader = TiffReader.Instance,
+        Writer = TiffWriter.Instance,
     };
 }
 
@@ -40,6 +41,104 @@ public sealed record TiffReaderOptions : ReaderOptions
 
     /// <summary>Gets the directory LoadAll asks for: a main-chain index and a SubIFD index (-1 for none). Overrides <see cref="Page"/>.</summary>
     internal (int Chain, int Sub)? Directory { get; init; }
+}
+
+/// <summary>Options for writing TIFF.</summary>
+/// <remarks>
+/// Re-saving a raster loaded from TIFF keeps the source's compression, predictor, tiling and byte order for every option left at
+/// <see langword="null"/>, so a round trip writes the same kind of file. A JPEG or WebP source compression is kept only while the
+/// raster is unchanged since loading; otherwise it falls back to Deflate, to avoid a second lossy pass.
+/// </remarks>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-save"/>
+/// </example>
+public sealed class TiffWriterOptions : WriterOptions
+{
+    private readonly int _compressionLevel = 5;
+    private readonly int _quality = 75;
+    private readonly int? _tileSize;
+
+    /// <summary>Gets the default options.</summary>
+    public static new TiffWriterOptions Default { get; } = new();
+
+    /// <summary>
+    /// Gets the compression, or <see langword="null"/> (the default) for the TIFF source's, else <see cref="TiffCompression.Deflate"/>.
+    /// The writer takes <see cref="TiffCompression.None"/>, <see cref="TiffCompression.Lzw"/>, <see cref="TiffCompression.Deflate"/>,
+    /// <see cref="TiffCompression.PackBits"/>, <see cref="TiffCompression.CcittGroup3"/> and <see cref="TiffCompression.CcittGroup4"/>
+    /// (1-bit images only), <see cref="TiffCompression.Jpeg"/> and <see cref="TiffCompression.Webp"/>.
+    /// </summary>
+    public TiffCompression? Compression { get; init; }
+
+    /// <summary>Gets the Deflate level, 0 (fastest) to 9 (smallest). Defaults to 5, as PNG's.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 9.</exception>
+    public int CompressionLevel
+    {
+        get => _compressionLevel;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 9);
+            _compressionLevel = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the predictor for LZW and Deflate, or <see langword="null"/> (the default) for the source's, else
+    /// <see cref="TiffPredictor.Horizontal"/> for 8, 16 and 32-bit integer samples and <see cref="TiffPredictor.FloatingPoint"/>
+    /// for float samples. <see cref="TiffPredictor.None"/> turns it off.
+    /// </summary>
+    public TiffPredictor? Predictor { get; init; }
+
+    /// <summary>Gets the quality of JPEG and lossy WebP compression, 1 to 100, with the JPEG and WebP writers' meanings. Defaults to 75.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 100.</exception>
+    public int Quality
+    {
+        get => _quality;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);
+            _quality = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the side of square tiles, a multiple of 16, or 0 for strips of about 64 KB of uncompressed rows, or
+    /// <see langword="null"/> (the default) for the source's layout, else strips.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative or not a multiple of 16.</exception>
+    public int? TileSize
+    {
+        get => _tileSize;
+        init => _tileSize = value is null or 0 || (value > 0 && value % 16 == 0)
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(value), value, "Tiles are a multiple of 16 pixels square; 0 means strips.");
+    }
+
+    /// <summary>
+    /// Gets whether classic TIFF or BigTIFF is written. Defaults to <see cref="TiffLayout.Classic"/>, which throws before writing
+    /// anything when the uncompressed pixels pass 4 GB.
+    /// </summary>
+    public TiffLayout Layout { get; init; }
+
+    /// <summary>
+    /// Gets whether to write the smallest exact form the pixels allow: 1 bit when every pixel is black or white, gray when red,
+    /// green and blue are equal, a palette of up to 256 colors for opaque images, 8 bits when every 16-bit sample is a multiple of
+    /// 257. Defaults to <see langword="false"/>: each pixel type is written at its own depth.
+    /// </summary>
+    public bool Reduce { get; init; }
+
+    /// <summary>
+    /// Gets whether straight alpha is written premultiplied, with ExtraSamples 1 (associated). Premultiplied pixel types are always
+    /// written that way. Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool AssociatedAlpha { get; init; }
+
+    /// <summary>
+    /// Gets whether strips and tiles are compressed on up to <see cref="EgamiContext.MaxParallelism"/> threads. The file is the same
+    /// either way. Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool ParallelCompression { get; init; }
 }
 
 /// <summary>A TIFF compression scheme, by its code in the Compression tag.</summary>
