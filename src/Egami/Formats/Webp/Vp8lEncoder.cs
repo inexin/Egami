@@ -4,15 +4,19 @@ using System.Runtime.CompilerServices;
 
 namespace Egami.Formats.Webp;
 
+/// <summary>How the lossless encoder works: effort 0 to 6 on libwebp's method scale, exact transparent colors, near-lossless level.</summary>
+internal readonly record struct Vp8lEncoderOptions(int Effort = 4, bool KeepTransparentColors = true, int NearLossless = 100);
+
 /// <summary>
-/// Writes a VP8L (lossless WebP) bit stream (RFC 9649 section 3): the header; the subtract-green transform, then the predictor
-/// transform with each 16 × 16 block's mode chosen by the smallest residuals; then the residuals as an entropy-coded image of
-/// literals, color cache hits and backward references under one group of prefix codes. The color cache size is the one of 0,
-/// 6 and 10 bits that gives the smallest stream.
+/// Writes a VP8L (lossless WebP) bit stream (RFC 9649 section 3). Effort chooses the tools: images of 256 colors or fewer are
+/// written as palette indices (bundled when 16 or fewer); others through subtract green, the predictor with each tile's mode
+/// chosen by its cost, and the color transform. The coded pixels are backward references found through hash chains, a color
+/// cache sized from symbol statistics, and, from effort 3, meta prefix codes that give similar tiles their own codes. At efforts 5
+/// and 6 the encoder tries more than one plan and keeps the smallest.
 /// </summary>
 /// <remarks>
-/// Ported from ClassicMac's lossless WebP encoder (Lars Dytterud, MIT, ClassicMac commit 1156fb4), reshaped to Egami's style:
-/// pooled buffers, packed tokens, no LINQ or delegates.
+/// Grown from ClassicMac's lossless WebP encoder (Lars Dytterud, MIT, ClassicMac commit 1156fb4): its prefix-code building, bit
+/// writer and predictor helpers remain.
 /// </remarks>
 internal static class Vp8lEncoder
 {
@@ -22,63 +26,76 @@ internal static class Vp8lEncoder
     /// <summary>The largest width or height VP8L can hold.</summary>
     internal const int MaxSide = 16384;
 
-    private const int PredictorBits = 4;
-    private const int MaxCopy = 4096;
-    private const int MaxDistance = (1 << 20) - 120;
-    private const int MinCopy = 3;
-    private const int ChainDepth = 48;
-    private const int HashBits = 16;
-
     /// <summary>The number of length prefix codes in the green alphabet.</summary>
     internal const int LengthCodes = 24;
 
     /// <summary>The number of distance prefix codes.</summary>
     internal const int DistanceCodes = 40;
 
+    /// <summary>The pixel count up to which every plan is tried, whatever the effort.</summary>
+    private const int SmallImage = 128 * 128;
+
+    /// <summary>The most tiles the entropy image may have, as in libwebp.</summary>
+    private const int MaxHistogramTiles = 2600;
+
+    private static readonly int[] AllModes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+    private static readonly int[] FewModes = [1, 2, 11, 12, 13, 7, 5];
+
     /// <summary>Writes the VP8L data for <paramref name="argb"/> (rows top-down, each pixel A &lt;&lt; 24 | R &lt;&lt; 16 | G &lt;&lt; 8 | B).</summary>
     internal static void Encode(ReadOnlySpan<uint> argb, int width, int height, Vp8lBitWriter output)
     {
+        Encode(argb, width, height, new Vp8lEncoderOptions(), output);
+    }
+
+    /// <summary>Writes the VP8L data for <paramref name="argb"/> with the given options.</summary>
+    internal static void Encode(ReadOnlySpan<uint> argb, int width, int height, Vp8lEncoderOptions options, Vp8lBitWriter output)
+    {
         int count = width * height;
-        uint[] pixels = ArrayPool<uint>.Shared.Rent(count);
-        uint[] residuals = ArrayPool<uint>.Shared.Rent(count);
-        int blocksX = Blocks(width);
-        int blocksY = Blocks(height);
-        uint[] modes = ArrayPool<uint>.Shared.Rent(blocksX * blocksY);
+        uint[] source = ArrayPool<uint>.Shared.Rent(count);
+        uint[] palette = new uint[256];
         try
         {
-            // Subtract green (section 4.2): red and blue less green, on which the predictor works.
+            Span<uint> pixels = source.AsSpan(0, count);
+            argb.CopyTo(pixels);
             bool alpha = false;
-            for (int i = 0; i < count; i++)
+            foreach (uint p in pixels)
             {
-                uint p = argb[i];
-                uint g = (p >> 8) & 0xFF;
-                uint r = ((p >> 16) - g) & 0xFF;
-                uint b = (p - g) & 0xFF;
-                pixels[i] = (p & 0xFF00FF00) | (r << 16) | b;
-                alpha |= p >> 24 != 0xFF;
+                if (p < 0xFF000000)
+                {
+                    alpha = true;
+                    break;
+                }
             }
 
-            Predict(width, height, pixels.AsSpan(0, count), modes, residuals.AsSpan(0, count));
+            if (!options.KeepTransparentColors && alpha)
+            {
+                // Fully transparent pixels may take any color; zero joins them into runs and matches.
+                foreach (ref uint p in pixels)
+                {
+                    if (p < 0x01000000)
+                    {
+                        p = 0;
+                    }
+                }
+            }
+
+            int colors = Vp8lTransforms.FindPalette(pixels, palette);
+            int effort = options.Effort;
             using Vp8lBitWriter trial = new(count);
             long best = long.MaxValue;
-            foreach (int cacheBits in (ReadOnlySpan<int>)[0, 6, 10])
+            foreach (Plan plan in Plans(colors, effort, count <= SmallImage, Vp8lTransforms.RankSpatialModes(pixels, width)))
             {
                 trial.Reset();
-                trial.Write(Signature, 8);
-                trial.Write((uint)(width - 1), 14);
-                trial.Write((uint)(height - 1), 14);
-                trial.Write(alpha ? 1u : 0u, 1);
-                trial.Write(0, 3);
+                WriteHeader(trial, width, height, alpha);
+                if (plan.Palette)
+                {
+                    EncodePalette(trial, pixels, width, height, palette.AsSpan(0, colors), plan.NearestOrder, effort);
+                }
+                else
+                {
+                    EncodeSpatial(trial, pixels, width, height, plan, effort, options.NearLossless);
+                }
 
-                // Subtract green, then the predictor with its block size and modes.
-                trial.Write(1, 1);
-                trial.Write(2, 2);
-                trial.Write(1, 1);
-                trial.Write(0, 2);
-                trial.Write(PredictorBits - 2, 3);
-                WriteImage(trial, modes.AsSpan(0, blocksX * blocksY), blocksX, cacheBits: 0, main: false);
-                trial.Write(0, 1);
-                WriteImage(trial, residuals.AsSpan(0, count), width, cacheBits, main: true);
                 if (trial.BitCount < best)
                 {
                     best = trial.BitCount;
@@ -89,223 +106,252 @@ internal static class Vp8lEncoder
         }
         finally
         {
-            ArrayPool<uint>.Shared.Return(pixels);
-            ArrayPool<uint>.Shared.Return(residuals);
-            ArrayPool<uint>.Shared.Return(modes);
+            ArrayPool<uint>.Shared.Return(source);
         }
     }
 
-    private static int Blocks(int size) => (size + (1 << PredictorBits) - 1) >> PredictorBits;
+    /// <summary>
+    /// One way to encode the image: palette indices (in sorted or nearest-neighbour order), or some of subtract green, the predictor
+    /// and the color transform.
+    /// </summary>
+    private readonly record struct Plan(bool Palette, bool NearestOrder, bool SubtractGreen, bool Predictor, bool CrossColor, int BitsAdjust);
 
     /// <summary>
-    /// The predictor transform (section 4.1): the mode of each block that gives the smallest residuals (each channel's distance
-    /// from 0, wrapping), and the residual of every pixel against its prediction from its neighbours.
+    /// Returns the plans an effort tries: the palette when the image has 256 colors or fewer, else the spatial mode the estimate
+    /// ranks first; at effort 6 also the runner-up and the other palette order; for a small image, all of them. The smallest
+    /// file wins.
     /// </summary>
-    private static void Predict(int width, int height, ReadOnlySpan<uint> pixels, Span<uint> modes, Span<uint> residuals)
+    private static IEnumerable<Plan> Plans(int colors, int effort, bool small, (Vp8lTransforms.SpatialMode First, Vp8lTransforms.SpatialMode Second) ranked)
     {
-        const int size = 1 << PredictorBits;
-        int blocksX = Blocks(width);
-        int blocksY = Blocks(height);
-        for (int by = 0; by < blocksY; by++)
+        if (small)
         {
-            int y1 = Math.Min(height, (by + 1) * size);
-            for (int bx = 0; bx < blocksX; bx++)
+            // Trying everything costs little on a small image, and estimates are least reliable there.
+            if (colors > 0)
             {
-                int x1 = Math.Min(width, (bx + 1) * size);
-                int bestMode = 0;
-                long bestCost = long.MaxValue;
-                for (int mode = 0; mode < 14; mode++)
-                {
-                    long cost = 0;
-                    for (int y = by * size; y < y1 && cost < bestCost; y++)
-                    {
-                        for (int x = bx * size; x < x1; x++)
-                        {
-                            cost += Cost(Subtract(pixels[(y * width) + x], Prediction(pixels, width, x, y, mode)));
-                        }
-                    }
+                yield return new Plan(true, false, false, false, false, 0);
+                yield return new Plan(true, true, false, false, false, 0);
+            }
 
-                    if (cost < bestCost)
-                    {
-                        (bestCost, bestMode) = (cost, mode);
-                    }
-                }
-
-                modes[(by * blocksX) + bx] = 0xFF000000u | ((uint)bestMode << 8);
-                for (int y = by * size; y < y1; y++)
+            for (int mode = 0; mode < 4; mode++)
+            {
+                Plan plan = Spatial((Vp8lTransforms.SpatialMode)mode, effort, 0);
+                yield return plan;
+                if (plan.CrossColor && effort >= 3)
                 {
-                    for (int x = bx * size; x < x1; x++)
-                    {
-                        residuals[(y * width) + x] = Subtract(pixels[(y * width) + x], Prediction(pixels, width, x, y, bestMode));
-                    }
+                    yield return plan with { CrossColor = false };
                 }
             }
+
+            yield break;
+        }
+
+        if (colors > 0)
+        {
+            yield return new Plan(true, false, false, false, false, 0);
+            if (effort >= 6)
+            {
+                yield return new Plan(true, true, false, false, false, 0);
+                if (colors > 16)
+                {
+                    yield return Spatial(ranked.First, effort, 0);
+                }
+            }
+
+            yield break;
+        }
+
+        yield return Spatial(ranked.First, effort, 0);
+        if (effort >= 6)
+        {
+            yield return Spatial(ranked.Second, effort, 0);
         }
     }
 
-    private static long Cost(uint residual)
+    private static Plan Spatial(Vp8lTransforms.SpatialMode mode, int effort, int bitsAdjust)
     {
-        long cost = 0;
-        for (int shift = 0; shift < 32; shift += 8)
-        {
-            int c = (int)((residual >> shift) & 0xFF);
-            cost += Math.Min(c, 256 - c);
-        }
-
-        return cost;
+        bool predictor = mode is Vp8lTransforms.SpatialMode.Spatial or Vp8lTransforms.SpatialMode.SpatialSubtractGreen;
+        bool green = mode is Vp8lTransforms.SpatialMode.SubtractGreen or Vp8lTransforms.SpatialMode.SpatialSubtractGreen;
+        return new Plan(false, false, green, predictor, predictor, bitsAdjust);
     }
 
-    /// <summary>
-    /// The prediction for (x, y) (section 4.1): the top-left pixel predicts opaque black, the rest of the top row its left
-    /// neighbour, the left column its top neighbour; elsewhere the mode's, the top-right of the last column being the first pixel
-    /// of the row.
-    /// </summary>
-    internal static uint Prediction(ReadOnlySpan<uint> p, int width, int x, int y, int mode)
+    private static void WriteHeader(Vp8lBitWriter w, int width, int height, bool alpha)
     {
-        if (x == 0 && y == 0)
-        {
-            return 0xFF000000;
-        }
-
-        if (y == 0)
-        {
-            return p[x - 1];
-        }
-
-        if (x == 0)
-        {
-            return p[(y - 1) * width];
-        }
-
-        int row = y * width;
-        uint l = p[row + x - 1];
-        uint t = p[row - width + x];
-        uint tl = p[row - width + x - 1];
-        uint tr = p[row - width + x + 1];
-        return Vp8lPredictors.Predict(mode, l, t, tl, tr);
+        w.Write(Signature, 8);
+        w.Write((uint)(width - 1), 14);
+        w.Write((uint)(height - 1), 14);
+        w.Write(alpha ? 1u : 0u, 1);
+        w.Write(0, 3);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint Subtract(uint a, uint b)
+    /// <summary>Writes the color indexing transform (the palette, delta coded) and then the index image.</summary>
+    private static void EncodePalette(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int height, ReadOnlySpan<uint> sorted, bool nearest, int effort)
     {
-        uint ag = (a | 0x00FF00FF) - (b & 0xFF00FF00);
-        uint rb = (a | 0xFF00FF00) - (b & 0x00FF00FF);
-        return (ag & 0xFF00FF00) | (rb & 0x00FF00FF);
-    }
+        Span<uint> palette = stackalloc uint[sorted.Length];
+        sorted.CopyTo(palette);
+        if (nearest)
+        {
+            Vp8lTransforms.OrderByNearest(palette);
+        }
 
-    /// <summary>
-    /// Writes an entropy-coded image (section 5): its color cache flag and size, for the main image the meta prefix code flag
-    /// (one group), the five prefix codes (green with the length and cache codes, red, blue, alpha, distance), then its tokens.
-    /// </summary>
-    private static void WriteImage(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int cacheBits, bool main)
-    {
-        ulong[] tokenArray = ArrayPool<ulong>.Shared.Rent(pixels.Length);
+        int colors = palette.Length;
+        int bundleBits = Vp8lTransforms.BundleBits(colors);
+        w.Write(1, 1);
+        w.Write(3, 2);
+        w.Write((uint)(colors - 1), 8);
+        Span<uint> deltas = stackalloc uint[colors];
+        deltas[0] = palette[0];
+        for (int i = 1; i < colors; i++)
+        {
+            deltas[i] = Subtract(palette[i], palette[i - 1]);
+        }
+
+        WriteImage(w, deltas, colors, 1, effort, main: false);
+        int packedWidth = Vp8lDecoder.SubSampleSize(width, bundleBits);
+        uint[] indexArray = ArrayPool<uint>.Shared.Rent(packedWidth * height);
         try
         {
-            Span<ulong> tokens = tokenArray.AsSpan(0, Tokens(pixels, width, cacheBits, tokenArray));
-            int cacheSize = cacheBits > 0 ? 1 << cacheBits : 0;
-            int greenSize = 256 + LengthCodes + cacheSize;
-            uint[] histogramArray = ArrayPool<uint>.Shared.Rent(greenSize + (256 * 3) + DistanceCodes);
-            byte[] lengthArray = ArrayPool<byte>.Shared.Rent(greenSize + (256 * 3) + DistanceCodes);
-            ushort[] codeArray = ArrayPool<ushort>.Shared.Rent(greenSize + (256 * 3) + DistanceCodes);
+            Span<uint> indices = indexArray.AsSpan(0, packedWidth * height);
+            Vp8lTransforms.ApplyPalette(pixels, width, height, palette, bundleBits, indices);
+            w.Write(0, 1);
+            WriteImage(w, indices, packedWidth, height, effort, main: true, usePalette: true);
+        }
+        finally
+        {
+            ArrayPool<uint>.Shared.Return(indexArray);
+        }
+    }
+
+    /// <summary>Writes the plan's subtract green, predictor and color transform, then the coded image.</summary>
+    private static void EncodeSpatial(Vp8lBitWriter w, ReadOnlySpan<uint> source, int width, int height, Plan plan, int effort, int nearLossless)
+    {
+        int count = width * height;
+        uint[] workArray = ArrayPool<uint>.Shared.Rent(count);
+        uint[] residualArray = ArrayPool<uint>.Shared.Rent(count);
+        try
+        {
+            Span<uint> pixels = workArray.AsSpan(0, count);
+            source.CopyTo(pixels);
+            if (nearLossless < 100)
+            {
+                Vp8lTransforms.NearLossless(pixels, width, height, nearLossless);
+            }
+
+            if (plan.SubtractGreen)
+            {
+                Vp8lTransforms.SubtractGreen(pixels);
+                w.Write(1, 1);
+                w.Write(2, 2);
+            }
+
+            if (!plan.Predictor)
+            {
+                w.Write(0, 1);
+                WriteImage(w, pixels, width, height, effort, main: true);
+                return;
+            }
+
+            int histoBits = HistogramBits(effort, false, width, height);
+            int bits = Math.Clamp(TransformBits(effort, histoBits) + plan.BitsAdjust, 2, 9);
+            int tiles = Vp8lDecoder.SubSampleSize(width, bits) * Vp8lDecoder.SubSampleSize(height, bits);
+            uint[] tileArray = ArrayPool<uint>.Shared.Rent(tiles);
             try
             {
-                Span<uint> histograms = histogramArray.AsSpan(0, greenSize + (256 * 3) + DistanceCodes);
-                histograms.Clear();
-                Span<uint> green = histograms[..greenSize];
-                Span<uint> red = histograms.Slice(greenSize, 256);
-                Span<uint> blue = histograms.Slice(greenSize + 256, 256);
-                Span<uint> alpha = histograms.Slice(greenSize + 512, 256);
-                Span<uint> distance = histograms.Slice(greenSize + 768, DistanceCodes);
-                foreach (ulong t in tokens)
+                Span<uint> tileData = tileArray.AsSpan(0, tiles);
+                ReadOnlySpan<int> modes = effort == 0 ? FewModes : AllModes;
+                Vp8lTransforms.ChooseModes(pixels, width, height, bits, modes, tileData);
+                Span<uint> residuals = residualArray.AsSpan(0, count);
+                Vp8lTransforms.ApplyPredictor(pixels, width, height, bits, tileData, residuals);
+                w.Write(1, 1);
+                w.Write(0, 2);
+                w.Write((uint)(bits - 2), 3);
+                WriteImage(w, tileData, Vp8lDecoder.SubSampleSize(width, bits), Vp8lDecoder.SubSampleSize(height, bits), effort, main: false);
+
+                if (plan.CrossColor)
                 {
-                    Token.Read(t, out int kind, out uint value, out int length);
-                    switch (kind)
-                    {
-                        case Token.Literal:
-                            green[(int)((value >> 8) & 0xFF)]++;
-                            red[(int)((value >> 16) & 0xFF)]++;
-                            blue[(int)(value & 0xFF)]++;
-                            alpha[(int)(value >> 24)]++;
-                            break;
-                        case Token.Cached:
-                            green[256 + LengthCodes + (int)value]++;
-                            break;
-                        default:
-                            green[256 + PrefixOf(length, out _, out _)]++;
-                            distance[PrefixOf((int)value, out _, out _)]++;
-                            break;
-                    }
+                    Vp8lTransforms.ChooseCrossColor(residuals, width, height, bits, effort, tileData);
+                    Vp8lTransforms.ApplyCrossColor(residuals, width, height, bits, tileData);
+                    w.Write(1, 1);
+                    w.Write(1, 2);
+                    w.Write((uint)(bits - 2), 3);
+                    WriteImage(w, tileData, Vp8lDecoder.SubSampleSize(width, bits), Vp8lDecoder.SubSampleSize(height, bits), effort, main: false);
                 }
 
-                w.Write(cacheBits > 0 ? 1u : 0u, 1);
-                if (cacheBits > 0)
-                {
-                    w.Write((uint)cacheBits, 4);
-                }
-
-                if (main)
-                {
-                    w.Write(0, 1);
-                }
-
-                Span<byte> lengths = lengthArray.AsSpan(0, histograms.Length);
-                Span<ushort> codes = codeArray.AsSpan(0, histograms.Length);
-                int start = 0;
-                foreach (int size in (ReadOnlySpan<int>)[greenSize, 256, 256, 256, DistanceCodes])
-                {
-                    Vp8lPrefixCode.BuildLengths(histograms.Slice(start, size), lengths.Slice(start, size), Vp8lPrefixCode.MaxLength);
-                    Vp8lPrefixCode.BuildCodes(lengths.Slice(start, size), codes.Slice(start, size));
-                    Vp8lPrefixCode.Write(w, lengths.Slice(start, size));
-                    if (Vp8lPrefixCode.IsSingle(lengths.Slice(start, size)))
-                    {
-                        // A code of one symbol takes no bits per symbol.
-                        lengths.Slice(start, size).Clear();
-                    }
-
-                    start += size;
-                }
-
-                int redAt = greenSize;
-                int blueAt = greenSize + 256;
-                int alphaAt = greenSize + 512;
-                int distanceAt = greenSize + 768;
-                foreach (ulong t in tokens)
-                {
-                    Token.Read(t, out int kind, out uint value, out int length);
-                    switch (kind)
-                    {
-                        case Token.Literal:
-                            int g = (int)((value >> 8) & 0xFF);
-                            int r = redAt + (int)((value >> 16) & 0xFF);
-                            int b = blueAt + (int)(value & 0xFF);
-                            int a = alphaAt + (int)(value >> 24);
-                            w.Write(codes[g], lengths[g]);
-                            w.Write(codes[r], lengths[r]);
-                            w.Write(codes[b], lengths[b]);
-                            w.Write(codes[a], lengths[a]);
-                            break;
-                        case Token.Cached:
-                            int c = 256 + LengthCodes + (int)value;
-                            w.Write(codes[c], lengths[c]);
-                            break;
-                        default:
-                            int lengthCode = 256 + PrefixOf(length, out int extra, out int extraBits);
-                            w.Write(codes[lengthCode], lengths[lengthCode]);
-                            w.Write((uint)extra, extraBits);
-                            int distanceCode = distanceAt + PrefixOf((int)value, out extra, out extraBits);
-                            w.Write(codes[distanceCode], lengths[distanceCode]);
-                            w.Write((uint)extra, extraBits);
-                            break;
-                    }
-                }
+                w.Write(0, 1);
+                WriteImage(w, residuals, width, height, effort, main: true);
             }
             finally
             {
-                ArrayPool<uint>.Shared.Return(histogramArray);
-                ArrayPool<byte>.Shared.Return(lengthArray);
-                ArrayPool<ushort>.Shared.Return(codeArray);
+                ArrayPool<uint>.Shared.Return(tileArray);
             }
+        }
+        finally
+        {
+            ArrayPool<uint>.Shared.Return(workArray);
+            ArrayPool<uint>.Shared.Return(residualArray);
+        }
+    }
+
+    /// <summary>Returns the entropy image's tile bits, as libwebp chooses them: smaller tiles at higher effort, at most 2,600 tiles.</summary>
+    internal static int HistogramBits(int effort, bool palette, int width, int height)
+    {
+        int bits = (palette ? 9 : 7) - effort;
+        while (Vp8lDecoder.SubSampleSize(width, bits) * Vp8lDecoder.SubSampleSize(height, bits) > MaxHistogramTiles)
+        {
+            bits++;
+        }
+
+        return Math.Clamp(bits, 2, 9);
+    }
+
+    /// <summary>Returns the predictor and color transform tile bits: no finer than the entropy image, and at most 6, 5 or 4 by effort.</summary>
+    internal static int TransformBits(int effort, int histoBits)
+    {
+        int max = effort < 4 ? 6 : effort > 4 ? 4 : 5;
+        return Math.Min(histoBits, max);
+    }
+
+    /// <summary>
+    /// Writes an entropy-coded image (section 5): backward references, the color cache size that its statistics favour, for the
+    /// main image from effort 3 meta prefix codes when they pay for themselves, the prefix codes and the tokens.
+    /// </summary>
+    private static void WriteImage(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int height, int effort, bool main, bool usePalette = false)
+    {
+        int count = pixels.Length;
+        ulong[] tokenArray = ArrayPool<ulong>.Shared.Rent(count);
+        try
+        {
+            Vp8lBackwardRefs.Settings settings = Vp8lBackwardRefs.ForEffort(main ? effort : Math.Min(effort, 2));
+            int n = Vp8lBackwardRefs.Build(pixels, width, settings, main ? 10 : 0, tokenArray, out int cacheBits);
+            Span<ulong> tokens = tokenArray.AsSpan(0, n);
+            if (cacheBits > 0)
+            {
+                Vp8lCache.Apply(tokens, pixels, cacheBits);
+            }
+
+            w.Write(cacheBits > 0 ? 1u : 0u, 1);
+            if (cacheBits > 0)
+            {
+                w.Write((uint)cacheBits, 4);
+            }
+
+            Vp8lGroups groups = main && effort >= 1
+                ? Vp8lGroups.Cluster(tokens, width, height, HistogramBits(effort, usePalette, width, height), cacheBits, effort)
+                : Vp8lGroups.Single(tokens, cacheBits);
+            if (main)
+            {
+                if (groups.Count > 1)
+                {
+                    w.Write(1, 1);
+                    w.Write((uint)(groups.Bits - 2), 3);
+                    WriteImage(w, groups.Map, groups.MapWidth, groups.MapHeight, effort, main: false);
+                }
+                else
+                {
+                    w.Write(0, 1);
+                }
+            }
+
+            groups.Write(w, tokens, width);
         }
         finally
         {
@@ -335,114 +381,61 @@ internal static class Vp8lEncoder
         return (2 * highest) + second;
     }
 
+    /// <summary>Returns the distance code of a distance in pixels: the plane code when the offset is one of the 120 nearby ones, else the distance plus 120.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int DistanceToCode(int distance, int width)
+    {
+        int dy = distance / width;
+        int dx = distance - (dy * width);
+        if (dx <= 8 && dy < 8)
+        {
+            int code = PlaneCodes[(dy * 16) + 8 - dx];
+            if (code > 0)
+            {
+                return code;
+            }
+        }
+        else if (dx > width - 8 && dy < 7)
+        {
+            int code = PlaneCodes[((dy + 1) * 16) + 8 + (width - dx)];
+            if (code > 0)
+            {
+                return code;
+            }
+        }
+
+        return distance + 120;
+    }
+
+    /// <summary>Gets the plane code for each (dy, 8 − dx) cell, 0 where none: the inverse of <see cref="Vp8lDecoder.PlaneX"/> and PlaneY.</summary>
+    private static ReadOnlySpan<byte> PlaneCodes => PlaneCodeTable;
+
+    private static readonly byte[] PlaneCodeTable = BuildPlaneCodes();
+
+    private static byte[] BuildPlaneCodes()
+    {
+        byte[] table = new byte[16 * 9];
+        for (int code = 1; code <= 120; code++)
+        {
+            int dx = Vp8lDecoder.PlaneX[code - 1];
+            int dy = Vp8lDecoder.PlaneY[code - 1];
+            table[(dy * 16) + 8 - dx] = (byte)code;
+        }
+
+        return table;
+    }
+
     /// <summary>Returns the color cache slot of a pixel (section 5.2.3).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int CacheKey(uint argb, int cacheBits) => (int)((argb * 0x1E35A7BDu) >> (32 - cacheBits));
 
-    /// <summary>
-    /// Writes the pixels as tokens: a backward reference to the longest earlier match (at least 3 pixels, found through chains of
-    /// the positions of each pixel pair), else a color cache hit, else a literal. Every pixel goes into the cache as the decoder
-    /// puts it there. A distance of one row, or of one pixel, takes its plane code.
-    /// </summary>
-    private static int Tokens(ReadOnlySpan<uint> pixels, int width, int cacheBits, Span<ulong> tokens)
-    {
-        int count = pixels.Length;
-        int[] head = ArrayPool<int>.Shared.Rent(1 << HashBits);
-        int[] chain = ArrayPool<int>.Shared.Rent(count);
-        uint[]? cache = cacheBits > 0 ? ArrayPool<uint>.Shared.Rent(1 << cacheBits) : null;
-        try
-        {
-            head.AsSpan(0, 1 << HashBits).Fill(-1);
-            Span<uint> cacheSpan = cache is null ? default : cache.AsSpan(0, 1 << cacheBits);
-
-            // Slots start empty; a pixel can only hit a slot it was stored in, so a sentinel no hash maps there is not needed:
-            // a zero slot matches a zero pixel only if a zero pixel was stored, which the valid flags below track.
-            Span<bool> valid = cacheBits > 0 ? new bool[1 << cacheBits] : default;
-            int n = 0;
-            for (int i = 0; i < count;)
-            {
-                int bestLength = 0;
-                int bestFrom = 0;
-                if (i + MinCopy <= count)
-                {
-                    int depth = 0;
-                    int limit = Math.Min(MaxCopy, count - i);
-                    for (int j = head[Hash(pixels, i)]; j >= 0 && depth < ChainDepth && i - j <= MaxDistance; j = chain[j], depth++)
-                    {
-                        int length = pixels.Slice(j, limit).CommonPrefixLength(pixels.Slice(i, limit));
-                        if (length > bestLength)
-                        {
-                            (bestLength, bestFrom) = (length, j);
-                            if (length == limit)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (bestLength >= MinCopy)
-                {
-                    int d = i - bestFrom;
-                    int code = d == width ? 1 : d == 1 ? 2 : d + 120;
-                    tokens[n++] = Token.Copy(bestLength, code);
-                    for (int k = 0; k < bestLength; k++)
-                    {
-                        Insert(pixels, head, chain, i + k);
-                        if (cache is not null)
-                        {
-                            int key = CacheKey(pixels[i + k], cacheBits);
-                            cacheSpan[key] = pixels[i + k];
-                            valid[key] = true;
-                        }
-                    }
-
-                    i += bestLength;
-                    continue;
-                }
-
-                uint p = pixels[i];
-                if (cache is not null)
-                {
-                    int key = CacheKey(p, cacheBits);
-                    tokens[n++] = valid[key] && cacheSpan[key] == p ? Token.CacheHit(key) : Token.Pixel(p);
-                    cacheSpan[key] = p;
-                    valid[key] = true;
-                }
-                else
-                {
-                    tokens[n++] = Token.Pixel(p);
-                }
-
-                Insert(pixels, head, chain, i);
-                i++;
-            }
-
-            return n;
-        }
-        finally
-        {
-            ArrayPool<int>.Shared.Return(head);
-            ArrayPool<int>.Shared.Return(chain);
-            if (cache is not null)
-            {
-                ArrayPool<uint>.Shared.Return(cache);
-            }
-        }
-    }
-
+    /// <summary>Subtracts two pixels channel by channel, each wrapping around.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int Hash(ReadOnlySpan<uint> pixels, int i) => (int)(((pixels[i] * 0x1E35A7BDu) ^ (pixels[i + 1] * 0x9E3779B1u)) >> (32 - HashBits));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Insert(ReadOnlySpan<uint> pixels, int[] head, int[] chain, int i)
+    internal static uint Subtract(uint a, uint b)
     {
-        if (i + 1 < pixels.Length)
-        {
-            int h = Hash(pixels, i);
-            chain[i] = head[h];
-            head[h] = i;
-        }
+        uint ag = (a | 0x00FF00FF) - (b & 0xFF00FF00);
+        uint rb = (a | 0xFF00FF00) - (b & 0x00FF00FF);
+        return (ag & 0xFF00FF00) | (rb & 0x00FF00FF);
     }
 
     /// <summary>A token packed into 64 bits: the kind in bits 62–63, a copy's length in bits 32–43, and the pixel, cache slot or distance code below.</summary>
@@ -468,6 +461,10 @@ internal static class Vp8lEncoder
             value = (uint)token;
             length = (int)((token >> 32) & 0x3FFF_FFFF);
         }
+
+        /// <summary>Returns how many pixels a token covers.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int Pixels(ulong token) => token >> 62 == Backward ? (int)((token >> 32) & 0x3FFF_FFFF) : 1;
     }
 }
 

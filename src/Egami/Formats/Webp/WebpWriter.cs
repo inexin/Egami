@@ -95,7 +95,7 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
             }
 
             using Vp8lBitWriter bits = new(argb.Length);
-            Vp8lEncoder.Encode(argb, _start.Width, _start.Height, bits);
+            Vp8lEncoder.Encode(argb, _start.Width, _start.Height, new Vp8lEncoderOptions(_options.Effort, _options.KeepTransparentColors, _options.NearLossless), bits);
             Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8L, bits.Finish(), default, alpha), _start.Width, _start.Height);
         }
 

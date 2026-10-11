@@ -197,24 +197,50 @@ internal static class Vp8lPrefixCode
         }
 
         writer.Write(0, 1);
-        byte[] tokenArray = ArrayPool<byte>.Shared.Rent(lengths.Length * 2);
+        byte[] tokenArray = ArrayPool<byte>.Shared.Rent(lengths.Length * 4);
         try
         {
-            // Each token is a code-length symbol and its extra bits value.
-            Span<byte> tokens = tokenArray.AsSpan(0, Tokens(lengths, tokenArray) * 2);
-            Span<uint> counts = stackalloc uint[CodeLengthSymbols];
-            counts.Clear();
-            for (int i = 0; i < tokens.Length; i += 2)
+            // Two ways to code the lengths, with and without repeats of non-zero lengths, each with and without the trailing
+            // zeros cut by max_symbol; the cheapest is written.
+            Span<byte> withRepeats = tokenArray.AsSpan(0, Tokens(lengths, tokenArray, repeats: true) * 2);
+            Span<byte> plain = tokenArray.AsSpan(lengths.Length * 2, Tokens(lengths, tokenArray.AsSpan(lengths.Length * 2), repeats: false) * 2);
+            Span<byte> codeLengths = stackalloc byte[CodeLengthSymbols];
+            Span<byte> bestLengths = stackalloc byte[CodeLengthSymbols];
+            Span<byte> best = default;
+            int bestUsed = 0;
+            long bestBits = long.MaxValue;
+            foreach (bool repeats in (ReadOnlySpan<bool>)[true, false])
             {
-                counts[tokens[i]]++;
+                Span<byte> tokens = repeats ? withRepeats : plain;
+                int all = tokens.Length / 2;
+                int lastNonZero = all;
+                while (lastNonZero > 0 && tokens[(lastNonZero - 1) * 2] is 0 or 17 or 18)
+                {
+                    lastNonZero--;
+                }
+
+                foreach (int used in (ReadOnlySpan<int>)[all, lastNonZero])
+                {
+                    if (used < 2 || (used != all && used == lastNonZero && lastNonZero == all))
+                    {
+                        continue;
+                    }
+
+                    long bits = Cost(tokens[..(used * 2)], codeLengths) + (used < all ? 4 + MaxSymbolBits(used) : 0);
+                    if (bits < bestBits)
+                    {
+                        bestBits = bits;
+                        best = tokens;
+                        bestUsed = used;
+                        codeLengths.CopyTo(bestLengths);
+                    }
+                }
             }
 
-            Span<byte> codeLengths = stackalloc byte[CodeLengthSymbols];
             Span<ushort> codeCodes = stackalloc ushort[CodeLengthSymbols];
-            BuildLengths(counts, codeLengths, MaxCodeLengthLength);
-            BuildCodes(codeLengths, codeCodes);
+            BuildCodes(bestLengths, codeCodes);
             int written = CodeLengthSymbols;
-            while (written > 4 && codeLengths[CodeLengthOrder[written - 1]] == 0)
+            while (written > 4 && bestLengths[CodeLengthOrder[written - 1]] == 0)
             {
                 written--;
             }
@@ -222,30 +248,41 @@ internal static class Vp8lPrefixCode
             writer.Write((uint)(written - 4), 4);
             for (int i = 0; i < written; i++)
             {
-                writer.Write(codeLengths[CodeLengthOrder[i]], 3);
+                writer.Write(bestLengths[CodeLengthOrder[i]], 3);
             }
 
-            // Every symbol's length follows (no max_symbol).
-            writer.Write(0, 1);
-            bool single = IsSingle(codeLengths);
-            for (int i = 0; i < tokens.Length; i += 2)
+            if (bestUsed < best.Length / 2)
             {
-                int code = tokens[i];
+                // max_symbol: how many code-length symbols follow, in 2 + 2k bits.
+                int nbits = MaxSymbolBits(bestUsed);
+                writer.Write(1, 1);
+                writer.Write((uint)((nbits - 2) / 2), 3);
+                writer.Write((uint)(bestUsed - 2), nbits);
+            }
+            else
+            {
+                writer.Write(0, 1);
+            }
+
+            bool single = IsSingle(bestLengths);
+            for (int i = 0; i < bestUsed * 2; i += 2)
+            {
+                int code = best[i];
                 if (!single)
                 {
-                    writer.Write(codeCodes[code], codeLengths[code]);
+                    writer.Write(codeCodes[code], bestLengths[code]);
                 }
 
                 switch (code)
                 {
                     case 16:
-                        writer.Write(tokens[i + 1], 2);
+                        writer.Write(best[i + 1], 2);
                         break;
                     case 17:
-                        writer.Write(tokens[i + 1], 3);
+                        writer.Write(best[i + 1], 3);
                         break;
                     case 18:
-                        writer.Write(tokens[i + 1], 7);
+                        writer.Write(best[i + 1], 7);
                         break;
                 }
             }
@@ -254,6 +291,46 @@ internal static class Vp8lPrefixCode
         {
             ArrayPool<byte>.Shared.Return(tokenArray);
         }
+    }
+
+    /// <summary>Returns the bits max_symbol's value takes: the smallest of 2, 4, ..., 16 that holds <paramref name="used"/> − 2.</summary>
+    private static int MaxSymbolBits(int used)
+    {
+        int nbits = 2;
+        while (nbits < 16 && (used - 2) >= 1 << nbits)
+        {
+            nbits += 2;
+        }
+
+        return nbits;
+    }
+
+    /// <summary>Returns the bits of a code-length token list with the code-length code built for it, and that code's lengths.</summary>
+    private static long Cost(ReadOnlySpan<byte> tokens, Span<byte> codeLengths)
+    {
+        Span<uint> counts = stackalloc uint[CodeLengthSymbols];
+        counts.Clear();
+        for (int i = 0; i < tokens.Length; i += 2)
+        {
+            counts[tokens[i]]++;
+        }
+
+        BuildLengths(counts, codeLengths, MaxCodeLengthLength);
+        int written = CodeLengthSymbols;
+        while (written > 4 && codeLengths[CodeLengthOrder[written - 1]] == 0)
+        {
+            written--;
+        }
+
+        long bits = 4 + (3 * written) + 1;
+        bool single = IsSingle(codeLengths);
+        for (int s = 0; s < CodeLengthSymbols; s++)
+        {
+            int extra = s == 16 ? 2 : s == 17 ? 3 : s == 18 ? 7 : 0;
+            bits += counts[s] * ((single ? 0 : codeLengths[s]) + extra);
+        }
+
+        return bits;
     }
 
     /// <summary>Returns whether a code has exactly one symbol, which takes no bits.</summary>
@@ -273,9 +350,10 @@ internal static class Vp8lPrefixCode
 
     /// <summary>
     /// Writes the code lengths as code-length tokens into <paramref name="tokens"/> (symbol, extra) and returns how many: 0 to 15
-    /// a length; 16 the previous non-zero length 3 to 6 times (before any, 8); 17 3 to 10 zeros; 18 11 to 138 zeros.
+    /// a length; 16 the previous non-zero length 3 to 6 times (before any, 8), unless <paramref name="repeats"/> is false; 17 3 to
+    /// 10 zeros; 18 11 to 138 zeros.
     /// </summary>
-    private static int Tokens(ReadOnlySpan<byte> lengths, Span<byte> tokens)
+    private static int Tokens(ReadOnlySpan<byte> lengths, Span<byte> tokens, bool repeats)
     {
         int n = 0;
         int previous = 8;
@@ -327,7 +405,7 @@ internal static class Vp8lPrefixCode
                 run--;
             }
 
-            while (run >= 3)
+            while (repeats && run >= 3)
             {
                 int take = Math.Min(run, 6);
                 tokens[n * 2] = 16;

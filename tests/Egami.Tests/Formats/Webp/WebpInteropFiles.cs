@@ -22,8 +22,13 @@ public class WebpInteropFiles
         {
             using (raster)
             {
-                File.WriteAllBytes(Path.Combine(directory, name + ".classicmac.webp"), WebpTestImages.EncodeSeed(raster));
-                File.WriteAllBytes(Path.Combine(directory, name + ".classicmac.rgba"), WebpTestImages.Bytes(raster));
+                for (int effort = 0; effort <= 6; effort++)
+                {
+                    using MemoryStream file = new();
+                    raster.Save(file, WebpFormat.Info, new WebpWriterOptions { Lossless = true, Effort = effort });
+                    File.WriteAllBytes(Path.Combine(directory, $"{name}.e{effort}.webp"), file.ToArray());
+                    File.WriteAllBytes(Path.Combine(directory, $"{name}.e{effort}.rgba"), WebpTestImages.Bytes(raster));
+                }
             }
         }
     }
@@ -57,15 +62,23 @@ internal static class WebpTestImages
         yield return ("shapes", Raster.Load<Rgba8>(Path.Combine(AppContext.BaseDirectory, "images", "ops", "shapes.png")));
     }
 
-    /// <summary>Encodes with the ClassicMac seed encoder into a simple-format file.</summary>
-    internal static byte[] EncodeSeed(Raster<Rgba8> raster)
+    /// <summary>Returns one test picture by name.</summary>
+    internal static Raster<Rgba8> Get(string name)
     {
-        uint[] argb = Argb(raster);
-        using Vp8lBitWriter writer = new();
-        Vp8lEncoder.Encode(argb, raster.Width, raster.Height, writer);
-        using MemoryStream file = new();
-        WebpContainer.WriteSimple(file, WebpContainer.Vp8L, writer.Finish());
-        return file.ToArray();
+        Raster<Rgba8>? found = null;
+        foreach ((string n, Raster<Rgba8> raster) in All())
+        {
+            if (n == name && found is null)
+            {
+                found = raster;
+            }
+            else
+            {
+                raster.Dispose();
+            }
+        }
+
+        return found ?? throw new ArgumentException($"No test picture \"{name}\".", nameof(name));
     }
 
     internal static uint[] Argb(Raster<Rgba8> raster)
