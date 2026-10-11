@@ -11,10 +11,17 @@ namespace Egami.Formats.Webp;
 /// </summary>
 internal static class WebpRgbToYuv
 {
-    internal static Vp8Planes Convert(ReadOnlySpan<uint> argb, int width, int height)
+    internal static Vp8Planes Convert(ReadOnlySpan<uint> argb, int width, int height, bool sharp = false)
     {
         Vp8Planes planes = new(width, height);
         YuvKernels8.FromRgbCoefficients k = YuvKernels8.FromRgbCoefficients.For(WebpReader.Vp8Color);
+        if (sharp)
+        {
+            WebpSharpYuv.Convert(argb, width, height, planes, in k);
+            planes.Pad();
+            return planes;
+        }
+
         YuvConvert.Order order = YuvConvert.Order.Of<Bgra8>();
         ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(argb);
         int rowBytes = width * 4;

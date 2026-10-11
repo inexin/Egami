@@ -181,6 +181,11 @@ internal sealed class WebpAnimation : IDisposable
             throw _input.Corrupt(at, "The frame's VP8 data is cut short.");
         }
 
+        if ((payload[start] & 1) != 0)
+        {
+            throw _input.Corrupt(at, "The frame's VP8 data is not a key frame.");
+        }
+
         (YuvRaster<byte> planes, string? warning) = WebpReader.DecodePlanes(_input, _options, payload, start, length, alpha, width, height, at, null);
         using (planes)
         {

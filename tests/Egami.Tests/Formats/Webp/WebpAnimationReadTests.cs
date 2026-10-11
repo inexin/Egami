@@ -129,6 +129,39 @@ public class WebpAnimationReadTests
     }
 
     [Fact]
+    public void AnInterFrameInAnAnimationIsCorrupt()
+    {
+        // Found by fuzzing: the VP8 decoder refuses inter frames with NotSupportedException, which a WebP file must not leak.
+        byte[] data = WebpCorpus.Read("anim-lossy.webp");
+        int at = 12, frames = 0;
+        while (at + 8 <= data.Length)
+        {
+            string type = System.Text.Encoding.ASCII.GetString(data, at, 4);
+            int size = BitConverter.ToInt32(data, at + 4);
+            if (type == "ANMF" && ++frames == 2)
+            {
+                for (int sub = at + 8 + 16; sub + 8 <= at + 8 + size;)
+                {
+                    int subSize = BitConverter.ToInt32(data, sub + 4);
+                    if (System.Text.Encoding.ASCII.GetString(data, sub, 4) == "VP8 ")
+                    {
+                        data[sub + 8] |= 1;
+                        break;
+                    }
+
+                    sub += 8 + subSize + (subSize & 1);
+                }
+
+                break;
+            }
+
+            at += 8 + size + (size & 1);
+        }
+
+        Assert.Throws<CorruptDataException>(() => Raster.Load(data));
+    }
+
+    [Fact]
     public void BlendMatchesLibwebpsIntegerFormula()
     {
         // Spot values from the formula: an opaque destination, a half-transparent source.

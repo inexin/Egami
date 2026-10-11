@@ -205,6 +205,46 @@ public class Vp8EncoderTests
         }
     }
 
+    [Theory]
+    [InlineData("shapes")]
+    [InlineData("checker")]
+    [InlineData("duck")]
+    [InlineData("edge-17x33")]
+    public void SharpYuvKeepsColoredEdges(string name)
+    {
+        using Raster<Rgba8> source = WebpTestImages.Get(name);
+        double plain = RgbPsnr(source, new WebpWriterOptions { Lossless = false, Quality = 90 });
+        double sharp = RgbPsnr(source, new WebpWriterOptions { Lossless = false, Quality = 90, SharpYuv = true });
+        Assert.True(sharp >= plain - 0.3, $"{name}: sharp {sharp:F2} dB, plain {plain:F2} dB");
+    }
+
+    [Fact]
+    public void SharpYuvImprovesRedOnBlueEdges()
+    {
+        using Raster<Rgba8> source = WebpTestImages.Make(64, 64, (x, y) => ((x / 3) + (y / 5)) % 2 == 0 ? new Rgba8(230, 20, 20, 255) : new Rgba8(20, 20, 230, 255));
+        double plain = RgbPsnr(source, new WebpWriterOptions { Lossless = false, Quality = 95 });
+        double sharp = RgbPsnr(source, new WebpWriterOptions { Lossless = false, Quality = 95, SharpYuv = true });
+        Assert.True(sharp > plain, $"sharp {sharp:F2} dB, plain {plain:F2} dB");
+    }
+
+    private static double RgbPsnr(Raster<Rgba8> source, WebpWriterOptions options)
+    {
+        using MemoryStream file = new();
+        source.Save(file, WebpFormat.Info, options);
+        using Raster<Rgba8> decoded = Raster.Load<Rgba8>(file.ToArray());
+        double se = 0;
+        for (int y = 0; y < source.Height; y++)
+        {
+            ReadOnlySpan<Rgba8> a = source.Row(y), b = decoded.Row(y);
+            for (int x = 0; x < a.Length; x++)
+            {
+                se += ((a[x].R - b[x].R) * (a[x].R - b[x].R)) + ((a[x].G - b[x].G) * (a[x].G - b[x].G)) + ((a[x].B - b[x].B) * (a[x].B - b[x].B));
+            }
+        }
+
+        return 10 * Math.Log10(255.0 * 255.0 * 3 * source.Width * source.Height / Math.Max(se, 1e-9));
+    }
+
     [Fact]
     public void PngSourcesSaveLossyByDefault()
     {

@@ -130,7 +130,7 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
                 alphaChunk = WebpAlphaEncoder.Encode(plane, width, height, options.AlphaQuality, options.Effort);
             }
 
-            Vp8Planes planes = WebpRgbToYuv.Convert(argb, width, height);
+            Vp8Planes planes = WebpRgbToYuv.Convert(argb, width, height, options.SharpYuv);
             byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Quality = options.Quality, Effort = options.Effort }).Encode();
             return (frame, alphaChunk);
         }
