@@ -126,6 +126,11 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jpeg.RestartResync` | Warning | A restart marker is missing or out of order; decoding picked up at the next one |
 | `Jpeg.SegmentTruncated` | Warning | A segment between scans is cut off |
 | `Jpeg.StrayBytes` | Warning | Stray bytes between segments after a scan were skipped |
+| `Jpeg2000.ChannelsDropped` | Warning | Channels that are neither color nor alpha (by the channel definitions, or beyond the color space's count) were not loaded |
+| `Jpeg2000.ExtraCodestreams` | Warning | A JPX file holds several codestreams; only the first was read |
+| `Jpeg2000.MissingTiles` | Warning | Tiles have no data in the codestream; they were left black |
+| `Jpeg2000.SignedSamples` | Warning | Signed samples were offset by half their range to load as unsigned |
+| `Jpeg2000.Truncated` | Warning | The codestream ends before its last packet; what it holds was decoded |
 | `Limits.Exceeded` | Debug | A safety limit is about to fail the load: its name, the limit and the value found |
 | `Operation.ChainPlanned` | Info | The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped |
 | `Parallel.Bands` | Debug | How many bands and threads a parallel decode or encode uses |

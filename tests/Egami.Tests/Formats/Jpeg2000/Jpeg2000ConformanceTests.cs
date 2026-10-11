@@ -89,44 +89,47 @@ public class Jpeg2000ConformanceTests(ITestOutputHelper output)
             : [.. Directory.GetFiles(Path.Combine(folder, "input", "conformance"), "*.jp2").Select(f => Path.GetFileName(f)!).Order(StringComparer.Ordinal)];
     }
 
+    /// <summary>
+    /// Files Pillow (OpenJPEG 2.5.4 inside) reads differently by design: file2 orders its channels by its channel definitions,
+    /// which Pillow ignores, and file6 is 12-bit gray, which Pillow clips converting its 16-bit mode to RGBA.
+    /// </summary>
+    private static readonly HashSet<string> PillowDiffers = ["file2.jp2", "file6.jp2"];
+
+    /// <summary>
+    /// Every JP2 file within 1 level of Pillow's decode (references made in Docker under .cache/j2k-pillow), or 4 for sYCC:
+    /// chroma is repeated as OpenJPEG does, but OpenJPEG truncates where Egami rounds, and a lossy file's components, each within
+    /// 1 of OpenJPEG's, combine in R = Y + 1.402 Cr. Pixels are as stored: ICC profiles stay in the metadata, as Pillow leaves
+    /// them.
+    /// </summary>
     [Theory]
     [MemberData(nameof(Jp2Files))]
     public void Jp2FilesMatchPillow(string name)
     {
         string? folder = Folder();
-        if (folder is null)
+        string reference = Path.Combine(folder ?? "", "..", "j2k-pillow", name + ".png");
+        if (folder is null || !File.Exists(reference) || PillowDiffers.Contains(name))
         {
             return;
         }
 
-        foreach (string tool in new[] { "j2k-pillow", "j2k-opjpng" })
+        byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name));
+        using Raster<Rgba8> egami = Raster.Load<Rgba8>(data, options: new Jpeg2000ReaderOptions { FastUpsampling = true });
+        using Raster<Rgba8> pillow = Raster.Load<Rgba8>(File.ReadAllBytes(reference));
+        Assert.Equal((pillow.Width, pillow.Height), (egami.Width, egami.Height));
+        int peak = 0;
+        for (int y = 0; y < egami.Height; y++)
         {
-            string reference = Path.Combine(folder, "..", tool, name + ".png");
-            if (!File.Exists(reference))
+            ReadOnlySpan<Rgba8> a = egami.Row(y);
+            ReadOnlySpan<Rgba8> b = pillow.Row(y);
+            for (int x = 0; x < a.Length; x++)
             {
-                continue;
+                peak = Math.Max(peak, Math.Max(Math.Max(Math.Abs(a[x].R - b[x].R), Math.Abs(a[x].G - b[x].G)), Math.Max(Math.Abs(a[x].B - b[x].B), Math.Abs(a[x].A - b[x].A))));
             }
-
-            using Raster natural = Raster.Load(File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name)));
-            using Raster<Rgba16> egami = Raster.Load<Rgba16>(File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name)));
-            using Raster<Rgba16> other = Raster.Load<Rgba16>(File.ReadAllBytes(reference));
-            Assert.Equal((other.Width, other.Height), (egami.Width, egami.Height));
-            int peak = 0;
-            long over = 0;
-            for (int y = 0; y < egami.Height; y++)
-            {
-                ReadOnlySpan<Rgba16> a = egami.Row(y);
-                ReadOnlySpan<Rgba16> b = other.Row(y);
-                for (int x = 0; x < a.Length; x++)
-                {
-                    int d = Math.Max(Math.Max(Math.Abs(a[x].R - b[x].R), Math.Abs(a[x].G - b[x].G)), Math.Max(Math.Abs(a[x].B - b[x].B), Math.Abs(a[x].A - b[x].A))) / 257;
-                    peak = Math.Max(peak, d);
-                    over += d > 1 ? 1 : 0;
-                }
-            }
-
-            output.WriteLine($"{name} vs {tool}: {natural.Layout.ChannelOrder} {natural.Layout.ChannelType}, peak {peak} (8-bit levels), {over} pixels off by more than 1, warnings: {string.Join("; ", natural.Metadata.Warnings.Select(w => w.Message))}");
         }
+
+        output.WriteLine($"{name}: peak {peak}");
+        bool sycc = egami.Metadata.FormatDetails is Jpeg2000Details { ColorSpace: Jpeg2000ColorSpace.Sycc };
+        Assert.True(peak <= (sycc ? 4 : 1), $"{name} differs from Pillow by {peak} levels.");
     }
 
     /// <summary>Reads a PGX file: a "PG ML +|- depth width height" line, then samples big-endian in 1, 2 or 4 bytes.</summary>

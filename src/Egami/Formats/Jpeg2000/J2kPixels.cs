@@ -146,7 +146,7 @@ internal sealed class J2kPixels
     {
         if (mode == Jpeg2000Components.Raw || file.Container == Jpeg2000Container.Codestream)
         {
-            return Plain(components, file);
+            return Plain(components, mode == Jpeg2000Components.Color);
         }
 
         // Channels: the component mapping through the palette, else the components themselves (I.5.3.5).
@@ -303,15 +303,20 @@ internal sealed class J2kPixels
         };
     }
 
-    /// <summary>The components as stored: 1 gray, 2 gray and alpha, 3 RGB, 4 CMYK (design question 8).</summary>
-    private static J2kPixels Plain(J2kComponent[] components, Jp2File file)
+    /// <summary>
+    /// The components as stored: 1 gray, 2 gray and alpha, 3 RGB, 4 CMYK (design question 8). In color, a raw codestream
+    /// whose second and third components are subsampled and its first not is YCC, as no RGB image is stored that way.
+    /// </summary>
+    private static J2kPixels Plain(J2kComponent[] components, bool color)
     {
         Channel Of(int c) => new(c, -1, components[c].Precision, components[c].Signed);
+        bool ycc = color && components.Length == 3 && components[0].Dx == 1 && components[0].Dy == 1
+            && components[1] == components[2] && (components[1].Dx > 1 || components[1].Dy > 1);
         J2kPixels pixels = components.Length switch
         {
             1 => new J2kPixels(J2kModel.Gray, [Of(0)], null, false, null, []),
             2 => new J2kPixels(J2kModel.Gray, [Of(0)], Of(1), false, null, []),
-            3 => new J2kPixels(J2kModel.Rgb, [Of(0), Of(1), Of(2)], null, false, null, []),
+            3 => new J2kPixels(ycc ? J2kModel.Sycc : J2kModel.Rgb, [Of(0), Of(1), Of(2)], null, false, null, []),
             _ => new J2kPixels(J2kModel.Cmyk, [Of(0), Of(1), Of(2), Of(3)], null, false, null, []),
         };
         pixels.Dropped = Math.Max(0, components.Length - 4);
