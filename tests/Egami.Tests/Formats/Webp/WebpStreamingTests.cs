@@ -7,15 +7,15 @@ using Egami.Tests.Streaming;
 namespace Egami.Tests.Formats.Webp;
 
 /// <summary>
-/// Phase 2.3.1 task 6: lossless WebP streams. Rows, regions and reductions equal Load's (the shared streaming tests run over the
+/// Phase 2.3.1 tasks 6 and 8: lossless and lossy WebP stream. Rows, regions and reductions equal Load's (the shared streaming tests run over the
 /// corpus too); here, non-seekable streams, held memory, metadata after the image data, and a window smaller than the image.
 /// </summary>
 public class WebpStreamingTests
 {
-    public static TheoryData<string> Lossless() => [.. WebpCorpus.Lossless];
+    public static TheoryData<string> Stills() => [.. WebpCorpus.Lossless.Concat(WebpCorpus.Lossy)];
 
     [Theory]
-    [MemberData(nameof(Lossless))]
+    [MemberData(nameof(Stills))]
     public void NonSeekableStreamsGiveLoadsPixels(string file)
     {
         byte[] data = WebpCorpus.Read(file);
@@ -35,7 +35,7 @@ public class WebpStreamingTests
     }
 
     [Theory]
-    [MemberData(nameof(Lossless))]
+    [MemberData(nameof(Stills))]
     public void HeldBytesStayWithinWorkingBytes(string file)
     {
         byte[] data = WebpCorpus.Read(file);
@@ -81,10 +81,13 @@ public class WebpStreamingTests
         Assert.True(decoder.Info.WorkingBytes < 100L * 16_384 * 4);
     }
 
-    [Fact]
-    public void IncrementalDecodingGivesRowsBeforeTheEnd()
+    [Theory]
+    [InlineData("lossless-z6.webp")]
+    [InlineData("lossy-q90.webp")]
+    [InlineData("lossy-alpha-m1-f2.webp")]
+    public void IncrementalDecodingGivesRowsBeforeTheEnd(string file)
     {
-        byte[] data = WebpCorpus.Read("lossless-z6.webp");
+        byte[] data = WebpCorpus.Read(file);
         using RasterDecoder decoder = RasterDecoder.OpenIncremental();
         decoder.Append(data.AsSpan(0, data.Length / 2));
         using Raster<Rgba8> rows = Raster.Create<Rgba8>(160, 8);

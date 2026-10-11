@@ -19,7 +19,12 @@ internal sealed partial class WebpReader : IFormatReader
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
-        WebpParser parser = WebpParser.Open(input, options with { Recovery = RecoveryMode.Lenient });
+        return Info(WebpParser.Open(input, options with { Recovery = RecoveryMode.Lenient }));
+    }
+
+    /// <summary>Finishes reading the container after the header (frame count, metadata after the image) and returns what Probe reports.</summary>
+    private static RasterInfo Info(WebpParser parser)
+    {
         if (parser.Animated)
         {
             parser.CountFrames();
@@ -88,7 +93,16 @@ internal sealed partial class WebpReader : IFormatReader
     /// <summary>Returns the bytes a streaming decode holds.</summary>
     private static long WorkingBytes(WebpParser parser)
     {
-        return parser.ImageChunk == WebpContainer.Vp8L ? Vp8lDecoder.WorkingBytes(parser.Width, parser.Height) : (long)parser.Width * 64;
+        if (parser.ImageChunk == WebpContainer.Vp8L)
+        {
+            return Vp8lDecoder.WorkingBytes(parser.Width, parser.Height);
+        }
+
+        // Lossy: the payload, the rings of planes and alpha rows, and the alpha's own decoder.
+        long width = parser.Width;
+        long rings = (width * 64 * (parser.Alpha is null ? 1 : 2)) + (2 * ((width + 1) / 2) * 32);
+        long alpha = parser.Alpha is null ? 0 : WebpAlpha.WorkingBytes(parser.Width, parser.Height);
+        return Math.Max(parser.ImageSize, 16) + rings + alpha;
     }
 
     /// <summary>
@@ -98,9 +112,15 @@ internal sealed partial class WebpReader : IFormatReader
     private static (long Consumed, string? Warning) DecodeStill<TPixel>(EgamiInput input, ReaderOptions options, WebpParser parser, Raster<TPixel> raster)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        if (parser.ImageChunk != WebpContainer.Vp8L)
+        if (parser.ImageChunk == WebpContainer.Vp8)
         {
-            throw new NotSupportedException("Lossy WebP is not supported yet.");
+            (YuvRaster<byte> planes, string? lossyWarning) = DecodePlanes(input, options, parser);
+            using (planes)
+            {
+                WebpYuvToRgb.ToRaster(planes, raster, options is WebpReaderOptions { FastUpsampling: true }, input.CancellationToken);
+            }
+
+            return (parser.ImageSize, lossyWarning);
         }
 
         bool strict = options.Recovery == RecoveryMode.Strict;

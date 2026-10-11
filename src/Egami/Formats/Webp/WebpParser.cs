@@ -476,7 +476,7 @@ internal sealed class WebpParser
                 throw _input.Corrupt(_input.Position + 6, $"The VP8 image size {Width}×{Height} is invalid.");
             }
 
-            HasAlpha = Alpha is not null;
+            HasAlpha = Alpha is not null || (Flags & 0x10) != 0;
             Details.Lossless = false;
         }
 
