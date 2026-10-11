@@ -6,7 +6,8 @@ operation makes it wrong, and is written back by every format that can carry it.
 | Item | Read from | Written to |
 | --- | --- | --- |
 | `Exif` (`ExifData`) | JPEG, PNG | JPEG, PNG |
-| `Xmp` | JPEG (with extended XMP), PNG, GIF | JPEG, PNG, GIF |
+| `Iptc` (`IptcData`) | JPEG (APP13) | JPEG |
+| `Xmp`, `XmpData` | JPEG (with extended XMP), PNG, GIF | JPEG, PNG, GIF |
 | `IccProfile` | JPEG, PNG, GIF, BMP (V5) | JPEG, PNG, GIF, BMP |
 | `Text` | PNG text chunks, GIF comments, PNM comments, TGA author and comments | The same |
 | `Resolution` | PNG, JPEG, BMP | PNG, JPEG, BMP |
@@ -66,6 +67,11 @@ name), never by prefix. A property is a simple value, an `XmpArray` (bag, sequen
 An edited packet is written as canonical RDF/XML with padding; properties Egami does not know are kept.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-values)]
+
+`RasterMetadata.XmpData` is a live view of `RasterMetadata.Xmp`: it parses the packet on first use, and once edited, the
+edit is the packet every format saves. JPEG, PNG (an iTXt chunk) and GIF carry XMP.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-live)]
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-parse)]
 

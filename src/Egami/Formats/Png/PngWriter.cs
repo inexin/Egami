@@ -21,6 +21,8 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 
     private static ReadOnlySpan<byte> Signature => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
+    private static ReadOnlySpan<byte> XmpKeyword => "XML:com.adobe.xmp"u8;
+
     public void Write<TPixel>(Raster<TPixel> raster, Stream output, WriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -832,9 +834,21 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             WriteChunk(output, PngChunkType.Exif, metadata.Exif.ToBytes().Span);
         }
 
+        // XMP as the XMP specification part 3 puts it in PNG: an uncompressed iTXt chunk with this keyword.
+        ReadOnlySpan<byte> xmp = metadata.Xmp.Span;
+        if (!xmp.IsEmpty)
+        {
+            WriteChunk(output, PngChunkType.Itxt, [.. XmpKeyword, 0, 0, 0, 0, 0, .. xmp]);
+        }
+
         for (int i = 0; i < metadata.Text.Count; i++)
         {
             TextEntry entry = metadata.Text[i];
+            if (!xmp.IsEmpty && entry.Key == "XML:com.adobe.xmp")
+            {
+                continue;
+            }
+
             if (!IsValidKeyword(entry.Key))
             {
                 throw new ArgumentException(

@@ -288,6 +288,27 @@ public class ApiExamples
     }
 
     [Fact]
+    public void XmpLive()
+    {
+        using SampleFiles files = new();
+
+        #region xmp-live
+        using Raster photo = Raster.Load("sideways.jpg");
+
+        // The parsed view of the packet; it is null when the file has none, so start one.
+        XmpData xmp = photo.Metadata.XmpData ??= new XmpData();
+        xmp.Keywords = [.. xmp.Keywords, "harbour"];
+        xmp.Rating = 5;
+
+        // The edit is the packet now: Metadata.Xmp returns it and every format saves it.
+        photo.Save("rated.png");
+        #endregion
+
+        using Raster saved = Raster.Load("rated.png");
+        Assert.Equal(5, saved.Metadata.XmpData!.Rating);
+    }
+
+    [Fact]
     public void XmpParse()
     {
         ReadOnlyMemory<byte> packet = new XmpData { Label = "Red" }.ToBytes();

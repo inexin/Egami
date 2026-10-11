@@ -20,6 +20,8 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
     private static ReadOnlySpan<byte> Signature => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
+    private static ReadOnlySpan<byte> XmpKeyword => "XML:com.adobe.xmp"u8;
+
     private delegate void UnpackRow<TNatural>(PngUnpacker unpacker, ReadOnlySpan<byte> scanline, Span<TNatural> destination)
         where TNatural : unmanaged, IPixelType<TNatural>;
 
@@ -478,7 +480,16 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         }
 
         ReadOnlySpan<byte> text = data.AsSpan(translatedEnd + 1);
-        string value = Encoding.UTF8.GetString(compressed ? Inflate(state, text) : text);
+        byte[] bytes = compressed ? Inflate(state, text) : text.ToArray();
+
+        // The XMP packet (XMP specification part 3) is metadata, not text; a second packet stays text, as 1.0 kept it.
+        if (data.AsSpan(0, keyEnd).SequenceEqual(XmpKeyword) && state.Metadata.Xmp.IsEmpty)
+        {
+            state.Metadata.Xmp = bytes;
+            return;
+        }
+
+        string value = Encoding.UTF8.GetString(bytes);
         AddText(state, new TextEntry(Encoding.Latin1.GetString(data, 0, keyEnd), value, language.Length > 0 ? language : null), "iTXt", compressed);
     }
 
@@ -1098,6 +1109,8 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         target.Resolution = source.Resolution;
         target.IccProfile = source.IccProfile;
         target.Exif = source.Exif;
+        target.ShareIptc(source);
+        target.Xmp = source.Xmp;
         foreach (TextEntry entry in source.Text)
         {
             target.Text.Add(entry);

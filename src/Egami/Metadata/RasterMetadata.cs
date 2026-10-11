@@ -103,6 +103,9 @@ public sealed class RasterMetadata
 {
     private ParsedProfile? _parsed;
     private IptcData? _iptc;
+    private ReadOnlyMemory<byte> _xmp;
+    private XmpData? _xmpView;
+    private bool _xmpParsed;
     private ReadOnlyMemory<byte> _iptcSource;
     private long _iptcLimit;
 
@@ -150,8 +153,63 @@ public sealed class RasterMetadata
     /// <summary>Gets or sets the embedded ICC profile. Egami keeps and writes it back but does not apply it. Empty if none.</summary>
     public ReadOnlyMemory<byte> IccProfile { get; set; }
 
-    /// <summary>Gets or sets the XMP packet as raw UTF-8 XML. Empty if none.</summary>
-    public ReadOnlyMemory<byte> Xmp { get; set; }
+    /// <summary>
+    /// Gets or sets the XMP packet as raw UTF-8 XML. Empty if none. Once <see cref="XmpData"/> has been edited, this returns the
+    /// packet written from it; setting it drops the parsed view.
+    /// </summary>
+    public ReadOnlyMemory<byte> Xmp
+    {
+        get => _xmpView is { IsEdited: true } view ? view.ToBytes() : _xmp;
+        set
+        {
+            _xmp = value;
+            _xmpView = null;
+            _xmpParsed = false;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the XMP packet parsed: a live view of <see cref="Xmp"/>, read on first use, and <see langword="null"/> when
+    /// there is no packet or it is not well-formed XML (the bytes are then kept and a warning added). Edits to the view are what
+    /// <see cref="Xmp"/> returns and what writers save; assign an empty <see cref="Metadata.XmpData"/> to start a packet.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ApiExamples.cs" region="xmp-live"/>
+    /// </example>
+    public XmpData? XmpData
+    {
+        get
+        {
+            if (!_xmpParsed)
+            {
+                _xmpParsed = true;
+                if (!_xmp.IsEmpty)
+                {
+                    XmpData parsed = Metadata.XmpData.Parse(_xmp.Span);
+                    if (parsed.IsDamaged)
+                    {
+                        foreach (string warning in parsed.Warnings)
+                        {
+                            WarningList.Add(warning + " The XMP packet is kept as it was.");
+                        }
+                    }
+                    else
+                    {
+                        _xmpView = parsed;
+                    }
+                }
+            }
+
+            return _xmpView;
+        }
+
+        set
+        {
+            _xmp = value?.ToBytes() ?? default;
+            _xmpView = value;
+            _xmpParsed = true;
+        }
+    }
 
     /// <summary>Gets or sets what the pixel values mean.</summary>
     public ColorSpaceHint ColorSpace { get; set; }
@@ -369,7 +427,9 @@ public sealed class RasterMetadata
         Exif = source.Exif;
         ShareIptc(source);
         IccProfile = source.IccProfile;
-        Xmp = source.Xmp;
+        _xmp = source._xmp;
+        _xmpView = source._xmpView;
+        _xmpParsed = source._xmpParsed;
         ColorSpace = source.ColorSpace;
         Gamma = source.Gamma;
         CodePoints = source.CodePoints;

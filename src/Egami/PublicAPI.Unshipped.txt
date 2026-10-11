@@ -411,6 +411,8 @@ Egami.Metadata.RasterMetadata.Iptc.get -> Egami.Metadata.IptcData?
 Egami.Metadata.RasterMetadata.Iptc.set -> void
 Egami.Metadata.RasterMetadata.Primaries.get -> Egami.Colors.ColorPrimaries?
 Egami.Metadata.RasterMetadata.Primaries.set -> void
+Egami.Metadata.RasterMetadata.XmpData.get -> Egami.Metadata.XmpData?
+Egami.Metadata.RasterMetadata.XmpData.set -> void
 Egami.Metadata.XmpArray
 Egami.Metadata.XmpArray.Add(Egami.Metadata.XmpArray! item) -> void
 Egami.Metadata.XmpArray.Add(Egami.Metadata.XmpStruct! item) -> void
