@@ -5,8 +5,8 @@ operation makes it wrong, and is written back by every format that can carry it.
 
 | Item | Read from | Written to |
 | --- | --- | --- |
-| `Exif` (`ExifData`) | JPEG, PNG | JPEG, PNG |
-| `Iptc` (`IptcData`) | JPEG (APP13) | JPEG |
+| `Exif` (`ExifData`) | JPEG, PNG (eXIf, and the legacy "Raw profile type" chunks) | JPEG, PNG |
+| `Iptc` (`IptcData`) | JPEG (APP13), PNG ("Raw profile type iptc") | JPEG, PNG |
 | `Xmp`, `XmpData` | JPEG (with extended XMP), PNG, GIF | JPEG, PNG, GIF |
 | `IccProfile` | JPEG, PNG, GIF, BMP (V5) | JPEG, PNG, GIF, BMP |
 | `Text` | PNG text chunks, GIF comments, PNM comments, TGA author and comments | The same |

@@ -442,6 +442,12 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
                 ReadInternationalText(state, data);
                 break;
             case PngChunkType.Exif:
+                if (state.ExifFromRawProfile is string kind)
+                {
+                    metadata.WarningList.Add($"The file has both an eXIf chunk and a \"Raw profile type {kind}\" chunk; the eXIf chunk is used.");
+                    state.ExifFromRawProfile = null;
+                }
+
                 metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(data, state.Input.Limits.MaxMetadataBytes, metadata.WarningList);
                 break;
             default:
@@ -483,8 +489,14 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         byte[] bytes = compressed ? Inflate(state, text) : text.ToArray();
 
         // The XMP packet (XMP specification part 3) is metadata, not text; a second packet stays text, as 1.0 kept it.
-        if (data.AsSpan(0, keyEnd).SequenceEqual(XmpKeyword) && state.Metadata.Xmp.IsEmpty)
+        if (data.AsSpan(0, keyEnd).SequenceEqual(XmpKeyword) && (state.Metadata.Xmp.IsEmpty || state.XmpFromRawProfile))
         {
+            if (state.XmpFromRawProfile)
+            {
+                state.Metadata.WarningList.Add("The file has both an XMP iTXt chunk and a \"Raw profile type xmp\" chunk; the iTXt chunk is used.");
+                state.XmpFromRawProfile = false;
+            }
+
             state.Metadata.Xmp = bytes;
             return;
         }
@@ -493,8 +505,48 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         AddText(state, new TextEntry(Encoding.Latin1.GetString(data, 0, keyEnd), value, language.Length > 0 ? language : null), "iTXt", compressed);
     }
 
+    // A legacy profile fills a block the file has not given yet; the real chunk wins whichever comes first (see the eXIf and
+    // iTXt cases).
+    private static void ApplyRawProfile(State state, string kind, byte[] profile)
+    {
+        RasterMetadata metadata = state.Metadata;
+        switch (kind)
+        {
+            case "exif" or "APP1" when metadata.Exif is null:
+                metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(RawProfiles.WithoutExifHeader(profile), state.Input.Limits.MaxMetadataBytes, metadata.WarningList);
+                state.ExifFromRawProfile = kind;
+                break;
+            case "exif" or "APP1":
+                metadata.WarningList.Add($"The file has both EXIF and a \"Raw profile type {kind}\" chunk; the first EXIF is used.");
+                break;
+            case "iptc" when !metadata.HasIptc:
+                metadata.SetIptcSource(RawProfiles.Iim(profile), state.Input.Limits.MaxMetadataBytes);
+                break;
+            case "xmp" when metadata.Xmp.IsEmpty:
+                metadata.Xmp = profile;
+                state.XmpFromRawProfile = true;
+                break;
+            case "xmp":
+                metadata.WarningList.Add("The file has both an XMP iTXt chunk and a \"Raw profile type xmp\" chunk; the iTXt chunk is used.");
+                break;
+        }
+    }
+
     private static void AddText(State state, TextEntry entry, string chunkType, bool compressed)
     {
+        // Legacy "Raw profile type" chunks become metadata blocks; a malformed one stays text, as 1.0 kept it.
+        if (RawProfiles.Kind(entry.Key) is string kind && !state.RawProfiles.ContainsKey(kind))
+        {
+            if (RawProfiles.Decode(entry.Value, state.Input.Limits.MaxMetadataBytes, out string? problem) is byte[] profile)
+            {
+                state.RawProfiles[kind] = profile;
+                ApplyRawProfile(state, kind, profile);
+                return;
+            }
+
+            state.Metadata.WarningList.Add($"The \"{entry.Key}\" text chunk cannot be decoded: {problem}. It is kept as text.");
+        }
+
         state.Metadata.Text.Add(entry);
         state.Png.TextSources.Add(new PngTextSource(chunkType, compressed));
     }
@@ -1230,6 +1282,15 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         public bool HasMetadata { get; set; }
 
         public long KeptBytes { get; set; }
+
+        /// <summary>Legacy "Raw profile type" chunks decoded, by kind (exif, APP1, iptc, xmp).</summary>
+        public Dictionary<string, byte[]> RawProfiles { get; } = [];
+
+        /// <summary>The legacy profile EXIF came from, which a later eXIf chunk replaces; null when none did.</summary>
+        public string? ExifFromRawProfile { get; set; }
+
+        /// <summary>Whether XMP came from a legacy profile, which a later iTXt packet replaces.</summary>
+        public bool XmpFromRawProfile { get; set; }
 
         public PngChunkPosition Position { get; set; } = PngChunkPosition.BeforePalette;
 

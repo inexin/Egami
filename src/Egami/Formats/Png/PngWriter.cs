@@ -841,10 +841,19 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             WriteChunk(output, PngChunkType.Itxt, [.. XmpKeyword, 0, 0, 0, 0, 0, .. xmp]);
         }
 
+        // IPTC as ImageMagick, ExifTool and others read it from PNG: a zTXt "Raw profile type iptc" chunk holding a Photoshop
+        // resource block, since PNG has no IPTC chunk of its own.
+        ReadOnlySpan<byte> iptc = metadata.IptcBytes.Span;
+        if (!iptc.IsEmpty)
+        {
+            string text = RawProfiles.Encode("iptc", PhotoshopResources.Create(iptc));
+            WriteChunk(output, PngChunkType.Ztxt, [.. Encoding.Latin1.GetBytes(RawProfiles.Prefix + "iptc"), 0, 0, .. Compress(Encoding.Latin1.GetBytes(text))]);
+        }
+
         for (int i = 0; i < metadata.Text.Count; i++)
         {
             TextEntry entry = metadata.Text[i];
-            if (!xmp.IsEmpty && entry.Key == "XML:com.adobe.xmp")
+            if ((!xmp.IsEmpty && entry.Key == "XML:com.adobe.xmp") || (!iptc.IsEmpty && entry.Key == RawProfiles.Prefix + "iptc"))
             {
                 continue;
             }
