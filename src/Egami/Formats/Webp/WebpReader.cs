@@ -60,9 +60,14 @@ internal sealed partial class WebpReader : IFormatReader
         Raster<TPixel> raster = input.CreateRaster<TPixel>(parser.Width, parser.Height);
         try
         {
-            long consumed = DecodeStill(input, options, parser, raster);
+            (long consumed, string? warning) = DecodeStill(input, options, parser, raster);
             parser.ReadToEnd(consumed);
             CopyMetadata(parser.Metadata, raster.Metadata);
+            if (warning is not null)
+            {
+                raster.Metadata.WarningList.Add(warning);
+            }
+
             return raster;
         }
         catch
@@ -86,8 +91,11 @@ internal sealed partial class WebpReader : IFormatReader
         return parser.ImageChunk == WebpContainer.Vp8L ? Vp8lDecoder.WorkingBytes(parser.Width, parser.Height) : (long)parser.Width * 64;
     }
 
-    /// <summary>Decodes a still image's chunk into <paramref name="raster"/> and returns how many payload bytes were consumed.</summary>
-    private static long DecodeStill<TPixel>(EgamiInput input, ReaderOptions options, WebpParser parser, Raster<TPixel> raster)
+    /// <summary>
+    /// Decodes a still image's chunk into <paramref name="raster"/>; returns how many payload bytes were consumed and the warning a
+    /// lenient decode recovered with, if any.
+    /// </summary>
+    private static (long Consumed, string? Warning) DecodeStill<TPixel>(EgamiInput input, ReaderOptions options, WebpParser parser, Raster<TPixel> raster)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (parser.ImageChunk != WebpContainer.Vp8L)
@@ -122,13 +130,8 @@ internal sealed partial class WebpReader : IFormatReader
             }
         }
 
-        if (decoder.Warning is not null)
-        {
-            parser.Metadata.WarningList.Add(decoder.Warning);
-        }
-
         reader.SkipRest();
-        return input.Position - start;
+        return (input.Position - start, decoder.Warning);
     }
 
     /// <summary>Copies what the parser read into the raster's metadata, keeping warnings the decode added.</summary>

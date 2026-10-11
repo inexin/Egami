@@ -24,6 +24,7 @@ internal sealed class WebpParser
     private bool _imageSeen;
     private bool _exifSeen;
     private bool _xmpSeen;
+    private long _pendingSkip = -1;
 
     private WebpParser(EgamiInput input, ReaderOptions options)
     {
@@ -189,10 +190,29 @@ internal sealed class WebpParser
     /// </summary>
     internal void ReadToEnd(long consumed)
     {
-        long rest = ImageSize - consumed + (ImageSize & 1);
-        if (rest > 0 && !SkipAvailable(rest))
+        // In steps an incremental decode can come back to: the rest of the image data first, then whole chunks one at a time.
+        if (_pendingSkip < 0)
         {
-            return;
+            _pendingSkip = Math.Min(ImageSize - consumed + (ImageSize & 1), _riffEnd - _input.Position);
+        }
+
+        while (_pendingSkip > 0)
+        {
+            int n = _input.Peek((int)Math.Min(_pendingSkip, 64 * 1024)).Length;
+            if (n == 0)
+            {
+                if (_input.Incremental && !_input.AtEndOfInput)
+                {
+                    throw new Streaming.NeedsInputException();
+                }
+
+                Problem(_input.Position, "The WebP file ends early.", truncation: true);
+                _pendingSkip = 0;
+                return;
+            }
+
+            _input.Skip(n);
+            _pendingSkip -= n;
         }
 
         ReadTrailingChunks();
@@ -201,7 +221,7 @@ internal sealed class WebpParser
     /// <summary>Reads the chunks from the read position to the end of the RIFF data.</summary>
     internal void ReadTrailingChunks()
     {
-        while (NextChunk(out uint type, out long size))
+        while (NextChunk(out uint type, out long size, whole: true))
         {
             switch (type)
             {
@@ -243,8 +263,12 @@ internal sealed class WebpParser
         FrameCount = frames;
     }
 
-    /// <summary>Reads a chunk header if the RIFF data has another chunk; returns <see langword="false"/> at its end.</summary>
-    internal bool NextChunk(out uint type, out long size)
+    /// <summary>
+    /// Reads a chunk header if the RIFF data has another chunk; returns <see langword="false"/> at its end. In an incremental decode
+    /// with <paramref name="whole"/>, the header is consumed only once the whole chunk has arrived, so a decode that waits can
+    /// come back to it.
+    /// </summary>
+    internal bool NextChunk(out uint type, out long size, bool whole = false)
     {
         type = 0;
         size = 0;
@@ -283,6 +307,11 @@ internal sealed class WebpParser
 
         type = BinaryPrimitives.ReadUInt32LittleEndian(header);
         size = BinaryPrimitives.ReadUInt32LittleEndian(header[4..]);
+        if (whole && _input.Incremental && !_input.AtEndOfInput && _input.Available < Math.Min(8 + size + (size & 1), left))
+        {
+            throw new Streaming.NeedsInputException();
+        }
+
         _input.Skip(8);
         if (size + (size & 1) > left - 8)
         {

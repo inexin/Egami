@@ -14,6 +14,9 @@ internal sealed class Vp8lBitReader : IDisposable
 {
     private const int ChunkSize = 16 * 1024;
 
+    /// <summary>What <see cref="NextByte"/> returns when the next byte of an incremental decode has not arrived.</summary>
+    private const int NotYet = -2;
+
     private readonly EgamiInput? _input;
     private readonly bool _pooled;
     private byte[] _chunk;
@@ -54,7 +57,7 @@ internal sealed class Vp8lBitReader : IDisposable
     {
         if (_count <= 32)
         {
-            FillSlow();
+            FillSlow(32);
         }
     }
 
@@ -76,7 +79,7 @@ internal sealed class Vp8lBitReader : IDisposable
     {
         if (_count < n)
         {
-            FillSlow();
+            FillSlow(n);
         }
 
         uint value = (uint)(_bits & ((1UL << n) - 1));
@@ -103,7 +106,7 @@ internal sealed class Vp8lBitReader : IDisposable
         {
             _bits = bits;
             _count = count;
-            FillSlow();
+            FillSlow(32);
             bits = _bits;
             count = _count;
         }
@@ -131,16 +134,31 @@ internal sealed class Vp8lBitReader : IDisposable
     /// <summary>Stops keeping bytes for a rewind.</summary>
     internal void Unmark() => _mark = -1;
 
-    /// <summary>Skips what is left of the payload in the input, so the next chunk can be read.</summary>
+    /// <summary>
+    /// Skips what is left of the payload in the input, so the next chunk can be read; stops at the end of the data. An incremental
+    /// decode waits for the rest, and can call this again.
+    /// </summary>
     internal void SkipRest()
     {
-        if (_input is not null && _remaining > 0)
-        {
-            _input.Skip(_remaining);
-            _remaining = 0;
-        }
-
         _position = _length;
+        _mark = -1;
+        while (_input is not null && _remaining > 0)
+        {
+            int n = _input.Peek((int)Math.Min(_remaining, 64 * 1024)).Length;
+            if (n == 0)
+            {
+                if (_input.Incremental && !_input.AtEndOfInput)
+                {
+                    throw new Streaming.NeedsInputException();
+                }
+
+                _remaining = 0;
+                break;
+            }
+
+            _input.Skip(n);
+            _remaining -= n;
+        }
     }
 
     public void Dispose()
@@ -153,7 +171,11 @@ internal sealed class Vp8lBitReader : IDisposable
         _chunk = [];
     }
 
-    private void FillSlow()
+    /// <summary>
+    /// Fills the buffer to more than 56 bits, or as far as the bytes go. In an incremental decode, bytes that have not arrived stop
+    /// the fill once at least <paramref name="need"/> bits are there; with fewer, the decode waits.
+    /// </summary>
+    private void FillSlow(int need)
     {
         while (_count <= 56)
         {
@@ -169,6 +191,16 @@ internal sealed class Vp8lBitReader : IDisposable
             }
 
             int next = NextByte();
+            if (next == NotYet)
+            {
+                if (_count >= need)
+                {
+                    return;
+                }
+
+                throw new Streaming.NeedsInputException();
+            }
+
             if (next < 0)
             {
                 // Past the end: zero bits, counted, so a decode that reads them can tell.
@@ -224,7 +256,7 @@ internal sealed class Vp8lBitReader : IDisposable
             {
                 if (_input.Incremental && !_input.AtEndOfInput)
                 {
-                    throw new Streaming.NeedsInputException();
+                    return NotYet;
                 }
 
                 _remaining = 0;

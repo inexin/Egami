@@ -100,10 +100,14 @@ internal sealed class Vp8lDecoder : IDisposable
     /// <summary>Gets the next row <see cref="DecodeRow"/> will produce.</summary>
     internal int NextRow => _nextRow;
 
-    /// <summary>Returns the bytes the decoder holds for an image of this size (before transforms): the window of coded pixels and three rows.</summary>
+    /// <summary>
+    /// Returns the most bytes the decoder holds for an image of this size: the window of coded pixels, three rows, and the transform
+    /// and entropy images at their largest (tiles of 4 × 4 pixels) with the palette.
+    /// </summary>
     internal static long WorkingBytes(int width, int height)
     {
-        return ((long)Math.Min(height, WindowRows(width)) * width * 4) + ((long)width * 12);
+        long subImages = 3L * SubSampleSize(width, 2) * SubSampleSize(height, 2) * 4;
+        return ((long)Math.Min(height, WindowRows(width)) * width * 4) + ((long)width * 12) + subImages + 1024;
     }
 
     /// <summary>
@@ -321,7 +325,7 @@ internal sealed class Vp8lDecoder : IDisposable
         {
             _reader.Rewind(mark);
             _decoded = decoded;
-            cache?.CopyTo(_cache!, 0);
+            cache?.AsSpan(0, _cache!.Length).CopyTo(_cache);
             throw;
         }
         finally
