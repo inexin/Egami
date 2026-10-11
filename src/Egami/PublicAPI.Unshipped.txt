@@ -763,6 +763,13 @@ Egami.Pixels.YuvMatrix.Bt2020Ncl = 2 -> Egami.Pixels.YuvMatrix
 Egami.Pixels.YuvMatrix.Bt601 = 0 -> Egami.Pixels.YuvMatrix
 Egami.Pixels.YuvMatrix.Bt709 = 1 -> Egami.Pixels.YuvMatrix
 Egami.Pixels.YuvMatrix.Identity = 3 -> Egami.Pixels.YuvMatrix
+Egami.Pixels.YuvPackedFormat
+Egami.Pixels.YuvPackedFormat.Nv12 = 0 -> Egami.Pixels.YuvPackedFormat
+Egami.Pixels.YuvPackedFormat.Nv21 = 1 -> Egami.Pixels.YuvPackedFormat
+Egami.Pixels.YuvPackedFormat.P010 = 2 -> Egami.Pixels.YuvPackedFormat
+Egami.Pixels.YuvPackedFormat.P016 = 3 -> Egami.Pixels.YuvPackedFormat
+Egami.Pixels.YuvPackedFormat.Uyvy = 5 -> Egami.Pixels.YuvPackedFormat
+Egami.Pixels.YuvPackedFormat.Yuyv = 4 -> Egami.Pixels.YuvPackedFormat
 Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
@@ -820,7 +827,9 @@ Egami.YuvRaster.BitDepth.get -> int
 Egami.YuvRaster.ChromaFormat.get -> Egami.Pixels.ChromaFormat
 Egami.YuvRaster.Color.get -> Egami.Pixels.YuvColor
 Egami.YuvRaster.CopyFrom<TPixel>(Egami.Raster<TPixel>! source, Egami.YuvConvertOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.YuvRaster.CopyFromPacked(Egami.Pixels.YuvPackedFormat format, System.ReadOnlySpan<byte> data, int stride = 0, System.ReadOnlySpan<byte> chroma = default(System.ReadOnlySpan<byte>), int chromaStride = 0) -> void
 Egami.YuvRaster.CopyTo<TPixel>(Egami.Raster<TPixel>! target, Egami.YuvConvertOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+Egami.YuvRaster.CopyToPacked(Egami.Pixels.YuvPackedFormat format, System.Span<byte> data, int stride = 0, System.Span<byte> chroma = default(System.Span<byte>), int chromaStride = 0) -> void
 Egami.YuvRaster.Dispose() -> void
 Egami.YuvRaster.Height.get -> int
 Egami.YuvRaster.Metadata.get -> Egami.Metadata.RasterMetadata!

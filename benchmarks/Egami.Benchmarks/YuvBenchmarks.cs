@@ -17,6 +17,7 @@ public class YuvBenchmarks
     private YuvRaster<ushort> _yuv10 = null!;
     private Raster<Rgba8> _rgba8 = null!;
     private Raster<Rgba16> _rgba16 = null!;
+    private byte[] _nv12 = [];
 
     [Params(1, 0)]
     public int Threads { get; set; }
@@ -53,6 +54,8 @@ public class YuvBenchmarks
         }
 
         random.NextBytes(MemoryMarshal.AsBytes(_rgba16.Row(0)));
+        _nv12 = new byte[1920 * 1080 * 3 / 2];
+        random.NextBytes(_nv12);
     }
 
     [GlobalCleanup]
@@ -72,4 +75,8 @@ public class YuvBenchmarks
 
     [Benchmark]
     public void Yuv420TenBitToRgba16() => _yuv10.CopyTo(_rgba16);
+
+    /// <summary>Phase 2.1.4 task 7: a decoder's NV12 frame into planes (single-threaded by design: one pass over memory).</summary>
+    [Benchmark]
+    public void Nv12ToPlanes() => _yuv8.CopyFromPacked(YuvPackedFormat.Nv12, _nv12);
 }
