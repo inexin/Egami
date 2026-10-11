@@ -57,7 +57,7 @@ internal sealed partial class JpegDecoder<TPixel>
     private int Cores(EgamiInput input, int units, int perCore)
     {
         int cores = Math.Min(input.Context.MaxParallelism, Environment.ProcessorCount);
-        if (cores < 2 || (!ForcePipeline && (long)_width * _height < ParallelPixels))
+        if (cores < 2 || (!ForcePipeline && (long)_header.Width * _header.Height < ParallelPixels))
         {
             return 1;
         }
@@ -316,7 +316,7 @@ internal sealed partial class JpegDecoder<TPixel>
     private bool DecodeScansTogether(EgamiInput input, ref JpegBitReader reader, JpegScan first)
     {
         int cores = Math.Min(Math.Min(input.Context.MaxParallelism, Environment.ProcessorCount), MaxPipelineCores);
-        if (cores < 2 || (!ForcePipeline && (long)_width * _height < ParallelPixels)
+        if (cores < 2 || (!ForcePipeline && (long)_header.Width * _header.Height < ParallelPixels)
             || input.Incremental || input.Length is not long length || length - input.Position is <= 0 or > MaxScanBytes)
         {
             return false;

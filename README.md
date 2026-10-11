@@ -84,7 +84,8 @@ image.Save(stream, PngFormat.Info, new PngWriterOptions
 
 ### JPEG
 
-JPEG files load like any other: baseline and progressive, gray, YCbCr, RGB, CMYK and YCCK, with any chroma subsampling. The
+JPEG files load like any other: baseline, extended and progressive, Huffman or arithmetic-coded, 8 and 12-bit (12-bit in 16-bit
+pixel types), and lossless JPEG at 2 to 16 bits; gray, YCbCr, RGB, CMYK and YCCK, with any chroma subsampling. The
 output matches libjpeg-turbo's `djpeg` exactly. Setting a target size decodes at 1/2, 1/4 or 1/8 scale straight from the
 DCT, the smallest that still covers the target, which is far faster than decoding in full and resizing.
 

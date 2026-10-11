@@ -174,6 +174,23 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   `MaxParallelism` threads. The bytes are the same at any thread count; files were 0.1% to 0.3% larger, and a 24-megapixel
   photo saved 8 times as fast on 12 cores. Off by default; with it off, or below the threshold, files are unchanged.
 
+### JPEG reading
+
+- Arithmetic-coded files (SOF9 and SOF10, sequential and progressive, with DAC conditioning) load like Huffman-coded ones, with
+  the same pixels as libjpeg-turbo's djpeg, at every scale and when streamed. `JpegDetails.Arithmetic` says which a file is.
+- 12-bit files (extended and progressive, Huffman or arithmetic) load in their natural 16-bit types, `Gray16`, `Rgb16` or
+  `Cmyk16`, each sample scaled from 0..4095 to the full range; `Load<Rgba8>` and other 8-bit types round them. Every corpus file
+  matches djpeg at 12 bits exactly, including at 1/2, 1/4 and 1/8 scale. `JpegDetails.Precision` gives the bits per sample.
+- Lossless files (SOF3, and SOF11 with arithmetic coding) at 2 to 16 bits, every predictor and point transform, decode to
+  exactly the samples djpeg gives (Thomas Richter's libjpeg for arithmetic coding, which libjpeg-turbo lacks): up to 8 bits as
+  `Gray8` or `Rgb8`, deeper as `Gray16`, `Rgb16` or `Cmyk16`. They have no DCT, so a smaller size comes from the general
+  reduction after a full decode. `JpegDetails.Lossless` says so. Hierarchical files are still refused.
+- Large files decode on several cores, with the same pixels at every `MaxParallelism`. A sequential file with restart markers is
+  split at the markers already in it; the scans of a progressive file run as a pipeline, each refinement scan following the
+  scan before it row by row, and the last pass is split by rows. The 4000 × 3000 progressive benchmark photo decodes in half the
+  time on 8 cores; the same photo with a marker every MCU row in under half. Files without markers decode as before.
+- Faster arithmetic decoding than the reference library 3.1.12 at one thread and on all cores.
+
 ### Pixel layouts
 
 - New enum values, for code that switches on them: `PixelChannelOrder.Argb`, `Abgr`, `Alpha` and `Cmyk`;
