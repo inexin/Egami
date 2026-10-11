@@ -815,6 +815,7 @@ Egami.Operations.RasterOps.CopyAlpha(Egami.Operations.Mask mask) -> Egami.Operat
 Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.EntropyCrop(float threshold = 0.5) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
@@ -828,6 +829,7 @@ Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Color
 Egami.Operations.RasterOps.Transform(Egami.Operations.Homography matrix, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Transform(System.Numerics.Matrix3x2 matrix, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Transform(System.Numerics.Matrix4x4 matrix, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Trim(float tolerance = 0, Egami.Pixels.Rgba8? color = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Within(Egami.Operations.Mask mask, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Within(Egami.Rect area, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
 Egami.Operations.SamplingOptions
@@ -1062,9 +1064,11 @@ Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
 Egami.Raster.ColorMask(Egami.Pixels.Rgba8 color, float tolerance = 0) -> Egami.Raster<Egami.Pixels.Gray8>!
 Egami.Raster.ConvertColor<TTo>(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Raster<TTo>!
+Egami.Raster.EntropyBounds(float threshold = 0.5) -> Egami.Rect
 Egami.Raster.ExtractChannel(Egami.Operations.ColorChannel channel) -> Egami.Raster!
 Egami.Raster.ExtractChannel<TPixel>(Egami.Operations.ColorChannel channel) -> Egami.Raster<TPixel>!
 Egami.Raster.FloodMask(Egami.Point seed, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Raster<Egami.Pixels.Gray8>!
+Egami.Raster.TrimBounds(float tolerance = 0, Egami.Pixels.Rgba8? color = null) -> Egami.Rect
 Egami.RasterDecoder
 Egami.RasterDecoder.Append(System.ReadOnlySpan<byte> data) -> void
 Egami.RasterDecoder.CurrentFrame.get -> Egami.Metadata.FrameMetadata?

@@ -73,6 +73,22 @@ A transform whose viewport has the input's size keeps the size, so it runs insid
 the image to infinity or behind the viewer has no finite bounds, so it needs a viewport. Like `Rotate`, a transform sets the EXIF
 orientation to Normal, updates the dimensions, drops the thumbnail and moves the subject area through the matrix.
 
+## Trimming and content crops
+
+`Trim` cuts away the border: the edge rows and columns whose pixels all lie within a tolerance of the border color (the top-left
+pixel's, or one you give), by ImageMagick's `-fuzz` distance, so its rectangle equals ImageMagick's `-trim`. `EntropyCrop` keeps the
+busiest part of the image: the 16 × 16 tiles whose luminance entropy reaches a threshold, as the reference library's `EntropyCrop` does.
+`Raster.TrimBounds` and `Raster.EntropyBounds` return the rectangles without changing anything.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#trim)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#entropy-crop)]
+
+Their size depends on the pixels, so the chain runs up to them, measures, and plans the rest from the real size; it is still one
+`Apply` or `Derive`. Every frame of an animation is measured and the union of their rectangles kept, so frames keep one size. An
+image that is all border, or has no busy tile, is left as it is. They cannot run inside `Within`, and `Transcode` decodes the
+whole image before running a chain that holds one.
+
 ## Orientation
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Geometry.cs#auto-orient)]
