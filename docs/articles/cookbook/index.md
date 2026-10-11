@@ -14,6 +14,27 @@ The JPEG decodes at 1/2, 1/4 or 1/8 scale, `AutoOrient` turns only the small res
 
 See the [security guide](../guides/security.md) for every limit.
 
+## Log Egami's warnings with ILogger
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Diagnostics.cs#logger)]
+
+Set it once at startup; every call that passes no context then reports to the log. The [diagnostics](../diagnostics.md) page lists
+every id.
+
+## Log Egami's warnings with Serilog
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Diagnostics.cs#serilog)]
+
+## Know which file a warning came from
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Diagnostics.cs#per-file)]
+
+## Reject damaged uploads
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Diagnostics.cs#errors)]
+
+A handler that throws turns every warning into an error; `RecoveryMode.Strict` does the same for damage alone, without a handler.
+
 ## Use from ASP.NET Core
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#upload)]

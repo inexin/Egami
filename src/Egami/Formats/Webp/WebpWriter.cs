@@ -36,6 +36,13 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
         }
 
         bool animated = !webp.FirstFrameOnly && (start.Whole?.FrameCount ?? 2) > 1;
+        SaveKeeps frames = animated || webp.FirstFrameOnly ? SaveKeeps.Frames : SaveKeeps.None;
+        SaveLosses.Report(start, "WebP", SaveKeeps.Alpha | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | frames);
+        if (webp.Lossless is null)
+        {
+            DiagnosticReporter? diagnostics = null;
+            start.Context.Emit(ref diagnostics, DiagnosticLevel.Info, "Webp.EncodingChosen", $"WebP is written {(lossless ? "lossless, as the file it was read from was" : $"lossy at quality {webp.Quality}")}, since WebpWriterOptions.Lossless is not set.");
+        }
         return animated ? new AnimationEncoder<TPixel>(output, start, webp, lossless) : new StillEncoder<TPixel>(output, start, webp, lossless);
     }
 

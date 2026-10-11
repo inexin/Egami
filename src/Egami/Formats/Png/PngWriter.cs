@@ -47,6 +47,8 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         bool animated = raster is not null && raster.FrameCount > 1 && !png.FirstFrameOnly;
         if (raster is not null && png.ColorType == PngColorType.Palette && NeedsQuantizing(raster, png, animated))
         {
+            int colors = Math.Min(1 << (png.BitDepth ?? 8), png.Palette.MaxColors);
+            SaveLosses.Report(start.Context, "Save.ColorsQuantized", $"The image has more colors than the PNG palette holds; it was reduced to at most {colors} colors.");
             Raster<Rgba8> quantized = Quantize(raster, png, animated);
             try
             {
@@ -59,7 +61,17 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             }
         }
 
-        return new Encoder<TPixel>(output, start, png, PlanOutput(raster, png, animated), animated);
+        Plan plan = PlanOutput(raster, png, animated);
+        SaveKeeps frames = animated || png.FirstFrameOnly ? SaveKeeps.Frames : SaveKeeps.None;
+        SaveLosses.Report(start, "PNG", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Metadata | frames);
+        if (png.ColorType is null)
+        {
+            DiagnosticReporter? diagnostics = null;
+            string palette = plan.ColorType == PngColorType.Palette ? $" with a {plan.Palette.Length}-color palette" : string.Empty;
+            start.Context.Emit(ref diagnostics, DiagnosticLevel.Info, "Png.ColorTypeChosen", $"PNG color type {plan.ColorType} at {plan.BitDepth} bits{palette} was chosen {(png.Reduce ? "as the smallest that keeps every pixel" : "from the pixel type")}.");
+        }
+
+        return new Encoder<TPixel>(output, start, png, plan, animated);
     }
 
     /// <summary>
@@ -107,6 +119,11 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             _memory = start.Context.Memory;
             _parallelism = start.Context.MaxParallelism;
             _header = new(start.Width, start.Height, plan.BitDepth, plan.ColorType, png.Interlace);
+            if (png.ParallelCompression && _parallelism > 1 && FilteredBytes(_header) > png.ParallelThreshold)
+            {
+                DiagnosticReporter? diagnostics = null;
+                start.Context.Emit(ref diagnostics, DiagnosticLevel.Debug, "Parallel.Bands", $"The PNG image data is compressed in bands of {png.ParallelBandSize:N0} bytes on up to {_parallelism} threads.");
+            }
             _hasAlpha = plan.ColorType is PngColorType.Rgba or PngColorType.GrayAlpha && TPixel.Layout.HasAlpha;
             bool strip = png.StripMetadata;
             _hdrWritten = !strip && start.Metadata.Hdr is not null;

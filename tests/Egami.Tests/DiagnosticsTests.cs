@@ -321,6 +321,58 @@ public class DiagnosticsTests
         Assert.Empty(seen);
     }
 
+    [Fact]
+    public void SavesReportWhatTheyLose()
+    {
+        List<EgamiDiagnostic> seen = [];
+        EgamiContext context = new() { Diagnostics = seen.Add };
+        List<string> Save(Raster raster, Egami.Formats.FormatInfo format, Egami.Formats.WriterOptions? options = null)
+        {
+            seen.Clear();
+            raster.Save(new MemoryStream(), format, options);
+            return [.. seen.Select(d => d.Id)];
+        }
+
+        using Raster<Rgba16> translucent = Raster.Create<Rgba16>(8, 8, context);
+        translucent.Row(0)[0] = new Rgba16(1000, 2000, 3000, 4000);
+        translucent.Metadata.Text.Add(new Egami.Metadata.TextEntry("Title", "x"));
+        translucent.Metadata.Xmp = "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray();
+        Assert.Equal(["Save.AlphaDropped", "Save.DepthReduced", "Save.MetadataDropped"], Save(translucent, Egami.Formats.Jpeg.JpegFormat.Info));
+        Assert.Contains("JPEG cannot hold text other than Comment", seen[2].Message, StringComparison.Ordinal);
+        Assert.Equal(["Save.MetadataDropped"], Save(translucent, Egami.Formats.Qoi.QoiFormat.Info, new Egami.Formats.Qoi.QoiWriterOptions()).Where(id => id != "Save.DepthReduced"));
+        Assert.Contains("XMP or text entries", seen.Single(d => d.Id == "Save.MetadataDropped").Message, StringComparison.Ordinal);
+
+        // Lossless saves report nothing; asking for the loss is not a loss either.
+        Assert.Empty(Save(translucent, PngFormat.Info));
+        Assert.Equal(["Save.MetadataDropped"], Save(translucent, Egami.Formats.Tiff.TiffFormat.Info));
+        Assert.Equal("TIFF cannot hold text entries; it was not written.", seen[0].Message);
+        Assert.Empty(Save(translucent, Egami.Formats.Jpeg.JpegFormat.Info, new Egami.Formats.Jpeg.JpegWriterOptions { Background = new Rgba8(0, 0, 0, 255), StripMetadata = true, Precision = 12 }));
+
+        using Raster<Rgba8> frames = Raster.Load<Rgba8>(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "gif", "pan-local.gif")), context);
+        Assert.Contains("Save.FramesDropped", Save(frames, Egami.Formats.Bmp.BmpFormat.Info));
+        Assert.DoesNotContain("Save.FramesDropped", Save(frames, PngFormat.Info));
+
+        using Raster<Rgba8> noisy = Raster.Create<Rgba8>(64, 64, context);
+        for (int y = 0; y < 64; y++)
+        {
+            for (int x = 0; x < 64; x++)
+            {
+                noisy.Row(y)[x] = new Rgba8((byte)(x * 4), (byte)(y * 4), (byte)(x ^ y), 255);
+            }
+        }
+
+        Assert.Equal(["Save.ColorsQuantized"], Save(noisy, Egami.Formats.Gif.GifFormat.Info));
+        Assert.Contains("Save.ColorsQuantized", Save(noisy, PngFormat.Info, new PngWriterOptions { ColorType = PngColorType.Palette }));
+
+        // Writers' own choices are Info, off by default.
+        EgamiContext info = context with { DiagnosticLevel = DiagnosticLevel.Info };
+        using Raster<Rgb8> plain = Raster.Create<Rgb8>(8, 8, info);
+        Assert.Equal(["Png.ColorTypeChosen"], Save(plain, PngFormat.Info));
+        Assert.Equal(["Jpeg.EncodingChosen"], Save(plain, Egami.Formats.Jpeg.JpegFormat.Info));
+        Assert.Contains("YCbCr 4:2:0 at quality", seen[0].Message, StringComparison.Ordinal);
+        Assert.Equal(["Webp.EncodingChosen"], Save(plain, Egami.Formats.Webp.WebpFormat.Info));
+    }
+
     private sealed class Counting : ISpanFormattable
     {
         public int Formatted { get; private set; }

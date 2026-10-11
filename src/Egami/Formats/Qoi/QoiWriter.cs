@@ -51,6 +51,7 @@ internal sealed class QoiWriter : IFormatWriter, IRowFormatWriter
 
         internal Encoder(Stream output, EncodeStart<TPixel> start, QoiWriterOptions qoi)
         {
+            SaveLosses.Report(start, "QOI", SaveKeeps.Alpha);
             _width = start.Width;
             _height = start.Height;
             _row = ArrayPool<uint>.Shared.Rent(_width);

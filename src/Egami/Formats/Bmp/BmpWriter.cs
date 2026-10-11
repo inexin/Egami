@@ -63,6 +63,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
         internal Encoder(Stream output, EncodeStart<TPixel> start, BmpWriterOptions bmp)
         {
             _output = output;
+            SaveLosses.Report(start, "BMP", SaveKeeps.Alpha | SaveKeeps.Icc | SaveKeeps.Resolution);
             Raster<TPixel>? raster = start.Whole;
             BmpPixelFormat layout = bmp.PixelFormat != BmpPixelFormat.Auto ? bmp.PixelFormat : !TPixel.Layout.HasAlpha || IsOpaque(raster!) ? BmpPixelFormat.Bgr24 : BmpPixelFormat.Bgra32;
             _bits = layout switch

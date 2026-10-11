@@ -57,7 +57,7 @@ public readonly record struct EgamiDiagnostic(DiagnosticLevel Level, string Sour
         private static readonly string[] s_known =
         [
             "Bmp", "Gif", "Jpeg", "Png", "Pnm", "Qoi", "Tga", "Tiff", "Webp", "Exif", "Xmp", "Iptc", "Icc", "Detect", "Limits",
-            "Parallel", "Streaming", "Color", "Resize", "Operation", "Diagnostics",
+            "Parallel", "Streaming", "Color", "Resize", "Operation", "Decode", "Save",
         ];
 
         public static string Intern(ReadOnlySpan<char> source)

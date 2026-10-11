@@ -50,6 +50,7 @@ internal sealed class PnmWriter : IFormatWriter, IRowFormatWriter
 
         internal Encoder(Stream output, EncodeStart<TPixel> start, PnmWriterOptions pnm, PnmKind kind)
         {
+            SaveLosses.Report(start, "Netpbm", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Comment);
             PixelLayoutInfo layout = TPixel.Layout;
             bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
             _kind = kind;

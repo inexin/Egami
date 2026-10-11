@@ -110,6 +110,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Iptc.ValueTooLong` | Warning | An IPTC value is longer than the IIM specification allows; it was kept |
 | `Jpeg.ArithmeticDamaged` | Warning | Arithmetic-coded data is damaged; the rest of the image is gray |
 | `Jpeg.DataEnded` | Warning | The entropy-coded data ends early; the rest is gray or has less detail |
+| `Jpeg.EncodingChosen` | Info | The color space, chroma sampling and quality a JPEG save used, with `ColorType` left at Auto |
 | `Jpeg.EoiMissing` | Warning | The file ends before its end-of-image marker; the scans so far were decoded |
 | `Jpeg.ExtendedXmpIncomplete` | Warning | The extended XMP packet is missing parts; it was dropped |
 | `Jpeg.ExtendedXmpOverLimit` | Warning | The extended XMP packet is over the metadata limit; it was dropped |
@@ -132,6 +133,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Png.ChunkOutOfOrder` | Warning | A chunk breaks an ordering rule; it was ignored |
 | `Png.ChunkOutOfPlace` | Warning | A chunk appears where it may not; it was ignored |
 | `Png.ChunkTruncated` | Warning | The file ends inside a chunk after the image data |
+| `Png.ColorTypeChosen` | Info | The color type, bit depth and palette a PNG save chose, with `ColorType` left unset |
 | `Png.DamageAfterLastRow` | Warning | The compressed data is damaged after the last row |
 | `Png.DataAfterLastRow` | Warning | The image data has extra bytes after the last row |
 | `Png.DataEmpty` | Warning | The image data ends before any row; the image is transparent black |
@@ -158,6 +160,12 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Qoi.DataAfterEnd` | Warning | Data follows the last pixel where the end marker should be |
 | `Qoi.EndMarkerMissing` | Warning | The file ends without the QOI end marker |
 | `Qoi.RowsMissing` | Warning | The file ends early; the rows not decoded are transparent black |
+| `Save.AlphaDropped` | Warning | The format, as written with these options, has no alpha; translucent pixels were written opaque |
+| `Save.ColorsQuantized` | Warning | The image has more colors than the palette holds; it was reduced |
+| `Save.ConvertedToRgb` | Warning | The format holds no CMYK; the inks were converted to RGB |
+| `Save.DepthReduced` | Warning | Samples deeper than the format holds were rounded, or floating-point samples clipped to integers |
+| `Save.FramesDropped` | Warning | The format holds one image here; only the first frame was written |
+| `Save.MetadataDropped` | Warning | Metadata the format cannot hold, or that is too large for it, was not written |
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
@@ -189,6 +197,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Webp.ChunkHeaderTruncated` | Warning | The file ends inside a chunk header |
 | `Webp.ChunkPastRiff` | Warning | A chunk's size runs past the RIFF data |
 | `Webp.ChunkTruncated` | Warning | The file ends inside a chunk |
+| `Webp.EncodingChosen` | Info | Lossless or lossy, and the quality, a WebP save used with `Lossless` left unset |
 | `Webp.ExifRepeated` | Warning | A second EXIF chunk was ignored |
 | `Webp.FileTruncated` | Warning | The file ends early, or before the end the RIFF size gives |
 | `Webp.FrameChunkPastAnmf` | Warning | A frame's image chunk runs past its ANMF chunk |

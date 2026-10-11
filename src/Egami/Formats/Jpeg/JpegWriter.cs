@@ -94,12 +94,21 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         internal RowWriter(Stream output, EncodeStart<TPixel> start, JpegWriterOptions jpeg)
         {
             _encoder = new(start, jpeg);
+            SaveKeeps alpha = jpeg.Background is null ? SaveKeeps.None : SaveKeeps.Alpha;
+            SaveKeeps wide = jpeg.Precision == 12 ? SaveKeeps.Wide : SaveKeeps.None;
+            SaveLosses.Report(start, "JPEG", alpha | wide | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Iptc | SaveKeeps.Icc | SaveKeeps.Comment | SaveKeeps.Resolution);
+            if (jpeg.ColorType == JpegColorType.Auto)
+            {
+                DiagnosticReporter? diagnostics = null;
+                start.Context.Emit(ref diagnostics, DiagnosticLevel.Info, "Jpeg.EncodingChosen", $"JPEG is written as {_encoder.Describe} at quality {jpeg.Quality}, chosen from the pixel type and the options left at their defaults.");
+            }
+
             _writer = new(output);
             _writer.Marker(JpegMarker.Soi);
             _encoder.WriteIdentification(_writer, jpeg.StripMetadata ? null : start.Metadata.Resolution);
             if (!jpeg.StripMetadata)
             {
-                WriteMetadata(_writer, start.Metadata, start.Options.ProfileToWrite(start.Metadata));
+                WriteMetadata(_writer, start.Metadata, start.Options.ProfileToWrite(start.Metadata), start.Context);
             }
 
             _encoder.WriteHeaders(_writer);
@@ -183,7 +192,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     /// EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large), Photoshop resources with the IPTC (APP13) and
     /// comments, in that order.
     /// </summary>
-    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile)
+    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile, EgamiContext? context = null)
     {
         // An EXIF block too large for one segment loses its thumbnail first; if it is still too large it is left out.
         if (metadata.Exif is ExifData exifData)
@@ -195,17 +204,30 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 ExifData smaller = exifData.Copy();
                 smaller.RemoveThumbnail();
                 exif = smaller.ToBytes();
+                if (context is not null && exif.Length <= max)
+                {
+                    SaveLosses.Report(context, "Save.MetadataDropped", "The EXIF block is over the 64 KB a JPEG segment holds; its thumbnail was left out.");
+                }
             }
 
             if (exif.Length <= max)
             {
                 Segment(writer, JpegMarker.App1, ExifId, exif.Span);
             }
+            else if (context is not null)
+            {
+                SaveLosses.Report(context, "Save.MetadataDropped", "The EXIF block is over the 64 KB a JPEG segment holds, even without its thumbnail; it was not written.");
+            }
         }
 
         ReadOnlySpan<byte> icc = profile.Span;
         const int IccChunk = ushort.MaxValue - 2 - 14;
         int chunks = (icc.Length + IccChunk - 1) / IccChunk;
+        if (chunks > 255 && context is not null)
+        {
+            SaveLosses.Report(context, "Save.MetadataDropped", "The ICC profile needs more than the 255 segments JPEG allows; it was not written.");
+        }
+
         if (chunks is > 0 and <= 255)
         {
             for (int i = 0; i < chunks; i++)
@@ -525,6 +547,20 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 },
             };
         }
+
+        /// <summary>Gets the color space and chroma sampling written, for a diagnostic.</summary>
+        internal string Describe => _space switch
+        {
+            Space.Gray => "gray",
+            Space.Cmyk => "CMYK",
+            Space.Ycck => "YCCK",
+            _ => (_maxH, _maxV) switch
+            {
+                (1, 1) => "YCbCr 4:4:4",
+                (2, 1) => "YCbCr 4:2:2",
+                _ => "YCbCr 4:2:0",
+            },
+        };
 
         /// <summary>The component id in the frame and scans: 1, 2, 3 (and 4) as libjpeg numbers them, but C, M, Y, K for CMYK.</summary>
         private int ComponentId(int i) => _space == Space.Cmyk ? "CMYK"[i] : i + 1;

@@ -73,6 +73,7 @@ internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
         {
             _tga = tga;
             _metadata = start.Metadata;
+            SaveLosses.Report(start, "TGA", SaveKeeps.Alpha | SaveKeeps.Comment, ["Comment", "Author"]);
             int width = _width = start.Width;
             int height = start.Height;
             PixelLayoutInfo layout = TPixel.Layout;

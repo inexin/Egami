@@ -90,6 +90,8 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
         private readonly Stream _output;
         private readonly GifWriterOptions _options;
         private readonly ReadOnlyMemory<byte> _profile;
+        private readonly EgamiContext _context;
+        private int _quantized;
         private readonly RasterMetadata _metadata;
         private readonly IPixelMemorySource _memory;
         private readonly int _parallelism;
@@ -126,6 +128,8 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             _profile = start.Options.ProfileToWrite(start.Metadata);
             _memory = start.Context.Memory;
             _parallelism = start.Context.MaxParallelism;
+            _context = start.Context;
+            SaveLosses.Report(start, "GIF", SaveKeeps.Alpha | SaveKeeps.Frames | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.Comment);
             _width = start.Width;
             _height = start.Height;
             _pixels = _width * _height;
@@ -367,11 +371,11 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             Rgba8[] row = ArrayPool<Rgba8>.Shared.Rent(region.Width);
             try
             {
-                return PaletteBuilder.Build(region.Height, r =>
+                return Noted(PaletteBuilder.Build(region.Height, r =>
                 {
                     PixelConvert.Convert<TPixel, Rgba8>(Source(index).Row(region.Y + r).Slice(region.X, region.Width), row.AsSpan(0, region.Width));
                     return row.AsMemory(0, region.Width);
-                }, options, binaryAlpha: true, reserve);
+                }, options, binaryAlpha: true, reserve));
             }
             finally
             {
@@ -385,16 +389,27 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             Rgba8[] row = ArrayPool<Rgba8>.Shared.Rent(_width);
             try
             {
-                return PaletteBuilder.Build(count * _height, r =>
+                return Noted(PaletteBuilder.Build(count * _height, r =>
                 {
                     PixelConvert.Convert<TPixel, Rgba8>(Source(first + (r / _height)).Row(r % _height), row.AsSpan(0, _width));
                     return row.AsMemory(0, _width);
-                }, options, binaryAlpha: true, reserve);
+                }, options, binaryAlpha: true, reserve));
             }
             finally
             {
                 ArrayPool<Rgba8>.Shared.Return(row);
             }
+        }
+
+        // Reports, once per encode, that a palette had to approximate colors; frames may build palettes on several threads.
+        private BuiltPalette Noted(BuiltPalette palette)
+        {
+            if (!palette.Exact && Interlocked.Exchange(ref _quantized, 1) == 0)
+            {
+                SaveLosses.Report(_context, "Save.ColorsQuantized", "The image has more colors than a GIF palette's 256; it was reduced to a palette per frame or for the file.");
+            }
+
+            return palette;
         }
 
         /// <summary>Adds a transparent entry to an exact palette that has room, so unchanged pixels can be skipped.</summary>
