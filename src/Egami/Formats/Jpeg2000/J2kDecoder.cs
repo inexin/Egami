@@ -4,21 +4,6 @@ using System.Runtime.ExceptionServices;
 
 namespace Egami.Formats.Jpeg2000;
 
-internal static class Timing
-{
-    internal static double T2, Alloc, T1, Dwt, Store, Pixels;
-
-    internal static long Prep, Passes, Write;
-
-    internal static string Report()
-    {
-        double f = 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-        string r = $"t2 {T2:F0} alloc {Alloc:F0} t1 {T1:F0} (prep {Prep * f:F0} passes {Passes * f:F0} write {Write * f:F0}) dwt {Dwt:F0} store {Store:F0} pixels {Pixels:F0}";
-        Prep = Passes = Write = 0;
-        return r;
-    }
-}
-
 /// <summary>A decoded JPEG 2000 image: one plane of samples per component, at each component's own (reduced) size.</summary>
 internal sealed class J2kImage
 {
@@ -106,10 +91,8 @@ internal sealed class J2kDecoder
     /// <summary>Decodes one tile into the image's planes; returns whether its data ended early.</summary>
     private bool DecodeTile(J2kTileData tile, J2kImage image)
     {
-        var sw = System.Diagnostics.Stopwatch.StartNew();
         J2kTier2 tier2 = new(_stream, tile, _keepLayers);
         tier2.ReadPackets(_cancellationToken);
-        Timing.T2 += sw.Elapsed.TotalMilliseconds; sw.Restart();
         J2kTileComponent[] components = tier2.Components;
         int count = components.Length;
         int[]?[] integers = new int[count][];
@@ -166,9 +149,7 @@ internal sealed class J2kDecoder
             }
         }
 
-        Timing.Alloc += sw.Elapsed.TotalMilliseconds; sw.Restart();
         RunTier1(work, components, integers, floats, tops);
-        Timing.T1 += sw.Elapsed.TotalMilliseconds; sw.Restart();
         ForEach(count, c =>
         {
             J2kTileComponent tc = components[c];
@@ -183,7 +164,6 @@ internal sealed class J2kDecoder
             }
         });
 
-        Timing.Dwt += sw.Elapsed.TotalMilliseconds; sw.Restart();
         bool transform = components[0].Style.Mct == 1 && count >= 3 && SameSize(components, tops);
         if (transform)
         {
@@ -206,7 +186,6 @@ internal sealed class J2kDecoder
             Store(components[c], tops[c], c, integers[c], floats[c], image);
         }
 
-        Timing.Store += sw.Elapsed.TotalMilliseconds;
         return tier2.Truncated;
     }
 
