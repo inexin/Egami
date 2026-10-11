@@ -383,19 +383,26 @@ Egami.Metadata.ExifData.SetThumbnail(Egami.Raster! raster, int maxSide = 160, in
 Egami.Metadata.IptcData
 Egami.Metadata.IptcData.Add(Egami.Metadata.IptcKey key, string! value) -> void
 Egami.Metadata.IptcData.Bylines.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.IptcData.Bylines.set -> void
 Egami.Metadata.IptcData.Caption.get -> string?
+Egami.Metadata.IptcData.Caption.set -> void
 Egami.Metadata.IptcData.Copy() -> Egami.Metadata.IptcData!
 Egami.Metadata.IptcData.Copyright.get -> string?
+Egami.Metadata.IptcData.Copyright.set -> void
 Egami.Metadata.IptcData.Credit.get -> string?
+Egami.Metadata.IptcData.Credit.set -> void
 Egami.Metadata.IptcData.DateCreated.get -> System.DateTimeOffset?
+Egami.Metadata.IptcData.DateCreated.set -> void
 Egami.Metadata.IptcData.Entries.get -> System.Collections.Generic.IReadOnlyList<Egami.Metadata.IptcEntry!>!
 Egami.Metadata.IptcData.Get(Egami.Metadata.IptcKey key) -> string?
 Egami.Metadata.IptcData.GetAll(Egami.Metadata.IptcKey key) -> System.Collections.Generic.IReadOnlyList<string!>!
 Egami.Metadata.IptcData.Headline.get -> string?
+Egami.Metadata.IptcData.Headline.set -> void
 Egami.Metadata.IptcData.IptcData() -> void
 Egami.Metadata.IptcData.IsDamaged.get -> bool
 Egami.Metadata.IptcData.IsUtf8.get -> bool
 Egami.Metadata.IptcData.Keywords.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.IptcData.Keywords.set -> void
 Egami.Metadata.IptcData.Remove(Egami.Metadata.IptcKey key) -> bool
 Egami.Metadata.IptcData.Set(Egami.Metadata.IptcKey key, string! value) -> void
 Egami.Metadata.IptcData.ToBytes() -> System.ReadOnlyMemory<byte>
@@ -495,7 +502,7 @@ Egami.Metadata.XmpName.XmpName() -> void
 Egami.Metadata.XmpName.XmpName(string! Namespace, string! Name) -> void
 Egami.Metadata.XmpNamespaces
 Egami.Metadata.XmpStruct
-Egami.Metadata.XmpStruct.CopyStruct() -> Egami.Metadata.XmpStruct!
+Egami.Metadata.XmpStruct.Copy() -> Egami.Metadata.XmpStruct!
 Egami.Metadata.XmpStruct.Count.get -> int
 Egami.Metadata.XmpStruct.GetText(Egami.Metadata.XmpName name) -> string?
 Egami.Metadata.XmpStruct.Names.get -> System.Collections.Generic.IReadOnlyList<Egami.Metadata.XmpName>!

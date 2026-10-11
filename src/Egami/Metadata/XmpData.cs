@@ -197,7 +197,7 @@ public sealed class XmpData : XmpStruct, IXmpOwner
 
     /// <summary>Returns an independent copy.</summary>
     /// <returns>The copy.</returns>
-    public XmpData Copy()
+    public new XmpData Copy()
     {
         XmpData copy = new() { _original = _original, _edited = _edited, IsDamaged = IsDamaged, About = About, Toolkit = Toolkit };
         CopyFieldsTo(copy);

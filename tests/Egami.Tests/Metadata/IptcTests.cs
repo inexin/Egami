@@ -181,6 +181,39 @@ public class IptcTests
     }
 
     [Fact]
+    public void TypedSettersWriteTheDatasets()
+    {
+        IptcData iptc = new()
+        {
+            Keywords = ["a", "b"],
+            Bylines = ["Photographer"],
+            Caption = "Caption",
+            Headline = "Headline",
+            Copyright = "(c) 2026",
+            Credit = "Egami",
+            DateCreated = new DateTimeOffset(2026, 10, 11, 9, 30, 15, TimeSpan.FromHours(-5.5)),
+        };
+        IptcData read = IptcData.Parse(iptc.ToBytes().Span);
+        Assert.Equal(["a", "b"], read.Keywords);
+        Assert.Equal(["Photographer"], read.Bylines);
+        Assert.Equal(("Caption", "Headline", "(c) 2026", "Egami"), (read.Caption, read.Headline, read.Copyright, read.Credit));
+        Assert.Equal("093015-0530", read.Get(IptcKey.TimeCreated));
+        Assert.Equal(new DateTimeOffset(2026, 10, 11, 9, 30, 15, TimeSpan.FromHours(-5.5)), read.DateCreated);
+
+        read.Keywords = [];
+        read.Caption = null;
+        read.DateCreated = null;
+        Assert.Empty(read.Keywords);
+        Assert.Null(read.Caption);
+        Assert.Null(read.Get(IptcKey.TimeCreated));
+
+        // A keyword over the cap leaves the old ones in place.
+        read.Keywords = ["kept"];
+        Assert.Throws<ArgumentException>(() => read.Keywords = ["ok", new string('k', 65)]);
+        Assert.Equal(["kept"], read.Keywords);
+    }
+
+    [Fact]
     public void DatesAndCopies()
     {
         IptcData iptc = new();

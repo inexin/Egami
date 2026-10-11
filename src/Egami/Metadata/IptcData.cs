@@ -50,30 +50,77 @@ public sealed class IptcData
     /// <summary>Gets whether text is UTF-8: the coded character set (1:90) is ESC % G.</summary>
     public bool IsUtf8 => _entries.Find(e => e.Key == IptcKey.CodedCharacterSet) is IptcEntry charset && charset.RawValue.Span.SequenceEqual(Utf8Escape);
 
-    /// <summary>Gets the keywords (2:25), in order.</summary>
-    public IReadOnlyList<string> Keywords => GetAll(IptcKey.Keywords);
+    /// <summary>Gets or sets the keywords (2:25), in order. Setting an empty list removes them.</summary>
+    /// <exception cref="ArgumentException">A keyword set is longer than 64 bytes in UTF-8.</exception>
+    public IReadOnlyList<string> Keywords
+    {
+        get => GetAll(IptcKey.Keywords);
+        set => SetAll(IptcKey.Keywords, value);
+    }
 
-    /// <summary>Gets the creators (2:80), in order.</summary>
-    public IReadOnlyList<string> Bylines => GetAll(IptcKey.Byline);
+    /// <summary>Gets or sets the creators (2:80), in order. Setting an empty list removes them.</summary>
+    /// <exception cref="ArgumentException">A name set is longer than 32 bytes in UTF-8.</exception>
+    public IReadOnlyList<string> Bylines
+    {
+        get => GetAll(IptcKey.Byline);
+        set => SetAll(IptcKey.Byline, value);
+    }
 
-    /// <summary>Gets the caption (2:120), or <see langword="null"/>.</summary>
-    public string? Caption => Get(IptcKey.Caption);
+    /// <summary>Gets or sets the caption (2:120), or <see langword="null"/>. Setting <see langword="null"/> removes it.</summary>
+    /// <exception cref="ArgumentException">The value set is longer than 2,000 bytes in UTF-8.</exception>
+    public string? Caption
+    {
+        get => Get(IptcKey.Caption);
+        set => SetOrRemove(IptcKey.Caption, value);
+    }
 
-    /// <summary>Gets the headline (2:105), or <see langword="null"/>.</summary>
-    public string? Headline => Get(IptcKey.Headline);
+    /// <summary>Gets or sets the headline (2:105), or <see langword="null"/>. Setting <see langword="null"/> removes it.</summary>
+    /// <exception cref="ArgumentException">The value set is longer than 256 bytes in UTF-8.</exception>
+    public string? Headline
+    {
+        get => Get(IptcKey.Headline);
+        set => SetOrRemove(IptcKey.Headline, value);
+    }
 
-    /// <summary>Gets the copyright notice (2:116), or <see langword="null"/>.</summary>
-    public string? Copyright => Get(IptcKey.CopyrightNotice);
+    /// <summary>Gets or sets the copyright notice (2:116), or <see langword="null"/>. Setting <see langword="null"/> removes it.</summary>
+    /// <exception cref="ArgumentException">The value set is longer than 128 bytes in UTF-8.</exception>
+    public string? Copyright
+    {
+        get => Get(IptcKey.CopyrightNotice);
+        set => SetOrRemove(IptcKey.CopyrightNotice, value);
+    }
 
-    /// <summary>Gets the credit (2:110), or <see langword="null"/>.</summary>
-    public string? Credit => Get(IptcKey.Credit);
+    /// <summary>Gets or sets the credit (2:110), or <see langword="null"/>. Setting <see langword="null"/> removes it.</summary>
+    /// <exception cref="ArgumentException">The value set is longer than 32 bytes in UTF-8.</exception>
+    public string? Credit
+    {
+        get => Get(IptcKey.Credit);
+        set => SetOrRemove(IptcKey.Credit, value);
+    }
 
     /// <summary>
-    /// Gets when the content was created, from the date (2:55) and time (2:60): midnight UTC when there is no valid time, and
-    /// <see langword="null"/> when there is no valid date.
+    /// Gets or sets when the content was created, from the date (2:55) and time (2:60): midnight UTC when there is no valid time,
+    /// and <see langword="null"/> when there is no valid date. Setting writes both (CCYYMMDD and HHMMSS±HHMM); setting
+    /// <see langword="null"/> removes both.
     /// </summary>
     public DateTimeOffset? DateCreated
     {
+        set
+        {
+            if (value is not DateTimeOffset date)
+            {
+                Remove(IptcKey.DateCreated);
+                Remove(IptcKey.TimeCreated);
+                return;
+            }
+
+            TimeSpan offset = date.Offset;
+            string sign = offset < TimeSpan.Zero ? "-" : "+";
+            offset = offset.Duration();
+            Set(IptcKey.DateCreated, date.ToString("yyyyMMdd", CultureInfo.InvariantCulture));
+            Set(IptcKey.TimeCreated, date.ToString("HHmmss", CultureInfo.InvariantCulture) + sign + offset.Hours.ToString("00", CultureInfo.InvariantCulture) + offset.Minutes.ToString("00", CultureInfo.InvariantCulture));
+        }
+
         get
         {
             if (Get(IptcKey.DateCreated) is not string date
@@ -295,6 +342,33 @@ public sealed class IptcData
         }
 
         return data;
+    }
+
+    private void SetAll(IptcKey key, IReadOnlyList<string> values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        foreach (string value in values)
+        {
+            Encode(key, value);   // checks every value before anything changes
+        }
+
+        Remove(key);
+        foreach (string value in values)
+        {
+            Add(key, value);
+        }
+    }
+
+    private void SetOrRemove(IptcKey key, string? value)
+    {
+        if (value is null)
+        {
+            Remove(key);
+        }
+        else
+        {
+            Set(key, value);
+        }
     }
 
     private static bool IsText(IptcKey key) => key.Record == 2 && key.Dataset is > 0 and < 200;

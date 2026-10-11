@@ -129,7 +129,7 @@ public class XmpStruct
     public void Set(XmpName name, XmpStruct value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        Put(name, value.Owner is null && value != this ? value : value.CopyStruct());
+        Put(name, value.Owner is null && value != this ? value : value.Copy());
     }
 
     /// <summary>Removes a field.</summary>
@@ -148,7 +148,7 @@ public class XmpStruct
 
     /// <summary>Returns an independent copy.</summary>
     /// <returns>The copy.</returns>
-    public XmpStruct CopyStruct()
+    public XmpStruct Copy()
     {
         XmpStruct copy = new();
         CopyFieldsTo(copy);
@@ -232,7 +232,7 @@ internal static class XmpValues
     public static object Copy(object value) => value switch
     {
         XmpArray a => a.Copy(),
-        XmpStruct s => s.CopyStruct(),
+        XmpStruct s => s.Copy(),
         _ => value,
     };
 

@@ -249,12 +249,14 @@ public class ApiExamples
         #region iptc-values
         using Raster photo = Raster.Load("sideways.jpg");
         IptcData iptc = photo.Metadata.Iptc ?? new IptcData();
-        iptc.Set(IptcKey.Headline, "Harbour at dawn");
-        iptc.Add(IptcKey.Keywords, "harbour");
-        iptc.Add(IptcKey.Keywords, "Bergen");
+        iptc.Headline = "Harbour at dawn";
+        iptc.Keywords = [.. iptc.Keywords, "harbour", "Bergen"];
+
+        // Any dataset by its key; Add appends to the repeatable ones.
+        iptc.Set(IptcKey.City, "Bergen");
 
         // Text that is not ASCII sets the coded character set (1:90) to UTF-8, so other programs read it right.
-        iptc.Set(IptcKey.Caption, "Fishing boats at Bryggen, Bergen — first light");
+        iptc.Caption = "Fishing boats at Bryggen, Bergen — first light";
         foreach (IptcEntry entry in iptc.Entries)
         {
             Console.WriteLine($"{entry.Key} {entry.AsString()}");

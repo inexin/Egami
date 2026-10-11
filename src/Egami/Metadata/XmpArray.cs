@@ -121,7 +121,7 @@ public sealed class XmpArray
     public void Add(XmpStruct item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        XmpStruct own = item.Owner is null ? item : item.CopyStruct();
+        XmpStruct own = item.Owner is null ? item : item.Copy();
         XmpValues.Adopt(own, this);
         _items.Add((own, null));
         Touch();
