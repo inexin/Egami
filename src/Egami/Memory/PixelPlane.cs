@@ -27,6 +27,9 @@ public sealed class PixelPlane<TPixel>
     private readonly Memory<TPixel> _wrapped;
     private readonly Memory<byte> _wrappedBytes;
     private readonly int _byteStride;
+    private readonly PixelPlane<TPixel>? _parent;
+    private readonly int _x;
+    private readonly int _y;
     private IDisposable? _owner;
     private IMemoryOwner<byte>[]? _blocks;
     private bool _disposed;
@@ -49,6 +52,17 @@ public sealed class PixelPlane<TPixel>
         _wrapped = memory;
     }
 
+    /// <summary>A view of a rectangle of <paramref name="parent"/>: its rows are slices of the parent's, so nothing is copied.</summary>
+    internal PixelPlane(PixelPlane<TPixel> parent, Rect area)
+    {
+        Width = area.Width;
+        Height = area.Height;
+        _rowsPerBlock = area.Height;
+        _parent = parent;
+        _x = area.X;
+        _y = area.Y;
+    }
+
     internal PixelPlane(Memory<byte> memory, int width, int height, int byteStride, IDisposable? owner)
     {
         Width = width;
@@ -66,7 +80,10 @@ public sealed class PixelPlane<TPixel>
     public int Height { get; }
 
     /// <summary>Gets a value indicating whether the plane owns its memory and frees it on dispose.</summary>
-    internal bool OwnsMemory => _wrapped.IsEmpty && _wrappedBytes.IsEmpty;
+    /// <summary>Gets the plane this one is a view of, or this plane.</summary>
+    internal PixelPlane<TPixel> Root => _parent?.Root ?? this;
+
+    internal bool OwnsMemory => _wrapped.IsEmpty && _wrappedBytes.IsEmpty && _parent is null;
 
     /// <summary>Returns one row of pixels.</summary>
     /// <param name="y">The row index, 0 to <see cref="Height"/> - 1.</param>
@@ -83,6 +100,11 @@ public sealed class PixelPlane<TPixel>
         if (!OwnsMemory)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_parent is not null)
+            {
+                return _parent.Row(_y + y).Slice(_x, Width);
+            }
+
             return _wrappedBytes.IsEmpty
                 ? _wrapped.Span.Slice(y * _stride, Width)
                 : MemoryMarshal.Cast<byte, TPixel>(_wrappedBytes.Span.Slice(y * _byteStride, Width * Unsafe.SizeOf<TPixel>()));
@@ -100,6 +122,13 @@ public sealed class PixelPlane<TPixel>
     /// <exception cref="ObjectDisposedException">The plane has been disposed.</exception>
     public bool TryGetContiguous(out Span<TPixel> pixels)
     {
+        if (_parent is not null)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            pixels = default;
+            return false;
+        }
+
         if (!OwnsMemory)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);

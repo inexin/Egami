@@ -42,6 +42,9 @@ public sealed class OperationInput<TPixel>
     /// <summary>Gets the index of the frame being processed.</summary>
     public int FrameIndex { get; }
 
+    /// <summary>Gets the chain's budgeted memory, for scratch planes that count against MaxTotalBytes, when the pipeline runs the step.</summary>
+    internal BudgetedMemorySource? Memory { get; init; }
+
     /// <summary>Gets the token that cancels the chain. <see cref="ForEachBand"/> checks it between bands.</summary>
     public CancellationToken CancellationToken { get; }
 

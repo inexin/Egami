@@ -19,6 +19,8 @@ namespace Egami.Operations;
 /// </example>
 public sealed class RasterOps
 {
+    private static int _groups;
+
     private readonly List<IRasterOperation> _operations = [];
 
     internal RasterOps()
@@ -381,9 +383,10 @@ public sealed class RasterOps
             return Add(ConvolutionOperation.Gaussian(sigma, linear));
         }
 
+        int group = Interlocked.Increment(ref _groups);
         foreach (int radius in BoxRadii(sigma, 3))
         {
-            Add(ConvolutionOperation.Box(radius, linear));
+            Add(ConvolutionOperation.Box(radius, linear).InGroup(group));
         }
 
         return this;
@@ -615,6 +618,50 @@ public sealed class RasterOps
         }
     }
 
+    /// <summary>
+    /// Runs the operations <paramref name="build"/> adds so that only pixels inside <paramref name="area"/> change, as if the image were
+    /// edited through a rectangular hole. Filters read the real pixels around the area, so a blurred rectangle has no seam and equals
+    /// the whole-image blur there; flips and a 180° turn mirror the area itself. Positions inside (DrawImage, FillColor) are the
+    /// raster's, as outside. Scopes nest: a rectangle inside a rectangle is their intersection.
+    /// </summary>
+    /// <param name="area">The rectangle, in the raster's coordinates. It is clipped to the raster; one that misses it changes nothing.</param>
+    /// <param name="build">Adds the operations. Each must keep the size: a resize, crop, pad, 90° or free turn, AutoOrient, ConvertColor or ToneMap throws.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="build"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="area"/> has a negative width or height.</exception>
+    /// <exception cref="ArgumentException">An operation inside would change the size or the color encoding; the message names it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Scopes.cs" region="within-rect"/>
+    /// </example>
+    public RasterOps Within(Rect area, Action<RasterOps> build)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(area.Width, nameof(area));
+        ArgumentOutOfRangeException.ThrowIfNegative(area.Height, nameof(area));
+        return Add(new Scopes.RectScopeOperation(area, Scopes.ScopeRunner.Record(build, nameof(build))));
+    }
+
+    /// <summary>
+    /// Runs the operations <paramref name="build"/> adds, then mixes each pixel with the original by the mask's coverage: none keeps
+    /// the original, full keeps the result, and values between blend the two on premultiplied pixels, so a soft mask edge gives a soft
+    /// transition. Only the box around the mask's non-zero coverage is touched. Masks nest by multiplying their coverage, and mix
+    /// freely with rectangles.
+    /// </summary>
+    /// <param name="mask">The coverage: a raster of any size and type, placed at its offset, read by its channel.</param>
+    /// <param name="build">Adds the operations. Each must keep the size, as in <see cref="Within(Rect, Action{RasterOps})"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="build"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The mask has no raster, or an operation inside would change the size or the color encoding.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The mask's channel is not defined.</exception>
+    /// <remarks>The mask raster must stay undisposed until the chain has run. Masking a raster with itself reads from a copy, made when the step runs.</remarks>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Scopes.cs" region="within-mask"/>
+    /// </example>
+    public RasterOps Within(Mask mask, Action<RasterOps> build)
+    {
+        CheckMask(mask, nameof(mask));
+        return Add(new Scopes.MaskScopeOperation(mask, Scopes.ScopeRunner.Record(build, nameof(build))));
+    }
+
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
     internal const float LargeSigma = 100;
 
@@ -654,6 +701,19 @@ public sealed class RasterOps
         }
 
         CheckFilter(ResampleFilter.Bicubic, colorSpace);
+    }
+
+    private static void CheckMask(Mask mask, string name)
+    {
+        if (mask.Source is null)
+        {
+            throw new ArgumentException("The mask has no raster.", name);
+        }
+
+        if (!Enum.IsDefined(mask.Channel))
+        {
+            throw new ArgumentOutOfRangeException(name, mask.Channel, "The mask channel is not defined.");
+        }
     }
 
     private static void CheckSigma(float sigma)

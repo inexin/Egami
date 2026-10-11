@@ -211,7 +211,7 @@ internal sealed class PadOperation(int width, int height, Rgba8 color, Anchor an
 }
 
 /// <summary>Mirrors the image horizontally, vertically or both (which is a 180° rotation).</summary>
-internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOperation, IUpdatesMetadata
+internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOperation, IUpdatesMetadata, Scopes.IRunsOnViews
 {
     /// <summary>Gets whether rows are mirrored left to right.</summary>
     internal bool Horizontal => horizontal;
@@ -439,8 +439,14 @@ internal sealed class AutoOrientOperation : IRasterOperation
 }
 
 /// <summary>Sets every pixel in a rectangle, or the whole image, to one color.</summary>
-internal sealed class FillColorOperation(Rgba8 color, Rect? rect) : IRasterOperation
+internal sealed class FillColorOperation(Rgba8 color, Rect? rect) : IRasterOperation, Scopes.IAreaTranslatable
 {
+    public IRasterOperation? InArea(Rect area)
+    {
+        Rect fill = (rect ?? area).Intersect(area);
+        return fill.IsEmpty ? null : new FillColorOperation(color, new Rect(fill.X - area.X, fill.Y - area.Y, fill.Width, fill.Height));
+    }
+
     public Size OutputSize(Size input)
     {
         if (rect is Rect r && !new Rect(0, 0, input.Width, input.Height).Contains(r))

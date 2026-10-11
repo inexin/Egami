@@ -16,7 +16,7 @@ namespace Egami.Operations.Color;
 /// adjacent matrices into one stage unless the earlier one can push a value out of 0..1, where the chain clamps as running the
 /// steps one by one would. Chains of per-channel stages on 8-bit byte-per-channel types run as lookup tables.
 /// </summary>
-internal sealed class ColorMatrixOperation : IRasterOperation
+internal sealed class ColorMatrixOperation : IRasterOperation, Scopes.IRunsOnViews
 {
     private readonly ColorMatrix[] _stages;
     private readonly int _count;
@@ -258,7 +258,7 @@ internal sealed class ColorMatrixOperation : IRasterOperation
 }
 
 /// <summary>Converts toward gray in linear light: decode, take the luma, mix, encode.</summary>
-internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount, Colors.LinearCurve? curve = null) : IRasterOperation, ILinearLight
+internal sealed class LinearGrayscaleOperation(LumaWeights mode, float amount, Colors.LinearCurve? curve = null) : IRasterOperation, ILinearLight, Scopes.IRunsOnViews
 {
     public bool UsesLinearLight => true;
 

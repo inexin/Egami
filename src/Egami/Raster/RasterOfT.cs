@@ -312,9 +312,11 @@ public sealed class Raster<TPixel> : Raster
 
     internal override bool HasPlane(object plane)
     {
+        // A view of part of a frame counts as that frame.
+        object root = plane is PixelPlane<TPixel> view ? view.Root : plane;
         foreach (Frame<TPixel> frame in _frames)
         {
-            if (ReferenceEquals(frame.Plane, plane))
+            if (ReferenceEquals(frame.Plane, root))
             {
                 return true;
             }

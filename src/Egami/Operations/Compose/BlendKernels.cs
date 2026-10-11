@@ -300,6 +300,14 @@ internal static class BlendKernels
 
             TC dv = TC.Load(ref d, (nuint)i);
             TC result;
+            if (c.Mode == BlendMode.Source && c.Covered)
+            {
+                // Source through coverage is the mix of the source into the destination: round((s·k + d·(255 − k)) / 255).
+                TC cover = TC.LoadCoverage(ref k, (nuint)i);
+                TC.Store(Div255C((sv * cover) + (dv * (full - cover))), ref d, (nuint)i);
+                continue;
+            }
+
             if (c.Mode == BlendMode.Plus)
             {
                 result = TC.Min(sv + dv, full);

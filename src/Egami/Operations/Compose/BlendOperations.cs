@@ -8,7 +8,7 @@ namespace Egami.Operations.Compose;
 
 /// <summary>Blends one constant color over every pixel with a <see cref="BlendMode"/>, in place.</summary>
 internal sealed class BlendColorOperation(Rgba8 color, BlendMode mode, float opacity, bool linear, Colors.LinearCurve? curve = null)
-    : IRasterOperation, ILinearLight
+    : IRasterOperation, ILinearLight, Scopes.IRunsOnViews
 {
     /// <summary>Gets the mode.</summary>
     internal BlendMode Mode => mode;
@@ -47,8 +47,14 @@ internal sealed class BlendColorOperation(Rgba8 color, BlendMode mode, float opa
 /// premultiplied channel becomes k1·S·D + k2·S + k3·D + k4, then, with clamping, is kept in 0..1 with color no higher than alpha.
 /// Only the overlap changes, as with DrawImage. The source is read as <see cref="RgbaF32"/>, so its full precision takes part.
 /// </summary>
-internal sealed class DrawArithmeticOperation(Raster image, Point position, float k1, float k2, float k3, float k4, bool clamp) : IRasterOperation
+internal sealed class DrawArithmeticOperation(Raster image, Point position, float k1, float k2, float k3, float k4, bool clamp)
+    : IRasterOperation, Scopes.IAreaTranslatable
 {
+    public IRasterOperation? InArea(Rect area)
+    {
+        return new DrawArithmeticOperation(image, new Point(position.X - area.X, position.Y - area.Y), k1, k2, k3, k4, clamp);
+    }
+
     public Size OutputSize(Size input)
     {
         return input;

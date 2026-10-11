@@ -50,11 +50,17 @@ internal static class OperationPipeline
                 steps[i] = tone.Bind(hdr);
                 hdr = null;
             }
+            else if (steps[i] is Scopes.IScope scope)
+            {
+                // A scope's linear-light steps take the curve the raster has at this point; a scope cannot change it.
+                steps[i] = scope.Bind(() => colorProfile is null ? null : Colors.LinearCurve.For((current ??= colorProfile()).Transfer));
+            }
         }
 
         Size[] sizes = new Size[steps.Count];
         for (int i = 0; i < steps.Count; i++)
         {
+            (steps[i] as Scopes.IScope)?.Validate(size);
             Size next = steps[i].OutputSize(size);
             if (next.Width < 1 || next.Height < 1)
             {
@@ -90,7 +96,7 @@ internal static class OperationPipeline
                 PixelPlane<TPixel> destination = sameSize && mayWriteCurrent && !NeedsNewPlane(plan.Steps[i], size) ? current : Allocate<TPixel>(size, memory);
                 try
                 {
-                    plan.Steps[i].Run(new OperationInput<TPixel>(current, destination, context, frameIndex, cancellationToken));
+                    plan.Steps[i].Run(new OperationInput<TPixel>(current, destination, context, frameIndex, cancellationToken) { Memory = memory });
                 }
                 catch
                 {
@@ -126,6 +132,12 @@ internal static class OperationPipeline
 
             throw;
         }
+    }
+
+    /// <summary>Plans a recorded chain as the top level is planned, for a scope's sub-chain (which holds no AutoOrient).</summary>
+    internal static List<IRasterOperation> PlanSteps(IReadOnlyList<IRasterOperation> steps)
+    {
+        return Planner.Plan(steps, ImageOrientation.Normal);
     }
 
     private static bool NeedsNewPlane(IRasterOperation step, Size size)

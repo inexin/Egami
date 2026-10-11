@@ -16,6 +16,8 @@
       href: guides/filters.md
     - name: Compositing
       href: guides/compositing.md
+    - name: Regions and masks
+      href: guides/regions-and-masks.md
     - name: Animation
       href: guides/animation.md
     - name: Metadata

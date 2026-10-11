@@ -30,6 +30,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
     private readonly float _sharpen;
     private readonly bool _linear;
     private readonly Colors.LinearCurve? _curve;
+    private int _group;
 
     private ConvolutionOperation(
         float[]? row, float[]? column, float[]? full, int rx, int ry, bool box, EdgeMode edge, bool preserveAlpha, float offset, float sharpen, bool linear, Colors.LinearCurve? curve = null)
@@ -50,8 +51,30 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
 
     public bool UsesLinearLight => _linear;
 
+    /// <summary>Gets the horizontal radius of the kernel.</summary>
+    internal int RadiusX => _rx;
+
+    /// <summary>Gets the vertical radius of the kernel.</summary>
+    internal int RadiusY => _ry;
+
+    /// <summary>Gets whether this is a box mean run as running sums, whose rounding depends on where a run starts.</summary>
+    internal bool IsBox => _box;
+
+    /// <summary>Gets how taps past the border are read.</summary>
+    internal EdgeMode Edge => _edge;
+
+    /// <summary>Gets the call this pass belongs to when one call adds several (a large blur's boxes), or 0.</summary>
+    internal int Group => _group;
+
     public IRasterOperation WithCurve(Colors.LinearCurve curve) =>
-        new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve);
+        new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve) { _group = _group };
+
+    /// <summary>Marks this pass as part of a call that adds several, before it is added to a chain.</summary>
+    internal ConvolutionOperation InGroup(int group)
+    {
+        _group = group;
+        return this;
+    }
 
     /// <summary>A Gaussian blur: radius ceil(3σ), weights normalized to sum to 1.</summary>
     internal static ConvolutionOperation Gaussian(float sigma, bool linear, float sharpen = 0)

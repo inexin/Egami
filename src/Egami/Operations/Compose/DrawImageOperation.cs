@@ -17,7 +17,7 @@ namespace Egami.Operations.Compose;
 /// </summary>
 internal sealed class DrawImageOperation(
     Raster image, Rect sourceArea, Point position, float opacity, BlendMode mode = BlendMode.SourceOver, bool linear = false, Colors.LinearCurve? curve = null)
-    : IRasterOperation, ILinearLight
+    : IRasterOperation, ILinearLight, Scopes.IAreaTranslatable
 {
     /// <summary>Initializes a new instance of the <see cref="DrawImageOperation"/> class that draws the whole image.</summary>
     public DrawImageOperation(Raster image, Point position, float opacity, BlendMode mode = BlendMode.SourceOver, bool linear = false)
@@ -31,6 +31,9 @@ internal sealed class DrawImageOperation(
     public bool UsesLinearLight => linear;
 
     public IRasterOperation WithCurve(Colors.LinearCurve curve) => new DrawImageOperation(image, sourceArea, position, opacity, mode, linear, curve);
+
+    public IRasterOperation? InArea(Rect area) =>
+        new DrawImageOperation(image, sourceArea, new Point(position.X - area.X, position.Y - area.Y), opacity, mode, linear, curve);
 
     public Size OutputSize(Size input)
     {
