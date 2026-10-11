@@ -59,3 +59,13 @@ duck16.close-square-3 16 240 180 -morphology Close Square:3
 duck.vignette-96 8 240 180 -background black -vignette 0x8.48528+24+18
 duck.vignette-100 8 240 180 -background black -vignette 0x11.04854+20+15
 egret.vignette-96-tall 8 180 240 -background black -vignette 0x8.48528+18+24
+duck.paint-1 8 240 180 -paint 1
+duck.paint-3 8 240 180 -paint 3
+egret.paint-5 8 180 240 -paint 5
+noisy.paint-2 8 240 180 -paint 2
+shapes.paint-3 8 200 150 -paint 3
+duck.kuwahara-3 8 240 180 -kuwahara 3x0
+duck.kuwahara-2 8 240 180 -kuwahara 2x0
+duck.kuwahara-3-1 8 240 180 -kuwahara 3x1
+egret.kuwahara-6-2 8 180 240 -kuwahara 6x2
+noisy.kuwahara-4-1 8 240 180 -kuwahara 4x1

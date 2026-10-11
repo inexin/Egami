@@ -146,4 +146,93 @@ public sealed partial class RasterOps
         layer.Blur(sigma, ColorSpace.Linear, BlurMethod.Fast);
         return Add(new LayerEffectOperation(layer.Steps, LayerPlacement.Over, BlendMode.Screen, linear: true));
     }
+
+    /// <summary>
+    /// Pixelates: the image is cut into square cells, and every pixel of a cell becomes the cell's average, taken on premultiplied
+    /// values so transparent pixels do not darken it. Cells start at <paramref name="origin"/> and repeat every
+    /// <paramref name="cellSize"/> pixels both ways; cells cut by the image's edges average the pixels they hold. Inside
+    /// <see cref="Within(Rect, Action{RasterOps})"/> cells stay on the image's grid and average whole cells, reading past the area.
+    /// </summary>
+    /// <param name="cellSize">The side of a cell in pixels, from 1 (changes nothing) to 4096.</param>
+    /// <param name="origin">Where a cell's top-left corner falls, in the raster's coordinates; the grid repeats from there both ways.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="cellSize"/> is outside 1..4096.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FilterEffects.cs" region="pixelate"/>
+    /// </example>
+    public RasterOps Pixelate(int cellSize, Point origin = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(cellSize, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(cellSize, 4096);
+        return cellSize == 1 ? this : Add(new PixelateOperation(cellSize, origin));
+    }
+
+    /// <summary>
+    /// Makes the image look painted, as ImageMagick's -paint does: around each pixel, in the (2r + 1) square, pixels are sorted into
+    /// <paramref name="levels"/> bins by intensity, and the pixel becomes a pixel of the most common bin, unchanged. With 256 levels
+    /// on 8-bit images the result is ImageMagick's exactly; fewer levels make larger, flatter strokes. Works on stored values; the
+    /// histogram slides along each row, so a larger radius costs little more per pixel than the window's size.
+    /// </summary>
+    /// <param name="radius">The brush radius in pixels, from 1 to 50.</param>
+    /// <param name="levels">The number of intensity bins, from 2 to 256.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="radius"/> is outside 1..50, or <paramref name="levels"/> is outside 2..256.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FilterEffects.cs" region="oil-paint"/>
+    /// </example>
+    public RasterOps OilPaint(int radius = 3, int levels = 20)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(radius, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(radius, OilPaintOperation.MaxRadius);
+        ArgumentOutOfRangeException.ThrowIfLessThan(levels, 2);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(levels, 256);
+        return Add(new OilPaintOperation(radius, levels));
+    }
+
+    /// <summary>
+    /// Smooths while keeping edges, with the Kuwahara filter as ImageMagick's -kuwahara defines it: of the four (r + 1) squares that
+    /// have the pixel as a corner, the one whose luma varies least gives the pixel its value, sampled at that square's middle. With
+    /// <paramref name="sigma"/> above 0 the image is blurred first with ImageMagick's kernel for radius x sigma (a Gaussian of σ out to the radius). The
+    /// variances come from summed-area tables, so the cost does not grow with the radius.
+    /// </summary>
+    /// <param name="radius">The radius in pixels, from 1 to 100.</param>
+    /// <param name="sigma">The blur before, in pixels, from 0 (none) to 100.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="radius"/> is outside 1..100, or <paramref name="sigma"/> is outside 0..100.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FilterEffects.cs" region="kuwahara"/>
+    /// </example>
+    public RasterOps Kuwahara(int radius = 3, float sigma = 0)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(radius, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(radius, KuwaharaOperation.MaxRadius);
+        if (!(sigma >= 0 && sigma <= LargeSigma))
+        {
+            throw new ArgumentOutOfRangeException(nameof(sigma), sigma, "Sigma must be from 0 to 100.");
+        }
+
+        return Add(new KuwaharaOperation(radius, sigma));
+    }
+
+    /// <summary>
+    /// Scatters pixels, as ImageMagick's -spread does: each pixel takes the value of a random pixel at most
+    /// <paramref name="radius"/> away (a whole-pixel offset in the disc; edges repeat the edge pixel). The offsets come from a hash of
+    /// the seed and the pixel's position, so the same seed gives the same pixels on any machine and any number of cores.
+    /// </summary>
+    /// <param name="radius">The farthest a value moves, in pixels, from 0 to 1000; below 1 nothing moves.</param>
+    /// <param name="seed">Picks the pattern; the same seed gives the same result.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="radius"/> is outside 0..1000.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FilterEffects.cs" region="spread"/>
+    /// </example>
+    public RasterOps Spread(float radius, ulong seed = 0)
+    {
+        if (!(radius >= 0 && radius <= SpreadOperation.MaxRadius))
+        {
+            throw new ArgumentOutOfRangeException(nameof(radius), radius, "The radius must be from 0 to 1000.");
+        }
+
+        return radius < 1 ? this : Add(new SpreadOperation(radius, seed));
+    }
 }

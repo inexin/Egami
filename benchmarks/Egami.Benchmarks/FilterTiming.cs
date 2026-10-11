@@ -45,6 +45,9 @@ internal static class FilterTiming
         ["Dilate-Disk-5"] = o => o.Morphology(MorphologyOp.Dilate, StructuringElement.Disk(5)),
         ["Dilate-Disk-25"] = o => o.Morphology(MorphologyOp.Dilate, StructuringElement.Disk(25)),
         ["Vignette"] = o => o.Vignette(),
+        ["Pixelate"] = o => o.Pixelate(16),
+        ["OilPaint"] = o => o.OilPaint(),
+        ["OilPaint-256"] = o => o.OilPaint(3, 256),
     };
 
     internal static void Run(string[] names)

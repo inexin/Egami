@@ -934,19 +934,23 @@ Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, 
 Egami.Operations.RasterOps.LensBlur(float radius, Egami.Operations.LensBlurOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Lighting(Egami.Operations.Light! light, Egami.Operations.LightingModel model, Egami.Operations.LightingOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Glow(float sigma, Egami.Pixels.Rgba8 color, float spread = 0, bool inner = false) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Kuwahara(int radius = 3, float sigma = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MakeTransparent(Egami.Pixels.Rgba8 color, float tolerance = 0, float softness = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Median(int radius, bool includeAlpha = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Morphology(Egami.Operations.MorphologyOp op, Egami.Operations.StructuringElement shape, int iterations = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MotionBlur(float radius, float sigma, float angle, bool centered = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Offset(int dx, int dy, Egami.Operations.EdgeMode edges = Egami.Operations.EdgeMode.Wrap, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8)) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.OilPaint(int radius = 3, int levels = 20) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.OnChannels(Egami.Operations.ColorChannels channels, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Pixelate(int cellSize, Egami.Point origin = default(Egami.Point)) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.QuadDistort(System.Numerics.Vector2 topLeft, System.Numerics.Vector2 topRight, System.Numerics.Vector2 bottomRight, System.Numerics.Vector2 bottomLeft, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ReplaceColor(Egami.Pixels.Rgba8 from, Egami.Pixels.Rgba8 to, float tolerance = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.RotationalBlur(float degrees, System.Numerics.Vector2? center = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Shade(float azimuth = 30, float elevation = 30, bool colored = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ShuffleChannels(Egami.Operations.ChannelSource red, Egami.Operations.ChannelSource green, Egami.Operations.ChannelSource blue, Egami.Operations.ChannelSource alpha) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Skew(float degreesX, float degreesY, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Spread(float radius, ulong seed = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Tile(int width, int height, Egami.Point origin = default(Egami.Point), Egami.Rect? source = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, double? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Transform(Egami.Operations.Homography matrix, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!

@@ -105,6 +105,19 @@ public class FilterReferenceTests
         ["vignette-96"] = (o => o.Vignette(96 / (120 * MathF.Sqrt(2)), 0.4f, center: new System.Numerics.Vector2(120.5f, 90.5f)), Gate.Close),
         ["vignette-100"] = (o => o.Vignette(100 / (120 * MathF.Sqrt(2)), 0.5f, center: new System.Numerics.Vector2(120.5f, 90.5f)), Gate.Close),
         ["vignette-96-tall"] = (o => o.Vignette(72 / (90 * MathF.Sqrt(2)), 0.4f, center: new System.Numerics.Vector2(90.5f, 120.5f)), Gate.Close),
+
+        // ImageMagick's -paint is OilPaint with 256 levels: the same window, bins, ties and picked pixel.
+        ["paint-1"] = (o => o.OilPaint(1, 256), Gate.Identical),
+        ["paint-2"] = (o => o.OilPaint(2, 256), Gate.Identical),
+        ["paint-3"] = (o => o.OilPaint(3, 256), Gate.Identical),
+        ["paint-5"] = (o => o.OilPaint(5, 256), Gate.Identical),
+
+        // Kuwahara with ImageMagick's radius x sigma and blur kernel; a near tie between squares may pick another one.
+        ["kuwahara-3"] = (o => o.Kuwahara(3), Gate.Close),
+        ["kuwahara-2"] = (o => o.Kuwahara(2), Gate.Close),
+        ["kuwahara-3-1"] = (o => o.Kuwahara(3, 1), Gate.Close),
+        ["kuwahara-6-2"] = (o => o.Kuwahara(6, 2), Gate.Close),
+        ["kuwahara-4-1"] = (o => o.Kuwahara(4, 1), Gate.Close),
     };
 
     /// <summary>ImageMagick's kernel 3x3+0+1:1,1,-,-,1,1,1,-,-: lopsided, so dilation and erosion read it differently.</summary>

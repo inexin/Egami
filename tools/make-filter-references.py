@@ -158,6 +158,16 @@ CASES = [
     ("duck", "vignette-96", 8, "-background black -vignette 0x8.48528+24+18"),
     ("duck", "vignette-100", 8, "-background black -vignette 0x11.04854+20+15"),
     ("egret", "vignette-96-tall", 8, "-background black -vignette 0x8.48528+18+24"),
+    ("duck", "paint-1", 8, "-paint 1"),
+    ("duck", "paint-3", 8, "-paint 3"),
+    ("egret", "paint-5", 8, "-paint 5"),
+    ("noisy", "paint-2", 8, "-paint 2"),
+    ("shapes", "paint-3", 8, "-paint 3"),
+    ("duck", "kuwahara-3", 8, "-kuwahara 3x0"),
+    ("duck", "kuwahara-2", 8, "-kuwahara 2x0"),
+    ("duck", "kuwahara-3-1", 8, "-kuwahara 3x1"),
+    ("egret", "kuwahara-6-2", 8, "-kuwahara 6x2"),
+    ("noisy", "kuwahara-4-1", 8, "-kuwahara 4x1"),
 ]
 
 # Options the magick command no longer runs, so their cases go through its legacy convert parser.

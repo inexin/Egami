@@ -76,6 +76,8 @@ public sealed class EveryPixelTypeTests : IDisposable
         "Color-Tables", "Grayscale-Linear", "Sepia",
     ];
 
+    private static readonly HashSet<string> Selecting = ["Kuwahara", "Kuwahara-Blur"];
+
     private void Compare<T>(string operation)
         where T : unmanaged, IPixelType<T>
     {
@@ -98,6 +100,13 @@ public sealed class EveryPixelTypeTests : IDisposable
         using Raster<Rgba8> a8 = result.As<Rgba8>();
         int bits = Math.Min(8, T.Layout.ChannelBits.IsEmpty ? 8 : Min(T.Layout.ChannelBits));
         int allowed = Math.Max(8, 2 * 255 / ((1 << bits) - 1));
+
+        // Kuwahara picks a square by comparing variances, so on random pixels the rounding of premultiplied 8-bit storage can tip a
+        // near tie to another square; there only the PSNR is checked.
+        if (Selecting.Contains(operation) && (typeof(T) == typeof(PremulRgba8) || typeof(T) == typeof(PremulBgra8)))
+        {
+            allowed = 255;
+        }
         int worst = 0;
         double squares = 0;
         long count = 0;
