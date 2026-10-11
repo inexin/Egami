@@ -24,6 +24,23 @@ internal static class Adler32
         return Update(adler, data, useVectors: true);
     }
 
+    /// <summary>
+    /// Returns the checksum of two pieces of data joined, from the checksum of each (both started from 1) and the second's length.
+    /// Continuing from (a1, b1) over n bytes adds the bytes' sum to a, and n·a1 plus the running sums to b; the second checksum
+    /// holds the same sums started from (1, 0), so a = a1 + a2 − 1 and b = b1 + b2 + n·(a1 − 1).
+    /// </summary>
+    internal static uint Combine(uint first, uint second, long secondLength)
+    {
+        ulong a1 = first & 0xFFFF;
+        ulong b1 = first >> 16;
+        ulong a2 = second & 0xFFFF;
+        ulong b2 = second >> 16;
+        ulong n = (ulong)secondLength % Modulus;
+        ulong a = (a1 + a2 + Modulus - 1) % Modulus;
+        ulong b = (b1 + b2 + (n * ((a1 + Modulus - 1) % Modulus))) % Modulus;
+        return (uint)((b << 16) | a);
+    }
+
     /// <summary>Continues a checksum, with or without SIMD. For tests and benchmarks.</summary>
     internal static uint Update(uint adler, ReadOnlySpan<byte> data, bool useVectors)
     {
