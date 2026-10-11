@@ -253,38 +253,38 @@ public sealed class ScopePropertyTests : IDisposable
                     RunSteps(owner, Steps, image, inner);
                     return;
                 case Kind.Mask:
-                {
-                    Raster<Gray8> mask = MaskRaster!;
-                    Rect box = MaskBox(mask, MaskAt).Intersect(area);
-                    PremulRgba8[] original = (PremulRgba8[])image.Clone();
-                    RunSteps(owner, Steps, image, box);
-                    for (int y = box.Y; y < box.Bottom; y++)
                     {
-                        for (int x = box.X; x < box.Right; x++)
+                        Raster<Gray8> mask = MaskRaster!;
+                        Rect box = MaskBox(mask, MaskAt).Intersect(area);
+                        PremulRgba8[] original = (PremulRgba8[])image.Clone();
+                        RunSteps(owner, Steps, image, box);
+                        for (int y = box.Y; y < box.Bottom; y++)
                         {
-                            int m = mask.GetPixel(x - MaskAt.X, y - MaskAt.Y).L;
-                            PremulRgba8 o = original[(y * W) + x], r = image[(y * W) + x];
-                            image[(y * W) + x] = new PremulRgba8(Mix(o.R, r.R, m), Mix(o.G, r.G, m), Mix(o.B, r.B, m), Mix(o.A, r.A, m));
+                            for (int x = box.X; x < box.Right; x++)
+                            {
+                                int m = mask.GetPixel(x - MaskAt.X, y - MaskAt.Y).L;
+                                PremulRgba8 o = original[(y * W) + x], r = image[(y * W) + x];
+                                image[(y * W) + x] = new PremulRgba8(Mix(o.R, r.R, m), Mix(o.G, r.G, m), Mix(o.B, r.B, m), Mix(o.A, r.A, m));
+                            }
                         }
-                    }
 
-                    return;
-                }
+                        return;
+                    }
 
                 default:
-                {
-                    PremulRgba8[] original = (PremulRgba8[])image.Clone();
-                    RunSteps(owner, Steps, image, area);
-                    for (int y = area.Y; y < area.Bottom; y++)
                     {
-                        for (int x = area.X; x < area.Right; x++)
+                        PremulRgba8[] original = (PremulRgba8[])image.Clone();
+                        RunSteps(owner, Steps, image, area);
+                        for (int y = area.Y; y < area.Bottom; y++)
                         {
-                            image[(y * W) + x] = Merge(original[(y * W) + x], image[(y * W) + x]);
+                            for (int x = area.X; x < area.Right; x++)
+                            {
+                                image[(y * W) + x] = Merge(original[(y * W) + x], image[(y * W) + x]);
+                            }
                         }
-                    }
 
-                    return;
-                }
+                        return;
+                    }
             }
         }
 
