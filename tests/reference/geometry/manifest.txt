@@ -1,0 +1,50 @@
+# Version: ImageMagick 7.1.1-32 Q16-HDRI x86_64 22207 https://imagemagick.org, in alpine:3.20. Lines: <input>.<case> <width> <height> <ImageMagick arguments>; trims: <input>.<case> <WxH+X+Y> <arguments>
+coded.barrel 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -distort Barrel '0.1 -0.2 0.05'
+coded.barrel-center 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -distort Barrel '0.05 0 -0.1 1.1 70,60'
+coded.barrel-inverse 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -distort BarrelInverse '0.05 -0.05 0.02'
+coded.polar 152 152 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none +distort Polar '0'
+coded.polar-args 122 122 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none +distort Polar '60 10 100,75 -90,180'
+coded.depolar 236 75 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none +distort DePolar '0'
+coded.depolar-args 158 50 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none +distort DePolar '70 20 90,80'
+coded.arc 268 166 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none +distort Arc '60'
+coded.arc-args 226 182 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none +distort Arc '180 30 120 40'
+coded.swirl 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -swirl 120
+coded.implode 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -implode 0.6
+coded.explode 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -implode -0.6
+coded.wave 200 166 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -wave 8x40
+coded.roll 200 150 -roll +13+7
+coded.affine 260 220 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -define distort:viewport=260x220-30-20 -distort AffineProjection '1.1037,0.4113,-0.2971,0.9089,12.31,-5.17'
+coded.quad 230 180 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none -define distort:viewport=230x180+0+0 -distort Perspective '0,0 20,10  200,0 210,0  200,150 230,170  0,150 0,160'
+coded.displace 200 150 -filter Point -interpolate Nearest -virtual-pixel Transparent -background none dmap.png -compose Displace -define compose:args=10x10 -composite
+zone.shrink 110 100 -filter Catrom -virtual-pixel Transparent -background none -define distort:viewport=110x100+0+0 -distort AffineProjection '0.383,0.117,-0.117,0.383,25,15'
+duck.shrink 300 260 -filter Catrom -virtual-pixel Transparent -background none -define distort:viewport=300x260+0+0 -distort AffineProjection '0.383,0.117,-0.117,0.383,60,10'
+duck.quad 640 480 -filter Catrom -virtual-pixel Transparent -background none -define distort:viewport=640x480+0+0 -distort Perspective '0,0 200,40  640,0 440,40  640,480 640,440  0,480 0,440'
+duck.skew 740 480 -filter Catrom -virtual-pixel Transparent -background none -define distort:viewport=740x480+0+0 -distort AffineProjection '1,0,0.2,1,0,0'
+duck.barrel 640 480 -filter Catrom -virtual-pixel Transparent -background none -distort Barrel '0.0 -0.06 0.0'
+zone.down-lanczos2 70 50 -filter Lanczos2 -resize 70x50!
+duck.down-lanczos2 160 120 -filter Lanczos2 -resize 160x120!
+duck.up-lanczos2 300 225 -crop 120x90+260+200 +repage -filter Lanczos2 -resize 300x225!
+zone.down-hermite 70 50 -filter Hermite -resize 70x50!
+duck.down-hermite 160 120 -filter Hermite -resize 160x120!
+duck.up-hermite 300 225 -crop 120x90+260+200 +repage -filter Hermite -resize 300x225!
+zone.down-gaussian 70 50 -filter Gaussian -resize 70x50!
+duck.down-gaussian 160 120 -filter Gaussian -resize 160x120!
+duck.up-gaussian 300 225 -crop 120x90+260+200 +repage -filter Gaussian -resize 300x225!
+zone.down-spline 70 50 -filter Spline -resize 70x50!
+duck.down-spline 160 120 -filter Spline -resize 160x120!
+duck.up-spline 300 225 -crop 120x90+260+200 +repage -filter Spline -resize 300x225!
+page.deskew-12.00 5.965313200702477836 -deskew 40%
+page.deskew-3.30 3.353340494317912146 -deskew 40%
+page.deskew-0.70 0.67140418284997616105 -deskew 40%
+page.deskew+0.00 -0 -deskew 40%
+page.deskew+0.45 -0.44761417086055305115 -deskew 40%
+page.deskew+2.00 -1.9575897574136547075 -deskew 40%
+page.deskew+7.50 -7.0699176477587526435 -deskew 40%
+page.deskew+14.00 -6.9596809044491267926 -deskew 40%
+bordered.trim-0 200x150+0+0 -fuzz 0% -trim
+bordered.trim-2 151x97+20+22 -fuzz 2% -trim
+bordered.trim-5 151x97+20+22 -fuzz 5% -trim
+bordered.trim-15 114x97+37+22 -fuzz 15% -trim
+bordered16.trim-0 120x90+0+0 -fuzz 0% -trim
+bordered16.trim-001 71x51+30+10 -fuzz 0.01% -trim
+bordered16.trim-01 50x41+30+20 -fuzz 0.1% -trim
