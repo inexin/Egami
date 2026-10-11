@@ -30,6 +30,17 @@ public class WebpInteropFiles
                     File.WriteAllBytes(Path.Combine(directory, $"{name}.e{effort}.rgba"), WebpTestImages.Bytes(raster));
                 }
 
+                foreach ((int alphaQuality, int effort) in new[] { (40, 2), (40, 6), (90, 4) })
+                {
+                    using MemoryStream file = new();
+                    raster.Save(file, WebpFormat.Info, new WebpWriterOptions { Lossless = false, AlphaQuality = alphaQuality, Effort = effort, KeepTransparentColors = false });
+                    string stem = Path.Combine(directory, $"{name}.lossy.a{alphaQuality}e{effort}");
+                    File.WriteAllBytes(stem + ".webp", file.ToArray());
+                    using Raster<Rgba8> decoded = Raster.Load<Rgba8>(file.ToArray());
+                    File.WriteAllBytes(stem + ".rgba", WebpTestImages.Bytes(decoded));
+                    File.WriteAllBytes(stem + ".yuv", WebpTestImages.Planes(file.ToArray()));
+                }
+
                 foreach (int partitions in new[] { 2, 4, 8 })
                 {
                     // Egami's decoder against libwebp's on several token partitions, which libwebp 1.3.2 no longer writes.

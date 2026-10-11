@@ -182,9 +182,9 @@ public sealed class WebpWriterOptions : WriterOptions
     }
 
     /// <summary>
-    /// Gets whether lossless data keeps the color of fully transparent pixels, so every pixel round-trips exactly. Defaults to
-    /// <see langword="true"/>; <see langword="false"/> lets the encoder change those colors for smaller files, as libwebp does unless
-    /// told to stay exact.
+    /// Gets whether the colors of fully transparent pixels are kept: exactly in lossless data, so every pixel round-trips, and as
+    /// closely as the quality allows in lossy data. Defaults to <see langword="true"/>; <see langword="false"/> lets either encoder
+    /// change those colors for smaller files (lossy flattens them), as libwebp does unless told to stay exact.
     /// </summary>
     public bool KeepTransparentColors { get; init; } = true;
 

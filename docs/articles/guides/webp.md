@@ -16,11 +16,15 @@ bytes and `Save("x.webp")` picks the writer.
 | `Quality` | 75 | Lossy quality, 0 to 100, cwebp's `-q` scale |
 | `Effort` | 4 | 0 (fastest) to 6 (smallest), cwebp's `-m`, for both kinds |
 | `AlphaQuality` | 100 | Lossy files with transparency: 100 keeps alpha exact |
-| `KeepTransparentColors` | `true` | Lossless: colors under fully transparent pixels stay exact; `false` lets the encoder change them for smaller files |
+| `KeepTransparentColors` | `true` | Colors under fully transparent pixels are kept (exactly in lossless files); `false` lets the encoder change them for smaller files |
 | `SharpYuv` | `false` | Lossy: a slower color conversion that keeps sharp colored edges |
 | `NearLossless` | 100 | Lossless: below 100 pixel values may move a little before coding |
 | `MixedFrames` | `false` | Animations: each frame is encoded both ways and the smaller kept |
 | `FirstFrameOnly` | `false` | Writes only the first frame, as a still |
+
+Lossy files with transparency carry the alpha in an ALPH chunk: compressed losslessly with the filter that gives the smallest
+result (all four tried at effort 5 and 6), and with fewer levels when `AlphaQuality` is below 100, fully transparent and fully
+opaque pixels always kept exact.
 
 Lossless WebP holds sides up to 16,384 pixels and lossy up to 16,383; larger rasters throw before any work. Every pixel type can
 be saved: it is converted to 8-bit RGBA first.

@@ -91,15 +91,89 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
 
             if (!_lossless)
             {
-                Vp8Planes planes = WebpRgbToYuv.Convert(argb, _start.Width, _start.Height);
-                byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Quality = _options.Quality, Effort = _options.Effort }).Encode();
-                Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8, frame, default, false), _start.Width, _start.Height);
+                (byte[] frame, byte[]? alphaChunk) = EncodeLossy(Argb, _start.Width, _start.Height, _options, alpha);
+                Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8, frame, alphaChunk, alpha), _start.Width, _start.Height);
                 return;
             }
 
             using Vp8lBitWriter bits = new(argb.Length);
             Vp8lEncoder.Encode(argb, _start.Width, _start.Height, new Vp8lEncoderOptions(_options.Effort, _options.KeepTransparentColors, _options.NearLossless), bits);
             Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8L, bits.Finish(), default, alpha), _start.Width, _start.Height);
+        }
+
+        /// <summary>
+        /// Encodes a lossy still: the VP8 frame, and for an image with transparency the ALPH payload. Unless transparent colors are
+        /// kept, fully transparent pixels are first flattened so they cost almost nothing.
+        /// </summary>
+        internal static (byte[] Frame, byte[]? Alpha) EncodeLossy(Span<uint> argb, int width, int height, WebpWriterOptions options, bool alpha)
+        {
+            byte[]? alphaChunk = null;
+            if (alpha)
+            {
+                if (!options.KeepTransparentColors)
+                {
+                    FlattenTransparent(argb, width, height);
+                }
+
+                byte[] plane = new byte[argb.Length];
+                for (int i = 0; i < plane.Length; i++)
+                {
+                    plane[i] = (byte)(argb[i] >> 24);
+                }
+
+                alphaChunk = WebpAlphaEncoder.Encode(plane, width, height, options.AlphaQuality, options.Effort);
+            }
+
+            Vp8Planes planes = WebpRgbToYuv.Convert(argb, width, height);
+            byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Quality = options.Quality, Effort = options.Effort }).Encode();
+            return (frame, alphaChunk);
+        }
+
+        /// <summary>
+        /// Gives each fully transparent 8 × 8 tile one flat color, the color of the last flattened tile in the row while transparent
+        /// tiles run on, or else the tile's own mean, so the encoder spends almost nothing on what will not be seen.
+        /// </summary>
+        private static void FlattenTransparent(Span<uint> argb, int width, int height)
+        {
+            for (int ty = 0; ty < height; ty += 8)
+            {
+                uint? run = null;
+                for (int tx = 0; tx < width; tx += 8)
+                {
+                    int w = Math.Min(8, width - tx), h = Math.Min(8, height - ty);
+                    bool clear = true;
+                    long r = 0, g = 0, b = 0;
+                    for (int y = 0; y < h && clear; y++)
+                    {
+                        foreach (uint p in argb.Slice(((ty + y) * width) + tx, w))
+                        {
+                            if (p >= 0x01000000)
+                            {
+                                clear = false;
+                                break;
+                            }
+
+                            r += (p >> 16) & 0xFF;
+                            g += (p >> 8) & 0xFF;
+                            b += p & 0xFF;
+                        }
+                    }
+
+                    if (!clear)
+                    {
+                        run = null;
+                        continue;
+                    }
+
+                    int n = w * h;
+                    uint color = run ?? (uint)((((r + (n / 2)) / n) << 16) | (((g + (n / 2)) / n) << 8) | ((b + (n / 2)) / n));
+                    run = color;
+                    for (int y = 0; y < h; y++)
+                    {
+                        argb.Slice(((ty + y) * width) + tx, w).Fill(color);
+                    }
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)
