@@ -4,3 +4,4 @@
 *.tgz binary
 *.icc binary
 *.f32 binary
+*.cube binary

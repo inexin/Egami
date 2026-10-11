@@ -15,6 +15,7 @@ Targets:
 | `jpeg-write` | Bytes that pick a pixel type, size, pixels and JPEG writer options (CMYK, YCCK, 12-bit, progressive, restart intervals, background): the file must read back at its size without warnings, a progressive file must decode to the baseline file's pixels, and a streamed encode must write what Save writes | `tests/images/fuzz/jpeg-write-seeds/*` |
 | `webp` | WebP files, stills and animations: probed and loaded leniently, strictly, with the background color, fast upsampling and frame ranges, from a stream that cannot seek and as planes, then written back lossless (which must round-trip exactly) and lossy | `tests/images/webp/*.webp` |
 | `webpcodec` | The first byte picks: a raw VP8 frame, a raw VP8L stream, or the rest as pixels for both encoders, whose lossless round trip must be exact | `tests/images/fuzz/webpcodec-seeds/*` |
+| `cube` | .cube LUT files (Adobe 1D and 3D, Resolve's 1D shaper with a 3D table): read with low limits, written back and read again to the same values, and run as a filter with every interpolation | `tests/images/fuzz/cube-seeds/*` |
 | `stream` | Any format through `RasterDecoder`, whole and incremental, with a region, a reduction, a band height and the sizes the bytes arrive in all picked from the input's hash, and previews drawn on the way; a strict incremental decode must give the whole decode's rows | `tests/images/fuzz/stream-seeds/*` |
 
 ## Running locally (Linux or WSL)

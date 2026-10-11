@@ -22,7 +22,9 @@ using SharpFuzz;
 // runs the JPEG writer: the input picks a pixel type, size, pixels and writer options (CMYK, YCCK, 12-bit, progressive among
 // them); the file must read back at its size, a progressive file must decode to the baseline file's pixels, and a streamed
 // encode must write what Save writes. The jbig2 and jbig2codec targets (Phase 2.3.4) load JBIG2 files every way, standalone and
-// embedded with globals, and feed each of JBIG2's decoding procedures (regions, dictionaries, Huffman tables) raw bytes.
+// embedded with globals, and feed each of JBIG2's decoding procedures (regions, dictionaries, Huffman tables) raw bytes. The cube
+// target (Phase 2.5.3) reads .cube LUT files, which must load or fail with an EgamiException; a table that loads must write back
+// and read again to the same values and run as a filter.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -112,7 +114,8 @@ static Action<Stream> Target(string name) => name switch
     "webpcodec" => DecodeWebpCodec,
     "jbig2" => LoadJbig2,
     "jbig2codec" => DecodeJbig2Codec,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec."),
+    "cube" => LoadCube,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube."),
 };
 
 static EgamiContext Context()
@@ -750,6 +753,60 @@ static void DecodeRawProfile(Stream stream)
         {
             throw new InvalidOperationException("A raw profile did not encode and decode back.");
         }
+    }
+}
+
+static void LoadCube(Stream stream)
+{
+    EgamiContext context = Context() with { Limits = Context().Limits with { MaxTotalBytes = 64L * 1024 * 1024 } };
+    Egami.Operations.Lut3D lut;
+    try
+    {
+        lut = Egami.Operations.CubeFile.Read(stream, context);
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    // What loads must write back and read again to the same values.
+    using MemoryStream written = new();
+    Egami.Operations.CubeFile.Write(written, lut, "fuzz");
+    written.Position = 0;
+    Egami.Operations.Lut3D again = Egami.Operations.CubeFile.Read(written, context);
+    if (again.Size != lut.Size || again.ShaperSize != lut.ShaperSize || again.DomainMin != lut.DomainMin || again.DomainMax != lut.DomainMax)
+    {
+        throw new InvalidOperationException("A written .cube file read back with a different shape.");
+    }
+
+    for (int b = 0; b < lut.Size; b += Math.Max(1, lut.Size / 5))
+    {
+        for (int g = 0; g < lut.Size; g += Math.Max(1, lut.Size / 5))
+        {
+            for (int r = 0; r < lut.Size; r += Math.Max(1, lut.Size / 5))
+            {
+                if (!lut[r, g, b].Equals(again[r, g, b]))
+                {
+                    throw new InvalidOperationException($"Grid point ({r}, {g}, {b}) changed in a round trip.");
+                }
+            }
+        }
+    }
+
+    // And run as a filter on a small image, every way it can be read.
+    using Raster<Rgba8> image = Raster.Create<Rgba8>(17, 9, context);
+    for (int y = 0; y < 9; y++)
+    {
+        Span<Rgba8> row = image.Row(y);
+        for (int x = 0; x < 17; x++)
+        {
+            row[x] = new Rgba8((byte)(x * 15), (byte)(y * 28), (byte)(x * y), 255);
+        }
+    }
+
+    foreach (Egami.Operations.LutInterpolation mode in Enum.GetValues<Egami.Operations.LutInterpolation>())
+    {
+        image.Apply(ops => ops.ApplyFilter(Egami.Operations.ColorFilter.FromLut(lut, mode)));
     }
 }
 
