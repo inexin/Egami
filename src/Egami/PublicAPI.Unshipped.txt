@@ -496,6 +496,38 @@ Egami.Metadata.XmpStruct.TryGetDate(Egami.Metadata.XmpName name, out System.Date
 Egami.Metadata.XmpStruct.TryGetInt(Egami.Metadata.XmpName name, out long value) -> bool
 Egami.Metadata.XmpStruct.TryGetRational(Egami.Metadata.XmpName name, out double value) -> bool
 Egami.Metadata.XmpStruct.XmpStruct() -> void
+Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Add = 25 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Clear = 1 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Color = 29 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.ColorBurn = 20 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.ColorDodge = 19 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Darken = 17 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Destination = 3 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.DestinationAtop = 10 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.DestinationIn = 6 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.DestinationOut = 8 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.DestinationOver = 4 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Difference = 23 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Exclusion = 24 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.HardLight = 21 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Hue = 27 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Lighten = 18 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Luminosity = 30 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Modulate = 13 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Multiply = 14 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Overlay = 16 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Plus = 12 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Saturation = 28 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Screen = 15 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.SoftLight = 22 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Source = 2 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.SourceAtop = 9 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.SourceIn = 5 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.SourceOut = 7 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.SourceOver = 0 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Subtract = 26 -> Egami.Operations.BlendMode
+Egami.Operations.BlendMode.Xor = 11 -> Egami.Operations.BlendMode
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, double? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Pixels.Abgr8
