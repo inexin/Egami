@@ -50,6 +50,25 @@ public class MetadataCorpusTests
         }
     }
 
+    /// <summary>The Unedited round trips gate: EXIF, IPTC, XMP and Photoshop resources come back byte for byte in their own format.</summary>
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void UneditedBlocksSurviveASave(string file)
+    {
+        using Raster raster = Raster.Load(MetadataCorpus.Bytes(file));
+        using MemoryStream saved = new();
+        raster.Save(saved, raster.Metadata.FormatName!);
+        using Raster again = Raster.Load(saved.ToArray());
+        Assert.Equal(raster.Metadata.Exif?.ToBytes().ToArray(), again.Metadata.Exif?.ToBytes().ToArray());
+        Assert.Equal(raster.Metadata.Iptc?.ToBytes().ToArray(), again.Metadata.Iptc?.ToBytes().ToArray());
+        Assert.Equal(raster.Metadata.Xmp.ToArray(), again.Metadata.Xmp.ToArray());
+        if (raster.Metadata.FormatDetails is JpegDetails jpeg)
+        {
+            Assert.Equal(jpeg.PhotoshopResources.ToArray(), ((JpegDetails)again.Metadata.FormatDetails!).PhotoshopResources.ToArray());
+            Assert.Equal(jpeg.ExtendedXmp.ToArray(), ((JpegDetails)again.Metadata.FormatDetails!).ExtendedXmp.ToArray());
+        }
+    }
+
     /// <summary>
     /// The stale-thumbnail gap task 1 confirmed: auto-orienting a phone photo (orientation 6) kept the IFD1 thumbnail, still in
     /// the old orientation, while IFD0 said 1. Task 8 drops it (the Stale thumbnail fix gate: no IFD1 left after save).

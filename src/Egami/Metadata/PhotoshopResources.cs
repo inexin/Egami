@@ -71,7 +71,7 @@ internal static class PhotoshopResources
 
     /// <summary>
     /// Returns the block with its IPTC resource replaced by <paramref name="iim"/> (removed when empty, added at the end when the
-    /// block had none) and an IPTC digest that matches. Every other resource keeps its bytes. A damaged block is returned as it
+    /// block had none) and an IPTC digest that matches (added when the block had none). Every other resource keeps its bytes. A damaged block is returned as it
     /// was, since its resources cannot be told apart.
     /// </summary>
     public static byte[] WithIptc(ReadOnlySpan<byte> block, ReadOnlySpan<byte> iim)
@@ -83,7 +83,7 @@ internal static class PhotoshopResources
         }
 
         using MemoryStream stream = new();
-        bool wroteIptc = false;
+        bool wroteIptc = false, wroteDigest = false;
         foreach (Resource r in resources)
         {
             if (r.Id == IptcId)
@@ -96,9 +96,10 @@ internal static class PhotoshopResources
             }
             else if (r.Id == IptcDigestId)
             {
-                if (!iim.IsEmpty)
+                if (!iim.IsEmpty && !wroteDigest)
                 {
                     Write(stream, IptcDigestId, Digest(iim));
+                    wroteDigest = true;
                 }
             }
             else
@@ -117,6 +118,12 @@ internal static class PhotoshopResources
         if (!wroteIptc && !iim.IsEmpty)
         {
             Write(stream, IptcId, iim);
+        }
+
+        // A digest that matches, so Photoshop and Lightroom trust the new IPTC; added when the block had none.
+        if (!wroteDigest && !iim.IsEmpty)
+        {
+            Write(stream, IptcDigestId, Digest(iim));
         }
 
         return stream.ToArray();

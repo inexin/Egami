@@ -65,6 +65,17 @@ public class PhotoshopResourceTests
     }
 
     [Fact]
+    public void AnEditAddsTheDigestWhenTheBlockHadNone()
+    {
+        byte[] original = MetadataCorpus.Bytes("synthetic/iptc-utf8.jpg");
+        Assert.DoesNotContain((ushort)0x0425, Resources(Block(original)).Keys);
+        using Raster raster = Raster.Load(original);
+        raster.Metadata.Iptc!.Set(IptcKey.City, "Oslo");
+        Dictionary<ushort, byte[]> after = Resources(Block(Save(raster)));
+        Assert.Equal(Md5(after[0x0404]), after[0x0425]);
+    }
+
+    [Fact]
     public void LargeIptcIsSplitAcrossSegments()
     {
         using Raster raster = Raster.Load(MetadataCorpus.Bytes("synthetic/iptc-large.jpg"));
