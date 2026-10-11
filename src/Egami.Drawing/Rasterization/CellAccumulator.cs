@@ -5,13 +5,18 @@ namespace Egami.Drawing.Rasterization;
 /// <summary>
 /// Walks fixed-point edges through one band's rows and cells, adding each piece's cover (signed height) and area (height times
 /// the sum of its x positions within the cell) to the cell it lies in. Consecutive pieces in the same cell merge before they are
-/// stored. Coordinates are 24.8 fixed point relative to the area's top-left corner.
+/// stored. Coordinates are 24.8 fixed point in absolute device pixels. The walk clips to the area's columns: cells left of it fold
+/// into its first column with no area of their own (only their winding reaches the pixels to their right), and cells right of it
+/// are dropped. Where an edge crosses a column side is computed by one formula from the piece's ends, as the full walk would, so a
+/// clipped shape has exactly the unclipped shape's pixels inside the clip.
 /// </summary>
 internal ref struct CellAccumulator
 {
     private readonly Workspace _workspace;
     private readonly int _bandStart;
     private readonly int _rows;
+    private readonly int _left;
+    private readonly int _right;
     private Span<Cell> _cells;
     private Span<int> _heads;
     private int _count;
@@ -20,11 +25,13 @@ internal ref struct CellAccumulator
     private int _cover;
     private int _area;
 
-    internal CellAccumulator(Workspace workspace, int bandStart, int rows)
+    internal CellAccumulator(Workspace workspace, int bandStart, int rows, int left, int right)
     {
         _workspace = workspace;
         _bandStart = bandStart;
         _rows = rows;
+        _left = left;
+        _right = right;
         _heads = workspace.RowHeads.Get(rows);
         _heads.Fill(-1);
         _cells = workspace.Cells.All;
@@ -97,6 +104,17 @@ internal ref struct CellAccumulator
         if (ca == cb)
         {
             int h = fyb - fya;
+            if (ca >= _right)
+            {
+                return;
+            }
+
+            if (ca < _left)
+            {
+                Add(row, _left, direction * h, 0);
+                return;
+            }
+
             Add(row, ca, direction * h, direction * h * ((xa - (ca << 8)) + (xb - (ca << 8))));
             return;
         }
@@ -104,11 +122,47 @@ internal ref struct CellAccumulator
         long ddx = xb - (long)xa, ddy = fyb - fya;
         int step = xb > xa ? 1 : -1;
         int x = xa, y = fya, c = ca;
+        if (step > 0 && c < _left)
+        {
+            // Everything left of the area only winds: one cover for the whole stretch, up to where the edge enters.
+            if (cb < _left)
+            {
+                Add(row, _left, direction * (fyb - fya), 0);
+                return;
+            }
+
+            int boundary = _left << 8;
+            int by = Math.Clamp(fya + (int)RoundDivide(ddy * (boundary - xa), ddx), y, fyb);
+            Add(row, _left, direction * (by - y), 0);
+            (x, y, c) = (boundary, by, _left);
+        }
+        else if (step < 0 && c >= _right)
+        {
+            if (cb >= _right)
+            {
+                return;
+            }
+
+            int boundary = _right << 8;
+            int by = Math.Clamp(fya + (int)RoundDivide(ddy * (boundary - xa), ddx), y, fyb);
+            (x, y, c) = (boundary, by, _right - 1);
+        }
+
         while (c != cb)
         {
+            if (step > 0 && c >= _right)
+            {
+                return;
+            }
+
+            if (step < 0 && c < _left)
+            {
+                Add(row, _left, direction * (fyb - y), 0);
+                return;
+            }
+
             int boundary = step > 0 ? (c + 1) << 8 : c << 8;
-            int by = fya + (int)RoundDivide(ddy * (boundary - xa), ddx);
-            by = Math.Clamp(by, y, fyb);
+            int by = Math.Clamp(fya + (int)RoundDivide(ddy * (boundary - xa), ddx), y, fyb);
             int h = by - y;
             int local = c << 8;
             Add(row, c, direction * h, direction * h * ((x - local) + (boundary - local)));
@@ -118,6 +172,17 @@ internal ref struct CellAccumulator
         }
 
         int rest = fyb - y;
+        if (cb >= _right)
+        {
+            return;
+        }
+
+        if (cb < _left)
+        {
+            Add(row, _left, direction * rest, 0);
+            return;
+        }
+
         int cellLeft = cb << 8;
         Add(row, cb, direction * rest, direction * rest * ((x - cellLeft) + (xb - cellLeft)));
     }

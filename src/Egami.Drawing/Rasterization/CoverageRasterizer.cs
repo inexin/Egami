@@ -32,6 +32,9 @@ internal sealed class CoverageRasterizer : IDisposable
     /// <summary>Constant runs at least this long go to <see cref="ISpanSink.Fill"/> instead of being written out byte by byte.</summary>
     private const int FillRun = 16;
 
+    /// <summary>The guard box's half-size in pixels: 2²² keeps every 24.8 coordinate within an int.</summary>
+    private const double Guard = 1 << 22;
+
     /// <summary>One pixel of winding: 256 subpixels of cover times 2·256 for the doubled area.</summary>
     private const int FullCover = 256 << 9;
 
@@ -134,15 +137,16 @@ internal sealed class CoverageRasterizer : IDisposable
     }
 
     /// <summary>
-    /// Clips each edge to the area's rows, and moves the parts left of the area onto its left side as vertical lines, which keeps
-    /// their winding for the pixels to the right; parts right of the area cannot affect it and are dropped. All of this happens in
-    /// double precision before the conversion to fixed point, so huge coordinates cannot overflow.
+    /// Converts the edges to 24.8 fixed point in absolute device pixels. Only a guard box far outside any raster is clipped here, in
+    /// double precision, so huge coordinates cannot overflow; parts left of it become vertical lines that keep their winding, and
+    /// parts right of it are dropped. The clip is applied by the cell walk itself, which gives a clipped shape exactly the pixels of
+    /// the unclipped one inside the clip. Edges wholly above, below or right of the area cannot reach it and are skipped.
     /// </summary>
     private void PrepareLines(EdgeList edges, Rect area)
     {
         _lineCount = 0;
         ReadOnlySpan<float> c = edges.Coordinates;
-        double top = area.Y, bottom = area.Bottom, left = area.X, right = area.Right;
+        double top = area.Y, bottom = area.Bottom, right = area.Right;
         for (int i = 0; i < c.Length; i += 4)
         {
             double x0 = c[i], y0 = c[i + 1], x1 = c[i + 2], y1 = c[i + 3];
@@ -151,79 +155,61 @@ internal sealed class CoverageRasterizer : IDisposable
                 continue;
             }
 
-            // Cut to the rows.
+            if (Math.Abs(x0) <= Guard && Math.Abs(x1) <= Guard && Math.Abs(y0) <= Guard && Math.Abs(y1) <= Guard)
+            {
+                AddFixed(x0, y0, x1, y1);
+                continue;
+            }
+
+            // Cut to the guard's rows, then split where the edge crosses its sides; pieces left of it become vertical.
             double dxdy = (x1 - x0) / (y1 - y0);
-            if (y0 < top)
-            {
-                x0 += (top - y0) * dxdy;
-                y0 = top;
-            }
-            else if (y0 > bottom)
-            {
-                x0 += (bottom - y0) * dxdy;
-                y0 = bottom;
-            }
-
-            if (y1 < top)
-            {
-                x1 += (top - y1) * dxdy;
-                y1 = top;
-            }
-            else if (y1 > bottom)
-            {
-                x1 += (bottom - y1) * dxdy;
-                y1 = bottom;
-            }
-
-            // Split where the edge crosses the left and right sides, then clamp: pieces left of the area become vertical.
-            double dydx = (y1 - y0) / (x1 - x0);
+            (x0, y0) = ClampRow(x0, y0, dxdy);
+            (x1, y1) = ClampRow(x1, y1, dxdy);
             Span<double> cuts = [0, 0];
+            Span<double> sides = [0, 0];
             int n = 0;
-            foreach (double side in (ReadOnlySpan<double>)[left, right])
+            foreach (double side in (ReadOnlySpan<double>)[-Guard, Guard])
             {
                 if ((x0 < side && x1 > side) || (x0 > side && x1 < side))
                 {
-                    cuts[n++] = y0 + ((side - x0) * dydx);
+                    cuts[n] = y0 + ((side - x0) * (y1 - y0) / (x1 - x0));
+                    sides[n++] = side;
                 }
             }
 
             if (n == 2 && (cuts[0] > cuts[1]) == (y1 > y0))
             {
                 (cuts[0], cuts[1]) = (cuts[1], cuts[0]);
+                (sides[0], sides[1]) = (sides[1], sides[0]);
             }
 
             double px = x0, py = y0;
             for (int k = 0; k <= n; k++)
             {
                 double qy = k < n ? cuts[k] : y1;
-                double qx = k < n ? x0 + ((qy - y0) * dxdy) : x1;
-                if (k < n)
+                double qx = k < n ? sides[k] : x1;
+                double mid = (px + qx) / 2;
+                if (mid < Guard)
                 {
-                    // Land exactly on the side the cut was made at.
-                    qx = Math.Abs(qx - left) < Math.Abs(qx - right) ? left : right;
+                    bool left = mid <= -Guard;
+                    AddFixed(left ? -Guard : px, py, left ? -Guard : qx, qy);
                 }
 
-                AddSegment(px, py, qx, qy, left, right, area);
                 px = qx;
                 py = qy;
             }
         }
+
+        static (double X, double Y) ClampRow(double x, double y, double dxdy)
+        {
+            double clamped = Math.Clamp(y, -Guard, Guard);
+            return (x + ((clamped - y) * dxdy), clamped);
+        }
     }
 
-    private void AddSegment(double x0, double y0, double x1, double y1, double left, double right, Rect area)
+    private void AddFixed(double x0, double y0, double x1, double y1)
     {
-        double mid = (x0 + x1) / 2;
-        if (mid >= right)
-        {
-            return;
-        }
-
-        if (mid <= left)
-        {
-            x0 = x1 = left;
-        }
-
-        int fx0 = Fixed(x0 - area.X), fy0 = Fixed(y0 - area.Y), fx1 = Fixed(x1 - area.X), fy1 = Fixed(y1 - area.Y);
+        int fy0 = Fixed(y0), fy1 = Fixed(y1);
         if (fy0 == fy1)
         {
             return;
@@ -235,9 +221,9 @@ internal sealed class CoverageRasterizer : IDisposable
         }
 
         Span<int> l = _lines.AsSpan(_lineCount * 4, 4);
-        l[0] = fx0;
+        l[0] = Fixed(x0);
         l[1] = fy0;
-        l[2] = fx1;
+        l[2] = Fixed(x1);
         l[3] = fy1;
         _lineCount++;
     }
@@ -250,9 +236,9 @@ internal sealed class CoverageRasterizer : IDisposable
         Workspace workspace = _workspaces.Rent();
         try
         {
-            CellAccumulator cells = new(workspace, start, end - start);
+            CellAccumulator cells = new(workspace, area.Y + start, end - start, area.X, area.Right);
             ReadOnlySpan<int> lines = _lines.AsSpan(0, _lineCount * 4);
-            int bandTop = start << 8, bandBottom = end << 8;
+            int bandTop = (area.Y + start) << 8, bandBottom = (area.Y + end) << 8;
             for (int i = 0; i < lines.Length; i += 4)
             {
                 int y0 = lines[i + 1], y1 = lines[i + 3];
@@ -315,7 +301,7 @@ internal sealed class CoverageRasterizer : IDisposable
         int next = 0;
         while (i < cells.Length)
         {
-            int x = cells[i].X;
+            int x = cells[i].X - originX;
             if (x >= width)
             {
                 break;
@@ -329,7 +315,7 @@ internal sealed class CoverageRasterizer : IDisposable
 
             int area = 0;
             int cellCover = 0;
-            while (i < cells.Length && cells[i].X == x)
+            while (i < cells.Length && cells[i].X - originX == x)
             {
                 cellCover += cells[i].Cover;
                 area += cells[i].Area;
