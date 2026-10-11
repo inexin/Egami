@@ -47,6 +47,13 @@ public sealed class OperationCoverageTests : IDisposable
         ["Transform-Linear"] = (_, _) => ops => ops.Transform(System.Numerics.Matrix3x2.CreateScale(0.6f, -0.7f), new TransformOptions { ColorSpace = ColorSpace.Linear, Edges = EdgeMode.Mirror }),
         ["QuadDistort"] = (s, _) => ops => ops.QuadDistort(new(s.Width * 0.2f, 0), new(s.Width * 0.8f, s.Height * 0.1f), new(s.Width, s.Height), new(0, s.Height * 0.9f), new TransformOptions { Background = Rgba8.White }),
         ["Skew"] = (_, _) => ops => ops.Skew(20, -5, new TransformOptions { Filter = ResampleFilter.Lanczos3 }),
+        ["Warp-Swirl"] = (_, _) => ops => ops.Warp(Warps.Swirl(100)),
+        ["Warp-Barrel-Linear"] = (_, _) => ops => ops.Warp(Warps.Barrel(0.02, -0.1, 0), new SamplingOptions { ColorSpace = ColorSpace.Linear, Edges = EdgeMode.Mirror }),
+        ["Warp-Polar"] = (_, _) => ops => ops.Warp(Warps.Polar(-1)),
+        ["Warp-Wave"] = (_, _) => ops => ops.Warp(Warps.Wave(3, 9), new SamplingOptions { Background = Rgba8.White }),
+        ["Displace"] = (s, _) => ops => ops.Displace(MapFor(s), 8, -6, ColorChannel.Blue, ColorChannel.Luminance),
+        ["Offset"] = (s, _) => ops => ops.Offset((s.Width / 3) + 1, -2),
+        ["Tile"] = (s, _) => ops => ops.Tile((s.Width * 2) + 1, s.Height + 3, new Point(-1, 2)),
         ["FillColor"] = (s, _) => ops => ops.FillColor(Rgba8.Lime, new Rect(0, 0, Half(s.Width), Half(s.Height))),
         ["Color-Matrix"] = (_, _) => ops => ops.Brightness(1.1f).Contrast(1.2f).Saturation(1.3f).HueRotate(20),
         ["Color-Tables"] = (_, _) => ops => ops.Brightness(1.1f).Invert(0.2f).Opacity(0.8f),
@@ -146,6 +153,14 @@ public sealed class OperationCoverageTests : IDisposable
 
         return fewest;
     }
+
+    /// <summary>A displacement map of the given size, made once per size and kept for the test run.</summary>
+    private static Raster<Rgba8> MapFor(Size size)
+    {
+        return Maps.GetOrAdd(size, s => Noise(s.Width, s.Height, EgamiContext.Default));
+    }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Size, Raster<Rgba8>> Maps = new();
 
     private static int Half(int size) => Math.Max(1, size / 2);
 

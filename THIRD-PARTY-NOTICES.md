@@ -75,3 +75,44 @@ WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
 LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 ```
+
+## ImageMagick distortions
+
+Egami's built-in warps (`src/Egami/Operations/Warps.cs`: Barrel, BarrelInverse, Polar, DePolar, Arc, Swirl, Implode and Wave) are
+defined to give the same mapping as ImageMagick's `-distort`, `-swirl`, `-implode` and `-wave`, so ImageMagick's documentation
+describes their parameters. Their formulas, defaults and best-fit canvas sizes were taken from ImageMagick's documentation and
+studied in its source (`MagickCore/distort.c`, `MagickCore/visual-effects.c`) for that purpose. ImageMagick is distributed under
+the ImageMagick License (https://imagemagick.org/script/license.php):
+
+    Copyright @ 1999 ImageMagick Studio LLC, a non-profit organization dedicated to making software imaging solutions freely
+    available.
+
+    Licensed under the ImageMagick License (the "License"); you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at https://imagemagick.org/script/license.php
+
+    Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+    language governing permissions and limitations under the License.
+
+## Skia magnifier
+
+`Warps.Magnifier` gives the same mapping as Skia's magnifier image filter, whose weighting was studied in Skia's
+`sk_magnifier` shader (`src/sksl/sksl_rt_shader.sksl`) and `SkMagnifierImageFilter.cpp`. Skia is distributed under the BSD
+3-clause license:
+
+    Copyright (c) 2011 Google Inc. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+    following conditions are met: redistributions of source code must retain the above copyright notice, this list of
+    conditions and the following disclaimer; redistributions in binary form must reproduce the above copyright notice, this
+    list of conditions and the following disclaimer in the documentation and/or other materials provided with the
+    distribution; neither the name of Google Inc. nor the names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+    USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+    OF THE POSSIBILITY OF SUCH DAMAGE.

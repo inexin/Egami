@@ -12,8 +12,8 @@ internal static class ResampleKernels
         {
             ResampleFilter.Nearest => 0,
             ResampleFilter.Box => 0.5,
-            ResampleFilter.Bilinear => 1,
-            ResampleFilter.Bicubic or ResampleFilter.Mitchell => 2,
+            ResampleFilter.Bilinear or ResampleFilter.Hermite => 1,
+            ResampleFilter.Bicubic or ResampleFilter.Mitchell or ResampleFilter.Lanczos2 or ResampleFilter.Gaussian or ResampleFilter.Spline => 2,
             ResampleFilter.Lanczos3 => 3,
             _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
         };
@@ -40,6 +40,15 @@ internal static class ResampleKernels
                 return Cubic(x, b: 1 / 3.0, c: 1 / 3.0);
             case ResampleFilter.Lanczos3:
                 return x < 3 ? Sinc(x) * Sinc(x / 3) : 0;
+            case ResampleFilter.Lanczos2:
+                return x < 2 ? Sinc(x) * Sinc(x / 2) : 0;
+            case ResampleFilter.Hermite:
+                return Cubic(x, b: 0, c: 0);
+            case ResampleFilter.Gaussian:
+                // σ = ½: exp(−x² / 2σ²). Weights are normalized, so the Gaussian's own scale factor is left out, as ImageMagick does.
+                return x < 2 ? Math.Exp(-2 * x * x) : 0;
+            case ResampleFilter.Spline:
+                return Cubic(x, b: 1, c: 0);
             default:
                 return x < 0.5 ? 1 : 0;
         }

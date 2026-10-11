@@ -22,7 +22,7 @@ public sealed class RectScopeTests : IDisposable
             using Raster<Rgba8> logo = OperationCoverageTests.Logo();
             RasterOps ops = Record(chain(size, logo));
             // Moves and transforms work in the area's own coordinates, so they are not the whole-image result kept in the area.
-            bool moving = moves.Contains(name) || ((string[])["Rotate", "Transform", "QuadDistort", "Skew"]).Any(p => name.StartsWith(p, StringComparison.Ordinal));
+            bool moving = moves.Contains(name) || ((string[])["Rotate", "Transform", "QuadDistort", "Skew", "Warp", "Displace", "Offset", "Tile"]).Any(p => name.StartsWith(p, StringComparison.Ordinal));
             if (!moving && ops.Steps.All(s => s.OutputSize(size) == size))
             {
                 data.Add(name);

@@ -41,4 +41,41 @@ public class Crops
         Assert.Equal((busy.Width, busy.Height), (cropped.Width, cropped.Height));
         Assert.True(cropped.Width < 900);
     }
+
+    [Fact]
+    public void ManySizesFromOneMipChain()
+    {
+        using SampleFiles files = new();
+        using Raster photo = Raster.Load("egret.png");
+
+        #region mip-chain
+        // A responsive image set: one chain, then each width from the smallest level at least twice its size.
+        using MipChain chain = MipChain.Build(photo);
+        foreach (int width in (int[])[320, 240, 160, 120, 80])
+        {
+            using Raster thumbnail = chain.Fit(width, width, ResampleFilter.Lanczos2);
+            thumbnail.Save($"egret-{width}.png");
+        }
+        #endregion
+
+        Assert.True(File.Exists("egret-80.png"));
+    }
+
+    [Fact]
+    public void StraightenAPage()
+    {
+        using SampleFiles files = new();
+        using Raster photo = Raster.Load("duck.png");
+
+        #region deskew
+        // Measure the tilt first, if you want to show it or decide yourself...
+        float tilt = photo.DetectSkew(maxAngle: 10);
+
+        // ...or straighten in one step, keeping the page size with white corners.
+        using Raster straight = photo.Derive(ops => ops.Deskew(background: Rgba8.White), Ct);
+        #endregion
+
+        Assert.Equal(0, tilt);
+        Assert.Equal(photo.Width, straight.Width);
+    }
 }

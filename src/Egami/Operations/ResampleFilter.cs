@@ -23,6 +23,26 @@ public enum ResampleFilter
 
     /// <summary>A three-lobe windowed sinc: the sharpest, with the most ringing, and the slowest.</summary>
     Lanczos3,
+
+    /// <summary>
+    /// A two-lobe windowed sinc, sinc(x)·sinc(x / 2) out to 2 pixels, as ImageMagick's Lanczos2: nearly as sharp as Lanczos3 with
+    /// less ringing, and faster.
+    /// </summary>
+    Lanczos2,
+
+    /// <summary>
+    /// The Hermite cubic (B = C = 0), 2|x|³ − 3|x|² + 1 out to 1 pixel: smooth like Bilinear when enlarging, without its corners,
+    /// and no ringing.
+    /// </summary>
+    Hermite,
+
+    /// <summary>
+    /// A Gaussian with σ = ½, exp(−2x²), out to 2 pixels, as ImageMagick's Gaussian filter: soft, with no ringing at all.
+    /// </summary>
+    Gaussian,
+
+    /// <summary>The cubic B-spline (B = 1, C = 0) out to 2 pixels: the smoothest cubic, with no ringing and noticeable blur.</summary>
+    Spline,
 }
 
 /// <summary>The color space in which resizing, blurs and grayscale blend colors: the stored sRGB-encoded values, or linear light.</summary>

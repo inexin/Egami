@@ -45,6 +45,34 @@ public abstract partial class Raster
         return Accept(new EntropyVisitor(threshold));
     }
 
+    /// <summary>
+    /// Returns the tilt of the first frame's text lines or other strong horizontal structure, in degrees clockwise, to 0.05°:
+    /// <see cref="Operations.RasterOps.Deskew"/> turns the image back by it. A gray copy about 1,500 pixels on its long side is
+    /// binarized with Otsu's threshold and every angle up to <paramref name="maxAngle"/> is scored by how sharply the ink's
+    /// projection piles up in rows (Postl's projection-profile method).
+    /// </summary>
+    /// <param name="maxAngle">The largest tilt looked for, in degrees, more than 0 and at most 45.</param>
+    /// <returns>The tilt, or 0 when no angle stands out clearly from level (a picture, noise, or an already straight page).</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxAngle"/> is out of range.</exception>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Crops.cs" region="deskew"/>
+    /// </example>
+    public float DetectSkew(float maxAngle = 15)
+    {
+        Operations.RasterOps.CheckMaxAngle(maxAngle);
+        return Accept(new SkewVisitor(maxAngle));
+    }
+
+    private sealed class SkewVisitor(float maxAngle) : IRasterVisitor<float>
+    {
+        public float Visit<TPixel>(Raster<TPixel> raster)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            return (float)SkewDetector.Detect(raster.Frames[0].Plane, maxAngle, CancellationToken.None);
+        }
+    }
+
     private sealed class TrimVisitor(float tolerance, Rgba8? color) : IRasterVisitor<Rect>
     {
         public Rect Visit<TPixel>(Raster<TPixel> raster)

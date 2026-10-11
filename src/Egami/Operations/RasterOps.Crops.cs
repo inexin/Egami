@@ -49,4 +49,33 @@ public sealed partial class RasterOps
 
         return Add(new EntropyCropOperation(threshold));
     }
+
+    /// <summary>
+    /// Straightens a scanned or photographed page: detects the tilt of its text lines (see <see cref="Raster.DetectSkew"/>) and
+    /// turns the image back by it. Every frame is turned by the first frame's angle; an image with no clear lines is left as it is.
+    /// </summary>
+    /// <param name="maxAngle">The largest tilt looked for, in degrees, more than 0 and at most 45.</param>
+    /// <param name="background">The color of the uncovered corners, or <see langword="null"/> (the default) for the top-left pixel's, the border color Trim would use.</param>
+    /// <param name="keepSize">Whether the page keeps its size (the default, as a scanner user expects), or the canvas grows to the turned bounds as Rotate does.</param>
+    /// <param name="filter">The resampling kernel for the turn.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxAngle"/> is out of range, or <paramref name="filter"/> is not defined.</exception>
+    /// <remarks>The angle depends on the pixels, so the chain runs up to the deskew and measures; it cannot run inside <c>Within</c>.</remarks>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Crops.cs" region="deskew"/>
+    /// </example>
+    public RasterOps Deskew(float maxAngle = 15, Rgba8? background = null, bool keepSize = true, ResampleFilter filter = ResampleFilter.Bicubic)
+    {
+        CheckMaxAngle(maxAngle);
+        CheckFilter(filter, ColorSpace.Encoded);
+        return Add(new DeskewOperation(maxAngle, background, keepSize, filter));
+    }
+
+    internal static void CheckMaxAngle(float maxAngle)
+    {
+        if (!(maxAngle > 0 && maxAngle <= 45))
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxAngle), maxAngle, "The largest angle must be more than 0 and at most 45 degrees.");
+        }
+    }
 }
