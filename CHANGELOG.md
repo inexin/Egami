@@ -24,6 +24,20 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   `MaxParallelism` threads, with the same bytes. Files are within 1% of the reference library's size at the same settings, and libtiff,
   ImageMagick and Pillow read them all. JPEG compression of CMYK waits for the JPEG writer's CMYK support.
 
+### WebP
+
+- `WebpFormat` reads and writes WebP: lossless (VP8L), lossy (VP8) with or without alpha, and animated, with no native code.
+  Lossless files decode to libwebp's pixels exactly; lossy files to libwebp's YUV planes sample for sample and to RGB within one
+  level (`YuvRaster.Load` returns the planes); animations compose every frame as libwebp's animation decoder does. Every kind
+  streams through `RasterDecoder`, incrementally too, and an animation holds one canvas whatever its frame count.
+- `WebpWriterOptions`: `Lossless` (by default a WebP source keeps its kind and anything else is lossy), `Quality` and `Effort` with
+  cwebp's meanings, `AlphaQuality`, `KeepTransparentColors`, `SharpYuv`, `NearLossless`, `MixedFrames` and `FirstFrameOnly`. At
+  quality 75 and effort 4 lossy files are the reference library's size at the same quality, written twice as fast; lossless files are 4 to 9%
+  smaller than the reference library's at every effort. Animations store changed rectangles; a GIF or APNG converts with Load and Save.
+- `WebpReaderOptions.UseBackgroundColor` starts animations from the ANIM color, and `FastUpsampling` repeats chroma samples.
+  `WebpDetails` and `WebpFrameDetails` say what a file held and keep unknown chunks (`WebpChunk`, `WebpChunkPosition`) for round
+  trips. ICC, EXIF and XMP are read and written; the resolution travels in EXIF.
+
 ### Several images in one file
 
 - `Raster.LoadAll` and `LoadAllAsync` return a `RasterList` of every image in a file, each at its own size and pixel type;

@@ -25,6 +25,17 @@ counted against `MaxTotalBytes`, so a slow client never holds a thread.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#batch-convert)]
 
+## Convert images to WebP for the web
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#webp-web)]
+
+Quality and Effort mean what cwebp's `-q` and `-m` mean; lossless keeps every pixel. See the [WebP guide](../guides/webp.md) for
+the other options.
+
+## Turn an animated GIF into WebP
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Webp.cs#webp-animation)]
+
 ## Make an animated GIF from frames
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#gif-from-frames)]

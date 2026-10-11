@@ -1,6 +1,7 @@
 using Egami.Formats;
 using Egami.Formats.Gif;
 using Egami.Formats.Jpeg;
+using Egami.Formats.Webp;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -23,6 +24,26 @@ public class Cookbook
         #endregion
 
         Assert.True(Raster.Probe("thumb.jpg").Width <= 400);
+    }
+
+    [Fact]
+    public void WebpForTheWeb()
+    {
+        using SampleFiles files = new();
+
+        #region webp-web
+        // Photos as lossy WebP, graphics with few colors as lossless: Probe reads only the header to tell them apart.
+        foreach (string path in new[] { "duck.png", "egret.png" })
+        {
+            using Raster image = Raster.Load(path);
+            bool photo = image.Width * image.Height > 100_000;
+            image.Save(Path.ChangeExtension(path, ".webp"), photo
+                ? new WebpWriterOptions { Quality = 80, Effort = 4 }
+                : new WebpWriterOptions { Lossless = true, Effort = 6 });
+        }
+        #endregion
+
+        Assert.True(File.Exists("duck.webp"));
     }
 
     [Fact]
