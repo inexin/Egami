@@ -73,6 +73,22 @@ public class Tiff
     }
 
     [Fact]
+    public void Split()
+    {
+        using SampleFiles files = new();
+
+        #region tiff-split
+        using RasterList pages = Raster.LoadAll("scan.tif");
+        for (int i = 0; i < pages.Count; i++)
+        {
+            pages[i].Save($"page-{i + 1}.png");
+        }
+        #endregion
+
+        Assert.True(File.Exists("page-3.png"));
+    }
+
+    [Fact]
     public void Save()
     {
         using SampleFiles files = new();

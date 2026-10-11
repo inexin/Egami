@@ -7,6 +7,30 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### TIFF
+
+- `TiffFormat` reads classic TIFF and BigTIFF: strips and tiles, chunky and planar, 1 to 64-bit integer and float samples, in
+  gray, palette, RGB, CMYK and other inks, YCbCr, CIELab, ICCLab, ITULab and LogLuv. Codecs: LZW, Deflate, PackBits, CCITT RLE,
+  Group 3 and Group 4, JPEG and old-style JPEG, WebP, ThunderScan and SGILog, with both predictors and either fill order. Every
+  file in the test corpus and in libtiff's sample images decodes as libtiff does. Damaged files and IFD loops throw
+  `CorruptDataException`, within `SafetyLimits`.
+- `Raster.Load` reads the first full-resolution page, or `TiffReaderOptions.Page`; a `MinimumSize` read takes a SubIFD or reduced
+  page of exactly the right size instead of decoding full size. Rows stream for strip and tile files alike. Exif, GPS, IPTC, XMP,
+  ICC and resolution come from the page's tags; tags Egami doesn't model are kept in `TiffDetails.OtherTags` and written back.
+- `TiffWriterOptions` writes uncompressed, LZW, Deflate, PackBits, CCITT Group 3 and 4, JPEG (gray and RGB) and WebP, with
+  predictors, strips or tiles, classic or BigTIFF (`Layout`), and `Reduce` for the smallest exact form (1-bit, gray, palette).
+  Each pixel type is written at its own depth. A TIFF source's compression, predictor, layout and byte order are kept unless set;
+  a lossy compression is kept only while the pixels are unchanged. `ParallelCompression` compresses strips and tiles on up to
+  `MaxParallelism` threads, with the same bytes. Files are within 1% of the reference library's size at the same settings, and libtiff,
+  ImageMagick and Pillow read them all. JPEG compression of CMYK waits for the JPEG writer's CMYK support.
+
+### Several images in one file
+
+- `Raster.LoadAll` and `LoadAllAsync` return a `RasterList` of every image in a file, each at its own size and pixel type;
+  single-image formats give a list of one. The list disposes its rasters; `Detach` keeps one. `RasterInfo.ImageCount` says how
+  many there are without decoding.
+- `Raster.SaveAll` and `SaveAllAsync` write several rasters as one multi-page TIFF; a format that holds one image takes one.
+
 ### Geometry
 
 - `Transform` takes an affine `Matrix3x2`, a perspective `Homography` or a `Matrix4x4` projected as CSS `matrix3d` draws a flat

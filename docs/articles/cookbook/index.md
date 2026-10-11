@@ -179,6 +179,22 @@ Barrel takes the PanoTools coefficients a lens database such as lensfun gives fo
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Combining.cs#sprite-sheet)]
 
+## Split a multi-page scan into PNGs
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-split)]
+
+Each page keeps its own size and pixel type; see [TIFF](../guides/tiff.md#reading).
+
+## Combine pages into one TIFF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-save-all)]
+
+## Archive a black-and-white page as a fax
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-fax)]
+
+Group 4 is the usual choice for scanned text; it takes 1-bit pages only, so threshold first or set `Reduce`.
+
 ## Strip metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]
