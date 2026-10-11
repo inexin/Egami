@@ -308,7 +308,7 @@ public static class TestFormat
             {
                 if (input.Read(MemoryMarshal.AsBytes(row.AsSpan())) < row.Length * 4)
                 {
-                    input.Warn(raster, $"The data ends at row {y}.");
+                    input.Warn(raster, "Egt.DataEnded", $"The data ends at row {y}.");
                     for (; y < height; y++)
                     {
                         raster.Row(y).Clear();

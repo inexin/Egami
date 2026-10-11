@@ -14,21 +14,24 @@ internal static class OperationPipeline
 {
     /// <summary>Records the chain from the caller's lambda and plans it, for an image with <paramref name="metadata"/>.</summary>
     /// <returns>The planned steps and the size after each one.</returns>
-    internal static Plan Build(Action<RasterOps> build, Size size, RasterMetadata? metadata = null)
+    internal static Plan Build(Action<RasterOps> build, Size size, RasterMetadata? metadata = null, bool describe = false)
     {
-        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal, metadata is null ? null : metadata.GetColorProfile, metadata?.Hdr);
+        return Build(build, size, metadata?.Exif?.Orientation ?? ImageOrientation.Normal, metadata is null ? null : metadata.GetColorProfile, metadata?.Hdr, describe);
     }
 
     /// <summary>
     /// Records and plans the chain for an image stored with <paramref name="orientation"/>, whose pixels are in the encoding
     /// <paramref name="colorProfile"/> returns (sRGB when <see langword="null"/>); it is asked only if the chain converts color.
     /// </summary>
-    internal static Plan Build(Action<RasterOps> build, Size size, ImageOrientation orientation, Func<Colors.ColorProfile>? colorProfile = null, Colors.HdrMetadata? hdr = null)
+    /// <remarks>With <paramref name="describe"/>, <see cref="Plan.Notes"/> says what the planner changed, for an Info event.</remarks>
+    internal static Plan Build(
+        Action<RasterOps> build, Size size, ImageOrientation orientation, Func<Colors.ColorProfile>? colorProfile = null, Colors.HdrMetadata? hdr = null, bool describe = false)
     {
         ArgumentNullException.ThrowIfNull(build);
         RasterOps ops = new();
         build(ops);
-        List<IRasterOperation> steps = Planner.Plan(ops.Steps, orientation);
+        List<string>? notes = describe ? [] : null;
+        List<IRasterOperation> steps = Planner.Plan(ops.Steps, orientation, notes);
         Colors.ColorProfile? current = null;
         for (int i = 0; i < steps.Count; i++)
         {
@@ -57,7 +60,7 @@ internal static class OperationPipeline
             }
         }
 
-        Plan plan = new(steps, new Size[steps.Count]) { Input = size };
+        Plan plan = new(steps, new Size[steps.Count]) { Input = size, Notes = notes is { Count: > 0 } ? $"The chain of {ops.Steps.Count} steps runs as {steps.Count}: {string.Join(" ", notes)}" : null };
         plan.ComputeSizes(0);
         return plan;
     }
@@ -195,6 +198,9 @@ internal static class OperationPipeline
         /// <summary>Gets the frame size before the first step.</summary>
         internal Size Input { get; init; }
 
+        /// <summary>Gets what the planner changed in the chain, when asked to describe it and it changed something.</summary>
+        internal string? Notes { get; init; }
+
         /// <summary>
         /// Gets the index of the first measured step still to measure, or the step count when there is none: the sizes of that
         /// step and every later one are not known yet.
@@ -319,7 +325,7 @@ internal static class OperationPipeline
     /// </summary>
     private static class Planner
     {
-        internal static List<IRasterOperation> Plan(IReadOnlyList<IRasterOperation> steps, ImageOrientation orientation)
+        internal static List<IRasterOperation> Plan(IReadOnlyList<IRasterOperation> steps, ImageOrientation orientation, List<string>? notes = null)
         {
             List<IRasterOperation> planned = new(steps.Count);
             for (int i = 0; i < steps.Count; i++)
@@ -331,6 +337,7 @@ internal static class OperationPipeline
                     {
                         planned.Add(next.BeforeOrienting(orientation));
                         planned.Add(turn);
+                        notes?.Add("The resize runs before AutoOrient's turn, so fewer pixels are turned.");
                         i++;
                     }
                     else if (turn is not null)
@@ -346,6 +353,7 @@ internal static class OperationPipeline
                 if (steps[i] is CropOperation crop && i + 1 < steps.Count && steps[i + 1] is ResizeOperation resize && !resize.HasCrop)
                 {
                     planned.Add(resize.WithCrop(crop.Rect));
+                    notes?.Add("A crop and the resize after it run as one resampling pass.");
                     i++;
                     continue;
                 }
@@ -353,12 +361,14 @@ internal static class OperationPipeline
                 // Drawing with Destination keeps every pixel as it is.
                 if (steps[i] is Compose.DrawImageOperation { Mode: BlendMode.Destination } or Compose.BlendColorOperation { Mode: BlendMode.Destination })
                 {
+                    notes?.Add("A draw with BlendMode.Destination changes nothing and was dropped.");
                     continue;
                 }
 
                 if (steps[i] is ColorMatrixOperation color && planned.Count > 0 && planned[^1] is ColorMatrixOperation previous)
                 {
                     planned[^1] = previous.Then(color);
+                    notes?.Add("Two neighbouring color steps run as one matrix.");
                     continue;
                 }
 

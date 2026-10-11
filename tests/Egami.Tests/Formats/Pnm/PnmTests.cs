@@ -128,7 +128,7 @@ public class PnmTests(ITestOutputHelper output)
     {
         using Raster raster = Raster.Load(SimpleCorpus.Read("pnm/pam-unknown-tupltype.pam"));
         Assert.Equal(Rgb8.Layout, raster.Layout);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("EGAMI_TEST", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("EGAMI_TEST", StringComparison.Ordinal));
     }
 
     public static TheoryData<string, bool> RoundTripCases() => new()

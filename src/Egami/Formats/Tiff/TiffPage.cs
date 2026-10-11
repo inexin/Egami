@@ -148,7 +148,7 @@ internal sealed class TiffPage
     public TiffNatural Natural { get; private set; }
 
     /// <summary>Gets the warnings building the page gave, for the raster's metadata.</summary>
-    public List<string> Warnings { get; } = [];
+    public WarningList Warnings { get; } = new();
 
     public PixelLayoutInfo Layout => Natural switch
     {
@@ -230,7 +230,7 @@ internal sealed class TiffPage
         {
             // TIFF 6.0 makes it required; libtiff guesses from the samples, and so does Egami, with a warning.
             page.Photometric = page.Samples >= 3 ? 2 : 1;
-            page.Warnings.Add($"The page has no PhotometricInterpretation; it was read as {(page.Samples >= 3 ? "RGB" : "gray")}.");
+            page.Warnings.Add("Tiff.PhotometricMissing", $"The page has no PhotometricInterpretation; it was read as {(page.Samples >= 3 ? "RGB" : "gray")}.");
         }
 
         if (page.Compression is TiffCodes.SgiLog or TiffCodes.SgiLog24 || page.Photometric is 32844 or 32845)
@@ -335,7 +335,7 @@ internal sealed class TiffPage
 
     private int IgnorePredictor()
     {
-        Warnings.Add($"A predictor with {TiffCodes.Name(Compression)} compression means nothing; it was ignored.");
+        Warnings.Add("Tiff.PredictorIgnored", $"A predictor with {TiffCodes.Name(Compression)} compression means nothing; it was ignored.");
         return 1;
     }
 
@@ -428,7 +428,7 @@ internal sealed class TiffPage
                 ColorSamples = Cmyk ? 4 : inks;
                 if (!Cmyk)
                 {
-                    Warnings.Add($"The page has {inks} inks that are not CMYK; only the first was read, as gray.");
+                    Warnings.Add("Tiff.InksNotCmyk", $"The page has {inks} inks that are not CMYK; only the first was read, as gray.");
                 }
 
                 break;
@@ -491,7 +491,7 @@ internal sealed class TiffPage
 
         if (Format == 2)
         {
-            Warnings.Add("The page has signed samples; they were offset so 0 is the middle value.");
+            Warnings.Add("Tiff.SignedSamples", "The page has signed samples; they were offset so 0 is the middle value.");
         }
 
         _ = strict;
@@ -542,7 +542,7 @@ internal sealed class TiffPage
         int dropped = Extra.Length - (alpha >= 0 ? 1 : 0);
         if (dropped > 0 && Photometric != 5 || (Photometric == 5 && Cmyk && dropped > 0))
         {
-            Warnings.Add($"The page has {dropped} extra sample{(dropped == 1 ? string.Empty : "s")} that {(dropped == 1 ? "is" : "are")} not alpha; dropped.");
+            Warnings.Add("Tiff.ExtraSamplesDropped", $"The page has {dropped} extra sample{(dropped == 1 ? string.Empty : "s")} that {(dropped == 1 ? "is" : "are")} not alpha; dropped.");
         }
     }
 
@@ -577,7 +577,7 @@ internal sealed class TiffPage
 
         if (Bits == 64 && Float)
         {
-            Warnings.Add("The page has 64-bit floating-point samples; they were read as 32-bit.");
+            Warnings.Add("Tiff.Float64Narrowed", "The page has 64-bit floating-point samples; they were read as 32-bit.");
         }
     }
 
@@ -596,7 +596,7 @@ internal sealed class TiffPage
 
             if (tw % 16 != 0 || th % 16 != 0)
             {
-                Warnings.Add($"Tiles of {tw} × {th} are not multiples of 16, as TIFF 6.0 requires; they were read as they are.");
+                Warnings.Add("Tiff.TileSizeOdd", $"Tiles of {tw} × {th} are not multiples of 16, as TIFF 6.0 requires; they were read as they are.");
             }
 
             (UnitWidth, UnitHeight) = ((int)tw, (int)th);
@@ -614,7 +614,7 @@ internal sealed class TiffPage
                 }
 
                 rows = (ulong)Height;
-                Warnings.Add("RowsPerStrip is 0; the page was read as one strip.");
+                Warnings.Add("Tiff.RowsPerStripZero", "RowsPerStrip is 0; the page was read as one strip.");
             }
 
             UnitWidth = Width;
@@ -652,7 +652,7 @@ internal sealed class TiffPage
                 throw input.Corrupt(Ifd.Offset, $"The page needs {needed} {(Tiled ? "tiles" : "strips")}; its offsets give {offsets.Count}.");
             }
 
-            Warnings.Add($"The page needs {needed} {(Tiled ? "tiles" : "strips")}; its offsets give {offsets.Count}. The rest is left black.");
+            Warnings.Add("Tiff.OffsetsMissing", $"The page needs {needed} {(Tiled ? "tiles" : "strips")}; its offsets give {offsets.Count}. The rest is left black.");
         }
 
         if (Ifd.TryGet(countsTag, out TiffEntry counts) && counts.ValueAt >= 0 && counts.Count >= UnitCount)
@@ -666,7 +666,7 @@ internal sealed class TiffPage
 
         if (Counts is null && UnitCount > 0)
         {
-            Warnings.Add(Compression == TiffCodes.None
+            Warnings.Add("Tiff.ByteCountsMissing", Compression == TiffCodes.None
                 ? "The page has no usable byte counts; they were worked out from its size."
                 : "The page has no usable byte counts; each strip or tile was read up to the next.");
         }

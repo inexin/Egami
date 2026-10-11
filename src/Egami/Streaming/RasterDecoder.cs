@@ -36,6 +36,8 @@ public sealed class RasterDecoder : IDisposable
     private RasterInfo? _info;
     private FrameMetadata? _frame;
     private RasterMetadata? _upkept;
+    private RasterMetadata? _warnings;
+    private DiagnosticReporter? _diagnostics;
     private bool _upkeptComplete;
     private bool _started;
     private bool _advancing;
@@ -67,6 +69,7 @@ public sealed class RasterDecoder : IDisposable
         // them would cost the time a full decode's allocation check saves.
         _context.Limits.CheckFrameSize(source.StoredWidth, source.StoredHeight);
         _source = source;
+        _warnings = source.Metadata;
         ReaderOptions options = _options;
         _plan = ReadPlan.Create(source.StoredWidth, source.StoredHeight, options.Region, options.MinimumSize, source.MaxNativeScale);
         if (_plan.NativeScale != source.NativeScale)
@@ -78,8 +81,15 @@ public sealed class RasterDecoder : IDisposable
         PixelLayoutInfo layout = source.Layout;
         if (options.ConvertColorTo is Colors.ColorProfile target)
         {
-            _stage.Color = source.WithNaturalType(new ColorRows.Factory(source.Metadata.GetColorProfile(), source.Metadata.Hdr, target, _context));
+            Colors.ColorProfile stored = source.Metadata.GetColorProfile();
+            _stage.Color = source.WithNaturalType(new ColorRows.Factory(stored, source.Metadata.Hdr, target, _context));
             layout = WithNaturalType(new LayoutVisitor());
+            _context.Emit(ref _diagnostics, DiagnosticLevel.Info, "Color.ConvertedOnLoad", $"The pixels are converted from {stored.Name} to {target.Name} as they are read.");
+        }
+
+        if (_plan.NativeScale > 1 || _plan.Factor > 1)
+        {
+            _context.Emit(ref _diagnostics, DiagnosticLevel.Info, "Decode.ScaleChosen", $"For ReaderOptions.MinimumSize the {format.Name} reader decodes at 1/{_plan.NativeScale} ({_plan.ScaledSize.Width}Ã—{_plan.ScaledSize.Height}), then averages {_plan.Factor}Ã—{_plan.Factor} blocks to {_plan.Output.Width}Ã—{_plan.Output.Height}.");
         }
 
         RasterMetadata metadata = Metadata;
@@ -412,6 +422,9 @@ public sealed class RasterDecoder : IDisposable
     /// <summary>Gets or sets whether a file that yields no row before its last byte waits for the end too, for a caller with no use for previews.</summary>
     internal bool WholeIfRowsAtEnd { get; set; }
 
+    /// <summary>Gets or sets whether the decoder keeps its warnings from the diagnostics handler, for a decode that only plans another.</summary>
+    internal bool Quiet { get; set; }
+
     /// <summary>Gets the context the decode runs in.</summary>
     internal EgamiContext Context => _context;
 
@@ -573,7 +586,12 @@ public sealed class RasterDecoder : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         AppendBuffer append = _append ?? throw new InvalidOperationException("Only a decoder from OpenIncremental takes appended bytes.");
+        int capacity = append.Capacity;
         append.Append(data);
+        if (append.Capacity > capacity)
+        {
+            _context.Emit(ref _diagnostics, DiagnosticLevel.Debug, "Streaming.BufferGrown", $"The incremental buffer grew to {append.Capacity:N0} bytes to hold the {append.Available:N0} bytes not yet decoded.");
+        }
         _appendedSinceWait += data.Length;
         MostBytesHeld = Math.Max(MostBytesHeld, append.Available);
         if (append.Available > _context.Limits.MaxTotalBytes)
@@ -820,6 +838,7 @@ public sealed class RasterDecoder : IDisposable
         if (!_disposed)
         {
             _disposed = true;
+            RasterMetadata? warnings = Quiet ? null : _warnings;
             _source?.Dispose();
             _input?.Dispose();
             _append?.Dispose();
@@ -828,6 +847,15 @@ public sealed class RasterDecoder : IDisposable
             if (buffer is not null)
             {
                 System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+            }
+
+            _diagnostics?.Complete();
+            if (warnings is not null && _context.Diagnostics is Action<EgamiDiagnostic> handler)
+            {
+                // Warnings are sent once the session ends, from the metadata as it ends up: a reader may still take one back or
+                // move them to new metadata while it waits for more input. Last, so a handler that throws leaks nothing.
+                warnings.BindWarnings(handler);
+                warnings.WarningList.Flush();
             }
         }
     }

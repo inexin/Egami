@@ -74,7 +74,7 @@ public class TiffReaderTests
             Assert.Equal(Gray8.Layout, raster.Layout);
             byte[] first = [.. Enumerable.Range(0, raw!.Length / 2).Select(i => (byte)(255 - raw[i * 2]))];
             Assert.Equal(first, actual);
-            Assert.Contains(raster.Metadata.Warnings, w => w.Contains("inks", StringComparison.Ordinal));
+            Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("inks", StringComparison.Ordinal));
             return;
         }
 

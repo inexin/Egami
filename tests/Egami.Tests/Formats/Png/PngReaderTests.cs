@@ -251,7 +251,7 @@ public class PngReaderTests
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster raster = Raster.Load(file);
         Assert.Empty(raster.Metadata.Text);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("tEXt", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("tEXt", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -288,7 +288,7 @@ public class PngReaderTests
 
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster<Rgba16> raster = Raster.Load<Rgba16>(file);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("ends early", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("ends early", StringComparison.Ordinal));
         Assert.Equal(Expected(builder, 0, 0), raster.GetPixel(0, 0));
         Assert.Equal(default, raster.GetPixel(15, 15));
     }
@@ -316,7 +316,7 @@ public class PngReaderTests
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster<Rgba8> raster = Raster.Load<Rgba8>(file);
         Assert.Equal(Rgba8.Black, raster.GetPixel(2, 3));
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("palette", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("palette", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -329,7 +329,7 @@ public class PngReaderTests
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster raster = Raster.Load(file);
         Assert.Null(((PngDetails)raster.Metadata.FormatDetails!).FileGamma);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("gAMA", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("gAMA", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -341,7 +341,7 @@ public class PngReaderTests
 
         Assert.Throws<CorruptDataException>(() => Raster.Load(file, options: Strict));
         using Raster raster = Raster.Load(file);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("IEND", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("IEND", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -393,7 +393,7 @@ public class PngReaderTests
         PngBuilder builder = Build(PngColorType.Gray, 8, false, false, 3, 3, seed: 19);
         builder.EditCompressed = _ => PngBuilder.Compress([.. builder.RawImageData(), 0, 0, 0, 0]);
         using Raster raster = Raster.Load(builder.Build(), options: Strict);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("extra", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("extra", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -427,7 +427,7 @@ internal sealed class TiffRows<TNatural> : RowSource
         if (_shortUnits > 0 && !_warned)
         {
             _warned = true;
-            Metadata.WarningList.Add($"{_shortUnits} strip{(_shortUnits == 1 ? string.Empty : "s")} or tile{(_shortUnits == 1 ? string.Empty : "s")} of the page decode to fewer bytes than their rows, or not at all; what they lack is read as zero samples.");
+            Metadata.WarningList.Add("Tiff.UnitsShort", $"{_shortUnits} strip{(_shortUnits == 1 ? string.Empty : "s")} or tile{(_shortUnits == 1 ? string.Empty : "s")} of the page decode to fewer bytes than their rows, or not at all; what they lack is read as zero samples.");
         }
     }
 

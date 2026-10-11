@@ -100,7 +100,7 @@ internal sealed partial class BmpReader : IFormatReader
         {
             if (raster.Width != header.Width || raster.Height != header.Height)
             {
-                raster.Metadata.WarningList.Add($"The embedded image is {raster.Width}×{raster.Height}; the BMP header says {header.Width}×{header.Height}.");
+                raster.Metadata.WarningList.Add("Bmp.EmbeddedSizeMismatch", $"The embedded image is {raster.Width}×{raster.Height}; the BMP header says {header.Width}×{header.Height}.");
             }
 
             raster.Metadata.FormatName = BmpFormat.Info.Name;
@@ -170,7 +170,7 @@ internal sealed partial class BmpReader : IFormatReader
         header.Height = Math.Abs(height);
         if (planes != 1)
         {
-            header.Warnings.Add($"The header says {planes} planes; BMP has 1. The value was ignored.");
+            header.Warnings.Add("Bmp.PlanesInvalid", $"The header says {planes} planes; BMP has 1. The value was ignored.");
         }
 
         header.Compression = (os2, compression) switch
@@ -319,7 +319,7 @@ internal sealed partial class BmpReader : IFormatReader
     {
         if (header.DataOffset < input.Position)
         {
-            header.Warnings.Add($"The pixel data offset {header.DataOffset} points into the headers; the pixels are read from byte {input.Position}.");
+            header.Warnings.Add("Bmp.DataOffsetInHeaders", $"The pixel data offset {header.DataOffset} points into the headers; the pixels are read from byte {input.Position}.", header.DataOffset);
             return;
         }
 
@@ -347,10 +347,7 @@ internal sealed partial class BmpReader : IFormatReader
             Calibration = header.Calibration,
             RenderingIntent = header.RenderingIntent,
         };
-        foreach (string warning in header.Warnings)
-        {
-            metadata.WarningList.Add(warning);
-        }
+        metadata.WarningList.AddRange(header.Warnings);
 
         if (header.Resolution is Resolution resolution)
         {
@@ -374,7 +371,7 @@ internal sealed partial class BmpReader : IFormatReader
             catch (CorruptDataException)
             {
                 header.Profile = null;
-                metadata.WarningList.Add("The file ends before the embedded ICC profile; it was dropped.");
+                metadata.WarningList.Add("Bmp.ProfileTruncated", "The file ends before the embedded ICC profile; it was dropped.", header.ProfileOffset);
             }
         }
 
@@ -385,7 +382,7 @@ internal sealed partial class BmpReader : IFormatReader
         }
         else if (header.ColorSpaceType == SpaceLinked)
         {
-            metadata.WarningList.Add("The color profile is linked by file name; it was not opened.");
+            metadata.WarningList.Add("Bmp.ProfileLinked", "The color profile is linked by file name; it was not opened.");
         }
         else if (header.ColorSpaceType is SpaceSrgb or SpaceWindows)
         {
@@ -484,7 +481,7 @@ internal sealed partial class BmpReader : IFormatReader
             raster.Row(header.RowOf(i)).Clear();
         }
 
-        raster.Metadata.WarningList.Add($"{e.Message} The {header.Height - fileRow} rows not decoded are left black.");
+        raster.Metadata.WarningList.Add("Bmp.RowsMissing", $"{e.Message} The {header.Height - fileRow} rows not decoded are left black.", e);
     }
 
     /// <summary>What the headers say.</summary>
@@ -525,7 +522,7 @@ internal sealed partial class BmpReader : IFormatReader
 
         public byte[]? Profile { get; set; }
 
-        public List<string> Warnings { get; } = [];
+        public WarningList Warnings { get; } = new();
 
         public bool Embedded => Compression is BmpCompression.Jpeg or BmpCompression.Png;
 
@@ -681,7 +678,7 @@ internal sealed partial class BmpReader : IFormatReader
 
                 if (pastPalette)
                 {
-                    raster.Metadata.WarningList.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
+                    raster.Metadata.WarningList.Add("Bmp.IndexOutOfRange", $"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
                 }
 
                 if (header.Bits == 32 && header.AlphaUnlessAllZero && opaque is null && !anyAlpha && TPixel.Layout.HasAlpha)
@@ -860,12 +857,12 @@ internal sealed partial class BmpReader : IFormatReader
 
                 if (_clipped)
                 {
-                    raster.Metadata.WarningList.Add("Some runs go past the end of a row; the extra pixels were dropped.");
+                    raster.Metadata.WarningList.Add("Bmp.RunPastRow", "Some runs go past the end of a row; the extra pixels were dropped.");
                 }
 
                 if (_pastPalette)
                 {
-                    raster.Metadata.WarningList.Add($"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
+                    raster.Metadata.WarningList.Add("Bmp.IndexOutOfRange", $"Some pixels use indices past the {header.Palette.Length}-color palette; they are drawn black.");
                 }
             }
             catch (CorruptDataException e)

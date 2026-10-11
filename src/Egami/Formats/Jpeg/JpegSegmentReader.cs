@@ -504,14 +504,14 @@ internal static class JpegSegmentReader
     /// Reads the segments after a scan up to the next scan header and returns it, or null at the end of the image. Tables and the
     /// restart interval may change between scans; anything else is skipped. Damage goes to <paramref name="problem"/>.
     /// </summary>
-    internal static JpegScan? NextScan(EgamiInput input, JpegHeader header, JpegBitReader reader, Action<string> problem)
+    internal static JpegScan? NextScan(EgamiInput input, JpegHeader header, JpegBitReader reader, Action<string, string> problem)
     {
         int marker = reader.EndScan();
         while (true)
         {
             if (marker == JpegBitReader.EndOfFile)
             {
-                problem("The file ends before its end-of-image marker; the scans so far were decoded.");
+                problem("Jpeg.EoiMissing", "The file ends before its end-of-image marker; the scans so far were decoded.");
                 return null;
             }
 
@@ -527,7 +527,7 @@ internal static class JpegSegmentReader
                 int length = (high << 8) + low - 2;
                 if (low < 0 || length < 0)
                 {
-                    problem("A segment between scans is cut off or has an invalid length.");
+                    problem("Jpeg.SegmentTruncated", "A segment between scans is cut off or has an invalid length.");
                     return null;
                 }
 
@@ -537,7 +537,7 @@ internal static class JpegSegmentReader
                     int b = reader.ReadSegmentByte();
                     if (b < 0)
                     {
-                        problem("A segment between scans is cut off.");
+                        problem("Jpeg.SegmentTruncated", "A segment between scans is cut off.");
                         return null;
                     }
 
@@ -570,7 +570,7 @@ internal static class JpegSegmentReader
             marker = reader.NextMarker(out bool junk);
             if (junk)
             {
-                problem("There are stray bytes between segments after a scan; they were skipped.");
+                problem("Jpeg.StrayBytes", "There are stray bytes between segments after a scan; they were skipped.");
             }
         }
     }
@@ -725,7 +725,7 @@ internal static class JpegSegmentReader
                 // The packet's stated size is allocated up front, so it must fit the metadata budget first.
                 if (total > maxBytes)
                 {
-                    header.Metadata.WarningList.Add($"The extended XMP packet says it is {total:N0} bytes, over the metadata limit. It was dropped.");
+                    header.Metadata.WarningList.Add("Jpeg.ExtendedXmpOverLimit", $"The extended XMP packet says it is {total:N0} bytes, over the metadata limit. It was dropped.");
                     return;
                 }
 
@@ -741,12 +741,12 @@ internal static class JpegSegmentReader
     }
 
     /// <summary>Parses an EXIF block, reporting damage as a warning; the pixels still load.</summary>
-    internal static ExifData ParseExif(ReadOnlySpan<byte> tiff, long maxBytes, IList<string> warnings)
+    internal static ExifData ParseExif(ReadOnlySpan<byte> tiff, long maxBytes, WarningList warnings)
     {
         ExifData exif = ExifData.Parse(tiff, maxBytes);
         foreach (string warning in exif.Warnings)
         {
-            warnings.Add(warning + " The EXIF block is kept as it was.");
+            warnings.Add("Exif.Damaged", warning + " The EXIF block is kept as it was.");
         }
 
         return exif;
@@ -763,7 +763,7 @@ internal static class JpegSegmentReader
         header.PhotoshopBlock ??= new MemoryStream();
         if (header.PhotoshopBlock.Length + payload.Length - PhotoshopId.Length > maxBytes)
         {
-            header.Metadata.WarningList.Add("The Photoshop resource block is over the metadata limit. It was dropped.");
+            header.Metadata.WarningList.Add("Jpeg.PhotoshopOverLimit", "The Photoshop resource block is over the metadata limit. It was dropped.");
             header.PhotoshopBlock = new MemoryStream();
             return;
         }
@@ -811,7 +811,7 @@ internal static class JpegSegmentReader
             }
             else
             {
-                header.Metadata.WarningList.Add($"The ICC profile has {iccChunks.Count} of its {iccCount} parts. It was dropped.");
+                header.Metadata.WarningList.Add("Jpeg.IccIncomplete", $"The ICC profile has {iccChunks.Count} of its {iccCount} parts. It was dropped.");
             }
         }
 
@@ -823,7 +823,7 @@ internal static class JpegSegmentReader
             }
             else
             {
-                header.Metadata.WarningList.Add("The extended XMP packet is missing parts. It was dropped.");
+                header.Metadata.WarningList.Add("Jpeg.ExtendedXmpIncomplete", "The extended XMP packet is missing parts. It was dropped.");
             }
         }
 

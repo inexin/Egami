@@ -176,10 +176,11 @@ internal static class Transcoder
         TranscodePlan plan;
         using (RasterDecoder probe = RasterDecoder.Open(source, context, options))
         {
+            probe.Quiet = true;
             plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
-        Restart(input, replay, start);
+        Restart(input, replay, start, context);
         if (plan.WholeImage is Action<RasterOps> whole)
         {
             using Raster raster = Raster.Load(source, context, plan.Options);
@@ -200,10 +201,11 @@ internal static class Transcoder
         TranscodePlan plan;
         using (RasterDecoder probe = await RasterDecoder.OpenAsync(source, context, options, cancellationToken).ConfigureAwait(false))
         {
+            probe.Quiet = true;
             plan = TranscodePlan.Create(build, probe.Info, options, options.ConvertColorTo ?? probe.Metadata.GetColorProfile(), options.ConvertColorTo is null ? probe.Metadata.Hdr : null);
         }
 
-        Restart(input, replay, start);
+        Restart(input, replay, start, context);
         if (plan.WholeImage is Action<RasterOps> whole)
         {
             using Raster raster = await Raster.LoadAsync(source, context, plan.Options, cancellationToken).ConfigureAwait(false);
@@ -216,10 +218,12 @@ internal static class Transcoder
         await decoder.WithNaturalType(new AsyncWork(decoder, plan, target, context, cancellationToken)).ConfigureAwait(false);
     }
 
-    private static void Restart(Stream input, ReplayStream? replay, long start)
+    private static void Restart(Stream input, ReplayStream? replay, long start, EgamiContext context)
     {
         if (replay is not null)
         {
+            DiagnosticReporter? diagnostics = null;
+            context.Emit(ref diagnostics, DiagnosticLevel.Debug, "Streaming.Replayed", $"The input cannot seek, so the {replay.Kept:N0} bytes read to plan the transcode were kept and read again.");
             replay.Rewind();
         }
         else
@@ -461,6 +465,9 @@ internal sealed class ReplayStream(Stream inner) : Stream
         get => throw new NotSupportedException();
         set => throw new NotSupportedException();
     }
+
+    /// <summary>Gets how many bytes are kept to hand out again.</summary>
+    public int Kept => _count;
 
     /// <summary>Starts handing out the kept bytes again.</summary>
     public void Rewind()

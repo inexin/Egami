@@ -65,12 +65,12 @@ internal sealed partial class WebpReader : IFormatReader
         Raster<TPixel> raster = input.CreateRaster<TPixel>(parser.Width, parser.Height);
         try
         {
-            (long consumed, string? warning) = DecodeStill(input, options, parser, raster);
+            (long consumed, EgamiDiagnostic? warning) = DecodeStill(input, options, parser, raster);
             parser.ReadToEnd(consumed);
             CopyMetadata(parser.Metadata, raster.Metadata);
             if (warning is not null)
             {
-                raster.Metadata.WarningList.Add(warning);
+                raster.Metadata.WarningList.Add(warning.Value);
             }
 
             return raster;
@@ -181,12 +181,12 @@ internal sealed partial class WebpReader : IFormatReader
     /// Decodes a still image's chunk into <paramref name="raster"/>; returns how many payload bytes were consumed and the warning a
     /// lenient decode recovered with, if any.
     /// </summary>
-    private static (long Consumed, string? Warning) DecodeStill<TPixel>(EgamiInput input, ReaderOptions options, WebpParser parser, Raster<TPixel> raster)
+    private static (long Consumed, EgamiDiagnostic? Warning) DecodeStill<TPixel>(EgamiInput input, ReaderOptions options, WebpParser parser, Raster<TPixel> raster)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         if (parser.ImageChunk == WebpContainer.Vp8)
         {
-            (YuvRaster<byte> planes, string? lossyWarning) = DecodePlanes(input, options, parser);
+            (YuvRaster<byte> planes, EgamiDiagnostic? lossyWarning) = DecodePlanes(input, options, parser);
             using (planes)
             {
                 WebpYuvToRgb.ToRaster(planes, raster, options is WebpReaderOptions { FastUpsampling: true }, input.CancellationToken);
@@ -237,10 +237,7 @@ internal sealed partial class WebpReader : IFormatReader
         target.Resolution = source.Resolution;
         target.LoopCount = source.LoopCount;
         target.ColorSpace = ColorSpaceHint.Srgb;
-        foreach (string warning in source.Warnings)
-        {
-            target.WarningList.Add(warning);
-        }
+        target.WarningList.AddRange(source.WarningList);
     }
 
     /// <summary>Returns whether the header in <paramref name="data"/> says the image has alpha (VP8X flag, VP8L hint or ALPH chunk).</summary>

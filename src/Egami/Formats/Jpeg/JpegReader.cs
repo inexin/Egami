@@ -136,9 +136,6 @@ internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScali
         }
 
         // Header warnings come first; the decoder added its own to the target already.
-        for (int i = source.Warnings.Count - 1; i >= 0; i--)
-        {
-            target.WarningList.Insert(0, source.Warnings[i]);
-        }
+        target.WarningList.Prepend(source.WarningList);
     }
 }

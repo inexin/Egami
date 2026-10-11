@@ -17,6 +17,20 @@ public sealed class SampleFiles : IDisposable
     /// <summary>Gets the folder with duck.png, egret.png, duck.jpg, sideways.jpg, pan.gif and scan.tif (three pages).</summary>
     public static string Images { get; } = Path.Combine(AppContext.BaseDirectory, "images");
 
+    /// <summary>Returns a small PNG whose text chunk has a bad checksum: it loads, with one Png.ChecksumMismatch warning.</summary>
+    public static byte[] Damaged()
+    {
+        using Raster<Egami.Pixels.Rgba8> image = Raster.Create<Egami.Pixels.Rgba8>(16, 16);
+        image.Metadata.Text.Add(new Egami.Metadata.TextEntry("Comment", "made for the samples"));
+        MemoryStream file = new();
+        image.Save(file, Egami.Formats.Png.PngFormat.Info);
+        byte[] bytes = file.ToArray();
+        int type = bytes.AsSpan().IndexOf("tEXt"u8);
+        int length = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(type - 4));
+        bytes[type + 4 + length] ^= 0xFF;
+        return bytes;
+    }
+
     /// <summary>Gets the working folder: a copy of the images, and where samples write. It is the current directory.</summary>
     public string Output { get; }
 

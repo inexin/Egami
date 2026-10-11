@@ -196,7 +196,7 @@ internal sealed partial class PngReader
         if (read < 1 + row.Length)
         {
             string? problem = inflated.Problem;
-            state.Chunks.Recoverable(state.Input.Position, (problem ?? "The image data ends early.") + $" Decoded {index} of the scanlines; the rest are transparent black.");
+            state.Chunks.Recoverable("Png.RowsMissing", state.Input.Position, (problem ?? "The image data ends early.") + $" Decoded {index} of the scanlines; the rest are transparent black.");
             return false;
         }
 
@@ -410,11 +410,11 @@ internal sealed partial class PngReader
                 Wait(!_idat.Dry);
                 if (_idat.Truncated)
                 {
-                    State.Chunks.Recoverable(input.Position, "The file ends inside the image data.");
+                    State.Chunks.Recoverable("Png.DataTruncated", input.Position, "The file ends inside the image data.");
                 }
                 else if (_checkAdler && _idat.Tail != _adler)
                 {
-                    State.Chunks.Recoverable(input.Position, $"The image data's Adler-32 checksum is 0x{_idat.Tail:X8} but the data gives 0x{_adler:X8}.");
+                    State.Chunks.Recoverable("Png.AdlerMismatch", input.Position, $"The image data's Adler-32 checksum is 0x{_idat.Tail:X8} but the data gives 0x{_adler:X8}.");
                 }
 
                 State.Unpacker.ThrowIfBadIndices(State.Chunks, input.Position);
@@ -430,7 +430,7 @@ internal sealed partial class PngReader
             }
             catch (CorruptDataException e) when (State.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation)
             {
-                State.Metadata.WarningList.Add("The file ends inside a chunk after the image data. That chunk was ignored.");
+                State.Metadata.WarningList.Add("Png.ChunkTruncated", "The file ends inside a chunk after the image data. That chunk was ignored.");
             }
 
             _ended = true;
@@ -838,7 +838,7 @@ internal sealed partial class PngReader
                 {
                     if (_next is null)
                     {
-                        chunks.Recoverable(input.Position, "The file ends before IEND.");
+                        chunks.Recoverable("Png.IendMissing", input.Position, "The file ends before IEND.");
                         break;
                     }
 
@@ -859,13 +859,13 @@ internal sealed partial class PngReader
 
                         if (type != PngChunkType.Fdat)
                         {
-                            chunks.Recoverable(chunks.ChunkOffset, "An fcTL chunk is not followed by fdAT; the animation ends there.");
+                            chunks.Recoverable("Png.FdatMissing", chunks.ChunkOffset, "An fcTL chunk is not followed by fdAT; the animation ends there.");
                             break;
                         }
 
                         if (_index >= state.AnimationFrames)
                         {
-                            chunks.Recoverable(chunks.ChunkOffset, $"There are more frames than the {state.AnimationFrames} acTL gives; the rest were ignored.");
+                            chunks.Recoverable("Png.FramesExtra", chunks.ChunkOffset, $"There are more frames than the {state.AnimationFrames} acTL gives; the rest were ignored.");
                             break;
                         }
 
@@ -883,7 +883,7 @@ internal sealed partial class PngReader
 
                     if (type is PngChunkType.Idat or PngChunkType.Fdat)
                     {
-                        chunks.Recoverable(chunks.ChunkOffset, $"A {PngChunkType.Name(type)} chunk is out of place. It was ignored.");
+                        chunks.Recoverable("Png.ChunkOutOfPlace", chunks.ChunkOffset, $"A {PngChunkType.Name(type)} chunk is out of place. It was ignored.");
                         chunks.Skip(type, length);
                     }
                     else
@@ -896,12 +896,12 @@ internal sealed partial class PngReader
 
                 if (!_stopped && _index < state.AnimationFrames && _index < _end)
                 {
-                    chunks.Recoverable(input.Position, $"acTL gives {state.AnimationFrames} frames but the file has {_index}.");
+                    chunks.Recoverable("Png.FramesMissing", input.Position, $"acTL gives {state.AnimationFrames} frames but the file has {_index}.");
                 }
             }
             catch (CorruptDataException e) when (state.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation && _served > 0)
             {
-                state.Metadata.WarningList.Add("The file ends inside the animation; the frames before that are kept.");
+                state.Metadata.WarningList.Add("Png.AnimationTruncated", "The file ends inside the animation; the frames before that are kept.");
             }
 
             return null;

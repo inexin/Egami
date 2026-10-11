@@ -191,7 +191,7 @@ public class JpegHeaderTests
 
         // A packet claiming to be larger than the metadata limit is never allocated.
         JpegHeader huge = Read(JpegBuilder.Baseline(16, 16, Ycc420).ExtendedXmp("0123456789ABCDEF0123456789ABCDEF", 2_000_000_000, 0, [0]).Scan(1, 2, 3));
-        Assert.Contains("over the metadata limit", huge.Metadata.Warnings.Single(), StringComparison.Ordinal);
+        Assert.Contains("over the metadata limit", huge.Metadata.Warnings.Single().Message, StringComparison.Ordinal);
     }
 
     [Fact]

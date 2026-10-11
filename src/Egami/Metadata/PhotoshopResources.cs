@@ -58,12 +58,12 @@ internal static class PhotoshopResources
     }
 
     /// <summary>Returns the IPTC resource's bytes, or empty.</summary>
-    public static ReadOnlyMemory<byte> FindIptc(ReadOnlyMemory<byte> block, IList<string>? warnings)
+    public static ReadOnlyMemory<byte> FindIptc(ReadOnlyMemory<byte> block, WarningList? warnings)
     {
         List<Resource> resources = [];
         if (!TryWalk(block.Span, resources))
         {
-            warnings?.Add("The Photoshop resource block is damaged; it is kept as it was.");
+            warnings?.Add("Iptc.ResourceBlockDamaged", "The Photoshop resource block is damaged; it is kept as it was.");
         }
 
         return resources.Find(r => r.Id == IptcId) is { DataLength: > 0 } iptc ? block.Slice(iptc.DataStart, iptc.DataLength) : default;

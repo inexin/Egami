@@ -133,10 +133,7 @@ internal sealed partial class PnmReader : IFormatReader
                 }
             }
 
-            foreach (string warning in header.Warnings)
-            {
-                metadata.WarningList.Add(warning);
-            }
+            metadata.WarningList.AddRange(header.Warnings);
 
             using Decoder<TPixel> decoder = new(input, header, options.Recovery == RecoveryMode.Strict);
             decoder.Run(raster);
@@ -197,7 +194,7 @@ internal sealed partial class PnmReader : IFormatReader
     }
 
     /// <summary>What the header says. Bitmaps (P1, P4) have depth 1 and maxval 1.</summary>
-    private sealed record Header(int Magic, int Width, int Height, int Depth, int MaxValue, string? TupleType, List<string> Comments, List<string> Warnings)
+    private sealed record Header(int Magic, int Width, int Height, int Depth, int MaxValue, string? TupleType, List<string> Comments, WarningList Warnings)
     {
         public bool Bitmap => Magic is 1 or 4;
 
@@ -223,7 +220,7 @@ internal sealed partial class PnmReader : IFormatReader
 
         public List<string> Comments { get; } = [];
 
-        public List<string> Warnings { get; } = [];
+        public WarningList Warnings { get; } = new();
 
         public int ReadNumber(string what)
         {
@@ -318,7 +315,7 @@ internal sealed partial class PnmReader : IFormatReader
                         tuple = tuple is null ? value : $"{tuple} {value}";
                         break;
                     default:
-                        Warnings.Add($"The PAM header line '{Shorten(line)}' is unknown and was ignored.");
+                        Warnings.Add("Pnm.UnknownHeaderLine", $"The PAM header line '{Shorten(line)}' is unknown and was ignored.");
                         break;
                 }
             }
@@ -342,7 +339,7 @@ internal sealed partial class PnmReader : IFormatReader
             }
 
             string read = depth switch { 1 => "gray", 2 => "gray with alpha", 3 => "RGB", _ => "RGBA" };
-            Warnings.Add($"The PAM tuple type '{Shorten(tuple ?? string.Empty)}' at byte {at} does not fit depth {depth}; the image is read as {read}.");
+            Warnings.Add("Pnm.TupleTypeMismatch", $"The PAM tuple type '{Shorten(tuple ?? string.Empty)}' at byte {at} does not fit depth {depth}; the image is read as {read}.");
             return depth;
         }
 
@@ -440,7 +437,7 @@ internal sealed partial class PnmReader : IFormatReader
                     raster.Row(rest).Clear();
                 }
 
-                raster.Metadata.WarningList.Add(Damaged(e, y));
+                raster.Metadata.WarningList.Add("Pnm.RowsMissing", Damaged(e, y), e);
             }
         }
 
@@ -518,12 +515,12 @@ internal sealed partial class PnmReader : IFormatReader
         }
 
         /// <summary>After the last row: reports clamped samples and data after the image.</summary>
-        public void Finish(List<string> warnings)
+        public void Finish(WarningList warnings)
         {
             _text?.Finish();
             if (_clamped)
             {
-                warnings.Add($"Some samples are above the maxval {header.MaxValue}; they were clamped.");
+                warnings.Add("Pnm.SamplesClamped", $"Some samples are above the maxval {header.MaxValue}; they were clamped.");
             }
 
             ReadOnlySpan<byte> rest = input.Peek(4096);
@@ -531,7 +528,7 @@ internal sealed partial class PnmReader : IFormatReader
             {
                 if (!IsSpace(b))
                 {
-                    warnings.Add("More data follows the image; only the first image is read.");
+                    warnings.Add("Pnm.DataAfterImage", "More data follows the image; only the first image is read.", input.Position);
                     break;
                 }
             }

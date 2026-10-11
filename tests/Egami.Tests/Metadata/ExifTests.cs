@@ -217,7 +217,7 @@ public class ExifTests
         jpeg[exifAt + 4] = 0xFF; // IFD0 offset far outside the block
         using Raster raster = Raster.Load(jpeg);
         Assert.True(raster.Metadata.Exif!.IsDamaged);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("EXIF", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("EXIF", StringComparison.Ordinal));
 
         // Damaged metadata is not damaged pixels: strict reading reports it the same way, as damaged ICC and XMP are.
         using Raster strict = Raster.Load(jpeg, options: new ReaderOptions { Recovery = RecoveryMode.Strict });

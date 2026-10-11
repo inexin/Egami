@@ -158,7 +158,7 @@ public class JpegParallelTests
             MemoryMarshal.AsBytes(raster.Row(y)).CopyTo(pixels.AsSpan(y * raster.Width * 8));
         }
 
-        return (pixels, [.. raster.Metadata.Warnings]);
+        return (pixels, [.. raster.Metadata.Warnings.Select(w => w.Message)]);
     }
 
     private static int ScanStart(byte[] data)

@@ -88,7 +88,8 @@ You can plug in your own source through `EgamiContext.Memory` by implementing `I
 
 `LiveBlocks` and `LiveBytes` are always counted, at the cost of one atomic addition per allocation. `TrackLeaks` gives each new
 block a small finalizable tracker, so turn it on only while you look; `CaptureStackTraces` makes allocations much slower still.
-`LeakDetected` runs on the finalizer thread.
+`LeakDetected` runs on the finalizer thread. Leaks come only through `LeakDetected`, never through the
+[diagnostics](../diagnostics.md) handler, which reports what one call found.
 
 ## Your own memory source
 

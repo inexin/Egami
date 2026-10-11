@@ -27,7 +27,7 @@ internal sealed class TiffImage : IDisposable
     public IReadOnlyList<TiffIfd> Chain => _chain;
 
     /// <summary>Gets the warnings walking the chain gave.</summary>
-    public List<string> Warnings { get; } = [];
+    public WarningList Warnings { get; } = new();
 
     /// <summary>Opens the file and walks its chain of IFDs, checking each offset against the file and against a loop.</summary>
     public static TiffImage Open(EgamiInput input, ReaderOptions options)
@@ -56,7 +56,7 @@ internal sealed class TiffImage : IDisposable
         {
             if (!seen.Add(offset))
             {
-                Problem(offset, $"The IFD chain loops back to {offset}; it was read up to there.");
+                Problem("Tiff.IfdLoop", offset, $"The IFD chain loops back to {offset}; it was read up to there.");
                 return;
             }
 
@@ -67,7 +67,7 @@ internal sealed class TiffImage : IDisposable
                     throw File.OutOfFile(offset, $"The IFD at {offset} lies outside the {Source.Length}-byte file.");
                 }
 
-                Problem(offset, $"The next IFD at {offset} lies outside the file; the pages before it were read.");
+                Problem("Tiff.IfdOutside", offset, $"The next IFD at {offset} lies outside the file; the pages before it were read.");
                 return;
             }
 
@@ -83,7 +83,7 @@ internal sealed class TiffImage : IDisposable
             }
             catch (CorruptDataException) when (!Strict && _chain.Count > 0)
             {
-                Warnings.Add($"The IFD at {offset} is damaged; the pages before it were read.");
+                Warnings.Add("Tiff.IfdDamaged", $"The IFD at {offset} is damaged; the pages before it were read.", offset);
                 return;
             }
 
@@ -92,14 +92,14 @@ internal sealed class TiffImage : IDisposable
         }
     }
 
-    private void Problem(long offset, string problem)
+    private void Problem(string id, long offset, string problem)
     {
         if (Strict)
         {
             throw File.Input.Corrupt(offset, problem);
         }
 
-        Warnings.Add(problem);
+        Warnings.Add(id, problem, offset);
     }
 
     /// <summary>Returns whether an IFD of the main chain is a full-resolution page: not reduced, not a transparency mask.</summary>
@@ -271,15 +271,8 @@ internal sealed class TiffImage : IDisposable
     {
         RasterMetadata metadata = new() { FormatName = TiffFormat.Info.Name };
         TiffMetadata.Read(this, page, metadata, options);
-        foreach (string warning in Warnings)
-        {
-            metadata.WarningList.Add(warning);
-        }
-
-        foreach (string warning in page.Warnings)
-        {
-            metadata.WarningList.Add(warning);
-        }
+        metadata.WarningList.AddRange(Warnings);
+        metadata.WarningList.AddRange(page.Warnings, page.Index);
 
         return metadata;
     }

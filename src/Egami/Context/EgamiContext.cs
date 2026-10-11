@@ -20,6 +20,7 @@ public sealed record EgamiContext
     private readonly IPixelMemorySource _memory = PooledPixelMemorySource.Shared;
     private readonly int _maxParallelism = Environment.ProcessorCount;
     private readonly SafetyLimits _limits = SafetyLimits.Default;
+    private readonly DiagnosticLevel _diagnosticLevel = DiagnosticLevel.Warning;
     private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Webp.WebpFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info, Egami.Formats.Tiff.TiffFormat.Info, Egami.Formats.Tga.TgaFormat.Info];
 
     private static EgamiContext? s_default;
@@ -64,6 +65,47 @@ public sealed record EgamiContext
     /// <exception cref="ArgumentNullException">The value set is <see langword="null"/>.</exception>
     public SafetyLimits Limits { get => _limits; init => _limits = value ?? throw new ArgumentNullException(nameof(value)); }
 
+    /// <summary>
+    /// Gets the handler that receives Egami's warnings and notable decisions, or <see langword="null"/> (the default) for none, which
+    /// costs nothing. It runs inline, possibly on several decode threads at once, so it must be quick and thread-safe. An exception
+    /// it throws fails the call, which turns warnings into errors. Warnings a load raises arrive in
+    /// <see cref="Metadata.RasterMetadata.Warnings"/> order as the call ends; Info and Debug events arrive as they happen. One id is
+    /// delivered at most 10 times per call, then once more as a count of the rest.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Diagnostics.cs" region="logger"/>
+    /// </example>
+    public Action<EgamiDiagnostic>? Diagnostics { get; init; }
+
+    /// <summary>
+    /// Gets the lowest level <see cref="Diagnostics"/> receives. Defaults to <see cref="Egami.DiagnosticLevel.Warning"/>; events below
+    /// it are never built.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value set is not a defined level.</exception>
+    public DiagnosticLevel DiagnosticLevel
+    {
+        get => _diagnosticLevel;
+        init
+        {
+            if (!Enum.IsDefined(value))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Not a defined diagnostic level.");
+            }
+
+            _diagnosticLevel = value;
+        }
+    }
+
+    /// <summary>
+    /// Starts reporting for one call outside Egami's own loads and saves, such as a video decode or a plug-in's own entry point,
+    /// with the same <see cref="DiagnosticLevel"/> filter and per-id cap. Dispose it when the call ends.
+    /// </summary>
+    /// <returns>A reporter for the call; a shared one that does nothing when <see cref="Diagnostics"/> is <see langword="null"/>.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Diagnostics.cs" region="plugin"/>
+    /// </example>
+    public DiagnosticReporter StartDiagnostics() => DiagnosticReporter.Start(this);
+
     /// <summary>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, WebP, BMP, QOI, PNM, TIFF and TGA.</summary>
     public IReadOnlyList<FormatInfo> Formats
     {
@@ -97,6 +139,9 @@ public sealed record EgamiContext
 
         return this with { Formats = formats };
     }
+
+    /// <summary>Gets whether events at <paramref name="level"/> reach a handler, so a site builds them only then.</summary>
+    internal bool Reports(DiagnosticLevel level) => Diagnostics is not null && level >= _diagnosticLevel;
 
     /// <summary>Finds a registered format by name or file extension, with or without a leading dot, ignoring case.</summary>
     internal FormatInfo? FindFormat(string nameOrExtension)

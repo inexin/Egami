@@ -53,6 +53,7 @@ internal sealed class Vp8lDecoder : IDisposable
     private int _nextRow;
     private bool _headerRead;
     private int _failedAt = -1;
+    private string? _warning;
     private bool _disposed;
 
     /// <summary>Starts decoding a VP8L stream whose first byte is the signature, or, when <paramref name="width"/> is given, the headerless stream of ALPH data.</summary>
@@ -96,7 +97,8 @@ internal sealed class Vp8lDecoder : IDisposable
     internal int FailedAt => _failedAt;
 
     /// <summary>Gets the warning a lenient decode recovered with, if any.</summary>
-    internal string? Warning { get; private set; }
+    internal EgamiDiagnostic? Warning => _warning is null ? null : EgamiDiagnostic.Create(DiagnosticLevel.Warning, "Webp.RowsMissing", _warning);
+
 
     /// <summary>Gets the next row <see cref="DecodeRow"/> will produce.</summary>
     internal int NextRow => _nextRow;
@@ -266,7 +268,7 @@ internal sealed class Vp8lDecoder : IDisposable
     private void Fail(int y, string problem)
     {
         _failedAt = y;
-        Warning = $"{problem} Rows {y} to {Height - 1} are left transparent black.";
+        _warning = $"{problem} Rows {y} to {Height - 1} are left transparent black.";
     }
 
     /// <summary>Decodes coded pixels until row <paramref name="y"/> is complete, sliding the window first if it is full.</summary>

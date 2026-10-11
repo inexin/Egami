@@ -15,8 +15,16 @@ internal static class ColorLoad
     {
         using (loaded)
         {
+            Converting(loaded, target);
             return loaded.ConvertColor<TPixel>(target);
         }
+    }
+
+    /// <summary>Notes the conversion <see cref="ReaderOptions.ConvertColorTo"/> asked for, from what the file said its pixels are.</summary>
+    internal static void Converting(Raster loaded, ColorProfile target)
+    {
+        DiagnosticReporter? diagnostics = null;
+        loaded.Context.Emit(ref diagnostics, DiagnosticLevel.Info, "Color.ConvertedOnLoad", $"The pixels were converted from {loaded.Metadata.GetColorProfile().Name} to {target.Name} as they were loaded.");
     }
 
     /// <summary>
@@ -27,6 +35,7 @@ internal static class ColorLoad
     {
         try
         {
+            Converting(loaded, target);
             Raster result = loaded.Accept(new Visitor(target));
             if (!ReferenceEquals(result, loaded))
             {

@@ -35,7 +35,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     private readonly ReaderOptions _options;
     private readonly Raster<TPixel>? _raster;
     private readonly YuvRaster<byte>? _planes;
-    private readonly List<string> _warnings;
+    private readonly WarningList _warnings;
     private readonly Component[] _components;
     private readonly int _maxH;
     private readonly int _maxV;
@@ -91,7 +91,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     }
 
     /// <summary>Creates a decoder for pull mode, with no raster: rows come from <see cref="ReadRow"/>, warnings go to <paramref name="warnings"/>.</summary>
-    internal JpegDecoder(JpegHeader header, ReaderOptions options, List<string> warnings, bool fastUpsampling, int scale)
+    internal JpegDecoder(JpegHeader header, ReaderOptions options, WarningList warnings, bool fastUpsampling, int scale)
         : this(header, options, null, null, warnings, fastUpsampling, scale)
     {
     }
@@ -106,7 +106,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     {
     }
 
-    private JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel>? raster, YuvRaster<byte>? planes, List<string> warnings, bool fastUpsampling, int scale)
+    private JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel>? raster, YuvRaster<byte>? planes, WarningList warnings, bool fastUpsampling, int scale)
     {
         _header = header;
         _options = options;
@@ -645,7 +645,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         {
             if (!_reader!.Restart((int)((marker - 1) & 7)))
             {
-                Problem("A restart marker is missing or out of order; the data was resynchronized at the next one.");
+                Problem("Jpeg.RestartResync", "A restart marker is missing or out of order; the data was resynchronized at the next one.");
                 state.Ended = _reader.Marker != 0;
                 break;
             }
@@ -1479,7 +1479,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
                     reader.Store(bits, available);
                     if (arithmetic is null)
                     {
-                        Problem(Ended);
+                        Problem("Jpeg.DataEnded", Ended);
                     }
 
                     return false;
@@ -1541,7 +1541,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         bool ended = false;
         if (!reader.Restart(nextRestart))
         {
-            Problem("A restart marker is missing or out of order; the data was resynchronized at the next one.");
+            Problem("Jpeg.RestartResync", "A restart marker is missing or out of order; the data was resynchronized at the next one.");
             // An out-of-order restart marker was consumed and decoding resumes; any other marker ends the data.
             ended = reader.Marker != 0;
         }
@@ -1558,7 +1558,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     {
         if (reader.PastEnd && !reader.AtRestartMarker)
         {
-            Problem(message);
+            Problem("Jpeg.DataEnded", message);
             return true;
         }
 
@@ -1597,19 +1597,19 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     {
         if (arithmetic.Failed)
         {
-            Problem(message);
+            Problem("Jpeg.ArithmeticDamaged", message);
             return true;
         }
 
         if (reader.Marker == JpegBitReader.EndOfFile)
         {
-            Problem("The file ends inside the image data; the rest was decoded as if zeros followed.");
+            Problem("Jpeg.DataEnded", "The file ends inside the image data; the rest was decoded as if zeros followed.");
         }
 
         return false;
     }
 
-    private void Problem(string message)
+    private void Problem(string id, string message)
     {
         if (_speculative)
         {
@@ -1624,7 +1624,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
 
         if (!_warned)
         {
-            _warnings.Add(message);
+            _warnings.Add(id, message);
             _warned = true;
         }
     }

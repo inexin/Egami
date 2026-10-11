@@ -128,10 +128,7 @@ internal sealed partial class PnmReader : IRowSourceReader, IIncrementalFormatRe
                 }
             }
 
-            foreach (string warning in header.Warnings)
-            {
-                Metadata.WarningList.Add(warning);
-            }
+            Metadata.WarningList.AddRange(header.Warnings);
 
             _row = input.RentScratch((int)PnmReader.WorkingBytes(header));
             _decoder = new Decoder<TNatural>(input, header, _strict);
@@ -187,7 +184,7 @@ internal sealed partial class PnmReader : IRowSourceReader, IIncrementalFormatRe
                 catch (CorruptDataException e) when (!_strict)
                 {
                     _failedAt = _next;
-                    Metadata.WarningList.Add(_decoder.Damaged(e, _next));
+                    Metadata.WarningList.Add("Pnm.RowsMissing", _decoder.Damaged(e, _next), e);
                 }
             }
 

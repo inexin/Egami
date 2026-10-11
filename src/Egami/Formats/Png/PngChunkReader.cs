@@ -72,7 +72,7 @@ internal static class PngChunkType
 }
 
 /// <summary>Reads chunk headers, data and CRCs from an <see cref="EgamiInput"/>.</summary>
-internal sealed class PngChunkReader(EgamiInput input, bool strict, IList<string> warnings)
+internal sealed class PngChunkReader(EgamiInput input, bool strict, WarningList warnings)
 {
     /// <summary>The largest chunk length the specification allows.</summary>
     private const uint MaxLength = int.MaxValue;
@@ -152,19 +152,19 @@ internal sealed class PngChunkReader(EgamiInput input, bool strict, IList<string
             throw input.Corrupt(offset, problem);
         }
 
-        warnings.Add(problem + " The chunk was ignored.");
+        warnings.Add("Png.ChecksumMismatch", problem + " The chunk was ignored.", offset);
         return false;
     }
 
     /// <summary>Reports a problem that lenient mode recovers from.</summary>
-    internal void Recoverable(long offset, string problem)
+    internal void Recoverable(string id, long offset, string problem)
     {
         if (strict)
         {
             throw input.Corrupt(offset, problem);
         }
 
-        warnings.Add(problem);
+        warnings.Add(id, problem, offset >= 0 ? offset : null);
     }
 
     /// <summary>Returns the CRC of a chunk's four type bytes, where every chunk CRC starts.</summary>

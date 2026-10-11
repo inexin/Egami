@@ -98,9 +98,9 @@ public class AnimationAndMetadata
         metadata.Text.Add(new TextEntry("Comment", "Made with Egami"));
         metadata.Resolution = new Resolution(300, 300, ResolutionUnit.PerInch);
         Console.WriteLine($"{metadata.ColorSpace}, ICC {metadata.IccProfile.Length} bytes, XMP {metadata.Xmp.Length} bytes");
-        foreach (string warning in metadata.Warnings)
+        foreach (EgamiDiagnostic warning in metadata.Warnings)
         {
-            Console.WriteLine($"Recovered from: {warning}");
+            Console.WriteLine($"Recovered from: {warning.Message} ({warning.Id})");
         }
 
         image.Save("duck-300dpi.png");

@@ -62,7 +62,13 @@ internal sealed partial class JpegDecoder<TPixel>
             return 1;
         }
 
-        return Math.Max(1, Math.Min(cores, Math.Min(units / perCore, _mcusY / MinRowsPerCore)));
+        int used = Math.Max(1, Math.Min(cores, Math.Min(units / perCore, _mcusY / MinRowsPerCore)));
+        if (used > 1)
+        {
+            input.Emit(DiagnosticLevel.Debug, "Parallel.Bands", $"The JPEG decode splits {units} MCU rows or runs into {used} bands on {used} threads.");
+        }
+
+        return used;
     }
 
     /// <summary>
@@ -322,6 +328,7 @@ internal sealed partial class JpegDecoder<TPixel>
             return false;
         }
 
+        input.Emit(DiagnosticLevel.Debug, "Parallel.Bands", $"The JPEG's scans are decoded together, as a pipeline on up to {cores} threads.");
         int size = (int)(length - input.Position);
         input.CheckMemory(size);
         byte[] bytes = _scanBytes = ArrayPool<byte>.Shared.Rent(size);

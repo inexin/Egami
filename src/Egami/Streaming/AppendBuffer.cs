@@ -18,6 +18,9 @@ internal sealed class AppendBuffer : Stream
     /// <summary>Gets the bytes received and not yet read.</summary>
     public int Available => _end - _start;
 
+    /// <summary>Gets the size of the buffer the bytes are held in.</summary>
+    public int Capacity => _data.Length;
+
     /// <summary>Gets the bytes received in total.</summary>
     public long Received { get; private set; }
 

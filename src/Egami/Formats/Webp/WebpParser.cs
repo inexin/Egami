@@ -111,7 +111,7 @@ internal sealed class WebpParser
         _riffEnd = 8 + (long)size;
         if (_input.Length is long length && length < _riffEnd)
         {
-            Problem(4, $"The RIFF size says the file has {_riffEnd} bytes, but it has {length}.", truncation: true);
+            Problem("Webp.RiffSizeMismatch", 4, $"The RIFF size says the file has {_riffEnd} bytes, but it has {length}.", truncation: true);
         }
 
         if (!NextChunk(out uint type, out long chunkSize))
@@ -147,7 +147,7 @@ internal sealed class WebpParser
                 case WebpContainer.Vp8L:
                     if ((Flags & 0x02) != 0)
                     {
-                        Problem(at, "The VP8X header says the file is animated, but it holds a still image.");
+                        Problem("Webp.AnimationFlagWithoutFrames", at, "The VP8X header says the file is animated, but it holds a still image.");
                     }
 
                     StartImage(type, chunkSize);
@@ -166,7 +166,7 @@ internal sealed class WebpParser
                 case WebpContainer.Anmf:
                     if ((Flags & 0x02) == 0)
                     {
-                        Problem(at, "The file holds ANMF frames but the VP8X header does not say it is animated.");
+                        Problem("Webp.FramesWithoutAnimationFlag", at, "The file holds ANMF frames but the VP8X header does not say it is animated.");
                     }
 
                     ImageChunk = WebpContainer.Anmf;
@@ -208,7 +208,7 @@ internal sealed class WebpParser
                     throw new Streaming.NeedsInputException();
                 }
 
-                Problem(_input.Position, "The WebP file ends early.", truncation: true);
+                Problem("Webp.FileTruncated", _input.Position, "The WebP file ends early.", truncation: true);
                 _pendingSkip = 0;
                 return;
             }
@@ -231,7 +231,7 @@ internal sealed class WebpParser
                 case WebpContainer.Vp8L:
                 case WebpContainer.Alph:
                 case WebpContainer.Anmf:
-                    Problem(_input.Position - 8, $"A second image chunk (\"{FourCC(type)}\") follows the image; it was ignored.");
+                    Problem("Webp.SecondImage", _input.Position - 8, $"A second image chunk (\"{FourCC(type)}\") follows the image; it was ignored.");
                     SkipPayload(size);
                     break;
                 default:
@@ -280,7 +280,7 @@ internal sealed class WebpParser
                 case WebpContainer.Vp8:
                 case WebpContainer.Vp8L:
                 case WebpContainer.Alph:
-                    Problem(_input.Position - 8, $"A \"{FourCC(type)}\" chunk lies between the frames of an animation; it was ignored.");
+                    Problem("Webp.ChunkBetweenFrames", _input.Position - 8, $"A \"{FourCC(type)}\" chunk lies between the frames of an animation; it was ignored.");
                     SkipPayload(size);
                     break;
                 default:
@@ -306,7 +306,7 @@ internal sealed class WebpParser
         {
             if (left > 0 && _input.Peek((int)Math.Min(left, 8)).Length > 0)
             {
-                Problem(_input.Position, $"{left} bytes after the last chunk are too few for another; they were ignored.");
+                Problem("Webp.TrailingBytes", _input.Position, $"{left} bytes after the last chunk are too few for another; they were ignored.");
                 SkipAvailable(left);
             }
 
@@ -323,11 +323,11 @@ internal sealed class WebpParser
         {
             if (header.Length > 0 || !_imageSeen)
             {
-                Problem(_input.Position, "The WebP file ends inside a chunk header.", truncation: true);
+                Problem("Webp.ChunkHeaderTruncated", _input.Position, "The WebP file ends inside a chunk header.", truncation: true);
             }
             else
             {
-                Problem(_input.Position, $"The file ends {left} bytes before the end the RIFF size gives.", truncation: true);
+                Problem("Webp.FileTruncated", _input.Position, $"The file ends {left} bytes before the end the RIFF size gives.", truncation: true);
             }
 
             _input.Skip(header.Length);
@@ -346,7 +346,7 @@ internal sealed class WebpParser
         {
             if (size > left - 8)
             {
-                Problem(_input.Position - 4, $"The \"{FourCC(type)}\" chunk's size {size} runs past the RIFF data ({left - 8} bytes left).", truncation: true);
+                Problem("Webp.ChunkPastRiff", _input.Position - 4, $"The \"{FourCC(type)}\" chunk's size {size} runs past the RIFF data ({left - 8} bytes left).", truncation: true);
                 size = left - 8;
             }
         }
@@ -372,7 +372,7 @@ internal sealed class WebpParser
         int read = _input.Read(data);
         if (read < size)
         {
-            Problem(_input.Position, $"The file ends inside the {what}.", truncation: true);
+            Problem("Webp.ChunkTruncated", _input.Position, $"The file ends inside the {what}.", truncation: true);
             return null;
         }
 
@@ -385,11 +385,22 @@ internal sealed class WebpParser
     }
 
     /// <summary>Notes a recoverable problem: a warning when lenient, <see cref="CorruptDataException"/> when strict.</summary>
-    internal void Problem(long offset, string problem, bool truncation = false)
+    internal void Problem(string id, long offset, string problem, bool truncation = false)
     {
         if (_strict)
         {
             throw new CorruptDataException(WebpFormat.Info.Name, offset, problem) { IsTruncation = truncation };
+        }
+
+        Metadata.WarningList.Add(id, problem, offset >= 0 ? offset : null);
+    }
+
+    /// <summary>Notes a problem a frame's decoder recovered from: a warning when lenient, <see cref="CorruptDataException"/> when strict.</summary>
+    internal void Problem(EgamiDiagnostic problem)
+    {
+        if (_strict)
+        {
+            throw new CorruptDataException(WebpFormat.Info.Name, problem.Offset ?? -1, problem.Message);
         }
 
         Metadata.WarningList.Add(problem);
@@ -414,7 +425,7 @@ internal sealed class WebpParser
             int n = _input.Peek((int)Math.Min(count, 64 * 1024)).Length;
             if (n == 0)
             {
-                Problem(_input.Position, "The WebP file ends early.", truncation: true);
+                Problem("Webp.FileTruncated", _input.Position, "The WebP file ends early.", truncation: true);
                 return false;
             }
 
@@ -517,14 +528,14 @@ internal sealed class WebpParser
     {
         if (Alpha is not null)
         {
-            Problem(_input.Position - 8, "The file has a second ALPH chunk; it was ignored.");
+            Problem("Webp.AlphaRepeated", _input.Position - 8, "The file has a second ALPH chunk; it was ignored.");
             SkipPayload(size);
             return;
         }
 
         if (size < 1)
         {
-            Problem(_input.Position - 8, "The ALPH chunk is empty; the image is read as opaque.");
+            Problem("Webp.AlphaEmpty", _input.Position - 8, "The ALPH chunk is empty; the image is read as opaque.");
             SkipPayload(size);
             return;
         }
@@ -537,7 +548,7 @@ internal sealed class WebpParser
     {
         if (size < 6)
         {
-            Problem(_input.Position - 8, $"The ANIM chunk has {size} bytes; it needs 6. It was ignored.");
+            Problem("Webp.AnimInvalid", _input.Position - 8, $"The ANIM chunk has {size} bytes; it needs 6. It was ignored.");
             SkipPayload(size);
             return;
         }
@@ -561,13 +572,13 @@ internal sealed class WebpParser
 
         if (type == WebpContainer.Iccp && _imageSeen)
         {
-            Problem(at, "The ICCP chunk comes after the image data; it was read anyway.");
+            Problem("Webp.IccAfterImage", at, "The ICCP chunk comes after the image data; it was read anyway.");
         }
 
         _metadataBytes += size;
         if (_metadataBytes > _input.Limits.MaxMetadataBytes)
         {
-            Metadata.WarningList.Add($"The \"{FourCC(type)}\" chunk is over the metadata limit. It was dropped.");
+            Metadata.WarningList.Add("Webp.MetadataOverLimit", $"The \"{FourCC(type)}\" chunk is over the metadata limit. It was dropped.");
             SkipPayload(size);
             return;
         }
@@ -591,7 +602,7 @@ internal sealed class WebpParser
             case WebpContainer.Exif:
                 if (_exifSeen)
                 {
-                    Metadata.WarningList.Add("The file has a second EXIF chunk; it was ignored.");
+                    Metadata.WarningList.Add("Webp.ExifRepeated", "The file has a second EXIF chunk; it was ignored.");
                     break;
                 }
 
@@ -603,7 +614,7 @@ internal sealed class WebpParser
             case WebpContainer.Xmp:
                 if (_xmpSeen)
                 {
-                    Metadata.WarningList.Add("The file has a second XMP chunk; it was ignored.");
+                    Metadata.WarningList.Add("Webp.XmpRepeated", "The file has a second XMP chunk; it was ignored.");
                     break;
                 }
 

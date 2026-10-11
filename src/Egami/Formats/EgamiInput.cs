@@ -22,7 +22,7 @@ public sealed class EgamiInput
     private const int DirectReadBytes = 4 * 1024;
 
     private readonly Stream _stream;
-    private readonly Streaming.AppendBuffer? _append;
+
     private readonly BudgetedMemorySource _memory;
     private readonly long _origin;
     private byte[]? _buffer;
@@ -30,6 +30,10 @@ public sealed class EgamiInput
     private int _end;
     private long _position;
     private string _formatName = "image";
+    private DiagnosticReporter? _diagnostics;
+
+    // The bytes of an incremental decode, which are the stream itself.
+    private Streaming.AppendBuffer? Append => _stream as Streaming.AppendBuffer;
 
     internal EgamiInput(Stream stream, EgamiContext context, CancellationToken cancellationToken)
     {
@@ -45,11 +49,20 @@ public sealed class EgamiInput
     internal EgamiInput(Streaming.AppendBuffer append, EgamiContext context, CancellationToken cancellationToken)
         : this((Stream)append, context, cancellationToken)
     {
-        _append = append;
     }
 
     /// <summary>Gets the context of the load.</summary>
     public EgamiContext Context { get; }
+
+    /// <summary>
+    /// Gets the load's link to <see cref="EgamiContext.Diagnostics"/>, for a reader's Info and Debug events. Warnings go through
+    /// <see cref="Warn"/>, so they are also listed in <see cref="RasterMetadata.Warnings"/>.
+    /// </summary>
+    public DiagnosticReporter Diagnostics =>
+        _diagnostics ?? Interlocked.CompareExchange(ref _diagnostics, DiagnosticReporter.Start(Context), null) ?? _diagnostics;
+
+    /// <summary>Gets whether events at <paramref name="level"/> reach a handler, so a site builds them only then.</summary>
+    internal bool Reports(DiagnosticLevel level) => Context.Diagnostics is not null && level >= Context.DiagnosticLevel;
 
     /// <summary>Gets the safety limits of the load.</summary>
     public SafetyLimits Limits => Context.Limits;
@@ -280,15 +293,64 @@ public sealed class EgamiInput
         Limits.CheckMetadataBytes(bytes);
     }
 
-    /// <summary>Notes a problem a lenient read recovered from in the raster's <see cref="RasterMetadata.Warnings"/>.</summary>
+    /// <summary>
+    /// Notes a problem a lenient read recovered from in the raster's <see cref="RasterMetadata.Warnings"/>, which also sends it to
+    /// <see cref="EgamiContext.Diagnostics"/> when the load ends.
+    /// </summary>
     /// <param name="raster">The raster being read.</param>
+    /// <param name="id">
+    /// A stable id of the form <c>Source.Name</c>, such as <c>"Pcx.PaletteMissing"</c>; <see cref="EgamiDiagnostic.Source"/> is the
+    /// part before the dot. Keep ids the same from version to version so apps can filter on them.
+    /// </param>
     /// <param name="warning">What was wrong and what the reader did, as a sentence.</param>
-    public void Warn(Raster raster, string warning)
+    /// <param name="offset">The byte offset in the input the problem is at, if known.</param>
+    /// <exception cref="ArgumentException"><paramref name="id"/> has no dot, or <paramref name="warning"/> is empty.</exception>
+    public void Warn(Raster raster, string id, string warning, long? offset = null)
     {
         ArgumentNullException.ThrowIfNull(raster);
+        ArgumentException.ThrowIfNullOrEmpty(id);
         ArgumentException.ThrowIfNullOrEmpty(warning);
+        if (id.IndexOf('.', StringComparison.Ordinal) < 1)
+        {
+            throw new ArgumentException($"The id '{id}' is not of the form Source.Name.", nameof(id));
+        }
+
         ObjectDisposedException.ThrowIf(_buffer is null, this);
-        raster.Metadata.WarningList.Add(warning);
+        raster.Metadata.WarningList.Add(id, warning, offset);
+    }
+
+    /// <summary>Has the Warnings of the raster a load returns sent to the handler, if any, as the load ends.</summary>
+    internal TRaster Watch<TRaster>(TRaster raster)
+        where TRaster : Raster
+    {
+        if (Context.Diagnostics is Action<EgamiDiagnostic> handler && raster.Metadata.BindWarnings(handler))
+        {
+            Diagnostics.Track(raster.Metadata);
+        }
+
+        return raster;
+    }
+
+    /// <summary>
+    /// Ends the load's reporting once the input is disposed: sends the Warnings of the raster <see cref="Watch"/> was given and the
+    /// summaries of capped ids. A handler that throws fails the load, and <paramref name="result"/> is disposed first.
+    /// </summary>
+    internal T Deliver<T>(T result)
+    {
+        if (_diagnostics is DiagnosticReporter diagnostics)
+        {
+            try
+            {
+                diagnostics.Complete();
+            }
+            catch
+            {
+                (result as IDisposable)?.Dispose();
+                throw;
+            }
+        }
+
+        return result;
     }
 
     /// <summary>Gets the length of the data from the start of the image, or <see langword="null"/> if the stream cannot seek.</summary>
@@ -299,7 +361,7 @@ public sealed class EgamiInput
     /// offsets (TIFF), or an empty segment for any other stream.
     /// </summary>
     internal ArraySegment<byte> WholeBuffer =>
-        _append is null && _stream is MemoryStream memory && memory.TryGetBuffer(out ArraySegment<byte> whole) && _origin >= 0
+        Append is null && _stream is MemoryStream memory && memory.TryGetBuffer(out ArraySegment<byte> whole) && _origin >= 0
             ? whole.Slice((int)_origin, (int)(memory.Length - _origin))
             : default;
 
@@ -334,16 +396,16 @@ public sealed class EgamiInput
     internal long? ImageEnd { get; set; }
 
     /// <summary>Gets whether this is an incremental decode, whose bytes are appended as they arrive.</summary>
-    internal bool Incremental => _append is not null;
+    internal bool Incremental => Append is not null;
 
     /// <summary>Gets whether running out of bytes is the end of the data: always, unless an incremental decode is still receiving.</summary>
-    internal bool AtEndOfInput => _append is null || _append.Ended;
+    internal bool AtEndOfInput => Append is null || Append.Ended;
 
     /// <summary>Gets whether an incremental decode has read every byte received so far while more may come.</summary>
-    internal bool Dry => _append is { Ended: false } && _start == _end && _append.Available == 0;
+    internal bool Dry => Append is { Ended: false } && _start == _end && Append.Available == 0;
 
     /// <summary>Gets the bytes an incremental decode can read now, without waiting for more.</summary>
-    internal long Available => (_end - _start) + (_append?.Available ?? 0);
+    internal long Available => (_end - _start) + (Append?.Available ?? 0);
 
     /// <summary>Gets the bytes read ahead into this input's buffer and not consumed, valid until the next read.</summary>
     internal ReadOnlyMemory<byte> BufferedUnread => Buffer.AsMemory(_start, _end - _start);
@@ -366,7 +428,7 @@ public sealed class EgamiInput
             Buffer.AsSpan(_start + (int)offset, fromBuffer).CopyTo(destination);
         }
 
-        return fromBuffer == destination.Length || _append!.TryPeek(Math.Max(0, offset - buffered), destination[fromBuffer..]);
+        return fromBuffer == destination.Length || Append!.TryPeek(Math.Max(0, offset - buffered), destination[fromBuffer..]);
     }
 
     /// <summary>
@@ -481,7 +543,7 @@ public sealed class EgamiInput
     private Exception Truncated(long offset)
     {
         // An incremental decode still receiving waits for more bytes instead.
-        return _append is { Ended: false }
+        return Append is { Ended: false }
             ? new Streaming.NeedsInputException()
             : new CorruptDataException(FormatName, offset, "The data ends unexpectedly.") { IsTruncation = true };
     }

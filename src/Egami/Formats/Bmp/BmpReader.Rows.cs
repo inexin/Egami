@@ -232,7 +232,7 @@ internal sealed partial class BmpReader : IRowSourceReader, IIncrementalFormatRe
                     catch (CorruptDataException e) when (!_strict)
                     {
                         _failedAt = _next;
-                        Metadata.WarningList.Add($"{e.Message} The {_header.Height - _next} rows not decoded are left black.");
+                        Metadata.WarningList.Add("Bmp.RowsMissing", $"{e.Message} The {_header.Height - _next} rows not decoded are left black.", e);
                     }
                 }
 
@@ -281,7 +281,7 @@ internal sealed partial class BmpReader : IRowSourceReader, IIncrementalFormatRe
             _ended = true;
             if (_pastPalette && _failedAt < 0)
             {
-                Metadata.WarningList.Add($"Some pixels use indices past the {_header.Palette.Length}-color palette; they are drawn black.");
+                Metadata.WarningList.Add("Bmp.IndexOutOfRange", $"Some pixels use indices past the {_header.Palette.Length}-color palette; they are drawn black.");
             }
 
             ApplyMetadata(_input, _header, Metadata, _options);

@@ -45,9 +45,9 @@ public class BmpDecodeTests(ITestOutputHelper output)
 
         int tolerance = file is "bmp/rgb565.bmp" or "bmp/argb1555.bmp" ? 1 : 0;
         Assert.InRange(Largest(expected, actual), 0, tolerance);
-        foreach (string warning in raster.Metadata.Warnings)
+        foreach (EgamiDiagnostic warning in raster.Metadata.Warnings)
         {
-            output.WriteLine(warning);
+            output.WriteLine(warning.ToString());
         }
     }
 

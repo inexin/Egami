@@ -20,7 +20,8 @@ with the limit's name, before any large allocation.
 ## Damaged files
 
 By default readers are lenient: a truncated or damaged file returns the rows decoded so far, the rest transparent black (or
-black), and lists what happened in `Metadata.Warnings`. A header that makes no sense always throws. `RecoveryMode.Strict` throws
+black), and lists what happened in `Metadata.Warnings`, each with a stable id; a [diagnostics](../diagnostics.md) handler gets the
+same list as each load ends. A header that makes no sense always throws. `RecoveryMode.Strict` throws
 `CorruptDataException` on any problem instead, with the byte offset.
 
 All three exceptions derive from `EgamiException`; anything else thrown by a reader is a bug.

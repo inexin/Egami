@@ -154,7 +154,7 @@ internal sealed partial class QoiReader : IRowSourceReader, IIncrementalFormatRe
                 throw _input.Corrupt(_input.Position, problem);
             }
 
-            Metadata.WarningList.Add(problem);
+            Metadata.WarningList.Add(end.Length == 0 || EndMarker.StartsWith(end) ? "Qoi.EndMarkerMissing" : "Qoi.DataAfterEnd", problem, _input.Position);
         }
 
         protected override void Dispose(bool disposing)
@@ -266,7 +266,7 @@ internal sealed partial class QoiReader : IRowSourceReader, IIncrementalFormatRe
             row[x..].Clear();
             _failedAt = _next;
             _next++;
-            Metadata.WarningList.Add($"The file ends after {_failedAt} of {StoredHeight} rows; the rest is left transparent black.");
+            Metadata.WarningList.Add("Qoi.RowsMissing", $"The file ends after {_failedAt} of {StoredHeight} rows; the rest is left transparent black.");
         }
     }
 }

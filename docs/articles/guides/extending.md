@@ -35,7 +35,7 @@ Readers read only through `EgamiInput`, which keeps them inside the safety limit
 | `AddFrame(raster)` | Another frame for animated formats, counted against `MaxFrames` and the memory budget |
 | `RentScratch(bytes)` | Working memory counted against the same budget |
 | `CheckMemory`, `CheckFrameCount`, `CheckMetadataBytes` | Check a number from the header before acting on it |
-| `Warn(raster, text)` | Note something a lenient read recovered from |
+| `Warn(raster, id, text)` | Note something a lenient read recovered from, with a stable id such as `Pcx.PaletteMissing` |
 | `Corrupt(offset, problem)` | The exception to throw for data that breaks the format's rules |
 
 Respect `ReaderOptions.Recovery`: in `Lenient` mode keep what decoded and warn; in `Strict` mode throw. The writer gets the

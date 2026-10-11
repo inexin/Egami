@@ -20,7 +20,7 @@ internal static class FormatPipeline
             return Named(decoder.ReadAll(), decoder.Info.Format);
         }
 
-        return Run(stream, context, (format, input) => Named(format.Reader!.Read(input, options), format), cancellationToken);
+        return Run(stream, context, (format, input) => Loaded(input, format.Reader!.Read(input, options), format, options), cancellationToken);
     }
 
     internal static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
@@ -37,7 +37,7 @@ internal static class FormatPipeline
             return Named(decoder.ReadAll<TPixel>(), decoder.Info.Format);
         }
 
-        return Run(stream, context, (format, input) => Named(format.Reader!.Read<TPixel>(input, options), format), cancellationToken);
+        return Run(stream, context, (format, input) => Loaded(input, format.Reader!.Read<TPixel>(input, options), format, options), cancellationToken);
     }
 
     internal static RasterInfo Probe(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
@@ -58,6 +58,10 @@ internal static class FormatPipeline
         {
             format = Detect(input, context);
             input.SetFormat(format);
+        }
+        catch (LimitExceededException e) when (LimitHit(input, e))
+        {
+            throw;
         }
         catch
         {
@@ -110,6 +114,25 @@ internal static class FormatPipeline
                 input.Dispose();
             }
         }
+    }
+
+    /// <summary>Names a raster a reader returned, has its Warnings sent as the load ends, and notes a frame range it was read with.</summary>
+    private static TRaster Loaded<TRaster>(EgamiInput input, TRaster raster, FormatInfo format, ReaderOptions options)
+        where TRaster : Raster
+    {
+        if (!options.Frames.Equals(Range.All))
+        {
+            input.Emit(DiagnosticLevel.Info, "Decode.FramesSelected", $"ReaderOptions.Frames is {options.Frames}: {raster.FrameCount} frames were read and the rest skipped.");
+        }
+
+        return input.Watch(Named(raster, format));
+    }
+
+    /// <summary>Notes a safety limit as it fails a load, while the exception is on its way out; never catches it.</summary>
+    internal static bool LimitHit(EgamiInput input, LimitExceededException e)
+    {
+        input.Emit(DiagnosticLevel.Debug, "Limits.Exceeded", $"{e.LimitName} is {e.Allowed:N0}; the file needs {e.Found:N0}. The load fails with LimitExceededException.");
+        return false;
     }
 
     /// <summary>Gets whether the options crop or reduce, which the session path does; otherwise Load runs as in 1.0.</summary>
@@ -178,6 +201,8 @@ internal static class FormatPipeline
         if (!stream.CanSeek)
         {
             (byte[] buffer, int length) = ReadAll(stream, context, cancellationToken);
+            DiagnosticReporter? diagnostics = null;
+            context.Emit(ref diagnostics, DiagnosticLevel.Debug, "Streaming.ReadWhole", $"The stream cannot seek, so its {length:N0} bytes were read into memory to find every image.");
             try
             {
                 using MemoryStream memory = new(buffer, 0, length, writable: false, publiclyVisible: true);
@@ -578,18 +603,25 @@ internal static class FormatPipeline
     {
         ArgumentNullException.ThrowIfNull(stream);
         EgamiInput input = new(stream, context, cancellationToken);
+        T result;
         try
         {
             FormatInfo format = Detect(input, context);
             input.SetFormat(format);
-            T result = read(format, input);
+            result = read(format, input);
             input.ReturnUnreadBytes();
-            return result;
+        }
+        catch (LimitExceededException e) when (LimitHit(input, e))
+        {
+            throw;
         }
         finally
         {
             input.Dispose();
         }
+
+        // Sends the load's Warnings, which can throw when the handler turns them into errors.
+        return input.Deliver(result);
     }
 
     internal static FormatInfo Detect(EgamiInput input, EgamiContext context)
@@ -610,7 +642,13 @@ internal static class FormatPipeline
         {
             if (header.Length >= format.SignatureLength && format.Matches(header))
             {
-                return format.Reader is null ? throw new UnsupportedFormatException($"The data is {format.Name}, but that format has no reader.") : format;
+                if (format.Reader is null)
+                {
+                    throw new UnsupportedFormatException($"The data is {format.Name}, but that format has no reader.");
+                }
+
+                input.Emit(DiagnosticLevel.Info, "Detect.Format", $"The data is {format.Name}, found by its signature.");
+                return format;
             }
         }
 

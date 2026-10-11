@@ -288,10 +288,7 @@ internal sealed partial class TgaReader : IFormatReader
             AlphaType = header.AlphaType,
         };
         metadata.FormatDetails = details;
-        foreach (string warning in header.Warnings)
-        {
-            metadata.WarningList.Add(warning);
-        }
+        metadata.WarningList.AddRange(header.Warnings);
 
         if (header.Extension is not byte[] e || !options.ReadMetadata)
         {
@@ -375,7 +372,7 @@ internal sealed partial class TgaReader : IFormatReader
         /// <summary>Gets or sets whether the footer can only be looked for after the pixels (the stream cannot seek).</summary>
         public bool FooterAfterPixels { get; set; }
 
-        public List<string> Warnings { get; } = [];
+        public WarningList Warnings { get; } = new();
 
         public bool Mapped => Type is 1 or 9;
 
@@ -536,7 +533,7 @@ internal sealed partial class TgaReader : IFormatReader
         /// <summary>Notes damage found at stored row <paramref name="row"/>: the rows from there on are left black.</summary>
         public void Damaged(CorruptDataException e, int row)
         {
-            header.Warnings.Add($"{e.Message} The {header.Height - row} rows not decoded are left black.");
+            header.Warnings.Add("Tga.RowsMissing", $"{e.Message} The {header.Height - row} rows not decoded are left black.", e);
             header.FooterAfterPixels = false;
         }
 
@@ -591,7 +588,7 @@ internal sealed partial class TgaReader : IFormatReader
         {
             if (_remaining > 0)
             {
-                Problem("A run-length packet goes past the end of the image; the rest of it was ignored.");
+                Problem("Tga.RunPastImage", "A run-length packet goes past the end of the image; the rest of it was ignored.");
                 if (!_repeat)
                 {
                     for (int i = 0; i < _remaining * header.BytesPerPixel; i++)
@@ -603,7 +600,7 @@ internal sealed partial class TgaReader : IFormatReader
 
             if (_pastPalette)
             {
-                header.Warnings.Add("Some pixels use indices outside the color map; they are drawn black.");
+                header.Warnings.Add("Tga.IndexOutOfRange", "Some pixels use indices outside the color map; they are drawn black.");
             }
         }
 
@@ -729,14 +726,14 @@ internal sealed partial class TgaReader : IFormatReader
             }
         }
 
-        private void Problem(string problem)
+        private void Problem(string id, string problem)
         {
             if (strict)
             {
                 throw new CorruptDataException(TgaFormat.Info.Name, input.Position, problem);
             }
 
-            header.Warnings.Add(problem);
+            header.Warnings.Add(id, problem, input.Position);
         }
 
         /// <summary>Fills one row from packets, which may continue from the row before.</summary>

@@ -50,7 +50,7 @@ public class RawProfileTests
         raster.Metadata.Text.Add(new TextEntry("Raw profile type exif", RawProfiles.Encode("exif", other.ToBytes().Span)));
         using Raster again = Raster.Load(Save(raster));
         Assert.Equal("Corpus Phone", again.Metadata.Exif!.CameraModel);
-        Assert.Contains(again.Metadata.Warnings, w => w.Contains("Raw profile type exif", StringComparison.Ordinal));
+        Assert.Contains(again.Metadata.Warnings, w => w.Message.Contains("Raw profile type exif", StringComparison.Ordinal));
     }
 
     [Theory]

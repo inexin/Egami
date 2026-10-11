@@ -25,14 +25,14 @@ internal sealed partial class WebpReader : IYuvFormatReader
                 : "This WebP is lossless, which has no YUV planes; load it with Raster.Load.");
         }
 
-        (YuvRaster<byte> planes, string? warning) = DecodePlanes(input, options, parser);
+        (YuvRaster<byte> planes, EgamiDiagnostic? warning) = DecodePlanes(input, options, parser);
         try
         {
             parser.ReadToEnd(parser.ImageSize);
             CopyMetadata(parser.Metadata, planes.Metadata);
             if (warning is not null)
             {
-                planes.Metadata.WarningList.Add(warning);
+                planes.Metadata.WarningList.Add(warning.Value);
             }
 
             return planes;
@@ -56,10 +56,10 @@ internal sealed partial class WebpReader : IYuvFormatReader
     /// decode recovered with. The payload is held in memory: VP8's first partition (the modes) and its token partitions are read
     /// side by side.
     /// </summary>
-    private static (YuvRaster<byte> Planes, string? Warning) DecodePlanes(EgamiInput input, ReaderOptions options, WebpParser parser)
+    private static (YuvRaster<byte> Planes, EgamiDiagnostic? Warning) DecodePlanes(EgamiInput input, ReaderOptions options, WebpParser parser)
     {
         bool strict = options.Recovery == RecoveryMode.Strict;
-        (byte[] payload, int length, string? warning) = ReadPayload(input, parser, strict);
+        (byte[] payload, int length, EgamiDiagnostic? warning) = ReadPayload(input, parser, strict);
         try
         {
             return DecodePlanes(input, options, payload, 0, length, parser.Alpha, parser.Width, parser.Height, parser.ImageStart, warning);
@@ -75,8 +75,8 @@ internal sealed partial class WebpReader : IYuvFormatReader
     /// into planes of the given size; <paramref name="warning"/> is a problem met while reading the data, kept unless a later one
     /// replaces it.
     /// </summary>
-    internal static (YuvRaster<byte> Planes, string? Warning) DecodePlanes(
-        EgamiInput input, ReaderOptions options, byte[] payload, int offset, int length, byte[]? alphaData, int width, int height, long at, string? warning)
+    internal static (YuvRaster<byte> Planes, EgamiDiagnostic? Warning) DecodePlanes(
+        EgamiInput input, ReaderOptions options, byte[] payload, int offset, int length, byte[]? alphaData, int width, int height, long at, EgamiDiagnostic? warning)
     {
         bool strict = options.Recovery == RecoveryMode.Strict;
         YuvRaster<byte>? planes = null;
@@ -115,7 +115,7 @@ internal sealed partial class WebpReader : IYuvFormatReader
                     throw new CorruptDataException(WebpFormat.Info.Name, at, "The lossy image data ends unexpectedly.") { IsTruncation = true };
                 }
 
-                warning = "The lossy image data ends early; the rest of the image is decoded from zeros.";
+                warning = EgamiDiagnostic.Create(DiagnosticLevel.Warning, "Webp.LossyDataEnded", "The lossy image data ends early; the rest of the image is decoded from zeros.");
             }
 
             if (alphaData is not null)
@@ -143,7 +143,7 @@ internal sealed partial class WebpReader : IYuvFormatReader
     }
 
     /// <summary>Reads the VP8 chunk's payload into a pooled array; a short file is an error (strict) or zero-filled with a warning.</summary>
-    private static (byte[] Payload, int Length, string? Warning) ReadPayload(EgamiInput input, WebpParser parser, bool strict)
+    private static (byte[] Payload, int Length, EgamiDiagnostic? Warning) ReadPayload(EgamiInput input, WebpParser parser, bool strict)
     {
         if (parser.ImageSize > int.MaxValue)
         {
@@ -154,7 +154,7 @@ internal sealed partial class WebpReader : IYuvFormatReader
         input.CheckMemory(size);
         byte[] payload = ArrayPool<byte>.Shared.Rent(Math.Max(size, 16));
         int read = input.Read(payload.AsSpan(0, size));
-        string? warning = null;
+        EgamiDiagnostic? warning = null;
         if (read < size)
         {
             if (strict)
@@ -164,7 +164,7 @@ internal sealed partial class WebpReader : IYuvFormatReader
             }
 
             payload.AsSpan(read, size - read).Clear();
-            warning = "The lossy image data ends early; the rest of the image is decoded from zeros.";
+            warning = EgamiDiagnostic.Create(DiagnosticLevel.Warning, "Webp.LossyDataEnded", "The lossy image data ends early; the rest of the image is decoded from zeros.");
         }
 
         return (payload, size, warning);

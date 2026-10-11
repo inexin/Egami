@@ -38,6 +38,8 @@
       href: guides/memory-and-threading.md
     - name: Security
       href: guides/security.md
+- name: Diagnostics
+  href: diagnostics.md
 - name: Cookbook
   href: cookbook/index.md
 - name: Performance

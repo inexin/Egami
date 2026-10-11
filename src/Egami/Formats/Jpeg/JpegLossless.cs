@@ -15,7 +15,7 @@ internal sealed class JpegLosslessDecoder : IDisposable
 {
     private readonly JpegHeader _header;
     private readonly ReaderOptions _options;
-    private readonly List<string> _warnings;
+    private readonly WarningList _warnings;
     private readonly bool _fast;
     private readonly Plane[] _planes;
     private readonly int _maxH;
@@ -39,7 +39,7 @@ internal sealed class JpegLosslessDecoder : IDisposable
     private bool _scanDecoded;
     private bool _scansDone;
 
-    internal JpegLosslessDecoder(JpegHeader header, ReaderOptions options, List<string> warnings, bool fastUpsampling)
+    internal JpegLosslessDecoder(JpegHeader header, ReaderOptions options, WarningList warnings, bool fastUpsampling)
     {
         _header = header;
         _options = options;
@@ -299,7 +299,7 @@ internal sealed class JpegLosslessDecoder : IDisposable
 
                 if (arithmetic is not null ? arithmetic.Failed : reader.PastEnd && !reader.AtRestartMarker)
                 {
-                    Problem("The image data ends early or is damaged. The rest of the image is black.");
+                    Problem("Jpeg.DataEnded", "The image data ends early or is damaged. The rest of the image is black.");
                     return false;
                 }
             }
@@ -438,7 +438,7 @@ internal sealed class JpegLosslessDecoder : IDisposable
         bool ended = false;
         if (!reader.Restart(nextRestart))
         {
-            Problem("A restart marker is missing or out of order; the data was resynchronized at the next one.");
+            Problem("Jpeg.RestartResync", "A restart marker is missing or out of order; the data was resynchronized at the next one.");
             ended = reader.Marker != 0;
         }
 
@@ -466,7 +466,7 @@ internal sealed class JpegLosslessDecoder : IDisposable
         return new CorruptDataException(JpegFormat.Info.Name, -1, $"The scan uses DC Huffman table {slot}, which is missing.");
     }
 
-    private void Problem(string message)
+    private void Problem(string id, string message)
     {
         if (_options.Recovery == RecoveryMode.Strict)
         {
@@ -475,7 +475,7 @@ internal sealed class JpegLosslessDecoder : IDisposable
 
         if (!_warned)
         {
-            _warnings.Add(message);
+            _warnings.Add(id, message);
             _warned = true;
         }
     }

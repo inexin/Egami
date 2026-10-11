@@ -155,7 +155,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         {
             if (length != 8)
             {
-                chunks.Recoverable(offset, $"The acTL chunk is {length} bytes long; it must be 8. The file is read as a still PNG.");
+                chunks.Recoverable("Png.ActlLength", offset, $"The acTL chunk is {length} bytes long; it must be 8. The file is read as a still PNG.");
                 chunks.Skip(PngChunkType.Actl, length);
             }
 
@@ -164,7 +164,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
         if (state.Png.Animated)
         {
-            chunks.Recoverable(offset, "A second acTL chunk appears. It was ignored.");
+            chunks.Recoverable("Png.ActlRepeated", offset, "A second acTL chunk appears. It was ignored.");
             return;
         }
 
@@ -172,7 +172,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         uint plays = BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(4));
         if (frames == 0 || frames > int.MaxValue || plays > int.MaxValue)
         {
-            state.Metadata.WarningList.Add($"The acTL chunk says {frames} frames; the file is read as a still PNG.");
+            state.Metadata.WarningList.Add("Png.ActlFrameCount", $"The acTL chunk says {frames} frames; the file is read as a still PNG.");
             return;
         }
 
@@ -211,7 +211,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         int denominator = BinaryPrimitives.ReadUInt16BigEndian(data.AsSpan(22));
         if (data[24] > 2 || data[25] > 1)
         {
-            chunks.Recoverable(offset, $"The fcTL chunk has disposal {data[24]} and blend {data[25]}; unknown values are read as 0.");
+            chunks.Recoverable("Png.FctlUnknownOps", offset, $"The fcTL chunk has disposal {data[24]} and blend {data[25]}; unknown values are read as 0.");
         }
 
         FrameDisposal disposal = data[24] switch
@@ -283,7 +283,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             case PngChunkType.Iend:
                 if (length != 0)
                 {
-                    chunks.Recoverable(offset, $"The IEND chunk has {length} bytes of data; it must be empty.");
+                    chunks.Recoverable("Png.IendData", offset, $"The IEND chunk has {length} bytes of data; it must be empty.");
                 }
 
                 chunks.Skip(type, length);
@@ -321,7 +321,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             case PngChunkType.Actl or PngChunkType.Fctl or PngChunkType.Fdat:
                 if (type == PngChunkType.Actl && state.SeenImageData)
                 {
-                    chunks.Recoverable(offset, "The acTL chunk comes after the image data; the file is read as a still PNG.");
+                    chunks.Recoverable("Png.ActlAfterData", offset, "The acTL chunk comes after the image data; the file is read as a still PNG.");
                 }
 
                 chunks.Skip(type, length);
@@ -380,7 +380,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         }
         catch (InvalidDataException e)
         {
-            chunks.Recoverable(offset, $"The {name} chunk is malformed ({e.Message}). It was ignored.");
+            chunks.Recoverable("Png.ChunkMalformed", offset, $"The {name} chunk is malformed ({e.Message}). It was ignored.");
         }
     }
 
@@ -444,7 +444,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             case PngChunkType.Exif:
                 if (state.ExifFromRawProfile is string kind)
                 {
-                    metadata.WarningList.Add($"The file has both an eXIf chunk and a \"Raw profile type {kind}\" chunk; the eXIf chunk is used.");
+                    metadata.WarningList.Add("Png.ExifDuplicate", $"The file has both an eXIf chunk and a \"Raw profile type {kind}\" chunk; the eXIf chunk is used.");
                     state.ExifFromRawProfile = null;
                 }
 
@@ -493,7 +493,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         {
             if (state.XmpFromRawProfile)
             {
-                state.Metadata.WarningList.Add("The file has both an XMP iTXt chunk and a \"Raw profile type xmp\" chunk; the iTXt chunk is used.");
+                state.Metadata.WarningList.Add("Png.XmpDuplicate", "The file has both an XMP iTXt chunk and a \"Raw profile type xmp\" chunk; the iTXt chunk is used.");
                 state.XmpFromRawProfile = false;
             }
 
@@ -517,7 +517,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
                 state.ExifFromRawProfile = kind;
                 break;
             case "exif" or "APP1":
-                metadata.WarningList.Add($"The file has both EXIF and a \"Raw profile type {kind}\" chunk; the first EXIF is used.");
+                metadata.WarningList.Add("Png.ExifDuplicate", $"The file has both EXIF and a \"Raw profile type {kind}\" chunk; the first EXIF is used.");
                 break;
             case "iptc" when !metadata.HasIptc:
                 metadata.SetIptcSource(RawProfiles.Iim(profile), state.Input.Limits.MaxMetadataBytes);
@@ -527,7 +527,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
                 state.XmpFromRawProfile = true;
                 break;
             case "xmp":
-                metadata.WarningList.Add("The file has both an XMP iTXt chunk and a \"Raw profile type xmp\" chunk; the iTXt chunk is used.");
+                metadata.WarningList.Add("Png.XmpDuplicate", "The file has both an XMP iTXt chunk and a \"Raw profile type xmp\" chunk; the iTXt chunk is used.");
                 break;
         }
     }
@@ -544,7 +544,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
                 return;
             }
 
-            state.Metadata.WarningList.Add($"The \"{entry.Key}\" text chunk cannot be decoded: {problem}. It is kept as text.");
+            state.Metadata.WarningList.Add("Png.RawProfileInvalid", $"The \"{entry.Key}\" text chunk cannot be decoded: {problem}. It is kept as text.");
         }
 
         state.Metadata.Text.Add(entry);
@@ -631,7 +631,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
         if (count > 1 << state.Header.BitDepth)
         {
-            chunks.Recoverable(offset, $"The palette has {count} entries but bit depth {state.Header.BitDepth} can index only {1 << state.Header.BitDepth}.");
+            chunks.Recoverable("Png.PaletteTooLong", offset, $"The palette has {count} entries but bit depth {state.Header.BitDepth} can index only {1 << state.Header.BitDepth}.");
         }
 
         state.Palette = ToPalette(data, count);
@@ -672,7 +672,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         bool valid = colorType == PngColorType.Palette ? length <= expected : length == expected;
         if (!valid)
         {
-            chunks.Recoverable(offset, expected < 0
+            chunks.Recoverable("Png.TrnsInvalid", offset, expected < 0
                 ? $"Color type {(int)colorType} already has alpha and must not have a tRNS chunk. It was ignored."
                 : $"The tRNS chunk is {length} bytes long, which does not fit color type {(int)colorType}. It was ignored.");
             chunks.Skip(PngChunkType.Trns, length);
@@ -701,7 +701,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
     private static void OutOfOrder(State state, uint type, uint length, string rule)
     {
-        state.Chunks.Recoverable(state.Chunks.ChunkOffset, $"The {PngChunkType.Name(type)} chunk {rule}. It was ignored.");
+        state.Chunks.Recoverable("Png.ChunkOutOfOrder", state.Chunks.ChunkOffset, $"The {PngChunkType.Name(type)} chunk {rule}. It was ignored.");
         state.Chunks.Skip(type, length);
     }
 
@@ -793,11 +793,11 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
             if (idat.Truncated)
             {
-                state.Chunks.Recoverable(input.Position, "The file ends inside the image data.");
+                state.Chunks.Recoverable("Png.DataTruncated", input.Position, "The file ends inside the image data.");
             }
             else if (checkAdler && idat.Tail != adler)
             {
-                state.Chunks.Recoverable(input.Position, $"The image data's Adler-32 checksum is 0x{idat.Tail:X8} but the data gives 0x{adler:X8}.");
+                state.Chunks.Recoverable("Png.AdlerMismatch", input.Position, $"The image data's Adler-32 checksum is 0x{idat.Tail:X8} but the data gives 0x{adler:X8}.");
             }
 
             state.Unpacker.ThrowIfBadIndices(state.Chunks, input.Position);
@@ -848,7 +848,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             {
                 if (next is null)
                 {
-                    chunks.Recoverable(input.Position, "The file ends before IEND.");
+                    chunks.Recoverable("Png.IendMissing", input.Position, "The file ends before IEND.");
                     break;
                 }
 
@@ -869,13 +869,13 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
                     if (type != PngChunkType.Fdat)
                     {
-                        chunks.Recoverable(chunks.ChunkOffset, "An fcTL chunk is not followed by fdAT; the animation ends there.");
+                        chunks.Recoverable("Png.FdatMissing", chunks.ChunkOffset, "An fcTL chunk is not followed by fdAT; the animation ends there.");
                         break;
                     }
 
                     if (index >= state.AnimationFrames)
                     {
-                        chunks.Recoverable(chunks.ChunkOffset, $"There are more frames than the {state.AnimationFrames} acTL gives; the rest were ignored.");
+                        chunks.Recoverable("Png.FramesExtra", chunks.ChunkOffset, $"There are more frames than the {state.AnimationFrames} acTL gives; the rest were ignored.");
                         break;
                     }
 
@@ -887,7 +887,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
                 if (type is PngChunkType.Idat or PngChunkType.Fdat)
                 {
-                    chunks.Recoverable(chunks.ChunkOffset, $"A {PngChunkType.Name(type)} chunk is out of place. It was ignored.");
+                    chunks.Recoverable("Png.ChunkOutOfPlace", chunks.ChunkOffset, $"A {PngChunkType.Name(type)} chunk is out of place. It was ignored.");
                     chunks.Skip(type, length);
                 }
                 else
@@ -900,12 +900,12 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
             if (!stopped && index < state.AnimationFrames && index < end)
             {
-                chunks.Recoverable(input.Position, $"acTL gives {state.AnimationFrames} frames but the file has {index}.");
+                chunks.Recoverable("Png.FramesMissing", input.Position, $"acTL gives {state.AnimationFrames} frames but the file has {index}.");
             }
         }
         catch (CorruptDataException e) when (state.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation && frames.Count > 0)
         {
-            state.Metadata.WarningList.Add("The file ends inside the animation; the frames before that are kept.");
+            state.Metadata.WarningList.Add("Png.AnimationTruncated", "The file ends inside the animation; the frames before that are kept.");
         }
         catch
         {
@@ -986,7 +986,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         bool complete = !data.Truncated && !data.OutOfSequence;
         if (data.OutOfSequence)
         {
-            state.Metadata.WarningList.Add($"Frame {index}'s data is out of sequence; the animation ends before it.");
+            state.Metadata.WarningList.Add("Png.SequenceError", $"Frame {index}'s data is out of sequence; the animation ends before it.");
             return null;
         }
 
@@ -1060,7 +1060,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
     {
         if (read < 2)
         {
-            state.Chunks.Recoverable(state.Input.Position, "The image data ends early, before any scanline. The image is transparent black.");
+            state.Chunks.Recoverable("Png.DataEmpty", state.Input.Position, "The image data ends early, before any scanline. The image is transparent black.");
             return false;
         }
 
@@ -1085,11 +1085,11 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
 
         if (inflated.Problem is string problem)
         {
-            state.Chunks.Recoverable(state.Input.Position, problem + " The damage is after the last row.");
+            state.Chunks.Recoverable("Png.DamageAfterLastRow", state.Input.Position, problem + " The damage is after the last row.");
         }
         else
         {
-            state.Metadata.WarningList.Add("The image data has extra bytes after the last row. They were ignored.");
+            state.Metadata.WarningList.Add("Png.DataAfterLastRow", "The image data has extra bytes after the last row. They were ignored.");
         }
 
         return false;
@@ -1104,7 +1104,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         }
         catch (CorruptDataException e) when (state.Options.Recovery == RecoveryMode.Lenient && e.IsTruncation)
         {
-            state.Metadata.WarningList.Add("The file ends inside a chunk after the image data. That chunk was ignored.");
+            state.Metadata.WarningList.Add("Png.ChunkTruncated", "The file ends inside a chunk after the image data. That chunk was ignored.");
         }
         catch
         {
@@ -1124,7 +1124,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             {
                 if (next is null)
                 {
-                    state.Chunks.Recoverable(state.Input.Position, "The file ends without an IEND chunk.");
+                    state.Chunks.Recoverable("Png.IendMissing", state.Input.Position, "The file ends without an IEND chunk.");
                     break;
                 }
 
@@ -1168,10 +1168,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             target.Text.Add(entry);
         }
 
-        foreach (string warning in source.Warnings)
-        {
-            target.WarningList.Add(warning);
-        }
+        target.WarningList.AddRange(source.WarningList);
 
         // Precedence from the specification: cICP, then iCCP, then sRGB, then gAMA.
         ReadOnlySpan<byte> cicp = png.CodingIndependentCodePoints.Span;
@@ -1312,7 +1309,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
         {
             if (number != ExpectedSequence)
             {
-                Chunks.Recoverable(Chunks.ChunkOffset, $"Sequence number {number} comes where {ExpectedSequence} was expected.");
+                Chunks.Recoverable("Png.SequenceError", Chunks.ChunkOffset, $"Sequence number {number} comes where {ExpectedSequence} was expected.");
                 return false;
             }
 
@@ -1524,7 +1521,7 @@ internal sealed partial class PngReader : IFormatReader, Streaming.IRowSourceRea
             if (read < 1 + row.Length)
             {
                 string? problem = inflated.Problem;
-                state.Chunks.Recoverable(state.Input.Position, (problem ?? "The image data ends early.") + $" Decoded {index} of the scanlines; the rest are transparent black.");
+                state.Chunks.Recoverable("Png.RowsMissing", state.Input.Position, (problem ?? "The image data ends early.") + $" Decoded {index} of the scanlines; the rest are transparent black.");
                 return false;
             }
 

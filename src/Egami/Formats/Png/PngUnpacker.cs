@@ -92,7 +92,7 @@ internal sealed class PngUnpacker
     {
         if (BadIndices > 0)
         {
-            chunks.Recoverable(offset, $"{BadIndices} pixels use palette indices outside the {_palette.Length}-entry palette. They were made black.");
+            chunks.Recoverable("Png.IndexOutOfRange", offset, $"{BadIndices} pixels use palette indices outside the {_palette.Length}-entry palette. They were made black.");
         }
     }
 

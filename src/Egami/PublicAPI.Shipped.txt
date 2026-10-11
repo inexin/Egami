@@ -9,8 +9,22 @@ Egami.CorruptDataException
 Egami.CorruptDataException.CorruptDataException(string! formatName, long offset, string! problem, System.Exception? innerException = null) -> void
 Egami.CorruptDataException.FormatName.get -> string!
 Egami.CorruptDataException.Offset.get -> long
+Egami.DiagnosticLevel
+Egami.DiagnosticLevel.Debug = 0 -> Egami.DiagnosticLevel
+Egami.DiagnosticLevel.Info = 1 -> Egami.DiagnosticLevel
+Egami.DiagnosticLevel.Warning = 2 -> Egami.DiagnosticLevel
+Egami.DiagnosticReporter
+Egami.DiagnosticReporter.Dispose() -> void
+Egami.DiagnosticReporter.IsEnabled(Egami.DiagnosticLevel level) -> bool
+Egami.DiagnosticReporter.IsOn.get -> bool
+Egami.DiagnosticReporter.Report(Egami.DiagnosticLevel level, string! id, string! message, long? offset = null, int? frame = null) -> void
+Egami.DiagnosticReporter.Report(Egami.EgamiDiagnostic diagnostic) -> void
 Egami.EgamiContext
 Egami.EgamiContext.<Clone>$() -> Egami.EgamiContext!
+Egami.EgamiContext.DiagnosticLevel.get -> Egami.DiagnosticLevel
+Egami.EgamiContext.DiagnosticLevel.init -> void
+Egami.EgamiContext.Diagnostics.get -> System.Action<Egami.EgamiDiagnostic>?
+Egami.EgamiContext.Diagnostics.init -> void
 Egami.EgamiContext.EgamiContext() -> void
 Egami.EgamiContext.Equals(Egami.EgamiContext? other) -> bool
 Egami.EgamiContext.Formats.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.FormatInfo!>!
@@ -21,7 +35,25 @@ Egami.EgamiContext.MaxParallelism.get -> int
 Egami.EgamiContext.MaxParallelism.init -> void
 Egami.EgamiContext.Memory.get -> Egami.IPixelMemorySource!
 Egami.EgamiContext.Memory.init -> void
+Egami.EgamiContext.StartDiagnostics() -> Egami.DiagnosticReporter!
 Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo! format) -> Egami.EgamiContext!
+Egami.EgamiDiagnostic
+Egami.EgamiDiagnostic.Deconstruct(out Egami.DiagnosticLevel Level, out string! Source, out string! Id, out string! Message, out long? Offset, out int? Frame) -> void
+Egami.EgamiDiagnostic.EgamiDiagnostic() -> void
+Egami.EgamiDiagnostic.EgamiDiagnostic(Egami.DiagnosticLevel Level, string! Source, string! Id, string! Message, long? Offset, int? Frame) -> void
+Egami.EgamiDiagnostic.Equals(Egami.EgamiDiagnostic other) -> bool
+Egami.EgamiDiagnostic.Frame.get -> int?
+Egami.EgamiDiagnostic.Frame.init -> void
+Egami.EgamiDiagnostic.Id.get -> string!
+Egami.EgamiDiagnostic.Id.init -> void
+Egami.EgamiDiagnostic.Level.get -> Egami.DiagnosticLevel
+Egami.EgamiDiagnostic.Level.init -> void
+Egami.EgamiDiagnostic.Message.get -> string!
+Egami.EgamiDiagnostic.Message.init -> void
+Egami.EgamiDiagnostic.Offset.get -> long?
+Egami.EgamiDiagnostic.Offset.init -> void
+Egami.EgamiDiagnostic.Source.get -> string!
+Egami.EgamiDiagnostic.Source.init -> void
 Egami.EgamiException
 Egami.EgamiException.EgamiException(string! message, System.Exception? innerException = null) -> void
 Egami.Formats.Bmp.BmpCompression
@@ -69,6 +101,7 @@ Egami.Formats.EgamiInput.CheckMetadataBytes(long bytes) -> void
 Egami.Formats.EgamiInput.Context.get -> Egami.EgamiContext!
 Egami.Formats.EgamiInput.Corrupt(long offset, string! problem) -> Egami.CorruptDataException!
 Egami.Formats.EgamiInput.CreateRaster<TPixel>(long width, long height, Egami.ClearMode clear = Egami.ClearMode.None) -> Egami.Raster<TPixel>!
+Egami.Formats.EgamiInput.Diagnostics.get -> Egami.DiagnosticReporter!
 Egami.Formats.EgamiInput.FormatName.get -> string!
 Egami.Formats.EgamiInput.Limits.get -> Egami.SafetyLimits!
 Egami.Formats.EgamiInput.Peek(int count) -> System.ReadOnlySpan<byte>
@@ -82,7 +115,7 @@ Egami.Formats.EgamiInput.ReadUInt32BigEndian() -> uint
 Egami.Formats.EgamiInput.ReadUInt32LittleEndian() -> uint
 Egami.Formats.EgamiInput.RentScratch(int byteLength, Egami.ClearMode clear = Egami.ClearMode.None) -> System.Buffers.IMemoryOwner<byte>!
 Egami.Formats.EgamiInput.Skip(long count) -> void
-Egami.Formats.EgamiInput.Warn(Egami.Raster! raster, string! warning) -> void
+Egami.Formats.EgamiInput.Warn(Egami.Raster! raster, string! id, string! warning, long? offset = null) -> void
 Egami.Formats.FormatInfo
 Egami.Formats.FormatInfo.<Clone>$() -> Egami.Formats.FormatInfo!
 Egami.Formats.FormatInfo.Equals(Egami.Formats.FormatInfo? other) -> bool
@@ -584,7 +617,7 @@ Egami.Metadata.RasterMetadata.RasterMetadata() -> void
 Egami.Metadata.RasterMetadata.Resolution.get -> Egami.Metadata.Resolution?
 Egami.Metadata.RasterMetadata.Resolution.set -> void
 Egami.Metadata.RasterMetadata.Text.get -> System.Collections.Generic.IList<Egami.Metadata.TextEntry!>!
-Egami.Metadata.RasterMetadata.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Metadata.RasterMetadata.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
 Egami.Metadata.RasterMetadata.Xmp.get -> System.ReadOnlyMemory<byte>
 Egami.Metadata.RasterMetadata.Xmp.set -> void
 Egami.Metadata.Resolution
@@ -946,6 +979,8 @@ Egami.UnsupportedFormatException.UnsupportedFormatException(string! message, Sys
 override Egami.EgamiContext.Equals(object? obj) -> bool
 override Egami.EgamiContext.GetHashCode() -> int
 override Egami.EgamiContext.ToString() -> string!
+override Egami.EgamiDiagnostic.GetHashCode() -> int
+override Egami.EgamiDiagnostic.ToString() -> string!
 override Egami.Formats.Bmp.BmpDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.FormatInfo.Equals(object? obj) -> bool
 override Egami.Formats.FormatInfo.GetHashCode() -> int
@@ -1036,6 +1071,8 @@ static Egami.EgamiContext.Default.get -> Egami.EgamiContext!
 static Egami.EgamiContext.operator !=(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
 static Egami.EgamiContext.operator ==(Egami.EgamiContext? left, Egami.EgamiContext? right) -> bool
 static Egami.EgamiContext.SetDefault(Egami.EgamiContext! context) -> void
+static Egami.EgamiDiagnostic.operator !=(Egami.EgamiDiagnostic left, Egami.EgamiDiagnostic right) -> bool
+static Egami.EgamiDiagnostic.operator ==(Egami.EgamiDiagnostic left, Egami.EgamiDiagnostic right) -> bool
 static Egami.Formats.Bmp.BmpFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Bmp.BmpWriterOptions.Default.get -> Egami.Formats.Bmp.BmpWriterOptions!
 static Egami.Formats.FormatInfo.operator !=(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool
@@ -1237,6 +1274,7 @@ virtual Egami.Formats.ReaderOptions.PrintMembers(System.Text.StringBuilder! buil
 virtual Egami.Formats.SignatureMatcher.Invoke(System.ReadOnlySpan<byte> header) -> bool
 virtual Egami.Operations.RowBandAction.Invoke(int start, int end) -> void
 virtual Egami.RowAction<TPixel>.Invoke(System.Span<TPixel> row, int y) -> void
+~override Egami.EgamiDiagnostic.Equals(object obj) -> bool
 ~override Egami.Metadata.ExifFraction.Equals(object obj) -> bool
 ~override Egami.Metadata.ExifKey.Equals(object obj) -> bool
 ~override Egami.Metadata.GeoPosition.Equals(object obj) -> bool

@@ -19,6 +19,7 @@ internal sealed class WebpAlpha : IDisposable
     private readonly byte[] _previous;
     private int _next;
     private bool _disposed;
+    private string? _warning;
 
     /// <summary>Starts decoding the ALPH payload <paramref name="data"/> for an image of the given size.</summary>
     /// <exception cref="CorruptDataException">The header byte is invalid.</exception>
@@ -50,12 +51,12 @@ internal sealed class WebpAlpha : IDisposable
                 throw new CorruptDataException(WebpFormat.Info.Name, -1, "The raw ALPH data is shorter than the image.") { IsTruncation = true };
             }
 
-            Warning = "The raw alpha data is shorter than the image; the missing rows are opaque.";
+            _warning = "The raw alpha data is shorter than the image; the missing rows are opaque.";
         }
     }
 
     /// <summary>Gets the warning a lenient decode recovered with, if any.</summary>
-    internal string? Warning { get; private set; }
+    internal EgamiDiagnostic? Warning => _warning is null ? null : EgamiDiagnostic.Create(DiagnosticLevel.Warning, "Webp.AlphaDamaged", _warning);
 
     /// <summary>Returns the bytes the decoder holds for an image of this size.</summary>
     internal static long WorkingBytes(int width, int height) => Vp8lDecoder.WorkingBytes(width, height) + (2L * width);
@@ -69,9 +70,9 @@ internal sealed class WebpAlpha : IDisposable
         {
             Span<uint> argb = _argb.AsSpan(0, _width);
             _decoder.DecodeRow(argb);
-            if (_decoder.Warning is string warning)
+            if (_decoder.Warning is EgamiDiagnostic warning)
             {
-                Warning = warning;
+                _warning = warning.Message;
             }
 
             for (int x = 0; x < _width; x++)

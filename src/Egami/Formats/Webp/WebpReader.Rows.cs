@@ -121,7 +121,7 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
         private int _chromaReady;
         private int _alphaReady;
         private int _frame = -1;
-        private string? _warning;
+        private EgamiDiagnostic? _warning;
         private bool _ended;
         private bool _disposed;
 
@@ -279,7 +279,7 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
             _parser.ReadToEnd(Math.Min(_filled, _payloadLength));
             if (_decoder.PastEnd && _filled >= _payloadLength && _warning is null)
             {
-                Problem("The lossy image data ends early; the rest of the image is decoded from zeros.");
+                Problem("Webp.LossyDataEnded", "The lossy image data ends early; the rest of the image is decoded from zeros.");
             }
 
             _warning ??= _alpha?.Warning;
@@ -339,7 +339,7 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
                     {
                         if (_warning is null)
                         {
-                            Problem("The lossy image data ends early; the rest of the image is decoded from zeros.");
+                            Problem("Webp.LossyDataEnded", "The lossy image data ends early; the rest of the image is decoded from zeros.");
                         }
 
                         _filled = _payloadLength;
@@ -352,21 +352,21 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
             }
         }
 
-        private void Problem(string problem)
+        private void Problem(string id, string problem)
         {
             if (_strict)
             {
                 throw new CorruptDataException(WebpFormat.Info.Name, _input.Position, problem) { IsTruncation = true };
             }
 
-            _warning = problem;
+            _warning = EgamiDiagnostic.Create(DiagnosticLevel.Warning, id, problem, _input.Position);
         }
 
         private void Publish()
         {
             RasterMetadata metadata = new();
             CopyMetadata(_parser.Metadata, metadata);
-            if (_warning is string warning)
+            if (_warning is EgamiDiagnostic warning)
             {
                 metadata.WarningList.Add(warning);
             }
@@ -487,7 +487,7 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
         {
             RasterMetadata metadata = new();
             CopyMetadata(_parser.Metadata, metadata);
-            if (_decoder.Warning is string warning)
+            if (_decoder.Warning is EgamiDiagnostic warning)
             {
                 metadata.WarningList.Add(warning);
             }

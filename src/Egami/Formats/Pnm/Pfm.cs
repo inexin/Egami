@@ -203,7 +203,7 @@ internal static class Pfm
                 raster.Row(y).Clear();
             }
 
-            raster.Metadata.WarningList.Add($"{e.Message} The top {header.Height - read} rows are left black.");
+            raster.Metadata.WarningList.Add("Pnm.RowsMissing", $"{e.Message} The top {header.Height - read} rows are left black.", e);
         }
         finally
         {

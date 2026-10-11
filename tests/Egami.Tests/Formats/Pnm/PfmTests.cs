@@ -110,7 +110,7 @@ public class PfmTests
         byte[] file = File.ReadAllBytes(Path.Combine(Folder, "rgb-little.pfm"));
         byte[] cut = file[..(HeaderLength(file) + (7 * 3 * 4 * 2) + 5)];
         using Raster<RgbF32> raster = Raster.Load<RgbF32>(cut);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Contains("top 3 rows", StringComparison.Ordinal));
+        Assert.Contains(raster.Metadata.Warnings, w => w.Message.Contains("top 3 rows", StringComparison.Ordinal));
         Assert.Equal(default, raster.Row(0)[0]);
         Assert.NotEqual(default, raster.Row(4)[0]);
         Assert.Throws<CorruptDataException>(() => Raster.Load(cut, options: new ReaderOptions { Recovery = RecoveryMode.Strict }).Dispose());

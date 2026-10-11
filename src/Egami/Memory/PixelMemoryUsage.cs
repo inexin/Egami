@@ -39,7 +39,8 @@ public sealed class PixelMemoryUsage
     /// <summary>
     /// Occurs when a block allocated while <see cref="TrackLeaks"/> was on is collected by the garbage collector without having
     /// been disposed. Handlers run on the finalizer thread, so they must be quick, must not throw, and must not touch objects that
-    /// may already be finalized.
+    /// may already be finalized. Leaks are reported here, not through <see cref="EgamiContext.Diagnostics"/>: they belong to the
+    /// memory source and are found after any call has ended.
     /// </summary>
     public event EventHandler<PixelMemoryLeakEventArgs>? LeakDetected;
 

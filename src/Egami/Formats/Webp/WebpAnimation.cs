@@ -82,7 +82,7 @@ internal sealed class WebpAnimation : IDisposable
         _input.Limits.CheckFrameCount(FramesSeen);
         if (payload.Length < 16)
         {
-            _parser.Problem(at, $"The ANMF chunk has {payload.Length} bytes, too few for its header; the frame was skipped.");
+            _parser.Problem("Webp.AnmfShort", at, $"The ANMF chunk has {payload.Length} bytes, too few for its header; the frame was skipped.");
             return Next();
         }
 
@@ -154,7 +154,7 @@ internal sealed class WebpAnimation : IDisposable
             int length = (int)Math.Min(size, payload.Length - start);
             if (length < size)
             {
-                _parser.Problem(at + start, $"The frame's \"{WebpParser.FourCC(type)}\" chunk runs past its ANMF chunk.", truncation: true);
+                _parser.Problem("Webp.FrameChunkPastAnmf", at + start, $"The frame's \"{WebpParser.FourCC(type)}\" chunk runs past its ANMF chunk.", truncation: true);
             }
 
             switch (type)
@@ -186,7 +186,7 @@ internal sealed class WebpAnimation : IDisposable
             throw _input.Corrupt(at, "The frame's VP8 data is not a key frame.");
         }
 
-        (YuvRaster<byte> planes, string? warning) = WebpReader.DecodePlanes(_input, _options, payload, start, length, alpha, width, height, at, null);
+        (YuvRaster<byte> planes, EgamiDiagnostic? warning) = WebpReader.DecodePlanes(_input, _options, payload, start, length, alpha, width, height, at, null);
         using (planes)
         {
             Raster<Rgba8> frame = _input.CreateRaster<Rgba8>(width, height);
@@ -247,7 +247,7 @@ internal sealed class WebpAnimation : IDisposable
 
         if (x + width > canvasWidth || y + height > canvasHeight)
         {
-            _parser.Problem(at, $"Frame {FramesSeen - 1} ({x}, {y}, {width}×{height}) reaches past the {canvasWidth}×{canvasHeight} canvas; it was clipped.");
+            _parser.Problem("Webp.FrameOutsideCanvas", at, $"Frame {FramesSeen - 1} ({x}, {y}, {width}×{height}) reaches past the {canvasWidth}×{canvasHeight} canvas; it was clipped.");
         }
 
         Rect bounds = x >= canvasWidth || y >= canvasHeight ? default
@@ -331,11 +331,11 @@ internal sealed class WebpAnimation : IDisposable
         byte Channel(int s, int d) => (byte)(((uint)((s * srcA) + (d * dstFactor)) * scale) >> 24);
     }
 
-    private void Warn(string? warning)
+    private void Warn(EgamiDiagnostic? warning)
     {
         if (warning is not null)
         {
-            _parser.Problem(-1, warning);
+            _parser.Problem(warning.Value);
         }
     }
 

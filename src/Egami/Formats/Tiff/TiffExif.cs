@@ -83,7 +83,7 @@ internal static class TiffExif
         }
         catch (CorruptDataException)
         {
-            metadata.WarningList.Add($"The {target} IFD at {offset} is damaged; it was skipped.");
+            metadata.WarningList.Add("Tiff.SubIfdDamaged", $"The {target} IFD at {offset} is damaged; it was skipped.", offset);
             return false;
         }
 

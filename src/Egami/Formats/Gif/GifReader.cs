@@ -341,7 +341,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
                 }
                 catch (CorruptDataException)
                 {
-                    Problem(at, "The file ends without a trailer.");
+                    Problem(at, "Gif.TrailerMissing", "The file ends without a trailer.");
                     return false;
                 }
 
@@ -380,14 +380,14 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
                     }
                     else
                     {
-                        Problem(at, $"Unknown block 0x{block:X2} where a block introducer was expected.");
+                        Problem(at, "Gif.UnknownBlock", $"Unknown block 0x{block:X2} where a block introducer was expected.");
                         return false;
                     }
                 }
                 catch (CorruptDataException) when (!_strict && _input.Peek(1).IsEmpty)
                 {
                     // The file ends inside a block's header: keep what came before it.
-                    Problem(at, "The file ends inside a block.");
+                    Problem(at, "Gif.BlockTruncated", "The file ends inside a block.");
                     return false;
                 }
 
@@ -645,7 +645,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
             CheckComplete(at, complete);
             if (length < 4)
             {
-                Problem(at, "A graphic control extension is shorter than 4 bytes.");
+                Problem(at, "Gif.ControlExtensionShort", "A graphic control extension is shorter than 4 bytes.");
                 return;
             }
 
@@ -659,7 +659,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
             };
             if (method > 3)
             {
-                Problem(at, $"Disposal method {method} is undefined; it is read as none.");
+                Problem(at, "Gif.DisposalUndefined", $"Disposal method {method} is undefined; it is read as none.");
             }
 
             _delay = TimeSpan.FromMilliseconds((_data[1] | (_data[2] << 8)) * 10);
@@ -746,7 +746,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
             int start = bytes.AsSpan().LastIndexOf(XmpTrailerStart);
             if (start < 0 || bytes.Length - start != 258)
             {
-                Problem(at, "The XMP block lacks its magic trailer.");
+                Problem(at, "Gif.XmpTrailerMissing", "The XMP block lacks its magic trailer.");
                 start = Math.Max(0, bytes.Length - 1);
             }
 
@@ -782,7 +782,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
             }
             catch (CorruptDataException)
             {
-                Problem(at, "The file ends inside an image.");
+                Problem(at, "Gif.ImageTruncated", "The file ends inside an image.");
                 return false;
             }
 
@@ -791,7 +791,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
                 bool done = GifSubBlocks.Skip(_input);
                 if (!done)
                 {
-                    Problem(at, "The file ends inside the image data.");
+                    Problem(at, "Gif.ImageDataTruncated", "The file ends inside the image data.");
                 }
 
                 return done;
@@ -804,7 +804,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
 
             if (minCodeSize == 1)
             {
-                Problem(at, "An LZW minimum code size of 1 is outside the specification.");
+                Problem(at, "Gif.LzwCodeSizeOne", "An LZW minimum code size of 1 is outside the specification.");
             }
 
             // Frames before the range are still drawn, because later frames build on them, but not kept.
@@ -816,7 +816,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
                 local.Length > 0 ? local : _global, transparent) : 0;
             if (!complete || decoded < width * height)
             {
-                Problem(at, "The image data ends early.");
+                Problem(at, "Gif.ImageDataShort", "The image data ends early.");
             }
 
             if (_streaming)
@@ -865,7 +865,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
             int bottom = Math.Min(top + height, Height);
             if (left + width > Width || top + height > Height)
             {
-                Problem(at, $"Frame {FramesSeen - 1} ({left}, {top}, {width}×{height}) sticks out of the {Width}×{Height} logical screen.");
+                Problem(at, "Gif.FrameOutsideScreen", $"Frame {FramesSeen - 1} ({left}, {top}, {width}×{height}) sticks out of the {Width}×{Height} logical screen.");
             }
 
             return left >= Width || top >= Height ? default : new Rect(left, top, right - left, bottom - top);
@@ -895,7 +895,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
 
             if (palette.Length == 0)
             {
-                Problem(at, "A frame has no color table; it is drawn transparent.");
+                Problem(at, "Gif.ColorTableMissing", "A frame has no color table; it is drawn transparent.");
             }
 
             for (int i = 0; i < palette.Length; i++)
@@ -932,7 +932,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
 
             if (outOfRange && palette.Length > 0)
             {
-                Problem(at, "A frame uses color indices past its color table; they are drawn transparent.");
+                Problem(at, "Gif.IndexOutOfRange", "A frame uses color indices past its color table; they are drawn transparent.");
             }
 
             return written;
@@ -963,7 +963,7 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
         {
             if (!complete)
             {
-                Problem(at, "The file ends inside a block.");
+                Problem(at, "Gif.BlockTruncated", "The file ends inside a block.");
             }
         }
 
@@ -973,14 +973,14 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
         }
 
         /// <summary>Notes a problem as a warning (Lenient) or throws (Strict).</summary>
-        private void Problem(long at, string message)
+        private void Problem(long at, string id, string message)
         {
             if (_strict)
             {
                 throw _input.Corrupt(at, message);
             }
 
-            Metadata.WarningList.Add(message);
+            Metadata.WarningList.Add(id, message, at);
         }
 
         private static string DecodeText(ReadOnlySpan<byte> bytes)

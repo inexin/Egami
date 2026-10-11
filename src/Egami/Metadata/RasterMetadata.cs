@@ -139,10 +139,11 @@ public sealed class RasterMetadata
                 _iptc = IptcData.Parse(_iptcSource.Span, _iptcLimit);
                 foreach (string warning in _iptc.Warnings)
                 {
-                    WarningList.Add(warning + " The IPTC block is kept as it was.");
+                    WarningList.Add(_iptc.IsDamaged ? "Iptc.Damaged" : "Iptc.ValueTooLong", warning + " The IPTC block is kept as it was.");
                 }
 
                 _iptcSource = default;
+                WarningList.Flush();
             }
 
             return _iptc;
@@ -195,8 +196,10 @@ public sealed class RasterMetadata
                     {
                         foreach (string warning in parsed.Warnings)
                         {
-                            WarningList.Add(warning + " The XMP packet is kept as it was.");
+                            WarningList.Add("Xmp.Damaged", warning + " The XMP packet is kept as it was.");
                         }
+
+                        WarningList.Flush();
                     }
                     else
                     {
@@ -249,11 +252,34 @@ public sealed class RasterMetadata
     /// <summary>Gets the text entries, in file order.</summary>
     public IList<TextEntry> Text { get; } = [];
 
-    /// <summary>Gets the problems a lenient read recovered from, such as a bad checksum after valid pixel data.</summary>
-    public IReadOnlyList<string> Warnings => WarningList;
+    /// <summary>
+    /// Gets the problems a lenient read recovered from, such as a bad checksum after valid pixel data, in the order found. Each has a
+    /// stable <see cref="EgamiDiagnostic.Id"/>; one id is listed at most 10 times, then once more as a count of the rest. The same
+    /// entries go to <see cref="EgamiContext.Diagnostics"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Diagnostics.cs" region="warnings"/>
+    /// </example>
+    public IReadOnlyList<EgamiDiagnostic> Warnings => WarningList;
 
     /// <summary>Gets the warnings for readers to add to; outside readers use <see cref="Formats.EgamiInput.Warn"/>.</summary>
-    internal List<string> WarningList { get; } = [];
+    internal WarningList WarningList { get; } = new();
+
+    /// <summary>
+    /// Sends the Warnings to <paramref name="handler"/> from now on, flushed as the load ends and on each lazy parse, when there are
+    /// any or a block parsed on first use (XMP, IPTC, ICC) may add some; otherwise nothing is allocated.
+    /// </summary>
+    /// <returns>Whether the Warnings were bound.</returns>
+    internal bool BindWarnings(Action<EgamiDiagnostic> handler)
+    {
+        if (WarningList.Count > 0 || WarningList.IsBound || (!_xmp.IsEmpty && !_xmpParsed) || !_iptcSource.IsEmpty || !IccProfile.IsEmpty)
+        {
+            WarningList.Bind(handler);
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Returns what the raster's pixel values mean, resolved from everything the file said, in this order: the H.273
@@ -324,9 +350,14 @@ public sealed class RasterMetadata
         {
             result = Colors.ColorProfile.FromIcc(icc.Span);
         }
-        catch (EgamiException)
+        catch (EgamiException e)
         {
             result = null;
+            lock (WarningList)
+            {
+                WarningList.Add("Icc.Unusable", $"The ICC profile cannot be used: {e.Message} Colors are read as if it were absent; it is kept as it was.");
+                WarningList.Flush();
+            }
         }
 
         _parsed = new ParsedProfile(icc, result);
@@ -417,11 +448,7 @@ public sealed class RasterMetadata
             copy.Text.Add(entry);
         }
 
-        foreach (string warning in Warnings)
-        {
-            copy.WarningList.Add(warning);
-        }
-
+        copy.WarningList.CopyOf(WarningList);
         return copy;
     }
 
@@ -449,7 +476,6 @@ public sealed class RasterMetadata
             Text.Add(entry);
         }
 
-        WarningList.Clear();
-        WarningList.AddRange(source.WarningList);
+        WarningList.ReplaceWith(source.WarningList);
     }
 }
