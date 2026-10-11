@@ -57,21 +57,9 @@ internal static class OperationPipeline
             }
         }
 
-        Size[] sizes = new Size[steps.Count];
-        for (int i = 0; i < steps.Count; i++)
-        {
-            (steps[i] as Scopes.IScope)?.Validate(size);
-            Size next = steps[i].OutputSize(size);
-            if (next.Width < 1 || next.Height < 1)
-            {
-                throw new ArgumentException($"Step {i + 1} ({steps[i].GetType().Name}) would make the image {next.Width}×{next.Height}.", nameof(build));
-            }
-
-            sizes[i] = next;
-            size = next;
-        }
-
-        return new Plan(steps, sizes);
+        Plan plan = new(steps, new Size[steps.Count]) { Input = size };
+        plan.ComputeSizes(0);
+        return plan;
     }
 
     /// <summary>
@@ -83,11 +71,20 @@ internal static class OperationPipeline
         Plan plan, PixelPlane<TPixel> source, bool inPlace, EgamiContext context, BudgetedMemorySource memory, int frameIndex, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        return RunFrame(plan, 0, plan.Steps.Count, source, inPlace, context, memory, frameIndex, cancellationToken);
+    }
+
+    /// <summary>Runs steps <paramref name="from"/> (inclusive) to <paramref name="to"/> (exclusive) of the plan on one frame.</summary>
+    /// <returns>The frame's plane after them: <paramref name="source"/> itself if every step ran in place on it.</returns>
+    internal static PixelPlane<TPixel> RunFrame<TPixel>(
+        Plan plan, int from, int to, PixelPlane<TPixel> source, bool inPlace, EgamiContext context, BudgetedMemorySource memory, int frameIndex, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         PixelPlane<TPixel> current = source;
         bool ownsCurrent = false;
         try
         {
-            for (int i = 0; i < plan.Steps.Count; i++)
+            for (int i = from; i < to; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Size size = plan.Sizes[i];
@@ -152,9 +149,103 @@ internal static class OperationPipeline
         return PixelPlane.Allocate<TPixel>(size.Width, size.Height, memory);
     }
 
+    /// <summary>
+    /// Runs the plan on every frame, splitting it at each measured step: the steps before it run on all frames, the step
+    /// measures them and becomes a step of known size, and the rest is planned from the real size. Each frame's plane is
+    /// replaced through <paramref name="planes"/>; <paramref name="owned"/> says which planes the chain may write and must
+    /// dispose when it replaces them (the caller's own frames, for Apply; none at first, for Derive).
+    /// </summary>
+    internal static void RunFrames<TPixel>(
+        Plan plan, PixelPlane<TPixel>[] planes, bool[] owned, EgamiContext context, BudgetedMemorySource memory, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        int from = 0;
+        while (true)
+        {
+            int to = plan.Pending;
+            for (int i = 0; i < planes.Length; i++)
+            {
+                PixelPlane<TPixel> result = RunFrame(plan, from, to, planes[i], owned[i], context, memory, i, cancellationToken);
+                if (!ReferenceEquals(result, planes[i]))
+                {
+                    if (owned[i])
+                    {
+                        planes[i].Dispose();
+                    }
+
+                    planes[i] = result;
+                    owned[i] = true;
+                }
+            }
+
+            if (to == plan.Steps.Count)
+            {
+                return;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            plan.Resolve(planes, context, memory, cancellationToken);
+            from = to;
+        }
+    }
+
     /// <summary>The planned steps and the frame size after each.</summary>
     internal sealed record Plan(IReadOnlyList<IRasterOperation> Steps, Size[] Sizes) : IDisposable
     {
+        /// <summary>Gets the frame size before the first step.</summary>
+        internal Size Input { get; init; }
+
+        /// <summary>
+        /// Gets the index of the first measured step still to measure, or the step count when there is none: the sizes of that
+        /// step and every later one are not known yet.
+        /// </summary>
+        internal int Pending { get; private set; } = Steps.Count;
+
+        /// <summary>Gets whether the chain holds a measured step, whose size only the pixels can tell.</summary>
+        internal bool HasMeasuredSteps => Steps.Any(step => step is IMeasuredStep);
+
+        /// <summary>Computes the sizes from step <paramref name="from"/> on, up to the next measured step.</summary>
+        internal void ComputeSizes(int from)
+        {
+            Size size = from == 0 ? Input : Sizes[from - 1];
+            int i = from;
+            for (; i < Steps.Count && Steps[i] is not IMeasuredStep; i++)
+            {
+                (Steps[i] as Scopes.IScope)?.Validate(size);
+                Size next = Steps[i].OutputSize(size);
+                if (next.Width < 1 || next.Height < 1)
+                {
+                    throw new ArgumentException($"Step {i + 1} ({Steps[i].GetType().Name}) would make the image {next.Width}×{next.Height}.");
+                }
+
+                Sizes[i] = next;
+                size = next;
+            }
+
+            Pending = i;
+        }
+
+        /// <summary>
+        /// Measures the pending step on every frame, puts the step it becomes in its place, sizes the rest of the chain from the
+        /// real size, and checks the largest plane the rest will allocate against <see cref="SafetyLimits.MaxTotalBytes"/> before
+        /// any of it runs.
+        /// </summary>
+        internal void Resolve<TPixel>(IReadOnlyList<PixelPlane<TPixel>> frames, EgamiContext context, BudgetedMemorySource memory, CancellationToken cancellationToken)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            int index = Pending;
+            IMeasuredStep measured = (IMeasuredStep)Steps[index];
+            ((List<IRasterOperation>)Steps)[index] = measured.Measure(frames, context, cancellationToken);
+            ComputeSizes(index);
+            long largest = 0;
+            for (int i = index; i < Pending; i++)
+            {
+                largest = Math.Max(largest, (long)Sizes[i].Width * Sizes[i].Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+            }
+
+            memory.Check(largest);
+        }
+
         /// <summary>Returns the pooled buffers the built-in steps kept for the chain.</summary>
         public void Dispose()
         {
@@ -272,6 +363,21 @@ internal static class OperationPipeline
             return planned;
         }
     }
+}
+
+/// <summary>
+/// A step whose output size depends on the pixels (Trim, EntropyCrop, Deskew). The planner plans the chain up to it, runs that
+/// part, lets it measure every frame, and plans the rest from the real size. Its <see cref="IRasterOperation.OutputSize"/> is
+/// never asked.
+/// </summary>
+internal interface IMeasuredStep : IRasterOperation
+{
+    /// <summary>
+    /// Measures the frames and returns the step of known size that runs in this one's place, the same for every frame, so frames
+    /// keep one size (a crop to the union of the frames' rectangles, say).
+    /// </summary>
+    IRasterOperation Measure<TPixel>(IReadOnlyList<PixelPlane<TPixel>> frames, EgamiContext context, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>;
 }
 
 /// <summary>A step that can work in linear light, which decodes with the curve the pipeline binds to it.</summary>

@@ -54,7 +54,7 @@ internal static class ScopeRunner
         {
             string? reason = steps[i] switch
             {
-                Resampling.ResizeOperation or CropOperation or PadOperation or RotateQuarterOperation or RotateOperation or AutoOrientOperation
+                Resampling.ResizeOperation or CropOperation or PadOperation or RotateQuarterOperation or RotateOperation or AutoOrientOperation or IMeasuredStep
                     => "changes the image's size",
                 Color.ConvertColorOperation or Color.ToneMapOperation => "changes the color encoding, which part of an image cannot have alone",
                 _ => null,

@@ -13,6 +13,9 @@ internal interface ITranscodeTarget
 {
     RasterEncoder<TPixel> Create<TPixel>(int width, int height, RasterMetadata metadata, EgamiContext context)
         where TPixel : unmanaged, IPixelType<TPixel>;
+
+    /// <summary>Writes a whole raster, for chains that cannot stream.</summary>
+    Task Save(Raster raster, bool async, CancellationToken cancellationToken);
 }
 
 internal sealed class PathTarget(string path, WriterOptions? options) : ITranscodeTarget
@@ -21,6 +24,17 @@ internal sealed class PathTarget(string path, WriterOptions? options) : ITransco
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         return RasterEncoder.Create<TPixel>(path, width, height, options, metadata, context);
+    }
+
+    public Task Save(Raster raster, bool async, CancellationToken cancellationToken)
+    {
+        if (async)
+        {
+            return raster.SaveAsync(path, options, cancellationToken);
+        }
+
+        raster.Save(path, options);
+        return Task.CompletedTask;
     }
 }
 
@@ -31,6 +45,17 @@ internal sealed class StreamTarget(Stream stream, FormatInfo format, WriterOptio
     {
         return RasterEncoder.Create<TPixel>(stream, format, width, height, options, metadata, context);
     }
+
+    public Task Save(Raster raster, bool async, CancellationToken cancellationToken)
+    {
+        if (async)
+        {
+            return raster.SaveAsync(stream, format, options, cancellationToken);
+        }
+
+        raster.Save(stream, format, options);
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>
@@ -39,6 +64,12 @@ internal sealed class StreamTarget(Stream stream, FormatInfo format, WriterOptio
 /// </summary>
 internal sealed record TranscodePlan(ReaderOptions Options, IReadOnlyList<IRasterOperation> Steps)
 {
+    /// <summary>
+    /// Gets the chain to run on the fully decoded image instead of on rows, when it holds a measured step (Trim, EntropyCrop,
+    /// Deskew), which needs the whole frame before anything after it can be sized.
+    /// </summary>
+    public Action<RasterOps>? WholeImage { get; init; }
+
     /// <summary>Plans the chain for an image the user's options decode to <paramref name="info"/>'s size and orientation.</summary>
     public static TranscodePlan Create(Action<RasterOps>? build, RasterInfo info, ReaderOptions options, Colors.ColorProfile? colorProfile = null, Colors.HdrMetadata? hdr = null)
     {
@@ -50,6 +81,11 @@ internal sealed record TranscodePlan(ReaderOptions Options, IReadOnlyList<IRaste
         Size size = new(info.Width, info.Height);
         // Linear-light steps and ConvertColor need the encoding the rows arrive in: the file's, or ConvertColorTo's.
         OperationPipeline.Plan plan = OperationPipeline.Build(build, size, info.Orientation, colorProfile is null ? null : () => colorProfile, hdr);
+        if (plan.HasMeasuredSteps)
+        {
+            return new TranscodePlan(options, []) { WholeImage = build };
+        }
+
         List<IRasterOperation> steps = [.. plan.Steps];
         foreach (IRasterOperation step in steps)
         {
@@ -144,6 +180,14 @@ internal static class Transcoder
         }
 
         Restart(input, replay, start);
+        if (plan.WholeImage is Action<RasterOps> whole)
+        {
+            using Raster raster = Raster.Load(source, context, plan.Options);
+            raster.Apply(whole, cancellationToken);
+            target.Save(raster, async: false, cancellationToken).GetAwaiter().GetResult();
+            return;
+        }
+
         using RasterDecoder decoder = RasterDecoder.Open(source, context, plan.Options);
         decoder.WithNaturalType(new Work(decoder, plan, target, context, cancellationToken));
     }
@@ -160,6 +204,14 @@ internal static class Transcoder
         }
 
         Restart(input, replay, start);
+        if (plan.WholeImage is Action<RasterOps> whole)
+        {
+            using Raster raster = await Raster.LoadAsync(source, context, plan.Options, cancellationToken).ConfigureAwait(false);
+            raster.Apply(whole, cancellationToken);
+            await target.Save(raster, async: true, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
         using RasterDecoder decoder = await RasterDecoder.OpenAsync(source, context, plan.Options, cancellationToken).ConfigureAwait(false);
         await decoder.WithNaturalType(new AsyncWork(decoder, plan, target, context, cancellationToken)).ConfigureAwait(false);
     }

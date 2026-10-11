@@ -105,15 +105,36 @@ public sealed class Raster<TPixel> : Raster
         }
 
         BudgetedMemorySource memory = new(Context.Memory, Context.Limits.MaxTotalBytes);
-        for (int i = 0; i < _frames.Count; i++)
+        if (plan.HasMeasuredSteps)
         {
-            Frame<TPixel> frame = _frames[i];
-            PixelPlane<TPixel> result = OperationPipeline.RunFrame(plan, frame.Plane, inPlace: true, Context, memory, i, cancellationToken);
-            if (!ReferenceEquals(result, frame.Plane))
+            // Measured steps need every frame run up to them before the rest of the chain can be sized.
+            PixelPlane<TPixel>[] planes = [.. _frames.Select(frame => frame.Plane)];
+            bool[] owned = [.. planes.Select(_ => true)];
+            try
             {
-                PixelPlane<TPixel> old = frame.Plane;
-                frame.Plane = result;
-                old.Dispose();
+                OperationPipeline.RunFrames(plan, planes, owned, Context, memory, cancellationToken);
+            }
+            finally
+            {
+                // Each frame takes the plane it reached, so nothing leaks if a step fails part way.
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    _frames[i].Plane = planes[i];
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < _frames.Count; i++)
+            {
+                Frame<TPixel> frame = _frames[i];
+                PixelPlane<TPixel> result = OperationPipeline.RunFrame(plan, frame.Plane, inPlace: true, Context, memory, i, cancellationToken);
+                if (!ReferenceEquals(result, frame.Plane))
+                {
+                    PixelPlane<TPixel> old = frame.Plane;
+                    frame.Plane = result;
+                    old.Dispose();
+                }
             }
         }
 
@@ -149,22 +170,63 @@ public sealed class Raster<TPixel> : Raster
 
         BudgetedMemorySource memory = new(Context.Memory, Context.Limits.MaxTotalBytes);
         List<Frame<TPixel>> frames = new(_frames.Count);
-        try
+        if (plan.HasMeasuredSteps)
         {
-            for (int i = 0; i < _frames.Count; i++)
+            PixelPlane<TPixel>[] planes = [.. _frames.Select(frame => frame.Plane)];
+            bool[] owned = new bool[planes.Length];
+            try
             {
-                PixelPlane<TPixel> result = OperationPipeline.RunFrame(plan, _frames[i].Plane, inPlace: false, Context, memory, i, cancellationToken);
-                frames.Add(new Frame<TPixel>(result, _frames[i].Metadata.Copy()));
+                OperationPipeline.RunFrames(plan, planes, owned, Context, memory, cancellationToken);
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    // A chain that left a frame untouched (a Trim with nothing to trim) still returns new pixels.
+                    if (!owned[i])
+                    {
+                        PixelPlane<TPixel> copy = PixelPlane.Allocate<TPixel>(planes[i].Width, planes[i].Height, memory);
+                        for (int y = 0; y < copy.Height; y++)
+                        {
+                            planes[i].Row(y).CopyTo(copy.Row(y));
+                        }
+
+                        planes[i] = copy;
+                        owned[i] = true;
+                    }
+
+                    frames.Add(new Frame<TPixel>(planes[i], _frames[i].Metadata.Copy()));
+                }
+            }
+            catch
+            {
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    if (owned[i])
+                    {
+                        planes[i].Dispose();
+                    }
+                }
+
+                throw;
             }
         }
-        catch
+        else
         {
-            foreach (Frame<TPixel> frame in frames)
+            try
             {
-                frame.Plane.Dispose();
+                for (int i = 0; i < _frames.Count; i++)
+                {
+                    PixelPlane<TPixel> result = OperationPipeline.RunFrame(plan, _frames[i].Plane, inPlace: false, Context, memory, i, cancellationToken);
+                    frames.Add(new Frame<TPixel>(result, _frames[i].Metadata.Copy()));
+                }
             }
+            catch
+            {
+                foreach (Frame<TPixel> frame in frames)
+                {
+                    frame.Plane.Dispose();
+                }
 
-            throw;
+                throw;
+            }
         }
 
         RasterMetadata metadata = Metadata.Copy();
