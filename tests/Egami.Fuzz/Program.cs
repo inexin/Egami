@@ -16,7 +16,9 @@ using SharpFuzz;
 // profile from one may fail only with an EgamiException. The iptc, psd, xmp and rawprofile targets (Phase 2.1.3) parse IPTC
 // datasets, Photoshop resource blocks, XMP packets and PNG "Raw profile type" text, which must never throw, and check that
 // what Egami writes after an edit reads back undamaged. The tiff and tiffcodec targets (Phase 2.3.2) load TIFF files every way
-// and feed TIFF's decompressors and predictors raw bytes.
+// and feed TIFF's decompressors and predictors raw bytes. The webp and webpcodec targets (Phase 2.3.1) load WebP files every way
+// (stills and animations, planes, from a stream that cannot seek) and write them back, and feed the VP8 and VP8L decoders raw
+// bit streams and the encoders arbitrary pixels, whose lossless round trip must be exact.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -101,7 +103,9 @@ static Action<Stream> Target(string name) => name switch
     "stream" => DecodeStreaming,
     "tiff" => LoadTiff,
     "tiffcodec" => DecodeTiffCodec,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec."),
+    "webp" => LoadWebp,
+    "webpcodec" => DecodeWebpCodec,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec."),
 };
 
 static EgamiContext Context()
@@ -727,6 +731,161 @@ static void DecodeRawProfile(Stream stream)
         {
             throw new InvalidOperationException("A raw profile did not encode and decode back.");
         }
+    }
+}
+
+static void LoadWebp(Stream stream)
+{
+    EgamiContext context = Context() with { Formats = [Egami.Formats.Webp.WebpFormat.Info], Limits = Context().Limits with { MaxFrames = 100 } };
+    byte[] data = ReadAll(stream);
+    // One reading of each kind per input, picked by its length, keeps an execution well under AFL's time limit.
+    ReaderOptions[] all =
+    [
+        new() { Recovery = RecoveryMode.Lenient },
+        new() { Recovery = RecoveryMode.Strict },
+        new Egami.Formats.Webp.WebpReaderOptions { UseBackgroundColor = true, FastUpsampling = true },
+        new() { Frames = 1..3 },
+        new() { Frames = ^1.. },
+    ];
+    foreach (ReaderOptions options in new[] { all[0], all[1 + (data.Length % 4)] })
+    {
+        try
+        {
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster<Rgba8> converted = Raster.Load<Rgba8>(new ForwardOnlyStream(data), context, options);
+            if (info.FrameCount == 1)
+            {
+                try
+                {
+                    using YuvRaster planes = YuvRaster.Load(data, context, options);
+                }
+                catch (NotSupportedException)
+                {
+                    // A lossless file has no planes.
+                }
+            }
+
+            // Writing back exercises both encoders and the animation writer on whatever was read.
+            if ((long)raster.Width * raster.Height * raster.FrameCount <= 40_000)
+            {
+                using MemoryStream lossless = new();
+                raster.Save(lossless, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = true, Effort = data.Length % 3 });
+                raster.Save(Stream.Null, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = false, Effort = (data.Length / 7) % 7, Quality = data.Length % 101 });
+                using Raster<Rgba8> again = Raster.Load<Rgba8>(lossless.ToArray(), context);
+                using Raster<Rgba8> expected = raster.As<Rgba8>();
+                for (int f = 0; f < expected.FrameCount; f++)
+                {
+                    for (int y = 0; y < expected.Height; y++)
+                    {
+                        if (!expected.Frames[f].Row(y).SequenceEqual(again.Frames[f].Row(y)))
+                        {
+                            throw new InvalidOperationException($"The lossless round trip differs in frame {f}, row {y}.");
+                        }
+                    }
+                }
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+// The first byte picks the codec: a raw VP8 frame, a raw VP8L stream, or the encoders on the rest as pixels.
+static void DecodeWebpCodec(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 4)
+    {
+        return;
+    }
+
+    EgamiContext context = Context();
+    if (data[0] % 3 == 0 && (data[1] & 1) != 0)
+    {
+        // An inter frame: the VP8 decoder refuses it (NotSupportedException), as WebP holds key frames only.
+        return;
+    }
+
+    try
+    {
+        switch (data[0] % 3)
+        {
+            case 0:
+                {
+                    using Egami.Formats.Webp.Vp8Decoder decoder = Egami.Formats.Webp.Vp8Decoder.Create(data, 1, data.Length - 1);
+                    if ((long)decoder.Width * decoder.Height > 1_000_000)
+                    {
+                        return;
+                    }
+
+                    while (decoder.DecodeRow((d, from, to, chromaFrom, chromaTo) =>
+                    {
+                        for (int y = from; y < to; y++)
+                        {
+                            _ = d.RowY(y);
+                        }
+                    }))
+                    {
+                    }
+
+                    break;
+                }
+
+            case 1:
+                {
+                    EgamiInput input = new(new MemoryStream(data), context, CancellationToken.None);
+                    using Egami.Formats.Webp.Vp8lBitReader reader = new(data, 1, data.Length - 1);
+                    using Egami.Formats.Webp.Vp8lDecoder decoder = new(input, reader, data[1] % 2 == 0);
+                    if ((long)decoder.Width * decoder.Height > 1_000_000)
+                    {
+                        return;
+                    }
+
+                    uint[] row = new uint[decoder.Width];
+                    for (int y = 0; y < decoder.Height; y++)
+                    {
+                        decoder.DecodeRow(row);
+                    }
+
+                    break;
+                }
+
+            default:
+                {
+                    int width = 1 + (data[1] % 64);
+                    int height = Math.Max(1, (data.Length - 4) / 4 / width);
+                    using Raster<Rgba8> raster = Raster.Create<Rgba8>(width, height, context);
+                    for (int y = 0; y < height; y++)
+                    {
+                        Span<byte> row = System.Runtime.InteropServices.MemoryMarshal.AsBytes(raster.Row(y));
+                        int at = 4 + (y * width * 4);
+                        data.AsSpan(Math.Min(at, data.Length), Math.Min(row.Length, Math.Max(0, data.Length - at))).CopyTo(row);
+                    }
+
+                    int effort = data[2] % 7;
+                    bool exact = data[3] % 2 == 0;
+                    using MemoryStream lossless = new();
+                    raster.Save(lossless, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = true, Effort = effort, NearLossless = exact ? 100 : data[3] % 101 });
+                    using MemoryStream lossy = new();
+                    raster.Save(lossy, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = false, Effort = effort, Quality = data[3] % 101, AlphaQuality = data[2] % 101 });
+                    using Raster<Rgba8> again = Raster.Load<Rgba8>(lossless.ToArray(), context);
+                    using Raster<Rgba8> decoded = Raster.Load<Rgba8>(lossy.ToArray(), context);
+                    for (int y = 0; y < height && exact; y++)
+                    {
+                        if (!raster.Row(y).SequenceEqual(again.Row(y)))
+                        {
+                            throw new InvalidOperationException($"The lossless round trip differs in row {y}.");
+                        }
+                    }
+
+                    break;
+                }
+        }
+    }
+    catch (EgamiException)
+    {
     }
 }
 
