@@ -1,0 +1,1551 @@
+{
+ "tools": "libjpeg-turbo 3.0.3, TurboJPEG 3 API; libjpeg-turbo-3.0.3-r0; alpine:3.20",
+ "files": [
+  {
+   "file": "duck-411.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "411",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 80,
+     "height": 240
+    },
+    {
+     "width": 80,
+     "height": 240
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-411.yuv.gz"
+  },
+  {
+   "file": "duck-420.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.yuv.gz"
+  },
+  {
+   "file": "duck-420.jpg",
+   "scale": "1/2",
+   "width": 160,
+   "height": 120,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 80,
+     "height": 60
+    },
+    {
+     "width": 80,
+     "height": 60
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.s2.yuv.gz"
+  },
+  {
+   "file": "duck-420.jpg",
+   "scale": "1/4",
+   "width": 80,
+   "height": 60,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 80,
+     "height": 60
+    },
+    {
+     "width": 40,
+     "height": 30
+    },
+    {
+     "width": 40,
+     "height": 30
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.s4.yuv.gz"
+  },
+  {
+   "file": "duck-420.jpg",
+   "scale": "1/8",
+   "width": 40,
+   "height": 30,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 40,
+     "height": 30
+    },
+    {
+     "width": 20,
+     "height": 15
+    },
+    {
+     "width": 20,
+     "height": 15
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.s8.yuv.gz"
+  },
+  {
+   "file": "duck-422.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "422",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 240
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-422.yuv.gz"
+  },
+  {
+   "file": "duck-440.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "440",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 120
+    },
+    {
+     "width": 320,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-440.yuv.gz"
+  },
+  {
+   "file": "duck-444.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "444",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 240
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-444.yuv.gz"
+  },
+  {
+   "file": "duck-444.jpg",
+   "scale": "1/2",
+   "width": 160,
+   "height": 120,
+   "subsampling": "444",
+   "planes": [
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-444.s2.yuv.gz"
+  },
+  {
+   "file": "duck-444.jpg",
+   "scale": "1/4",
+   "width": 80,
+   "height": 60,
+   "subsampling": "444",
+   "planes": [
+    {
+     "width": 80,
+     "height": 60
+    },
+    {
+     "width": 80,
+     "height": 60
+    },
+    {
+     "width": 80,
+     "height": 60
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-444.s4.yuv.gz"
+  },
+  {
+   "file": "duck-444.jpg",
+   "scale": "1/8",
+   "width": 40,
+   "height": 30,
+   "subsampling": "444",
+   "planes": [
+    {
+     "width": 40,
+     "height": 30
+    },
+    {
+     "width": 40,
+     "height": 30
+    },
+    {
+     "width": 40,
+     "height": 30
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-444.s8.yuv.gz"
+  },
+  {
+   "file": "duck-gray.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "gray",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-gray.yuv.gz"
+  },
+  {
+   "file": "duck-gray.jpg",
+   "scale": "1/2",
+   "width": 160,
+   "height": 120,
+   "subsampling": "gray",
+   "planes": [
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-gray.s2.yuv.gz"
+  },
+  {
+   "file": "duck-gray.jpg",
+   "scale": "1/4",
+   "width": 80,
+   "height": 60,
+   "subsampling": "gray",
+   "planes": [
+    {
+     "width": 80,
+     "height": 60
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-gray.s4.yuv.gz"
+  },
+  {
+   "file": "duck-gray.jpg",
+   "scale": "1/8",
+   "width": 40,
+   "height": 30,
+   "subsampling": "gray",
+   "planes": [
+    {
+     "width": 40,
+     "height": 30
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-gray.s8.yuv.gz"
+  },
+  {
+   "file": "duck-optimized.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.yuv.gz"
+  },
+  {
+   "file": "duck-q100.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "444",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 240
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-q100.yuv.gz"
+  },
+  {
+   "file": "duck-q50.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-q50.yuv.gz"
+  },
+  {
+   "file": "duck-restart-blocks.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.yuv.gz"
+  },
+  {
+   "file": "duck-restart-rows.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "duck-420.yuv.gz"
+  },
+  {
+   "file": "egret-420.jpg",
+   "scale": "1/1",
+   "width": 240,
+   "height": 320,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 240,
+     "height": 320
+    },
+    {
+     "width": 120,
+     "height": 160
+    },
+    {
+     "width": 120,
+     "height": 160
+    }
+   ],
+   "progressive": false,
+   "reference": "egret-420.yuv.gz"
+  },
+  {
+   "file": "egret-420.jpg",
+   "scale": "1/2",
+   "width": 120,
+   "height": 160,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 120,
+     "height": 160
+    },
+    {
+     "width": 60,
+     "height": 80
+    },
+    {
+     "width": 60,
+     "height": 80
+    }
+   ],
+   "progressive": false,
+   "reference": "egret-420.s2.yuv.gz"
+  },
+  {
+   "file": "egret-420.jpg",
+   "scale": "1/4",
+   "width": 60,
+   "height": 80,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 60,
+     "height": 80
+    },
+    {
+     "width": 30,
+     "height": 40
+    },
+    {
+     "width": 30,
+     "height": 40
+    }
+   ],
+   "progressive": false,
+   "reference": "egret-420.s4.yuv.gz"
+  },
+  {
+   "file": "egret-420.jpg",
+   "scale": "1/8",
+   "width": 30,
+   "height": 40,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 30,
+     "height": 40
+    },
+    {
+     "width": 15,
+     "height": 20
+    },
+    {
+     "width": 15,
+     "height": 20
+    }
+   ],
+   "progressive": false,
+   "reference": "egret-420.s8.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-1.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-2.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-3.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-4.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-5.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-6.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-7.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-orientation-8.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "exif-tags.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": false,
+   "reference": "exif-orientation-1.yuv.gz"
+  },
+  {
+   "file": "odd-17x9.jpg",
+   "scale": "1/1",
+   "width": 17,
+   "height": 9,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 18,
+     "height": 10
+    },
+    {
+     "width": 9,
+     "height": 5
+    },
+    {
+     "width": 9,
+     "height": 5
+    }
+   ],
+   "progressive": false,
+   "reference": "odd-17x9.yuv.gz"
+  },
+  {
+   "file": "odd-1x1.jpg",
+   "scale": "1/1",
+   "width": 1,
+   "height": 1,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 2,
+     "height": 2
+    },
+    {
+     "width": 1,
+     "height": 1
+    },
+    {
+     "width": 1,
+     "height": 1
+    }
+   ],
+   "progressive": false,
+   "reference": "odd-1x1.yuv.gz"
+  },
+  {
+   "file": "odd-1x33.jpg",
+   "scale": "1/1",
+   "width": 1,
+   "height": 33,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 2,
+     "height": 34
+    },
+    {
+     "width": 1,
+     "height": 17
+    },
+    {
+     "width": 1,
+     "height": 17
+    }
+   ],
+   "progressive": false,
+   "reference": "odd-1x33.yuv.gz"
+  },
+  {
+   "file": "odd-31x17.jpg",
+   "scale": "1/1",
+   "width": 31,
+   "height": 17,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 32,
+     "height": 18
+    },
+    {
+     "width": 16,
+     "height": 9
+    },
+    {
+     "width": 16,
+     "height": 9
+    }
+   ],
+   "progressive": false,
+   "reference": "odd-31x17.yuv.gz"
+  },
+  {
+   "file": "odd-33x1.jpg",
+   "scale": "1/1",
+   "width": 33,
+   "height": 1,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 34,
+     "height": 2
+    },
+    {
+     "width": 17,
+     "height": 1
+    },
+    {
+     "width": 17,
+     "height": 1
+    }
+   ],
+   "progressive": false,
+   "reference": "odd-33x1.yuv.gz"
+  },
+  {
+   "file": "testimgint.jpg",
+   "scale": "1/1",
+   "width": 227,
+   "height": 149,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 228,
+     "height": 150
+    },
+    {
+     "width": 114,
+     "height": 75
+    },
+    {
+     "width": 114,
+     "height": 75
+    }
+   ],
+   "progressive": false,
+   "reference": "testimgint.yuv.gz"
+  },
+  {
+   "file": "testorig.jpg",
+   "scale": "1/1",
+   "width": 227,
+   "height": 149,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 228,
+     "height": 150
+    },
+    {
+     "width": 114,
+     "height": 75
+    },
+    {
+     "width": 114,
+     "height": 75
+    }
+   ],
+   "progressive": false,
+   "reference": "testorig.yuv.gz"
+  },
+  {
+   "file": "testorig.jpg",
+   "scale": "1/2",
+   "width": 114,
+   "height": 75,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 114,
+     "height": 76
+    },
+    {
+     "width": 57,
+     "height": 38
+    },
+    {
+     "width": 57,
+     "height": 38
+    }
+   ],
+   "progressive": false,
+   "reference": "testorig.s2.yuv.gz"
+  },
+  {
+   "file": "testorig.jpg",
+   "scale": "1/4",
+   "width": 57,
+   "height": 38,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 58,
+     "height": 38
+    },
+    {
+     "width": 29,
+     "height": 19
+    },
+    {
+     "width": 29,
+     "height": 19
+    }
+   ],
+   "progressive": false,
+   "reference": "testorig.s4.yuv.gz"
+  },
+  {
+   "file": "testorig.jpg",
+   "scale": "1/8",
+   "width": 29,
+   "height": 19,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 30,
+     "height": 20
+    },
+    {
+     "width": 15,
+     "height": 10
+    },
+    {
+     "width": 15,
+     "height": 10
+    }
+   ],
+   "progressive": false,
+   "reference": "testorig.s8.yuv.gz"
+  },
+  {
+   "file": "duck-progressive-444.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "444",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 320,
+     "height": 240
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-444.yuv.gz"
+  },
+  {
+   "file": "duck-progressive-gray.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "gray",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-gray.yuv.gz"
+  },
+  {
+   "file": "duck-progressive-restart.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-420.yuv.gz"
+  },
+  {
+   "file": "duck-progressive.jpg",
+   "scale": "1/1",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 320,
+     "height": 240
+    },
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 160,
+     "height": 120
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-420.yuv.gz"
+  },
+  {
+   "file": "duck-progressive.jpg",
+   "scale": "1/2",
+   "width": 160,
+   "height": 120,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 160,
+     "height": 120
+    },
+    {
+     "width": 80,
+     "height": 60
+    },
+    {
+     "width": 80,
+     "height": 60
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-420.s2.yuv.gz"
+  },
+  {
+   "file": "duck-progressive.jpg",
+   "scale": "1/4",
+   "width": 80,
+   "height": 60,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 80,
+     "height": 60
+    },
+    {
+     "width": 40,
+     "height": 30
+    },
+    {
+     "width": 40,
+     "height": 30
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-420.s4.yuv.gz"
+  },
+  {
+   "file": "duck-progressive.jpg",
+   "scale": "1/8",
+   "width": 40,
+   "height": 30,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 40,
+     "height": 30
+    },
+    {
+     "width": 20,
+     "height": 15
+    },
+    {
+     "width": 20,
+     "height": 15
+    }
+   ],
+   "progressive": true,
+   "reference": "duck-420.s8.yuv.gz"
+  },
+  {
+   "file": "odd-17x9-progressive.jpg",
+   "scale": "1/1",
+   "width": 17,
+   "height": 9,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 18,
+     "height": 10
+    },
+    {
+     "width": 9,
+     "height": 5
+    },
+    {
+     "width": 9,
+     "height": 5
+    }
+   ],
+   "progressive": true,
+   "reference": "odd-17x9.yuv.gz"
+  },
+  {
+   "file": "odd-1x1-progressive.jpg",
+   "scale": "1/1",
+   "width": 1,
+   "height": 1,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 2,
+     "height": 2
+    },
+    {
+     "width": 1,
+     "height": 1
+    },
+    {
+     "width": 1,
+     "height": 1
+    }
+   ],
+   "progressive": true,
+   "reference": "odd-1x1.yuv.gz"
+  },
+  {
+   "file": "odd-1x33-progressive.jpg",
+   "scale": "1/1",
+   "width": 1,
+   "height": 33,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 2,
+     "height": 34
+    },
+    {
+     "width": 1,
+     "height": 17
+    },
+    {
+     "width": 1,
+     "height": 17
+    }
+   ],
+   "progressive": true,
+   "reference": "odd-1x33.yuv.gz"
+  },
+  {
+   "file": "odd-31x17-progressive.jpg",
+   "scale": "1/1",
+   "width": 31,
+   "height": 17,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 32,
+     "height": 18
+    },
+    {
+     "width": 16,
+     "height": 9
+    },
+    {
+     "width": 16,
+     "height": 9
+    }
+   ],
+   "progressive": true,
+   "reference": "odd-31x17.yuv.gz"
+  },
+  {
+   "file": "odd-33x1-progressive.jpg",
+   "scale": "1/1",
+   "width": 33,
+   "height": 1,
+   "subsampling": "420",
+   "planes": [
+    {
+     "width": 34,
+     "height": 2
+    },
+    {
+     "width": 17,
+     "height": 1
+    },
+    {
+     "width": 17,
+     "height": 1
+    }
+   ],
+   "progressive": true,
+   "reference": "odd-33x1.yuv.gz"
+  }
+ ],
+ "skipped": [
+  {
+   "file": "duck-cmyk.jpg",
+   "reason": "Color space cmyk"
+  },
+  {
+   "file": "duck-ycck.jpg",
+   "reason": "Color space ycck"
+  },
+  {
+   "file": "testimgari.jpg",
+   "reason": "Arithmetic coding"
+  },
+  {
+   "file": "testorig12.jpg",
+   "reason": "12-bit"
+  }
+ ],
+ "encodes": [
+  {
+   "file": "encode/duck-420-q75.jpg",
+   "source": "duck-420.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "quality": 75,
+   "size": 12883,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_420",
+    "TJPARAM_QUALITY": 75,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-420-q90.jpg",
+   "source": "duck-420.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "420",
+   "quality": 90,
+   "size": 22412,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_420",
+    "TJPARAM_QUALITY": 90,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-422-q75.jpg",
+   "source": "duck-422.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "422",
+   "quality": 75,
+   "size": 14012,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_422",
+    "TJPARAM_QUALITY": 75,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-422-q90.jpg",
+   "source": "duck-422.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "422",
+   "quality": 90,
+   "size": 24837,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_422",
+    "TJPARAM_QUALITY": 90,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-444-q75.jpg",
+   "source": "duck-444.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "444",
+   "quality": 75,
+   "size": 16059,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_444",
+    "TJPARAM_QUALITY": 75,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-444-q90.jpg",
+   "source": "duck-444.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "444",
+   "quality": 90,
+   "size": 29383,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_444",
+    "TJPARAM_QUALITY": 90,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-gray-q75.jpg",
+   "source": "duck-gray.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "gray",
+   "quality": 75,
+   "size": 11167,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_GRAY",
+    "TJPARAM_QUALITY": 75,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/duck-gray-q90.jpg",
+   "source": "duck-gray.yuv.gz",
+   "width": 320,
+   "height": 240,
+   "subsampling": "gray",
+   "quality": 90,
+   "size": 19064,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_GRAY",
+    "TJPARAM_QUALITY": 90,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/odd-17x9-q75.jpg",
+   "source": "odd-17x9.yuv.gz",
+   "width": 17,
+   "height": 9,
+   "subsampling": "420",
+   "quality": 75,
+   "size": 667,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_420",
+    "TJPARAM_QUALITY": 75,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/odd-17x9-q90.jpg",
+   "source": "odd-17x9.yuv.gz",
+   "width": 17,
+   "height": 9,
+   "subsampling": "420",
+   "quality": 90,
+   "size": 695,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_420",
+    "TJPARAM_QUALITY": 90,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/odd-31x17-q75.jpg",
+   "source": "odd-31x17.yuv.gz",
+   "width": 31,
+   "height": 17,
+   "subsampling": "420",
+   "quality": 75,
+   "size": 718,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_420",
+    "TJPARAM_QUALITY": 75,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  },
+  {
+   "file": "encode/odd-31x17-q90.jpg",
+   "source": "odd-31x17.yuv.gz",
+   "width": 31,
+   "height": 17,
+   "subsampling": "420",
+   "quality": 90,
+   "size": 798,
+   "function": "tj3CompressFromYUVPlanes8",
+   "params": {
+    "TJPARAM_SUBSAMP": "TJSAMP_420",
+    "TJPARAM_QUALITY": 90,
+    "TJPARAM_FASTDCT": 0,
+    "TJPARAM_OPTIMIZE": 0,
+    "TJPARAM_PROGRESSIVE": 0,
+    "TJPARAM_ARITHMETIC": 0,
+    "TJPARAM_RESTARTBLOCKS": 0,
+    "TJPARAM_RESTARTROWS": 0,
+    "TJPARAM_LOSSLESS": 0
+   }
+  }
+ ],
+ "markersExample": {
+  "file": "encode/duck-420-q75.jpg",
+  "segments": [
+   {
+    "marker": "SOI"
+   },
+   {
+    "marker": "APP0",
+    "length": 16,
+    "identifier": "JFIF"
+   },
+   {
+    "marker": "DQT",
+    "length": 67
+   },
+   {
+    "marker": "DQT",
+    "length": 67
+   },
+   {
+    "marker": "SOF0",
+    "length": 17
+   },
+   {
+    "marker": "DHT",
+    "length": 31
+   },
+   {
+    "marker": "DHT",
+    "length": 181
+   },
+   {
+    "marker": "DHT",
+    "length": 31
+   },
+   {
+    "marker": "DHT",
+    "length": 181
+   },
+   {
+    "marker": "SOS",
+    "length": 12,
+    "entropyBytes": 12258
+   },
+   {
+    "marker": "EOI"
+   }
+  ]
+ }
+}
