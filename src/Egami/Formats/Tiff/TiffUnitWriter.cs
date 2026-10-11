@@ -8,7 +8,7 @@ namespace Egami.Formats.Tiff;
 
 /// <summary>
 /// JPEG and WebP strips and tiles for the writer, through Egami's own encoders: JPEG as Adobe's TIFF Technical Note 2 has it, the
-/// tables shared in JPEGTables and each unit an abbreviated stream; WebP as a whole lossless file per unit.
+/// tables shared in JPEGTables and each unit an abbreviated stream; WebP as a whole file per unit.
 /// </summary>
 internal static class TiffUnitWriter
 {
@@ -92,11 +92,11 @@ internal static class TiffUnitWriter
         return (tables.ToArray(), rest.ToArray());
     }
 
-    /// <summary>Encodes a unit of 8-bit RGB or RGBA rows as a lossless WebP file.</summary>
-    public static byte[] Webp(ReadOnlySpan<byte> unit, int width, int rows, bool alpha, EgamiContext context)
+    /// <summary>Encodes a unit of 8-bit RGB or RGBA rows as a WebP file, lossless or at <paramref name="quality"/>.</summary>
+    public static byte[] Webp(ReadOnlySpan<byte> unit, int width, int rows, bool alpha, bool lossless, int quality, EgamiContext context)
     {
         using MemoryStream stream = new();
-        WebpWriterOptions options = new() { Lossless = true, StripMetadata = true };
+        WebpWriterOptions options = new() { Lossless = lossless, Quality = quality, StripMetadata = true };
         if (alpha)
         {
             using Raster<Rgba8> raster = Raster.Create<Rgba8>(width, rows, context);

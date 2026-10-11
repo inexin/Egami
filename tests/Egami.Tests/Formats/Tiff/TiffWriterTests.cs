@@ -344,7 +344,26 @@ public class TiffWriterExtrasTests
         using Raster<Rgba8> back = Raster.Load<Rgba8>(file);
         Assert.Equal(TiffCompression.Webp, ((TiffDetails)back.Metadata.FormatDetails!).Compression);
         Assert.Equal(TiffReference.Bytes(source), TiffReference.Bytes(back));
-        Assert.Throws<NotSupportedException>(() => Save(source, new TiffWriterOptions { Compression = TiffCompression.Webp, Quality = 80 }));
+    }
+
+    [Fact]
+    public void ALosslessWebpSourceStaysLossless()
+    {
+        using Raster loaded = Raster.Load(TiffCorpus.Main.Read("webp-lossless-alpha.tif"));
+        using MemoryStream file = new();
+        loaded.Save(file, TiffFormat.Info);
+        using Raster back = Raster.Load(file.ToArray());
+        Assert.Equal(TiffCompression.Webp, ((TiffDetails)back.Metadata.FormatDetails!).Compression);
+        Assert.Equal(TiffReference.Bytes(loaded), TiffReference.Bytes(back));
+    }
+
+    [Fact]
+    public void LossyWebpWritesCloseToTheSource()
+    {
+        using Raster<Rgb8> source = Raster.Load<Rgb8>(TiffCorpus.Main.Read("rgb8.tif"));
+        byte[] file = Save(source, new TiffWriterOptions { Compression = TiffCompression.Webp, Quality = 90 });
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(file);
+        Assert.True(Psnr(source, back) > 28, $"PSNR {Psnr(source, back):F1} dB");
     }
 
     [Fact]

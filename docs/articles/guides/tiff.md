@@ -53,10 +53,10 @@ them through it.
 
 | Option | Default | Does |
 | --- | --- | --- |
-| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray and RGB), `Webp` (lossless, at `Quality` 100) |
+| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray and RGB), `Webp` (lossless at `Quality` 100, else lossy) |
 | `CompressionLevel` | 5 | Deflate level, 0 to 9 |
 | `Predictor` | the source's, else `Horizontal` for integers and `FloatingPoint` for floats | For LZW and Deflate; `None` turns it off |
-| `Quality` | 75 | JPEG quality |
+| `Quality` | 75 | JPEG and lossy WebP quality |
 | `TileSize` | the source's, else strips of about 64 KB | A multiple of 16 writes square tiles; 0 forces strips |
 | `Layout` | `Classic` | `Big` writes BigTIFF; `Auto` switches when the pixels pass 4 GB; `Classic` throws before writing when they would |
 | `Reduce` | `false` | Writes the smallest exact form: 1 bit, gray, a palette of up to 256 colors, or 8 bits from 16 |

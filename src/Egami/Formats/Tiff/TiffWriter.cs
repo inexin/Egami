@@ -239,8 +239,11 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
     /// <summary>Gets the palette of a reduced page: 256 entries at most, in index order.</summary>
     public Rgb8[] Palette { get; init; } = [];
 
-    /// <summary>Gets the quality of JPEG compression.</summary>
+    /// <summary>Gets the quality of JPEG and lossy WebP compression.</summary>
     public int Quality { get; init; } = 75;
+
+    /// <summary>Gets whether WebP units are lossless.</summary>
+    public bool Lossless { get; init; }
 
     /// <summary>Returns the bytes of a stored row of <paramref name="width"/> pixels.</summary>
     public int RowBytes(int width) => (int)((((long)width * Samples * Bits) + 7) / 8);
@@ -280,6 +283,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
         }
 
         bool kept = tiff.Compression is null;
+        bool lossless = false;
         if (ccitt && store != TiffStore.Bilevel)
         {
             if (!kept)
@@ -376,11 +380,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
             (store, photometric, samples, bits, format, extra, associated) = alpha
                 ? (TiffStore.Rgba8, 2, 4, 8, 1, 2, false)
                 : (TiffStore.Rgb8, 2, 3, 8, 1, -1, false);
-            bool lossless = tiff.Quality == 100 || (tiff.Compression is null && source?.Compression == TiffCompression.Webp);
-            if (!lossless)
-            {
-                throw new NotSupportedException("TIFF: lossy WebP compression waits for the WebP writer's lossy encoder; set Quality to 100 for lossless.");
-            }
+            lossless = tiff.Quality == 100 || (tiff.Compression is null && source is { Compression: TiffCompression.Webp, WebpLossless: true });
         }
 
         int predictor = 1;
@@ -402,6 +402,7 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
         {
             Palette = palette,
             Quality = tiff.Quality,
+            Lossless = lossless,
         };
     }
 

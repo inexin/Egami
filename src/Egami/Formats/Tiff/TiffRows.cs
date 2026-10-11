@@ -372,6 +372,11 @@ internal sealed class TiffRows<TNatural> : RowSource
                 Short(unit);
             }
 
+            if (unit == 0 && decoded.Metadata.FormatDetails is Webp.WebpDetails webp && Metadata.FormatDetails is TiffDetails details)
+            {
+                details.WebpLossless = webp.Lossless;
+            }
+
             int pixelBytes = TNatural.Layout.BytesPerPixel;
             int width = Math.Min(columns, decoded.Width);
             bool invert = page.Photometric == 5 && page.Compression != TiffCodes.Webp;
