@@ -152,37 +152,37 @@ public abstract partial class Raster
             switch (mode)
             {
                 case StackMode.Mean:
-                {
-                    double sum = 0;
-                    foreach (double v in values)
                     {
-                        sum += v;
-                    }
+                        double sum = 0;
+                        foreach (double v in values)
+                        {
+                            sum += v;
+                        }
 
-                    return sum / values.Length;
-                }
+                        return sum / values.Length;
+                    }
 
                 case StackMode.Min:
-                {
-                    double min = values[0];
-                    foreach (double v in values)
                     {
-                        min = Math.Min(min, v);
-                    }
+                        double min = values[0];
+                        foreach (double v in values)
+                        {
+                            min = Math.Min(min, v);
+                        }
 
-                    return min;
-                }
+                        return min;
+                    }
 
                 case StackMode.Max:
-                {
-                    double max = values[0];
-                    foreach (double v in values)
                     {
-                        max = Math.Max(max, v);
-                    }
+                        double max = values[0];
+                        foreach (double v in values)
+                        {
+                            max = Math.Max(max, v);
+                        }
 
-                    return max;
-                }
+                        return max;
+                    }
 
                 default:
                     // The median of each channel: the middle value, the upper of the two middle ones for an even count. Small counts
