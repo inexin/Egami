@@ -72,6 +72,22 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `Raster.Load`, `LoadAll`, `Probe` and `RasterDecoder.Open` take a `FormatInfo` to read data in a known format without
   detection, as PDF's JBIG2 streams need.
 
+### JPEG 2000
+
+- `Jpeg2000Format` reads all of JPEG 2000 Part 1 (T.800): JP2 and JPX files and raw codestreams, including a PDF's JPXDecode
+  streams, which load with plain `Raster.Load`. Every progression order and progression change, every code-block style, tiles,
+  tile-parts, precincts, packed headers, ROI, the reversible 5/3 and irreversible 9/7 wavelets, RCT and ICT, subsampled and
+  signed components. Every ISO/IEC 15444-4 conformance codestream decodes within its tolerances: reversible ones identical to
+  OpenJPEG 2.5.4, irreversible ones within one level, and the same at reduced resolutions.
+- Palettes, channel definitions, sYCC and CIELab (converted to sRGB), ICC profiles (kept in the metadata), XMP and resolution are
+  read; `Jpeg2000ReaderOptions.Components` returns the codestream's components as stored instead, for a PDF that names its own
+  color space; `MaxQualityLayers` decodes the first layers only; `FastUpsampling` repeats subsampled chroma as OpenJPEG does.
+  Subsampled sYCC also loads into a `YuvRaster`. `Jpeg2000Details` says how the codestream was coded.
+- `MinimumSize` drops whole wavelet levels, `Region` decodes only the tiles and code-blocks it needs, and rows stream a row of
+  tiles at a time. Tier 1 runs on every core; at one thread lossy files decode faster than OpenJPEG through Magick.NET, and at
+  all cores every file decodes two to four times faster. Part 2 coding tools and High-Throughput code-blocks throw
+  `NotSupportedException` naming the feature.
+
 ### Several images in one file
 
 - `Raster.LoadAll` and `LoadAllAsync` return a `RasterList` of every image in a file, each at its own size and pixel type;

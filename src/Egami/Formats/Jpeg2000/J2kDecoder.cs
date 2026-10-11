@@ -86,6 +86,11 @@ internal sealed class J2kDecoder
             {
                 throw new InvalidDataException($"Component {c} has no samples: its subsampling of {_stream.Components[c].Dx}×{_stream.Components[c].Dy} leaves none in the image.");
             }
+
+            if ((Needed is null || Needed[c]) && _stream.Components[c].Precision > 30)
+            {
+                throw new NotSupportedException($"Component {c} has {_stream.Components[c].Precision}-bit samples; Egami reads JPEG 2000 components of up to 30 bits.");
+            }
         }
 
         int[][] planes = new int[count][];

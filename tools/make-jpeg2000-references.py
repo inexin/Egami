@@ -9,6 +9,8 @@ Local references (never committed), which Jpeg2000ConformanceTests and Jpeg2000S
   .cache/j2k-opj               opj_decompress of each conformance codestream to PGX
   .cache/j2k-opj-r             the same with -r 1 and -r 2
   .cache/j2k-pillow            Pillow's decode of each conformance JP2 file to PNG
+  .cache/j2k-speed             the speed set egami-compare's Jpeg2000 benchmarks time: zoo1.jp2 (3906 x 2602) re-encoded
+                               lossless, lossy, layered and tiled, and its gray scan lossless and lossy
 
 Usage, from the repo root with Docker running:
   python tools/make-jpeg2000-references.py [--local]
@@ -27,6 +29,18 @@ for f in p*.j2k; do
   opj_decompress -quiet -i $f -o /w/.cache/j2k-opj/${f%.j2k}.pgx || true
   for r in 1 2; do opj_decompress -quiet -r $r -i $f -o /w/.cache/j2k-opj-r/${f%.j2k}_r$r.pgx || true; done
 done
+mkdir -p /w/.cache/j2k-speed
+cd /w/.cache/j2k-speed
+opj_decompress -quiet -i /w/.cache/openjpeg-data/input/conformance/zoo1.jp2 -o photo.ppm
+magick photo.ppm -colorspace Gray -depth 8 scan.pgm
+opj_compress -i photo.ppm -o photo-lossless.j2k
+opj_compress -i photo.ppm -o photo-lossy.j2k -I -r 20
+opj_compress -i photo.ppm -o photo-layers.jp2 -I -r 80,40,20
+opj_compress -i photo.ppm -o photo-tiled.j2k -I -r 20 -t 512,512
+opj_compress -i scan.pgm -o scan-lossless.j2k
+opj_compress -i scan.pgm -o scan-lossy.jp2 -I -r 10
+rm photo.ppm scan.pgm
+cd /w/.cache/openjpeg-data/input/conformance
 python3 - <<'PY'
 import glob, os
 from PIL import Image
