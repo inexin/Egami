@@ -245,6 +245,8 @@ public class CoverageTests
     internal sealed class GridSink(int width, int height) : ISpanSink
     {
         public byte[,] Grid { get; } = new byte[height, width];
+        public bool FillsDirectly => true;
+
 
         private readonly bool[,] _written = new bool[height, width];
 

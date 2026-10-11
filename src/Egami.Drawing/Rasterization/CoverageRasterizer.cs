@@ -10,6 +10,12 @@ internal interface ISpanSink
 
     /// <summary>Blends <paramref name="length"/> pixels from <paramref name="x"/> on row <paramref name="y"/> through one coverage value; <paramref name="scratch"/> holds at least <paramref name="length"/> bytes.</summary>
     void Fill(int y, int x, int length, byte coverage, Span<byte> scratch);
+
+    /// <summary>
+    /// Gets a value indicating whether a fully covered run is cheaper as <see cref="Fill"/> (a plain write) than as part of a
+    /// <see cref="Blend"/> row; otherwise the rasterizer sends each row's runs as one blend, which costs one call.
+    /// </summary>
+    bool FillsDirectly { get; }
 }
 
 /// <summary>
@@ -83,7 +89,14 @@ internal sealed class CoverageRasterizer : IDisposable
                 return;
             }
 
-            Run(bands, area.Height, (start, end) => Band(area, start, end, rule == FillRule.EvenOdd, sink));
+            if (bands <= 1)
+            {
+                Band(area, 0, area.Height, rule == FillRule.EvenOdd, sink);
+            }
+            else
+            {
+                Run(bands, area.Height, (start, end) => Band(area, start, end, rule == FillRule.EvenOdd, sink));
+            }
         }
         else
         {
@@ -414,7 +427,7 @@ internal sealed class CoverageRasterizer : IDisposable
                 return;
             }
 
-            if (length >= FillRun)
+            if (length >= FillRun && (alpha != 255 || sink.FillsDirectly))
             {
                 Flush();
                 sink.Fill(y, originX + x, length, alpha, _buffer);

@@ -62,6 +62,8 @@ internal abstract class RasterSink(ClipMask? mask, byte scale) : ISpanSink
     /// <summary>Gets a value indicating whether a fully covered run needs no per-pixel coverage at all.</summary>
     protected bool Plain => mask is null && scale == 255;
 
+    public virtual bool FillsDirectly => false;
+
     public void Blend(int y, int x, Span<byte> coverage)
     {
         if (mask is not null)
@@ -140,6 +142,8 @@ internal sealed class SolidSink<TPixel> : RasterSink
 
     private static bool EightBit => TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
 
+    public override bool FillsDirectly => _canFill && Plain;
+
     protected override void Write(int y, int x, ReadOnlySpan<byte> coverage)
         => Compositor.Blend(_mode, _color, _plane.Row(y).Slice(x, coverage.Length), coverage, _opacity, _colorSpace);
 
@@ -161,6 +165,8 @@ internal sealed class ImageSink<TPixel>(
     : RasterSink(mask, 255)
     where TPixel : unmanaged, IPixelType<TPixel>
 {
+    public override bool FillsDirectly => Plain;
+
     protected override void Write(int y, int x, ReadOnlySpan<byte> coverage)
     {
         ReadOnlySpan<TPixel> source = placed.Row(y - origin.Y).Slice(x - origin.X, coverage.Length);
@@ -178,6 +184,8 @@ internal sealed class ImageSink<TPixel>(
 /// <summary>Writes coverage into a plain buffer laid out over a device rectangle.</summary>
 internal sealed class BufferSink(Memory<byte> buffer, Rect bounds) : ISpanSink
 {
+    public bool FillsDirectly => true;
+
     public void Blend(int y, int x, Span<byte> coverage) => coverage.CopyTo(Row(y).Slice(x - bounds.X));
 
     public void Fill(int y, int x, int length, byte coverage, Span<byte> scratch) => Row(y).Slice(x - bounds.X, length).Fill(coverage);
