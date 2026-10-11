@@ -71,7 +71,18 @@ static void print_directory(TIFF *tif, int index, int sub)
            sub_count);
     for (int i = 0; i < extra_count; i++)
         printf("%s%u", i ? "," : "", extra[i]);
-    printf("]}");
+    printf("]");
+    uint16_t *red, *green, *blue;
+    uint16_t bits = tag16(tif, TIFFTAG_BITSPERSAMPLE, 1);
+    if (tag16(tif, TIFFTAG_PHOTOMETRIC, 0) == PHOTOMETRIC_PALETTE && bits <= 16 && TIFFGetField(tif, TIFFTAG_COLORMAP, &red, &green, &blue))
+    {
+        int n = 1 << bits;
+        printf(",\"map\":[");
+        for (int i = 0; i < 3 * n; i++)
+            printf("%s%u", i ? "," : "", (i < n ? red : i < 2 * n ? green : blue)[i % n]);
+        printf("]");
+    }
+    printf("}");
 }
 
 static int info(const char *path)
@@ -154,6 +165,7 @@ static int raw(const char *path, const char *which, const char *out)
     int unit_samples = planar == PLANARCONFIG_SEPARATE ? 1 : samples;
     uint64_t row_bytes = ((uint64_t)width * unit_samples * bits + 7) / 8;
     uint64_t plane_bytes = row_bytes * height;
+    int failed = 0;
     unsigned char *image = calloc(planes * plane_bytes, 1);
     if (!image) fail("out of memory");
 
@@ -188,7 +200,10 @@ static int raw(const char *path, const char *which, const char *out)
             {
                 memset(strip, 0, strip_size);
                 if (TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, s * rows_per_strip, (uint16_t)p), strip, -1) < 0)
-                    fail("TIFFReadEncodedStrip failed");
+                {
+                    /* A damaged strip: keep what libtiff decoded of it and go on, as readers do. */
+                    failed++;
+                }
                 uint32_t rows = height - s * rows_per_strip < rows_per_strip ? height - s * rows_per_strip : rows_per_strip;
                 memcpy(image + p * plane_bytes + (uint64_t)s * rows_per_strip * row_bytes, strip, rows * row_bytes);
             }

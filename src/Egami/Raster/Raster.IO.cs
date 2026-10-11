@@ -565,8 +565,8 @@ public abstract partial class Raster
     internal static MemoryStream AsStream(ReadOnlyMemory<byte> data)
     {
         return System.Runtime.InteropServices.MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
-            ? new MemoryStream(segment.Array!, segment.Offset, segment.Count, writable: false)
-            : new MemoryStream(data.ToArray(), writable: false);
+            ? new MemoryStream(segment.Array!, segment.Offset, segment.Count, writable: false, publiclyVisible: true)
+            : new MemoryStream(data.ToArray(), 0, data.Length, writable: false, publiclyVisible: true);
     }
 
     internal static void WriteFile(string path, Action<Stream> write)

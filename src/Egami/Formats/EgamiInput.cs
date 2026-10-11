@@ -295,6 +295,39 @@ public sealed class EgamiInput
     internal long? Length => _origin >= 0 ? _stream.Length - _origin : null;
 
     /// <summary>
+    /// Gets the bytes of a memory stream from the start of the image to its end without copying, for formats that read at
+    /// offsets (TIFF), or an empty segment for any other stream.
+    /// </summary>
+    internal ArraySegment<byte> WholeBuffer =>
+        _append is null && _stream is MemoryStream memory && memory.TryGetBuffer(out ArraySegment<byte> whole) && _origin >= 0
+            ? whole.Slice((int)_origin, (int)(memory.Length - _origin))
+            : default;
+
+    /// <summary>
+    /// Reads up to <paramref name="destination"/>.Length bytes at <paramref name="offset"/> from the start of the image without
+    /// moving the read position, for formats that read at offsets; returns how many there were. The stream must be seekable.
+    /// </summary>
+    internal int ReadAt(long offset, Span<byte> destination)
+    {
+        if (_origin < 0 || offset < 0 || offset >= Length)
+        {
+            return 0;
+        }
+
+        CancellationToken.ThrowIfCancellationRequested();
+        long saved = _stream.Position;
+        try
+        {
+            _stream.Position = _origin + offset;
+            return _stream.ReadAtLeast(destination, destination.Length, throwOnEndOfStream: false);
+        }
+        finally
+        {
+            _stream.Position = saved;
+        }
+    }
+
+    /// <summary>
     /// Gets or sets where the image ends, from its start, when a reader read past it: TGA looks for its footer at the end of a
     /// stream that cannot seek. <see langword="null"/> when the bytes consumed are the image.
     /// </summary>

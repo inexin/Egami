@@ -211,6 +211,9 @@ def base_tags(width, height, bits, samples, photometric, fmt=1, extra=None):
     return tags
 
 
+big_endian = set()
+
+
 def make_bases(pictures):
     """Returns (name, pages, notes) for every base file."""
     import numpy as np
@@ -334,10 +337,14 @@ def make_bases(pictures):
     ycbcr("ycbcr22-zip", 2, 2, deflate=True)
     ycbcr("ycbcr22-bt709", 2, 2, (0.2126, 0.7152, 0.0722), [16, 235, 128, 240, 128, 240])
 
-    # CIELab and ICCLab from sRGB through XYZ (D65).
+    # CIELab and ICCLab from sRGB through XYZ, adapted from D65 to D50 by Bradford (the white Adobe's TIFF note and ICC use).
     lin = np.where(duck / 255 <= 0.04045, duck / 255 / 12.92, ((duck / 255 + 0.055) / 1.055) ** 2.4)
     m = np.array([[0.4124564, 0.3575761, 0.1804375], [0.2126729, 0.7151522, 0.0721750], [0.0193339, 0.1191920, 0.9503041]])
-    xyz = lin @ m.T / np.array([0.95047, 1.0, 1.08883])
+    bradford = np.array([[0.8951, 0.2664, -0.1614], [-0.7502, 1.7135, 0.0367], [0.0389, -0.0685, 1.0296]])
+    d65 = np.array([0.3127 / 0.3290, 1.0, (1 - 0.3127 - 0.3290) / 0.3290])
+    d50 = np.array([0.3457 / 0.3585, 1.0, (1 - 0.3457 - 0.3585) / 0.3585])
+    adapt = np.linalg.inv(bradford) @ np.diag((bradford @ d50) / (bradford @ d65)) @ bradford
+    xyz = lin @ m.T @ adapt.T / d50
     f = np.where(xyz > (6 / 29) ** 3, np.cbrt(xyz), xyz / (3 * (6 / 29) ** 2) + 4 / 29)
     lab_l, lab_a, lab_b = 116 * f[:, :, 1] - 16, 500 * (f[:, :, 0] - f[:, :, 1]), 200 * (f[:, :, 1] - f[:, :, 2])
     single("cielab8", 8, 3, 8, np.dstack([np.rint(lab_l * 255 / 100), np.rint(lab_a) % 256, np.rint(lab_b) % 256]).astype(np.int64))
@@ -374,6 +381,23 @@ def make_bases(pictures):
     files.append(("pyramid-subifd", [pyramid], "SubIFDs of 64x48 and 32x24"))
     mask = page_of(bilevel[:, :, None], 1, 1, 4, {254: (4, [4])})
     files.append(("pages-mask", [page_of(level(duck, 8), 8, 3, 2), mask], "a page and its transparency mask"))
+    import zlib
+
+    fp = np.ascontiguousarray((duck / 255).astype(">f4"))
+    rows = []
+    for y in range(h):
+        row = fp[y].view(np.uint8).reshape(w * 3, 4)
+        planes = bytearray(np.ascontiguousarray(row.T).ravel())
+        for i in range(len(planes) - 1, 2, -1):
+            planes[i] = (planes[i] - planes[i - 3]) & 0xFF
+        rows.append(bytes(planes))
+    tags = base_tags(w, h, 32, 3, 2, 3)
+    tags[259] = (3, [8])
+    tags[317] = (3, [3])
+    files.append(("rgbf32-zip-fp-be", [Page(w, h, tags, zlib.compress(b"".join(rows), 6))],
+                  "big-endian, floating-point predictor as Adobe's note describes it; written by the script"))
+    files[-1][1][0].rows = h
+    big_endian.add("rgbf32-zip-fp-be")
     strips = page_of(level(duck, 8), 8, 3, 2)
     strips.rows = 5
     files.append(("rgb8-strips5-ifdfirst", [strips], "written by this script: 5 rows a strip, IFD first"))
@@ -403,6 +427,8 @@ VARIANTS = [
     ("rgb8-rows1", "rgb8", ["-r", "1", "-c", "packbits"]),
     ("rgb8-rows7-zip", "rgb8", ["-r", "7", "-c", "zip:2"]),
     ("rgb8-be", "rgb8", ["-B", "-c", "lzw:2"]),
+    ("rgb8-lzw-lsb", "rgb8", ["-c", "lzw", "-f", "lsb2msb"]),
+    ("rgb8-packbits-lsb", "rgb8", ["-c", "packbits", "-f", "lsb2msb"]),
     ("rgb8-bigtiff", "rgb8", ["-8", "-c", "zip:2"]),
     ("rgb8-bigtiff-tiles-be", "rgb8", ["-8", "-B", "-t", "-w", "16", "-l", "16", "-c", "lzw"]),
     ("rgb16-lzw-pred", "rgb16", ["-c", "lzw:2"]),
@@ -415,7 +441,7 @@ VARIANTS = [
     ("rgba8-assoc-zip", "rgba8-assoc", ["-c", "zip:2"]),
     ("rgba16-zip-pred", "rgba16", ["-c", "zip:2"]),
     ("rgbf32-zip-fp", "rgbf32", ["-c", "zip:3"]),
-    ("rgbf32-lzw-fp-be", "rgbf32", ["-c", "lzw:3", "-B"]),
+    ("rgbf32-lzw-fp", "rgbf32", ["-c", "lzw:3"]),
     ("rgbf32-zip-pred2", "rgbf32", ["-c", "zip:2"]),
     ("rgbf16-zip-fp", "rgbf16", ["-c", "zip:3"]),
     ("rgbaf32-tiles-zip-fp", "rgbaf32", ["-t", "-w", "16", "-l", "16", "-c", "zip:3"]),
@@ -485,7 +511,7 @@ def inside(pics):
 
     pictures = sources()
     for name, pages, note in make_bases(pictures):
-        write_tiff(os.path.join(CORPUS, name + ".tif"), pages)
+        write_tiff(os.path.join(CORPUS, name + ".tif"), pages, ">" if name in big_endian else "<")
         references(name, {"file": name + ".tif", "tool": "make-tiff-references.py", "note": note})
 
     for name, base, options in VARIANTS:
@@ -533,7 +559,7 @@ def inside(pics):
         out = os.path.join(CORPUS, name + ".tif")
         shutil.copy(os.path.join(CORPUS, base + ".tif"), out)
         run("exiftool", "-q", "-overwrite_original", *args, out)
-        exif = run("exiftool", "-j", "-a", "-G1", "-struct", "-n", out)
+        exif = run("exiftool", "-j", "-a", "-G1", "-struct", "-n", "-x", "System:all", out)
         with open(os.path.join(TARGET, name + ".exif.json"), "w", newline="\n") as f:
             f.write(exif)
         references(name, {"file": name + ".tif", "tool": "exiftool", "source": base + ".tif", "options": args,

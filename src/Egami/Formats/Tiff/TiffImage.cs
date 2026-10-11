@@ -1,0 +1,189 @@
+using Egami.Metadata;
+
+namespace Egami.Formats.Tiff;
+
+/// <summary>
+/// An open TIFF file: its source, header and chain of IFDs, read once. Pages are found by walking the chain, which reads only
+/// each IFD's entries, never pixels.
+/// </summary>
+internal sealed class TiffImage : IDisposable
+{
+    private readonly List<TiffIfd> _chain = [];
+
+    private TiffImage(TiffSource source, TiffFile file, bool strict)
+    {
+        Source = source;
+        File = file;
+        Strict = strict;
+    }
+
+    public TiffSource Source { get; }
+
+    public TiffFile File { get; }
+
+    public bool Strict { get; }
+
+    /// <summary>Gets every IFD of the main chain, in order.</summary>
+    public IReadOnlyList<TiffIfd> Chain => _chain;
+
+    /// <summary>Gets the warnings walking the chain gave.</summary>
+    public List<string> Warnings { get; } = [];
+
+    /// <summary>Opens the file and walks its chain of IFDs, checking each offset against the file and against a loop.</summary>
+    public static TiffImage Open(EgamiInput input, ReaderOptions options)
+    {
+        TiffSource source = TiffSource.Open(input);
+        try
+        {
+            bool strict = options.Recovery == RecoveryMode.Strict;
+            TiffImage image = new(source, TiffFile.Open(source, input), strict);
+            image.Walk();
+            return image;
+        }
+        catch
+        {
+            source.Dispose();
+            throw;
+        }
+    }
+
+    private void Walk()
+    {
+        HashSet<long> seen = [];
+        long offset = File.FirstIfd;
+        long limit = File.Input.Limits.MaxFrames;
+        while (offset != 0)
+        {
+            if (!seen.Add(offset))
+            {
+                Problem(offset, $"The IFD chain loops back to {offset}; it was read up to there.");
+                return;
+            }
+
+            if (offset < 0 || offset > Source.Length - (File.Big ? 8 : 2))
+            {
+                if (_chain.Count == 0)
+                {
+                    throw File.OutOfFile(offset, $"The IFD at {offset} lies outside the {Source.Length}-byte file.");
+                }
+
+                Problem(offset, $"The next IFD at {offset} lies outside the file; the pages before it were read.");
+                return;
+            }
+
+            if (_chain.Count + 1 > limit)
+            {
+                File.Input.CheckFrameCount(_chain.Count + 1L);
+            }
+
+            TiffIfd ifd;
+            try
+            {
+                ifd = File.ReadIfd(offset);
+            }
+            catch (CorruptDataException) when (!Strict && _chain.Count > 0)
+            {
+                Warnings.Add($"The IFD at {offset} is damaged; the pages before it were read.");
+                return;
+            }
+
+            _chain.Add(ifd);
+            offset = ifd.Next;
+        }
+    }
+
+    private void Problem(long offset, string problem)
+    {
+        if (Strict)
+        {
+            throw File.Input.Corrupt(offset, problem);
+        }
+
+        Warnings.Add(problem);
+    }
+
+    /// <summary>Returns whether an IFD of the main chain is a full-resolution page: not reduced, not a transparency mask.</summary>
+    public bool IsFullPage(int index)
+    {
+        (uint subfile, int photometric) = TiffPage.Kind(File, _chain[index]);
+        return (subfile & 5) == 0 && photometric != 4;
+    }
+
+    /// <summary>Gets the chain indexes of the full-resolution pages.</summary>
+    public List<int> FullPages()
+    {
+        List<int> pages = [];
+        for (int i = 0; i < _chain.Count; i++)
+        {
+            if (IsFullPage(i))
+            {
+                pages.Add(i);
+            }
+        }
+
+        return pages;
+    }
+
+    /// <summary>
+    /// Returns the chain index of the page Load reads: <see cref="TiffReaderOptions.Page"/> among the full-resolution pages, the
+    /// first by default, or the first IFD when the file has no full-resolution page.
+    /// </summary>
+    public int PageToLoad(ReaderOptions options)
+    {
+        List<int> pages = FullPages();
+        int wanted = (options as TiffReaderOptions)?.Page ?? 0;
+        if (wanted < 0 || (pages.Count > 0 && wanted >= pages.Count) || (pages.Count == 0 && wanted > 0))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options), wanted, $"TIFF: the file has {pages.Count} full-resolution page{(pages.Count == 1 ? string.Empty : "s")}.");
+        }
+
+        return pages.Count > 0 ? pages[wanted] : 0;
+    }
+
+    /// <summary>Reads a page's description: a main-chain IFD, or one of its SubIFDs.</summary>
+    public TiffPage Page(int index, int sub = -1)
+    {
+        TiffIfd ifd = _chain[index];
+        if (sub >= 0)
+        {
+            ifd = File.ReadIfd(SubIfdOffsets(index)[sub]);
+        }
+
+        return TiffPage.Read(File, ifd, index, sub, Strict);
+    }
+
+    /// <summary>Returns the offsets of a page's SubIFDs that lie inside the file.</summary>
+    public long[] SubIfdOffsets(int index)
+    {
+        if (!_chain[index].TryGet(TiffTags.SubIfds, out TiffEntry entry) || entry.ValueAt < 0)
+        {
+            return [];
+        }
+
+        ulong[] values = File.Integers(entry, 1024);
+        return [.. values.Where(v => v > 0 && v < (ulong)Source.Length).Select(v => (long)v)];
+    }
+
+    /// <summary>Builds the metadata of a page: format details, resolution, ICC, XMP, IPTC, EXIF and the warnings so far.</summary>
+    public RasterMetadata Metadata(TiffPage page, ReaderOptions options)
+    {
+        RasterMetadata metadata = new() { FormatName = TiffFormat.Info.Name };
+        TiffMetadata.Read(this, page, metadata, options);
+        foreach (string warning in Warnings)
+        {
+            metadata.WarningList.Add(warning);
+        }
+
+        foreach (string warning in page.Warnings)
+        {
+            metadata.WarningList.Add(warning);
+        }
+
+        return metadata;
+    }
+
+    public void Dispose()
+    {
+        Source.Dispose();
+    }
+}

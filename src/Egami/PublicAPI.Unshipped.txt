@@ -376,6 +376,108 @@ Egami.Formats.RowReader.Dispose() -> void
 Egami.Formats.RowReader.RowReader() -> void
 Egami.Formats.RowReader<TNatural>
 Egami.Formats.RowReader<TNatural>.RowReader() -> void
+Egami.Formats.Tiff.TiffByteOrder
+Egami.Formats.Tiff.TiffByteOrder.BigEndian = 1 -> Egami.Formats.Tiff.TiffByteOrder
+Egami.Formats.Tiff.TiffByteOrder.LittleEndian = 0 -> Egami.Formats.Tiff.TiffByteOrder
+Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.AdobeDeflate = 32946 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.CcittGroup3 = 3 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.CcittGroup4 = 4 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.CcittRle = 2 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.CcittRleWord = 32771 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.Deflate = 8 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.Jpeg = 7 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.Lzw = 5 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.None = 1 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.OldJpeg = 6 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.PackBits = 32773 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.SgiLog = 34676 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.SgiLog24 = 34677 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.ThunderScan = 32809 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.Webp = 50001 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffDetails
+Egami.Formats.Tiff.TiffDetails.BitsPerSample.get -> int
+Egami.Formats.Tiff.TiffDetails.BitsPerSample.set -> void
+Egami.Formats.Tiff.TiffDetails.ByteOrder.get -> Egami.Formats.Tiff.TiffByteOrder
+Egami.Formats.Tiff.TiffDetails.ByteOrder.set -> void
+Egami.Formats.Tiff.TiffDetails.Compression.get -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffDetails.Compression.set -> void
+Egami.Formats.Tiff.TiffDetails.ExtraSamples.get -> System.Collections.Generic.IList<Egami.Formats.Tiff.TiffExtraSample>!
+Egami.Formats.Tiff.TiffDetails.ExtraSamples.set -> void
+Egami.Formats.Tiff.TiffDetails.InkNames.get -> System.Collections.Generic.IList<string!>!
+Egami.Formats.Tiff.TiffDetails.InkNames.set -> void
+Egami.Formats.Tiff.TiffDetails.IsReducedResolution.get -> bool
+Egami.Formats.Tiff.TiffDetails.IsReducedResolution.set -> void
+Egami.Formats.Tiff.TiffDetails.Layout.get -> Egami.Formats.Tiff.TiffLayout
+Egami.Formats.Tiff.TiffDetails.Layout.set -> void
+Egami.Formats.Tiff.TiffDetails.OtherTags.get -> System.Collections.Generic.IList<Egami.Formats.Tiff.TiffTag!>!
+Egami.Formats.Tiff.TiffDetails.PageIndex.get -> int
+Egami.Formats.Tiff.TiffDetails.PageIndex.set -> void
+Egami.Formats.Tiff.TiffDetails.Photometric.get -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffDetails.Photometric.set -> void
+Egami.Formats.Tiff.TiffDetails.Planar.get -> bool
+Egami.Formats.Tiff.TiffDetails.Planar.set -> void
+Egami.Formats.Tiff.TiffDetails.Predictor.get -> Egami.Formats.Tiff.TiffPredictor
+Egami.Formats.Tiff.TiffDetails.Predictor.set -> void
+Egami.Formats.Tiff.TiffDetails.RowsPerStrip.get -> int?
+Egami.Formats.Tiff.TiffDetails.RowsPerStrip.set -> void
+Egami.Formats.Tiff.TiffDetails.SampleFormat.get -> Egami.Formats.Tiff.TiffSampleFormat
+Egami.Formats.Tiff.TiffDetails.SampleFormat.set -> void
+Egami.Formats.Tiff.TiffDetails.TiffDetails() -> void
+Egami.Formats.Tiff.TiffDetails.TileHeight.get -> int?
+Egami.Formats.Tiff.TiffDetails.TileHeight.set -> void
+Egami.Formats.Tiff.TiffDetails.TileWidth.get -> int?
+Egami.Formats.Tiff.TiffDetails.TileWidth.set -> void
+Egami.Formats.Tiff.TiffExtraSample
+Egami.Formats.Tiff.TiffExtraSample.Associated = 1 -> Egami.Formats.Tiff.TiffExtraSample
+Egami.Formats.Tiff.TiffExtraSample.Unassociated = 2 -> Egami.Formats.Tiff.TiffExtraSample
+Egami.Formats.Tiff.TiffExtraSample.Unspecified = 0 -> Egami.Formats.Tiff.TiffExtraSample
+Egami.Formats.Tiff.TiffFormat
+Egami.Formats.Tiff.TiffLayout
+Egami.Formats.Tiff.TiffLayout.Auto = 2 -> Egami.Formats.Tiff.TiffLayout
+Egami.Formats.Tiff.TiffLayout.Big = 1 -> Egami.Formats.Tiff.TiffLayout
+Egami.Formats.Tiff.TiffLayout.Classic = 0 -> Egami.Formats.Tiff.TiffLayout
+Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.BlackIsZero = 1 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.CieLab = 8 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.IccLab = 9 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.ItuLab = 10 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.LogL = 32844 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.LogLuv = 32845 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.Palette = 3 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.Rgb = 2 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.Separated = 5 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.TransparencyMask = 4 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.WhiteIsZero = 0 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPhotometric.YCbCr = 6 -> Egami.Formats.Tiff.TiffPhotometric
+Egami.Formats.Tiff.TiffPredictor
+Egami.Formats.Tiff.TiffPredictor.FloatingPoint = 3 -> Egami.Formats.Tiff.TiffPredictor
+Egami.Formats.Tiff.TiffPredictor.Horizontal = 2 -> Egami.Formats.Tiff.TiffPredictor
+Egami.Formats.Tiff.TiffPredictor.None = 1 -> Egami.Formats.Tiff.TiffPredictor
+Egami.Formats.Tiff.TiffReaderOptions
+Egami.Formats.Tiff.TiffReaderOptions.Equals(Egami.Formats.Tiff.TiffReaderOptions? other) -> bool
+Egami.Formats.Tiff.TiffReaderOptions.IncludeReducedPages.get -> bool
+Egami.Formats.Tiff.TiffReaderOptions.IncludeReducedPages.init -> void
+Egami.Formats.Tiff.TiffReaderOptions.Page.get -> int?
+Egami.Formats.Tiff.TiffReaderOptions.Page.init -> void
+Egami.Formats.Tiff.TiffReaderOptions.TiffReaderOptions() -> void
+Egami.Formats.Tiff.TiffSampleFormat
+Egami.Formats.Tiff.TiffSampleFormat.Float = 3 -> Egami.Formats.Tiff.TiffSampleFormat
+Egami.Formats.Tiff.TiffSampleFormat.SignedInteger = 2 -> Egami.Formats.Tiff.TiffSampleFormat
+Egami.Formats.Tiff.TiffSampleFormat.UnsignedInteger = 1 -> Egami.Formats.Tiff.TiffSampleFormat
+Egami.Formats.Tiff.TiffTag
+Egami.Formats.Tiff.TiffTag.<Clone>$() -> Egami.Formats.Tiff.TiffTag!
+Egami.Formats.Tiff.TiffTag.Count.get -> int
+Egami.Formats.Tiff.TiffTag.Count.init -> void
+Egami.Formats.Tiff.TiffTag.Deconstruct(out int Id, out Egami.Metadata.ExifType Type, out int Count, out System.ReadOnlyMemory<byte> Value) -> void
+Egami.Formats.Tiff.TiffTag.Equals(Egami.Formats.Tiff.TiffTag? other) -> bool
+Egami.Formats.Tiff.TiffTag.Id.get -> int
+Egami.Formats.Tiff.TiffTag.Id.init -> void
+Egami.Formats.Tiff.TiffTag.TiffTag(int Id, Egami.Metadata.ExifType Type, int Count, System.ReadOnlyMemory<byte> Value) -> void
+Egami.Formats.Tiff.TiffTag.Type.get -> Egami.Metadata.ExifType
+Egami.Formats.Tiff.TiffTag.Type.init -> void
+Egami.Formats.Tiff.TiffTag.Value.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Tiff.TiffTag.Value.init -> void
 Egami.Formats.Webp.WebpChunk
 Egami.Formats.Webp.WebpChunk.<Clone>$() -> Egami.Formats.Webp.WebpChunk!
 Egami.Formats.Webp.WebpChunk.Data.get -> System.ReadOnlyMemory<byte>
@@ -1051,6 +1153,14 @@ override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
+override Egami.Formats.Tiff.TiffDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Tiff.TiffReaderOptions.<Clone>$() -> Egami.Formats.Tiff.TiffReaderOptions!
+override Egami.Formats.Tiff.TiffReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Tiff.TiffReaderOptions.GetHashCode() -> int
+override Egami.Formats.Tiff.TiffReaderOptions.ToString() -> string!
+override Egami.Formats.Tiff.TiffTag.Equals(object? obj) -> bool
+override Egami.Formats.Tiff.TiffTag.GetHashCode() -> int
+override Egami.Formats.Tiff.TiffTag.ToString() -> string!
 override Egami.Formats.Webp.WebpChunk.Equals(object? obj) -> bool
 override Egami.Formats.Webp.WebpChunk.GetHashCode() -> int
 override Egami.Formats.Webp.WebpChunk.ToString() -> string!
@@ -1132,6 +1242,7 @@ override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
+override sealed Egami.Formats.Tiff.TiffReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Operations.TransformOptions.Equals(Egami.Operations.SamplingOptions? other) -> bool
 static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
@@ -1236,6 +1347,11 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Formats.Tiff.TiffFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Tiff.TiffReaderOptions.operator !=(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
+static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
+static Egami.Formats.Tiff.TiffTag.operator !=(Egami.Formats.Tiff.TiffTag? left, Egami.Formats.Tiff.TiffTag? right) -> bool
+static Egami.Formats.Tiff.TiffTag.operator ==(Egami.Formats.Tiff.TiffTag? left, Egami.Formats.Tiff.TiffTag? right) -> bool
 static Egami.Formats.Webp.WebpChunk.operator !=(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
 static Egami.Formats.Webp.WebpChunk.operator ==(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
 static Egami.Formats.Webp.WebpFormat.Info.get -> Egami.Formats.FormatInfo!

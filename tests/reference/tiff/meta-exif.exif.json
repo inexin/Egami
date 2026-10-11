@@ -1,13 +1,6 @@
 [{
   "SourceFile": "tests/images/tiff/meta-exif.tif",
   "ExifTool:ExifToolVersion": 12.80,
-  "System:FileName": "meta-exif.tif",
-  "System:Directory": "tests/images/tiff",
-  "System:FileSize": 14056,
-  "System:FileModifyDate": "2026:10:11 11:19:56+00:00",
-  "System:FileAccessDate": "2026:10:11 11:19:56+00:00",
-  "System:FileInodeChangeDate": "2026:10:11 11:19:56+00:00",
-  "System:FilePermissions": 100644,
   "File:FileType": "TIFF",
   "File:FileTypeExtension": "TIF",
   "File:MIMEType": "image/tiff",
