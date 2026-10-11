@@ -412,6 +412,96 @@ Egami.Formats.Jpeg.JpegWriterOptions.Precision.get -> int
 Egami.Formats.Jpeg.JpegWriterOptions.Precision.init -> void
 Egami.Formats.Jpeg.JpegWriterOptions.Progressive.get -> bool
 Egami.Formats.Jpeg.JpegWriterOptions.Progressive.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Channel
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Association.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Association.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Channel.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Channel.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Deconstruct(out int Channel, out Egami.Formats.Jpeg2000.Jpeg2000ChannelType Type, out int Association) -> void
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Equals(Egami.Formats.Jpeg2000.Jpeg2000Channel other) -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Jpeg2000Channel() -> void
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Jpeg2000Channel(int Channel, Egami.Formats.Jpeg2000.Jpeg2000ChannelType Type, int Association) -> void
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Type.get -> Egami.Formats.Jpeg2000.Jpeg2000ChannelType
+Egami.Formats.Jpeg2000.Jpeg2000Channel.Type.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000ChannelType
+Egami.Formats.Jpeg2000.Jpeg2000ChannelType.Color = 0 -> Egami.Formats.Jpeg2000.Jpeg2000ChannelType
+Egami.Formats.Jpeg2000.Jpeg2000ChannelType.Opacity = 1 -> Egami.Formats.Jpeg2000.Jpeg2000ChannelType
+Egami.Formats.Jpeg2000.Jpeg2000ChannelType.PremultipliedOpacity = 2 -> Egami.Formats.Jpeg2000.Jpeg2000ChannelType
+Egami.Formats.Jpeg2000.Jpeg2000ChannelType.Unspecified = 3 -> Egami.Formats.Jpeg2000.Jpeg2000ChannelType
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.CieLab = 5 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Cmyk = 4 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Gray = 2 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Icc = 6 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Other = 7 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Srgb = 1 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Sycc = 3 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000ColorSpace.Unspecified = 0 -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000Component
+Egami.Formats.Jpeg2000.Jpeg2000Component.Deconstruct(out int Precision, out bool IsSigned, out int SubsamplingX, out int SubsamplingY) -> void
+Egami.Formats.Jpeg2000.Jpeg2000Component.Equals(Egami.Formats.Jpeg2000.Jpeg2000Component other) -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Component.IsSigned.get -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Component.IsSigned.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Component.Jpeg2000Component() -> void
+Egami.Formats.Jpeg2000.Jpeg2000Component.Jpeg2000Component(int Precision, bool IsSigned, int SubsamplingX, int SubsamplingY) -> void
+Egami.Formats.Jpeg2000.Jpeg2000Component.Precision.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Component.Precision.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Component.SubsamplingX.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Component.SubsamplingX.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Component.SubsamplingY.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Component.SubsamplingY.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000Components
+Egami.Formats.Jpeg2000.Jpeg2000Components.Color = 0 -> Egami.Formats.Jpeg2000.Jpeg2000Components
+Egami.Formats.Jpeg2000.Jpeg2000Components.Raw = 1 -> Egami.Formats.Jpeg2000.Jpeg2000Components
+Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Container.Codestream = 0 -> Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Container.Jp2 = 1 -> Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Container.Jpx = 2 -> Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Details
+Egami.Formats.Jpeg2000.Jpeg2000Details.Channels.get -> System.Collections.Generic.IList<Egami.Formats.Jpeg2000.Jpeg2000Channel>!
+Egami.Formats.Jpeg2000.Jpeg2000Details.ColorSpace.get -> Egami.Formats.Jpeg2000.Jpeg2000ColorSpace
+Egami.Formats.Jpeg2000.Jpeg2000Details.ColorSpace.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.Comments.get -> System.Collections.Generic.IList<string!>!
+Egami.Formats.Jpeg2000.Jpeg2000Details.Components.get -> System.Collections.Generic.IList<Egami.Formats.Jpeg2000.Jpeg2000Component>!
+Egami.Formats.Jpeg2000.Jpeg2000Details.Container.get -> Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Details.Container.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.DecompositionLevels.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.DecompositionLevels.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.EnumeratedColorSpace.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.EnumeratedColorSpace.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.HasPalette.get -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Details.HasPalette.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.Jpeg2000Details() -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.Profile.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.Profile.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.ProgressionOrder.get -> Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000Details.ProgressionOrder.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.QualityLayers.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.QualityLayers.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.Reversible.get -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Details.Reversible.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.TileCount.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.TileCount.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.TileHeight.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.TileHeight.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Details.TileWidth.get -> int
+Egami.Formats.Jpeg2000.Jpeg2000Details.TileWidth.set -> void
+Egami.Formats.Jpeg2000.Jpeg2000Format
+Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder.Cprl = 4 -> Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder.Lrcp = 0 -> Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder.Pcrl = 3 -> Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder.Rlcp = 1 -> Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder.Rpcl = 2 -> Egami.Formats.Jpeg2000.Jpeg2000ProgressionOrder
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Components.get -> Egami.Formats.Jpeg2000.Jpeg2000Components
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Components.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? other) -> bool
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.FastUpsampling.get -> bool
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.FastUpsampling.init -> void
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Jpeg2000ReaderOptions() -> void
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.MaxQualityLayers.get -> int?
+Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.MaxQualityLayers.init -> void
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Png.PngWriterOptions.Interlace.get -> bool
@@ -1503,6 +1593,13 @@ override Egami.Formats.Jbig2.Jbig2ReaderOptions.<Clone>$() -> Egami.Formats.Jbig
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.GetHashCode() -> int
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.ToString() -> string!
+override Egami.Formats.Jpeg2000.Jpeg2000Channel.GetHashCode() -> int
+override Egami.Formats.Jpeg2000.Jpeg2000Component.GetHashCode() -> int
+override Egami.Formats.Jpeg2000.Jpeg2000Details.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.<Clone>$() -> Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions!
+override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.GetHashCode() -> int
+override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.ToString() -> string!
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
 override Egami.Formats.Tiff.TiffDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Tiff.TiffReaderOptions.<Clone>$() -> Egami.Formats.Tiff.TiffReaderOptions!
@@ -1622,6 +1719,7 @@ override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
 override sealed Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+override sealed Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Tiff.TiffReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Operations.DistantLight.Equals(Egami.Operations.Light? other) -> bool
@@ -1734,6 +1832,13 @@ static Egami.Formats.Jbig2.Jbig2Format.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jbig2.Jbig2Globals.Parse(System.ReadOnlySpan<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Jbig2.Jbig2Globals!
 static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator !=(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
 static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator ==(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
+static Egami.Formats.Jpeg2000.Jpeg2000Channel.operator !=(Egami.Formats.Jpeg2000.Jpeg2000Channel left, Egami.Formats.Jpeg2000.Jpeg2000Channel right) -> bool
+static Egami.Formats.Jpeg2000.Jpeg2000Channel.operator ==(Egami.Formats.Jpeg2000.Jpeg2000Channel left, Egami.Formats.Jpeg2000.Jpeg2000Channel right) -> bool
+static Egami.Formats.Jpeg2000.Jpeg2000Component.operator !=(Egami.Formats.Jpeg2000.Jpeg2000Component left, Egami.Formats.Jpeg2000.Jpeg2000Component right) -> bool
+static Egami.Formats.Jpeg2000.Jpeg2000Component.operator ==(Egami.Formats.Jpeg2000.Jpeg2000Component left, Egami.Formats.Jpeg2000.Jpeg2000Component right) -> bool
+static Egami.Formats.Jpeg2000.Jpeg2000Format.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator !=(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
+static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator ==(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Tiff.TiffReaderOptions.operator !=(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
@@ -2083,6 +2188,10 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Colors.XyzColor.ToString() -> string
 ~override Egami.Colors.YCbCrColor.Equals(object obj) -> bool
 ~override Egami.Colors.YCbCrColor.ToString() -> string
+~override Egami.Formats.Jpeg2000.Jpeg2000Channel.Equals(object obj) -> bool
+~override Egami.Formats.Jpeg2000.Jpeg2000Channel.ToString() -> string
+~override Egami.Formats.Jpeg2000.Jpeg2000Component.Equals(object obj) -> bool
+~override Egami.Formats.Jpeg2000.Jpeg2000Component.ToString() -> string
 ~override Egami.Metadata.IptcKey.Equals(object obj) -> bool
 ~override Egami.Metadata.XmpName.Equals(object obj) -> bool
 ~override Egami.Operations.LightingModel.Equals(object obj) -> bool

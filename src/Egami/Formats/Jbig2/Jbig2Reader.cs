@@ -215,7 +215,7 @@ internal sealed partial class Jbig2Reader : IFormatReader, IMultiImageReader
     /// </summary>
     private static T Run<T>(EgamiInput input, ReaderOptions options, Func<Jbig2Decoder, int, T> action, bool anyPage = false)
     {
-        (byte[] data, int length, bool pooled) = ReadAll(input);
+        (byte[] data, int length, bool pooled) = InputBytes.ReadAll(input);
         try
         {
             (Jbig2Decoder decoder, int page) = Prepare(input, data, length, options, anyPage);
@@ -267,44 +267,5 @@ internal sealed partial class Jbig2Reader : IFormatReader, IMultiImageReader
         return e is EndOfStreamException
             ? new CorruptDataException(input.FormatName, -1, e.Message) { IsTruncation = true }
             : input.Corrupt(-1, e.Message);
-    }
-
-    /// <summary>Reads the input to its end, counting the bytes against <see cref="SafetyLimits.MaxTotalBytes"/>.</summary>
-    private static (byte[] Data, int Length, bool Pooled) ReadAll(EgamiInput input)
-    {
-        long max = Math.Min(input.Limits.MaxTotalBytes, Array.MaxLength);
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
-        int length = 0;
-        try
-        {
-            while (true)
-            {
-                if (length == buffer.Length)
-                {
-                    if (length >= max)
-                    {
-                        throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), input.Limits.MaxTotalBytes, length + 1L);
-                    }
-
-                    byte[] larger = ArrayPool<byte>.Shared.Rent((int)Math.Min(max, (long)buffer.Length * 2));
-                    buffer.AsSpan(0, length).CopyTo(larger);
-                    ArrayPool<byte>.Shared.Return(buffer);
-                    buffer = larger;
-                }
-
-                int n = input.Read(buffer.AsSpan(length, (int)Math.Min(buffer.Length, max) - length));
-                if (n == 0)
-                {
-                    return (buffer, length, true);
-                }
-
-                length += n;
-            }
-        }
-        catch
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-            throw;
-        }
     }
 }

@@ -15,7 +15,7 @@ internal sealed partial class Jbig2Reader : IRowSourceReader
 {
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
-        (byte[] data, int length, bool _) = ReadAll(input);
+        (byte[] data, int length, bool _) = InputBytes.ReadAll(input);
         try
         {
             (Jbig2Decoder decoder, int page) = Prepare(input, data, length, options);

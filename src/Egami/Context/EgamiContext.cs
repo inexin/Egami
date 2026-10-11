@@ -21,7 +21,7 @@ public sealed record EgamiContext
     private readonly int _maxParallelism = Environment.ProcessorCount;
     private readonly SafetyLimits _limits = SafetyLimits.Default;
     private readonly DiagnosticLevel _diagnosticLevel = DiagnosticLevel.Warning;
-    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Webp.WebpFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info, Egami.Formats.Tiff.TiffFormat.Info, Egami.Formats.Jbig2.Jbig2Format.Info, Egami.Formats.Tga.TgaFormat.Info];
+    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Webp.WebpFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info, Egami.Formats.Tiff.TiffFormat.Info, Egami.Formats.Jbig2.Jbig2Format.Info, Egami.Formats.Jpeg2000.Jpeg2000Format.Info, Egami.Formats.Tga.TgaFormat.Info];
 
     private static EgamiContext? s_default;
 
@@ -106,7 +106,7 @@ public sealed record EgamiContext
     /// </example>
     public DiagnosticReporter StartDiagnostics() => DiagnosticReporter.Start(this);
 
-    /// <summary>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, WebP, BMP, QOI, PNM, TIFF, JBIG2 and TGA.</summary>
+    /// <summary>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, WebP, BMP, QOI, PNM, TIFF, JBIG2, JPEG 2000 and TGA.</summary>
     public IReadOnlyList<FormatInfo> Formats
     {
         get => _formats;
