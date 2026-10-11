@@ -32,9 +32,6 @@ public sealed class DiagnosticReporter : IDisposable
         _level = level;
     }
 
-    /// <summary>Gets whether a handler is set, so that some events are delivered.</summary>
-    public bool IsOn => _handler is not null;
-
     /// <summary>Gets whether events at <paramref name="level"/> are delivered. Check it before building an expensive message.</summary>
     /// <param name="level">The level of the event about to be reported.</param>
     /// <returns><see langword="true"/> if a handler is set and <paramref name="level"/> is at or above the context's level.</returns>

@@ -16,7 +16,6 @@ Egami.DiagnosticLevel.Warning = 2 -> Egami.DiagnosticLevel
 Egami.DiagnosticReporter
 Egami.DiagnosticReporter.Dispose() -> void
 Egami.DiagnosticReporter.IsEnabled(Egami.DiagnosticLevel level) -> bool
-Egami.DiagnosticReporter.IsOn.get -> bool
 Egami.DiagnosticReporter.Report(Egami.DiagnosticLevel level, string! id, string! message, long? offset = null, int? frame = null) -> void
 Egami.DiagnosticReporter.Report(Egami.EgamiDiagnostic diagnostic) -> void
 Egami.EgamiContext

@@ -142,7 +142,7 @@ public class DiagnosticsTests
         EgamiContext context = new() { Diagnostics = seen.Add, DiagnosticLevel = DiagnosticLevel.Info };
         using (DiagnosticReporter reporter = context.StartDiagnostics())
         {
-            Assert.True(reporter.IsOn);
+            Assert.True(reporter.IsEnabled(DiagnosticLevel.Warning));
             Assert.False(reporter.IsEnabled(DiagnosticLevel.Debug));
             Assert.True(reporter.IsEnabled(DiagnosticLevel.Info));
             reporter.Report(DiagnosticLevel.Debug, "Avi.IndexRead", "Not delivered.");
@@ -164,7 +164,7 @@ public class DiagnosticsTests
         Assert.Throws<ArgumentException>(() => context.StartDiagnostics().Report(DiagnosticLevel.Info, "A.B", string.Empty));
 
         DiagnosticReporter off = new EgamiContext().StartDiagnostics();
-        Assert.False(off.IsOn);
+        Assert.False(off.IsEnabled(DiagnosticLevel.Warning));
         Assert.Same(off, EgamiContext.Default.StartDiagnostics());
         off.Report(DiagnosticLevel.Warning, "Avi.IndexRebuilt", "Goes nowhere.");
         off.Dispose();

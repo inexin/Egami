@@ -118,7 +118,19 @@ static EgamiContext Context()
     {
         MaxParallelism = 1,
         Limits = SafetyLimits.Default with { MaxPixels = 4_000_000, MaxTotalBytes = 256L * 1024 * 1024, MaxMetadataBytes = 1024 * 1024 },
+        Diagnostics = CheckDiagnostic,
+        DiagnosticLevel = DiagnosticLevel.Debug,
     };
+}
+
+// Every event a fuzzed file causes must be well formed: a handler sees only what the diagnostics design promises.
+static void CheckDiagnostic(EgamiDiagnostic d)
+{
+    int dot = d.Id.IndexOf('.', StringComparison.Ordinal);
+    if (dot < 1 || d.Source != d.Id[..dot] || string.IsNullOrWhiteSpace(d.Message) || d.Offset < 0 || d.Frame < 0 || !Enum.IsDefined(d.Level))
+    {
+        throw new InvalidOperationException($"A malformed diagnostic: {d}.");
+    }
 }
 
 static void LoadPng(Stream stream)
