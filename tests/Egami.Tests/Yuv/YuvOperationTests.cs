@@ -87,6 +87,38 @@ public class YuvOperationTests
     }
 
     [Fact]
+    public void ResizeToFillsAnExistingRasterAsResizeDoes()
+    {
+        using YuvRaster<byte> source = YuvRaster.Create(97, 61, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+        YuvConversionTests.Fill(source, new Random(3));
+        using YuvRaster<byte> expected = source.Resize(40, 30);
+        using YuvRaster<byte> target = YuvRaster.Create(40, 30, ChromaFormat.Yuv420, YuvColor.Bt709Limited, alpha: true);
+        for (int frame = 0; frame < 2; frame++)
+        {
+            source.ResizeTo(target);
+        }
+
+        for (int y = 0; y < 30; y++)
+        {
+            Assert.True(target.Y.Row(y).SequenceEqual(expected.Y.Row(y)));
+            Assert.Equal(255, target.A!.Row(y)[39]);
+        }
+
+        for (int y = 0; y < 15; y++)
+        {
+            Assert.True(target.V!.Row(y).SequenceEqual(expected.V!.Row(y)));
+        }
+
+        using YuvRaster<byte> other = YuvRaster.Create(40, 30, ChromaFormat.Yuv422, YuvColor.Bt709Limited);
+        using YuvRaster<byte> otherColor = YuvRaster.Create(40, 30, ChromaFormat.Yuv420, YuvColor.Jpeg);
+        using YuvRaster<ushort> deeper = YuvRaster.Create(40, 30, ChromaFormat.Yuv420, 10, YuvColor.Bt709Limited);
+        Assert.Throws<ArgumentException>(() => source.ResizeTo(other));
+        Assert.Throws<ArgumentException>(() => source.ResizeTo(otherColor));
+        Assert.Throws<ArgumentException>(() => source.ResizeTo(deeper));
+        Assert.Throws<ArgumentException>(() => source.ResizeTo(source));
+    }
+
+    [Fact]
     public void WrappedPlanesResizeToo()
     {
         ushort[] y = new ushort[64], u = new ushort[16], v = new ushort[16];

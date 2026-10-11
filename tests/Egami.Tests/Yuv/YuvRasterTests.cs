@@ -181,6 +181,19 @@ public class YuvRasterTests
     }
 
     [Fact]
+    public void AlphaPlanesComeOnlyWhenAsked()
+    {
+        using Raster<Rgba8> rgba = Raster.Create(4, 4, new Rgba8(10, 20, 30, 40));
+        using YuvRaster<byte> dropped = YuvRaster.FromRaster(rgba, ChromaFormat.Yuv420, YuvColor.Jpeg);
+        Assert.False(dropped.HasAlpha);
+        using YuvRaster<byte> kept = YuvRaster.FromRaster(rgba, ChromaFormat.Yuv420, YuvColor.Jpeg, alpha: true);
+        Assert.Equal(40, kept.A!.Row(3)[3]);
+        using Raster<Rgb8> rgb = Raster.Create<Rgb8>(4, 4);
+        using YuvRaster<ushort> opaque = YuvRaster.FromRaster(rgb, ChromaFormat.Yuv444, 10, YuvColor.Jpeg, alpha: true);
+        Assert.Equal(1023, opaque.A!.Row(0)[0]);
+    }
+
+    [Fact]
     public void CopyToChecksSizes()
     {
         using YuvRaster<byte> yuv = YuvRaster.Create(4, 4, ChromaFormat.Yuv420, YuvColor.Jpeg);

@@ -38,9 +38,44 @@ public abstract partial class YuvRaster
     /// </example>
     public YuvRaster Resize(int width, int height, ResampleFilter filter = ResampleFilter.Bicubic) => ResizeCore(width, height, filter);
 
+    /// <summary>
+    /// Resizes every plane into an existing raster of the size wanted, as <see cref="Resize(int, int, ResampleFilter)"/> does, so a
+    /// video can scale every frame into the same raster. The target must have the same sample type, chroma format, bit depth and
+    /// color. An alpha plane is resized when both have one; a target alpha plane with no source alpha is made opaque. The target's
+    /// metadata is left alone.
+    /// </summary>
+    /// <param name="target">The raster to write, of any size.</param>
+    /// <param name="filter">The resampling kernel. Defaults to <see cref="ResampleFilter.Bicubic"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="target"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The target is this raster, or differs in sample type, chroma format, bit depth or color.</exception>
+    /// <exception cref="ObjectDisposedException">Either raster has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="operations"/>
+    /// </example>
+    public void ResizeTo(YuvRaster target, ResampleFilter filter = ResampleFilter.Bicubic)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ThrowIfDisposed();
+        target.ThrowIfDisposed();
+        if (ReferenceEquals(target, this))
+        {
+            throw new ArgumentException("The target must be another raster.", nameof(target));
+        }
+
+        if (target.GetType() != GetType() || target.ChromaFormat != ChromaFormat || target.BitDepth != BitDepth || target.Color != Color)
+        {
+            throw new ArgumentException(
+                $"The target is {target.ChromaFormat} at {target.BitDepth} bits, {target.Color}; this raster is {ChromaFormat} at {BitDepth} bits, {Color}.", nameof(target));
+        }
+
+        ResizeToCore(target, filter);
+    }
+
     private protected abstract YuvRaster CropCore(Rect rect);
 
     private protected abstract YuvRaster ResizeCore(int width, int height, ResampleFilter filter);
+
+    private protected abstract void ResizeToCore(YuvRaster target, ResampleFilter filter);
 }
 
 /// <content>Crop and resize on the planes.</content>
@@ -99,10 +134,7 @@ public sealed partial class YuvRaster<TSample>
         YuvRaster<TSample> result = Allocate(width, height, ChromaFormat, BitDepth, Color, HasAlpha, Metadata.Copy(), Context, ClearMode.None);
         try
         {
-            ResizePlane(Y, result.Y, filter);
-            ResizePlane(U, result.U, filter);
-            ResizePlane(V, result.V, filter);
-            ResizePlane(A, result.A, filter);
+            ResizePlanes(result, filter);
             UpdateExif(result.Metadata, width, height);
             return result;
         }
@@ -118,6 +150,32 @@ public sealed partial class YuvRaster<TSample>
 
     /// <inheritdoc/>
     private protected override YuvRaster ResizeCore(int width, int height, ResampleFilter filter) => Resize(width, height, filter);
+
+    /// <inheritdoc/>
+    private protected override void ResizeToCore(YuvRaster target, ResampleFilter filter) => ResizePlanes((YuvRaster<TSample>)target, filter);
+
+    /// <summary>Resizes every plane into <paramref name="target"/>; a target alpha plane with no source alpha is made opaque.</summary>
+    private void ResizePlanes(YuvRaster<TSample> target, ResampleFilter filter)
+    {
+        ResizePlane(Y, target.Y, filter);
+        ResizePlane(U, target.U, filter);
+        ResizePlane(V, target.V, filter);
+        if (A is not null)
+        {
+            ResizePlane(A, target.A, filter);
+        }
+        else if (target.A is YuvPlane<TSample> alpha)
+        {
+            for (int y = 0; y < alpha.Height; y++)
+            {
+                Span<TSample> row = alpha.Row(y);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    YuvConvert.SetSample(row, x, target.MaxSample);
+                }
+            }
+        }
+    }
 
     /// <summary>Keeps EXIF's stored size in step with a new size, as raster operations do.</summary>
     private static void UpdateExif(RasterMetadata metadata, int width, int height)

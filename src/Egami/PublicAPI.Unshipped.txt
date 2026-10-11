@@ -839,6 +839,7 @@ Egami.YuvRaster.Dispose() -> void
 Egami.YuvRaster.Height.get -> int
 Egami.YuvRaster.Metadata.get -> Egami.Metadata.RasterMetadata!
 Egami.YuvRaster.Resize(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic) -> Egami.YuvRaster!
+Egami.YuvRaster.ResizeTo(Egami.YuvRaster! target, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic) -> void
 Egami.YuvRaster.Save(string! path, Egami.Formats.WriterOptions? options = null) -> void
 Egami.YuvRaster.Save(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null) -> void
 Egami.YuvRaster.Save(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options = null) -> void
@@ -1181,8 +1182,8 @@ static Egami.YuvConvertOptions.operator !=(Egami.YuvConvertOptions? left, Egami.
 static Egami.YuvConvertOptions.operator ==(Egami.YuvConvertOptions? left, Egami.YuvConvertOptions? right) -> bool
 static Egami.YuvRaster.Create(int width, int height, Egami.Pixels.ChromaFormat chromaFormat, Egami.Pixels.YuvColor color, bool alpha = false, Egami.EgamiContext? context = null) -> Egami.YuvRaster<byte>!
 static Egami.YuvRaster.Create(int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, bool alpha = false, Egami.EgamiContext? context = null) -> Egami.YuvRaster<ushort>!
-static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, Egami.Pixels.YuvColor color, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<byte>!
-static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<ushort>!
+static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, Egami.Pixels.YuvColor color, bool alpha = false, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<byte>!
+static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, bool alpha = false, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<ushort>!
 static Egami.YuvRaster.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRaster!
 static Egami.YuvRaster.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRaster!
 static Egami.YuvRaster.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRaster!

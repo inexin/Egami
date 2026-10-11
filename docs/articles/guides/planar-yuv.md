@@ -36,6 +36,8 @@ There is no default guess: every load, wrap and conversion states a `YuvColor`. 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#convert)]
 
+`FromRaster` drops alpha unless asked: pass `alpha: true` for an alpha plane, opaque when the source has none.
+
 Conversion is within one level of an exact double-precision implementation of H.273, at every depth, and identical for at least
 99% of samples. RGB comes out in the picture's own transfer function: BT.709 video gives BT.709-encoded RGB, PQ gives PQ-encoded
 RGB. Linearizing or tone mapping is a separate step (see [color management](color-management.md)).
@@ -73,4 +75,5 @@ JPEG decoder's own libjpeg-turbo color code.
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#operations)]
 
 `Resize` runs each plane through the same filters as `RasterOps.Resize` and clamps to the bit depth; the chroma format, siting and
-color stay. `Crop` must start on a chroma sample, so chroma is copied exactly.
+color stay. `ResizeTo` does the same into a raster you already have, so a player scales every frame into one raster. `Crop`
+must start on a chroma sample, so chroma is copied exactly.

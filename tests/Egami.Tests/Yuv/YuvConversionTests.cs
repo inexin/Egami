@@ -204,7 +204,7 @@ public class YuvConversionTests
 
                 // Identity stores G, B and R as they are, so only 4:4:4 keeps gray exactly.
                 ChromaFormat format = matrix == YuvMatrix.Identity ? ChromaFormat.Yuv444 : ChromaFormat.Yuv420;
-                using YuvRaster<byte> yuv = YuvRaster.FromRaster(source, format, new YuvColor(matrix, range, ChromaSiting.Center));
+                using YuvRaster<byte> yuv = YuvRaster.FromRaster(source, format, new YuvColor(matrix, range, ChromaSiting.Center), alpha: true);
                 Assert.True(yuv.HasAlpha);
                 using Raster<Rgba8> back = yuv.ToRaster<Rgba8>();
                 for (int x = 0; x < 256; x++)
@@ -340,12 +340,12 @@ public class YuvConversionTests
         tally.Case = $"{typeof(TPixel).Name} to {format} {color} {depth}-bit {mode}";
         if (depth == 8)
         {
-            using YuvRaster<byte> yuv = YuvRaster.FromRaster(rgb, format, color, options);
+            using YuvRaster<byte> yuv = YuvRaster.FromRaster(rgb, format, color, alpha: true, options);
             Compare(yuv);
         }
         else
         {
-            using YuvRaster<ushort> yuv = YuvRaster.FromRaster(rgb, format, depth, color, options);
+            using YuvRaster<ushort> yuv = YuvRaster.FromRaster(rgb, format, depth, color, alpha: true, options);
             Compare(yuv);
         }
 

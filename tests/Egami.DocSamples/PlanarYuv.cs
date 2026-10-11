@@ -119,7 +119,7 @@ public class PlanarYuv
 
         // The defaults filter chroma by its siting both ways; Nearest and Fast trade edge quality for speed.
         YuvConvertOptions fast = new() { Upsampling = ChromaUpsampling.Nearest, Downsampling = ChromaDownsampling.Fast };
-        using YuvRaster<byte> yuv = YuvRaster.FromRaster(photo, ChromaFormat.Yuv420, YuvColor.Bt601Limited, fast);
+        using YuvRaster<byte> yuv = YuvRaster.FromRaster(photo, ChromaFormat.Yuv420, YuvColor.Bt601Limited, options: fast);
         using Raster<Rgba8> back = yuv.ToRaster<Rgba8>(fast);
         #endregion
 
@@ -169,6 +169,10 @@ public class PlanarYuv
         // Scale the planes before converting, as video does; crops start on a chroma sample (even x and y at 4:2:0).
         using YuvRaster<byte> small = frame.Resize(1280, 720, ResampleFilter.Bicubic);
         using YuvRaster<byte> center = small.Crop(new Rect(320, 180, 640, 360));
+
+        // A player scales every frame into the same raster.
+        using YuvRaster<byte> screen = YuvRaster.Create(960, 540, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+        frame.ResizeTo(screen);
 
         // Everything else (rotate, color adjustments, drawing) runs on a Raster after conversion.
         using Raster<Rgba8> rgb = center.ToRaster<Rgba8>();

@@ -10,7 +10,7 @@ namespace Egami;
 /// A picture held as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane, the way video codecs, AVIF, lossy
 /// WebP and JPEG store it. This base class is used when the sample type is not known at compile time;
 /// <see cref="YuvRaster{TSample}"/> gives the planes. Convert to and from a <see cref="Raster"/> with <see cref="ToRaster(YuvConvertOptions?)"/>,
-/// <see cref="CopyTo{TPixel}"/> and <see cref="FromRaster(Raster, ChromaFormat, YuvColor, YuvConvertOptions?)"/>.
+/// <see cref="CopyTo{TPixel}"/> and <see cref="FromRaster(Raster, ChromaFormat, YuvColor, bool, YuvConvertOptions?)"/>.
 /// </summary>
 /// <remarks>
 /// A YUV raster is not a <see cref="Raster"/>: one pixel is spread over planes of different sizes. Operations other than
@@ -160,11 +160,15 @@ public abstract partial class YuvRaster : IDisposable
     }
 
     /// <summary>
-    /// Converts the first frame of a raster to a new 8-bit YUV raster. Sources with alpha get an alpha plane. Metadata is copied.
+    /// Converts the first frame of a raster to a new 8-bit YUV raster. Metadata is copied.
     /// </summary>
     /// <param name="source">The raster to convert, of any pixel type.</param>
     /// <param name="chromaFormat">The chroma resolution.</param>
     /// <param name="color">The matrix, range and siting to encode with.</param>
+    /// <param name="alpha">
+    /// Whether to add an alpha plane, holding the source's alpha (opaque for sources without). Defaults to
+    /// <see langword="false"/>: alpha is dropped.
+    /// </param>
     /// <param name="options">The chroma filters, or <see langword="null"/> for <see cref="YuvConvertOptions.Default"/>.</param>
     /// <returns>The new raster, allocated from the source's context. The caller must dispose it.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
@@ -172,20 +176,23 @@ public abstract partial class YuvRaster : IDisposable
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="convert"/>
     /// </example>
-    public static YuvRaster<byte> FromRaster(Raster source, ChromaFormat chromaFormat, YuvColor color, YuvConvertOptions? options = null)
+    public static YuvRaster<byte> FromRaster(Raster source, ChromaFormat chromaFormat, YuvColor color, bool alpha = false, YuvConvertOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return source.Accept(new FromRasterVisitor<byte>(chromaFormat, 8, color, options ?? YuvConvertOptions.Default));
+        return source.Accept(new FromRasterVisitor<byte>(chromaFormat, 8, color, alpha, options ?? YuvConvertOptions.Default));
     }
 
     /// <summary>
-    /// Converts the first frame of a raster to a new 10-, 12- or 16-bit YUV raster. Sources with alpha get an alpha plane.
-    /// Metadata is copied.
+    /// Converts the first frame of a raster to a new 10-, 12- or 16-bit YUV raster. Metadata is copied.
     /// </summary>
     /// <param name="source">The raster to convert, of any pixel type.</param>
     /// <param name="chromaFormat">The chroma resolution.</param>
     /// <param name="bitDepth">The bits per sample: 10, 12 or 16.</param>
     /// <param name="color">The matrix, range and siting to encode with.</param>
+    /// <param name="alpha">
+    /// Whether to add an alpha plane, holding the source's alpha (opaque for sources without). Defaults to
+    /// <see langword="false"/>: alpha is dropped.
+    /// </param>
     /// <param name="options">The chroma filters, or <see langword="null"/> for <see cref="YuvConvertOptions.Default"/>.</param>
     /// <returns>The new raster, allocated from the source's context. The caller must dispose it.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
@@ -194,10 +201,10 @@ public abstract partial class YuvRaster : IDisposable
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="convert"/>
     /// </example>
-    public static YuvRaster<ushort> FromRaster(Raster source, ChromaFormat chromaFormat, int bitDepth, YuvColor color, YuvConvertOptions? options = null)
+    public static YuvRaster<ushort> FromRaster(Raster source, ChromaFormat chromaFormat, int bitDepth, YuvColor color, bool alpha = false, YuvConvertOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return source.Accept(new FromRasterVisitor<ushort>(chromaFormat, bitDepth, color, options ?? YuvConvertOptions.Default));
+        return source.Accept(new FromRasterVisitor<ushort>(chromaFormat, bitDepth, color, alpha, options ?? YuvConvertOptions.Default));
     }
 
     /// <summary>
@@ -353,13 +360,13 @@ public abstract partial class YuvRaster : IDisposable
     /// <summary>Releases the planes' memory.</summary>
     private protected abstract void Release();
 
-    private sealed class FromRasterVisitor<TSample>(ChromaFormat format, int bitDepth, YuvColor color, YuvConvertOptions options) : IRasterVisitor<YuvRaster<TSample>>
+    private sealed class FromRasterVisitor<TSample>(ChromaFormat format, int bitDepth, YuvColor color, bool alpha, YuvConvertOptions options) : IRasterVisitor<YuvRaster<TSample>>
         where TSample : unmanaged
     {
         public YuvRaster<TSample> Visit<TPixel>(Raster<TPixel> raster)
             where TPixel : unmanaged, IPixelType<TPixel>
         {
-            YuvRaster<TSample> result = YuvRaster<TSample>.Allocate(raster.Width, raster.Height, format, bitDepth, color, TPixel.Layout.HasAlpha, raster.Metadata.Copy(), raster.Context, ClearMode.None);
+            YuvRaster<TSample> result = YuvRaster<TSample>.Allocate(raster.Width, raster.Height, format, bitDepth, color, alpha, raster.Metadata.Copy(), raster.Context, ClearMode.None);
             try
             {
                 result.CopyFrom(raster, options);
