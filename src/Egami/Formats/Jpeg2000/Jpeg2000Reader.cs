@@ -125,7 +125,7 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             }
             else
             {
-                Fill(raster, image, grid, pixels);
+                Fill(raster, image, grid, pixels, input.Context.MaxParallelism);
             }
 
             Describe(raster.Metadata, file, stream, options);
@@ -136,6 +136,10 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
         {
             raster.Dispose();
             throw;
+        }
+        finally
+        {
+            image.Release();
         }
     }
 
@@ -158,34 +162,47 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
         return image;
     }
 
-    private static void Fill<TPixel>(Raster<TPixel> raster, J2kImage image, J2kGrid grid, J2kPixels pixels)
+    /// <summary>Converts the decoded samples to pixels, row by row, in bands on several threads for a large image.</summary>
+    private static void Fill<TPixel>(Raster<TPixel> raster, J2kImage image, J2kGrid grid, J2kPixels pixels, int parallelism)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int bytes = grid.Width * pixels.Layout.BytesPerPixel;
         bool direct = TPixel.Layout == pixels.Layout;
-        byte[]? buffer = direct ? null : ArrayPool<byte>.Shared.Rent(bytes);
-        try
+        void Rows(int from, int to)
         {
-            for (int y = 0; y < grid.Height; y++)
+            byte[]? buffer = direct ? null : ArrayPool<byte>.Shared.Rent(bytes);
+            try
             {
-                if (direct)
+                for (int y = from; y < to; y++)
                 {
-                    pixels.Row(image, grid, y, 0, MemoryMarshal.AsBytes(raster.Row(y)));
-                    continue;
-                }
+                    if (direct)
+                    {
+                        pixels.Row(image, grid, y, 0, MemoryMarshal.AsBytes(raster.Row(y)));
+                        continue;
+                    }
 
-                Span<byte> natural = buffer.AsSpan(0, bytes);
-                pixels.Row(image, grid, y, 0, natural);
-                Convert(pixels.Natural, natural, raster.Row(y));
+                    Span<byte> natural = buffer.AsSpan(0, bytes);
+                    pixels.Row(image, grid, y, 0, natural);
+                    Convert(pixels.Natural, natural, raster.Row(y));
+                }
             }
-        }
-        finally
-        {
-            if (buffer is not null)
+            finally
             {
-                ArrayPool<byte>.Shared.Return(buffer);
+                if (buffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
             }
         }
+
+        int parts = (long)grid.Width * grid.Height < 1 << 18 ? 1 : Math.Min(parallelism, grid.Height / 16);
+        if (parts <= 1)
+        {
+            Rows(0, grid.Height);
+            return;
+        }
+
+        Parallel.For(0, parts, new ParallelOptions { MaxDegreeOfParallelism = parts }, i => Rows(grid.Height * i / parts, grid.Height * (i + 1) / parts));
     }
 
     /// <summary>Converts a row of the natural type to <typeparamref name="TPixel"/>.</summary>

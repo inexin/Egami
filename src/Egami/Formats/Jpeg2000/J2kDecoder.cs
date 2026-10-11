@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.ExceptionServices;
@@ -26,6 +27,19 @@ internal sealed class J2kImage
 
     /// <summary>Gets or sets the number of tiles that had no data.</summary>
     internal int MissingTiles { get; set; }
+
+    /// <summary>Returns the planes, which come from the shared array pool, once the samples are no longer needed.</summary>
+    internal void Release()
+    {
+        for (int c = 0; c < Planes.Length; c++)
+        {
+            if (Planes[c].Length > 0)
+            {
+                ArrayPool<int>.Shared.Return(Planes[c]);
+                Planes[c] = [];
+            }
+        }
+    }
 }
 
 /// <summary>A rectangle on the reference grid after the levels dropped, to which a decode may limit its work.</summary>
@@ -104,7 +118,7 @@ internal sealed class J2kDecoder
             offsets[c] = J2kTier2.CeilShift(J2kTier2.CeilDiv(y0, component.Dy), _reduce) - origin;
             heights[c] = J2kTier2.CeilShift(J2kTier2.CeilDiv(y1, component.Dy), _reduce) - origin - offsets[c];
             widths[c] = ComponentSize(_stream, c, _reduce).Width;
-            planes[c] = Needed is null || Needed[c] ? new int[(long)widths[c] * heights[c]] : [];
+            planes[c] = Needed is null || Needed[c] ? Rent<int>((long)widths[c] * heights[c]) : [];
         }
 
         J2kImage image = new() { Planes = planes, RowOffsets = offsets, Widths = widths, Heights = heights, Components = _stream.Components };
@@ -210,11 +224,11 @@ internal sealed class J2kDecoder
             long size = (long)highest.Width * highest.Height;
             if (tc.Style.Reversible)
             {
-                integers[c] = new int[size];
+                integers[c] = Rent<int>(size);
             }
             else
             {
-                floats[c] = new float[size];
+                floats[c] = Rent<float>(size);
             }
 
             for (int r = 0; r <= top; r++)
@@ -263,26 +277,27 @@ internal sealed class J2kDecoder
 
             J2kTileComponent tc = components[c];
             J2kResolution highest = tc.Resolutions[tops[c]];
+            int threads = Math.Max(1, _parallelism / Math.Max(1, Math.Min(count, _parallelism)));
             if (integers[c] is { } ints)
             {
-                J2kWavelet.Reverse53(ints, highest.Width, tc.Resolutions, tops[c]);
+                J2kWavelet.Reverse53(ints, highest.Width, tc.Resolutions, tops[c], threads);
             }
             else
             {
-                J2kWavelet.Reverse97(floats[c]!, highest.Width, tc.Resolutions, tops[c]);
+                J2kWavelet.Reverse97(floats[c]!, highest.Width, tc.Resolutions, tops[c], threads);
             }
         });
 
         bool transform = components[0].Style.Mct == 1 && count >= 3 && SameSize(components, tops);
         if (transform)
         {
-            if (integers[0] is not null && integers[1] is not null && integers[2] is not null)
+            if (integers[0] is { } y0 && integers[1] is { } y1 && integers[2] is { } y2)
             {
-                InverseRct(integers[0]!, integers[1]!, integers[2]!);
+                ForRanges(y0.Length, (from, to) => InverseRct(y0.AsSpan(from, to - from), y1.AsSpan(from, to - from), y2.AsSpan(from, to - from)));
             }
-            else if (floats[0] is not null && floats[1] is not null && floats[2] is not null)
+            else if (floats[0] is { } f0 && floats[1] is { } f1 && floats[2] is { } f2)
             {
-                InverseIct(floats[0]!, floats[1]!, floats[2]!);
+                ForRanges(f0.Length, (from, to) => InverseIct(f0.AsSpan(from, to - from), f1.AsSpan(from, to - from), f2.AsSpan(from, to - from)));
             }
             else
             {
@@ -290,15 +305,41 @@ internal sealed class J2kDecoder
             }
         }
 
-        for (int c = 0; c < count; c++)
+        ForEach(count, c =>
         {
             if (integers[c] is not null || floats[c] is not null)
             {
                 Store(components[c], tops[c], c, integers[c], floats[c], image);
             }
+        });
+
+        for (int c = 0; c < count; c++)
+        {
+            if (integers[c] is { } ints)
+            {
+                ArrayPool<int>.Shared.Return(ints);
+            }
+
+            if (floats[c] is { } fl)
+            {
+                ArrayPool<float>.Shared.Return(fl);
+            }
         }
 
         return tier2.Truncated;
+    }
+
+    /// <summary>Rents an array of at least <paramref name="size"/> elements from the shared pool, its first <paramref name="size"/> cleared.</summary>
+    private static T[] Rent<T>(long size)
+    {
+        if (size > Array.MaxLength)
+        {
+            throw new InvalidDataException("A component is larger than an array can hold.");
+        }
+
+        T[] array = ArrayPool<T>.Shared.Rent((int)Math.Max(size, 1));
+        array.AsSpan(0, (int)size).Clear();
+        return array;
     }
 
     private static bool SameSize(J2kTileComponent[] components, int[] tops)
@@ -374,8 +415,21 @@ internal sealed class J2kDecoder
         }
     }
 
+    /// <summary>Runs <paramref name="body"/> over 0 to <paramref name="count"/> in ranges, on several threads when the count is large.</summary>
+    private void ForRanges(int count, Action<int, int> body)
+    {
+        int parts = count < 1 << 16 ? 1 : Math.Min(_parallelism, count >> 15);
+        if (parts <= 1)
+        {
+            body(0, count);
+            return;
+        }
+
+        ForEach(parts, i => body((int)((long)count * i / parts), (int)((long)count * (i + 1) / parts)));
+    }
+
     /// <summary>The inverse reversible component transform (G.2.2).</summary>
-    private static void InverseRct(int[] y0, int[] y1, int[] y2)
+    private static void InverseRct(Span<int> y0, Span<int> y1, Span<int> y2)
     {
         for (int i = 0; i < y0.Length; i++)
         {
@@ -389,7 +443,7 @@ internal sealed class J2kDecoder
     }
 
     /// <summary>The inverse irreversible component transform (G.3.2).</summary>
-    private static void InverseIct(float[] y0, float[] y1, float[] y2)
+    private static void InverseIct(Span<float> y0, Span<float> y1, Span<float> y2)
     {
         for (int i = 0; i < y0.Length; i++)
         {

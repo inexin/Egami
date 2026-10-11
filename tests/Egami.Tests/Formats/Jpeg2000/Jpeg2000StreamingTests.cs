@@ -128,4 +128,24 @@ public class Jpeg2000StreamingTests(ITestOutputHelper output)
         using Raster small = decoder.ReadAll();
         Assert.Equal((whole.Width / 4, whole.Height / 4), (small.Width, small.Height));
     }
+
+    [Theory]
+    [InlineData("p0_07.j2k")]
+    [InlineData("p1_05.j2k")]
+    [InlineData("zoo1.jp2")]
+    public void AnyThreadCountGivesTheSamePixels(string name)
+    {
+        string? folder = Jpeg2000ConformanceTests.Folder();
+        if (folder is null)
+        {
+            return;
+        }
+
+        byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name));
+        using Raster one = Raster.Load(data, EgamiContext.Default with { MaxParallelism = 1 });
+        using Raster all = Raster.Load(data, EgamiContext.Default with { MaxParallelism = Environment.ProcessorCount });
+        using Raster three = Raster.Load(data, EgamiContext.Default with { MaxParallelism = 3 });
+        Assert.Equal(TiffReference.Bytes(one), TiffReference.Bytes(all));
+        Assert.Equal(TiffReference.Bytes(one), TiffReference.Bytes(three));
+    }
 }

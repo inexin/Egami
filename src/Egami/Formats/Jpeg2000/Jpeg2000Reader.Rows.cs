@@ -253,6 +253,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
 
                 if (band != _band || _image is null)
                 {
+                    _image?.Release();
                     _image = null;
                     _band = band;
                     _image = Decode(band);
@@ -292,6 +293,8 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
                 _data = null;
                 ArrayPool<byte>.Shared.Return(_row!);
                 _row = null;
+                _image?.Release();
+                _image = null;
                 _whole8?.Dispose();
                 _whole8 = null;
                 _whole16?.Dispose();
@@ -322,17 +325,24 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
             _truncated |= image.Truncated;
             _missing += image.MissingTiles;
             (ChromaFormat format, int depth) = PlaneFormat(_stream, _pixels)!.Value;
-            if (depth == 8)
+            try
             {
-                using YuvRaster<byte> planes = Planes<byte>(image, format, depth, _input.Context);
-                _whole8 = _input.CreateRaster<Rgb8>(_grid.Width, _grid.Height);
-                YuvConvert.ToRgb(planes, _whole8, Upsampling(_options), _input.CancellationToken);
+                if (depth == 8)
+                {
+                    using YuvRaster<byte> planes = Planes<byte>(image, format, depth, _input.Context);
+                    _whole8 = _input.CreateRaster<Rgb8>(_grid.Width, _grid.Height);
+                    YuvConvert.ToRgb(planes, _whole8, Upsampling(_options), _input.CancellationToken);
+                }
+                else
+                {
+                    using YuvRaster<ushort> planes = Planes<ushort>(image, format, depth, _input.Context);
+                    _whole16 = _input.CreateRaster<Rgb16>(_grid.Width, _grid.Height);
+                    YuvConvert.ToRgb(planes, _whole16, Upsampling(_options), _input.CancellationToken);
+                }
             }
-            else
+            finally
             {
-                using YuvRaster<ushort> planes = Planes<ushort>(image, format, depth, _input.Context);
-                _whole16 = _input.CreateRaster<Rgb16>(_grid.Width, _grid.Height);
-                YuvConvert.ToRgb(planes, _whole16, Upsampling(_options), _input.CancellationToken);
+                image.Release();
             }
         }
 

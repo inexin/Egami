@@ -27,68 +27,130 @@ internal static class J2kWavelet
     private const float InverseK = 1 / K;
 
     /// <summary>
-    /// Runs the inverse 5/3 transform in place on a tile-component's coefficients, laid out with each resolution's low band at
-    /// the top left, up to resolution <paramref name="top"/>.
+    /// The columns the vertical pass lifts together: narrow enough that a strip of a large image stays in the core's cache
+    /// through all four lifting steps and the interleave, so memory is read and written once a level.
     /// </summary>
-    internal static void Reverse53(Span<int> buffer, int stride, J2kResolution[] resolutions, int top)
+    private const int Strip = 32;
+
+    /// <summary>
+    /// Runs the inverse 5/3 transform in place on a tile-component's coefficients, laid out with each resolution's low band at
+    /// the top left, up to resolution <paramref name="top"/>, on up to <paramref name="threads"/> threads: rows split by
+    /// row, columns by strips of columns, the same arithmetic in any split.
+    /// </summary>
+    internal static void Reverse53(int[] buffer, int stride, J2kResolution[] resolutions, int top, int threads = 1)
     {
-        int[] temp = ArrayPool<int>.Shared.Rent(Scratch(resolutions, top));
-        try
+        for (int r = 1; r <= top; r++)
         {
-            for (int r = 1; r <= top; r++)
+            J2kResolution res = resolutions[r];
+            J2kResolution low = resolutions[r - 1];
+            int w = res.Width;
+            int h = res.Height;
+            if (w == 0 || h == 0)
             {
-                J2kResolution res = resolutions[r];
-                J2kResolution low = resolutions[r - 1];
-                int w = res.Width;
-                int h = res.Height;
-                if (w == 0 || h == 0)
-                {
-                    continue;
-                }
-
-                for (int y = 0; y < h; y++)
-                {
-                    Row53(buffer.Slice(y * stride, w), low.Width, res.X0 & 1, temp);
-                }
-
-                Columns53(buffer, stride, w, h, low.Height, res.Y0 & 1, temp);
+                continue;
             }
-        }
-        finally
-        {
-            ArrayPool<int>.Shared.Return(temp);
+
+            int parity = res.X0 & 1;
+            Split(h, Parts(w, h, threads, 1), (from, to) =>
+            {
+                int[] temp = ArrayPool<int>.Shared.Rent(w + 8);
+                for (int y = from; y < to; y++)
+                {
+                    Row53(buffer.AsSpan(y * stride, w), low.Width, parity, temp);
+                }
+
+                ArrayPool<int>.Shared.Return(temp);
+            });
+            int lowHeight = low.Height;
+            int rowParity = res.Y0 & 1;
+            Split(w, Parts(w, h, threads, Strip), (from, to) =>
+            {
+                int[] temp = ArrayPool<int>.Shared.Rent((Strip * h) + 8);
+                for (int x = from; x < to; x += Strip)
+                {
+                    Columns53(buffer.AsSpan(x), stride, Math.Min(Strip, to - x), h, lowHeight, rowParity, temp);
+                }
+
+                ArrayPool<int>.Shared.Return(temp);
+            });
         }
     }
 
     /// <summary>Runs the inverse 9/7 transform in place; see <see cref="Reverse53"/>.</summary>
-    internal static void Reverse97(Span<float> buffer, int stride, J2kResolution[] resolutions, int top)
+    internal static void Reverse97(float[] buffer, int stride, J2kResolution[] resolutions, int top, int threads = 1)
     {
-        float[] temp = ArrayPool<float>.Shared.Rent(Scratch(resolutions, top));
-        try
+        for (int r = 1; r <= top; r++)
         {
-            for (int r = 1; r <= top; r++)
+            J2kResolution res = resolutions[r];
+            J2kResolution low = resolutions[r - 1];
+            int w = res.Width;
+            int h = res.Height;
+            if (w == 0 || h == 0)
             {
-                J2kResolution res = resolutions[r];
-                J2kResolution low = resolutions[r - 1];
-                int w = res.Width;
-                int h = res.Height;
-                if (w == 0 || h == 0)
-                {
-                    continue;
-                }
-
-                for (int y = 0; y < h; y++)
-                {
-                    Row97(buffer.Slice(y * stride, w), low.Width, res.X0 & 1, temp);
-                }
-
-                Columns97(buffer, stride, w, h, low.Height, res.Y0 & 1, temp);
+                continue;
             }
+
+            int parity = res.X0 & 1;
+            Split(h, Parts(w, h, threads, 1), (from, to) =>
+            {
+                float[] temp = ArrayPool<float>.Shared.Rent(w + 8);
+                for (int y = from; y < to; y++)
+                {
+                    Row97(buffer.AsSpan(y * stride, w), low.Width, parity, temp);
+                }
+
+                ArrayPool<float>.Shared.Return(temp);
+            });
+            int lowHeight = low.Height;
+            int rowParity = res.Y0 & 1;
+            Split(w, Parts(w, h, threads, Strip), (from, to) =>
+            {
+                float[] temp = ArrayPool<float>.Shared.Rent((Strip * h) + 8);
+                for (int x = from; x < to; x += Strip)
+                {
+                    Columns97(buffer.AsSpan(x), stride, Math.Min(Strip, to - x), h, lowHeight, rowParity, temp);
+                }
+
+                ArrayPool<float>.Shared.Return(temp);
+            });
         }
-        finally
+    }
+
+    /// <summary>
+    /// Returns how many parts to split a level's <paramref name="w"/> × <paramref name="h"/> samples into: one below 64K
+    /// samples, where threads cost more than they save, else up to <paramref name="threads"/>, each at least
+    /// <paramref name="minimum"/> wide along the split.
+    /// </summary>
+    private static int Parts(int w, int h, int threads, int minimum)
+    {
+        if (threads <= 1 || (long)w * h < 1 << 16)
         {
-            ArrayPool<float>.Shared.Return(temp);
+            return 1;
         }
+
+        int along = minimum == 1 ? h : w / minimum;
+        return Math.Clamp(along, 1, threads);
+    }
+
+    /// <summary>Runs <paramref name="body"/> on <paramref name="parts"/> contiguous ranges of 0 to <paramref name="count"/>, in parallel when there are several.</summary>
+    private static void Split(int count, int parts, Action<int, int> body)
+    {
+        if (parts <= 1)
+        {
+            body(0, count);
+            return;
+        }
+
+        Parallel.For(0, parts, new ParallelOptions { MaxDegreeOfParallelism = parts }, i =>
+        {
+            // Column strips start on multiples of 16 so vector loads stay aligned to the strip.
+            int from = (int)((long)count * i / parts) & ~15;
+            int to = i == parts - 1 ? count : (int)((long)count * (i + 1) / parts) & ~15;
+            if (to > from)
+            {
+                body(from, to);
+            }
+        });
     }
 
     private static int Scratch(J2kResolution[] resolutions, int top)

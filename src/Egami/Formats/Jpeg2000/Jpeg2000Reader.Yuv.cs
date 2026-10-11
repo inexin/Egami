@@ -17,7 +17,16 @@ internal sealed partial class Jpeg2000Reader : IYuvFormatReader
             (ChromaFormat format, int depth) = PlaneFormat(stream, pixels) ?? throw new NotSupportedException(
                 "This JPEG 2000 image is not sYCC or gray at 8, 10, 12 or 16 bits with 4:2:0, 4:2:2 or 4:4:4 sampling, so it has no YUV planes; load it with Raster.Load.");
             J2kImage image = Decode(input, stream, options, pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1));
-            YuvRaster planes = depth == 8 ? Planes<byte>(image, format, depth, input.Context) : Planes<ushort>(image, format, depth, input.Context);
+            YuvRaster planes;
+            try
+            {
+                planes = depth == 8 ? Planes<byte>(image, format, depth, input.Context) : Planes<ushort>(image, format, depth, input.Context);
+            }
+            finally
+            {
+                image.Release();
+            }
+
             try
             {
                 Describe(planes.Metadata, file, stream, options);
