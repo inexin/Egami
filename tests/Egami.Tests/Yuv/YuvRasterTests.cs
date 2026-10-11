@@ -162,6 +162,10 @@ public class YuvRasterTests
         Assert.Equal(YuvMatrix.Identity, gbr.Matrix);
         Assert.False(YuvColor.TryFromH273(2, true, ChromaSiting.Center, out _));
         Assert.False(YuvColor.TryFromH273(10, true, ChromaSiting.Center, out _));
+        Assert.True(new Egami.Colors.ColorCodePoints(1, 1, 1, false).TryGetYuvColor(ChromaSiting.Left, out YuvColor tagged));
+        Assert.Equal(YuvColor.Bt709Limited, tagged);
+        Egami.Colors.ColorCodePoints unknown = Egami.Colors.ColorCodePoints.Srgb with { MatrixCoefficients = 2 };
+        Assert.False(unknown.TryGetYuvColor(ChromaSiting.Center, out _));
         Assert.Equal([0, 1, 6, 9], Enum.GetValues<YuvMatrix>().Select(m => new YuvColor(m, YuvRange.Full, ChromaSiting.Center).ToH273()).Order());
     }
 

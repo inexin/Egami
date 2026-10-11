@@ -69,6 +69,7 @@ Egami.Colors.ColorCodePoints.Primaries.get -> byte
 Egami.Colors.ColorCodePoints.Primaries.init -> void
 Egami.Colors.ColorCodePoints.TransferCharacteristics.get -> byte
 Egami.Colors.ColorCodePoints.TransferCharacteristics.init -> void
+Egami.Colors.ColorCodePoints.TryGetYuvColor(Egami.Pixels.ChromaSiting siting, out Egami.Pixels.YuvColor color) -> bool
 Egami.Colors.ColorConvert
 Egami.Colors.ColorModel
 Egami.Colors.ColorModel.Cmyk = 2 -> Egami.Colors.ColorModel

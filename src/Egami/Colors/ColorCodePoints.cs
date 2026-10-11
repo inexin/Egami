@@ -1,3 +1,5 @@
+using Egami.Pixels;
+
 namespace Egami.Colors;
 
 /// <summary>
@@ -51,4 +53,17 @@ public readonly record struct ColorCodePoints(byte Primaries, byte TransferChara
         18 => TransferFunction.Hlg,
         _ => null,
     };
+
+    /// <summary>
+    /// Gets how YUV samples tagged with these code points turn into RGB: the matrix <see cref="MatrixCoefficients"/> names and the
+    /// range <see cref="FullRange"/> gives, with the chroma siting the container states separately. See
+    /// <see cref="YuvColor.TryFromH273"/>.
+    /// </summary>
+    /// <param name="siting">Where chroma sits, which the code points do not carry.</param>
+    /// <param name="color">The color, or the default when the matrix code is not one Egami knows.</param>
+    /// <returns><see langword="true"/> if the matrix code is known: 0, 1, 5, 6 or 9.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="color"/>
+    /// </example>
+    public bool TryGetYuvColor(ChromaSiting siting, out YuvColor color) => YuvColor.TryFromH273(MatrixCoefficients, FullRange, siting, out color);
 }

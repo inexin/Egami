@@ -35,9 +35,14 @@ public class PlanarYuv
         {
             Console.WriteLine($"{fromStream.Matrix}, {fromStream.Range}; back to code {fromStream.ToH273()}");
         }
+
+        // Or straight from the code points an AVIF or PNG cICP box carries.
+        Egami.Colors.ColorCodePoints hdr10 = new(Primaries: 9, TransferCharacteristics: 16, MatrixCoefficients: 9, FullRange: false);
+        hdr10.TryGetYuvColor(ChromaSiting.TopLeft, out YuvColor fromBox);
         #endregion
 
         Assert.Equal(YuvColor.Bt2020Limited, fromStream);
+        Assert.Equal(fromStream, fromBox);
         Assert.NotEqual(jpeg, custom);
     }
 

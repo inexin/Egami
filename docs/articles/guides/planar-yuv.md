@@ -30,7 +30,8 @@ Frames a decoder or the operating system already holds are wrapped without a cop
 | `ChromaSiting` | `Center`, `Left`, `TopLeft` | JPEG and WebP center chroma; BT.601 and BT.709 video put it on the left column; BT.2020 on the top-left sample |
 
 There is no default guess: every load, wrap and conversion states a `YuvColor`. `YuvColor.TryFromH273` reads the
-`matrix_coefficients` code and full-range flag that AV1, VP9, HEVC and CICP boxes carry, and refuses codes Egami does not know.
+`matrix_coefficients` code and full-range flag that AV1, VP9, HEVC and CICP boxes carry, and refuses codes Egami does not know;
+`ColorCodePoints.TryGetYuvColor` does the same from code points already read.
 
 ## Converting
 
