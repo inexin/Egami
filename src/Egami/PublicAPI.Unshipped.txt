@@ -752,6 +752,9 @@ Egami.Operations.BlendMode.SourceOut = 7 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.SourceOver = 0 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Subtract = 26 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Xor = 11 -> Egami.Operations.BlendMode
+Egami.Operations.BlurMethod
+Egami.Operations.BlurMethod.Exact = 0 -> Egami.Operations.BlurMethod
+Egami.Operations.BlurMethod.Fast = 1 -> Egami.Operations.BlurMethod
 Egami.Operations.ChannelSource
 Egami.Operations.ChannelSource.Alpha = 3 -> Egami.Operations.ChannelSource
 Egami.Operations.ChannelSource.Blue = 2 -> Egami.Operations.ChannelSource
@@ -831,6 +834,7 @@ Egami.Operations.PixelMath.Subtract = 1 -> Egami.Operations.PixelMath
 Egami.Operations.RasterOps.AlphaToGray() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Arithmetic(Egami.Operations.PixelMath op, float value, Egami.Operations.ColorChannels channels = Egami.Operations.ColorChannels.Color) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.BlendColor(Egami.Pixels.Rgba8 color, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Blur(float sigma, Egami.Operations.ColorSpace colorSpace, Egami.Operations.BlurMethod method) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.CopyAlpha(Egami.Operations.Mask mask) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Deskew(float maxAngle = 15, Egami.Pixels.Rgba8? background = null, bool keepSize = true, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic) -> Egami.Operations.RasterOps!

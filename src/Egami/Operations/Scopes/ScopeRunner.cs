@@ -24,6 +24,16 @@ internal interface IRunsOnViews
 {
 }
 
+/// <summary>
+/// A built-in filter that reads a neighbourhood around each pixel, so inside a scope it runs on the band of real pixels its reach
+/// covers and only the area is copied back, as a convolution does.
+/// </summary>
+internal interface INeighbourhoodStep
+{
+    /// <summary>Gets how far the step reads past an output pixel, in pixels across and down, or <see langword="null"/> when it reads the whole image.</summary>
+    (int X, int Y)? Reach { get; }
+}
+
 /// <summary>A scope: a recorded sub-chain that the pipeline plans and binds like the top-level chain.</summary>
 internal interface IScope
 {
@@ -130,15 +140,15 @@ internal static class ScopeRunner
         {
             input.CancellationToken.ThrowIfCancellationRequested();
             IRasterOperation step = steps[i];
-            if (step is ConvolutionOperation convolution)
+            if (step is INeighbourhoodStep)
             {
                 int last = i;
-                while (convolution.Group != 0 && last + 1 < steps.Count && steps[last + 1] is ConvolutionOperation next && next.Group == convolution.Group)
+                while (step is ConvolutionOperation { Group: not 0 } convolution && last + 1 < steps.Count && steps[last + 1] is ConvolutionOperation next && next.Group == convolution.Group)
                 {
                     last++;
                 }
 
-                Convolve(steps, i, last, input, area);
+                Neighbourhood(steps, i, last, input, area);
                 i = last;
             }
             else if (step is IAreaStep areaStep)
@@ -218,21 +228,26 @@ internal static class ScopeRunner
     }
 
     /// <summary>
-    /// Convolutions on the band around the area that their kernels reach (the whole image for wrapping edges and box means), so every pixel in
-    /// the area gets the value a whole-image run would give; only the area is copied back.
+    /// Neighbourhood filters (convolutions, and the 2.5.4 filters) on the band around the area that they reach (the whole image for
+    /// wrapping edges, box means and filters that read everything), so every pixel in the area gets the value a whole-image run
+    /// would give; only the area is copied back.
     /// </summary>
-    private static void Convolve<TPixel>(IReadOnlyList<IRasterOperation> steps, int first, int last, OperationInput<TPixel> input, Rect area)
+    private static void Neighbourhood<TPixel>(IReadOnlyList<IRasterOperation> steps, int first, int last, OperationInput<TPixel> input, Rect area)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int rx = 0, ry = 0;
         bool wraps = false;
         for (int i = first; i <= last; i++)
         {
-            ConvolutionOperation c = (ConvolutionOperation)steps[i];
-            rx += c.RadiusX;
-            ry += c.RadiusY;
-            // Wrapping reads the far edge; running sums round by where they start: both need the whole image.
-            wraps |= c.Edge == EdgeMode.Wrap || c.IsBox;
+            if (((INeighbourhoodStep)steps[i]).Reach is (int x, int y))
+            {
+                rx += x;
+                ry += y;
+            }
+            else
+            {
+                wraps = true;
+            }
         }
 
         Rect full = new(0, 0, input.Destination.Width, input.Destination.Height);

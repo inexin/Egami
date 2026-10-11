@@ -63,6 +63,8 @@ public sealed class OperationCoverageTests : IDisposable
         ["Blur-Linear"] = (_, _) => ops => ops.Blur(1.5f, ColorSpace.Linear),
         ["Blur-Boxes"] = (_, _) => ops => ops.Blur(120),
         ["BoxBlur"] = (_, _) => ops => ops.BoxBlur(3),
+        ["Blur-Fast"] = (_, _) => ops => ops.Blur(6, ColorSpace.Encoded, BlurMethod.Fast),
+        ["Blur-Fast-Linear"] = (_, _) => ops => ops.Blur(3.5f, ColorSpace.Linear, BlurMethod.Fast),
         ["Sharpen"] = (_, _) => ops => ops.Sharpen(0.8f, 1.2f),
         ["Convolve-Full"] = (_, _) => ops => ops.Convolve(new ConvolutionKernel(3, 3, [0, -1, 0, -1, 5, -1, 0, -1, 0]), EdgeMode.Mirror),
         ["Convolve-Separable"] = (_, _) => ops => ops.Convolve(ConvolutionKernel.Separable([1, 2, 1], [1, 2, 1], divisor: 16), EdgeMode.Wrap),

@@ -16,7 +16,7 @@ namespace Egami.Operations.Filters;
 /// into a ring of rows, then sums the ring vertically; a box filter does both with running sums; any other kernel keeps the padded
 /// rows in the ring and sums every tap.
 /// </summary>
-internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, ILinearLight
+internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, ILinearLight, Scopes.INeighbourhoodStep
 {
     private readonly float[]? _row;
     private readonly float[]? _column;
@@ -57,14 +57,11 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
     /// <summary>Gets the vertical radius of the kernel.</summary>
     internal int RadiusY => _ry;
 
-    /// <summary>Gets whether this is a box mean run as running sums, whose rounding depends on where a run starts.</summary>
-    internal bool IsBox => _box;
-
-    /// <summary>Gets how taps past the border are read.</summary>
-    internal EdgeMode Edge => _edge;
-
     /// <summary>Gets the call this pass belongs to when one call adds several (a large blur's boxes), or 0.</summary>
     internal int Group => _group;
+
+    /// <summary>Gets the kernel's reach, or <see langword="null"/> for wrapping edges and box means: wrapping reads the far edge, and running sums round by where they start, so both need the whole image.</summary>
+    public (int X, int Y)? Reach => _edge == EdgeMode.Wrap || _box ? null : (_rx, _ry);
 
     public IRasterOperation WithCurve(Colors.LinearCurve curve) =>
         new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve) { _group = _group };

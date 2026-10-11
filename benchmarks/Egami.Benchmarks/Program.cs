@@ -8,6 +8,13 @@ using Egami.Tests.Memory;
 
 // Run all:      dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --filter "*"
 // Run a class:  dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --filter "*PngDecode*"
+// Time the Phase 2.5.4 filter scenarios at one thread and all cores: -- --time-filters [name...]
+if (args is ["--time-filters", .. string[] names])
+{
+    FilterTiming.Run(names);
+    return;
+}
+
 // Write the benchmark photo as PNG, for tools/make-jpeg-bench-files.py: -- --write-photo <path>
 if (args is ["--write-photo", string path])
 {
