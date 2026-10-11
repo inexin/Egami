@@ -20,7 +20,7 @@ public sealed class IptcData
     private static readonly byte[] Utf8Escape = [0x1B, 0x25, 0x47];
 
     private readonly List<IptcEntry> _entries = [];
-    private readonly List<string> _warnings = [];
+    private List<string>? _warnings;
     private readonly byte[] _original = [];
     private bool _edited;
 
@@ -42,7 +42,7 @@ public sealed class IptcData
     public bool IsDamaged { get; private set; }
 
     /// <summary>Gets what was wrong with the block when read (damage, values longer than the specification allows), as sentences.</summary>
-    public IReadOnlyList<string> Warnings => _warnings;
+    public IReadOnlyList<string> Warnings => _warnings ?? [];
 
     /// <summary>Gets every dataset in the order stored.</summary>
     public IReadOnlyList<IptcEntry> Entries => _entries;
@@ -132,7 +132,19 @@ public sealed class IptcData
     /// <summary>Returns every value of <paramref name="key"/> as text, in order.</summary>
     /// <param name="key">The record and dataset.</param>
     /// <returns>The values; empty when there are none.</returns>
-    public IReadOnlyList<string> GetAll(IptcKey key) => [.. _entries.Where(e => e.Key == key).Select(e => e.AsString())];
+    public IReadOnlyList<string> GetAll(IptcKey key)
+    {
+        List<string> values = [];
+        foreach (IptcEntry entry in _entries)
+        {
+            if (entry.Key.Record == key.Record && entry.Key.Dataset == key.Dataset)
+            {
+                values.Add(entry.AsString());
+            }
+        }
+
+        return values;
+    }
 
     /// <summary>Replaces every value of <paramref name="key"/> with one value.</summary>
     /// <param name="key">The record and dataset.</param>
@@ -188,15 +200,18 @@ public sealed class IptcData
     {
         IptcData copy = new(_original) { _edited = _edited, IsDamaged = IsDamaged };
         copy._entries.AddRange(_entries);
-        copy._warnings.AddRange(_warnings);
+        copy._warnings = _warnings is null ? null : [.. _warnings];
         return copy;
     }
 
     /// <summary>Parses with a cap on the bytes of values read, from <see cref="SafetyLimits.MaxMetadataBytes"/>.</summary>
     internal static IptcData Parse(ReadOnlySpan<byte> iim, long maxBytes)
     {
-        IptcData data = new(iim.ToArray());
-        List<(IptcKey Key, byte[] Value)> read = [];
+        // Values are slices of the one copy kept for writing back; the charset applies once the whole block is read.
+        byte[] original = iim.ToArray();
+        IptcData data = new(original);
+        data._entries.Capacity = Math.Min(iim.Length / 16, 1 << 16);
+        bool utf8 = false;
         long total = 0;
         int i = 0;
         while (i < iim.Length)
@@ -253,18 +268,24 @@ public sealed class IptcData
                 break;
             }
 
-            byte[] value = iim.Slice(i + header, (int)length).ToArray();
-            if (key.MaxLength is int max && value.Length > max)
+            if (key.MaxLength is int max && length > max)
             {
-                data._warnings.Add($"IPTC {key} is {value.Length} bytes, longer than the {max} the IIM specification allows.");
+                (data._warnings ??= []).Add($"IPTC {key} is {length} bytes, longer than the {max} the IIM specification allows.");
             }
 
-            read.Add((key, value));
+            utf8 |= key.Record == 1 && key.Dataset == 90 && iim.Slice(i + header, (int)length).SequenceEqual(Utf8Escape);
+            data._entries.Add(new IptcEntry(key, new ReadOnlyMemory<byte>(original, i + header, (int)length), false));
             i += header + (int)length;
         }
 
-        bool utf8 = read.Exists(e => e.Key == IptcKey.CodedCharacterSet && e.Value.AsSpan().SequenceEqual(Utf8Escape));
-        data._entries.AddRange(read.Select(e => new IptcEntry(e.Key, e.Value, utf8)));
+        if (utf8)
+        {
+            foreach (IptcEntry entry in data._entries)
+            {
+                entry.MarkUtf8();
+            }
+        }
+
         return data;
     }
 
@@ -303,7 +324,7 @@ public sealed class IptcData
         }
 
         _entries.RemoveAll(e => e.Key == IptcKey.CodedCharacterSet);
-        _entries.Insert(0, new IptcEntry(IptcKey.CodedCharacterSet, [.. Utf8Escape], true));
+        _entries.Insert(0, new IptcEntry(IptcKey.CodedCharacterSet, Utf8Escape.ToArray(), true));
     }
 
     private byte[] Build()
@@ -311,12 +332,12 @@ public sealed class IptcData
         List<IptcEntry> entries = [.. _entries];
         if (entries.Exists(e => e.Key == IptcKey.CodedCharacterSet) && !entries.Exists(e => e.Key == IptcKey.EnvelopeRecordVersion))
         {
-            entries.Add(new IptcEntry(IptcKey.EnvelopeRecordVersion, [0, 4], IsUtf8));
+            entries.Add(new IptcEntry(IptcKey.EnvelopeRecordVersion, new byte[] { 0, 4 }, IsUtf8));
         }
 
         if (entries.Exists(e => e.Key.Record == 2) && !entries.Exists(e => e.Key == IptcKey.RecordVersion))
         {
-            entries.Add(new IptcEntry(IptcKey.RecordVersion, [0, 4], IsUtf8));
+            entries.Add(new IptcEntry(IptcKey.RecordVersion, new byte[] { 0, 4 }, IsUtf8));
         }
 
         // Record and dataset order (stable, so repeats keep theirs), as IIM requires.
@@ -350,6 +371,6 @@ public sealed class IptcData
     private void Damaged(string warning)
     {
         IsDamaged = true;
-        _warnings.Add(warning);
+        (_warnings ??= []).Add(warning);
     }
 }

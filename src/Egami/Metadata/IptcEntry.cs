@@ -8,10 +8,10 @@ namespace Egami.Metadata;
 /// </example>
 public sealed class IptcEntry
 {
-    private readonly byte[] _value;
-    private readonly bool _utf8;
+    private readonly ReadOnlyMemory<byte> _value;
+    private bool _utf8;
 
-    internal IptcEntry(IptcKey key, byte[] value, bool utf8)
+    internal IptcEntry(IptcKey key, ReadOnlyMemory<byte> value, bool utf8)
     {
         Key = key;
         _value = value;
@@ -29,7 +29,7 @@ public sealed class IptcEntry
     /// valid UTF-8 and Latin-1 when they are not, the rule <see cref="ExifEntry.AsString"/> uses.
     /// </summary>
     /// <returns>The text.</returns>
-    public string AsString() => Decode(_value, _utf8);
+    public string AsString() => Decode(_value.Span, _utf8);
 
     /// <inheritdoc/>
     public override string ToString() => $"{Key}: \"{AsString()}\"";
@@ -38,4 +38,7 @@ public sealed class IptcEntry
         utf8 || System.Text.Unicode.Utf8.IsValid(bytes) ? Encoding.UTF8.GetString(bytes) : Encoding.Latin1.GetString(bytes);
 
     internal IptcEntry WithCharset(bool utf8) => utf8 == _utf8 ? this : new(Key, _value, utf8);
+
+    /// <summary>Marks a freshly parsed entry as UTF-8, once the whole block has been read.</summary>
+    internal void MarkUtf8() => _utf8 = true;
 }

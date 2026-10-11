@@ -20,17 +20,18 @@ internal static class XmpParser
         XmlResolver = null,
         IgnoreComments = true,
         IgnoreProcessingInstructions = true,
+        IgnoreWhitespace = true,
         CloseInput = false,
         MaxCharactersFromEntities = 1024,
     };
 
     /// <summary>Fills <paramref name="data"/> from the packet; returns a sentence saying what was wrong, or null.</summary>
-    public static string? Read(ReadOnlySpan<byte> packet, XmpData data)
+    public static string? Read(byte[] packet, XmpData data)
     {
         Node root;
         try
         {
-            using MemoryStream stream = new(packet.ToArray(), writable: false);
+            using MemoryStream stream = new(packet, writable: false);
             using XmlReader reader = XmlReader.Create(stream, Settings);
             root = ReadTree(reader, data.Prefixes) ?? throw new XmlException("The packet has no XML element.");
         }
@@ -150,7 +151,7 @@ internal static class XmpParser
             return Structure(only, language, depth);
         }
 
-        if (node.Children.Count > 0 || node.PropertyAttributes().Any() || node.Attribute(XmpNamespaces.Rdf, "value") is not null)
+        if (node.Children.Count > 0 || node.HasPropertyAttributes() || node.Attribute(XmpNamespaces.Rdf, "value") is not null)
         {
             return Structure(node, language, depth);
         }
@@ -220,7 +221,7 @@ internal static class XmpParser
                                 }
                                 else
                                 {
-                                    node.Attributes.Add((reader.NamespaceURI, reader.LocalName, reader.Value));
+                                    node.AddAttribute(reader.NamespaceURI, reader.LocalName, reader.Value);
                                     Note(prefixes, reader.NamespaceURI, reader.Prefix);
                                 }
                             }
@@ -230,7 +231,7 @@ internal static class XmpParser
 
                         if (open.TryPeek(out Node? parent))
                         {
-                            parent.Children.Add(node);
+                            parent.AddChild(node);
                         }
                         else
                         {
@@ -271,25 +272,81 @@ internal static class XmpParser
 
     private sealed class Node(string ns, string name)
     {
-        private System.Text.StringBuilder? _text;
+        private static readonly List<(string, string, string)> NoAttributes = [];
+        private static readonly List<Node> NoChildren = [];
+
+        private string? _text;
+        private System.Text.StringBuilder? _more;
+        private List<(string Namespace, string Name, string Value)>? _attributes;
+        private List<Node>? _children;
 
         public string Namespace { get; } = ns;
 
         public string Name { get; } = name;
 
-        public List<(string Namespace, string Name, string Value)> Attributes { get; } = [];
+        public List<(string Namespace, string Name, string Value)> Attributes => _attributes ?? NoAttributes;
 
-        public List<Node> Children { get; } = [];
+        public List<Node> Children => _children ?? NoChildren;
 
-        public string Text => _text?.ToString() ?? string.Empty;
+        public string Text => _more?.ToString() ?? _text ?? string.Empty;
 
         public bool Is(string ns, string name) => Namespace == ns && Name == name;
 
-        public string? Attribute(string ns, string name) => Attributes.Find(a => a.Namespace == ns && a.Name == name).Value;
+        public string? Attribute(string ns, string name)
+        {
+            foreach ((string Namespace, string Name, string Value) a in Attributes)
+            {
+                if (a.Namespace == ns && a.Name == name)
+                {
+                    return a.Value;
+                }
+            }
 
-        public IEnumerable<(string Namespace, string Name, string Value)> PropertyAttributes() =>
-            Attributes.Where(a => a.Namespace.Length > 0 && a.Namespace != XmpNamespaces.Rdf && a.Namespace != XmpNamespaces.Xml);
+            return null;
+        }
 
-        public void AppendText(string text) => (_text ??= new()).Append(text);
+        public IEnumerable<(string Namespace, string Name, string Value)> PropertyAttributes()
+        {
+            foreach ((string Namespace, string Name, string Value) a in Attributes)
+            {
+                if (a.Namespace.Length > 0 && a.Namespace != XmpNamespaces.Rdf && a.Namespace != XmpNamespaces.Xml)
+                {
+                    yield return a;
+                }
+            }
+        }
+
+        public bool HasPropertyAttributes()
+        {
+            foreach ((string Namespace, string Name, string Value) a in Attributes)
+            {
+                if (a.Namespace.Length > 0 && a.Namespace != XmpNamespaces.Rdf && a.Namespace != XmpNamespaces.Xml)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void AddAttribute(string ns, string name, string value) => (_attributes ??= []).Add((ns, name, value));
+
+        public void AddChild(Node child) => (_children ??= []).Add(child);
+
+        public void AppendText(string text)
+        {
+            if (_more is not null)
+            {
+                _more.Append(text);
+            }
+            else if (_text is null)
+            {
+                _text = text;
+            }
+            else
+            {
+                _more = new System.Text.StringBuilder(_text).Append(text);
+            }
+        }
     }
 }

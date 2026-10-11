@@ -174,14 +174,15 @@ public sealed class XmpData : XmpStruct, IXmpOwner
     /// </example>
     public static XmpData Parse(ReadOnlySpan<byte> packet, SafetyLimits? limits = null)
     {
-        XmpData data = new() { _original = packet.ToArray(), _edited = false };
+        byte[] original = packet.ToArray();
+        XmpData data = new() { _original = original, _edited = false };
         if (packet.Length > (limits ?? SafetyLimits.Default).MaxMetadataBytes)
         {
             data.Damaged("The XMP packet is over the metadata limit.");
             return data;
         }
 
-        if (XmpParser.Read(packet, data) is string problem)
+        if (XmpParser.Read(original, data) is string problem)
         {
             data.Fields.Clear();
             data.Damaged(problem);
