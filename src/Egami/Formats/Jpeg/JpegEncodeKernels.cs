@@ -172,6 +172,129 @@ internal static class JpegEncodeKernels
         values.StoreUnsafe(ref MemoryMarshal.GetReference(target), (nuint)x);
     }
 
+    /// <summary>Gets ceil-ish reciprocals: (n × Reciprocal[d]) &gt;&gt; 32 equals n / d for every n below 2^16 and d up to 255.</summary>
+    private static readonly ulong[] Reciprocal = [.. Enumerable.Range(0, 256).Select(d => d == 0 ? 0UL : (1UL << 32) / (ulong)d + 1)];
+
+    /// <summary>
+    /// Converts packed RGB to packed inks exactly as <see cref="Pixels.Cmyk8.FromRgba8"/> does (K = 255 − max, each ink rounded
+    /// (max − channel) × 255 / max), with the division done by a reciprocal multiply.
+    /// </summary>
+    internal static void InksFromRgb(ReadOnlySpan<byte> rgb, Span<byte> cmyk)
+    {
+        int width = cmyk.Length / 4;
+        _ = rgb[(3 * width) - 1];
+        ref byte source = ref MemoryMarshal.GetReference(rgb);
+        ref byte target = ref MemoryMarshal.GetReference(cmyk);
+        ref ulong reciprocal = ref MemoryMarshal.GetArrayDataReference(Reciprocal);
+        int done = Avx2.IsSupported ? InksFromRgbAvx2(rgb, cmyk) : 0;
+        for (int x = done; x < width; x++)
+        {
+            int r = Unsafe.Add(ref source, 3 * x), g = Unsafe.Add(ref source, (3 * x) + 1), b = Unsafe.Add(ref source, (3 * x) + 2);
+            int max = Math.Max(r, Math.Max(g, b));
+
+            // Black (max 0) has reciprocal 0, which makes every ink 0, as FromRgba8 gives it.
+            ulong m = Unsafe.Add(ref reciprocal, max);
+            int half = max >> 1;
+            uint ink = (uint)((((ulong)(((max - r) * 255) + half)) * m) >> 32)
+                | (uint)((((ulong)(((max - g) * 255) + half)) * m) >> 32) << 8
+                | (uint)((((ulong)(((max - b) * 255) + half)) * m) >> 32) << 16
+                | (uint)(255 - max) << 24;
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 4 * x), BitConverter.IsLittleEndian ? ink : System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(ink));
+        }
+    }
+
+    /// <summary>
+    /// <see cref="InksFromRgb"/> sixteen pixels at a time: the bytes split into planes as <see cref="YCbCrAvx2"/> splits them, and
+    /// each ink as floor((n + 0.5) / max) in single precision, which is exact for these n and max (the fraction stays at least
+    /// 0.5 / max from a whole number, far above the rounding error). Returns how many pixels it did.
+    /// </summary>
+    internal static int InksFromRgbAvx2(ReadOnlySpan<byte> rgb, Span<byte> cmyk)
+    {
+        int width = cmyk.Length / 4;
+        ref byte source = ref MemoryMarshal.GetReference(rgb);
+        ref byte target = ref MemoryMarshal.GetReference(cmyk);
+        Vector128<byte> r0 = Vector128.Create((byte)0, 3, 6, 9, 12, 15, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128);
+        Vector128<byte> r1 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 2, 5, 8, 11, 14, 128, 128, 128, 128, 128);
+        Vector128<byte> r2 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 1, 4, 7, 10, 13);
+        Vector128<byte> g0 = Vector128.Create((byte)1, 4, 7, 10, 13, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128);
+        Vector128<byte> g1 = Vector128.Create((byte)128, 128, 128, 128, 128, 0, 3, 6, 9, 12, 15, 128, 128, 128, 128, 128);
+        Vector128<byte> g2 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2, 5, 8, 11, 14);
+        Vector128<byte> b0 = Vector128.Create((byte)2, 5, 8, 11, 14, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128);
+        Vector128<byte> b1 = Vector128.Create((byte)128, 128, 128, 128, 128, 1, 4, 7, 10, 13, 128, 128, 128, 128, 128, 128);
+        Vector128<byte> b2 = Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 3, 6, 9, 12, 15);
+        int x = 0;
+        for (; x + 16 <= width && (3 * x) + 48 <= rgb.Length; x += 16)
+        {
+            Vector128<byte> v0 = Vector128.LoadUnsafe(ref source, (nuint)(3 * x));
+            Vector128<byte> v1 = Vector128.LoadUnsafe(ref source, (nuint)((3 * x) + 16));
+            Vector128<byte> v2 = Vector128.LoadUnsafe(ref source, (nuint)((3 * x) + 32));
+            Vector128<byte> red = Ssse3.Shuffle(v0, r0) | Ssse3.Shuffle(v1, r1) | Ssse3.Shuffle(v2, r2);
+            Vector128<byte> green = Ssse3.Shuffle(v0, g0) | Ssse3.Shuffle(v1, g1) | Ssse3.Shuffle(v2, g2);
+            Vector128<byte> blue = Ssse3.Shuffle(v0, b0) | Ssse3.Shuffle(v1, b1) | Ssse3.Shuffle(v2, b2);
+            Vector128<byte> max = Vector128.Max(red, Vector128.Max(green, blue));
+            Inks8(red, green, blue, max).StoreUnsafe(ref target, (nuint)(4 * x));
+            Inks8(Sse2.ShiftRightLogical128BitLane(red, 8), Sse2.ShiftRightLogical128BitLane(green, 8), Sse2.ShiftRightLogical128BitLane(blue, 8), Sse2.ShiftRightLogical128BitLane(max, 8))
+                .StoreUnsafe(ref target, (nuint)((4 * x) + 32));
+        }
+
+        return x;
+    }
+
+    /// <summary>The packed inks of the low eight pixels of the planes: C, M, Y, K bytes per pixel.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<byte> Inks8(Vector128<byte> red, Vector128<byte> green, Vector128<byte> blue, Vector128<byte> maxBytes)
+    {
+        Vector256<int> max = Avx2.ConvertToVector256Int32(maxBytes);
+        Vector256<int> half = max >>> 1;
+        Vector256<float> divisor = Vector256.ConvertToSingle(max);
+        Vector256<int> black = Vector256.Equals(max, Vector256<int>.Zero);
+        Vector256<int> c = Ink(Avx2.ConvertToVector256Int32(red), max, half, divisor, black);
+        Vector256<int> m = Ink(Avx2.ConvertToVector256Int32(green), max, half, divisor, black);
+        Vector256<int> y = Ink(Avx2.ConvertToVector256Int32(blue), max, half, divisor, black);
+        Vector256<int> k = Vector256.Create(255) - max;
+        return (c | (m << 8) | (y << 16) | (k << 24)).AsByte();
+
+        static Vector256<int> Ink(Vector256<int> channel, Vector256<int> max, Vector256<int> half, Vector256<float> divisor, Vector256<int> black)
+        {
+            Vector256<float> n = Vector256.ConvertToSingle(((max - channel) * Vector256.Create(255)) + half) + Vector256.Create(0.5f);
+            return Vector256.AndNot(Vector256.ConvertToInt32(Vector256.Floor(n / divisor)), black);
+        }
+    }
+
+    /// <summary>
+    /// Splits packed inks into four planes, each value inverted as Adobe stores CMYK, as wide as <paramref name="c"/>; with AVX2,
+    /// eight pixels at a time by byte shuffles.
+    /// </summary>
+    internal static void SplitInverted(ReadOnlySpan<byte> cmyk, Span<byte> c, Span<byte> m, Span<byte> y, Span<byte> k)
+    {
+        int width = c.Length;
+        int x = 0;
+        if (Avx2.IsSupported)
+        {
+            ref byte source = ref MemoryMarshal.GetReference(cmyk);
+            // Within each 128-bit lane, gather byte 0 of every pixel, then byte 1, 2 and 3: four 4-byte groups per lane.
+            Vector256<byte> gather = Vector256.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
+            Vector256<int> order = Vector256.Create(0, 4, 1, 5, 2, 6, 3, 7);
+            for (; x + 8 <= width && (4 * x) + 32 <= cmyk.Length; x += 8)
+            {
+                Vector256<byte> pixels = ~Vector256.LoadUnsafe(ref source, (nuint)(4 * x));
+                Vector256<ulong> planes = Avx2.PermuteVar8x32(Avx2.Shuffle(pixels, gather).AsInt32(), order).AsUInt64();
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(c), x), planes.GetElement(0));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(m), x), planes.GetElement(1));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(y), x), planes.GetElement(2));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(k), x), planes.GetElement(3));
+            }
+        }
+
+        for (; x < width; x++)
+        {
+            c[x] = (byte)~cmyk[4 * x];
+            m[x] = (byte)~cmyk[(4 * x) + 1];
+            y[x] = (byte)~cmyk[(4 * x) + 2];
+            k[x] = (byte)~cmyk[(4 * x) + 3];
+        }
+    }
+
     /// <summary>
     /// Converts packed 12-bit RGB to luma and chroma rows, as wide as <paramref name="y"/>, with libjpeg's constants centered on
     /// 2048 as its 12-bit build does; <paramref name="cb"/> and <paramref name="cr"/> are empty for luma alone.

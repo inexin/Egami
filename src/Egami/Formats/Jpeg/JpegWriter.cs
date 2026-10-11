@@ -1132,30 +1132,34 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         private void InkRow(int y, int r, Workspace workspace, bool subsampled)
         {
             Plane[] planes = workspace.Planes;
-            Span<byte> ink = workspace.Rgba.AsSpan(0, _width * 4);
-            if (_options.Background is null)
+            ReadOnlySpan<byte> ink;
+            if (_options.Background is null && typeof(TPixel) == typeof(Cmyk8))
             {
-                PixelConvert.Convert(_rowAt(y), MemoryMarshal.Cast<byte, Cmyk8>(ink));
+                ink = MemoryMarshal.AsBytes(_rowAt(y));
+            }
+            else if (_options.Background is null && TPixel.Layout.ChannelOrder == PixelChannelOrder.Cmyk)
+            {
+                PixelConvert.Convert(_rowAt(y), MemoryMarshal.Cast<byte, Cmyk8>(workspace.Rgba.AsSpan(0, _width * 4)));
+                ink = workspace.Rgba.AsSpan(0, _width * 4);
             }
             else
             {
-                PixelConvert.Convert(MemoryMarshal.Cast<byte, Rgb8>(RgbRow(y, workspace)), MemoryMarshal.Cast<byte, Cmyk8>(ink));
-            }
-
-            int inks = _space == Space.Cmyk ? 4 : 0;
-            for (int i = 0; i < inks; i++)
-            {
-                Span<byte> row = planes[i].Samples.AsSpan(r * planes[i].Stride, _paddedWidth);
-                for (int x = 0; x < _width; x++)
-                {
-                    row[x] = (byte)~ink[(4 * x) + i];
-                }
-
-                Pad(row, _width);
+                // Other pixels go through 8-bit RGB (composited first when there is a background) and the plain formula.
+                JpegEncodeKernels.InksFromRgb(RgbRow(y, workspace), workspace.Rgba.AsSpan(0, _width * 4));
+                ink = workspace.Rgba.AsSpan(0, _width * 4);
             }
 
             if (_space == Space.Cmyk)
             {
+                Span<byte> c = planes[0].Samples.AsSpan(r * planes[0].Stride, _paddedWidth);
+                Span<byte> m = planes[1].Samples.AsSpan(r * planes[1].Stride, _paddedWidth);
+                Span<byte> yellow = planes[2].Samples.AsSpan(r * planes[2].Stride, _paddedWidth);
+                Span<byte> k = planes[3].Samples.AsSpan(r * planes[3].Stride, _paddedWidth);
+                JpegEncodeKernels.SplitInverted(ink, c[.._width], m[.._width], yellow[.._width], k[.._width]);
+                Pad(c, _width);
+                Pad(m, _width);
+                Pad(yellow, _width);
+                Pad(k, _width);
                 return;
             }
 

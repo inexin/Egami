@@ -38,6 +38,42 @@ public class JpegWriteDepthTests
     }
 
     [Fact]
+    public void InkKernelsMatchThePixelConversion()
+    {
+        // Every channel and maximum: the reciprocal multiply gives Cmyk8.FromRgba8's rounded division exactly.
+        byte[] rgb = new byte[256 * 256 * 3];
+        for (int max = 0; max < 256; max++)
+        {
+            for (int channel = 0; channel <= max; channel++)
+            {
+                int i = ((max * 256) + channel) * 3;
+                (rgb[i], rgb[i + 1], rgb[i + 2]) = ((byte)max, (byte)channel, (byte)(channel / 2));
+            }
+        }
+
+        byte[] fast = new byte[256 * 256 * 4];
+        JpegEncodeKernels.InksFromRgb(rgb, fast);
+        Cmyk8[] expected = new Cmyk8[256 * 256];
+        PixelConvert.ConvertScalar<Rgb8, Cmyk8>(System.Runtime.InteropServices.MemoryMarshal.Cast<byte, Rgb8>(rgb), expected);
+        Assert.Equal(System.Runtime.InteropServices.MemoryMarshal.AsBytes(expected.AsSpan()).ToArray(), fast);
+
+        // The vector split equals the scalar one, at widths around the vector size.
+        foreach (int width in (int[])[1, 7, 8, 9, 31, 33])
+        {
+            byte[] inks = [.. Enumerable.Range(0, width * 4).Select(i => (byte)((i * 37) + 11))];
+            byte[][] planes = [new byte[width], new byte[width], new byte[width], new byte[width]];
+            JpegEncodeKernels.SplitInverted(inks, planes[0], planes[1], planes[2], planes[3]);
+            for (int x = 0; x < width; x++)
+            {
+                for (int c = 0; c < 4; c++)
+                {
+                    Assert.Equal((byte)~inks[(4 * x) + c], planes[c][x]);
+                }
+            }
+        }
+    }
+
+    [Fact]
     public void YcckSubsamplesChromaButNotBlack()
     {
         using Raster<Cmyk8> source = Inks(40, 24);
