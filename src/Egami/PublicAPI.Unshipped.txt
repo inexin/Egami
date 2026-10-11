@@ -801,6 +801,18 @@ Egami.Operations.EdgeOperator.Sobel = 0 -> Egami.Operations.EdgeOperator
 Egami.Operations.HeightSource
 Egami.Operations.HeightSource.Alpha = 0 -> Egami.Operations.HeightSource
 Egami.Operations.HeightSource.Luminance = 1 -> Egami.Operations.HeightSource
+Egami.Operations.DropShadowOptions
+Egami.Operations.DropShadowOptions.<Clone>$() -> Egami.Operations.DropShadowOptions!
+Egami.Operations.DropShadowOptions.DropShadowOptions() -> void
+Egami.Operations.DropShadowOptions.Equals(Egami.Operations.DropShadowOptions? other) -> bool
+Egami.Operations.DropShadowOptions.Expand.get -> bool
+Egami.Operations.DropShadowOptions.Expand.init -> void
+Egami.Operations.DropShadowOptions.Method.get -> Egami.Operations.BlurMethod
+Egami.Operations.DropShadowOptions.Method.init -> void
+Egami.Operations.DropShadowOptions.ShadowOnly.get -> bool
+Egami.Operations.DropShadowOptions.ShadowOnly.init -> void
+Egami.Operations.DropShadowOptions.SigmaY.get -> float?
+Egami.Operations.DropShadowOptions.SigmaY.init -> void
 Egami.Operations.Homography
 Egami.Operations.Homography.Determinant.get -> double
 Egami.Operations.Homography.Equals(Egami.Operations.Homography other) -> bool
@@ -926,6 +938,7 @@ Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, 
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Edges(Egami.Operations.EdgeOperator op = Egami.Operations.EdgeOperator.Sobel, bool grayscale = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Emboss(float angle = 135, float depth = 1, float sigma = 1, bool grayscale = true) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DropShadow(float dx, float dy, float sigma, Egami.Pixels.Rgba8 color, Egami.Operations.DropShadowOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.EntropyCrop(float threshold = 0.5) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Erode(int radius) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Erode(int radiusX, int radiusY) -> Egami.Operations.RasterOps!
@@ -1389,6 +1402,9 @@ override Egami.Operations.DistantLight.<Clone>$() -> Egami.Operations.DistantLig
 override Egami.Operations.DistantLight.Equals(object? obj) -> bool
 override Egami.Operations.DistantLight.GetHashCode() -> int
 override Egami.Operations.DistantLight.ToString() -> string!
+override Egami.Operations.DropShadowOptions.Equals(object? obj) -> bool
+override Egami.Operations.DropShadowOptions.GetHashCode() -> int
+override Egami.Operations.DropShadowOptions.ToString() -> string!
 override Egami.Operations.Homography.Equals(object? obj) -> bool
 override Egami.Operations.Homography.GetHashCode() -> int
 override Egami.Operations.Homography.ToString() -> string!
@@ -1613,6 +1629,8 @@ static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode
 static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Operations.DistantLight.operator !=(Egami.Operations.DistantLight? left, Egami.Operations.DistantLight? right) -> bool
 static Egami.Operations.DistantLight.operator ==(Egami.Operations.DistantLight? left, Egami.Operations.DistantLight? right) -> bool
+static Egami.Operations.DropShadowOptions.operator !=(Egami.Operations.DropShadowOptions? left, Egami.Operations.DropShadowOptions? right) -> bool
+static Egami.Operations.DropShadowOptions.operator ==(Egami.Operations.DropShadowOptions? left, Egami.Operations.DropShadowOptions? right) -> bool
 static Egami.Operations.Homography.CreateRotation(double radians) -> Egami.Operations.Homography
 static Egami.Operations.Homography.CreateRotation(double radians, System.Numerics.Vector2 center) -> Egami.Operations.Homography
 static Egami.Operations.Homography.CreateScale(double scaleX, double scaleY) -> Egami.Operations.Homography

@@ -235,4 +235,39 @@ public sealed partial class RasterOps
 
         return radius < 1 ? this : Add(new SpreadOperation(radius, seed));
     }
+
+    /// <summary>
+    /// Adds a drop shadow, as Skia's DropShadow image filter: the image's alpha, moved by (<paramref name="dx"/>,
+    /// <paramref name="dy"/>), blurred by a Gaussian of <paramref name="sigma"/> and filled with <paramref name="color"/>, with the
+    /// image drawn over it source-over. By default the canvas grows by 3σ plus the offset on the sides the shadow reaches past the
+    /// image, so it is never cut off, and the step then cannot run inside <see cref="Within(Rect, Action{RasterOps})"/>; set
+    /// <see cref="DropShadowOptions.Expand"/> to <see langword="false"/> to keep the size. The shadow fades as if the image went on,
+    /// transparent, past its edges.
+    /// </summary>
+    /// <param name="dx">How far the shadow moves right, in pixels (negative moves it left), at most 10000 either way.</param>
+    /// <param name="dy">How far the shadow moves down, in pixels, at most 10000 either way.</param>
+    /// <param name="sigma">The shadow's blur in pixels, from 0 (a hard shadow) to 1000.</param>
+    /// <param name="color">The shadow's color, with its alpha as the shadow's opacity.</param>
+    /// <param name="options">A separate vertical blur, whether the canvas grows, whether only the shadow is kept, and the blur method; the defaults when <see langword="null"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An offset is not finite or beyond 10000 either way, or <paramref name="sigma"/> is outside 0..1000.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FilterEffects.cs" region="drop-shadow"/>
+    /// </example>
+    public RasterOps DropShadow(float dx, float dy, float sigma, Rgba8 color, DropShadowOptions? options = null)
+    {
+        if (!(Math.Abs(dx) <= 10000))
+        {
+            throw new ArgumentOutOfRangeException(nameof(dx), dx, "The offset must be from -10000 to 10000.");
+        }
+
+        if (!(Math.Abs(dy) <= 10000))
+        {
+            throw new ArgumentOutOfRangeException(nameof(dy), dy, "The offset must be from -10000 to 10000.");
+        }
+
+        CheckSigma(sigma);
+        options ??= new DropShadowOptions();
+        return Add(new DropShadowOperation(dx, dy, sigma, options.SigmaY ?? sigma, color, options));
+    }
 }

@@ -94,4 +94,57 @@ public class FilterEffects
 
         Assert.Equal(photo.Width, frosted.Width);
     }
+
+    [Fact]
+    public void DropShadow()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgba8> logo = Logo();
+
+        #region drop-shadow
+        // Skia's DropShadow: 6 px right and down, blurred with sigma 8, black at 55%; the canvas grows to hold the shadow.
+        using Raster shadowed = logo.Derive(ops => ops.DropShadow(6, 6, 8, new Rgba8(0, 0, 0, 140)), Ct);
+
+        // Keep the size, or keep only the shadow (as Skia's DropShadowOnly and ImageMagick's -shadow).
+        using Raster same = logo.Derive(ops => ops.DropShadow(4, 4, 3, Rgba8.Black, new DropShadowOptions { Expand = false }), Ct);
+        using Raster shadow = logo.Derive(ops => ops.DropShadow(0, 10, 12, Rgba8.Black, new DropShadowOptions { ShadowOnly = true, SigmaY = 6 }), Ct);
+        #endregion
+
+        Assert.True(shadowed.Width > logo.Width);
+        Assert.Equal(logo.Width, same.Width);
+    }
+
+    [Fact]
+    public void Cookbook()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgba8> logo = Logo();
+        using Raster photo = Raster.Load("duck.png");
+
+        #region logo-shadow
+        // A logo on a page: a soft shadow under it, then the result flattened onto white for a JPEG.
+        logo.Apply(ops => ops
+            .DropShadow(5, 7, 6, new Rgba8(0, 0, 0, 110))
+            .Flatten(Rgba8.White), Ct);
+        logo.Save("logo-shadow.jpg");
+        #endregion
+
+        #region blur-face
+        // Hide a face: pixelate only the rectangle around it, with the grid starting at its corner so cells line up with it.
+        Rect face = new(100, 40, 72, 64);
+        photo.Apply(ops => ops.Within(face, o => o.Pixelate(12, new Point(face.X, face.Y))), Ct);
+        #endregion
+
+        #region oil-look
+        // A painted look: a light blur to calm noise, the oil paint, then a touch more saturation and a vignette.
+        using Raster painting = photo.Derive(ops => ops
+            .Blur(0.8f)
+            .OilPaint(radius: 4, levels: 24)
+            .Saturation(1.15f)
+            .Vignette(0.9f, softness: 0.6f), Ct);
+        painting.Save("painting.png");
+        #endregion
+
+        Assert.True(File.Exists("painting.png"));
+    }
 }

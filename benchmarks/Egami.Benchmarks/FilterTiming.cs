@@ -50,6 +50,12 @@ internal static class FilterTiming
         ["OilPaint-256"] = o => o.OilPaint(3, 256),
     };
 
+    /// <summary>Scenarios on a 1000 × 1000 logo with alpha (an opaque rounded badge and a soft disc on transparent black).</summary>
+    internal static readonly Dictionary<string, Action<RasterOps>> LogoScenarios = new()
+    {
+        ["DropShadow-10"] = o => o.DropShadow(8, 8, 10, new Rgba8(0, 0, 0, 160)),
+    };
+
     internal static void Run(string[] names)
     {
         using Raster<Rgba8> photo = BenchImages.Photo(4000, 3000);
@@ -90,7 +96,51 @@ internal static class FilterTiming
             double one = Time(image, chain, 1);
             double all = Time(image, chain, Environment.ProcessorCount);
             Console.WriteLine($"{name,-24} 1 thread {one,8:F1} ms   {Environment.ProcessorCount} threads {all,8:F1} ms");
+            Report(name, photo, chain);
         }
+
+        using Raster<Rgba8> logo = Logo(1000, 1000);
+        foreach ((string name, Action<RasterOps> chain) in LogoScenarios)
+        {
+            if (names.Length == 0 || names.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase)))
+            {
+                Report(name, logo, chain);
+            }
+        }
+    }
+
+    private static void Report(string name, Raster<Rgba8> image, Action<RasterOps> chain)
+    {
+        double one = Time(image, chain, 1);
+        double all = Time(image, chain, Environment.ProcessorCount);
+        Console.WriteLine($"{name,-24} 1 thread {one,8:F1} ms   {Environment.ProcessorCount} threads {all,8:F1} ms");
+    }
+
+    /// <summary>A logo with alpha: an opaque rounded badge with antialiased corners and a disc with a soft edge.</summary>
+    private static Raster<Rgba8> Logo(int width, int height)
+    {
+        Raster<Rgba8> logo = Raster.Create<Rgba8>(width, height);
+        float scale = width / 160f;
+        for (int y = 0; y < height; y++)
+        {
+            Span<Rgba8> row = logo.Row(y);
+            for (int x = 0; x < width; x++)
+            {
+                float u = (x + 0.5f) / scale, v = (y + 0.5f) / scale;
+                float cx = Math.Clamp(u, 22, 98), cy = Math.Clamp(v, 32, 88);
+                float cover = u is >= 10 and < 110 && v is >= 20 and < 100 ? Math.Clamp(12.5f - MathF.Sqrt(((u - cx) * (u - cx)) + ((v - cy) * (v - cy))), 0, 1) : 0;
+                Rgba8 p = cover > 0 ? new Rgba8(40, 110, 220, (byte)MathF.Round(255 * cover)) : default;
+                float d = MathF.Sqrt(((u - 125) * (u - 125)) + ((v - 60) * (v - 60)));
+                if (d < 30)
+                {
+                    p = new Rgba8(240, 180, 30, (byte)MathF.Round(255 * Math.Clamp((30 - d) / 10, 0, 1)));
+                }
+
+                row[x] = p;
+            }
+        }
+
+        return logo;
     }
 
     private static double Time(Raster<Rgba8> photo, Action<RasterOps> chain, int threads)
