@@ -25,7 +25,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "tiff": "tests/images/tiff/*.tif", "tiffcodec": "tests/images/fuzz/tiffcodec-seeds/*",
          "webp": "tests/images/webp/*.webp", "webpcodec": "tests/images/fuzz/webpcodec-seeds/*",
          "jbig2": "tests/images/jbig2/*", "jbig2codec": "tests/images/fuzz/jbig2codec-seeds/*",
-         "cube": "tests/images/fuzz/cube-seeds/*"}
+         "cube": "tests/images/fuzz/cube-seeds/*",
+         "jpeg2000": "tests/images/fuzz/jpeg2000-seeds/*", "jpeg2000codec": "tests/images/fuzz/jpeg2000codec-seeds/*"}
 
 SCRIPT = """
 set -e

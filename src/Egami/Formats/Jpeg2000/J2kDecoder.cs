@@ -79,6 +79,15 @@ internal sealed class J2kDecoder
     internal J2kImage Decode(int y0, int y1, J2kWindow? window)
     {
         int count = _stream.Components.Length;
+        for (int c = 0; c < count; c++)
+        {
+            (int w, int h) = ComponentSize(_stream, c, _reduce);
+            if ((Needed is null || Needed[c]) && (w < 1 || h < 1))
+            {
+                throw new InvalidDataException($"Component {c} has no samples: its subsampling of {_stream.Components[c].Dx}×{_stream.Components[c].Dy} leaves none in the image.");
+            }
+        }
+
         int[][] planes = new int[count][];
         int[] widths = new int[count];
         int[] heights = new int[count];

@@ -111,6 +111,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
         private readonly bool _strict;
         private readonly int _reduce;
         private readonly int[] _bandStarts;
+        private readonly (int Y0, int Y1)[] _bandRows;
         private readonly bool _yuv;
         private readonly Jp2File _file;
         private readonly ReaderOptions _options;
@@ -161,7 +162,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
             }
 
             _yuv = _pixels.Model == J2kModel.Sycc && PlaneFormat(stream, _pixels) is (ChromaFormat format, _) && format != ChromaFormat.Yuv444;
-            _bandStarts = Bands(stream, _reduce, !_yuv && Banded(stream));
+            (_bandStarts, _bandRows) = Bands(stream, _reduce, !_yuv && Banded(stream));
             long working = WorkingBytesOf(stream, _reduce, _bandStarts, _yuv, needed);
             if (working > input.Limits.MaxTotalBytes)
             {
@@ -302,7 +303,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
         /// <summary>Decodes band <paramref name="band"/>: one row of tiles, or the whole image.</summary>
         private J2kImage Decode(int band)
         {
-            (int y0, int y1) = BandRows(_stream, band, _bandStarts.Length - 1);
+            (int y0, int y1) = _bandRows[band];
             J2kImage image = _decoder.Decode(y0, y1, _window);
             _truncated |= image.Truncated;
             _missing += image.MissingTiles;
@@ -365,43 +366,34 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
     }
 
     /// <summary>
-    /// Returns the first output row of each band and, last, the output height: a band per row of tiles when
-    /// <paramref name="banded"/>, else one band.
+    /// Returns the first output row of each band and, last, the output height, with each band's reference grid rows: a band per
+    /// row of tiles when <paramref name="banded"/> (rows of tiles the reduction leaves empty dropped), else one band.
     /// </summary>
-    private static int[] Bands(J2kCodestream stream, int reduce, bool banded)
+    private static (int[] Starts, (int Y0, int Y1)[] Rows) Bands(J2kCodestream stream, int reduce, bool banded)
     {
         int origin = J2kTier2.CeilShift(stream.OffsetY, reduce);
         int height = J2kTier2.CeilShift(stream.Height, reduce) - origin;
         if (!banded)
         {
-            return [0, height];
+            return ([0, height], [(stream.OffsetY, stream.Height)]);
         }
 
         List<int> starts = [];
+        List<(int, int)> rows = [];
         for (int ty = 0; ty < stream.TilesY; ty++)
         {
-            (_, int y0, _, _) = stream.TileRect(ty * stream.TilesX);
+            (_, int y0, _, int y1) = stream.TileRect(ty * stream.TilesX);
             int start = J2kTier2.CeilShift(y0, reduce) - origin;
-            if (starts.Count == 0 || start > starts[^1])
+            int end = J2kTier2.CeilShift(y1, reduce) - origin;
+            if (end > start)
             {
                 starts.Add(start);
+                rows.Add((y0, y1));
             }
         }
 
         starts.Add(height);
-        return [.. starts];
-    }
-
-    /// <summary>Returns the reference grid rows of band <paramref name="band"/> of <paramref name="count"/>.</summary>
-    private static (int Y0, int Y1) BandRows(J2kCodestream stream, int band, int count)
-    {
-        if (count == 1)
-        {
-            return (stream.OffsetY, stream.Height);
-        }
-
-        (_, int y0, _, int y1) = stream.TileRect(band * stream.TilesX);
-        return (y0, y1);
+        return ([.. starts], [.. rows]);
     }
 
     /// <summary>Returns what streaming holds: one band's samples of every component and one tile's coefficients.</summary>

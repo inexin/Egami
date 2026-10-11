@@ -24,7 +24,9 @@ using SharpFuzz;
 // encode must write what Save writes. The jbig2 and jbig2codec targets (Phase 2.3.4) load JBIG2 files every way, standalone and
 // embedded with globals, and feed each of JBIG2's decoding procedures (regions, dictionaries, Huffman tables) raw bytes. The cube
 // target (Phase 2.5.3) reads .cube LUT files, which must load or fail with an EgamiException; a table that loads must write back
-// and read again to the same values and run as a filter.
+// and read again to the same values and run as a filter. The jpeg2000 and jpeg2000codec targets (Phase 2.3.4) load JP2, JPX and
+// codestreams every way (color and raw components, quality layers, rows, regions, reductions, YUV planes) and feed tier 1 raw
+// code-block bytes in every code-block style.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -115,7 +117,9 @@ static Action<Stream> Target(string name) => name switch
     "jbig2" => LoadJbig2,
     "jbig2codec" => DecodeJbig2Codec,
     "cube" => LoadCube,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube."),
+    "jpeg2000" => LoadJpeg2000,
+    "jpeg2000codec" => DecodeJpeg2000Codec,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec."),
 };
 
 static EgamiContext Context()
@@ -1115,6 +1119,97 @@ static void LoadJbig2(Stream stream)
         {
             // Extensions marked necessary that Egami does not read say so.
         }
+    }
+}
+
+// Phase 2.3.4: JPEG 2000 every way: Probe, Load in color and as raw components, strict and lenient, the first quality layer,
+// rows through the decoder (which must give Load's size), a region at a reduced size, and YUV planes where there are some.
+static void LoadJpeg2000(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        try
+        {
+            Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions options = new() { Recovery = recovery };
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster raw = Raster.Load(data, context, options with { Components = Egami.Formats.Jpeg2000.Jpeg2000Components.Raw, MaxQualityLayers = 1, FastUpsampling = true });
+            using RasterDecoder decoder = RasterDecoder.Open(data, context, options);
+            using Raster rows = decoder.ReadAll();
+            if (rows.Width != raster.Width || rows.Height != raster.Height || info.Width != raster.Width || info.Height != raster.Height)
+            {
+                throw new InvalidOperationException("Probe, Load and streaming disagree on the size.");
+            }
+
+            Rect region = new(info.Width / 4, info.Height / 4, Math.Max(1, info.Width / 2), Math.Max(1, info.Height / 2));
+            using Raster<Rgba8> cropped = Raster.Load<Rgba8>(data, context, options with { Region = region, MinimumSize = new Size(Math.Max(1, info.Width / 5), 1) });
+            try
+            {
+                using YuvRaster planes = YuvRaster.Load(data, context, options);
+            }
+            catch (NotSupportedException)
+            {
+                // Not sYCC or gray at a depth YUV planes hold.
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+            // Part 2 and High-Throughput coding tools say so.
+        }
+    }
+}
+
+// Phase 2.3.4: JPEG 2000's tier 1 fed directly. The first eight bytes pick the code-block's size, its band's orientation, its
+// style, its bit-planes and its segments' passes; the rest is its coded data. Nothing may throw but InvalidDataException.
+static void DecodeJpeg2000Codec(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 8)
+    {
+        return;
+    }
+
+    int width = 1 + (data[0] % 64);
+    int height = 1 + (data[1] % 64);
+    int style = data[3] & 0x3F;
+    int planes = 1 + (data[4] % 30);
+    byte[] coded = data[8..];
+    Egami.Formats.Jpeg2000.J2kCodeBlock block = new() { X0 = 0, Y0 = 0, X1 = width, Y1 = height, Included = true };
+    int passes = Math.Min((3 * planes) - 2, 1 + data[5]);
+    int segments = 0;
+    int used = 0;
+    for (int pass = 0; pass < passes; segments++)
+    {
+        int n = Math.Min(passes - pass, Egami.Formats.Jpeg2000.J2kTier2.MaxPasses(style, segments));
+        int length = segments == 0 ? Math.Min(coded.Length, data[6] * 4) : Math.Min(coded.Length - used, data[7] + segments);
+        length = Math.Max(0, Math.Min(length, coded.Length - used));
+        block.Segments.Add(new Egami.Formats.Jpeg2000.J2kSegment { Passes = n, KeptPasses = n, Length = length });
+        block.Chunks.Add(coded.AsMemory(used, length));
+        block.Bytes += length;
+        used += length;
+        pass += n;
+    }
+
+    Egami.Formats.Jpeg2000.J2kTileComponent tc = new()
+    {
+        Style = new Egami.Formats.Jpeg2000.J2kCodingStyle { BlockStyle = style, Reversible = (data[2] & 4) != 0 },
+        Quantization = new Egami.Formats.Jpeg2000.J2kQuantization(),
+        RoiShift = (data[2] & 8) != 0 ? data[2] >> 4 : 0,
+    };
+    Egami.Formats.Jpeg2000.J2kBand band = new() { Orientation = data[2] & 3, MagnitudePlanes = planes, Step = 0.5f };
+    int[] integers = new int[width * height];
+    float[] floats = new float[width * height];
+    try
+    {
+        new Egami.Formats.Jpeg2000.J2kTier1().Decode(block, band, tc, integers, floats, 0, width);
+    }
+    catch (InvalidDataException)
+    {
     }
 }
 
