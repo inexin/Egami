@@ -36,6 +36,7 @@ internal static class FilterTiming
     {
         ["Lighting-Distant"] = o => o.Lighting(new DistantLight(225, 40), LightingModel.Diffuse(), new LightingOptions { SurfaceScale = 4 }),
         ["Lighting-Spot"] = o => o.Lighting(new SpotLight(new System.Numerics.Vector3(400, 300, 600), new System.Numerics.Vector3(1200, 1400, 0), 4, 35), LightingModel.Specular(1, 20), new LightingOptions { SurfaceScale = 4 }),
+        ["Edges-Sobel"] = o => o.Edges(),
     };
 
     internal static void Run(string[] names)

@@ -791,6 +791,16 @@ Egami.Operations.DistantLight.Equals(Egami.Operations.DistantLight? other) -> bo
 Egami.Operations.HeightSource
 Egami.Operations.HeightSource.Alpha = 0 -> Egami.Operations.HeightSource
 Egami.Operations.HeightSource.Luminance = 1 -> Egami.Operations.HeightSource
+Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Kirsch = 4 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Laplacian3x3 = 6 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Laplacian5x5 = 7 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.LaplacianOfGaussian = 8 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Prewitt = 2 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.RobertsCross = 3 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Robinson = 5 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Scharr = 1 -> Egami.Operations.EdgeOperator
+Egami.Operations.EdgeOperator.Sobel = 0 -> Egami.Operations.EdgeOperator
 Egami.Operations.Homography
 Egami.Operations.Homography.Determinant.get -> double
 Egami.Operations.Homography.Equals(Egami.Operations.Homography other) -> bool
@@ -903,6 +913,7 @@ Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point posit
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Emboss(float angle = 135, float depth = 1, float sigma = 1, bool grayscale = true) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Edges(Egami.Operations.EdgeOperator op = Egami.Operations.EdgeOperator.Sobel, bool grayscale = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.EntropyCrop(float threshold = 0.5) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Operations.RasterOps!
