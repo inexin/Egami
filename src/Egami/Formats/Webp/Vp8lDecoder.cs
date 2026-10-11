@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
 using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Webp;
@@ -1013,37 +1014,158 @@ internal static class Vp8lPredict
     internal static void UndoRun(int mode, Span<uint> row, ReadOnlySpan<uint> above, int x, int end)
     {
         // The top-right of the last pixel is the first pixel of the current row (which is already reconstructed), as the format says.
+        // Modes that read only the row above are undone four pixels at a time; the others depend on the pixel just undone.
+        ref uint r = ref MemoryMarshal.GetReference(row);
+        ref uint a = ref MemoryMarshal.GetReference(above);
+        int last = row.Length - 1;
         switch (mode)
         {
             case 0:
                 for (; x < end; x++)
                 {
-                    row[x] = Vp8lDecoder.AddPixels(row[x], 0xFF000000);
+                    Unsafe.Add(ref r, x) = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), 0xFF000000);
                 }
 
                 break;
             case 1:
-                for (; x < end; x++)
                 {
-                    row[x] = Vp8lDecoder.AddPixels(row[x], row[x - 1]);
+                    uint left = Unsafe.Add(ref r, x - 1);
+                    for (; x < end; x++)
+                    {
+                        left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), left);
+                        Unsafe.Add(ref r, x) = left;
+                    }
+
+                    break;
                 }
 
-                break;
             case 2:
+            case 3:
+            case 4:
+            case 8:
+            case 9:
+                if (Vector128.IsHardwareAccelerated)
+                {
+                    // The top-right of pixel x is above[x + 1]: in range while x + 4 <= last.
+                    for (; x + 4 <= end && x + 4 <= last; x += 4)
+                    {
+                        Vector128<uint> t = Vector128.LoadUnsafe(ref a, (nuint)x);
+                        Vector128<uint> prediction = mode switch
+                        {
+                            2 => t,
+                            3 => Vector128.LoadUnsafe(ref a, (nuint)(x + 1)),
+                            4 => Vector128.LoadUnsafe(ref a, (nuint)(x - 1)),
+                            8 => Average(Vector128.LoadUnsafe(ref a, (nuint)(x - 1)), t),
+                            _ => Average(t, Vector128.LoadUnsafe(ref a, (nuint)(x + 1))),
+                        };
+                        (Vector128.LoadUnsafe(ref r, (nuint)x).AsByte() + prediction.AsByte()).AsUInt32().StoreUnsafe(ref r, (nuint)x);
+                    }
+                }
+
                 for (; x < end; x++)
                 {
-                    row[x] = Vp8lDecoder.AddPixels(row[x], above[x]);
+                    uint tr = x < last ? Unsafe.Add(ref a, x + 1) : r;
+                    uint t = Unsafe.Add(ref a, x), tl = Unsafe.Add(ref a, x - 1);
+                    uint prediction = mode switch { 2 => t, 3 => tr, 4 => tl, 8 => Vp8lPredictors.Average(tl, t), _ => Vp8lPredictors.Average(t, tr) };
+                    Unsafe.Add(ref r, x) = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), prediction);
                 }
 
                 break;
             default:
-                for (; x < end; x++)
                 {
-                    uint tr = x + 1 < row.Length ? above[x + 1] : row[0];
-                    row[x] = Vp8lDecoder.AddPixels(row[x], Vp8lPredictors.Predict(mode, row[x - 1], above[x], above[x - 1], tr));
-                }
+                    uint left = Unsafe.Add(ref r, x - 1);
+                    for (; x < end; x++)
+                    {
+                        uint t = Unsafe.Add(ref a, x), tl = Unsafe.Add(ref a, x - 1);
+                        uint prediction;
+                        switch (mode)
+                        {
+                            case 5:
+                                prediction = Vp8lPredictors.Average(Vp8lPredictors.Average(left, x < last ? Unsafe.Add(ref a, x + 1) : r), t);
+                                break;
+                            case 6:
+                                prediction = Vp8lPredictors.Average(left, tl);
+                                break;
+                            case 7:
+                                prediction = Vp8lPredictors.Average(left, t);
+                                break;
+                            case 10:
+                                prediction = Vp8lPredictors.Average(Vp8lPredictors.Average(left, tl), Vp8lPredictors.Average(t, x < last ? Unsafe.Add(ref a, x + 1) : r));
+                                break;
+                            case 11:
+                                prediction = Select(left, t, tl);
+                                break;
+                            case 12:
+                                prediction = ClampAddSubtractFull(left, t, tl);
+                                break;
+                            case 13:
+                                prediction = ClampAddSubtractHalf(Vp8lPredictors.Average(left, t), tl);
+                                break;
+                            default:
+                                prediction = 0xFF000000;
+                                break;
+                        }
 
-                break;
+                        left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), prediction);
+                        Unsafe.Add(ref r, x) = left;
+                    }
+
+                    break;
+                }
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<uint> Average(Vector128<uint> a, Vector128<uint> b) => (((a ^ b) & Vector128.Create(0xFEFEFEFEu)) >>> 1) + (a & b);
+
+    /// <summary><see cref="Vp8lPredictors.Select"/> with the four channels side by side.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Select(uint l, uint t, uint tl)
+    {
+        if (!Sse41.IsSupported)
+        {
+            return Vp8lPredictors.Select(l, t, tl);
+        }
+
+        Vector128<int> vl = Widen(l), vt = Widen(t), vtl = Widen(tl);
+        int pl = Vector128.Sum(Vector128.Abs(vt - vtl));
+        int pt = Vector128.Sum(Vector128.Abs(vl - vtl));
+        return pl < pt ? l : t;
+    }
+
+    /// <summary><see cref="Vp8lPredictors.ClampAddSubtractFull"/> with the four channels side by side.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint ClampAddSubtractFull(uint a, uint b, uint c)
+    {
+        if (!Sse41.IsSupported)
+        {
+            return Vp8lPredictors.ClampAddSubtractFull(a, b, c);
+        }
+
+        return Narrow(Widen(a) + Widen(b) - Widen(c));
+    }
+
+    /// <summary><see cref="Vp8lPredictors.ClampAddSubtractHalf"/> with the four channels side by side; the halving truncates toward zero.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint ClampAddSubtractHalf(uint a, uint b)
+    {
+        if (!Sse41.IsSupported)
+        {
+            return Vp8lPredictors.ClampAddSubtractHalf(a, b);
+        }
+
+        Vector128<int> va = Widen(a);
+        Vector128<int> d = va - Widen(b);
+        return Narrow(va + Vector128.ShiftRightArithmetic(d - Vector128.ShiftRightArithmetic(d, 31), 1));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Widen(uint p) => Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(p).AsByte());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Narrow(Vector128<int> v)
+    {
+        Vector128<short> s = Sse2.PackSignedSaturate(v, v);
+        return Sse2.PackUnsignedSaturate(s, s).AsUInt32().ToScalar();
     }
 }
