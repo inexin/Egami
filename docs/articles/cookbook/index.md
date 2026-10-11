@@ -33,6 +33,21 @@ counted against `MaxTotalBytes`, so a slow client never holds a thread.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#cmyk-inks)]
 
+## Load any upload as sRGB
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-on-load)]
+
+Display P3 phone photos, Adobe RGB camera files and CMYK print JPEGs all come out as sRGB, converted through their own
+profiles while they decode; files with no color information are taken as sRGB and left alone.
+
+## Show a CMYK print file on screen
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-type)]
+
+## Show an HDR image on an SDR screen
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#tone-map)]
+
 ## Draw into a premultiplied BGRA surface
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#premultiplied-surface)]
