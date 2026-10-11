@@ -208,7 +208,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             c.AllocateCoefficients(input.Memory, _mcusX * c.H, _mcusY * c.V);
         }
 
-        if (_arithmetic is null && DecodeScansTogether(input, ref reader, scan))
+        if (DecodeScansTogether(input, ref reader, scan))
         {
             return;
         }
@@ -1347,9 +1347,11 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     /// <param name="acTables">The AC tables as they stood for this scan, or null for the header's current ones.</param>
     /// <param name="restartInterval">The restart interval for this scan, or null for the header's current one.</param>
     /// <param name="follower">In a pipelined decode, where the scan waits for earlier ones and says how far it has come.</param>
+    /// <param name="scanArithmetic">In a pipelined decode of an arithmetic-coded file, the scan's own decoder.</param>
     private bool DecodeBufferedScan(
-        JpegBitReader reader, JpegScan scan, JpegHuffmanSpec?[]? dcTables = null, JpegHuffmanSpec?[]? acTables = null, int? restartInterval = null, ScanFollower? follower = null)
+        JpegBitReader reader, JpegScan scan, JpegHuffmanSpec?[]? dcTables = null, JpegHuffmanSpec?[]? acTables = null, int? restartInterval = null, ScanFollower? follower = null, JpegArithmeticDecoder? scanArithmetic = null)
     {
+        JpegArithmeticDecoder? arithmetic = scanArithmetic ?? _arithmetic;
         dcTables ??= _header.DcTables;
         acTables ??= _header.AcTables;
         int count = scan.Components.Length;
@@ -1373,7 +1375,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             JpegScanComponent sc = scan.Components[i];
             order[i] = _components[sc.ComponentIndex];
             LatchQuant(sc.ComponentIndex);
-            if (_arithmetic is not null)
+            if (arithmetic is not null)
             {
                 continue;
             }
@@ -1390,7 +1392,6 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         }
 
         reader.BeginScan();
-        JpegArithmeticDecoder? arithmetic = _arithmetic;
         arithmetic?.BeginScan(scan);
         Span<int> predictors = stackalloc int[count];
         Span<short> natural = stackalloc short[64];

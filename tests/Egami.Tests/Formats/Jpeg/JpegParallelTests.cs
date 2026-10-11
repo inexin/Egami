@@ -57,6 +57,8 @@ public class JpegParallelTests
     [InlineData("duck-progressive.jpg")]
     [InlineData("duck-progressive-restart.jpg")]
     [InlineData("depth/p12-progressive.jpg")]
+    [InlineData("depth/arith-progressive.jpg")]
+    [InlineData("depth/arith-progressive-restart.jpg")]
     public void DamagedFilesDecodeAsOneThreadDoes(string file)
     {
         byte[] clean = File.ReadAllBytes(Path.Combine(Images, file));

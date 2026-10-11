@@ -307,7 +307,7 @@ internal sealed partial class JpegDecoder<TPixel>
     }
 
     /// <summary>
-    /// Decodes the scans of a buffered Huffman-coded file on several cores at once, when the image is large and the rest of the
+    /// Decodes the scans of a buffered file on several cores at once, when the image is large and the rest of the
     /// file can be read into memory. Every scan is located first, with the tables it uses; then each core takes the next scan in
     /// file order, and a scan that refines coefficients an earlier one codes follows it block row by block row, so a chain of
     /// refinement scans runs as a pipeline. Returns false to decode one scan at a time as before; a parallel decode that met
@@ -333,6 +333,9 @@ internal sealed partial class JpegDecoder<TPixel>
         JpegHuffmanSpec?[] dcTables = (JpegHuffmanSpec?[])_header.DcTables.Clone();
         JpegHuffmanSpec?[] acTables = (JpegHuffmanSpec?[])_header.AcTables.Clone();
         ushort[]?[] quantTables = (ushort[]?[])_header.QuantTables.Clone();
+        byte[] lower = (byte[])_header.ArithmeticLower.Clone();
+        byte[] upper = (byte[])_header.ArithmeticUpper.Clone();
+        byte[] kx = (byte[])_header.ArithmeticKx.Clone();
         int restart = _header.RestartInterval;
         _speculative = true;
         try
@@ -355,6 +358,9 @@ internal sealed partial class JpegDecoder<TPixel>
             dcTables.CopyTo(_header.DcTables, 0);
             acTables.CopyTo(_header.AcTables, 0);
             quantTables.CopyTo(_header.QuantTables, 0);
+            lower.CopyTo(_header.ArithmeticLower, 0);
+            upper.CopyTo(_header.ArithmeticUpper, 0);
+            kx.CopyTo(_header.ArithmeticKx, 0);
             _header.RestartInterval = restart;
             foreach (Component c in _components)
             {
@@ -363,6 +369,11 @@ internal sealed partial class JpegDecoder<TPixel>
             }
 
             reader = new JpegBitReader(bytes, 0, size);
+            if (_arithmetic is not null)
+            {
+                _arithmetic = new JpegArithmeticDecoder(reader, _header);
+            }
+
             return false;
         }
     }
@@ -401,7 +412,9 @@ internal sealed partial class JpegDecoder<TPixel>
                 }
             }
 
-            plan.Add(new PlannedScan(scan, (JpegHuffmanSpec?[])_header.DcTables.Clone(), (JpegHuffmanSpec?[])_header.AcTables.Clone(), _header.RestartInterval, start));
+            plan.Add(new PlannedScan(
+                scan, (JpegHuffmanSpec?[])_header.DcTables.Clone(), (JpegHuffmanSpec?[])_header.AcTables.Clone(), _header.RestartInterval, start,
+                ((byte[])_header.ArithmeticLower.Clone(), (byte[])_header.ArithmeticUpper.Clone(), (byte[])_header.ArithmeticKx.Clone())));
             walker.BeginScan();
             scan = NextScan(input, walker);
             start = walker.Offset;
@@ -481,7 +494,8 @@ internal sealed partial class JpegDecoder<TPixel>
                         if (!skip)
                         {
                             using JpegBitReader scanReader = new(bytes, p.Start, size);
-                            DecodeBufferedScan(scanReader, p.Scan, p.DcTables, p.AcTables, p.RestartInterval, followers[item]);
+                            JpegArithmeticDecoder? arithmetic = _header.Arithmetic ? new JpegArithmeticDecoder(scanReader, _header, p.Conditioning) : null;
+                            DecodeBufferedScan(scanReader, p.Scan, p.DcTables, p.AcTables, p.RestartInterval, followers[item], arithmetic);
                         }
 
                         followers[item].Finish();
@@ -528,8 +542,12 @@ internal sealed partial class JpegDecoder<TPixel>
     {
     }
 
-    /// <summary>One scan of a pipelined decode: its header, the tables and restart interval in force for it, and where its data starts.</summary>
-    private sealed record PlannedScan(JpegScan Scan, JpegHuffmanSpec?[] DcTables, JpegHuffmanSpec?[] AcTables, int RestartInterval, int Start);
+    /// <summary>
+    /// One scan of a pipelined decode: its header, the Huffman tables, restart interval and arithmetic conditioning in force for
+    /// it, and where its data starts.
+    /// </summary>
+    private sealed record PlannedScan(
+        JpegScan Scan, JpegHuffmanSpec?[] DcTables, JpegHuffmanSpec?[] AcTables, int RestartInterval, int Start, (byte[] Lower, byte[] Upper, byte[] Kx) Conditioning);
 
     /// <summary>What every scan of a pipelined decode shares: whether one failed, and the load's cancellation.</summary>
     private sealed class PipelineState(CancellationToken cancellationToken)

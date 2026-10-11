@@ -6,6 +6,10 @@ The JPEG design's decode scenarios need the 4000 x 3000 benchmark photo as JPEG 
   photo-444.jpg          quality 90, 4:4:4
   photo-progressive.jpg  quality 90, 4:2:0, progressive
   photo-gray.jpg         quality 90, one component
+  photo-arith-420.jpg    quality 90, 4:2:0, arithmetic-coded (2.4.2)
+  photo-arith-progressive.jpg  quality 90, 4:2:0, progressive and arithmetic-coded (2.4.2)
+  photo-restart-420.jpg  quality 90, 4:2:0, a restart marker every MCU row, for the restart-interval split (2.4.2)
+  photo-12bit-420.jpg    quality 90, 4:2:0, 12-bit samples (2.4.2)
   camera-00..49.jpg      photo-420.jpg with a camera-like EXIF block (the probe and EXIF scenarios' stand-ins)
   photo-orientation-6.jpg  photo-420.jpg tagged with orientation 6 (the thumbnail scenario)
 
@@ -27,6 +31,10 @@ FILES = {
     "photo-444.jpg": ["-quality", "90", "-sample", "1x1"],
     "photo-progressive.jpg": ["-quality", "90", "-sample", "2x2", "-progressive"],
     "photo-gray.jpg": ["-quality", "90", "-grayscale"],
+    "photo-arith-420.jpg": ["-quality", "90", "-sample", "2x2", "-arithmetic"],
+    "photo-arith-progressive.jpg": ["-quality", "90", "-sample", "2x2", "-progressive", "-arithmetic"],
+    "photo-restart-420.jpg": ["-quality", "90", "-sample", "2x2", "-restart", "1"],
+    "photo-12bit-420.jpg": ["-quality", "90", "-sample", "2x2", "-precision", "12"],
 }
 
 

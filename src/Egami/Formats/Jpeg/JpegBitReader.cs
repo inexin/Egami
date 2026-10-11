@@ -140,7 +140,18 @@ internal sealed class JpegBitReader : IDisposable
     /// Returns the next byte of arithmetic-coded data (T.81 D.2.6, Byte_in): a stuffed FF 00 is the byte 0xFF, and once a marker
     /// or the end of the file stops the data every byte is 0, which the decoder reads past the end as T.81 requires.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int ArithmeticByte()
+    {
+        if (Marker == 0 && _position < _length && _chunk[_position] != 0xFF)
+        {
+            return _chunk[_position++];
+        }
+
+        return ArithmeticByteSlow();
+    }
+
+    private int ArithmeticByteSlow()
     {
         if (Marker != 0)
         {
