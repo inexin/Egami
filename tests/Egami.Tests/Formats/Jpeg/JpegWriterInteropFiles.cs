@@ -82,7 +82,7 @@ public class JpegWriterInteropFiles
         using Raster<Rgb8> rgb = Raster.Load<Rgb8>(path);
         File.WriteAllBytes(path + ".rgb", Bytes(rgb));
         using Raster natural = Raster.Load(path);
-        if (natural is Raster<Cmyk8> or Raster<Cmyk16>)
+        if (natural.Metadata.FormatDetails is JpegDetails { ColorSpace: JpegColorSpace.Cmyk or JpegColorSpace.Ycck })
         {
             using Raster<Cmyk8> inks = Raster.Load<Cmyk8>(path);
             File.WriteAllBytes(path + ".cmyk", Bytes(inks));

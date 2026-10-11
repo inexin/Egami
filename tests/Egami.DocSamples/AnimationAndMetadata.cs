@@ -184,7 +184,7 @@ public class AnimationAndMetadata
         Assert.True(((JpegDetails)Raster.Load("duck-progressive.jpg").Metadata.FormatDetails!).Progressive);
         Assert.Equal(JpegColorSpace.Ycck, ((JpegDetails)Raster.Load("duck-ycck.jpg").Metadata.FormatDetails!).ColorSpace);
         Assert.Equal(12, ((JpegDetails)Raster.Load("duck-12bit.jpg").Metadata.FormatDetails!).Precision);
-        Assert.Equal(Cmyk8.Layout, Raster.Load("duck-cmyk-out.jpg").Layout);
+        Assert.Equal(JpegColorSpace.Cmyk, ((JpegDetails)Raster.Load("duck-cmyk-out.jpg").Metadata.FormatDetails!).ColorSpace);
     }
 
     [Fact]
