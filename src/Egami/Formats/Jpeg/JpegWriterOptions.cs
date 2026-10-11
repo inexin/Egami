@@ -24,11 +24,24 @@ public enum ChromaSubsampling
 /// </example>
 public enum JpegColorType
 {
-    /// <summary>Gray for gray pixel types, YCbCr for everything else.</summary>
+    /// <summary>Gray for gray pixel types, CMYK for CMYK pixel types, YCbCr for everything else.</summary>
     Auto,
 
     /// <summary>One gray component, whatever the pixel type; color is converted to luma.</summary>
     Gray,
+
+    /// <summary>
+    /// Four CMYK components with an Adobe marker (transform 0), the values inverted as Photoshop writes them and every reader
+    /// expects. Other pixel types are converted to ink with the plain formula. <see cref="Auto"/> picks this for CMYK pixel types.
+    /// </summary>
+    Cmyk,
+
+    /// <summary>
+    /// Four YCCK components with an Adobe marker (transform 2): cyan, magenta and yellow converted to YCbCr as libjpeg converts
+    /// Adobe CMYK, chroma subsampled as <see cref="JpegWriterOptions.Subsampling"/> says, and the inverted black at full size.
+    /// Usually smaller than <see cref="Cmyk"/>.
+    /// </summary>
+    Ycck,
 }
 
 /// <summary>
@@ -42,6 +55,7 @@ public sealed class JpegWriterOptions : WriterOptions
 {
     private readonly int _quality = 75;
     private readonly int _restartInterval;
+    private readonly int _precision = 8;
 
     /// <summary>Gets the default options.</summary>
     public static new JpegWriterOptions Default { get; } = new();
@@ -84,6 +98,36 @@ public sealed class JpegWriterOptions : WriterOptions
             ArgumentOutOfRangeException.ThrowIfNegative(value);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(value, ushort.MaxValue);
             _restartInterval = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether to write a progressive file: libjpeg's standard scan script (ten scans for color, six for
+    /// gray) with Huffman tables optimized for each scan, as <c>cjpeg -progressive</c> writes. Readers show a coarse image first
+    /// and refine it; files are usually a few percent smaller than baseline, and decode to the same pixels. The encoder holds every
+    /// quantized coefficient until the last scan, about 2 bytes per sample, counted against <see cref="SafetyLimits.MaxTotalBytes"/>;
+    /// a streamed encode buffers. Re-saving a progressive file writes baseline unless this is set. Defaults to
+    /// <see langword="false"/>.
+    /// </summary>
+    public bool Progressive { get; init; }
+
+    /// <summary>
+    /// Gets the bits per sample, 8 or 12. 12 keeps the detail of 16-bit and float images (written as SOF1, or SOF2 when
+    /// progressive, with Huffman tables always optimized), but no browser shows 12-bit JPEG; 8-bit pixel types gain nothing from
+    /// it. Defaults to 8.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 8 or 12.</exception>
+    public int Precision
+    {
+        get => _precision;
+        init
+        {
+            if (value is not (8 or 12))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "JPEG precision is 8 or 12 bits.");
+            }
+
+            _precision = value;
         }
     }
 

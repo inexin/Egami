@@ -172,5 +172,53 @@ internal static class JpegEncodeKernels
         values.StoreUnsafe(ref MemoryMarshal.GetReference(target), (nuint)x);
     }
 
+    /// <summary>
+    /// Converts packed 12-bit RGB to luma and chroma rows, as wide as <paramref name="y"/>, with libjpeg's constants centered on
+    /// 2048 as its 12-bit build does; <paramref name="cb"/> and <paramref name="cr"/> are empty for luma alone.
+    /// </summary>
+    internal static void YCbCr12(ReadOnlySpan<ushort> rgb, Span<ushort> y, Span<ushort> cb, Span<ushort> cr)
+    {
+        const int Offset = 2048 << ScaleBits;
+        bool luma = cb.IsEmpty;
+        for (int x = 0; x < y.Length; x++)
+        {
+            int red = rgb[3 * x], green = rgb[(3 * x) + 1], blue = rgb[(3 * x) + 2];
+            y[x] = (ushort)(((RY * red) + (GY * green) + (BY * blue) + Half) >> ScaleBits);
+            if (!luma)
+            {
+                cb[x] = (ushort)(((RCb * red) + (GCb * green) + (BCbRCr * blue) + Offset + Half - 1) >> ScaleBits);
+                cr[x] = (ushort)(((BCbRCr * red) + (GCr * green) + (BCr * blue) + Offset + Half - 1) >> ScaleBits);
+            }
+        }
+    }
+
+    /// <summary><see cref="DownsampleScalar"/> for 12-bit samples.</summary>
+    internal static void Downsample12(ReadOnlySpan<ushort> row0, ReadOnlySpan<ushort> row1, bool twoRows, Span<ushort> output)
+    {
+        if (twoRows)
+        {
+            for (int x = 0, bias = 1; x < output.Length; x++, bias ^= 3)
+            {
+                output[x] = (ushort)((row0[2 * x] + row0[(2 * x) + 1] + row1[2 * x] + row1[(2 * x) + 1] + bias) >> 2);
+            }
+        }
+        else
+        {
+            for (int x = 0, bias = 0; x < output.Length; x++, bias ^= 1)
+            {
+                output[x] = (ushort)((row0[2 * x] + row0[(2 * x) + 1] + bias) >> 1);
+            }
+        }
+    }
+
+    /// <summary>Narrows 16-bit samples to 12 bits in place, rounding: 65535 becomes 4095.</summary>
+    internal static void To12(Span<ushort> samples)
+    {
+        foreach (ref ushort s in samples)
+        {
+            s = (ushort)(((s * 4095) + 32767) / 65535);
+        }
+    }
+
     private static int Fix(double value) => (int)((value * (1 << ScaleBits)) + 0.5);
 }
