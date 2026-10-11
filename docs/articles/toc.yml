@@ -12,6 +12,8 @@
       href: guides/color.md
     - name: Color management
       href: guides/color-management.md
+    - name: Tone and color
+      href: guides/tone-and-color.md
     - name: Filters
       href: guides/filters.md
     - name: Edges and morphology

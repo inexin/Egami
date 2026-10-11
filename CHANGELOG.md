@@ -7,6 +7,29 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Tone and color
+
+- Tone steps with ImageMagick's formulas and values from 0 to 1: `Level` (`-level` and `+level` in one), `Gamma`,
+  `SigmoidalContrast`, `Posterize` (with ordered or Floyd–Steinberg dithering), `Solarize`, `Threshold` (luminance, each channel,
+  saturation or chroma, with any two colors), `Colorize`, `Tint` and `Duotone`; Skia's `HighContrast`; and
+  `SimulateColorBlindness` from Machado, Oliveira and Fernandes (2009) with a severity. Each is within one level of ImageMagick 7
+  at 8 bits and two at 16; thresholds are identical. Tone steps, color matrices and filters next to each other run as one pass,
+  as exact lookup tables on 8- and 16-bit images.
+- `ColorFilter` holds a color adjustment as a value, as Skia's color filters: every tone step and color matrix, `Curves` of
+  `ToneCurve`s (monotone curves through points, tables, functions), 3D tables, `Then` and `Lerp`. `RasterOps.ApplyFilter` runs one;
+  `Apply` runs one on your own pixels; `ToLut3D` samples one into a table.
+- `Lut3D` with tetrahedral (the default), trilinear and nearest reading and a 1D shaper; `CubeFile` reads and writes .cube files
+  (Adobe 1.0 and Resolve's 1D-plus-3D form), strictly and within `SafetyLimits`, and has a fuzz target; `Lut3D.FromHald`, `ToHald`
+  and `Raster.HaldIdentity` round-trip Hald CLUT images. Trilinear tables equal ImageMagick's `-hald-clut` within a level.
+- Adjustments that measure the image first: `AutoLevel`, `ContrastStretch`, `Normalize`, `AutoGamma`, `AutoWhiteBalance`,
+  `Equalize` and `AutoThreshold` (Otsu, triangle, Kapur). Inside a chain they measure what the steps before them made; inside
+  `Within` and `OnChannels`, only the scope; across an animation, all frames at once unless `perFrame`. Their black and white
+  points, gammas and levels equal ImageMagick's. `Raster.MeasureAutoLevel`, `MeasureContrastStretch`, `MeasureAutoGamma`,
+  `MeasureWhiteBalance`, `MeasureEqualize` and `FindThreshold` return the filter or level without changing anything.
+- `WhiteBalance` by a picked neutral color or by color temperature and tint (Bradford adaptation to D65); `Clahe` (Zuiderveld's
+  CLAHE on L*, within the closeness gate of ImageMagick's `-clahe`); `LocalContrast` (ImageMagick's `-local-contrast`, within a
+  level); and `AdaptiveThreshold` (Bradley and Roth) for unevenly lit pages.
+
 ### TIFF
 
 - `TiffFormat` reads classic TIFF and BigTIFF: strips and tiles, chunky and planar, 1 to 64-bit integer and float samples, in

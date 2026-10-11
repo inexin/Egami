@@ -145,6 +145,40 @@ A dark logo drawn with `Multiply` reads as ink on the photo: light areas of the 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#tint)]
 
+## A basic tone panel
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#tone)]
+
+Levels, an S-curve and a tint run as one pass over the pixels.
+
+## A poster look, and how it reads with color blindness
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#effects)]
+
+## Apply a .cube grade at 70%, and export curves as a .cube
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#cube)]
+
+## Grade in any editor through a Hald image
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#hald)]
+
+## Fix a dull scan
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#auto)]
+
+## White-balance a shoot from one reference
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#measure)]
+
+## Threshold a page for OCR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#auto-threshold)]
+
+## Bring out detail in a foggy landscape
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#clahe)]
+
 ## Blend a row in a custom operation
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#blend-row)]
