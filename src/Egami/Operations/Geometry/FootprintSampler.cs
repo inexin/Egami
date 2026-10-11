@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
 using Egami.Operations.Resampling;
@@ -292,6 +293,81 @@ internal readonly ref struct FootprintSampler<TPixel>
         return _edges == EdgeMode.Transparent ? Background : Fetch(Row(Edge(y, _height))[Edge(x, _width)]);
     }
 
+    /// <summary>
+    /// Returns the source pixel point sampling picks at (<paramref name="u"/>, <paramref name="v"/>), folded by the edge mode, or
+    /// <see langword="false"/> when it reads the background; callers copy that pixel as it is, with no conversion.
+    /// </summary>
+    internal bool PointIndex(double u, double v, out int x, out int y)
+    {
+        x = y = 0;
+        if (!Normalize(ref u, ref v, 1, 1))
+        {
+            return false;
+        }
+
+        x = (int)Math.Floor(u + 0.5);
+        y = (int)Math.Floor(v + 0.5);
+        if ((uint)x < (uint)_width && (uint)y < (uint)_height)
+        {
+            return true;
+        }
+
+        if (_edges == EdgeMode.Transparent)
+        {
+            return false;
+        }
+
+        x = Edge(x, _width);
+        y = Edge(y, _height);
+        return true;
+    }
+
+    /// <summary>
+    /// Samples a row of positions that advance by a constant step, (u0 + x·du, v0 + x·dv), with the plain kernel, into four floats
+    /// per pixel. Positions step in 32.32 fixed point, so the inner loop has no floating-point rounding or division, and taps that
+    /// lie inside the image take the 8-bit vector kernel straight away.
+    /// </summary>
+    internal void KernelRow(double u0, double v0, double du, double dv, Span<float> row)
+    {
+        const double One = 4294967296.0;
+        int count = row.Length / 4;
+        bool fast = Fast8 && _curve is null && Math.Abs(u0) < 1e9 && Math.Abs(v0) < 1e9 && Math.Abs(du) < 1e5 && Math.Abs(dv) < 1e5;
+        long u = (long)Math.Floor(u0 * One), v = (long)Math.Floor(v0 * One);
+        long stepU = (long)Math.Round(du * One), stepV = (long)Math.Round(dv * One);
+        for (int x = 0; x < count; x++, u += stepU, v += stepV)
+        {
+            if (fast)
+            {
+                int x0 = (int)(u >> 32) - _reach + 1, y0 = (int)(v >> 32) - _reach + 1;
+                if (x0 >= 0 && y0 >= 0 && x0 + _taps <= _width && y0 + _taps <= _height)
+                {
+                    // The fraction rounded to 1/1024 pixel: the kernel table's row.
+                    int su = (int)(((u & 0xFFFFFFFFL) + (1L << 21)) >> 22);
+                    int sv = (int)(((v & 0xFFFFFFFFL) + (1L << 21)) >> 22);
+                    Unsafe.As<float, Vector4>(ref row[x * 4]) = Kernel8(x0, y0, _kernel.Slice(su * _taps, _taps), _kernel.Slice(sv * _taps, _taps));
+                    continue;
+                }
+            }
+
+            Kernel(u0 + (x * du), v0 + (x * dv)).CopyTo(row[(x * 4)..]);
+        }
+    }
+
+    /// <summary>
+    /// Point-samples a row of positions that advance by a constant step, copying each chosen source pixel exactly into
+    /// <paramref name="target"/>, or <paramref name="fill"/> where it reads the background.
+    /// </summary>
+    internal void PointRow(double u0, double v0, double du, double dv, Span<TPixel> target, TPixel fill)
+    {
+        for (int x = 0; x < target.Length; x++)
+        {
+            target[x] = PointIndex(u0 + (x * du), v0 + (x * dv), out int sx, out int sy) ? Row(sy)[sx] : fill;
+        }
+    }
+
+    /// <summary>Gets one source row.</summary>
+    internal ReadOnlySpan<TPixel> SourceRow(int y) => Row(y);
+
     /// <summary>The filter's separable 2D kernel, unstretched: Rotate's sampling, with edge modes added.</summary>
     internal Vector4 Kernel(double u, double v)
     {
@@ -312,6 +388,10 @@ internal readonly ref struct FootprintSampler<TPixel>
 
         ReadOnlySpan<float> wx = _kernel.Slice((int)(((u - fu) * SamplerSettings.KernelSteps) + 0.5) * _taps, _taps);
         ReadOnlySpan<float> wy = _kernel.Slice((int)(((v - fv) * SamplerSettings.KernelSteps) + 0.5) * _taps, _taps);
+        if (Fast8 && _curve is null && x0 >= 0 && y0 >= 0 && x0 + _taps <= _width && y0 + _taps <= _height)
+        {
+            return Kernel8(x0, y0, wx, wy);
+        }
         bool insideX = x0 >= 0 && x0 + _taps <= _width;
         Vector4 sum = Vector4.Zero;
         for (int j = 0; j < wy.Length; j++)
@@ -349,6 +429,74 @@ internal readonly ref struct FootprintSampler<TPixel>
 
         return sum;
     }
+
+    /// <summary>
+    /// The plain kernel for 4-byte pixels whose taps all lie inside the image, two pixels per 256-bit vector: each tap is weighed
+    /// at its 0..255 value times its alpha (255 for alpha itself), and the sum scaled once at the end, so premultiplying costs one
+    /// multiply per tap. Premultiplied types skip that multiply. Every vector width gives the same sums, since Vector256's
+    /// software fallback does the same float operations in the same order.
+    /// </summary>
+    private Vector4 Kernel8(int x0, int y0, ReadOnlySpan<float> wx, ReadOnlySpan<float> wy)
+    {
+        Vector256<float> sum = Vector256<float>.Zero;
+        Vector256<int> alphaLanes = Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7);
+        Vector256<float> full = Vector256.Create(0f, 0f, 0f, 255f, 0f, 0f, 0f, 255f);
+        Vector256<float> isAlpha = Vector256.Create(0, 0, 0, -1, 0, 0, 0, -1).AsSingle();
+        bool premultiplied = RowConverter<TPixel>.Premul8;
+        if (_taps == 4)
+        {
+            Vector256<float> w01 = Vector256.Create(Vector128.Create(wx[0]), Vector128.Create(wx[1]));
+            Vector256<float> w23 = Vector256.Create(Vector128.Create(wx[2]), Vector128.Create(wx[3]));
+            bool contiguous = !_all.IsEmpty;
+            ref byte origin = ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(_all));
+            for (int j = 0; j < 4; j++)
+            {
+                // The caller checked that the 4 × 4 block lies inside the image.
+                Vector128<byte> four = contiguous
+                    ? Vector128.LoadUnsafe(ref origin, (nuint)(((long)(y0 + j) * _width) + x0) * 4)
+                    : Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(Row(y0 + j).Slice(x0, 4))));
+                Vector128<ushort> low = Vector128.WidenLower(four), high = Vector128.WidenUpper(four);
+                Vector256<float> p01 = Vector256.ConvertToSingle(Vector256.Create(Vector128.WidenLower(low), Vector128.WidenUpper(low)).AsInt32());
+                Vector256<float> p23 = Vector256.ConvertToSingle(Vector256.Create(Vector128.WidenLower(high), Vector128.WidenUpper(high)).AsInt32());
+                if (!premultiplied)
+                {
+                    // Times (a, a, a, 255): color premultiplied, alpha kept, all in units of 255².
+                    p01 *= Vector256.ConditionalSelect(isAlpha, full, Vector256.Shuffle(p01, alphaLanes));
+                    p23 *= Vector256.ConditionalSelect(isAlpha, full, Vector256.Shuffle(p23, alphaLanes));
+                }
+
+                sum += ((p01 * w01) + (p23 * w23)) * wy[j];
+            }
+        }
+        else
+        {
+            for (int j = 0; j < wy.Length; j++)
+            {
+                ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(Row(y0 + j).Slice(x0, _taps));
+                ref byte start = ref MemoryMarshal.GetReference(bytes);
+                Vector256<float> line = Vector256<float>.Zero;
+                for (int i = 0; i < wx.Length; i += 2)
+                {
+                    Vector128<ushort> wide = Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref start, i * 4))).AsByte());
+                    Vector256<float> p = Vector256.ConvertToSingle(Vector256.Create(Vector128.WidenLower(wide), Vector128.WidenUpper(wide)).AsInt32());
+                    if (!premultiplied)
+                    {
+                        p *= Vector256.ConditionalSelect(isAlpha, full, Vector256.Shuffle(p, alphaLanes));
+                    }
+
+                    line += p * Vector256.Create(Vector128.Create(wx[i]), Vector128.Create(wx[i + 1]));
+                }
+
+                sum += line * wy[j];
+            }
+        }
+
+        Vector128<float> total = sum.GetLower() + sum.GetUpper();
+        return (total * (premultiplied ? 1f / 255f : 1f / (255f * 255f))).AsVector4();
+    }
+
+    /// <summary>Gets whether the pixel type is 4 bytes with alpha last: Rgba8, Bgra8 and their premultiplied forms.</summary>
+    private static bool Fast8 => RowConverter<TPixel>.FourByte || RowConverter<TPixel>.Premul8;
 
     /// <summary>
     /// Elliptical weighted averaging: every source pixel center inside the footprint's ellipse around (u, v) weighs the filter at

@@ -93,6 +93,7 @@ internal sealed class TransformOperation(Func<Size, Homography> matrixFor, Trans
         PixelPlane<TPixel> destination = input.Destination;
         RowConverter<TPixel> converter = new(settings.Curve);
         int width = destination.Width;
+        TPixel fill = TPixel.FromRgba8(settings.Background);
         input.ForEachBand((start, end) =>
         {
             float[] rowBuffer = ArrayPool<float>.Shared.Rent(width * 4);
@@ -106,6 +107,19 @@ internal sealed class TransformOperation(Func<Size, Homography> matrixFor, Trans
                     double cy = y + 0.5;
                     double u0 = (0.5 * g.M11) + (cy * g.M21) + g.M31 - 0.5;
                     double v0 = (0.5 * g.M12) + (cy * g.M22) + g.M32 - 0.5;
+                    if (settings.Taps == 1)
+                    {
+                        sampler.PointRow(u0, v0, g.M11, g.M12, destination.Row(y), fill);
+                        continue;
+                    }
+
+                    if (!footprint.IsEwa)
+                    {
+                        sampler.KernelRow(u0, v0, g.M11, g.M12, row);
+                        converter.Store(row, destination.Row(y), opaque: false);
+                        continue;
+                    }
+
                     for (int x = 0; x < width; x++)
                     {
                         Vector4 sum = sampler.Sample(u0 + (x * g.M11), v0 + (x * g.M12), footprint);
