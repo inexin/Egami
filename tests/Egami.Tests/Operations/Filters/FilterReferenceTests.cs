@@ -24,6 +24,18 @@ public class FilterReferenceTests
     {
         internal static readonly Gate Identical = new(0, double.PositiveInfinity);
         internal static readonly Gate Close = new(8, 40);
+
+        // BilateralBlur weighs neighbours by their RGB difference (design question 4); ImageMagick weighs by the 8-bit difference
+        // of their intensity. On gray images the two agree (Close); on photos they differ at a few color edges, so only the PSNR
+        // is gated; on colored salt-and-pepper noise, which intensity cannot tell from its surroundings, they differ by design.
+        // ImageMagick rounds each motion and rotational sample to the nearest pixel; Egami reads between pixels with 2.5.2's
+        // bilinear sampler (design question 5), which smooths diagonal streaks. With rounded offsets Egami's motion streaks are
+        // the same to within float rounding (the "-rounded" cases, one level); the bilinear results are gated by PSNR alone.
+        internal static readonly Gate Sampled = new(255, 30);
+        internal static readonly Gate Rounded = new(1, 90);
+
+        internal static readonly Gate BilateralColor = new(255, 40);
+        internal static readonly Gate BilateralNoise = new(255, 20);
     }
 
     private static readonly Dictionary<string, (Action<RasterOps> Chain, Gate Gate)> Chains = new()
@@ -34,6 +46,18 @@ public class FilterReferenceTests
         ["median-4"] = (o => o.Median(4), Gate.Identical),
         ["median-10"] = (o => o.Median(10), Gate.Identical),
         ["median-3-alpha"] = (o => o.Median(3, includeAlpha: true), Gate.Identical),
+        ["bilateral-3-0.1"] = (o => o.BilateralBlur(3, 0.1f), Gate.BilateralColor),
+        ["bilateral-2-0.2"] = (o => o.BilateralBlur(2, 0.2f), Gate.BilateralColor),
+        ["bilateral-gray-3-0.1"] = (o => o.BilateralBlur(3, 0.1f), Gate.Close),
+        ["motion-6-2-30"] = (o => o.MotionBlur(6, 2, 30), Gate.Sampled),
+        ["motion-10-4-0"] = (o => o.MotionBlur(10, 4, 0), Gate.Close),
+        ["motion-8-3-110"] = (o => o.MotionBlur(8, 3, 110), Gate.Sampled),
+        ["motion-6-2-30-rounded"] = (o => o.Add(Egami.Operations.Filters.DirectionalBlurOperation.Motion(6, 2, 30, false, roundOffsets: true)), Gate.Rounded),
+        ["motion-8-3-110-rounded"] = (o => o.Add(Egami.Operations.Filters.DirectionalBlurOperation.Motion(8, 3, 110, false, roundOffsets: true)), Gate.Rounded),
+        ["rotational-10"] = (o => o.RotationalBlur(10), Gate.Sampled),
+        ["rotational-4"] = (o => o.RotationalBlur(4), Gate.Sampled),
+        ["despeckle"] = (o => o.Despeckle(), Gate.Identical),
+        ["bilateral-noise-2-0.2"] = (o => o.BilateralBlur(2, 0.2f), Gate.BilateralNoise),
     };
 
     public static TheoryData<string> Cases()

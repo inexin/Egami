@@ -19,6 +19,13 @@ internal static class FilterTiming
         ["Blur-Fast-60"] = o => o.Blur(60, ColorSpace.Encoded, BlurMethod.Fast),
         ["Median-2"] = o => o.Median(2),
         ["Median-10"] = o => o.Median(10),
+        ["LensBlur-32"] = o => o.LensBlur(32),
+        ["Bilateral-3"] = o => o.BilateralBlur(3, 0.1f),
+        ["Bilateral-10"] = o => o.BilateralBlur(10, 0.1f),
+        ["MotionBlur-30"] = o => o.MotionBlur(15, 5, 30),
+        ["RotationalBlur-10"] = o => o.RotationalBlur(10),
+        ["AddNoise-Gaussian"] = o => o.AddNoise(NoiseKind.Gaussian),
+        ["Despeckle"] = o => o.Despeckle(),
     };
 
     internal static void Run(string[] names)

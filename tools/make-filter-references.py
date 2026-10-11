@@ -102,6 +102,20 @@ CASES = [
     ("duck16", "median-3", 16, "-statistic Median 7x7"),
     ("shapes", "median-2", 8, "-channel RGB -statistic Median 5x5"),
     ("shapes", "median-3-alpha", 8, "-channel RGBA -statistic Median 7x7"),
+    ("duck", "bilateral-3-0.1", 8, "-bilateral-blur 13x13+25.5+3"),
+    ("egret", "bilateral-2-0.2", 8, "-bilateral-blur 9x9+51+2"),
+    ("noisy", "bilateral-noise-2-0.2", 8, "-bilateral-blur 9x9+51+2"),
+    ("duck", "motion-6-2-30", 8, "-motion-blur 6x2+30"),
+    ("duck", "motion-10-4-0", 8, "-motion-blur 10x4+0"),
+    ("egret", "motion-8-3-110", 8, "-motion-blur 8x3+110"),
+    ("duck", "motion-6-2-30-rounded", 8, "-motion-blur 6x2+30"),
+    ("egret", "motion-8-3-110-rounded", 8, "-motion-blur 8x3+110"),
+    ("duck", "rotational-10", 8, "-rotational-blur 10"),
+    ("egret", "rotational-4", 8, "-rotational-blur 4"),
+    ("duck", "despeckle", 8, "-channel RGB -despeckle"),
+    ("noisy", "despeckle", 8, "-channel RGB -despeckle"),
+    ("duck16", "despeckle", 16, "-channel RGB -despeckle"),
+    ("steps", "bilateral-gray-3-0.1", 8, "-bilateral-blur 13x13+25.5+3"),
 ]
 
 
@@ -113,9 +127,9 @@ def main():
     for name, make in GENERATED.items():
         with open(os.path.join(CACHE, name + ".rgba8"), "wb") as f:
             f.write(make(160, 120))
-        script.append(f"magick -size 160x120 -depth 8 RGBA:{CACHE}/{name}.rgba8 PNG32:{IMAGES}/{name}.png")
+        script.append(f"magick -size 160x120 -depth 8 RGBA:{CACHE}/{name}.rgba8 -define png:exclude-chunks=date,time PNG32:{IMAGES}/{name}.png")
     for name, (source, args, kind) in DERIVED.items():
-        script.append(f"magick {source} {args} -alpha set {kind}:{IMAGES}/{name}.png")
+        script.append(f"magick {source} {args} -alpha set -define png:exclude-chunks=date,time {kind}:{IMAGES}/{name}.png")
 
     outputs = []
     for name, case, bits, args in CASES:

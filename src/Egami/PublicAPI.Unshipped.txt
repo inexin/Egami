@@ -801,6 +801,20 @@ Egami.Operations.Homography.TryInvert(out Egami.Operations.Homography inverse) -
 Egami.Operations.IWarp
 Egami.Operations.IWarp.Map(int y, Egami.Size input, System.Span<System.Numerics.Vector2> source) -> void
 Egami.Operations.IWarp.OutputSize(Egami.Size input) -> Egami.Size
+Egami.Operations.LensBlurOptions
+Egami.Operations.LensBlurOptions.<Clone>$() -> Egami.Operations.LensBlurOptions!
+Egami.Operations.LensBlurOptions.Blades.get -> int
+Egami.Operations.LensBlurOptions.Blades.init -> void
+Egami.Operations.LensBlurOptions.ColorSpace.get -> Egami.Operations.ColorSpace
+Egami.Operations.LensBlurOptions.ColorSpace.init -> void
+Egami.Operations.LensBlurOptions.Equals(Egami.Operations.LensBlurOptions? other) -> bool
+Egami.Operations.LensBlurOptions.HighlightGain.get -> float
+Egami.Operations.LensBlurOptions.HighlightGain.init -> void
+Egami.Operations.LensBlurOptions.HighlightThreshold.get -> float
+Egami.Operations.LensBlurOptions.HighlightThreshold.init -> void
+Egami.Operations.LensBlurOptions.LensBlurOptions() -> void
+Egami.Operations.LensBlurOptions.Rotation.get -> float
+Egami.Operations.LensBlurOptions.Rotation.init -> void
 Egami.Operations.Mask
 Egami.Operations.Mask.Channel.get -> Egami.Operations.MaskChannel
 Egami.Operations.Mask.Channel.init -> void
@@ -821,6 +835,13 @@ Egami.Operations.MaskChannel.Blue = 5 -> Egami.Operations.MaskChannel
 Egami.Operations.MaskChannel.Green = 4 -> Egami.Operations.MaskChannel
 Egami.Operations.MaskChannel.Luminance = 1 -> Egami.Operations.MaskChannel
 Egami.Operations.MaskChannel.Red = 3 -> Egami.Operations.MaskChannel
+Egami.Operations.NoiseKind
+Egami.Operations.NoiseKind.Gaussian = 0 -> Egami.Operations.NoiseKind
+Egami.Operations.NoiseKind.Impulse = 2 -> Egami.Operations.NoiseKind
+Egami.Operations.NoiseKind.Laplacian = 3 -> Egami.Operations.NoiseKind
+Egami.Operations.NoiseKind.Multiplicative = 4 -> Egami.Operations.NoiseKind
+Egami.Operations.NoiseKind.Poisson = 5 -> Egami.Operations.NoiseKind
+Egami.Operations.NoiseKind.Uniform = 1 -> Egami.Operations.NoiseKind
 Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Add = 0 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Divide = 3 -> Egami.Operations.PixelMath
@@ -831,13 +852,16 @@ Egami.Operations.PixelMath.Multiply = 2 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Pow = 4 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Set = 8 -> Egami.Operations.PixelMath
 Egami.Operations.PixelMath.Subtract = 1 -> Egami.Operations.PixelMath
+Egami.Operations.RasterOps.AddNoise(Egami.Operations.NoiseKind kind, float amount = 1, bool monochrome = false, ulong seed = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.AlphaToGray() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Arithmetic(Egami.Operations.PixelMath op, float value, Egami.Operations.ColorChannels channels = Egami.Operations.ColorChannels.Color) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.BilateralBlur(float spatialSigma, float rangeSigma, int? radius = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.BlendColor(Egami.Pixels.Rgba8 color, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Blur(float sigma, Egami.Operations.ColorSpace colorSpace, Egami.Operations.BlurMethod method) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.CopyAlpha(Egami.Operations.Mask mask) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Deskew(float maxAngle = 15, Egami.Pixels.Rgba8? background = null, bool keepSize = true, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Despeckle() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Displace(Egami.Raster! map, float scaleX, float scaleY, Egami.Operations.ColorChannel xChannel = Egami.Operations.ColorChannel.Red, Egami.Operations.ColorChannel yChannel = Egami.Operations.ColorChannel.Green, Egami.Operations.SamplingOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
@@ -845,13 +869,16 @@ Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea,
 Egami.Operations.RasterOps.EntropyCrop(float threshold = 0.5) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.LensBlur(float radius, Egami.Operations.LensBlurOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MakeTransparent(Egami.Pixels.Rgba8 color, float tolerance = 0, float softness = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Median(int radius, bool includeAlpha = false) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.MotionBlur(float radius, float sigma, float angle, bool centered = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Offset(int dx, int dy, Egami.Operations.EdgeMode edges = Egami.Operations.EdgeMode.Wrap, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8)) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.OnChannels(Egami.Operations.ColorChannels channels, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.QuadDistort(System.Numerics.Vector2 topLeft, System.Numerics.Vector2 topRight, System.Numerics.Vector2 bottomRight, System.Numerics.Vector2 bottomLeft, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ReplaceColor(Egami.Pixels.Rgba8 from, Egami.Pixels.Rgba8 to, float tolerance = 0) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.RotationalBlur(float degrees, System.Numerics.Vector2? center = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ShuffleChannels(Egami.Operations.ChannelSource red, Egami.Operations.ChannelSource green, Egami.Operations.ChannelSource blue, Egami.Operations.ChannelSource alpha) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Skew(float degreesX, float degreesY, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Tile(int width, int height, Egami.Point origin = default(Egami.Point), Egami.Rect? source = null) -> Egami.Operations.RasterOps!
@@ -863,6 +890,7 @@ Egami.Operations.RasterOps.Trim(float tolerance = 0, Egami.Pixels.Rgba8? color =
 Egami.Operations.RasterOps.Warp(Egami.Operations.IWarp! warp, Egami.Operations.SamplingOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Within(Egami.Operations.Mask mask, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Within(Egami.Rect area, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.ZoomBlur(float amount, System.Numerics.Vector2? center = null) -> Egami.Operations.RasterOps!
 Egami.Operations.ResampleFilter.Gaussian = 8 -> Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Hermite = 7 -> Egami.Operations.ResampleFilter
 Egami.Operations.ResampleFilter.Lanczos2 = 6 -> Egami.Operations.ResampleFilter
@@ -1273,6 +1301,9 @@ override Egami.Metadata.XmpName.ToString() -> string!
 override Egami.Operations.Homography.Equals(object? obj) -> bool
 override Egami.Operations.Homography.GetHashCode() -> int
 override Egami.Operations.Homography.ToString() -> string!
+override Egami.Operations.LensBlurOptions.Equals(object? obj) -> bool
+override Egami.Operations.LensBlurOptions.GetHashCode() -> int
+override Egami.Operations.LensBlurOptions.ToString() -> string!
 override Egami.Operations.Mask.GetHashCode() -> int
 override Egami.Operations.SamplingOptions.Equals(object? obj) -> bool
 override Egami.Operations.SamplingOptions.GetHashCode() -> int
@@ -1488,6 +1519,9 @@ static Egami.Operations.Homography.Multiply(Egami.Operations.Homography first, E
 static Egami.Operations.Homography.operator !=(Egami.Operations.Homography left, Egami.Operations.Homography right) -> bool
 static Egami.Operations.Homography.operator *(Egami.Operations.Homography first, Egami.Operations.Homography second) -> Egami.Operations.Homography
 static Egami.Operations.Homography.operator ==(Egami.Operations.Homography left, Egami.Operations.Homography right) -> bool
+static Egami.Operations.LensBlurOptions.Default.get -> Egami.Operations.LensBlurOptions!
+static Egami.Operations.LensBlurOptions.operator !=(Egami.Operations.LensBlurOptions? left, Egami.Operations.LensBlurOptions? right) -> bool
+static Egami.Operations.LensBlurOptions.operator ==(Egami.Operations.LensBlurOptions? left, Egami.Operations.LensBlurOptions? right) -> bool
 static Egami.Operations.Mask.operator !=(Egami.Operations.Mask left, Egami.Operations.Mask right) -> bool
 static Egami.Operations.Mask.operator ==(Egami.Operations.Mask left, Egami.Operations.Mask right) -> bool
 static Egami.Operations.SamplingOptions.operator !=(Egami.Operations.SamplingOptions? left, Egami.Operations.SamplingOptions? right) -> bool

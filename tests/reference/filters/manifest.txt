@@ -9,3 +9,17 @@ duck16.median-2 16 240 180 -statistic Median 5x5
 duck16.median-3 16 240 180 -statistic Median 7x7
 shapes.median-2 8 200 150 -channel RGB -statistic Median 5x5
 shapes.median-3-alpha 8 200 150 -channel RGBA -statistic Median 7x7
+duck.bilateral-3-0.1 8 240 180 -bilateral-blur 13x13+25.5+3
+egret.bilateral-2-0.2 8 180 240 -bilateral-blur 9x9+51+2
+noisy.bilateral-noise-2-0.2 8 240 180 -bilateral-blur 9x9+51+2
+duck.motion-6-2-30 8 240 180 -motion-blur 6x2+30
+duck.motion-10-4-0 8 240 180 -motion-blur 10x4+0
+egret.motion-8-3-110 8 180 240 -motion-blur 8x3+110
+duck.motion-6-2-30-rounded 8 240 180 -motion-blur 6x2+30
+egret.motion-8-3-110-rounded 8 180 240 -motion-blur 8x3+110
+duck.rotational-10 8 240 180 -rotational-blur 10
+egret.rotational-4 8 180 240 -rotational-blur 4
+duck.despeckle 8 240 180 -channel RGB -despeckle
+noisy.despeckle 8 240 180 -channel RGB -despeckle
+duck16.despeckle 16 240 180 -channel RGB -despeckle
+steps.bilateral-gray-3-0.1 8 160 120 -bilateral-blur 13x13+25.5+3

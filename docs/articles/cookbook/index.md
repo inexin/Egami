@@ -141,6 +141,25 @@ A dark logo drawn with `Multiply` reads as ink on the photo: light areas of the 
 
 The blur reads the real pixels around the rectangle, so its edge has no seam.
 
+## Add film grain
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Filters.cs#noise)]
+
+The grain depends only on the seed and the pixel's position, so a batch of frames with the same seed grains alike.
+
+## Blur the background like a lens
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Filters.cs#lens-blur)]
+
+`LensBlur` works in linear light, so bright points stay bright discs instead of gray smudges; `Within` with a mask feathers the
+edge between the sharp subject and the blurred background.
+
+## Clean a scan
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Filters.cs#despeckle)]
+
+For heavy salt-and-pepper noise use `Median(1)` or `Median(2)` instead; both keep edges, and both give ImageMagick's pixels.
+
 ## Edit only the sky
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Scopes.cs#within-mask)]
