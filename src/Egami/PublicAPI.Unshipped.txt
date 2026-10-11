@@ -788,6 +788,18 @@ Egami.Operations.DistantLight.DistantLight(float azimuth, float elevation) -> vo
 Egami.Operations.DistantLight.Elevation.get -> float
 Egami.Operations.DistantLight.Elevation.init -> void
 Egami.Operations.DistantLight.Equals(Egami.Operations.DistantLight? other) -> bool
+Egami.Operations.DropShadowOptions
+Egami.Operations.DropShadowOptions.<Clone>$() -> Egami.Operations.DropShadowOptions!
+Egami.Operations.DropShadowOptions.DropShadowOptions() -> void
+Egami.Operations.DropShadowOptions.Equals(Egami.Operations.DropShadowOptions? other) -> bool
+Egami.Operations.DropShadowOptions.Expand.get -> bool
+Egami.Operations.DropShadowOptions.Expand.init -> void
+Egami.Operations.DropShadowOptions.Method.get -> Egami.Operations.BlurMethod
+Egami.Operations.DropShadowOptions.Method.init -> void
+Egami.Operations.DropShadowOptions.ShadowOnly.get -> bool
+Egami.Operations.DropShadowOptions.ShadowOnly.init -> void
+Egami.Operations.DropShadowOptions.SigmaY.get -> float?
+Egami.Operations.DropShadowOptions.SigmaY.init -> void
 Egami.Operations.EdgeOperator
 Egami.Operations.EdgeOperator.Kirsch = 4 -> Egami.Operations.EdgeOperator
 Egami.Operations.EdgeOperator.Laplacian3x3 = 6 -> Egami.Operations.EdgeOperator
@@ -801,18 +813,6 @@ Egami.Operations.EdgeOperator.Sobel = 0 -> Egami.Operations.EdgeOperator
 Egami.Operations.HeightSource
 Egami.Operations.HeightSource.Alpha = 0 -> Egami.Operations.HeightSource
 Egami.Operations.HeightSource.Luminance = 1 -> Egami.Operations.HeightSource
-Egami.Operations.DropShadowOptions
-Egami.Operations.DropShadowOptions.<Clone>$() -> Egami.Operations.DropShadowOptions!
-Egami.Operations.DropShadowOptions.DropShadowOptions() -> void
-Egami.Operations.DropShadowOptions.Equals(Egami.Operations.DropShadowOptions? other) -> bool
-Egami.Operations.DropShadowOptions.Expand.get -> bool
-Egami.Operations.DropShadowOptions.Expand.init -> void
-Egami.Operations.DropShadowOptions.Method.get -> Egami.Operations.BlurMethod
-Egami.Operations.DropShadowOptions.Method.init -> void
-Egami.Operations.DropShadowOptions.ShadowOnly.get -> bool
-Egami.Operations.DropShadowOptions.ShadowOnly.init -> void
-Egami.Operations.DropShadowOptions.SigmaY.get -> float?
-Egami.Operations.DropShadowOptions.SigmaY.init -> void
 Egami.Operations.Homography
 Egami.Operations.Homography.Determinant.get -> double
 Egami.Operations.Homography.Equals(Egami.Operations.Homography other) -> bool
@@ -936,18 +936,18 @@ Egami.Operations.RasterOps.Displace(Egami.Raster! map, float scaleX, float scale
 Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DropShadow(float dx, float dy, float sigma, Egami.Pixels.Rgba8 color, Egami.Operations.DropShadowOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Edges(Egami.Operations.EdgeOperator op = Egami.Operations.EdgeOperator.Sobel, bool grayscale = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Emboss(float angle = 135, float depth = 1, float sigma = 1, bool grayscale = true) -> Egami.Operations.RasterOps!
-Egami.Operations.RasterOps.DropShadow(float dx, float dy, float sigma, Egami.Pixels.Rgba8 color, Egami.Operations.DropShadowOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.EntropyCrop(float threshold = 0.5) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Erode(int radius) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Erode(int radiusX, int radiusY) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.FloodFill(Egami.Point seed, Egami.Pixels.Rgba8 fill, float tolerance = 0, Egami.Operations.Connectivity connectivity = Egami.Operations.Connectivity.Four) -> Egami.Operations.RasterOps!
-Egami.Operations.RasterOps.LensBlur(float radius, Egami.Operations.LensBlurOptions? options = null) -> Egami.Operations.RasterOps!
-Egami.Operations.RasterOps.Lighting(Egami.Operations.Light! light, Egami.Operations.LightingModel model, Egami.Operations.LightingOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Glow(float sigma, Egami.Pixels.Rgba8 color, float spread = 0, bool inner = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Kuwahara(int radius = 3, float sigma = 0) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.LensBlur(float radius, Egami.Operations.LensBlurOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Lighting(Egami.Operations.Light! light, Egami.Operations.LightingModel model, Egami.Operations.LightingOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MakeTransparent(Egami.Pixels.Rgba8 color, float tolerance = 0, float softness = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Median(int radius, bool includeAlpha = false) -> Egami.Operations.RasterOps!

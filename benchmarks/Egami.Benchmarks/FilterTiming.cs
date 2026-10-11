@@ -29,13 +29,6 @@ internal static class FilterTiming
         ["Despeckle"] = o => o.Despeckle(),
         ["Emboss"] = o => o.Emboss(),
         ["Shade"] = o => o.Shade(),
-    };
-
-    /// <summary>The scenarios that light an alpha shape: 2000 × 2000 with alpha (<see cref="AlphaLogo"/>), as the design names them.</summary>
-    internal static readonly Dictionary<string, Action<RasterOps>> AlphaScenarios = new()
-    {
-        ["Lighting-Distant"] = o => o.Lighting(new DistantLight(225, 40), LightingModel.Diffuse(), new LightingOptions { SurfaceScale = 4 }),
-        ["Lighting-Spot"] = o => o.Lighting(new SpotLight(new System.Numerics.Vector3(400, 300, 600), new System.Numerics.Vector3(1200, 1400, 0), 4, 35), LightingModel.Specular(1, 20), new LightingOptions { SurfaceScale = 4 }),
         ["Edges-Sobel"] = o => o.Edges(),
         ["CannyEdges-1"] = o => o.CannyEdges(1),
         ["Dilate-5"] = o => o.Dilate(5),
@@ -50,6 +43,13 @@ internal static class FilterTiming
         ["OilPaint-256"] = o => o.OilPaint(3, 256),
     };
 
+    /// <summary>The scenarios that light an alpha shape: 2000 × 2000 with alpha (<see cref="AlphaLogo"/>), as the design names them.</summary>
+    internal static readonly Dictionary<string, Action<RasterOps>> AlphaScenarios = new()
+    {
+        ["Lighting-Distant"] = o => o.Lighting(new DistantLight(225, 40), LightingModel.Diffuse(), new LightingOptions { SurfaceScale = 4 }),
+        ["Lighting-Spot"] = o => o.Lighting(new SpotLight(new System.Numerics.Vector3(400, 300, 600), new System.Numerics.Vector3(1200, 1400, 0), 4, 35), LightingModel.Specular(1, 20), new LightingOptions { SurfaceScale = 4 }),
+    };
+
     /// <summary>Scenarios on a 1000 × 1000 logo with alpha (an opaque rounded badge and a soft disc on transparent black).</summary>
     internal static readonly Dictionary<string, Action<RasterOps>> LogoScenarios = new()
     {
@@ -62,6 +62,8 @@ internal static class FilterTiming
         RunAll(photo, Scenarios, names);
         using Raster<Rgba8> logo = AlphaLogo(2000, 2000);
         RunAll(logo, AlphaScenarios, names);
+        using Raster<Rgba8> badge = Logo(1000, 1000);
+        RunAll(badge, LogoScenarios, names);
     }
 
     /// <summary>Soft-edged discs and a rounded square on transparent black, so alpha has edges and slopes to light.</summary>
@@ -88,23 +90,9 @@ internal static class FilterTiming
     {
         foreach ((string name, Action<RasterOps> chain) in scenarios)
         {
-            if (names.Length > 0 && !names.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase)))
-            {
-                continue;
-            }
-
-            double one = Time(image, chain, 1);
-            double all = Time(image, chain, Environment.ProcessorCount);
-            Console.WriteLine($"{name,-24} 1 thread {one,8:F1} ms   {Environment.ProcessorCount} threads {all,8:F1} ms");
-            Report(name, photo, chain);
-        }
-
-        using Raster<Rgba8> logo = Logo(1000, 1000);
-        foreach ((string name, Action<RasterOps> chain) in LogoScenarios)
-        {
             if (names.Length == 0 || names.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase)))
             {
-                Report(name, logo, chain);
+                Report(name, image, chain);
             }
         }
     }
