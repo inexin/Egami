@@ -370,7 +370,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
                 packed = CcittEncoder.Encode(unit, unitWidth, rows, plan.Compression == TiffCodes.CcittGroup4);
                 break;
             case TiffCodes.Jpeg:
-                packed = TiffUnitWriter.Jpeg(unit, unitWidth, rows, plan.Photometric == 1, plan.Quality, _start.Context, ref _jpegTables);
+                packed = TiffUnitWriter.Jpeg(unit, unitWidth, rows, plan.Photometric, plan.Quality, _start.Context, ref _jpegTables);
                 break;
             case TiffCodes.Webp:
                 packed = TiffUnitWriter.Webp(unit, unitWidth, rows, plan.Samples == 4, plan.Lossless, plan.Quality, _start.Context);

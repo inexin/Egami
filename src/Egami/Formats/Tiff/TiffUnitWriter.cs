@@ -13,18 +13,34 @@ namespace Egami.Formats.Tiff;
 internal static class TiffUnitWriter
 {
     /// <summary>
-    /// Encodes a unit of 8-bit RGB (as YCbCr 4:2:0) or gray rows with fixed Huffman tables, so every unit shares the first one's
-    /// tables; returns the unit's stream without them. <paramref name="tables"/> is set from the first unit.
+    /// Encodes a unit of 8-bit RGB (as YCbCr 4:2:0), gray (photometric 1) or CMYK (photometric 5) rows with fixed Huffman tables,
+    /// so every unit shares the first one's tables; returns the unit's stream without them. <paramref name="tables"/> is set from
+    /// the first unit.
     /// </summary>
-    public static byte[] Jpeg(ReadOnlySpan<byte> unit, int width, int rows, bool gray, int quality, EgamiContext context, ref byte[]? tables)
+    public static byte[] Jpeg(ReadOnlySpan<byte> unit, int width, int rows, int photometric, int quality, EgamiContext context, ref byte[]? tables)
     {
         using MemoryStream stream = new();
         JpegWriterOptions options = new() { Quality = quality, Subsampling = ChromaSubsampling.Subsample420, OptimizeHuffman = false, StripMetadata = true };
-        if (gray)
+        if (photometric == 1)
         {
             using Raster<Gray8> raster = Raster.Create<Gray8>(width, rows, context);
             Copy(unit, raster);
             raster.Save(stream, JpegFormat.Info, options);
+        }
+        else if (photometric == 5)
+        {
+            // libtiff's separated JPEG holds the inks as they are, where a JPEG file holds them inverted as Adobe does: invert
+            // here so the writer's inversion gives back the inks.
+            using Raster<Cmyk8> raster = Raster.Create<Cmyk8>(width, rows, context);
+            Copy(unit, raster);
+            raster.ForEachRow((row, _) =>
+            {
+                foreach (ref byte b in MemoryMarshal.AsBytes(row))
+                {
+                    b = (byte)~b;
+                }
+            });
+            raster.Save(stream, JpegFormat.Info, new JpegWriterOptions { Quality = quality, ColorType = JpegColorType.Cmyk, StripMetadata = true });
         }
         else
         {

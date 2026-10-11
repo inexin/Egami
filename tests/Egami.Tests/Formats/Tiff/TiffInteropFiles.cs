@@ -61,6 +61,13 @@ public class TiffInteropFiles
             Write(directory!, "rgba-jpeg-rgb-tiles.tif", photo, new TiffWriterOptions { Compression = TiffCompression.Jpeg, TileSize = 32 });
             Write(directory!, "rgba-jpeg-gray.tif", bilevel, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 95 });
             Write(directory!, "rgba-webp-rgb.tif", photo, new TiffWriterOptions { Compression = TiffCompression.Webp, Quality = 100 });
+
+            // CMYK JPEG (2.4.3) compares raw inks, within 2 levels.
+            using Raster<Cmyk8> inks = photo.As<Cmyk8>();
+            using Raster<Cmyk16> inks16 = photo.As<Cmyk16>();
+            Write(directory!, "near-jpeg-cmyk8.tif", inks, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 95 });
+            Write(directory!, "near-jpeg-cmyk8-tiles.tif", inks, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 95, TileSize = 32 });
+            Write(directory!, "near-jpeg-cmyk16.tif", inks16, new TiffWriterOptions { Compression = TiffCompression.Jpeg });
         }
         finally
         {

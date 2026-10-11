@@ -360,7 +360,8 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
             }
             else if (store is TiffStore.Cmyk8 or TiffStore.Cmyk16)
             {
-                throw new NotSupportedException("TIFF: JPEG compression of CMYK waits for the JPEG writer's CMYK support (Phase 2.4.3).");
+                // Four components with no Adobe marker and the inks as they are, as libtiff writes separated JPEG.
+                (store, photometric, samples, bits, format, extra) = (TiffStore.Cmyk8, 5, 4, 8, 1, -1);
             }
             else
             {

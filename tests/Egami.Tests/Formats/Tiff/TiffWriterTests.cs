@@ -328,12 +328,34 @@ public class TiffWriterExtrasTests
     }
 
     [Fact]
-    public void JpegRefusesAlphaAndWaitsForCmyk()
+    public void JpegRefusesAlpha()
     {
         using Raster<Rgba8> rgba = TiffWriterTests.Pattern<Rgba8>();
-        using Raster<Cmyk8> cmyk = TiffWriterTests.Pattern<Cmyk8>();
         Assert.Throws<ArgumentException>(() => Save(rgba, new TiffWriterOptions { Compression = TiffCompression.Jpeg }));
-        Assert.Throws<NotSupportedException>(() => Save(cmyk, new TiffWriterOptions { Compression = TiffCompression.Jpeg }));
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(32, false)]
+    [InlineData(0, true)]
+    public void JpegWritesCmykAsSeparatedInks(int tile, bool sixteen)
+    {
+        using Raster<Rgb8> rgb = Raster.Load<Rgb8>(TiffCorpus.Main.Read("rgb8.tif"));
+        using Raster<Cmyk8> source = rgb.As<Cmyk8>();
+        using Raster input = sixteen ? source.As<Cmyk16>() : source.Copy();
+        byte[] file = Save(input, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 95, TileSize = tile });
+        using Raster<Cmyk8> back = Raster.Load<Cmyk8>(file);
+        TiffDetails details = (TiffDetails)back.Metadata.FormatDetails!;
+        Assert.Equal((TiffCompression.Jpeg, TiffPhotometric.Separated, 8), (details.Compression, details.Photometric, details.BitsPerSample));
+        byte[] a = TiffReference.Bytes(source), b = TiffReference.Bytes(back);
+        double sum = 0;
+        for (int i = 0; i < a.Length; i++)
+        {
+            sum += (a[i] - b[i]) * (a[i] - b[i]);
+        }
+
+        double psnr = 10 * Math.Log10(255.0 * 255 / (sum / a.Length));
+        Assert.True(psnr > 35, $"PSNR {psnr:F1} dB");
     }
 
     [Fact]
