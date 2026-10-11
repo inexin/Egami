@@ -104,6 +104,13 @@ internal static class PhotoshopResources
             else
             {
                 stream.Write(block[r.Start..r.End]);
+
+                // A last resource whose padding byte was cut off gets it back, so what follows starts where readers look.
+                int padded = r.DataStart + ((r.DataLength + 1) & ~1);
+                for (int i = r.End; i < padded; i++)
+                {
+                    stream.WriteByte(0);
+                }
             }
         }
 

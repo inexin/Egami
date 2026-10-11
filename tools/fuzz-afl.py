@@ -16,6 +16,8 @@ import subprocess
 import sys
 
 SEEDS = {"png": "tests/images/pngsuite/*.png", "jpeg": "tests/images/jpeg/*.jpg", "exif": "tests/images/fuzz/exif-seeds/*.tiff", "icc": "tests/images/icc/*/*.icc",
+         "iptc": "tests/images/fuzz/iptc-seeds/*", "psd": "tests/images/fuzz/psd-seeds/*", "xmp": "tests/images/fuzz/xmp-seeds/*",
+         "rawprofile": "tests/images/fuzz/rawprofile-seeds/*",
          "gif": "tests/images/gif/*.gif", "apng": "tests/images/apng/*.png", "lzw": "tests/images/fuzz/lzw-seeds/*.bin",
          "bmp": "tests/images/bmp/*", "tga": "tests/images/tga/*", "qoi": "tests/images/qoi/*", "pnm": "tests/images/pnm/*", "pfm": "tests/images/pfm/*.pfm",
          "detect": "tests/images/fuzz/detect-seeds/*",

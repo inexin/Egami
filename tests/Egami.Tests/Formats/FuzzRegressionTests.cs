@@ -84,6 +84,18 @@ public class FuzzRegressionTests
         Assert.Contains("cannot be inverted", e.Message, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// A Photoshop resource block whose last resource lost its padding byte: replacing the IPTC put the new resource one byte
+    /// early, where no reader looks (found by the Phase 2.1.3 psd target). The padding is now restored.
+    /// </summary>
+    [Fact]
+    public void AnUnpaddedLastResourceKeepsTheIptcFindable()
+    {
+        byte[] block = File.ReadAllBytes(Path.Combine(Fuzz, "psd", "unpadded-last-resource.8bim"));
+        byte[] replaced = PhotoshopResources.WithIptc(block, [0x1C, 2, 5, 0, 1, (byte)'x']);
+        Assert.Equal(6, PhotoshopResources.FindIptc(replaced, null).Length);
+    }
+
     /// <summary>The BMP, TGA, QOI and PNM inputs load, from memory and from a stream that cannot seek, or fail cleanly.</summary>
     [Theory]
     [MemberData(nameof(SimpleFiles))]

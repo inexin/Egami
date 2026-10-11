@@ -13,7 +13,9 @@ using SharpFuzz;
 // Fuzz targets, one per reader. Each must load any input or fail with an EgamiException: any other exception is a crash,
 // and AFL++ reports hangs. Limits are lowered so a valid but huge image cannot exhaust the fuzzer's memory. The exif target
 // parses raw TIFF blocks, which must never throw at all; the icc target parses ICC profiles the same way, and building a color
-// profile from one may fail only with an EgamiException.
+// profile from one may fail only with an EgamiException. The iptc, psd, xmp and rawprofile targets (Phase 2.1.3) parse IPTC
+// datasets, Photoshop resource blocks, XMP packets and PNG "Raw profile type" text, which must never throw, and check that
+// what Egami writes after an edit reads back undamaged.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -89,9 +91,13 @@ static Action<Stream> Target(string name) => name switch
     "qoi" => stream => LoadSimple(stream, Egami.Formats.Qoi.QoiFormat.Info),
     "pnm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
     "pfm" => stream => LoadSimple(stream, Egami.Formats.Pnm.PnmFormat.Info),
+    "iptc" => ParseIptc,
+    "psd" => WalkPhotoshopResources,
+    "xmp" => ParseXmp,
+    "rawprofile" => DecodeRawProfile,
     "detect" => Detect,
     "stream" => DecodeStreaming,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, icc, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream."),
 };
 
 static EgamiContext Context()
@@ -467,6 +473,82 @@ static void ParseExif(Stream stream)
     if (again.IsDamaged || again.Entries.Count != exif.Entries.Count)
     {
         throw new InvalidOperationException("A rebuilt EXIF block did not read back the same.");
+    }
+}
+
+static void ParseIptc(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    IptcData iptc = IptcData.Parse(data, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
+    _ = (iptc.Keywords, iptc.Bylines, iptc.Caption, iptc.Headline, iptc.Copyright, iptc.Credit, iptc.DateCreated, iptc.IsUtf8);
+    foreach (IptcEntry entry in iptc.Entries)
+    {
+        _ = entry.AsString();
+    }
+
+    if (!iptc.IsDamaged && !iptc.ToBytes().Span.SequenceEqual(data))
+    {
+        throw new InvalidOperationException("An undamaged IPTC block did not write back byte for byte.");
+    }
+
+    // An edit rebuilds the block, which must read back the same.
+    iptc.Add(IptcKey.Keywords, "fuzz ø");
+    IptcData again = IptcData.Parse(iptc.ToBytes().Span);
+    if (again.IsDamaged || again.Entries.Count < iptc.Entries.Count || !again.Keywords.Contains("fuzz ø"))
+    {
+        throw new InvalidOperationException("A rebuilt IPTC block did not read back the same.");
+    }
+}
+
+static void WalkPhotoshopResources(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    ReadOnlyMemory<byte> iptc = PhotoshopResources.FindIptc(data, null);
+    byte[] replaced = PhotoshopResources.WithIptc(data, "\u001C\u0002\u0005\u0000\u0001x"u8);
+    List<PhotoshopResources.Resource> resources = [];
+    if (PhotoshopResources.TryWalk(data, resources))
+    {
+        // A block Egami can walk keeps every other resource and gets the new IPTC.
+        if (PhotoshopResources.FindIptc(replaced, null).Length != 6)
+        {
+            throw new InvalidOperationException("A rewritten Photoshop resource block lost its IPTC.");
+        }
+    }
+
+    _ = (iptc.Length, PhotoshopResources.Create(iptc.Span).Length);
+}
+
+static void ParseXmp(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    XmpData xmp = XmpData.Parse(data, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
+    _ = (xmp.Title, xmp.Description, xmp.Rights, xmp.Creators, xmp.Keywords, xmp.CreateDate, xmp.ModifyDate, xmp.Rating, xmp.Orientation, xmp.Headline);
+    if (xmp.IsDamaged)
+    {
+        return;
+    }
+
+    // What Egami writes after an edit must parse, with the same properties.
+    xmp.Label = "fuzz";
+    XmpData again = XmpData.Parse(xmp.ToBytes().Span);
+    if (again.IsDamaged || again.Count != xmp.Count || again.Label != "fuzz")
+    {
+        throw new InvalidOperationException("An edited XMP packet did not read back: " + string.Join(" ", again.Warnings));
+    }
+}
+
+static void DecodeRawProfile(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    string text = System.Text.Encoding.Latin1.GetString(data);
+    if (RawProfiles.Decode(text, 1024 * 1024, out _) is byte[] bytes)
+    {
+        _ = RawProfiles.Iim(bytes);
+        _ = RawProfiles.WithoutExifHeader(bytes).Length;
+        if (RawProfiles.Decode(RawProfiles.Encode("exif", bytes), 1024 * 1024, out _) is not byte[] again || !again.AsSpan().SequenceEqual(bytes))
+        {
+            throw new InvalidOperationException("A raw profile did not encode and decode back.");
+        }
     }
 }
 
