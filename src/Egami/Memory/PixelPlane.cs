@@ -108,29 +108,20 @@ public sealed class PixelPlane<TPixel>
             ThrowRowOutOfRange(y);
         }
 
-        if (!OwnsMemory)
+        // Planes from a memory source (every decoder's and operation's) take this path: one check, no branch for the other kinds.
+        IMemoryOwner<byte>[]? blocks = _blocks;
+        if (blocks is not null)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            if (_parent is not null)
+            if (blocks.Length == 1)
             {
-                return _parent.Row(_y + y).Slice(_x, Width);
+                return MemoryMarshal.Cast<byte, TPixel>(blocks[0].Memory.Span).Slice(y * Width, Width);
             }
 
-            if (_views is not null)
-            {
-                int view = y / _rowsPerBlock;
-                return MemoryMarshal.Cast<byte, TPixel>(_views[view].Span).Slice((y - (view * _rowsPerBlock)) * Width, Width);
-            }
-
-            return _wrappedBytes.IsEmpty
-                ? _wrapped.Span.Slice(y * _stride, Width)
-                : MemoryMarshal.Cast<byte, TPixel>(_wrappedBytes.Span.Slice(y * _byteStride, Width * Unsafe.SizeOf<TPixel>()));
+            int block = y / _rowsPerBlock;
+            return MemoryMarshal.Cast<byte, TPixel>(blocks[block].Memory.Span).Slice((y - (block * _rowsPerBlock)) * Width, Width);
         }
 
-        IMemoryOwner<byte>[] blocks = _blocks ?? throw new ObjectDisposedException(GetType().FullName);
-        int block = y / _rowsPerBlock;
-        int row = y - (block * _rowsPerBlock);
-        return MemoryMarshal.Cast<byte, TPixel>(blocks[block].Memory.Span).Slice(row * Width, Width);
+        return OtherRow(y);
     }
 
     /// <summary>Gets all pixels as one span, if the plane is one block with no gap between rows.</summary>
@@ -192,6 +183,27 @@ public sealed class PixelPlane<TPixel>
                 block.Dispose();
             }
         }
+    }
+
+    /// <summary>Gets a row of a wrapped plane, a view, or a block view, or throws for a disposed plane.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Span<TPixel> OtherRow(int y)
+    {
+        ObjectDisposedException.ThrowIf(_disposed || OwnsMemory, this);
+        if (_parent is not null)
+        {
+            return _parent.Row(_y + y).Slice(_x, Width);
+        }
+
+        if (_views is not null)
+        {
+            int view = y / _rowsPerBlock;
+            return MemoryMarshal.Cast<byte, TPixel>(_views[view].Span).Slice((y - (view * _rowsPerBlock)) * Width, Width);
+        }
+
+        return _wrappedBytes.IsEmpty
+            ? _wrapped.Span.Slice(y * _stride, Width)
+            : MemoryMarshal.Cast<byte, TPixel>(_wrappedBytes.Span.Slice(y * _byteStride, Width * Unsafe.SizeOf<TPixel>()));
     }
 
     private void ThrowRowOutOfRange(int y)
