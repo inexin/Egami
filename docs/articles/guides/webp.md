@@ -28,6 +28,11 @@ be saved: it is converted to 8-bit RGBA first.
 ## Reading
 
 `Raster.Load` gives `Rgba8` when the file says it has alpha (the VP8X flag, the VP8L hint or an ALPH chunk) and `Rgb8` otherwise.
+Lossless files decode to exactly libwebp's pixels. Lossy files decode to libwebp's YUV planes sample for sample, and to RGB within
+one level of libwebp's: chroma is brought to full resolution exactly as libwebp's default upsampler does, then converted with the
+BT.601 kernel of the planar YUV guide. `YuvRaster.Load` returns a lossy file's planes untouched (4:2:0, BT.601, limited range, chroma
+in the centre), with the alpha as a fourth plane. Every kind streams through `RasterDecoder`, with regions, reductions and
+incremental decode.
 `WebpReaderOptions` adds two choices on top of the general reader options:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Webp.cs#webp-read)]
