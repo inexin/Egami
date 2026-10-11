@@ -131,6 +131,29 @@ public sealed class RectScopeTests : IDisposable
     }
 
     [Fact]
+    public void DeriveLeavesTheSourceUntouched()
+    {
+        using Raster<Rgba8> source = OperationCoverageTests.Noise(60, 40, EgamiContext.Default);
+        Rgba8[] before = Pixels(source);
+        using Raster<Gray8> mask = MaskScopeTests.GrayMask(30, 20);
+        using Raster<Rgba8> derived = source.Derive(ops => ops
+            .Within(new Rect(5, 5, 30, 20), o => o.Blur(2).Invert())
+            .Within(new Mask(mask, new Point(10, 10)), o => o.FlipHorizontal().Saturation(1.3f))
+            .OnChannels(ColorChannels.Alpha, o => o.BoxBlur(1)), Ct);
+        Assert.Equal(before, Pixels(source));
+        Assert.NotEqual(before, Pixels(derived));
+    }
+
+    [Fact]
+    public void CancellationStopsInsideAScope()
+    {
+        using Raster<Rgba8> source = Raster.Create<Rgba8>(2000, 2000);
+        using CancellationTokenSource cancel = new();
+        CancelOnRun stop = new(cancel);
+        Assert.ThrowsAny<OperationCanceledException>(() => source.Apply(ops => ops.Within(new Rect(0, 0, 1500, 1500), o => o.Add(stop).Blur(5).Invert()), cancel.Token));
+    }
+
+    [Fact]
     public void ScratchPlanesCountAgainstTheBudget()
     {
         EgamiContext tight = EgamiContext.Default with { Limits = EgamiContext.Default.Limits with { MaxTotalBytes = 12_000_000 } };
@@ -175,6 +198,17 @@ public sealed class RectScopeTests : IDisposable
             {
                 input.Destination.Row(y).Fill(TPixel.FromRgba8(Rgba8.White));
             }
+        }
+    }
+
+    private sealed class CancelOnRun(CancellationTokenSource cancel) : IRasterOperation
+    {
+        public Size OutputSize(Size input) => input;
+
+        public void Run<TPixel>(OperationInput<TPixel> input)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            cancel.Cancel();
         }
     }
 

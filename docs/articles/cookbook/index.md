@@ -95,6 +95,26 @@ A dark logo drawn with `Multiply` reads as ink on the photo: light areas of the 
 
 `Compositor.Blend` works on any pixel type, so one custom step serves every raster.
 
+## Blur a face
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Scopes.cs#within-rect)]
+
+The blur reads the real pixels around the rectangle, so its edge has no seam.
+
+## Edit only the sky
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Scopes.cs#within-mask)]
+
+A soft mask gives a soft transition; blur the mask raster first to feather a hard selection.
+
+## Swap red and blue
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#shuffle)]
+
+## Alpha from a gray image
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#alpha)]
+
 ## Strip metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]

@@ -707,9 +707,9 @@ public sealed class RasterOps
     /// <summary>
     /// Runs the operations <paramref name="build"/> adds and keeps their result only in <paramref name="channels"/>, as ImageMagick's
     /// -channel does: <c>OnChannels(ColorChannels.Alpha, o => o.Blur(2))</c> softens only the alpha. Channels are the working RGBA,
-    /// with a gray raster's red, green and blue its gray value. Color steps alone (Brightness, ShuffleChannels, a color matrix)
-    /// become one matrix with the other channels left as they are, so they cost nothing extra; other chains run once and the other
-    /// channels are restored. Combines with Within in either order.
+    /// with a gray raster's red, green and blue its gray value. Color steps that fuse into one matrix (Brightness, ShuffleChannels,
+    /// a color matrix) become that matrix with the other channels left as they are, so they cost nothing extra; other chains run
+    /// once and the other channels are restored. Combines with Within in either order.
     /// </summary>
     /// <param name="channels">The channels the result is kept in.</param>
     /// <param name="build">Adds the operations. Each must keep the size, as in <see cref="Within(Rect, Action{RasterOps})"/>.</param>
@@ -729,7 +729,9 @@ public sealed class RasterOps
 
         IReadOnlyList<IRasterOperation> steps = Scopes.ScopeRunner.Record(build, nameof(build));
         List<IRasterOperation> planned = OperationPipeline.PlanSteps(steps);
-        if (planned.Count == 1 && planned[0] is ColorMatrixOperation matrix)
+        // One matrix (no clamp inside it) restricted to the chosen rows is exactly the chain kept in those channels; a chain that
+        // clamps between stages would let later stages see the restricted values, so it takes the restoring path instead.
+        if (planned.Count == 1 && planned[0] is ColorMatrixOperation { Stages.Count: 1 } matrix)
         {
             return Add(matrix.OnlyRows(channels));
         }
