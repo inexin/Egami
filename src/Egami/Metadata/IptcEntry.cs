@@ -29,7 +29,16 @@ public sealed class IptcEntry
     /// valid UTF-8 and Latin-1 when they are not, the rule <see cref="ExifEntry.AsString"/> uses.
     /// </summary>
     /// <returns>The text.</returns>
-    public string AsString() => Decode(_value.Span, _utf8);
+    public string AsString()
+    {
+        // Array-backed values (all parsed and set ones) decode without going through a span of the memory.
+        if (System.Runtime.InteropServices.MemoryMarshal.TryGetArray(_value, out ArraySegment<byte> segment))
+        {
+            return _utf8 ? Encoding.UTF8.GetString(segment.Array!, segment.Offset, segment.Count) : Decode(segment, false);
+        }
+
+        return Decode(_value.Span, _utf8);
+    }
 
     /// <inheritdoc/>
     public override string ToString() => $"{Key}: \"{AsString()}\"";

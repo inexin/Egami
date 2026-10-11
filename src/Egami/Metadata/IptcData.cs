@@ -134,12 +134,20 @@ public sealed class IptcData
     /// <returns>The values; empty when there are none.</returns>
     public IReadOnlyList<string> GetAll(IptcKey key)
     {
-        List<string> values = [];
+        int count = 0;
         foreach (IptcEntry entry in _entries)
         {
+            count += entry.Key.Record == key.Record && entry.Key.Dataset == key.Dataset ? 1 : 0;
+        }
+
+        string[] values = new string[count];
+        int at = 0;
+        for (int i = 0; at < count; i++)
+        {
+            IptcEntry entry = _entries[i];
             if (entry.Key.Record == key.Record && entry.Key.Dataset == key.Dataset)
             {
-                values.Add(entry.AsString());
+                values[at++] = entry.AsString();
             }
         }
 
