@@ -13,7 +13,8 @@ Corpus (tests/images/tiff; licenses in tests/images/LICENSES), all made here fro
     message); tiles of 16x16, 32x16 and 64x64; separate planes; 1 and 7 rows a strip; big-endian; BigTIFF; FillOrder 2.
   - tiffref (tools/tiffref/tiffref.c, compiled in the container) writes SGILog (LogL, LogLuv, LogLuv24) and WebP (lossless and
     lossy) files, which tiffcp cannot make from plain samples.
-  - exiftool adds EXIF with GPS, XMP, IPTC and an ICC profile (icc/compact/DisplayP3-v4.icc) to two files.
+  - exiftool adds EXIF with GPS, XMP, IPTC and ICC profiles (icc/compact/DisplayP3-v4.icc, and icc/synthetic/cmyk-lut16-v2.icc
+    on a CMYK file) to three files.
 
 References (tests/reference/tiff):
   <file>.<page>.raw.gz    tiffref raw: libtiff's decoded samples (see tiffref.c for the layout)
@@ -379,6 +380,14 @@ def make_bases(pictures):
     pyramid = Page(160, 120, base_tags(160, 120, 8, 3, 2), samples_bytes(level(big, 8), 8),
                    subs=[page_of(level(duck, 8), 8, 3, 2, {254: (4, [1])}), page_of(level(small, 8), 8, 3, 2, {254: (4, [1])})])
     files.append(("pyramid-subifd", [pyramid], "SubIFDs of 64x48 and 32x24"))
+    # An exact pyramid: SubIFDs of ceil(size / 2) and ceil(size / 4), as GDAL writes overviews.
+    from PIL import Image as PilImage
+
+    source = PilImage.open("tests/images/ops/duck.png").convert("RGB")
+    levels = [np.asarray(source.resize((128 >> k, 96 >> k), PilImage.LANCZOS)).astype(np.int64) for k in range(3)]
+    exact = Page(128, 96, base_tags(128, 96, 8, 3, 2), samples_bytes(levels[0], 8),
+                 subs=[page_of(levels[1], 8, 3, 2, {254: (4, [1])}), page_of(levels[2], 8, 3, 2, {254: (4, [1])})])
+    files.append(("pyramid-exact", [exact], "SubIFDs of exactly half and a quarter the size"))
     mask = page_of(bilevel[:, :, None], 1, 1, 4, {254: (4, [4])})
     files.append(("pages-mask", [page_of(level(duck, 8), 8, 3, 2), mask], "a page and its transparency mask"))
     import zlib
@@ -554,6 +563,7 @@ def inside(pics):
                                    "-XMP-dc:Creator=Egami", "-XMP-dc:Title=Duck", "-IPTC:Keywords=duck", "-IPTC:Keywords=bird",
                                    "-IPTC:By-line=Egami Tester"]),
         ("meta-icc", "rgb16-lzw-pred", ["-ICC_Profile<=tests/images/icc/compact/DisplayP3-v4.icc"]),
+        ("meta-cmyk-icc", "cmyk8-lzw-pred", ["-ICC_Profile<=tests/images/icc/synthetic/cmyk-lut16-v2.icc"]),
     ]
     for name, base, args in meta:
         out = os.path.join(CORPUS, name + ".tif")

@@ -3529,6 +3529,97 @@
    "size": 69724
   },
   {
+   "file": "pyramid-exact.tif",
+   "tool": "make-tiff-references.py",
+   "note": "SubIFDs of exactly half and a quarter the size",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 128,
+      "height": 96,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 2,
+      "extraSamples": [],
+      "references": {
+       "raw": "pyramid-exact.0.raw.gz",
+       "rgba": "pyramid-exact.0.rgba.gz"
+      }
+     },
+     {
+      "index": 0,
+      "sub": 0,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 1,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pyramid-exact.0.0.raw.gz",
+       "rgba": "pyramid-exact.0.0.rgba.gz"
+      }
+     },
+     {
+      "index": 0,
+      "sub": 1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 1,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pyramid-exact.0.1.raw.gz",
+       "rgba": "pyramid-exact.0.1.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 48988
+  },
+  {
    "file": "pages-mask.tif",
    "tool": "make-tiff-references.py",
    "note": "a page and its transparency mask",
@@ -9018,6 +9109,50 @@
     "count": 1
    },
    "size": 23628
+  },
+  {
+   "file": "meta-cmyk-icc.tif",
+   "tool": "exiftool",
+   "source": "cmyk8-lzw-pred.tif",
+   "options": [
+    "-ICC_Profile<=tests/images/icc/synthetic/cmyk-lut16-v2.icc"
+   ],
+   "exif": "meta-cmyk-icc.exif.json",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk8.0.raw.gz",
+       "rgba": "cmyk8.0.rgba.gz",
+       "magick": "cmyk8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 268354
   }
  ]
 }

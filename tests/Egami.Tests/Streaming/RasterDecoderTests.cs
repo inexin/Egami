@@ -311,7 +311,8 @@ public class RegionAndReductionTests
 {
     public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
 
-    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f))];
+    // A TIFF pyramid's levels serve reduced decodes, so its reductions are its smaller pages, not box averages.
+    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f) && f != "tiff/pyramid-exact.tif")];
 
     public static TheoryData<string> Jpeg() => [.. StreamingCorpus.Files.Where(IsJpeg)];
 

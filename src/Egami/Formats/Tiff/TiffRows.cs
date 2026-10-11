@@ -8,6 +8,12 @@ using Egami.Streaming;
 namespace Egami.Formats.Tiff;
 
 /// <summary>
+/// A reduced-resolution page standing in for a full page at an exact power-of-two reduction: the full page's size, the reduction
+/// read, and the largest the file's pyramid offers.
+/// </summary>
+internal sealed record Pyramid(int Width, int Height, int Scale, int MaxScale, TiffPage Page);
+
+/// <summary>
 /// One TIFF page decoded a band at a time: a strip, or a row of tiles, decompressed when a row in it is first asked for, so only
 /// the strips and tiles a read touches are decoded (tiles only for the columns asked for). Rows are converted from the band's raw
 /// samples as they are asked for, so a load holds the raw band and the raster, nothing more. JPEG and WebP units, and subsampled
@@ -31,6 +37,7 @@ internal sealed class TiffRows<TNatural> : RowSource
     private readonly bool[] _done;
     private readonly int _stride;
     private readonly int _unitBytes;
+    private readonly Pyramid? _pyramid;
     private readonly bool _inPlace;
     private readonly long[]? _offsets;
     private Raster<TNatural>? _whole;
@@ -40,14 +47,15 @@ internal sealed class TiffRows<TNatural> : RowSource
     private bool _warned;
     private bool _disposed;
 
-    public TiffRows(EgamiInput input, TiffImage image, TiffPage page, ReaderOptions options, bool ownsInput)
+    public TiffRows(EgamiInput input, TiffImage image, TiffPage page, ReaderOptions options, bool ownsInput, Pyramid? pyramid = null)
     {
+        _pyramid = pyramid;
         _input = input;
         _image = image;
         _page = page;
         _ownsInput = ownsInput;
         _strict = options.Recovery == RecoveryMode.Strict;
-        Metadata = image.Metadata(page, options);
+        Metadata = image.Metadata(pyramid?.Page ?? page, options);
         _decoder = new TiffDecoder(page);
         _convert = new TiffConvert(page);
         _stride = page.Width * TNatural.Layout.BytesPerPixel;
@@ -105,13 +113,13 @@ internal sealed class TiffRows<TNatural> : RowSource
     /// <summary>Returns whether a page is converted into a band of natural pixels rather than row by row from its raw samples.</summary>
     private static bool Banded(TiffPage page) => page.Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg or TiffCodes.Webp || page.Subsampled;
 
-    public override int StoredWidth => _page.Width;
+    public override int StoredWidth => _pyramid?.Width ?? _page.Width;
 
-    public override int StoredHeight => _page.Height;
+    public override int StoredHeight => _pyramid?.Height ?? _page.Height;
 
-    public override int NativeScale => 1;
+    public override int NativeScale => _pyramid?.Scale ?? 1;
 
-    public override int MaxNativeScale => 1;
+    public override int MaxNativeScale => _pyramid?.MaxScale ?? 1;
 
     public override PixelLayoutInfo Layout => TNatural.Layout;
 

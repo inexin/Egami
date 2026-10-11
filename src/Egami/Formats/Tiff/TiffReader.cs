@@ -130,6 +130,11 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader, IMultiImageR
             (int index, int sub) = image.PageToLoad(options);
             TiffPage page = image.Page(index, sub);
             input.Limits.CheckFrameSize(page.Width, page.Height);
+            if (sub < 0 && options.MinimumSize is not null && image.PyramidFor(page, options) is (TiffPage level, Pyramid pyramid))
+            {
+                return level.WithNaturalType(new OpenRows(input, image, level, options, ownsInput: true, pyramid));
+            }
+
             return page.WithNaturalType(new OpenRows(input, image, page, options, ownsInput: true));
         }
         catch
@@ -154,12 +159,13 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader, IMultiImageR
         return [.. image.Images(options).Select(d => tiff with { Directory = d })];
     }
 
-    private sealed class OpenRows(EgamiInput input, TiffImage image, TiffPage page, ReaderOptions options, bool ownsInput) : INaturalTypeVisitor<RowSource>
+    private sealed class OpenRows(EgamiInput input, TiffImage image, TiffPage page, ReaderOptions options, bool ownsInput, Pyramid? pyramid = null)
+        : INaturalTypeVisitor<RowSource>
     {
         public RowSource Visit<TPixel>()
             where TPixel : unmanaged, IPixelType<TPixel>
         {
-            return new TiffRows<TPixel>(input, image, page, options, ownsInput);
+            return new TiffRows<TPixel>(input, image, page, options, ownsInput, pyramid);
         }
     }
 

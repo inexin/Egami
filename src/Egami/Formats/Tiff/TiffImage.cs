@@ -195,6 +195,65 @@ internal sealed class TiffImage : IDisposable
         return TiffPage.Read(File, ifd, index, sub, Strict);
     }
 
+    /// <summary>
+    /// Returns the reduced-resolution page that serves a reduced decode of <paramref name="page"/>, when the file has a pyramid:
+    /// SubIFDs of the page, or reduced pages right after it in the chain, of exactly ceil(size / 2^k) for k = 1, 2 and so on, with
+    /// the page's pixel type. 2.2's plan then picks the largest power of two the minimum size allows, and the box average does the
+    /// rest. Returns <see langword="null"/> when no level is used.
+    /// </summary>
+    public (TiffPage Level, Pyramid Pyramid)? PyramidFor(TiffPage page, ReaderOptions options)
+    {
+        Dictionary<int, TiffPage> levels = [];
+        void Consider(Func<TiffPage> read)
+        {
+            try
+            {
+                TiffPage level = read();
+                for (int k = 2; k <= 1 << 16; k *= 2)
+                {
+                    if (level.Width == (page.Width + k - 1) / k && level.Height == (page.Height + k - 1) / k && level.Natural == page.Natural)
+                    {
+                        levels.TryAdd(k, level);
+                        return;
+                    }
+                }
+            }
+            catch (Exception e) when (e is CorruptDataException or NotSupportedException)
+            {
+                // A damaged or unsupported level is simply not used.
+            }
+        }
+
+        for (int s = 0; s < SubIfdOffsets(page.Index).Length && s < 32; s++)
+        {
+            int sub = s;
+            Consider(() => Page(page.Index, sub));
+        }
+
+        for (int i = page.Index + 1; i < _chain.Count && !IsFullPage(i); i++)
+        {
+            int index = i;
+            if ((TiffPage.Kind(File, _chain[i]).SubfileType & 1) != 0)
+            {
+                Consider(() => Page(index));
+            }
+        }
+
+        int max = 1;
+        while (levels.ContainsKey(max * 2))
+        {
+            max *= 2;
+        }
+
+        if (max == 1)
+        {
+            return null;
+        }
+
+        Streaming.ReadPlan plan = Streaming.ReadPlan.Create(page.Width, page.Height, options.Region, options.MinimumSize, max);
+        return plan.NativeScale > 1 ? (levels[plan.NativeScale], new Pyramid(page.Width, page.Height, plan.NativeScale, max, page)) : null;
+    }
+
     /// <summary>Returns the offsets of a page's SubIFDs that lie inside the file.</summary>
     public long[] SubIfdOffsets(int index)
     {
