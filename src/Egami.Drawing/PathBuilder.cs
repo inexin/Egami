@@ -524,6 +524,9 @@ public sealed class PathBuilder
         return new Path([.. _points], [.. _verbs], fillRule);
     }
 
+    /// <summary>Returns the path without checking its points, for outlines built from already-checked input whose arithmetic may overflow.</summary>
+    internal Path ToPathUnchecked(FillRule fillRule = FillRule.NonZero) => new([.. _points], [.. _verbs], fillRule, checkFinite: false);
+
     /// <summary>Removes everything added, to build another path.</summary>
     /// <returns>This builder.</returns>
     public PathBuilder Reset()

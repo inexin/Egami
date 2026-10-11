@@ -24,8 +24,12 @@ internal static class Stroker
         PathBuilder builder = new();
         if (half <= 0 || path.Points.Length == 0)
         {
-            return builder.ToPath();
+            return builder.ToPathUnchecked();
         }
+
+        // A tolerance far below a float's precision at the pen's size buys nothing and makes arcs and curves explode into points
+        // (a canvas scaled by 1e38 asks for 1e-39): keep it at least a hundred-thousandth of the half-width.
+        tolerance = MathF.Max(tolerance, half * 1e-5f);
 
         // A contour counts once it has a line, curve or close: a lone move draws nothing, even with round caps.
         List<Vector2> points = [];
@@ -76,7 +80,7 @@ internal static class Stroker
             Contour(points, smooth, closed, stroke, half, tolerance, builder);
         }
 
-        return builder.ToPath();
+        return builder.ToPathUnchecked();
     }
 
     private static void Add(List<Vector2> points, List<bool> smooth, Vector2 point, float half, bool isSmooth)
@@ -95,11 +99,15 @@ internal static class Stroker
     /// </summary>
     private static void Curve(List<Vector2> points, List<bool> smooth, Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float half, float tolerance)
     {
+        // Floats carry about seven digits: finer than a millionth of the curve's coordinates is noise, which would only make the
+        // count, and the joins between the pieces, explode.
+        float magnitude = MathF.Max(MathF.Max(Vector2.Abs(p0).X, Vector2.Abs(p0).Y), MathF.Max(MathF.Max(Vector2.Abs(p3).X, Vector2.Abs(p3).Y), MathF.Max(MathF.Max(Vector2.Abs(p1).X, Vector2.Abs(p1).Y), MathF.Max(Vector2.Abs(p2).X, Vector2.Abs(p2).Y))));
+        tolerance = MathF.Max(tolerance, magnitude * 1e-6f);
         int n = Flattener.CubicCount(p0, p1, p2, p3, tolerance);
         double turn = Angle(p0, p1, p2) + Angle(p1, p2, p3);
         double maxStep = half > tolerance ? 2 * Math.Acos(Math.Clamp(1 - (tolerance / half), -1, 1)) : Math.PI / 4;
         maxStep = Math.Min(maxStep, Math.PI / 4);
-        n = Math.Max(n, (int)Math.Min(4096, Math.Ceiling(turn / maxStep)));
+        n = Math.Min(Math.Max(n, (int)Math.Min(4096, Math.Ceiling(turn / maxStep))), 4096);
         for (int i = 1; i <= n; i++)
         {
             // Points inside a curve are smooth: their joins follow the offset curve (round), whatever the pen's join.
@@ -333,8 +341,8 @@ internal static class Stroker
             }
         }
 
-        double step = half > tolerance ? 2 * Math.Acos(1 - (tolerance / half)) : Math.PI / 2;
-        int n = Math.Max(1, (int)Math.Min(1024, Math.Ceiling(Math.Abs(sweep) / step)));
+        double step = half > tolerance ? Math.Max(2 * Math.Acos(1 - ((double)tolerance / half)), 1e-3) : Math.PI / 2;
+        int n = Math.Max(1, (int)Math.Min(256, Math.Ceiling(Math.Abs(sweep) / step)));
         for (int i = 1; i <= n; i++)
         {
             (double s, double c) = Math.SinCos(a0 + (sweep * i / n));

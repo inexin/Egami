@@ -22,13 +22,16 @@ public sealed partial class Path
     private bool? _convex;
     private Path[]? _contours;
 
-    internal Path(Vector2[] points, PathVerb[] verbs, FillRule fillRule)
+    internal Path(Vector2[] points, PathVerb[] verbs, FillRule fillRule, bool checkFinite = true)
     {
-        foreach (Vector2 p in points)
+        if (checkFinite)
         {
-            if (!float.IsFinite(p.X) || !float.IsFinite(p.Y))
+            foreach (Vector2 p in points)
             {
-                throw new ArgumentException("A path's points must be finite numbers.", nameof(points));
+                if (!float.IsFinite(p.X) || !float.IsFinite(p.Y))
+                {
+                    throw new ArgumentException("A path's points must be finite numbers.", nameof(points));
+                }
             }
         }
 
@@ -117,6 +120,18 @@ public sealed partial class Path
         }
 
         return new Path(points, _verbs, FillRule);
+    }
+
+    /// <summary>Transforms for drawing: points that overflow to infinity are kept, for the rasterizer to clip.</summary>
+    internal Path TransformForDrawing(Matrix3x2 matrix)
+    {
+        Vector2[] points = new Vector2[_points.Length];
+        for (int i = 0; i < points.Length; i++)
+        {
+            points[i] = Vector2.Transform(_points[i], matrix);
+        }
+
+        return new Path(points, _verbs, FillRule, checkFinite: false);
     }
 
     /// <summary>

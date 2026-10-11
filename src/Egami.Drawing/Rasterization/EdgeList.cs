@@ -5,6 +5,8 @@ namespace Egami.Drawing.Rasterization;
 /// <summary>The straight edges of a flattened outline in device pixels, with their bounds. Reused from call to call.</summary>
 internal sealed class EdgeList
 {
+    private const float Far = 1e30f;
+
     private float[] _coordinates = new float[256];
 
     /// <summary>Gets the number of edges.</summary>
@@ -28,9 +30,19 @@ internal sealed class EdgeList
         MaxX = MaxY = float.MinValue;
     }
 
-    /// <summary>Adds an edge; horizontal ones are kept for bounds but add no coverage, so they are dropped.</summary>
+    /// <summary>
+    /// Adds an edge; horizontal ones are kept for bounds but add no coverage, so they are dropped. An edge with a NaN coordinate
+    /// (arithmetic that overflowed on its way here) is dropped, and infinities are moved to a far finite value the rasterizer clips.
+    /// </summary>
     internal void Add(Vector2 a, Vector2 b)
     {
+        if (float.IsNaN(a.X) || float.IsNaN(a.Y) || float.IsNaN(b.X) || float.IsNaN(b.Y))
+        {
+            return;
+        }
+
+        a = Vector2.Clamp(a, new Vector2(-Far), new Vector2(Far));
+        b = Vector2.Clamp(b, new Vector2(-Far), new Vector2(Far));
         MinX = MathF.Min(MinX, MathF.Min(a.X, b.X));
         MaxX = MathF.Max(MaxX, MathF.Max(a.X, b.X));
         MinY = MathF.Min(MinY, MathF.Min(a.Y, b.Y));

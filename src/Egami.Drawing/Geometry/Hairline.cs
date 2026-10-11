@@ -47,7 +47,7 @@ internal static class Hairline
         }
 
         Contour(points, closed, cap, builder);
-        return builder.ToPath();
+        return builder.ToPathUnchecked();
     }
 
     private static void Contour(List<Vector2> points, bool closed, LineCap cap, PathBuilder builder)
