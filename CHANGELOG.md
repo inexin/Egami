@@ -311,3 +311,19 @@ source-over drawing of whole images or areas. Chains are planned before they run
 - Safety limits checked before any allocation; lenient or strict recovery from damaged files.
 - Pooled pixel memory with live usage counts and opt-in leak tracking.
 - Custom operations and formats through public interfaces, including animated formats.
+
+### Diagnostics
+
+- `EgamiContext.Diagnostics` takes an `Action<EgamiDiagnostic>` that receives Egami's warnings and notable decisions, so one line
+  sends them to `ILogger`, Serilog or the console; Egami takes no logging dependency. Off by default and free: with no handler
+  nothing is built, and a load or save allocates exactly what it would without diagnostics.
+- Each `EgamiDiagnostic` has a level (`Warning`, `Info`, `Debug`; `EgamiContext.DiagnosticLevel` sets the lowest delivered), a
+  source, a stable id such as `Png.ChecksumMismatch`, a message, and the byte offset and frame when known. Every id is listed in
+  the diagnostics article.
+- `RasterMetadata.Warnings` is an `IReadOnlyList<EgamiDiagnostic>`: every problem a lenient read recovered from, with its id. One
+  id is kept at most 10 times per call, then counted; the handler gets the same list as each call ends.
+- Saves report what they lose without being asked (alpha, depth, CMYK inks, frames, metadata the format cannot hold), and Info
+  and Debug events say what Egami chose: the format detected, a scaled decode, conversion on load, writer settings, parallel
+  bands, chain planning.
+- `EgamiContext.StartDiagnostics()` and `EgamiInput.Diagnostics` let format plug-ins and other libraries report through the same
+  handler, filter and cap; `EgamiInput.Warn` takes an id.

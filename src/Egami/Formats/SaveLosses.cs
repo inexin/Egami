@@ -58,6 +58,8 @@ internal enum SaveKeeps
 /// </summary>
 internal static class SaveLosses
 {
+    private static readonly string[] s_comment = ["Comment"];
+
     /// <summary>Compares the raster or rows about to be written with what the writer keeps, and reports each loss once.</summary>
     /// <param name="start">The encode, for its pixels, metadata, options and context.</param>
     /// <param name="format">The format's name, which starts each message.</param>
@@ -101,7 +103,7 @@ internal static class SaveLosses
             context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.ConvertedToRgb", $"{format} holds no CMYK here; the inks were converted to RGB.");
         }
 
-        if (!start.Options.StripMetadata && Dropped(start.Metadata, keeps, textKeys ?? ["Comment"]) is string dropped)
+        if (!start.Options.StripMetadata && Dropped(start.Metadata, keeps, textKeys ?? s_comment) is string dropped)
         {
             context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.MetadataDropped", $"{format} cannot hold {dropped}; it was not written.");
         }
@@ -145,9 +147,13 @@ internal static class SaveLosses
         if ((keeps & SaveKeeps.Text) == 0)
         {
             bool comments = (keeps & SaveKeeps.Comment) != 0;
-            if (metadata.Text.Any(t => !comments || !textKeys.Contains(t.Key, StringComparer.OrdinalIgnoreCase)))
+            for (int i = 0; i < metadata.Text.Count; i++)
             {
-                Add(comments ? $"text other than {string.Join(" and ", textKeys)}" : "text entries");
+                if (!comments || !Kept(textKeys, metadata.Text[i].Key))
+                {
+                    Add(comments ? $"text other than {string.Join(" and ", textKeys)}" : "text entries");
+                    break;
+                }
             }
         }
 
@@ -157,6 +163,19 @@ internal static class SaveLosses
         }
 
         return kinds is null ? null : kinds.Count == 1 ? kinds[0] : $"{string.Join(", ", kinds.GetRange(0, kinds.Count - 1))} or {kinds[^1]}";
+    }
+
+    private static bool Kept(string[] keys, string key)
+    {
+        foreach (string kept in keys)
+        {
+            if (string.Equals(kept, key, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool IsOpaque<TPixel>(Raster<TPixel> raster)

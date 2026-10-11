@@ -20,7 +20,17 @@ internal static class FormatPipeline
             return Named(decoder.ReadAll(), decoder.Info.Format);
         }
 
-        return Run(stream, context, (format, input) => Loaded(input, format.Reader!.Read(input, options), format, options), cancellationToken);
+        return Run(stream, context, (format, input) =>
+        {
+            try
+            {
+                return Loaded(input, format.Reader!.Read(input, options), format, options);
+            }
+            catch (LimitExceededException e) when (LimitHit(input, e))
+            {
+                throw;
+            }
+        }, cancellationToken);
     }
 
     internal static Raster<TPixel> Load<TPixel>(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
@@ -37,7 +47,17 @@ internal static class FormatPipeline
             return Named(decoder.ReadAll<TPixel>(), decoder.Info.Format);
         }
 
-        return Run(stream, context, (format, input) => Loaded(input, format.Reader!.Read<TPixel>(input, options), format, options), cancellationToken);
+        return Run(stream, context, (format, input) =>
+        {
+            try
+            {
+                return Loaded(input, format.Reader!.Read<TPixel>(input, options), format, options);
+            }
+            catch (LimitExceededException e) when (LimitHit(input, e))
+            {
+                throw;
+            }
+        }, cancellationToken);
     }
 
     internal static RasterInfo Probe(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
@@ -610,10 +630,6 @@ internal static class FormatPipeline
             input.SetFormat(format);
             result = read(format, input);
             input.ReturnUnreadBytes();
-        }
-        catch (LimitExceededException e) when (LimitHit(input, e))
-        {
-            throw;
         }
         finally
         {
