@@ -53,7 +53,7 @@ them through it.
 
 | Option | Default | Does |
 | --- | --- | --- |
-| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray and RGB), `Webp` (lossless at `Quality` 100, else lossy) |
+| `Compression` | the TIFF source's, else `Deflate` | `None`, `Lzw`, `Deflate`, `PackBits`, `CcittGroup3` and `CcittGroup4` (1-bit), `Jpeg` (8-bit gray, RGB and CMYK), `Webp` (lossless at `Quality` 100, else lossy) |
 | `CompressionLevel` | 5 | Deflate level, 0 to 9 |
 | `Predictor` | the source's, else `Horizontal` for integers and `FloatingPoint` for floats | For LZW and Deflate; `None` turns it off |
 | `Quality` | 75 | JPEG and lossy WebP quality |

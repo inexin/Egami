@@ -54,6 +54,14 @@ Decoder frames in NV12 or P010 copy into the planes first; see [planar YUV](../g
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#cmyk-inks)]
 
+## Save a CMYK JPEG for print
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-cmyk)]
+
+## Save a progressive JPEG for the web
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-progressive)]
+
 ## Load any upload as sRGB
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-on-load)]

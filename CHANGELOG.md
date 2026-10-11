@@ -22,7 +22,7 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   Each pixel type is written at its own depth. A TIFF source's compression, predictor, layout and byte order are kept unless set;
   a lossy compression is kept only while the pixels are unchanged. `ParallelCompression` compresses strips and tiles on up to
   `MaxParallelism` threads, with the same bytes. Files are within 1% of the reference library's size at the same settings, and libtiff,
-  ImageMagick and Pillow read them all. JPEG compression of CMYK waits for the JPEG writer's CMYK support.
+  ImageMagick and Pillow read them all. JPEG compression takes CMYK too, written as libtiff writes separated JPEG.
 
 ### WebP
 
@@ -247,6 +247,24 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   scan before it row by row, and the last pass is split by rows. The 4000 × 3000 progressive benchmark photo decodes in half the
   time on 8 cores; the same photo with a marker every MCU row in under half. Files without markers decode as before.
 - Faster arithmetic decoding than the reference library 3.1.12 at one thread and on all cores.
+
+### JPEG writing
+
+- `JpegWriterOptions.Progressive` writes progressive files with libjpeg's standard scan script (ten scans for color, six for
+  gray) and Huffman tables optimized per scan. They decode to exactly the baseline file's pixels and are the same bytes as
+  libjpeg-turbo's `cjpeg -progressive` at the same quality and sampling. The quantized coefficients are held until the last
+  scan, about 2 bytes per sample, within `SafetyLimits.MaxTotalBytes`; a streamed encode buffers. Off by default, and a
+  progressive source is re-saved as baseline unless it is set.
+- `JpegColorType.Cmyk` and `JpegColorType.Ycck` write four components behind an Adobe marker, inverted as Photoshop writes CMYK;
+  `Auto` picks CMYK for `Cmyk8` and `Cmyk16` pixels, which 1.x converted to RGB on save. YCCK subsamples its chroma and keeps
+  black at full size. djpeg, ImageMagick and Pillow read every file to within a level of Egami's inks. 12 MP encodes faster than
+  the reference library 3.1.12's CMYK and YCCK encoder at one thread (95 against 106 ms, 91 against 98) and on all cores (2.2 and 3.3 times
+  as fast).
+- `JpegWriterOptions.Precision = 12` writes 12-bit files (SOF1, or SOF2 when progressive) that keep the detail of 16-bit and
+  float pixels, with optimized Huffman tables and 16-bit quantization tables where quality needs them. djpeg reads them within a
+  level of Egami's decode; browsers, Pillow and many ImageMagick builds don't read 12-bit JPEG at all.
+- TIFF's JPEG compression takes CMYK pages (see TIFF above).
+- Arithmetic and lossless JPEG are still read only.
 
 ### Pixel layouts
 

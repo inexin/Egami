@@ -18,7 +18,10 @@ using SharpFuzz;
 // what Egami writes after an edit reads back undamaged. The tiff and tiffcodec targets (Phase 2.3.2) load TIFF files every way
 // and feed TIFF's decompressors and predictors raw bytes. The webp and webpcodec targets (Phase 2.3.1) load WebP files every way
 // (stills and animations, planes, from a stream that cannot seek) and write them back, and feed the VP8 and VP8L decoders raw
-// bit streams and the encoders arbitrary pixels, whose lossless round trip must be exact.
+// bit streams and the encoders arbitrary pixels, whose lossless round trip must be exact. The jpeg-write target (Phase 2.4.3)
+// runs the JPEG writer: the input picks a pixel type, size, pixels and writer options (CMYK, YCCK, 12-bit, progressive among
+// them); the file must read back at its size, a progressive file must decode to the baseline file's pixels, and a streamed
+// encode must write what Save writes.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -85,6 +88,7 @@ static Action<Stream> Target(string name) => name switch
     "png" => LoadPng,
     "jpeg" => LoadJpeg,
     "jpeg-depth" => LoadJpegDepth,
+    "jpeg-write" => WriteJpeg,
     "exif" => ParseExif,
     "icc" => ParseIcc,
     "gif" => LoadGif,
@@ -105,7 +109,7 @@ static Action<Stream> Target(string name) => name switch
     "tiffcodec" => DecodeTiffCodec,
     "webp" => LoadWebp,
     "webpcodec" => DecodeWebpCodec,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec."),
 };
 
 static EgamiContext Context()
@@ -886,6 +890,102 @@ static void DecodeWebpCodec(Stream stream)
     }
     catch (EgamiException)
     {
+    }
+}
+
+static void WriteJpeg(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 8)
+    {
+        return;
+    }
+
+    EgamiContext context = Context() with { MaxParallelism = 1 + (data[6] % 4) };
+    int width = 1 + ((data[0] | ((data[1] & 1) << 8)) % 300);
+    int height = 1 + ((data[2] | ((data[3] & 1) << 8)) % 300);
+    byte flags = data[5];
+    byte more = data[6];
+    JpegWriterOptions Options(bool progressive) => new()
+    {
+        Quality = 1 + (data[7] % 100),
+        Subsampling = (ChromaSubsampling)(flags % 3),
+        OptimizeHuffman = (flags & 4) != 0,
+        Progressive = progressive,
+        Precision = (flags & 16) != 0 ? 12 : 8,
+        ColorType = (JpegColorType)((flags >> 5) % 4),
+        RestartInterval = (more & 8) != 0 ? more >> 4 : 0,
+        Background = (more & 4) != 0 ? new Rgba8(data[0], data[1], data[2], 255) : null,
+    };
+
+    using Raster raster = (data[4] % 7) switch
+    {
+        0 => Fill<Rgb8>(width, height, data, context),
+        1 => Fill<Gray8>(width, height, data, context),
+        2 => Fill<Cmyk8>(width, height, data, context),
+        3 => Fill<Rgb16>(width, height, data, context),
+        4 => Fill<Gray16>(width, height, data, context),
+        5 => Fill<Cmyk16>(width, height, data, context),
+        _ => Fill<Rgba8>(width, height, data, context),
+    };
+
+    bool progressive = (flags & 8) != 0;
+    byte[] file = Save(raster, Options(progressive));
+    using Raster back = Raster.Load(file, context);
+    if (back.Width != width || back.Height != height || back.Metadata.Warnings.Count > 0)
+    {
+        throw new InvalidOperationException($"The JPEG read back as {back.Width} × {back.Height} with {back.Metadata.Warnings.Count} warnings.");
+    }
+
+    if (progressive)
+    {
+        using Raster baseline = Raster.Load(Save(raster, Options(false)), context);
+        using Raster<Rgba16> a = baseline.As<Rgba16>();
+        using Raster<Rgba16> b = back.As<Rgba16>();
+        for (int y = 0; y < height; y++)
+        {
+            if (!a.Row(y).SequenceEqual(b.Row(y)))
+            {
+                throw new InvalidOperationException($"Progressive row {y} decodes differently from baseline.");
+            }
+        }
+    }
+
+    if ((more & 2) != 0 && raster is Raster<Rgb16> rgb)
+    {
+        using MemoryStream streamed = new();
+        using (RasterEncoder<Rgb16> encoder = RasterEncoder.Create<Rgb16>(streamed, JpegFormat.Info, width, height, Options(progressive), context: context))
+        {
+            encoder.WriteRows(rgb);
+            encoder.Complete();
+        }
+
+        if (!streamed.ToArray().AsSpan().SequenceEqual(file))
+        {
+            throw new InvalidOperationException("A streamed encode wrote a different file from Save.");
+        }
+    }
+
+    static byte[] Save(Raster raster, JpegWriterOptions options)
+    {
+        using MemoryStream output = new();
+        raster.Save(output, JpegFormat.Info, options);
+        return output.ToArray();
+    }
+
+    static Raster<T> Fill<T>(int width, int height, byte[] data, EgamiContext context)
+        where T : unmanaged, IPixelType<T>
+    {
+        Raster<T> raster = Raster.Create<T>(width, height, context);
+        byte[] pixels = new byte[width * height * T.Layout.BytesPerPixel];
+        ReadOnlySpan<byte> source = data.AsSpan(8);
+        for (int i = 0; i < pixels.Length && !source.IsEmpty; i++)
+        {
+            pixels[i] = source[i % source.Length];
+        }
+
+        raster.CopyPixelsFrom(pixels);
+        return raster;
     }
 }
 

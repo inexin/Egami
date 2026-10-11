@@ -158,6 +158,36 @@ public class AnimationAndMetadata
     }
 
     [Fact]
+    public void JpegWriteModes()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> image = Raster.Load<Rgb8>("duck.png");
+
+        #region jpeg-progressive
+        // Shows coarse first and sharpens as it loads; usually a few percent smaller, and decodes to the same pixels.
+        image.Save("duck-progressive.jpg", new JpegWriterOptions { Progressive = true });
+        #endregion
+
+        #region jpeg-cmyk
+        // CMYK pixels save as CMYK, inverted behind an Adobe marker as Photoshop writes; YCCK is usually smaller.
+        using Raster<Cmyk8> inks = image.As<Cmyk8>();
+        inks.Save("duck-cmyk-out.jpg", JpegWriterOptions.Default);
+        inks.Save("duck-ycck.jpg", new JpegWriterOptions { ColorType = JpegColorType.Ycck });
+        #endregion
+
+        #region jpeg-12bit
+        // 16-bit and float pixels keep more than 8 bits in a 12-bit file; it loads back as Rgb16. No browser shows it.
+        using Raster<Rgb16> deep = image.As<Rgb16>();
+        deep.Save("duck-12bit.jpg", new JpegWriterOptions { Precision = 12, Quality = 95 });
+        #endregion
+
+        Assert.True(((JpegDetails)Raster.Load("duck-progressive.jpg").Metadata.FormatDetails!).Progressive);
+        Assert.Equal(JpegColorSpace.Ycck, ((JpegDetails)Raster.Load("duck-ycck.jpg").Metadata.FormatDetails!).ColorSpace);
+        Assert.Equal(12, ((JpegDetails)Raster.Load("duck-12bit.jpg").Metadata.FormatDetails!).Precision);
+        Assert.Equal(Cmyk8.Layout, Raster.Load("duck-cmyk-out.jpg").Layout);
+    }
+
+    [Fact]
     public void JpegDetailsSample()
     {
         using SampleFiles files = new();

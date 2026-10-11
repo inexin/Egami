@@ -104,6 +104,9 @@ image.Save(stream, JpegFormat.Info, new JpegWriterOptions
 });
 ```
 
+The writer also writes progressive files (`Progressive`, the same bytes as `cjpeg -progressive`), CMYK and YCCK (CMYK pixels
+save as CMYK), and 12-bit files from 16-bit and float pixels (`Precision = 12`).
+
 `JpegWriterOptions.Background` composites rasters with alpha onto a color first; without it alpha is ignored. Facts about the
 file (progressive, sampling, an estimate of the quality it was saved at) are in `image.Metadata.FormatDetails` as
 `JpegDetails`.
