@@ -34,7 +34,7 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             ImageCount = 1,
             HasMetadata = !file.Xmp.IsEmpty || !file.Icc.IsEmpty || file.Capture is not null || file.Display is not null,
             EstimatedBytes = (long)width * height * pixels.Layout.BytesPerPixel,
-            Access = RasterAccess.Buffered,
+            Access = Streams(stream, pixels) ? RasterAccess.Streamed : RasterAccess.Buffered,
             WorkingBytes = WorkingBytes(stream, 0),
         };
     }
@@ -70,6 +70,13 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
     {
         Upsampling = options is Jpeg2000ReaderOptions { FastUpsampling: true } ? ChromaUpsampling.Nearest : ChromaUpsampling.Bilinear,
     };
+
+    /// <summary>Gets whether rows stream a row of tiles at a time, which <see cref="Open"/> does unless chroma is interpolated or the image has one row of tiles.</summary>
+    private static bool Streams(J2kCodestream stream, J2kPixels pixels)
+    {
+        bool yuv = pixels.Model == J2kModel.Sycc && PlaneFormat(stream, pixels) is (ChromaFormat format, _) && format != ChromaFormat.Yuv444;
+        return !yuv && Banded(stream) && stream.TilesY > 1;
+    }
 
     private static Jpeg2000Components Mode(ReaderOptions options) => options is Jpeg2000ReaderOptions j ? j.Components : Jpeg2000Components.Color;
 
