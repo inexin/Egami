@@ -68,6 +68,9 @@ sampling (other samplings are replicated to 4:4:4), gray as 4:0:0, also at reduc
 without planes, throw `NotSupportedException`: load those with `Raster.Load`. Saving 8-bit BT.601 full-range planes as JPEG
 encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes.
 
+Loading planes skips chroma upsampling and color conversion, so it is faster than `Raster.Load` on one thread. On several
+threads both are limited by the same Huffman decoding and take about the same time.
+
 Converting loaded planes with `ToRaster` may differ by one level, in a small share of pixels, from `Raster.Load`, which keeps the
 JPEG decoder's own libjpeg-turbo color code.
 
@@ -76,5 +79,6 @@ JPEG decoder's own libjpeg-turbo color code.
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#operations)]
 
 `Resize` runs each plane through the same filters as `RasterOps.Resize` and clamps to the bit depth; the chroma format, siting and
-color stay. `ResizeTo` does the same into a raster you already have, so a player scales every frame into one raster. `Crop`
+color stay. For now it is somewhat slower than resizing the same picture as `Rgba8`, whose resize has a faster horizontal
+pass. `ResizeTo` does the same into a raster you already have, so a player scales every frame into one raster. `Crop`
 must start on a chroma sample, so chroma is copied exactly.
