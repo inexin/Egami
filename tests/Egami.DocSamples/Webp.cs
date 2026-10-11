@@ -30,6 +30,28 @@ public class Webp
     }
 
     [Fact]
+    public void Animation()
+    {
+        using SampleFiles files = new();
+
+        #region webp-animation
+        // A GIF (or APNG) becomes an animated WebP in one Load and one Save: frames, delays and loop count carry over. Each frame
+        // stores only what changed; lossless frames are exact, MixedFrames keeps whichever kind is smaller per frame.
+        using Raster gif = Raster.Load("pan.gif");
+        gif.Save("pan.webp", new WebpWriterOptions { Lossless = false, MixedFrames = true });
+
+        // Read back, every frame is the composed canvas, as with GIF and APNG.
+        using Raster<Rgba8> webp = Raster.Load<Rgba8>("pan.webp");
+        foreach (Frame<Rgba8> frame in webp.Frames)
+        {
+            Console.WriteLine($"{frame.Metadata.Delay.TotalMilliseconds} ms, changed {frame.Metadata.Bounds}, blend {frame.Metadata.Blend}");
+        }
+        #endregion
+
+        Assert.Equal(gif.FrameCount, webp.FrameCount);
+    }
+
+    [Fact]
     public void Details()
     {
         using SampleFiles files = new();

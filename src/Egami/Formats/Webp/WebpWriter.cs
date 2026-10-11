@@ -13,7 +13,7 @@ namespace Egami.Formats.Webp;
 /// container is the simple form when the image needs nothing else, and the extended form (VP8X) for metadata, kept chunks or
 /// alpha in lossy data.
 /// </summary>
-internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
+internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly WebpWriter Instance = new();
 
@@ -35,7 +35,8 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
                 nameof(start), $"{(lossless ? "Lossless" : "Lossy")} WebP holds images up to {max} pixels a side; this one is {start.Width}×{start.Height}.");
         }
 
-        return new StillEncoder<TPixel>(output, start, webp, lossless);
+        bool animated = !webp.FirstFrameOnly && (start.Whole?.FrameCount ?? 2) > 1;
+        return animated ? new AnimationEncoder<TPixel>(output, start, webp, lossless) : new StillEncoder<TPixel>(output, start, webp, lossless);
     }
 
     /// <summary>Gathers a still image's rows as ARGB and encodes them at the end.</summary>
@@ -78,7 +79,12 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
                 throw new InvalidOperationException($"The image has {_start.Height} rows, but {_rows} were written.");
             }
 
-            ReadOnlySpan<uint> argb = Argb;
+            WriteStill(_output, _start.Metadata, _options, _lossless, Argb, _start.Width, _start.Height);
+        }
+
+        /// <summary>Encodes and writes a still image's file from its ARGB pixels.</summary>
+        internal static void WriteStill(Stream output, RasterMetadata metadata, WebpWriterOptions options, bool lossless, Span<uint> argb, int width, int height)
+        {
             bool alpha = false;
             foreach (uint p in argb)
             {
@@ -89,16 +95,16 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
                 }
             }
 
-            if (!_lossless)
+            if (!lossless)
             {
-                (byte[] frame, byte[]? alphaChunk) = EncodeLossy(Argb, _start.Width, _start.Height, _options, alpha);
-                Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8, frame, alphaChunk, alpha), _start.Width, _start.Height);
+                (byte[] frame, byte[]? alphaChunk) = EncodeLossy(argb, width, height, options, alpha);
+                Container.Write(output, metadata, options, new ImageChunk(WebpContainer.Vp8, frame, alphaChunk, alpha), width, height);
                 return;
             }
 
             using Vp8lBitWriter bits = new(argb.Length);
-            Vp8lEncoder.Encode(argb, _start.Width, _start.Height, new Vp8lEncoderOptions(_options.Effort, _options.KeepTransparentColors, _options.NearLossless), bits);
-            Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8L, bits.Finish(), default, alpha), _start.Width, _start.Height);
+            Vp8lEncoder.Encode(argb, width, height, new Vp8lEncoderOptions(options.Effort, options.KeepTransparentColors, options.NearLossless), bits);
+            Container.Write(output, metadata, options, new ImageChunk(WebpContainer.Vp8L, bits.Finish(), default, alpha), width, height);
         }
 
         /// <summary>

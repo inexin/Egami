@@ -49,3 +49,14 @@ WebP and is not written. `WebpDetails` says what kind of file it was and keeps c
 its `WebpChunkPosition`; animation frames carry `WebpFrameDetails`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Webp.cs#webp-details)]
+
+## Animation
+
+Animated WebP reads and writes through the same frames as GIF and APNG. Reading composes every frame on a canvas exactly as
+libwebp's animation decoder does (its blending and key frames included), starting transparent unless
+`WebpReaderOptions.UseBackgroundColor` asks for the ANIM background color; `ReaderOptions.Frames` and streaming through
+`RasterDecoder` work as for GIF, holding one canvas whatever the frame count. Writing stores each frame's changed rectangle at
+even offsets, blended over the canvas when its new pixels are opaque and replacing them otherwise, with delays rounded to whole
+milliseconds and capped at 16,777,215.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Webp.cs#webp-animation)]

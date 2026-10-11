@@ -67,6 +67,41 @@ public class WebpInteropFiles
                 }
             }
         }
+
+        // Animations from the GIF and APNG corpus, each frame as Egami decodes it, for WebPAnimDecoder to match.
+        foreach (string file in Egami.Tests.Formats.Gif.AnimCorpus.Files("gif").Concat(Egami.Tests.Formats.Gif.AnimCorpus.Files("apng")).Where(f => !f.Contains("16", StringComparison.Ordinal)))
+        {
+            using Raster<Rgba8> source = Raster.Load<Rgba8>(Egami.Tests.Formats.Gif.AnimCorpus.Read(file));
+            if (source.FrameCount < 2)
+            {
+                continue;
+            }
+
+            string name = "anim-" + Path.GetFileNameWithoutExtension(file).Replace('/', '-');
+            foreach ((string kind, WebpWriterOptions options) in new[]
+            {
+                ("lossless", new WebpWriterOptions { Lossless = true }),
+                ("lossy", new WebpWriterOptions { Lossless = false }),
+                ("lossy-mixed", new WebpWriterOptions { Lossless = false, MixedFrames = true, Effort = 6 }),
+            })
+            {
+                using MemoryStream webp = new();
+                source.Save(webp, WebpFormat.Info, options);
+                string stem = Path.Combine(directory, $"{name}.{kind}");
+                File.WriteAllBytes(stem + ".webp", webp.ToArray());
+                using Raster<Rgba8> decoded = Raster.Load<Rgba8>(webp.ToArray());
+                using MemoryStream frames = new();
+                foreach (Frame<Rgba8> frame in decoded.Frames)
+                {
+                    for (int y = 0; y < decoded.Height; y++)
+                    {
+                        frames.Write(MemoryMarshal.AsBytes(frame.Row(y)));
+                    }
+                }
+
+                File.WriteAllBytes(stem + ".frames.rgba", frames.ToArray());
+            }
+        }
     }
 }
 
