@@ -151,4 +151,21 @@ public class Formats
 
         Assert.Equal("TGA", image.Metadata.FormatName);
     }
+
+    [Fact]
+    public void NamedFormat()
+    {
+        using SampleFiles files = new();
+        Raster.Load("duck.png").Save("duck.tga");
+        byte[] data = File.ReadAllBytes("duck.tga");
+
+        #region named-format
+        // Data without a signature of its own (a TGA here; a JBIG2 stream from a PDF) loads with its format named,
+        // which skips detection. Probe, LoadAll and RasterDecoder.Open take the format the same way.
+        using Raster image = Raster.Load(data, TgaFormat.Info);
+        RasterInfo info = Raster.Probe(data, TgaFormat.Info);
+        #endregion
+
+        Assert.Equal(info.Width, image.Width);
+    }
 }

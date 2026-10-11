@@ -20,7 +20,7 @@ internal static class FormatPipeline
             return Named(decoder.ReadAll(), decoder.Info.Format);
         }
 
-        return Run(stream, context, (format, input) =>
+        return Run(stream, context, options, (format, input) =>
         {
             try
             {
@@ -47,7 +47,7 @@ internal static class FormatPipeline
             return Named(decoder.ReadAll<TPixel>(), decoder.Info.Format);
         }
 
-        return Run(stream, context, (format, input) =>
+        return Run(stream, context, options, (format, input) =>
         {
             try
             {
@@ -62,7 +62,7 @@ internal static class FormatPipeline
 
     internal static RasterInfo Probe(Stream stream, EgamiContext context, ReaderOptions options, CancellationToken cancellationToken)
     {
-        return Run(stream, context, (format, input) => ProbeCore(format, input, options), cancellationToken);
+        return Run(stream, context, options, (format, input) => ProbeCore(format, input, options), cancellationToken);
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ internal static class FormatPipeline
         FormatInfo format;
         try
         {
-            format = Detect(input, context);
+            format = Detect(input, context, options);
             input.SetFormat(format);
         }
         catch (LimitExceededException e) when (LimitHit(input, e))
@@ -235,8 +235,13 @@ internal static class FormatPipeline
         }
 
         long start = stream.Position;
-        IReadOnlyList<ReaderOptions> images = Run(stream, context, (format, input) => format.Reader is IMultiImageReader multi ? multi.Images(input, options) : [options], cancellationToken);
+        IReadOnlyList<ReaderOptions> images = Run(stream, context, options, (format, input) => format.Reader is IMultiImageReader multi ? multi.Images(input, options) : [options], cancellationToken);
         context.Limits.CheckFrameCount(images.Count);
+        if (options.Format is FormatInfo named)
+        {
+            images = [.. images.Select(o => o.Format is null ? o with { Format = named } : o)];
+        }
+
         List<Raster?> rasters = new(images.Count);
         long total = 0;
         long end = start;
@@ -619,14 +624,14 @@ internal static class FormatPipeline
         }
     }
 
-    internal static T Run<T>(Stream stream, EgamiContext context, Func<FormatInfo, EgamiInput, T> read, CancellationToken cancellationToken)
+    internal static T Run<T>(Stream stream, EgamiContext context, ReaderOptions options, Func<FormatInfo, EgamiInput, T> read, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(stream);
         EgamiInput input = new(stream, context, cancellationToken);
         T result;
         try
         {
-            FormatInfo format = Detect(input, context);
+            FormatInfo format = Detect(input, context, options);
             input.SetFormat(format);
             result = read(format, input);
             input.ReturnUnreadBytes();
@@ -640,8 +645,17 @@ internal static class FormatPipeline
         return input.Deliver(result);
     }
 
-    internal static FormatInfo Detect(EgamiInput input, EgamiContext context)
+    /// <summary>
+    /// Returns the format the options name (<see cref="ReaderOptions.Format"/>), without looking at the data, or else the first
+    /// registered format whose signature matches.
+    /// </summary>
+    internal static FormatInfo Detect(EgamiInput input, EgamiContext context, ReaderOptions options)
     {
+        if (options.Format is FormatInfo named)
+        {
+            return named.Reader is null ? throw new UnsupportedFormatException($"The {named.Name} format has no reader.") : named;
+        }
+
         if (context.Formats.Count == 0)
         {
             throw new UnsupportedFormatException("No formats are registered in the context.");

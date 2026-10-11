@@ -71,6 +71,12 @@ public record ReaderOptions
     /// <see langword="null"/> to choose from <see cref="MinimumSize"/> alone as in 1.3. Set by the streaming path, never by callers.
     /// </summary>
     internal Func<int, int, int>? NativeScale { get; init; }
+
+    /// <summary>
+    /// Gets the format to read with, skipping detection, or <see langword="null"/> to detect it from the data. Set by the overloads
+    /// that take a <see cref="FormatInfo"/>, such as <see cref="Raster.Load(Stream, FormatInfo, EgamiContext?, ReaderOptions?)"/>.
+    /// </summary>
+    internal FormatInfo? Format { get; init; }
 }
 
 /// <summary>How a decode produces rows, as <see cref="RasterInfo.Access"/> reports it.</summary>

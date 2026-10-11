@@ -255,6 +255,49 @@ public sealed class RasterDecoder : IDisposable
     }
 
     /// <summary>
+    /// Opens an image of a known format from a stream without detecting it, for data that has no signature of its own. See
+    /// <see cref="Open(Stream, EgamiContext?, ReaderOptions?)"/>.
+    /// </summary>
+    /// <param name="stream">The encoded image, read from its current position and left open.</param>
+    /// <param name="format">The format to read with. It need not be registered in the context.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <returns>The decoder. The caller must dispose it.</returns>
+    /// <exception cref="UnsupportedFormatException"><paramref name="format"/> has no reader.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules, including data of another format.</exception>
+    /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="ReaderOptions.Region"/> has no area or misses the image.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="format"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Formats.cs" region="named-format"/>
+    /// </example>
+    public static RasterDecoder Open(Stream stream, FormatInfo format, EgamiContext? context = null, ReaderOptions? options = null)
+    {
+        return Open(stream, context, Raster.WithFormat(format, options), owned: null);
+    }
+
+    /// <summary>Opens an image of a known format from bytes in memory. See <see cref="Open(Stream, FormatInfo, EgamiContext?, ReaderOptions?)"/>.</summary>
+    /// <param name="data">The encoded image.</param>
+    /// <param name="format">The format to read with. It need not be registered in the context.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <param name="options">How to read, or <see langword="null"/> for <see cref="ReaderOptions.Default"/>.</param>
+    /// <returns>The decoder. The caller must dispose it.</returns>
+    /// <exception cref="UnsupportedFormatException"><paramref name="format"/> has no reader.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules, including data of another format.</exception>
+    /// <exception cref="LimitExceededException">The image breaks a safety limit.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="ReaderOptions.Region"/> has no area or misses the image.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="format"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Formats.cs" region="named-format"/>
+    /// </example>
+    public static RasterDecoder Open(ReadOnlyMemory<byte> data, FormatInfo format, EgamiContext? context = null, ReaderOptions? options = null)
+    {
+        ReaderOptions named = Raster.WithFormat(format, options);
+        MemoryStream stream = Raster.AsStream(data);
+        return Open(stream, context, named, owned: stream);
+    }
+
+    /// <summary>
     /// Starts an incremental decode: bytes are given with <see cref="Append"/> as they arrive, and rows, frames and previews come
     /// out as far as the bytes reach. <see cref="Status"/> says when more bytes are needed and <see cref="HeaderRead"/> when
     /// <see cref="Info"/> is known; <see cref="EndOfInput"/> says the last byte has come.
@@ -1028,7 +1071,7 @@ public sealed class RasterDecoder : IDisposable
             return;
         }
 
-        FormatInfo format = FormatPipeline.Detect(input, _context);
+        FormatInfo format = FormatPipeline.Detect(input, _context, _options);
         input.SetFormat(format);
         if (!append.Ended)
         {

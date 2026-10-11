@@ -34,7 +34,7 @@ public abstract partial class YuvRaster
             throw new NotSupportedException("Loading planes does not crop or convert color; load a Raster for that.");
         }
 
-        return FormatPipeline.Run(stream, context ?? EgamiContext.Default, (format, input) => Reader(format).ReadYuv(input, options), CancellationToken.None);
+        return FormatPipeline.Run(stream, context ?? EgamiContext.Default, options, (format, input) => Reader(format).ReadYuv(input, options), CancellationToken.None);
     }
 
     /// <summary>Loads an image file's planes. See <see cref="Load(Stream, EgamiContext?, ReaderOptions?)"/>.</summary>
@@ -92,7 +92,7 @@ public abstract partial class YuvRaster
     {
         options ??= ReaderOptions.Default;
         context ??= EgamiContext.Default;
-        return FormatPipeline.Run(stream, context, (format, input) =>
+        return FormatPipeline.Run(stream, context, options, (format, input) =>
         {
             if (format.Reader is IYuvFormatReader yuv)
             {
