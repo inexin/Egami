@@ -37,6 +37,9 @@ public sealed record TiffReaderOptions : ReaderOptions
     /// Defaults to <see langword="false"/>: only full-resolution pages.
     /// </summary>
     public bool IncludeReducedPages { get; init; }
+
+    /// <summary>Gets the directory LoadAll asks for: a main-chain index and a SubIFD index (-1 for none). Overrides <see cref="Page"/>.</summary>
+    internal (int Chain, int Sub)? Directory { get; init; }
 }
 
 /// <summary>A TIFF compression scheme, by its code in the Compression tag.</summary>

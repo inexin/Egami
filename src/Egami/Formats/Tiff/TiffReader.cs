@@ -11,7 +11,7 @@ namespace Egami.Formats.Tiff;
 /// note, starting from Lars's ClassicMac reader. Load reads one page (the first full-resolution page unless
 /// <see cref="TiffReaderOptions.Page"/> says otherwise) into its natural pixel type, a strip or row of tiles at a time.
 /// </summary>
-internal sealed class TiffReader : IFormatReader, IRowSourceReader
+internal sealed class TiffReader : IFormatReader, IRowSourceReader, IMultiImageReader
 {
     internal static readonly TiffReader Instance = new();
 
@@ -58,8 +58,8 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
         using TiffImage image = TiffImage.Open(input, options);
-        int index = image.PageToLoad(options);
-        TiffPage page = image.Page(index);
+        (int index, int sub) = image.PageToLoad(options);
+        TiffPage page = image.Page(index, sub);
         input.Limits.CheckFrameSize(page.Width, page.Height);
         RasterMetadata metadata = image.Metadata(page, options);
         bool hasMetadata = metadata.Exif is not null || !metadata.IccProfile.IsEmpty || !metadata.Xmp.IsEmpty || metadata.HasIptc;
@@ -70,6 +70,7 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader
             Height = page.Height,
             Layout = page.Layout,
             FrameCount = 1,
+            ImageCount = image.Images(options).Count,
             HasMetadata = hasMetadata,
             EstimatedBytes = (long)page.Width * page.Height * page.Layout.BytesPerPixel,
             Orientation = metadata.Exif?.Orientation ?? ImageOrientation.Normal,
@@ -82,14 +83,16 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         using TiffImage image = TiffImage.Open(input, options);
-        TiffPage page = image.Page(image.PageToLoad(options));
+        (int index, int sub) = image.PageToLoad(options);
+        TiffPage page = image.Page(index, sub);
         return ReadPage<TPixel>(input, image, page, options);
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
         using TiffImage image = TiffImage.Open(input, options);
-        TiffPage page = image.Page(image.PageToLoad(options));
+        (int index, int sub) = image.PageToLoad(options);
+        TiffPage page = image.Page(index, sub);
         return page.WithNaturalType(new NaturalRead(input, image, page, options));
     }
 
@@ -124,7 +127,8 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader
         TiffImage image = TiffImage.Open(input, options);
         try
         {
-            TiffPage page = image.Page(image.PageToLoad(options));
+            (int index, int sub) = image.PageToLoad(options);
+            TiffPage page = image.Page(index, sub);
             input.Limits.CheckFrameSize(page.Width, page.Height);
             return page.WithNaturalType(new OpenRows(input, image, page, options, ownsInput: true));
         }
@@ -133,6 +137,21 @@ internal sealed class TiffReader : IFormatReader, IRowSourceReader
             image.Dispose();
             throw;
         }
+    }
+
+    public IReadOnlyList<ReaderOptions> Images(EgamiInput input, ReaderOptions options)
+    {
+        using TiffImage image = TiffImage.Open(input, options);
+        TiffReaderOptions tiff = options as TiffReaderOptions ?? new TiffReaderOptions
+        {
+            Recovery = options.Recovery,
+            ReadMetadata = options.ReadMetadata,
+            ConvertColorTo = options.ConvertColorTo,
+            Frames = options.Frames,
+            MinimumSize = options.MinimumSize,
+            Region = options.Region,
+        };
+        return [.. image.Images(options).Select(d => tiff with { Directory = d })];
     }
 
     private sealed class OpenRows(EgamiInput input, TiffImage image, TiffPage page, ReaderOptions options, bool ownsInput) : INaturalTypeVisitor<RowSource>

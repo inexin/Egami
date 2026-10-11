@@ -139,6 +139,11 @@ internal static class FormatPipeline
         }
 
         RasterInfo info = reader.ReadInfo(input, read);
+        if (info.ImageCount is null && reader is not IMultiImageReader && format.Reader is not null && IsBuiltIn(format))
+        {
+            info = info with { ImageCount = 1 };
+        }
+
         if (reader is Streaming.IRowSourceReader or IRowFormatReader && info.Access == RasterAccess.Streamed)
         {
             // A streaming reader reports its own working set.
@@ -156,6 +161,139 @@ internal static class FormatPipeline
         long stage = plan.Factor == 1 ? 0 : (plan.Output.Width * 4L * sizeof(double)) + (plan.Region.Width * 16L);
         long buffer = (long)plan.ScaledSize.Width * plan.ScaledSize.Height * info.Layout.BytesPerPixel * Math.Max(1, info.FrameCount ?? 1);
         return info with { Access = RasterAccess.Buffered, WorkingBytes = buffer + stage };
+    }
+
+    /// <summary>Gets whether a format is one of Egami's own, which all say how many images they hold.</summary>
+    private static bool IsBuiltIn(FormatInfo format) => format.Reader?.GetType().Assembly == typeof(FormatPipeline).Assembly;
+
+    /// <summary>
+    /// Loads every image of a file. A format that holds several (<see cref="IMultiImageReader"/>) names an options value for each,
+    /// and each is loaded as Load would load it, from the start of the data; any other format gives its one image. A stream that
+    /// cannot seek is read whole first. The images' bytes together count against <see cref="SafetyLimits.MaxTotalBytes"/> and
+    /// their number against <see cref="SafetyLimits.MaxFrames"/>.
+    /// </summary>
+    internal static RasterList LoadAll(Stream stream, EgamiContext context, ReaderOptions options, Func<Stream, ReaderOptions, Raster> load, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanSeek)
+        {
+            (byte[] buffer, int length) = ReadAll(stream, context, cancellationToken);
+            try
+            {
+                using MemoryStream memory = new(buffer, 0, length, writable: false, publiclyVisible: true);
+                return LoadAll(memory, context, options, load, cancellationToken);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        long start = stream.Position;
+        IReadOnlyList<ReaderOptions> images = Run(stream, context, (format, input) => format.Reader is IMultiImageReader multi ? multi.Images(input, options) : [options], cancellationToken);
+        context.Limits.CheckFrameCount(images.Count);
+        List<Raster?> rasters = new(images.Count);
+        long total = 0;
+        long end = start;
+        try
+        {
+            foreach (ReaderOptions image in images)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                stream.Position = start;
+                Raster raster = load(stream, image);
+                rasters.Add(raster);
+                end = Math.Max(end, stream.Position);
+                total += (long)raster.Width * raster.Height * raster.Layout.BytesPerPixel * raster.FrameCount;
+                if (total > context.Limits.MaxTotalBytes)
+                {
+                    throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), context.Limits.MaxTotalBytes, total);
+                }
+            }
+
+            stream.Position = end;
+            return new RasterList(rasters);
+        }
+        catch
+        {
+            foreach (Raster? raster in rasters)
+            {
+                raster?.Dispose();
+            }
+
+            throw;
+        }
+    }
+
+    /// <summary>Reads a whole stream into a pooled buffer, counting the bytes against <see cref="SafetyLimits.MaxTotalBytes"/>.</summary>
+    private static (byte[] Buffer, int Length) ReadAll(Stream stream, EgamiContext context, CancellationToken cancellationToken)
+    {
+        long max = Math.Min(context.Limits.MaxTotalBytes, Array.MaxLength);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
+        int length = 0;
+        try
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (length == buffer.Length)
+                {
+                    if (length >= max)
+                    {
+                        throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), context.Limits.MaxTotalBytes, length + 1L);
+                    }
+
+                    byte[] larger = ArrayPool<byte>.Shared.Rent((int)Math.Min(max, (long)buffer.Length * 2));
+                    buffer.AsSpan(0, length).CopyTo(larger);
+                    ArrayPool<byte>.Shared.Return(buffer);
+                    buffer = larger;
+                }
+
+                int n = stream.Read(buffer, length, (int)Math.Min(buffer.Length, max) - length);
+                if (n == 0)
+                {
+                    return (buffer, length);
+                }
+
+                length += n;
+            }
+        }
+        catch
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Writes several rasters to one file: a format that holds several (<see cref="IMultiImageWriter"/>) takes them all, and any
+    /// format takes one, as Save writes it.
+    /// </summary>
+    internal static void SaveAll(IReadOnlyList<Raster> rasters, Stream output, FormatInfo format, WriterOptions options)
+    {
+        IFormatWriter writer = format.Writer ?? throw new UnsupportedFormatException($"The {format.Name} format has no writer.");
+        if (rasters.Count == 0)
+        {
+            throw new ArgumentException("SaveAll needs at least one raster.", nameof(rasters));
+        }
+
+        foreach (Raster raster in rasters)
+        {
+            ArgumentNullException.ThrowIfNull(raster, nameof(rasters));
+        }
+
+        if (writer is IMultiImageWriter multi)
+        {
+            multi.WriteAll(rasters, output, options);
+            return;
+        }
+
+        if (rasters.Count > 1)
+        {
+            throw new ArgumentException($"The {format.Name} format holds one image; {rasters.Count} rasters were given. Save each to its own file, or use a format that holds several, such as TIFF.", nameof(rasters));
+        }
+
+        rasters[0].Save(output, format, options);
     }
 
     internal static void Save(Stream output, FormatInfo format, WriterOptions options, Action<IFormatWriter, Stream, WriterOptions> write)

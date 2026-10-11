@@ -362,6 +362,8 @@ Egami.Formats.RasterAccess.Buffered = 0 -> Egami.Formats.RasterAccess
 Egami.Formats.RasterAccess.Streamed = 1 -> Egami.Formats.RasterAccess
 Egami.Formats.RasterInfo.Access.get -> Egami.Formats.RasterAccess
 Egami.Formats.RasterInfo.Access.init -> void
+Egami.Formats.RasterInfo.ImageCount.get -> int?
+Egami.Formats.RasterInfo.ImageCount.init -> void
 Egami.Formats.RasterInfo.WorkingBytes.get -> long
 Egami.Formats.RasterInfo.WorkingBytes.init -> void
 Egami.Formats.ReaderOptions.ConvertColorTo.get -> Egami.Colors.ColorProfile?
@@ -1071,6 +1073,12 @@ Egami.RasterEncoder<TPixel>.WriteFrameAsync(Egami.Raster<TPixel>! frame, Egami.M
 Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band) -> void
 Egami.RasterEncoder<TPixel>.WriteRows(Egami.Raster<TPixel>! band, int rows) -> void
 Egami.RasterEncoder<TPixel>.WriteRowsAsync(Egami.Raster<TPixel>! band, int rows, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Egami.RasterList
+Egami.RasterList.Count.get -> int
+Egami.RasterList.Detach(int index) -> Egami.Raster!
+Egami.RasterList.Dispose() -> void
+Egami.RasterList.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Raster!>!
+Egami.RasterList.this[int index].get -> Egami.Raster!
 Egami.YuvConvertOptions
 Egami.YuvConvertOptions.<Clone>$() -> Egami.YuvConvertOptions!
 Egami.YuvConvertOptions.Downsampling.get -> Egami.ChromaDownsampling
@@ -1486,9 +1494,23 @@ static Egami.Pixels.YuvColor.operator !=(Egami.Pixels.YuvColor left, Egami.Pixel
 static Egami.Pixels.YuvColor.operator ==(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.TryFromH273(int matrixCoefficients, bool fullRange, Egami.Pixels.ChromaSiting siting, out Egami.Pixels.YuvColor color) -> bool
 static Egami.Raster.CombineChannels<TPixel>(Egami.Raster! red, Egami.Raster! green, Egami.Raster! blue, Egami.Raster? alpha = null) -> Egami.Raster<TPixel>!
+static Egami.Raster.LoadAll(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterList!
+static Egami.Raster.LoadAll(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterList!
+static Egami.Raster.LoadAll(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterList!
+static Egami.Raster.LoadAll<TPixel>(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterList!
+static Egami.Raster.LoadAll<TPixel>(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterList!
+static Egami.Raster.LoadAll<TPixel>(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.RasterList!
+static Egami.Raster.LoadAllAsync(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.RasterList!>!
+static Egami.Raster.LoadAllAsync(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.RasterList!>!
+static Egami.Raster.LoadAllAsync<TPixel>(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.RasterList!>!
+static Egami.Raster.LoadAllAsync<TPixel>(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.RasterList!>!
 static Egami.Raster.LoadInto<TPixel>(string! path, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
 static Egami.Raster.LoadInto<TPixel>(System.IO.Stream! stream, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
 static Egami.Raster.LoadInto<TPixel>(System.ReadOnlyMemory<byte> data, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
+static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, string! path, Egami.Formats.WriterOptions? options = null) -> void
+static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null) -> void
+static Egami.Raster.SaveAll(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, string! formatNameOrExtension, Egami.Formats.WriterOptions? options = null) -> void
+static Egami.Raster.SaveAllAsync(System.Collections.Generic.IEnumerable<Egami.Raster!>! rasters, System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Egami.Raster.Stack(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! images, Egami.Operations.StackMode mode) -> Egami.Raster!
 static Egami.Raster.Transcode(string! inputPath, string! outputPath, System.Action<Egami.Operations.RasterOps!>? operations = null, Egami.Formats.ReaderOptions? readerOptions = null, Egami.Formats.WriterOptions? writerOptions = null, Egami.EgamiContext? context = null) -> void
 static Egami.Raster.Transcode(System.IO.Stream! input, System.IO.Stream! output, Egami.Formats.FormatInfo! outputFormat, System.Action<Egami.Operations.RasterOps!>? operations = null, Egami.Formats.ReaderOptions? readerOptions = null, Egami.Formats.WriterOptions? writerOptions = null, Egami.EgamiContext? context = null) -> void

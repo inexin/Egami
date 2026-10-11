@@ -151,6 +151,13 @@ public sealed record RasterInfo
     /// <summary>Gets the number of frames, or <see langword="null"/> if finding out would need more than the header.</summary>
     public int? FrameCount { get; init; }
 
+    /// <summary>
+    /// Gets how many images <see cref="Raster.LoadAll(Stream, EgamiContext?, ReaderOptions?)"/> would return: 1 for formats that hold
+    /// one image (an animation is one image), the page count of a TIFF, or <see langword="null"/> when finding out would need more
+    /// than the header.
+    /// </summary>
+    public int? ImageCount { get; init; }
+
     /// <summary>Gets whether the header shows any metadata, such as EXIF, ICC, XMP or text.</summary>
     public bool HasMetadata { get; init; }
 

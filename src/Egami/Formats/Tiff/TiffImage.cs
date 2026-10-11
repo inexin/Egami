@@ -128,8 +128,13 @@ internal sealed class TiffImage : IDisposable
     /// Returns the chain index of the page Load reads: <see cref="TiffReaderOptions.Page"/> among the full-resolution pages, the
     /// first by default, or the first IFD when the file has no full-resolution page.
     /// </summary>
-    public int PageToLoad(ReaderOptions options)
+    public (int Chain, int Sub) PageToLoad(ReaderOptions options)
     {
+        if (options is TiffReaderOptions { Directory: (int chain, int sub) } && chain >= 0 && chain < _chain.Count)
+        {
+            return (chain, sub);
+        }
+
         List<int> pages = FullPages();
         int wanted = (options as TiffReaderOptions)?.Page ?? 0;
         if (wanted < 0 || (pages.Count > 0 && wanted >= pages.Count) || (pages.Count == 0 && wanted > 0))
@@ -137,7 +142,45 @@ internal sealed class TiffImage : IDisposable
             throw new ArgumentOutOfRangeException(nameof(options), wanted, $"TIFF: the file has {pages.Count} full-resolution page{(pages.Count == 1 ? string.Empty : "s")}.");
         }
 
-        return pages.Count > 0 ? pages[wanted] : 0;
+        return (pages.Count > 0 ? pages[wanted] : 0, -1);
+    }
+
+    /// <summary>
+    /// Returns every directory LoadAll reads, in order: each full-resolution page, and with <see cref="TiffReaderOptions.IncludeReducedPages"/>
+    /// the reduced-resolution pages and each page's SubIFDs after it. Transparency masks are never images.
+    /// </summary>
+    public List<(int Chain, int Sub)> Images(ReaderOptions options)
+    {
+        bool reduced = options is TiffReaderOptions { IncludeReducedPages: true };
+        List<(int, int)> images = [];
+        for (int i = 0; i < _chain.Count; i++)
+        {
+            (uint subfile, int photometric) = TiffPage.Kind(File, _chain[i]);
+            if ((subfile & 4) != 0 || photometric == 4)
+            {
+                continue;
+            }
+
+            if ((subfile & 1) == 0 || reduced)
+            {
+                images.Add((i, -1));
+            }
+
+            if (reduced)
+            {
+                for (int s = 0; s < SubIfdOffsets(i).Length; s++)
+                {
+                    images.Add((i, s));
+                }
+            }
+        }
+
+        if (images.Count == 0 && _chain.Count > 0)
+        {
+            images.Add((0, -1));
+        }
+
+        return images;
     }
 
     /// <summary>Reads a page's description: a main-chain IFD, or one of its SubIFDs.</summary>
