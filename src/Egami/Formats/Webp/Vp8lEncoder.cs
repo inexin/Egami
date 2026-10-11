@@ -12,6 +12,9 @@ internal readonly record struct Vp8lEncoderOptions(int Effort = 4, bool KeepTran
 
     /// <summary>Gets whether to code without a color cache, as libwebp does for alpha streams (old decoders mishandled the two together).</summary>
     internal bool NoColorCache { get; init; }
+
+    /// <summary>Gets how many threads the encoder may use; the output does not depend on it.</summary>
+    internal int Parallelism { get; init; } = 1;
 }
 
 /// <summary>
@@ -100,11 +103,11 @@ internal static class Vp8lEncoder
 
                 if (plan.Palette)
                 {
-                    EncodePalette(trial, pixels, width, height, palette.AsSpan(0, colors), plan.NearestOrder, effort, !options.NoColorCache);
+                    EncodePalette(trial, pixels, width, height, palette.AsSpan(0, colors), plan.NearestOrder, effort, new Tuning(options.NoColorCache, options.Parallelism));
                 }
                 else
                 {
-                    EncodeSpatial(trial, pixels, width, height, plan, effort, options.NearLossless, !options.NoColorCache);
+                    EncodeSpatial(trial, pixels, width, height, plan, effort, options.NearLossless, new Tuning(options.NoColorCache, options.Parallelism));
                 }
 
                 if (trial.BitCount < best)
@@ -178,6 +181,9 @@ internal static class Vp8lEncoder
         }
     }
 
+    /// <summary>What the main image's coding may use: the color cache (unless <see cref="NoCache"/>) and threads.</summary>
+    private readonly record struct Tuning(bool NoCache, int Parallelism);
+
     private static Plan Spatial(Vp8lTransforms.SpatialMode mode, int effort, int bitsAdjust)
     {
         bool predictor = mode is Vp8lTransforms.SpatialMode.Spatial or Vp8lTransforms.SpatialMode.SpatialSubtractGreen;
@@ -195,7 +201,7 @@ internal static class Vp8lEncoder
     }
 
     /// <summary>Writes the color indexing transform (the palette, delta coded) and then the index image.</summary>
-    private static void EncodePalette(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int height, ReadOnlySpan<uint> sorted, bool nearest, int effort, bool cache)
+    private static void EncodePalette(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int height, ReadOnlySpan<uint> sorted, bool nearest, int effort, Tuning tuning)
     {
         Span<uint> palette = stackalloc uint[sorted.Length];
         sorted.CopyTo(palette);
@@ -224,7 +230,7 @@ internal static class Vp8lEncoder
             Span<uint> indices = indexArray.AsSpan(0, packedWidth * height);
             Vp8lTransforms.ApplyPalette(pixels, width, height, palette, bundleBits, indices);
             w.Write(0, 1);
-            WriteImage(w, indices, packedWidth, height, effort, main: true, usePalette: true, cache: cache);
+            WriteImage(w, indices, packedWidth, height, effort, main: true, usePalette: true, tuning: tuning);
         }
         finally
         {
@@ -233,7 +239,7 @@ internal static class Vp8lEncoder
     }
 
     /// <summary>Writes the plan's subtract green, predictor and color transform, then the coded image.</summary>
-    private static void EncodeSpatial(Vp8lBitWriter w, ReadOnlySpan<uint> source, int width, int height, Plan plan, int effort, int nearLossless, bool cache)
+    private static void EncodeSpatial(Vp8lBitWriter w, ReadOnlySpan<uint> source, int width, int height, Plan plan, int effort, int nearLossless, Tuning tuning)
     {
         int count = width * height;
         uint[] workArray = ArrayPool<uint>.Shared.Rent(count);
@@ -257,7 +263,7 @@ internal static class Vp8lEncoder
             if (!plan.Predictor)
             {
                 w.Write(0, 1);
-                WriteImage(w, pixels, width, height, effort, main: true, cache: cache);
+                WriteImage(w, pixels, width, height, effort, main: true, tuning: tuning);
                 return;
             }
 
@@ -288,7 +294,7 @@ internal static class Vp8lEncoder
                 }
 
                 w.Write(0, 1);
-                WriteImage(w, residuals, width, height, effort, main: true, cache: cache);
+                WriteImage(w, residuals, width, height, effort, main: true, tuning: tuning);
             }
             finally
             {
@@ -325,14 +331,14 @@ internal static class Vp8lEncoder
     /// Writes an entropy-coded image (section 5): backward references, the color cache size that its statistics favour, for the
     /// main image from effort 3 meta prefix codes when they pay for themselves, the prefix codes and the tokens.
     /// </summary>
-    private static void WriteImage(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int height, int effort, bool main, bool usePalette = false, bool cache = true)
+    private static void WriteImage(Vp8lBitWriter w, ReadOnlySpan<uint> pixels, int width, int height, int effort, bool main, bool usePalette = false, Tuning tuning = default)
     {
         int count = pixels.Length;
         ulong[] tokenArray = ArrayPool<ulong>.Shared.Rent(count);
         try
         {
-            Vp8lBackwardRefs.Settings settings = Vp8lBackwardRefs.ForEffort(main ? effort : Math.Min(effort, 2));
-            int n = Vp8lBackwardRefs.Build(pixels, width, settings, main && cache ? 10 : 0, tokenArray, out int cacheBits);
+            Vp8lBackwardRefs.Settings settings = Vp8lBackwardRefs.ForEffort(main ? effort : Math.Min(effort, 2)) with { Parallelism = Math.Max(1, tuning.Parallelism) };
+            int n = Vp8lBackwardRefs.Build(pixels, width, settings, main && !tuning.NoCache ? 10 : 0, tokenArray, out int cacheBits);
             Span<ulong> tokens = tokenArray.AsSpan(0, n);
             if (cacheBits > 0)
             {

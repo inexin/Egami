@@ -15,7 +15,11 @@ internal static class Vp8lBackwardRefs
     private const int HashBits = 18;
 
     /// <summary>Settings that scale with effort: how many chain links to follow, how far back to look, and how to parse.</summary>
-    internal readonly record struct Settings(int ChainDepth, int Window, bool Lazy, bool CostBased);
+    internal readonly record struct Settings(int ChainDepth, int Window, bool Lazy, bool CostBased)
+    {
+        /// <summary>Gets how many threads the match search may use; the result does not depend on it.</summary>
+        internal int Parallelism { get; init; } = 1;
+    }
 
     /// <summary>Returns the settings for an effort level (0 to 6) on the main image.</summary>
     internal static Settings ForEffort(int effort) => effort switch
@@ -101,6 +105,9 @@ internal static class Vp8lBackwardRefs
         }
     }
 
+    /// <summary>The pixels searched as one unit; segments of the image are searched independently, in parallel when allowed.</summary>
+    private const int Segment = 1 << 16;
+
     /// <summary>
     /// Finds, for every position, the longest earlier match (length 0 when none of at least <see cref="MinLength"/>) and its
     /// distance. The hash chains are built first; then positions are searched from the end backwards, and a match found at one
@@ -109,7 +116,7 @@ internal static class Vp8lBackwardRefs
     /// codes are cheapest, are tried first, and a far match must be clearly longer to replace a near one. The best of those two
     /// nearby matches is kept apart in <paramref name="near"/> (positive for the left pixel, negative for the one above).
     /// </summary>
-    private static void FindMatches(ReadOnlySpan<uint> pixels, int width, Settings settings, Span<int> lengths, Span<int> distances, Span<int> near)
+    private static unsafe void FindMatches(ReadOnlySpan<uint> pixels, int width, Settings settings, Span<int> lengths, Span<int> distances, Span<int> near)
     {
         int count = pixels.Length;
         int[] headArray = ArrayPool<int>.Shared.Rent(1 << HashBits);
@@ -129,99 +136,135 @@ internal static class Vp8lBackwardRefs
             lengths[count - 1] = 0;
             distances[count - 1] = 0;
             near[count - 1] = 0;
-            int farPenalty = 16;
-            for (int pos = count - 2; pos >= 0;)
+
+            // Fixed segments, whatever the parallelism, so the file is the same on any machine: a match found near a segment's
+            // start does not extend left into the segment before.
+            int segments = (count - 1 + Segment - 1) / Segment;
+            if (settings.Parallelism <= 1 || segments == 1)
             {
-                int limit = Math.Min(MaxLength, count - pos);
-                int bestLength = 0;
-                int bestDistance = 0;
-                int nearLength = 0;
-                if (pos >= width)
+                for (int k = 0; k < segments; k++)
                 {
-                    bestLength = pixels.Slice(pos - width, limit).CommonPrefixLength(pixels.Slice(pos, limit));
-                    bestDistance = width;
+                    SearchSegment(pixels, width, settings, chain, lengths, distances, near, k * Segment, Math.Min((k + 1) * Segment, count - 1));
                 }
 
-                if (pos >= 1)
+                return;
+            }
+
+            fixed (uint* pp = pixels)
+            fixed (int* pc = chain, pl = lengths, pd = distances, pn = near)
+            {
+                nint ap = (nint)pp, ac = (nint)pc, al = (nint)pl, ad = (nint)pd, an = (nint)pn;
+                Parallel.For(0, segments, new ParallelOptions { MaxDegreeOfParallelism = settings.Parallelism }, k =>
                 {
-                    int left = pixels.Slice(pos - 1, limit).CommonPrefixLength(pixels.Slice(pos, limit));
-                    if (left >= bestLength)
-                    {
-                        (bestLength, bestDistance) = (left, 1);
-                    }
-                }
-
-                if (bestLength >= MinLength)
-                {
-                    nearLength = bestDistance == 1 ? bestLength : -bestLength;
-                }
-
-                int depth = settings.ChainDepth;
-                for (int j = chain[pos]; j >= 0 && depth-- > 0 && bestLength < limit; j = chain[j])
-                {
-                    int distance = pos - j;
-                    if (distance > settings.Window)
-                    {
-                        break;
-                    }
-
-                    // Only a candidate that could beat the best so far is compared in full.
-                    if (pixels[j + bestLength] != pixels[pos + bestLength])
-                    {
-                        continue;
-                    }
-
-                    int length = pixels.Slice(j, limit).CommonPrefixLength(pixels.Slice(pos, limit));
-                    if (length > bestLength + (distance > width * 8 && bestLength >= MinLength ? farPenalty : 0))
-                    {
-                        (bestLength, bestDistance) = (length, distance);
-                    }
-                }
-
-                if (bestLength < MinLength)
-                {
-                    lengths[pos] = 0;
-                    distances[pos] = 0;
-                    near[pos] = 0;
-                    pos--;
-                    continue;
-                }
-
-                // Extend to the left while the pixels before keep matching at this distance.
-                int nearDistance = nearLength > 0 ? 1 : width;
-                int nearRun = Math.Abs(nearLength);
-                while (true)
-                {
-                    lengths[pos] = bestLength;
-                    distances[pos] = bestDistance;
-                    near[pos] = nearRun >= MinLength ? (nearDistance == 1 ? nearRun : -nearRun) : 0;
-                    if (pos == 0 || pos - 1 < bestDistance || pixels[pos - 1 - bestDistance] != pixels[pos - 1])
-                    {
-                        pos--;
-                        break;
-                    }
-
-                    pos--;
-                    if (bestLength < MaxLength)
-                    {
-                        bestLength++;
-                    }
-
-                    if (nearRun > 0 && pos >= nearDistance && pixels[pos - nearDistance] == pixels[pos] && nearRun < MaxLength)
-                    {
-                        nearRun++;
-                    }
-                    else
-                    {
-                        nearRun = 0;
-                    }
-                }
+                    SearchSegment(
+                        new ReadOnlySpan<uint>((void*)ap, count), width, settings, new ReadOnlySpan<int>((void*)ac, count),
+                        new Span<int>((void*)al, count), new Span<int>((void*)ad, count), new Span<int>((void*)an, count),
+                        k * Segment, Math.Min((k + 1) * Segment, count - 1));
+                });
             }
         }
         finally
         {
             ArrayPool<int>.Shared.Return(headArray);
             ArrayPool<int>.Shared.Return(chainArray);
+        }
+    }
+
+    /// <summary>
+    /// Finds the longest match at each position from <paramref name="end"/> − 1 down to <paramref name="start"/>: the pixel above
+    /// and to the left first, then the hash chain; a match found is extended leftwards while the pixels before keep matching.
+    /// </summary>
+    private static void SearchSegment(
+        ReadOnlySpan<uint> pixels, int width, Settings settings, ReadOnlySpan<int> chain, Span<int> lengths, Span<int> distances, Span<int> near, int start, int end)
+    {
+        int count = pixels.Length;
+        int farPenalty = 16;
+        for (int pos = end - 1; pos >= start;)
+        {
+            int limit = Math.Min(MaxLength, count - pos);
+            int bestLength = 0;
+            int bestDistance = 0;
+            int nearLength = 0;
+            if (pos >= width)
+            {
+                bestLength = pixels.Slice(pos - width, limit).CommonPrefixLength(pixels.Slice(pos, limit));
+                bestDistance = width;
+            }
+
+            if (pos >= 1)
+            {
+                int left = pixels.Slice(pos - 1, limit).CommonPrefixLength(pixels.Slice(pos, limit));
+                if (left >= bestLength)
+                {
+                    (bestLength, bestDistance) = (left, 1);
+                }
+            }
+
+            if (bestLength >= MinLength)
+            {
+                nearLength = bestDistance == 1 ? bestLength : -bestLength;
+            }
+
+            int depth = settings.ChainDepth;
+            for (int j = chain[pos]; j >= 0 && depth-- > 0 && bestLength < limit; j = chain[j])
+            {
+                int distance = pos - j;
+                if (distance > settings.Window)
+                {
+                    break;
+                }
+
+                // Only a candidate that could beat the best so far is compared in full.
+                if (pixels[j + bestLength] != pixels[pos + bestLength])
+                {
+                    continue;
+                }
+
+                int length = pixels.Slice(j, limit).CommonPrefixLength(pixels.Slice(pos, limit));
+                if (length > bestLength + (distance > width * 8 && bestLength >= MinLength ? farPenalty : 0))
+                {
+                    (bestLength, bestDistance) = (length, distance);
+                }
+            }
+
+            if (bestLength < MinLength)
+            {
+                lengths[pos] = 0;
+                distances[pos] = 0;
+                near[pos] = 0;
+                pos--;
+                continue;
+            }
+
+            // Extend to the left while the pixels before keep matching at this distance.
+            int nearDistance = nearLength > 0 ? 1 : width;
+            int nearRun = Math.Abs(nearLength);
+            while (true)
+            {
+                lengths[pos] = bestLength;
+                distances[pos] = bestDistance;
+                near[pos] = nearRun >= MinLength ? (nearDistance == 1 ? nearRun : -nearRun) : 0;
+                if (pos == start || pos - 1 < bestDistance || pixels[pos - 1 - bestDistance] != pixels[pos - 1])
+                {
+                    pos--;
+                    break;
+                }
+
+                pos--;
+                if (bestLength < MaxLength)
+                {
+                    bestLength++;
+                }
+
+                if (nearRun > 0 && pos >= nearDistance && pixels[pos - nearDistance] == pixels[pos] && nearRun < MaxLength)
+                {
+                    nearRun++;
+                }
+                else
+                {
+                    nearRun = 0;
+                }
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Webp;
 
@@ -46,7 +47,6 @@ internal sealed class Vp8lDecoder : IDisposable
     private int _windowRows;
 
     // Rows out.
-    private uint[]? _row;
     private uint[]? _scratch;
     private uint[]? _previous;
     private int _nextRow;
@@ -172,7 +172,6 @@ internal sealed class Vp8lDecoder : IDisposable
             _total = (long)_xsize * Height;
             _windowRows = (int)Math.Min(Height, WindowRows(_xsize));
             _windowMemory = Rent((long)_windowRows * _xsize);
-            _row = ArrayPool<uint>.Shared.Rent(Width);
             _scratch = ArrayPool<uint>.Shared.Rent(Width);
             _previous = ArrayPool<uint>.Shared.Rent(Width);
             _headerRead = true;
@@ -224,11 +223,11 @@ internal sealed class Vp8lDecoder : IDisposable
             return;
         }
 
+        // Undone in the caller's row itself, which saves two copies a row.
         Span<uint> window = MemoryMarshal.Cast<byte, uint>(_windowMemory.Span);
-        Span<uint> row = _row.AsSpan(0, Width);
+        Span<uint> row = argb[..Width];
         window.Slice((int)(((long)y * _xsize) - _base), _xsize).CopyTo(row);
         Untransform(row, y);
-        row.CopyTo(argb);
         _nextRow++;
     }
 
@@ -241,7 +240,7 @@ internal sealed class Vp8lDecoder : IDisposable
 
         _disposed = true;
         ReleaseHeader();
-        foreach (uint[]? array in (ReadOnlySpan<uint[]?>)[_row, _scratch, _previous])
+        foreach (uint[]? array in (ReadOnlySpan<uint[]?>)[_scratch, _previous])
         {
             if (array is not null)
             {
@@ -249,7 +248,7 @@ internal sealed class Vp8lDecoder : IDisposable
             }
         }
 
-        _row = _scratch = _previous = null;
+        _scratch = _previous = null;
     }
 
     private void ReleaseHeader()
@@ -609,6 +608,7 @@ internal sealed class Vp8lDecoder : IDisposable
         ReadOnlySpan<uint> meta, int metaBits, int metaWidth, long capacity)
     {
         ReadOnlySpan<uint> tables = groups.Tables;
+        ref uint table0 = ref MemoryMarshal.GetReference(tables);
         ReadOnlySpan<int> offsets = groups.Offsets;
         ReadOnlySpan<int> singles = groups.Single;
         int mask = metaBits == 0 ? -1 : (1 << metaBits) - 1;
@@ -633,7 +633,7 @@ internal sealed class Vp8lDecoder : IDisposable
                 }
 
                 _reader.Fill(ref bits, ref count);
-                int green = Vp8lHuffman.Decode(tables[offsets[group]..], ref bits, ref count);
+                int green = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group]), ref bits, ref count);
                 if (green < 256)
                 {
                     int red = singles[group + 1];
@@ -644,18 +644,18 @@ internal sealed class Vp8lDecoder : IDisposable
                         _reader.Fill(ref bits, ref count);
                         if (red < 0)
                         {
-                            red = Vp8lHuffman.Decode(tables[offsets[group + 1]..], ref bits, ref count);
+                            red = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group + 1]), ref bits, ref count);
                         }
 
                         if (blue < 0)
                         {
-                            blue = Vp8lHuffman.Decode(tables[offsets[group + 2]..], ref bits, ref count);
+                            blue = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group + 2]), ref bits, ref count);
                         }
 
                         _reader.Fill(ref bits, ref count);
                         if (alpha < 0)
                         {
-                            alpha = Vp8lHuffman.Decode(tables[offsets[group + 3]..], ref bits, ref count);
+                            alpha = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group + 3]), ref bits, ref count);
                         }
                     }
 
@@ -859,7 +859,38 @@ internal sealed class Vp8lDecoder : IDisposable
     private static void UndoCrossColor(Span<uint> row, int y, ref Transform t)
     {
         ReadOnlySpan<uint> elements = MemoryMarshal.Cast<byte, uint>(t.Data.Span).Slice((y >> t.Bits) * SubSampleSize(t.XSize, t.Bits));
-        for (int x = 0; x < row.Length; x++)
+        int x = 0;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            // Tile by tile: the multipliers are the same for every pixel of a tile, so four at a time in 32-bit lanes.
+            int tile = 1 << t.Bits;
+            ref uint r0 = ref MemoryMarshal.GetReference(row);
+            for (; x + 4 <= row.Length; x += 4)
+            {
+                if ((x >> t.Bits) != ((x + 3) >> t.Bits))
+                {
+                    break;
+                }
+
+                uint e = elements[x >> t.Bits];
+                Vector128<int> greenToRed = Vector128.Create((int)(sbyte)e), greenToBlue = Vector128.Create((int)(sbyte)(e >> 8)), redToBlue = Vector128.Create((int)(sbyte)(e >> 16));
+                int end = Math.Min(row.Length, ((x >> t.Bits) + 1) * tile) & ~3;
+                for (; x < end; x += 4)
+                {
+                    Vector128<uint> p = Vector128.LoadUnsafe(ref r0, (nuint)x);
+                    Vector128<int> green = Vector128.ShiftRightArithmetic(p.AsInt32() << 16, 24);
+                    Vector128<int> red = (p >> 16).AsInt32() + Vector128.ShiftRightArithmetic(greenToRed * green, 5);
+                    Vector128<int> signedRed = Vector128.ShiftRightArithmetic(red << 24, 24);
+                    Vector128<int> blue = p.AsInt32() + Vector128.ShiftRightArithmetic(greenToBlue * green, 5) + Vector128.ShiftRightArithmetic(redToBlue * signedRed, 5);
+                    Vector128<uint> result = (p & Vector128.Create(0xFF00FF00u)) | ((red.AsUInt32() & Vector128.Create(0xFFu)) << 16) | (blue.AsUInt32() & Vector128.Create(0xFFu));
+                    result.StoreUnsafe(ref r0, (nuint)x);
+                }
+
+                x -= 4;
+            }
+        }
+
+        for (; x < row.Length; x++)
         {
             uint e = elements[x >> t.Bits];
             sbyte greenToRed = (sbyte)e;
@@ -875,7 +906,20 @@ internal sealed class Vp8lDecoder : IDisposable
 
     private static void UndoSubtractGreen(Span<uint> row)
     {
-        for (int x = 0; x < row.Length; x++)
+        int x = 0;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            ref uint r0 = ref MemoryMarshal.GetReference(row);
+            for (; x + 4 <= row.Length; x += 4)
+            {
+                Vector128<uint> p = Vector128.LoadUnsafe(ref r0, (nuint)x);
+                Vector128<uint> green = (p >> 8) & Vector128.Create(0xFFu);
+                Vector128<uint> redBlue = (p & Vector128.Create(0x00FF00FFu)) + ((green << 16) | green);
+                ((p & Vector128.Create(0xFF00FF00u)) | (redBlue & Vector128.Create(0x00FF00FFu))).StoreUnsafe(ref r0, (nuint)x);
+            }
+        }
+
+        for (; x < row.Length; x++)
         {
             uint p = row[x];
             uint green = (p >> 8) & 0xFF;

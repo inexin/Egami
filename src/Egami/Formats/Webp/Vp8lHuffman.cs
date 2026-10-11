@@ -193,6 +193,25 @@ internal static class Vp8lHuffman
         return (int)(entry >> 16);
     }
 
+    /// <summary>Decodes one symbol from the table at <paramref name="table"/>, with at least 15 bits buffered.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int Decode(ref uint table, ref ulong bits, ref int count)
+    {
+        uint entry = Unsafe.Add(ref table, (int)(bits & ((1 << RootBits) - 1)));
+        int length = (int)(entry & 0xFF);
+        if (length > RootBits)
+        {
+            bits >>= RootBits;
+            count -= RootBits;
+            entry = Unsafe.Add(ref table, (int)(entry >> 16) + (int)(bits & ((1u << (length - RootBits)) - 1)));
+            length = (int)(entry & 0xFF);
+        }
+
+        bits >>= length;
+        count -= length;
+        return (int)(entry >> 16);
+    }
+
     /// <summary>Sets <paramref name="next"/>[length] to the first canonical code of each length.</summary>
     private static void Canonical(ReadOnlySpan<int> count, Span<int> next)
     {

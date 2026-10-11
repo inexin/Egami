@@ -33,6 +33,28 @@ public class WebpLosslessEncodeTests
     }
 
     [Fact]
+    public void OutputDoesNotDependOnTheThreadCount()
+    {
+        using Raster<Rgba8> photo = Raster.Load<Rgba8>(Path.Combine(AppContext.BaseDirectory, "images", "ops", "duck.png"));
+        byte[] one = Save(photo, EgamiContext.Default with { MaxParallelism = 1 });
+        byte[] many = Save(photo, EgamiContext.Default with { MaxParallelism = 8 });
+        Assert.Equal(one, many);
+
+        static byte[] Save(Raster<Rgba8> raster, EgamiContext context)
+        {
+            using Raster<Rgba8> copy = Raster.Create<Rgba8>(raster.Width, raster.Height, context);
+            for (int y = 0; y < raster.Height; y++)
+            {
+                raster.Row(y).CopyTo(copy.Row(y));
+            }
+
+            using MemoryStream file = new();
+            copy.Save(file, WebpFormat.Info, new WebpWriterOptions { Lossless = true });
+            return file.ToArray();
+        }
+    }
+
+    [Fact]
     public void HigherEffortIsNotLarger()
     {
         using Raster<Rgba8> duck = WebpTestImages.Get("duck");

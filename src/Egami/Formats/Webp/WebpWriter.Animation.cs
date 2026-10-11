@@ -131,7 +131,7 @@ internal sealed partial class WebpWriter
 
             if (_firstFrame is not null)
             {
-                StillEncoder<TPixel>.WriteStill(_output, _start.Metadata, _options, _lossless, _firstFrame, _width, _height);
+                StillEncoder<TPixel>.WriteStill(_output, _start.Metadata, _options, _lossless, _firstFrame, _width, _height, _start.Context.MaxParallelism);
                 return;
             }
 
@@ -281,7 +281,7 @@ internal sealed partial class WebpWriter
                 }
 
                 using Vp8lBitWriter bits = new(pixels.Length);
-                Vp8lEncoder.Encode(pixels, w, h, new Vp8lEncoderOptions(_options.Effort, _options.KeepTransparentColors, _options.NearLossless), bits);
+                Vp8lEncoder.Encode(pixels, w, h, new Vp8lEncoderOptions(_options.Effort, _options.KeepTransparentColors, _options.NearLossless) { Parallelism = _start.Context.MaxParallelism }, bits);
                 lossless = Chunk(WebpContainer.Vp8L, bits.Finish(), default);
             }
 

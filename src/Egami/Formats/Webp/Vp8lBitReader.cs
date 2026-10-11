@@ -102,7 +102,19 @@ internal sealed class Vp8lBitReader : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Fill(ref ulong bits, ref int count)
     {
-        if (count <= 32)
+        if (count <= 32 && _length - _position >= 8)
+        {
+            // The common case inline: whole bytes from one 64-bit load, as FillSlow takes them.
+            int take = (64 - count) >> 3;
+            bits |= Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(_chunk), _position)) << count;
+            _position += take;
+            count += take * 8;
+            if (count < 64)
+            {
+                bits &= (1UL << count) - 1;
+            }
+        }
+        else if (count <= 32)
         {
             _bits = bits;
             _count = count;

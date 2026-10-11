@@ -79,11 +79,11 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
                 throw new InvalidOperationException($"The image has {_start.Height} rows, but {_rows} were written.");
             }
 
-            WriteStill(_output, _start.Metadata, _options, _lossless, Argb, _start.Width, _start.Height);
+            WriteStill(_output, _start.Metadata, _options, _lossless, Argb, _start.Width, _start.Height, _start.Context.MaxParallelism);
         }
 
         /// <summary>Encodes and writes a still image's file from its ARGB pixels.</summary>
-        internal static void WriteStill(Stream output, RasterMetadata metadata, WebpWriterOptions options, bool lossless, Span<uint> argb, int width, int height)
+        internal static void WriteStill(Stream output, RasterMetadata metadata, WebpWriterOptions options, bool lossless, Span<uint> argb, int width, int height, int parallelism)
         {
             bool alpha = false;
             foreach (uint p in argb)
@@ -103,7 +103,7 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
             }
 
             using Vp8lBitWriter bits = new(argb.Length);
-            Vp8lEncoder.Encode(argb, width, height, new Vp8lEncoderOptions(options.Effort, options.KeepTransparentColors, options.NearLossless), bits);
+            Vp8lEncoder.Encode(argb, width, height, new Vp8lEncoderOptions(options.Effort, options.KeepTransparentColors, options.NearLossless) { Parallelism = parallelism }, bits);
             Container.Write(output, metadata, options, new ImageChunk(WebpContainer.Vp8L, bits.Finish(), default, alpha), width, height);
         }
 
