@@ -12,8 +12,9 @@ using Egami.Streaming;
 namespace Egami.Formats.Png;
 
 /// <summary>
-/// Writes PNG, non-interlaced, from the W3C PNG Specification (Third Edition), and APNG for rasters with more than one frame. It
-/// streams: one row at a time is filtered and compressed, and IDAT (or fdAT) chunks are written as compressed data fills them.
+/// Writes PNG from the W3C PNG Specification (Third Edition), non-interlaced or Adam7, and APNG for rasters with more than one
+/// frame. A non-interlaced image streams: one row at a time is filtered and compressed, and IDAT (or fdAT) chunks are written as
+/// compressed data fills them. With ParallelCompression, large images are compressed in bands on several threads.
 /// </summary>
 internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 {
@@ -82,7 +83,10 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         private readonly bool _hasAlpha;
         private readonly bool _streaming;
         private readonly IPixelMemorySource _memory;
+        private readonly int _parallelism;
         private ImageData<TPixel>? _image;
+        private PixelPlane<TPixel>? _rows;
+        private int _rowsWritten;
         private int _frames;
         private uint _sequence;
         private long _actlAt = -1;
@@ -101,7 +105,8 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             _seekable = start.Seekable;
             _streaming = start.Streaming;
             _memory = start.Context.Memory;
-            _header = new(start.Width, start.Height, plan.BitDepth, plan.ColorType, Interlaced: false);
+            _parallelism = start.Context.MaxParallelism;
+            _header = new(start.Width, start.Height, plan.BitDepth, plan.ColorType, png.Interlace);
             _hasAlpha = plan.ColorType is PngColorType.Rgba or PngColorType.GrayAlpha && TPixel.Layout.HasAlpha;
             bool strip = png.StripMetadata;
             _hdrWritten = !strip && start.Metadata.Hdr is not null;
@@ -115,6 +120,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             BinaryPrimitives.WriteUInt32BigEndian(ihdr[4..], (uint)_header.Height);
             ihdr[8] = (byte)_header.BitDepth;
             ihdr[9] = (byte)_header.ColorType;
+            ihdr[12] = _header.Interlaced ? (byte)1 : (byte)0;
             WriteChunk(output, PngChunkType.Ihdr, ihdr);
 
             if (!strip)
@@ -153,7 +159,15 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
 
         public override void WriteRow(ReadOnlySpan<TPixel> row)
         {
-            _image ??= new ImageData<TPixel>(new IdatChunkStream(_output, _options.MaxIdatSize, PngChunkType.Idat, null), _options, _header, _plan, ownsData: true);
+            if (_header.Interlaced)
+            {
+                // Adam7's first pass needs rows from the whole height, so the rows wait until the last one.
+                _rows ??= PixelPlane.Allocate<TPixel>(_header.Width, _header.Height, _memory);
+                row.CopyTo(_rows.Row(_rowsWritten++));
+                return;
+            }
+
+            _image ??= new ImageData<TPixel>(new IdatChunkStream(_output, _options.MaxIdatSize, PngChunkType.Idat, null), _options, _header, _plan, ownsData: true, _parallelism);
             _image.Row(row);
         }
 
@@ -197,13 +211,22 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
                 }
 
                 return result;
-            }, data, _options, frameHeader, _plan);
+            }, data, _options, frameHeader, _plan, _parallelism);
             Keep(frame);
             _frames++;
         }
 
         public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
         {
+            if (!_animated && _header.Interlaced)
+            {
+                // Save has every row, so the passes read them in place.
+                using IdatChunkStream data = new(_output, _options.MaxIdatSize, PngChunkType.Idat, null);
+                WriteImageData(y => raster.Row(y), data, _options, _header, _plan, _parallelism);
+                yield return 0;
+                yield break;
+            }
+
             if (!_animated)
             {
                 foreach (int y in base.WriteWhole(raster))
@@ -226,6 +249,17 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             if (_image is not null)
             {
                 _image.Finish();
+            }
+            else if (_rows is not null)
+            {
+                if (_rowsWritten != _header.Height)
+                {
+                    throw new InvalidOperationException($"The image has {_header.Height} rows, but {_rowsWritten} were written.");
+                }
+
+                using IdatChunkStream data = new(_output, _options.MaxIdatSize, PngChunkType.Idat, null);
+                PixelPlane<TPixel> rows = _rows;
+                WriteImageData(y => rows.Row(y), data, _options, _header, _plan, _parallelism);
             }
             else if (_frames > 0)
             {
@@ -255,6 +289,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         protected override void Dispose(bool disposing)
         {
             _image?.Dispose();
+            _rows?.Dispose();
             _kept?.Dispose();
             if (_patch is not null)
             {
@@ -591,98 +626,222 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         }
     }
 
-    /// <summary>Filters and compresses the rows <paramref name="rows"/> gives (header.Height of them, header.Width wide) into <paramref name="idat"/>.</summary>
-    private static void WriteImageData<TPixel>(RowGetter<TPixel> rows, IdatChunkStream idat, PngWriterOptions options, PngHeader header, Plan plan)
+    /// <summary>
+    /// Filters and compresses the image <paramref name="rows"/> gives (header.Height rows, header.Width wide) into
+    /// <paramref name="idat"/>: top-down, or for Adam7 the seven passes in turn, each a smaller image of every few pixels.
+    /// </summary>
+    private static void WriteImageData<TPixel>(RowGetter<TPixel> rows, IdatChunkStream idat, PngWriterOptions options, PngHeader header, Plan plan, int parallelism)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        using ImageData<TPixel> data = new(idat, options, header, plan, ownsData: false);
-        for (int y = 0; y < header.Height; y++)
+        using ImageData<TPixel> data = new(idat, options, header, plan, ownsData: false, parallelism);
+        if (!header.Interlaced)
         {
-            data.Row(rows(y));
+            for (int y = 0; y < header.Height; y++)
+            {
+                data.Row(rows(y));
+            }
+        }
+        else
+        {
+            TPixel[] gathered = ArrayPool<TPixel>.Shared.Rent(header.Width);
+            try
+            {
+                for (int pass = 0; pass < 7; pass++)
+                {
+                    int columns = Adam7.Columns(pass, header.Width);
+                    int count = Adam7.Rows(pass, header.Height);
+                    if (columns == 0 || count == 0)
+                    {
+                        // An empty pass has no rows and no filter bytes (section 8.2).
+                        continue;
+                    }
+
+                    data.Pass(columns);
+                    int x0 = Adam7.XStart[pass];
+                    int dx = Adam7.XStep[pass];
+                    Span<TPixel> passRow = gathered.AsSpan(0, columns);
+                    for (int r = 0; r < count; r++)
+                    {
+                        ReadOnlySpan<TPixel> row = rows(Adam7.YStart[pass] + (r * Adam7.YStep[pass]));
+                        for (int c = 0; c < columns; c++)
+                        {
+                            passRow[c] = row[x0 + (c * dx)];
+                        }
+
+                        data.Row(passRow);
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<TPixel>.Shared.Return(gathered);
+            }
         }
 
         data.Finish();
     }
 
-    /// <summary>One image's rows being filtered and compressed into IDAT or fdAT chunks, a row at a time.</summary>
+    /// <summary>Returns the zlib level and strategy the options ask for.</summary>
+    private static ZLibCompressionOptions Compression(PngWriterOptions options)
+    {
+        ZLibCompressionStrategy strategy = options.CompressionStrategy switch
+        {
+            PngCompressionStrategy.Auto => ZLibCompressionStrategy.Default,
+            PngCompressionStrategy.Filtered => ZLibCompressionStrategy.Filtered,
+            PngCompressionStrategy.HuffmanOnly => ZLibCompressionStrategy.HuffmanOnly,
+            PngCompressionStrategy.RunLengthEncoding => ZLibCompressionStrategy.RunLengthEncoding,
+            _ => ZLibCompressionStrategy.Default,
+        };
+        return new ZLibCompressionOptions { CompressionLevel = options.CompressionLevel, CompressionStrategy = strategy };
+    }
+
+    /// <summary>Returns the size of the filtered image data: every row of every pass with its filter byte.</summary>
+    private static long FilteredBytes(PngHeader header)
+    {
+        if (!header.Interlaced)
+        {
+            return header.Height * (header.RowBytes(header.Width) + 1);
+        }
+
+        long total = 0;
+        for (int pass = 0; pass < 7; pass++)
+        {
+            int columns = Adam7.Columns(pass, header.Width);
+            if (columns > 0)
+            {
+                total += Adam7.Rows(pass, header.Height) * (header.RowBytes(columns) + 1);
+            }
+        }
+
+        return total;
+    }
+
+    /// <summary>
+    /// Filters one packed row against the row above and returns the filter type; <paramref name="chosen"/> is the filtered row,
+    /// inside <paramref name="scratch"/> (five rows long for <see cref="PngFilterMode.Adaptive"/>, else one).
+    /// </summary>
+    private static byte FilterRow(PngFilterMode mode, ReadOnlySpan<byte> row, ReadOnlySpan<byte> above, int stride, Span<byte> scratch, out Span<byte> chosen)
+    {
+        int rowBytes = row.Length;
+        if (mode != PngFilterMode.Adaptive)
+        {
+            byte type = (byte)(mode - PngFilterMode.None);
+            chosen = scratch[..rowBytes];
+            PngFilterEncoder.Filter(type, row, above, stride, chosen);
+            return type;
+        }
+
+        byte filter = 0;
+        long best = long.MaxValue;
+        for (byte f = 0; f < 5; f++)
+        {
+            Span<byte> candidate = scratch.Slice(f * rowBytes, rowBytes);
+            PngFilterEncoder.Filter(f, row, above, stride, candidate);
+            long sum = PngFilterEncoder.SumOfAbsolutes(candidate, PixelKernels.HardwareBits);
+            if (sum < best)
+            {
+                best = sum;
+                filter = f;
+            }
+        }
+
+        chosen = scratch.Slice(filter * rowBytes, rowBytes);
+        return filter;
+    }
+
+    /// <summary>
+    /// One image's rows being filtered and compressed into IDAT or fdAT chunks, a row at a time, pass by pass for Adam7. With
+    /// <see cref="PngWriterOptions.ParallelCompression"/> and enough data, packed rows collect into bands of a fixed size that
+    /// are filtered and compressed on other threads (<see cref="ParallelZLibWriter"/>); a band starts with a copy of the row
+    /// above it, and a new pass starts a new band, so every band filters on its own.
+    /// </summary>
     private sealed class ImageData<TPixel> : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly IdatChunkStream _idat;
         private readonly bool _ownsData;
         private readonly PngFilterMode _mode;
-        private readonly int _rowBytes;
+        private readonly int _bitsPerPixel;
         private readonly int _stride;
+        private readonly int _candidates;
+        private readonly int _bandSize;
         private readonly byte[] _filtered;
         private readonly RowPacker<TPixel> _packer;
-        private readonly ZLibStream _zlib;
+        private readonly ZLibStream? _zlib;
+        private readonly ParallelZLibWriter? _bands;
+        private int _rowBytes;
         private byte[] _current;
         private byte[] _previous;
+        private byte[]? _band;
+        private int _bandRows;
+        private int _inBand;
         private bool _disposed;
 
-        internal ImageData(IdatChunkStream idat, PngWriterOptions options, PngHeader header, Plan plan, bool ownsData)
+        internal ImageData(IdatChunkStream idat, PngWriterOptions options, PngHeader header, Plan plan, bool ownsData, int parallelism)
         {
             _idat = idat;
             _ownsData = ownsData;
             bool lowDepthOrPalette = header.BitDepth < 8 || header.ColorType == PngColorType.Palette;
             _mode = options.Filter == PngFilterMode.Adaptive && lowDepthOrPalette ? PngFilterMode.None : options.Filter;
-            ZLibCompressionStrategy strategy = options.CompressionStrategy switch
-            {
-                PngCompressionStrategy.Auto => ZLibCompressionStrategy.Default,
-                PngCompressionStrategy.Filtered => ZLibCompressionStrategy.Filtered,
-                PngCompressionStrategy.HuffmanOnly => ZLibCompressionStrategy.HuffmanOnly,
-                PngCompressionStrategy.RunLengthEncoding => ZLibCompressionStrategy.RunLengthEncoding,
-                _ => ZLibCompressionStrategy.Default,
-            };
-
-            _rowBytes = (int)header.RowBytes(header.Width);
+            int rowBytes = (int)header.RowBytes(header.Width);
+            _bitsPerPixel = header.BitsPerPixel;
             _stride = header.FilterStride;
-            int candidates = _mode == PngFilterMode.Adaptive ? 5 : 1;
-            _current = ArrayPool<byte>.Shared.Rent(_rowBytes);
-            _previous = ArrayPool<byte>.Shared.Rent(_rowBytes);
-            _filtered = ArrayPool<byte>.Shared.Rent(_rowBytes * candidates);
+            _candidates = _mode == PngFilterMode.Adaptive ? 5 : 1;
+            _bandSize = options.ParallelBandSize;
+            _current = ArrayPool<byte>.Shared.Rent(rowBytes);
+            _previous = ArrayPool<byte>.Shared.Rent(rowBytes);
+            _filtered = ArrayPool<byte>.Shared.Rent(rowBytes * _candidates);
             _packer = new(header, plan);
+            ZLibCompressionOptions compression = Compression(options);
+            if (options.ParallelCompression && FilteredBytes(header) > options.ParallelThreshold)
+            {
+                _bands = new(idat, compression, parallelism);
+            }
+            else
+            {
+                _zlib = new(idat, compression, leaveOpen: true);
+            }
+
+            Pass(header.Width);
+        }
+
+        /// <summary>Starts a pass <paramref name="width"/> pixels wide, whose first row has no row above.</summary>
+        public void Pass(int width)
+        {
+            Submit();
+            _rowBytes = (int)((((long)width * _bitsPerPixel) + 7) / 8);
+            _bandRows = Math.Max(1, _bandSize / (_rowBytes + 1));
             _previous.AsSpan(0, _rowBytes).Clear();
-            _zlib = new(idat, new ZLibCompressionOptions { CompressionLevel = options.CompressionLevel, CompressionStrategy = strategy }, leaveOpen: true);
         }
 
         public void Row(ReadOnlySpan<TPixel> source)
         {
             int rowBytes = _rowBytes;
-            Span<byte> row = _current.AsSpan(0, rowBytes);
-            _packer.Pack(source, row);
-            ReadOnlySpan<byte> above = _previous.AsSpan(0, rowBytes);
-            byte filter;
-            ReadOnlySpan<byte> chosen;
-            if (_mode == PngFilterMode.Adaptive)
+            if (_bands is not null)
             {
-                filter = 0;
-                long best = long.MaxValue;
-                for (byte f = 0; f < 5; f++)
+                if (_band is null)
                 {
-                    Span<byte> candidate = _filtered.AsSpan(f * rowBytes, rowBytes);
-                    PngFilterEncoder.Filter(f, row, above, _stride, candidate);
-                    long sum = PngFilterEncoder.SumOfAbsolutes(candidate, PixelKernels.HardwareBits);
-                    if (sum < best)
-                    {
-                        best = sum;
-                        filter = f;
-                    }
+                    _band = ArrayPool<byte>.Shared.Rent((_bandRows + 1) * rowBytes);
+                    _previous.AsSpan(0, rowBytes).CopyTo(_band);
                 }
 
-                chosen = _filtered.AsSpan(filter * rowBytes, rowBytes);
+                _inBand++;
+                _packer.Pack(source, _band.AsSpan(_inBand * rowBytes, rowBytes));
+                if (_inBand == _bandRows)
+                {
+                    Submit();
+                }
+
+                return;
             }
-            else
-            {
-                filter = (byte)(_mode - PngFilterMode.None);
-                Span<byte> destination = _filtered.AsSpan(0, rowBytes);
-                PngFilterEncoder.Filter(filter, row, above, _stride, destination);
-                chosen = destination;
-            }
+
+            Span<byte> row = _current.AsSpan(0, rowBytes);
+            _packer.Pack(source, row);
+            byte filter = FilterRow(_mode, row, _previous.AsSpan(0, rowBytes), _stride, _filtered, out Span<byte> chosen);
 
             // Stream.WriteByte allocates a one-byte array on every call, so the filter byte goes through a span.
             Span<byte> filterByte = [filter];
-            _zlib.Write(filterByte);
+            _zlib!.Write(filterByte);
             _zlib.Write(chosen);
             (_current, _previous) = (_previous, _current);
         }
@@ -690,7 +849,16 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
         /// <summary>Ends the compressed data and writes the last chunk.</summary>
         public void Finish()
         {
-            _zlib.Dispose();
+            if (_bands is not null)
+            {
+                Submit();
+                _bands.Finish();
+            }
+            else
+            {
+                _zlib!.Dispose();
+            }
+
             _idat.Finish();
         }
 
@@ -702,7 +870,13 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             }
 
             _disposed = true;
-            _zlib.Dispose();
+            _zlib?.Dispose();
+            _bands?.Dispose();
+            if (_band is not null)
+            {
+                ArrayPool<byte>.Shared.Return(_band);
+            }
+
             ArrayPool<byte>.Shared.Return(_current);
             ArrayPool<byte>.Shared.Return(_previous);
             ArrayPool<byte>.Shared.Return(_filtered);
@@ -711,6 +885,46 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             {
                 _idat.Dispose();
             }
+        }
+
+        /// <summary>Hands the rows collected so far to a worker as one band, keeping the last as the next band's row above.</summary>
+        private void Submit()
+        {
+            if (_band is null || _inBand == 0)
+            {
+                return;
+            }
+
+            byte[] band = _band;
+            int rows = _inBand;
+            int rowBytes = _rowBytes;
+            int stride = _stride;
+            int candidates = _candidates;
+            PngFilterMode mode = _mode;
+            band.AsSpan(rows * rowBytes, rowBytes).CopyTo(_previous);
+            _band = null;
+            _inBand = 0;
+            int length = rows * (rowBytes + 1);
+            _bands!.Add(length, filtered =>
+            {
+                byte[] scratch = ArrayPool<byte>.Shared.Rent(rowBytes * candidates);
+                try
+                {
+                    for (int i = 0; i < rows; i++)
+                    {
+                        int at = i * (rowBytes + 1);
+                        filtered[at] = FilterRow(mode, band.AsSpan((i + 1) * rowBytes, rowBytes), band.AsSpan(i * rowBytes, rowBytes), stride, scratch, out Span<byte> chosen);
+                        chosen.CopyTo(filtered.AsSpan(at + 1));
+                    }
+
+                    return length;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(scratch);
+                    ArrayPool<byte>.Shared.Return(band);
+                }
+            });
         }
     }
 

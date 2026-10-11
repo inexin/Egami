@@ -347,6 +347,10 @@ Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.get -> System.ReadOnlyMemory<b
 Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.set -> void
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
+Egami.Formats.Png.PngWriterOptions.Interlace.get -> bool
+Egami.Formats.Png.PngWriterOptions.Interlace.init -> void
+Egami.Formats.Png.PngWriterOptions.ParallelCompression.get -> bool
+Egami.Formats.Png.PngWriterOptions.ParallelCompression.init -> void
 Egami.Formats.Pnm.PnmDetails.LittleEndian.get -> bool?
 Egami.Formats.Pnm.PnmDetails.LittleEndian.set -> void
 Egami.Formats.Pnm.PnmDetails.Scale.get -> double?

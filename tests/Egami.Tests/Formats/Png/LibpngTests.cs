@@ -60,6 +60,11 @@ public sealed class LibpngTests : IDisposable
             ("rgb8", new PngWriterOptions { ColorType = PngColorType.Rgb }, false),
             ("gray2", new PngWriterOptions { ColorType = PngColorType.Gray, BitDepth = 2 }, false),
             ("grayAlpha16", new PngWriterOptions { ColorType = PngColorType.GrayAlpha, BitDepth = 16 }, false),
+            ("interlace", new PngWriterOptions { Interlace = true }, true),
+            ("interlace-reduce", new PngWriterOptions { Interlace = true, Reduce = true }, true),
+            ("interlace-gray2", new PngWriterOptions { Interlace = true, ColorType = PngColorType.Gray, BitDepth = 2 }, false),
+            ("parallel", new PngWriterOptions { ParallelCompression = true, ParallelThreshold = 0, ParallelBandSize = 1000 }, true),
+            ("interlace-parallel", new PngWriterOptions { Interlace = true, Reduce = true, ParallelCompression = true, ParallelThreshold = 0, ParallelBandSize = 300 }, true),
         ];
 
         List<string> failures = [];

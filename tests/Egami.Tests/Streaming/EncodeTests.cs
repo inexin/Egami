@@ -30,6 +30,8 @@ public class EncodeTests
         ["png-rgb16"] = new(PngFormat.Info, () => new PngWriterOptions { BitDepth = 16 }, Pixel.Rgb8),
         ["png-gray"] = new(PngFormat.Info, () => new PngWriterOptions { ColorType = PngColorType.Gray }, Pixel.Rgba8),
         ["png-none-9"] = new(PngFormat.Info, () => new PngWriterOptions { Filter = PngFilterMode.None, CompressionLevel = 9 }, Pixel.Rgba8),
+        ["png-interlace"] = new(PngFormat.Info, () => new PngWriterOptions { Interlace = true }, Pixel.Rgba8),
+        ["png-parallel"] = new(PngFormat.Info, () => new PngWriterOptions { ParallelCompression = true, ParallelThreshold = 0, ParallelBandSize = 8192 }, Pixel.Rgb8),
         ["jpeg"] = new(JpegFormat.Info, () => JpegWriterOptions.Default, Pixel.Rgb8),
         ["jpeg-optimized"] = new(JpegFormat.Info, () => new JpegWriterOptions { OptimizeHuffman = true }, Pixel.Rgb8),
         ["jpeg-restart"] = new(JpegFormat.Info, () => new JpegWriterOptions { RestartInterval = 3, Subsampling = ChromaSubsampling.Subsample422 }, Pixel.Rgba8),
@@ -330,6 +332,10 @@ public class EncodeTests
                 Filter = png.Filter,
                 CompressionLevel = png.CompressionLevel,
                 CompressionStrategy = png.CompressionStrategy,
+                Interlace = png.Interlace,
+                ParallelCompression = png.ParallelCompression,
+                ParallelThreshold = png.ParallelThreshold,
+                ParallelBandSize = png.ParallelBandSize,
                 FrameCount = raster.FrameCount,
             };
         }

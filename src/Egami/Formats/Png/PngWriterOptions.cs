@@ -140,6 +140,28 @@ public sealed class PngWriterOptions : WriterOptions
     /// <summary>Gets the Deflate strategy. Defaults to <see cref="PngCompressionStrategy.Auto"/>.</summary>
     public PngCompressionStrategy CompressionStrategy { get; init; }
 
+    /// <summary>
+    /// Gets whether to write the image Adam7 interlaced, so a viewer can show a coarse version before the whole file has arrived.
+    /// Defaults to <see langword="false"/>, and an interlaced source is written non-interlaced unless this is set: interlaced files
+    /// are usually larger and slower to write and read. Every color type, bit depth, palette and APNG frame can be interlaced; a
+    /// streamed encode holds the whole image until the last row, since the first pass needs rows from the whole height.
+    /// </summary>
+    public bool Interlace { get; init; }
+
+    /// <summary>
+    /// Gets whether to compress large images on several threads, up to <see cref="EgamiContext.MaxParallelism"/>. The image data is
+    /// cut into fixed bands of about 1 MiB, each compressed on its own, so the file is the same whatever the number of threads, and
+    /// usually under 1% larger than with this off. Only images with more than 4 MiB of image data are split; smaller ones are
+    /// written as when this is off. Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool ParallelCompression { get; init; }
+
+    /// <summary>Gets the image data size above which <see cref="ParallelCompression"/> splits the data, in bytes. For tests.</summary>
+    internal long ParallelThreshold { get; init; } = 4 * 1024 * 1024;
+
+    /// <summary>Gets the uncompressed size of a band for <see cref="ParallelCompression"/>, in bytes. For tests.</summary>
+    internal int ParallelBandSize { get; init; } = ParallelZLibWriter.BandSize;
+
     /// <summary>Gets the largest IDAT chunk, in bytes. Defaults to 65,536.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is less than 1.</exception>
     internal int MaxIdatSize

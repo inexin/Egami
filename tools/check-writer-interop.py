@@ -1,8 +1,9 @@
-"""Checks that other tools read Egami's BMP, TGA, QOI and PNM files to the pixels Egami reads back.
+"""Checks that other tools read Egami's BMP, TGA, QOI and PNM files, and its interlaced and banded PNG files, to the pixels Egami
+reads back.
 
 Runs the WriterInteropFiles test with EGAMI_INTEROP_DIR=.cache/interop, which writes every writer layout and, next to each
 file, Egami's own decode as raw RGBA; then, in Docker (alpine:3.20), reads each file with Pillow, ImageMagick, Netpbm (PNM
-only) and qoiconv (QOI only, when .cache/qoi/qoi.h is there) and compares. 16-bit PNM files may differ by 1 level, since the
+only) and qoiconv (QOI only, when .cache/qoi/qoi.h is there) and compares. 16-bit PNM and PNG files may differ by 1 level, since the
 tools narrow 16 bits to 8 their own way. Known tool failures are reported, not failed: neither Pillow nor
 ImageMagick 7.1 reads 2-bit BMP, Pillow reads no PAM, and Pillow clips 16-bit gray. Egami's own reader covers 2-bit BMP.
 

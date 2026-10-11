@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 
 using Egami.Formats;
 using Egami.Formats.Bmp;
+using Egami.Formats.Png;
 using Egami.Formats.Pnm;
 using Egami.Formats.Qoi;
 using Egami.Formats.Tga;
@@ -10,8 +11,9 @@ using Egami.Pixels;
 namespace Egami.Tests.Formats;
 
 /// <summary>
-/// Writes BMP, TGA, QOI and PNM files in every layout the writers offer, each with the pixels Egami reads back, for
-/// tools/check-writer-interop.py to read with Pillow, ImageMagick, Netpbm and qoiconv. Runs only when EGAMI_INTEROP_DIR is set.
+/// Writes BMP, TGA, QOI and PNM files in every layout the writers offer, and PNG files interlaced and compressed in bands, each
+/// with the pixels Egami reads back, for tools/check-writer-interop.py to read with Pillow, ImageMagick, Netpbm and qoiconv. Runs
+/// only when EGAMI_INTEROP_DIR is set.
 /// </summary>
 public class WriterInteropFiles
 {
@@ -59,6 +61,23 @@ public class WriterInteropFiles
         Write(directory!, "pnm-rgba.pam", rgba, PnmFormat.Info, PnmWriterOptions.Default);
         Write(directory!, "pnm-gray-alpha.pam", grayAlpha, PnmFormat.Info, PnmWriterOptions.Default);
         Write(directory!, "pnm-rgb.pam", rgb, PnmFormat.Info, new PnmWriterOptions { Kind = PnmKind.Pam });
+
+        // Phase 2.4.1: Adam7 and banded Deflate, which libpng's own tests (LibpngTests) also cover.
+        foreach ((string mode, bool interlace, bool parallel) in new[] { ("interlace", true, false), ("parallel", false, true), ("interlace-parallel", true, true) })
+        {
+            PngWriterOptions Options(PngColorType? colorType = null, int? depth = null) => new()
+            {
+                ColorType = colorType, BitDepth = depth, Interlace = interlace, ParallelCompression = parallel, ParallelThreshold = 0, ParallelBandSize = 1500,
+            };
+            Write(directory!, $"png-{mode}-rgba.png", rgba, PngFormat.Info, Options());
+            Write(directory!, $"png-{mode}-rgb.png", rgb, PngFormat.Info, Options());
+            Write(directory!, $"png-{mode}-gray.png", gray, PngFormat.Info, Options());
+            Write(directory!, $"png-{mode}-gray-alpha.png", grayAlpha, PngFormat.Info, Options());
+            Write(directory!, $"png-{mode}-rgba16.png", rgba16, PngFormat.Info, Options());
+            Write(directory!, $"png-{mode}-gray1.png", two, PngFormat.Info, Options(PngColorType.Gray, 1));
+            Write(directory!, $"png-{mode}-palette2.png", few, PngFormat.Info, Options(PngColorType.Palette, 2));
+            Write(directory!, $"png-{mode}-palette8.png", rgb, PngFormat.Info, Options(PngColorType.Palette, 8));
+        }
     }
 
     /// <summary>Writes a file and, next to it, the pixels Egami reads back from it as raw RGBA.</summary>
