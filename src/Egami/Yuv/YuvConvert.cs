@@ -539,6 +539,7 @@ internal static class YuvConvert
         private readonly float[] _floatSum;
         private readonly int _chromaWidth;
         private readonly int _inMax;
+        private readonly bool _boxFromRgb;
 
         internal FromRgbRows(YuvRaster<TSample> target, YuvConvertOptions options)
         {
@@ -559,6 +560,7 @@ internal static class YuvConvert
             if (_useFixed)
             {
                 _fixed = YuvKernels8.FromRgbCoefficients.For(target.Color);
+                _boxFromRgb = _via is null && _order.Size == 4 && target.Color.Matrix != YuvMatrix.Identity;
                 _fixedRows = [.. Enumerable.Range(0, 6).Select(_ => ArrayPool<int>.Shared.Rent(width))];
                 _fixedSum = ArrayPool<int>.Shared.Rent(Math.Max(2 * _chromaWidth, 1));
                 _floatRows = [];
@@ -612,6 +614,24 @@ internal static class YuvConvert
             for (int i = 0; i < count; i++)
             {
                 verticalWeight += weights[i];
+            }
+
+            if (_boxFromRgb && !fast && siting == ChromaSiting.Center && format is ChromaFormat.Yuv420 or ChromaFormat.Yuv422)
+            {
+                // The common case of centered chroma from four-byte pixels: luma per row, then chroma once per box of RGB sums,
+                // which in exact integer arithmetic gives the same samples as averaging chroma.
+                int owned = format == ChromaFormat.Yuv420 ? Math.Min(2, height - first) : 1;
+                for (int y = first; y < first + owned; y++)
+                {
+                    ConvertRow(source, y, owned: true, slot: -1);
+                }
+
+                ReadOnlySpan<byte> top = MemoryMarshal.AsBytes(source.Row(first));
+                ReadOnlySpan<byte> bottom = format == ChromaFormat.Yuv420 ? MemoryMarshal.AsBytes(source.Row(Math.Min(first + 1, height - 1))) : top;
+                int chromaAt = format == ChromaFormat.Yuv420 ? group : first;
+                YuvKernels8.BoxFromRgb(
+                    top, bottom, format == ChromaFormat.Yuv420, _order, MemoryMarshal.Cast<TSample, byte>(t.U!.Row(chromaAt)), MemoryMarshal.Cast<TSample, byte>(t.V!.Row(chromaAt)), t.Width, in _fixed);
+                return;
             }
 
             // Chroma for every row that feeds this chroma row, and luma (and alpha) for the rows this group owns. Row first - 1

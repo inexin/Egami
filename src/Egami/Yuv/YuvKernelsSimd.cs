@@ -275,6 +275,59 @@ internal static partial class YuvKernels8
         }
     }
 
+    /// <summary>The SIMD part of <see cref="BoxFromRgb"/>: four chroma samples at a time, staying clear of the end of the rows.</summary>
+    private static int BoxFromRgbSimd(ReadOnlySpan<byte> top, ReadOnlySpan<byte> bottom, bool twoRows, YuvConvert.Order order, Span<byte> u, Span<byte> v, int width, in FromRgbCoefficients k)
+    {
+        if (!Ssse3.IsSupported)
+        {
+            return 0;
+        }
+
+        Span<short> cb = stackalloc short[8], cr = stackalloc short[8];
+        cb.Clear();
+        cr.Clear();
+        (cb[order.R], cb[order.G], cb[order.B]) = ((short)k.BR, (short)k.BG, (short)k.BB);
+        (cr[order.R], cr[order.G], cr[order.B]) = ((short)k.RR, (short)k.RG, (short)k.RB);
+        cb[..4].CopyTo(cb[4..]);
+        cr[..4].CopyTo(cr[4..]);
+        Vector128<short> kb = Vector128.Create((ReadOnlySpan<short>)cb), kr = Vector128.Create((ReadOnlySpan<short>)cr);
+        int shift = twoRows ? 17 : 16;
+        Vector128<int> half = Vector128.Create(1 << (shift - 1)), off = Vector128.Create(k.COff), max = Vector128.Create(255);
+        ref byte rt = ref MemoryMarshal.GetReference(top), rb = ref MemoryMarshal.GetReference(bottom);
+        ref byte ru = ref MemoryMarshal.GetReference(u), rv = ref MemoryMarshal.GetReference(v);
+        int i = 0;
+
+        // Four boxes take eight pixels, read 16 bytes at a time from each pair: keep two pixels of slack.
+        for (; i + 4 <= u.Length && (2 * i) + 10 <= width; i += 4)
+        {
+            Vector128<short> p01 = Sum(ref rt, ref rb, 8 * i, twoRows), p23 = Sum(ref rt, ref rb, (8 * i) + 8, twoRows);
+            Vector128<short> p45 = Sum(ref rt, ref rb, (8 * i) + 16, twoRows), p67 = Sum(ref rt, ref rb, (8 * i) + 24, twoRows);
+
+            // The R, G, B, A sums of two boxes per vector, then each box's chroma from the matrix's chroma rows.
+            Vector128<short> b01 = Sse2.UnpackLow(Pairs(p01).AsInt64(), Pairs(p23).AsInt64()).AsInt16();
+            Vector128<short> b23 = Sse2.UnpackLow(Pairs(p45).AsInt64(), Pairs(p67).AsInt64()).AsInt16();
+            Vector128<int> cbs = Ssse3.HorizontalAdd(Sse2.MultiplyAddAdjacent(b01, kb), Sse2.MultiplyAddAdjacent(b23, kb));
+            Vector128<int> crs = Ssse3.HorizontalAdd(Sse2.MultiplyAddAdjacent(b01, kr), Sse2.MultiplyAddAdjacent(b23, kr));
+            Vector128<int> us = Vector128.Clamp(Vector128.ShiftRightArithmetic(cbs + half, shift) + off, Vector128<int>.Zero, max);
+            Vector128<int> vs = Vector128.Clamp(Vector128.ShiftRightArithmetic(crs + half, shift) + off, Vector128<int>.Zero, max);
+            Vector128<uint> bytes = Sse2.PackUnsignedSaturate(Sse2.PackSignedSaturate(us, vs), Vector128<short>.Zero).AsUInt32();
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref ru, i), bytes.ToScalar());
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref rv, i), bytes.GetElement(1));
+        }
+
+        return i;
+
+        // Two pixels of the top row, plus the two below them, as 16-bit channels.
+        static Vector128<short> Sum(ref byte first, ref byte second, int at, bool twoRows)
+        {
+            Vector128<short> sum = Vector128.WidenLower(Vector128.LoadUnsafe(ref first, (nuint)at)).AsInt16();
+            return twoRows ? sum + Vector128.WidenLower(Vector128.LoadUnsafe(ref second, (nuint)at)).AsInt16() : sum;
+        }
+
+        // The two pixels' channels added, in both halves.
+        static Vector128<short> Pairs(Vector128<short> two) => two + Sse2.Shuffle(two.AsInt32(), 0b01_00_11_10).AsInt16();
+    }
+
     private static int FromRgbSimd(ReadOnlySpan<byte> rgb, YuvConvert.Order order, Span<byte> luma, Span<int> cb, Span<int> cr, int width, in FromRgbCoefficients k)
     {
         if (!YuvSimd.IsSupported)

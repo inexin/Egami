@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Egami.Pixels;
 
@@ -103,6 +104,18 @@ internal static partial class YuvKernels8
         int horizontalWeight = YuvKernelsFloat.HorizontalWeight(format, siting, fast);
         int shift = 15 + int.Log2(horizontalWeight * verticalWeight);
         int half = 1 << (shift - 1);
+        if (!fast && siting == ChromaSiting.Center && format != ChromaFormat.Yuv444 && verticalWeight == verticalWeights.Length)
+        {
+            // The common case, JPEG and WebP's centered chroma: a plain box over one or two rows, in one pass per plane.
+            for (int plane = 0; plane < 2; plane++)
+            {
+                ReadOnlySpan<int> first = rows[plane].AsSpan(0, width), second = rows[(2 * (verticalWeights.Length - 1)) + plane].AsSpan(0, width);
+                Box(first, second, verticalWeights.Length == 2, plane == 0 ? u : v, shift, k.COff);
+            }
+
+            return;
+        }
+
         for (int plane = 0; plane < 2; plane++)
         {
             Span<int> sum = sums.AsSpan(0, chromaWidth);
@@ -117,6 +130,48 @@ internal static partial class YuvKernels8
             {
                 YuvConvert.SetSample(target, i, Math.Clamp(((sum[i] + half) >> shift) + k.COff, 0, 255));
             }
+        }
+    }
+
+    /// <summary>
+    /// Converts centered 4:2:0 (two rows) or 4:2:2 (one row) chroma straight from four-byte RGB: the pixels of each box are
+    /// summed per channel, then the chroma rows of the matrix applied once and rounded. Not for the identity matrix, whose
+    /// coefficients do not fit 16 bits.
+    /// </summary>
+    internal static void BoxFromRgb(ReadOnlySpan<byte> top, ReadOnlySpan<byte> bottom, bool twoRows, YuvConvert.Order order, Span<byte> u, Span<byte> v, int width, in FromRgbCoefficients k)
+    {
+        int shift = twoRows ? 17 : 16, half = 1 << (shift - 1);
+        int i = BoxFromRgbSimd(top, bottom, twoRows, order, u, v, width, in k);
+        for (; i < u.Length; i++)
+        {
+            int a = 4 * (2 * i), b = 4 * Math.Min((2 * i) + 1, width - 1);
+            int r = top[a + order.R] + top[b + order.R], g = top[a + order.G] + top[b + order.G], bl = top[a + order.B] + top[b + order.B];
+            if (twoRows)
+            {
+                r += bottom[a + order.R] + bottom[b + order.R];
+                g += bottom[a + order.G] + bottom[b + order.G];
+                bl += bottom[a + order.B] + bottom[b + order.B];
+            }
+
+            u[i] = (byte)Math.Clamp((((k.BR * r) + (k.BG * g) + (k.BB * bl) + half) >> shift) + k.COff, 0, 255);
+            v[i] = (byte)Math.Clamp((((k.RR * r) + (k.RG * g) + (k.RB * bl) + half) >> shift) + k.COff, 0, 255);
+        }
+    }
+
+    /// <summary>
+    /// Sums each pair of full-resolution Q15 chroma samples (and the pair below, for two rows), rounds once and adds the offset:
+    /// the centered box filter of <see cref="Downsample"/> in one pass.
+    /// </summary>
+    internal static void Box<TSample>(ReadOnlySpan<int> first, ReadOnlySpan<int> second, bool twoRows, Span<TSample> target, int shift, int offset)
+        where TSample : unmanaged
+    {
+        int i = YuvResample.Box8(first, second, twoRows, MemoryMarshal.Cast<TSample, byte>(target), shift, offset);
+        int last = first.Length - 1, half = 1 << (shift - 1);
+        for (; i < target.Length; i++)
+        {
+            int a = 2 * i, b = Math.Min((2 * i) + 1, last);
+            int sum = first[a] + first[b] + (twoRows ? second[a] + second[b] : 0);
+            YuvConvert.SetSample(target, i, Math.Clamp(((sum + half) >> shift) + offset, 0, 255));
         }
     }
 

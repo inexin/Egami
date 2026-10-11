@@ -162,6 +162,40 @@ internal static class YuvResample
         return i;
     }
 
+    /// <summary>
+    /// The SIMD part of <see cref="YuvKernels8.Box"/>: pairs of Q15 samples (and the pairs below) summed, rounded, offset and
+    /// narrowed to bytes, eight at a time; returns the count done. Stays clear of the last pair, which may have no second sample.
+    /// </summary>
+    internal static int Box8(ReadOnlySpan<int> first, ReadOnlySpan<int> second, bool twoRows, Span<byte> target, int shift, int offset)
+    {
+        if (!Vector256.IsHardwareAccelerated || !Avx2.IsSupported)
+        {
+            return 0;
+        }
+
+        ref int r0 = ref MemoryMarshal.GetReference(first), r1 = ref MemoryMarshal.GetReference(second);
+        ref byte rt = ref MemoryMarshal.GetReference(target);
+        Vector256<int> half = Vector256.Create(1 << (shift - 1)), off = Vector256.Create(offset), top = Vector256.Create(255);
+        int i = 0;
+        for (; i + 8 <= target.Length && (2 * i) + 16 <= first.Length; i += 8)
+        {
+            Vector256<int> a = Vector256.LoadUnsafe(ref r0, (nuint)(2 * i)), b = Vector256.LoadUnsafe(ref r0, (nuint)((2 * i) + 8));
+            if (twoRows)
+            {
+                a += Vector256.LoadUnsafe(ref r1, (nuint)(2 * i));
+                b += Vector256.LoadUnsafe(ref r1, (nuint)((2 * i) + 8));
+            }
+
+            // Pair sums per 128-bit lane, a's then b's; the 64-bit permute puts them in order.
+            Vector256<int> pairs = Avx2.Permute4x64(Avx2.HorizontalAdd(a, b).AsInt64(), 0b11_01_10_00).AsInt32();
+            Vector256<int> value = Vector256.Clamp(Vector256.ShiftRightArithmetic(pairs + half, shift) + off, Vector256<int>.Zero, top);
+            Vector128<ushort> words = Vector256.Narrow(value.AsUInt32(), value.AsUInt32()).GetLower();
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref rt, i), Vector128.Narrow(words, words).AsUInt64().ToScalar());
+        }
+
+        return i;
+    }
+
     /// <summary>Rounds Q15 chroma sums, <c>((sum + half) &gt;&gt; shift) + offset</c> clamped to 0..255; returns the count done.</summary>
     internal static int Round8<TSample>(ReadOnlySpan<int> sum, Span<TSample> target, int shift, int offset)
         where TSample : unmanaged

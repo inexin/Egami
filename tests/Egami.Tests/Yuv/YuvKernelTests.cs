@@ -168,6 +168,45 @@ public class YuvKernelTests
         }
     }
 
+    [Theory]
+    [MemberData(nameof(Colors))]
+    public void BoxesOfRgbSumsGiveTheAveragedChroma(YuvMatrix matrix, YuvRange range)
+    {
+        if (matrix == YuvMatrix.Identity)
+        {
+            return;
+        }
+
+        Random random = new(HashCode.Combine(matrix, range, 5));
+        YuvKernels8.FromRgbCoefficients k = YuvKernels8.FromRgbCoefficients.For(new YuvColor(matrix, range, ChromaSiting.Center));
+        for (int width = 1; width < 70; width++)
+        {
+            foreach (YuvConvert.Order order in Orders[..2])
+            {
+                byte[] top = Bytes(random, width * 4), bottom = Bytes(random, width * 4);
+                int chroma = (width + 1) / 2;
+                foreach (bool twoRows in new[] { true, false })
+                {
+                    byte[] u = new byte[chroma], v = new byte[chroma];
+                    YuvKernels8.BoxFromRgb(top, twoRows ? bottom : top, twoRows, order, u, v, width, in k);
+
+                    // The definition: Q15 chroma per pixel, summed over the box, rounded once.
+                    int[] cb0 = new int[width], cr0 = new int[width], cb1 = new int[width], cr1 = new int[width];
+                    YuvKernels8.FromRgbScalar(top, order, default, cb0, cr0, width, in k);
+                    YuvKernels8.FromRgbScalar(bottom, order, default, cb1, cr1, width, in k);
+                    int shift = twoRows ? 17 : 16;
+                    for (int i = 0; i < chroma; i++)
+                    {
+                        int a = 2 * i, b = Math.Min((2 * i) + 1, width - 1);
+                        int su = cb0[a] + cb0[b] + (twoRows ? cb1[a] + cb1[b] : 0), sv = cr0[a] + cr0[b] + (twoRows ? cr1[a] + cr1[b] : 0);
+                        Assert.Equal(Math.Clamp(((su + (1 << (shift - 1))) >> shift) + 128, 0, 255), u[i]);
+                        Assert.Equal(Math.Clamp(((sv + (1 << (shift - 1))) >> shift) + 128, 0, 255), v[i]);
+                    }
+                }
+            }
+        }
+    }
+
     [Fact]
     public void EightBitUpsampling()
     {
