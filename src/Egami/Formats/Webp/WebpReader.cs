@@ -59,7 +59,7 @@ internal sealed partial class WebpReader : IFormatReader
         WebpParser parser = WebpParser.Open(input, options);
         if (parser.Animated)
         {
-            throw new NotSupportedException("Animated WebP is not supported yet.");
+            return ReadAnimation<TPixel>(input, options, parser);
         }
 
         Raster<TPixel> raster = input.CreateRaster<TPixel>(parser.Width, parser.Height);
@@ -82,6 +82,73 @@ internal sealed partial class WebpReader : IFormatReader
         }
     }
 
+    /// <summary>
+    /// Reads an animation: every frame is composed on the canvas, and those in <see cref="ReaderOptions.Frames"/> are copied out at
+    /// the canvas size. Frames after the range are skipped undecoded; the chunks after them are still read for their metadata.
+    /// </summary>
+    private static Raster<TPixel> ReadAnimation<TPixel>(EgamiInput input, ReaderOptions options, WebpParser parser)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Range range = options.Frames;
+        bool fromEnd = range.Start.IsFromEnd || range.End.IsFromEnd;
+        int first = fromEnd ? 0 : range.Start.Value, end = fromEnd ? int.MaxValue : range.End.Value;
+        List<Frame<TPixel>> frames = [];
+        using WebpAnimation animation = new(input, options, parser);
+        try
+        {
+            while (animation.Next() is FrameMetadata metadata)
+            {
+                int index = animation.FramesSeen - 1;
+                if (index >= first && index < end)
+                {
+                    input.CheckMemory((long)parser.CanvasWidth * parser.CanvasHeight * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+                    PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(parser.CanvasWidth, parser.CanvasHeight, input.Memory);
+                    animation.Canvas.CopyTo(plane);
+                    frames.Add(new Frame<TPixel>(plane, metadata));
+                }
+
+                if (animation.FramesSeen >= end)
+                {
+                    animation.SkipRest();
+                    break;
+                }
+            }
+
+            if (fromEnd)
+            {
+                // A range counted from the end is only known once every frame is read.
+                (int offset, int length) = AnimationCanvasRange.Clamp(range, frames.Count);
+                for (int i = 0; i < frames.Count; i++)
+                {
+                    if (i < offset || i >= offset + length)
+                    {
+                        frames[i].Plane.Dispose();
+                    }
+                }
+
+                frames = frames.GetRange(offset, length);
+            }
+
+            if (frames.Count == 0)
+            {
+                throw input.Corrupt(-1, animation.FramesSeen == 0 ? "The animation has no frame." : "No frame is in the requested range.");
+            }
+
+            RasterMetadata rasterMetadata = new();
+            CopyMetadata(parser.Metadata, rasterMetadata);
+            return new Raster<TPixel>(frames, rasterMetadata, input.Context);
+        }
+        catch
+        {
+            foreach (Frame<TPixel> frame in frames)
+            {
+                frame.Plane.Dispose();
+            }
+
+            throw;
+        }
+    }
+
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
         // The natural type needs the header; a second look costs only the bytes up to the image chunk.
@@ -93,6 +160,11 @@ internal sealed partial class WebpReader : IFormatReader
     /// <summary>Returns the bytes a streaming decode holds.</summary>
     private static long WorkingBytes(WebpParser parser)
     {
+        if (parser.Animated)
+        {
+            return WebpAnimation.WorkingBytes(parser.CanvasWidth, parser.CanvasHeight);
+        }
+
         if (parser.ImageChunk == WebpContainer.Vp8L)
         {
             return Vp8lDecoder.WorkingBytes(parser.Width, parser.Height);
@@ -199,8 +271,9 @@ internal sealed partial class WebpReader : IFormatReader
                 case WebpContainer.Vp8L:
                     return alpha || (at + 13 <= data.Length && (data[at + 12] & 0x10) != 0);
                 case WebpContainer.Vp8:
-                case WebpContainer.Anmf:
                     return alpha;
+                case WebpContainer.Anmf:
+                    return true;
             }
 
             at += 8 + (int)Math.Min(size + (size & 1), int.MaxValue - at);

@@ -167,6 +167,9 @@ internal sealed class BufferedRowSource : RowSource
     /// <summary>Gets the whole decoded image.</summary>
     public Raster Raster => _raster ?? throw new ObjectDisposedException(nameof(BufferedRowSource));
 
+    /// <summary>Serves rows from a raster a reader has already decoded whole, at its full size.</summary>
+    public static BufferedRowSource From(Raster raster) => new(raster, raster.Width, raster.Height, 1, 1);
+
     /// <summary>
     /// Decodes the whole image with <paramref name="format"/>'s reader. A reader that scales natively is asked for the scale
     /// <see cref="ReadPlan"/> picks for its stored size; any other reader decodes at full size and the row stage reduces.

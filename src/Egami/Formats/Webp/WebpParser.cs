@@ -174,7 +174,9 @@ internal sealed class WebpParser
                     ImageStart = _input.Position;
                     Width = CanvasWidth;
                     Height = CanvasHeight;
-                    HasAlpha = (Flags & 0x10) != 0;
+                    // The canvas starts transparent and frames need not cover it, so an animation always has alpha to show.
+                    HasAlpha = true;
+                    Details.HasAlpha = (Flags & 0x10) != 0;
                     _imageSeen = true;
                     return;
                 default:
@@ -261,6 +263,33 @@ internal sealed class WebpParser
         }
 
         FrameCount = frames;
+    }
+
+    /// <summary>
+    /// Walks to the next ANMF chunk, reading metadata and unknown chunks on the way; returns <see langword="true"/> with the read
+    /// position at the frame's payload, or <see langword="false"/> at the end of the file.
+    /// </summary>
+    internal bool NextFrame(out long size)
+    {
+        while (NextChunk(out uint type, out size))
+        {
+            switch (type)
+            {
+                case WebpContainer.Anmf:
+                    return true;
+                case WebpContainer.Vp8:
+                case WebpContainer.Vp8L:
+                case WebpContainer.Alph:
+                    Problem(_input.Position - 8, $"A \"{FourCC(type)}\" chunk lies between the frames of an animation; it was ignored.");
+                    SkipPayload(size);
+                    break;
+                default:
+                    ReadOther(type, size);
+                    break;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

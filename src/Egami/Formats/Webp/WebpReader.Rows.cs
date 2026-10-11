@@ -22,9 +22,24 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
             return new LossyRows(input, parser, options);
         }
 
-        if (parser.ImageChunk != WebpContainer.Vp8L)
+        if (parser.Animated)
         {
-            throw new NotSupportedException("Animated WebP does not stream yet.");
+            Range frames = options.Frames;
+            if (frames.Start.IsFromEnd || (frames.End.IsFromEnd && frames.End.Value > 0))
+            {
+                // Frames counted from the end need the frame count, which only reading every frame gives.
+                try
+                {
+                    return BufferedRowSource.From(ReadAnimation<Rgba8>(input, options, parser));
+                }
+                finally
+                {
+                    input.ReturnUnreadBytes();
+                    input.Dispose();
+                }
+            }
+
+            return new AnimationRows(input, parser, options);
         }
 
         return new LosslessRows(input, parser, options);
@@ -477,6 +492,107 @@ internal sealed partial class WebpReader : IRowSourceReader, IIncrementalFormatR
                 metadata.WarningList.Add(warning);
             }
 
+            Metadata.ReplaceWith(metadata);
+        }
+    }
+
+    /// <summary>
+    /// An animation read a frame at a time: each frame is composed on the canvas and its rows read from there, so the memory held
+    /// is the canvas and one decoded frame, whatever the frame count.
+    /// </summary>
+    private sealed class AnimationRows : RowSource
+    {
+        private readonly EgamiInput _input;
+        private readonly WebpParser _parser;
+        private readonly WebpAnimation _animation;
+        private readonly int _first;
+        private readonly int _end;
+        private bool _disposed;
+
+        public AnimationRows(EgamiInput input, WebpParser parser, ReaderOptions options)
+        {
+            _input = input;
+            _parser = parser;
+            _animation = new WebpAnimation(input, options, parser);
+            _first = options.Frames.Start.Value;
+            _end = options.Frames.End.IsFromEnd ? int.MaxValue : options.Frames.End.Value;
+            CopyMetadata(parser.Metadata, Metadata);
+        }
+
+        public override int StoredWidth => _parser.CanvasWidth;
+
+        public override int StoredHeight => _parser.CanvasHeight;
+
+        public override int NativeScale => 1;
+
+        public override int MaxNativeScale => 1;
+
+        public override PixelLayoutInfo Layout => _parser.HasAlpha ? Rgba8.Layout : Rgb8.Layout;
+
+        public override RasterMetadata Metadata { get; } = new() { FormatName = WebpFormat.Info.Name };
+
+        public override bool MetadataComplete => _animation.Finished;
+
+        public override int? FrameCount => null;
+
+        public override RasterAccess Access => RasterAccess.Streamed;
+
+        public override long WorkingBytes => WebpAnimation.WorkingBytes(_parser.CanvasWidth, _parser.CanvasHeight);
+
+        public override TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor)
+        {
+            return _parser.HasAlpha ? visitor.Visit<Rgba8>() : visitor.Visit<Rgb8>();
+        }
+
+        public override FrameMetadata? NextFrame()
+        {
+            while (true)
+            {
+                if (_animation.FramesSeen >= _end)
+                {
+                    _animation.SkipRest();
+                    Publish();
+                    return null;
+                }
+
+                if (_animation.Next() is not FrameMetadata frame)
+                {
+                    if (_animation.FramesSeen == 0)
+                    {
+                        throw _input.Corrupt(-1, "The animation has no frame.");
+                    }
+
+                    Publish();
+                    return null;
+                }
+
+                if (_animation.FramesSeen - 1 >= _first)
+                {
+                    return frame;
+                }
+            }
+        }
+
+        public override void ReadRow<TPixel>(int y, int x, Span<TPixel> destination)
+        {
+            PixelConvert.Convert<Rgba8, TPixel>(_animation.Canvas.Row(y).Slice(x, destination.Length), destination);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _animation.Dispose();
+                _input.ReturnUnreadBytes();
+                _input.Dispose();
+            }
+        }
+
+        private void Publish()
+        {
+            RasterMetadata metadata = new();
+            CopyMetadata(_parser.Metadata, metadata);
             Metadata.ReplaceWith(metadata);
         }
     }

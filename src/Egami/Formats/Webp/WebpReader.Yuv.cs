@@ -60,17 +60,36 @@ internal sealed partial class WebpReader : IYuvFormatReader
     {
         bool strict = options.Recovery == RecoveryMode.Strict;
         (byte[] payload, int length, string? warning) = ReadPayload(input, parser, strict);
+        try
+        {
+            return DecodePlanes(input, options, payload, 0, length, parser.Alpha, parser.Width, parser.Height, parser.ImageStart, warning);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(payload);
+        }
+    }
+
+    /// <summary>
+    /// Decodes VP8 data held in memory (<paramref name="length"/> bytes at <paramref name="offset"/>), with its ALPH payload if any,
+    /// into planes of the given size; <paramref name="warning"/> is a problem met while reading the data, kept unless a later one
+    /// replaces it.
+    /// </summary>
+    internal static (YuvRaster<byte> Planes, string? Warning) DecodePlanes(
+        EgamiInput input, ReaderOptions options, byte[] payload, int offset, int length, byte[]? alphaData, int width, int height, long at, string? warning)
+    {
+        bool strict = options.Recovery == RecoveryMode.Strict;
         YuvRaster<byte>? planes = null;
         WebpAlpha? alpha = null;
         try
         {
-            using Vp8Decoder decoder = Vp8Decoder.Create(payload, 0, length);
-            if (decoder.Width != parser.Width || decoder.Height != parser.Height)
+            using Vp8Decoder decoder = Vp8Decoder.Create(payload, offset, length);
+            if (decoder.Width != width || decoder.Height != height)
             {
-                throw new CorruptDataException(WebpFormat.Info.Name, parser.ImageStart, "The VP8 frame size differs from the one its header gave.");
+                throw new CorruptDataException(WebpFormat.Info.Name, at, "The VP8 frame size differs from the one its header gave.");
             }
 
-            planes = YuvRaster<byte>.Allocate(parser.Width, parser.Height, ChromaFormat.Yuv420, 8, Vp8Color, parser.Alpha is not null, new RasterMetadata(), input.Context, ClearMode.None);
+            planes = YuvRaster<byte>.Allocate(width, height, ChromaFormat.Yuv420, 8, Vp8Color, alphaData is not null, new RasterMetadata(), input.Context, ClearMode.None);
             YuvRaster<byte> target = planes;
             while (decoder.DecodeRow((d, from, to, chromaFrom, chromaTo) =>
             {
@@ -93,16 +112,16 @@ internal sealed partial class WebpReader : IYuvFormatReader
             {
                 if (strict)
                 {
-                    throw new CorruptDataException(WebpFormat.Info.Name, parser.ImageStart, "The lossy image data ends unexpectedly.") { IsTruncation = true };
+                    throw new CorruptDataException(WebpFormat.Info.Name, at, "The lossy image data ends unexpectedly.") { IsTruncation = true };
                 }
 
                 warning = "The lossy image data ends early; the rest of the image is decoded from zeros.";
             }
 
-            if (parser.Alpha is byte[] data)
+            if (alphaData is not null)
             {
-                alpha = new WebpAlpha(input, data, parser.Width, parser.Height, strict);
-                for (int y = 0; y < parser.Height; y++)
+                alpha = new WebpAlpha(input, alphaData, width, height, strict);
+                for (int y = 0; y < height; y++)
                 {
                     alpha.DecodeRow(planes.A!.Row(y));
                 }
@@ -120,7 +139,6 @@ internal sealed partial class WebpReader : IYuvFormatReader
         finally
         {
             alpha?.Dispose();
-            ArrayPool<byte>.Shared.Return(payload);
         }
     }
 
