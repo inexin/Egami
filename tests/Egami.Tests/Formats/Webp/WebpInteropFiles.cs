@@ -29,6 +29,31 @@ public class WebpInteropFiles
                     File.WriteAllBytes(Path.Combine(directory, $"{name}.e{effort}.webp"), file.ToArray());
                     File.WriteAllBytes(Path.Combine(directory, $"{name}.e{effort}.rgba"), WebpTestImages.Bytes(raster));
                 }
+
+                foreach (int partitions in new[] { 2, 4, 8 })
+                {
+                    // Egami's decoder against libwebp's on several token partitions, which libwebp 1.3.2 no longer writes.
+                    Vp8Planes planes = WebpRgbToYuv.Convert(WebpTestImages.Argb(raster), raster.Width, raster.Height);
+                    byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Partitions = partitions }).Encode();
+                    using MemoryStream file = new();
+                    WebpContainer.WriteSimple(file, WebpContainer.Vp8, frame);
+                    string stem = Path.Combine(directory, $"{name}.lossy.p{partitions}");
+                    File.WriteAllBytes(stem + ".webp", file.ToArray());
+                    using Raster<Rgba8> decoded = Raster.Load<Rgba8>(file.ToArray());
+                    File.WriteAllBytes(stem + ".rgba", WebpTestImages.Bytes(decoded));
+                    File.WriteAllBytes(stem + ".yuv", WebpTestImages.Planes(file.ToArray()));
+                }
+
+                foreach ((int quality, int effort) in new[] { (75, 0), (75, 1), (75, 2), (75, 3), (75, 4), (75, 5), (75, 6), (0, 4), (30, 4), (90, 6), (100, 4) })
+                {
+                    using MemoryStream file = new();
+                    raster.Save(file, WebpFormat.Info, new WebpWriterOptions { Lossless = false, Quality = quality, Effort = effort });
+                    string stem = Path.Combine(directory, $"{name}.lossy.q{quality}e{effort}");
+                    File.WriteAllBytes(stem + ".webp", file.ToArray());
+                    using Raster<Rgba8> decoded = Raster.Load<Rgba8>(file.ToArray());
+                    File.WriteAllBytes(stem + ".rgba", WebpTestImages.Bytes(decoded));
+                    File.WriteAllBytes(stem + ".yuv", WebpTestImages.Planes(file.ToArray()));
+                }
             }
         }
     }
@@ -90,6 +115,27 @@ internal static class WebpTestImages
         }
 
         return argb;
+    }
+
+    /// <summary>Decodes a lossy file's planes as WebPDecodeYUV packs them: Y, then U and V.</summary>
+    internal static byte[] Planes(byte[] webp)
+    {
+        using YuvRaster yuv = YuvRaster.Load(webp);
+        YuvRaster<byte> planes = (YuvRaster<byte>)yuv;
+        int width = planes.Width, height = planes.Height, cw = (width + 1) / 2, ch = (height + 1) / 2;
+        byte[] packed = new byte[(width * height) + (2 * cw * ch)];
+        for (int y = 0; y < height; y++)
+        {
+            planes.Y.Row(y).CopyTo(packed.AsSpan(y * width, width));
+        }
+
+        for (int y = 0; y < ch; y++)
+        {
+            planes.U!.Row(y).CopyTo(packed.AsSpan((width * height) + (y * cw), cw));
+            planes.V!.Row(y).CopyTo(packed.AsSpan((width * height) + (cw * ch) + (y * cw), cw));
+        }
+
+        return packed;
     }
 
     internal static byte[] Bytes(Raster<Rgba8> raster)

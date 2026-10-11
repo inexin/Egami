@@ -181,11 +181,11 @@ public class WebpContainerTests
     }
 
     [Fact]
-    public void LossySavingIsRefusedUntilItExists()
+    public void OversizedLossyRastersAreRefused()
     {
-        using Raster<Rgba8> raster = Solid(3, 3);
+        using Raster<Gray8> raster = Raster.Create<Gray8>(16384, 1);
         using MemoryStream output = new();
-        Assert.Throws<NotSupportedException>(() => raster.Save(output, WebpFormat.Info, new WebpWriterOptions { Lossless = false }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => raster.Save(output, WebpFormat.Info, new WebpWriterOptions { Lossless = false }));
     }
 
     [Fact]

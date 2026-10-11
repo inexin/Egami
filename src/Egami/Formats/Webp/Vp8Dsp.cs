@@ -54,6 +54,18 @@ internal static class Vp8Dsp
     /// <summary>Adds the inverse DCT of a block's 16 coefficients to the 4 × 4 pixels at <paramref name="at"/>.</summary>
     internal static void InverseTransformAdd(ReadOnlySpan<short> input, Span<byte> buffer, int at)
     {
+        if (Vp8TransformSimd.IsSupported)
+        {
+            Vp8TransformSimd.InverseTransformAdd(input, buffer, at);
+            return;
+        }
+
+        InverseTransformAddScalar(input, buffer, at);
+    }
+
+    /// <summary>The scalar path of <see cref="InverseTransformAdd"/>; the SIMD kernel must match it exactly.</summary>
+    internal static void InverseTransformAddScalar(ReadOnlySpan<short> input, Span<byte> buffer, int at)
+    {
         Span<int> tmp = stackalloc int[16];
         for (int i = 0; i < 4; i++)
         {

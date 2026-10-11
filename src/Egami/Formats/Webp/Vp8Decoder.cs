@@ -17,15 +17,15 @@ internal sealed class Vp8Decoder : IDisposable
 
     private const int ChromaTail = 4;
 
-    private static readonly byte[] Bands = [0, 1, 2, 3, 6, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 7, 0];
-    private static readonly byte[] Zigzag = [0, 1, 4, 8, 5, 2, 3, 6, 9, 12, 13, 10, 7, 11, 14, 15];
-    private static readonly byte[] Cat3 = [173, 148, 140];
-    private static readonly byte[] Cat4 = [176, 155, 140, 135];
-    private static readonly byte[] Cat5 = [180, 157, 141, 134, 130];
-    private static readonly byte[] Cat6 = [254, 254, 243, 230, 196, 177, 153, 140, 133, 130, 129];
+    internal static readonly byte[] Bands = [0, 1, 2, 3, 6, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 7, 0];
+    internal static readonly byte[] Zigzag = [0, 1, 4, 8, 5, 2, 3, 6, 9, 12, 13, 10, 7, 11, 14, 15];
+    internal static readonly byte[] Cat3 = [173, 148, 140];
+    internal static readonly byte[] Cat4 = [176, 155, 140, 135];
+    internal static readonly byte[] Cat5 = [180, 157, 141, 134, 130];
+    internal static readonly byte[] Cat6 = [254, 254, 243, 230, 196, 177, 153, 140, 133, 130, 129];
 
     // The 4 × 4 mode tree of RFC 6386 section 11.2, as pairs of children: positive is the next pair, otherwise minus the mode.
-    private static readonly sbyte[] BModeTree = [-Vp8Dsp.BDc, 2, -Vp8Dsp.BTm, 4, -Vp8Dsp.BVe, 6, 8, 12, -Vp8Dsp.BHe, 10, -Vp8Dsp.BRd, -Vp8Dsp.BVr, -Vp8Dsp.BLd, 14, -Vp8Dsp.BVl, 16, -Vp8Dsp.BHd, -Vp8Dsp.BHu];
+    internal static readonly sbyte[] BModeTree = [-Vp8Dsp.BDc, 2, -Vp8Dsp.BTm, 4, -Vp8Dsp.BVe, 6, 8, 12, -Vp8Dsp.BHe, 10, -Vp8Dsp.BRd, -Vp8Dsp.BVr, -Vp8Dsp.BLd, 14, -Vp8Dsp.BVl, 16, -Vp8Dsp.BHd, -Vp8Dsp.BHu];
 
     private readonly byte[] _data;
     private readonly Vp8StreamState _state;
@@ -872,7 +872,7 @@ internal sealed class Vp8Decoder : IDisposable
     }
 
     /// <summary>Maps a 16 × 16 or chroma mode to its prediction, using the DC variants at the frame's top and left edges.</summary>
-    private static Vp8Dsp.BlockMode EdgeMode(int mode, int mbx, int mby)
+    internal static Vp8Dsp.BlockMode EdgeMode(int mode, int mbx, int mby)
     {
         if (mode != 0)
         {

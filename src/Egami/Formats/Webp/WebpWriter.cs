@@ -35,11 +35,6 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
                 nameof(start), $"{(lossless ? "Lossless" : "Lossy")} WebP holds images up to {max} pixels a side; this one is {start.Width}×{start.Height}.");
         }
 
-        if (!lossless)
-        {
-            throw new NotSupportedException("Lossy WebP writing is not supported yet; set WebpWriterOptions.Lossless to true.");
-        }
-
         return new StillEncoder<TPixel>(output, start, webp, lossless);
     }
 
@@ -92,6 +87,14 @@ internal sealed class WebpWriter : IFormatWriter, IRowFormatWriter
                     alpha = true;
                     break;
                 }
+            }
+
+            if (!_lossless)
+            {
+                Vp8Planes planes = WebpRgbToYuv.Convert(argb, _start.Width, _start.Height);
+                byte[] frame = new Vp8Encoder(planes, new Vp8EncoderOptions { Quality = _options.Quality, Effort = _options.Effort }).Encode();
+                Container.Write(_output, _start.Metadata, _options, new ImageChunk(WebpContainer.Vp8, frame, default, false), _start.Width, _start.Height);
+                return;
             }
 
             using Vp8lBitWriter bits = new(argb.Length);

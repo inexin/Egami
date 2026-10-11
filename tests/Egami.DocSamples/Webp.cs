@@ -14,6 +14,9 @@ public class Webp
         using Raster photo = Raster.Load("duck.png");
 
         #region webp
+        // Lossy, the default for rasters not read from WebP: quality 0 to 100 and effort 0 to 6 on cwebp's scales.
+        photo.Save("small.webp", new WebpWriterOptions { Quality = 80 });
+
         // Lossless: every pixel exact, colors under full transparency included. Effort 0 (fastest) to 6 (smallest).
         photo.Save("duck.webp", new WebpWriterOptions { Lossless = true, Effort = 6 });
 
@@ -23,6 +26,7 @@ public class Webp
         #endregion
 
         Assert.True(((WebpDetails)Raster.Load("copy.webp").Metadata.FormatDetails!).Lossless);
+        Assert.False(((WebpDetails)Raster.Load("small.webp").Metadata.FormatDetails!).Lossless);
     }
 
     [Fact]
