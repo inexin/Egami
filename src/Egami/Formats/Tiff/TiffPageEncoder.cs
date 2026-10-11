@@ -34,6 +34,12 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
     private readonly ulong[] _offsets;
     private readonly ulong[] _counts;
     private readonly MemoryStream? _deflate;
+    private readonly TPixel[]? _padded;
+    private readonly Rgb8[]? _rgb;
+    private readonly Dictionary<int, int>? _lookup;
+    private byte[]? _jpegTables;
+    private readonly int _batch;
+    private readonly List<(byte[] Data, int Length, int RowLength, int Rows, int UnitWidth)> _pending = [];
     private int _y;
     private int _bandStart;
     private int _unitIndex;
@@ -49,29 +55,57 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         _width = start.Width;
         _height = start.Height;
         _options = start.Options as TiffWriterOptions ?? TiffWriterOptions.Default;
-        _plan = TiffPlan.For<TPixel>(start.Metadata, start.Options);
-        _rowBytes = checked(_width * _plan.PixelBytes);
+        if (start.Streaming && (_options.Reduce || _options.Compression is TiffCompression.CcittGroup3 or TiffCompression.CcittGroup4))
+        {
+            start.Refuse("TIFF", _options.Reduce ? "Reduce" : "Checking that every pixel is black or white for CCITT", "Leave Reduce off, or choose another compression.");
+        }
+
+        _plan = TiffPlan.For(start.Metadata, start.Options, start.Whole);
+        _rowBytes = _plan.RowBytes(_width);
         int tile = _plan.TileSize;
         if (tile > 0)
         {
             _unitRows = tile;
             _across = (_width + tile - 1) / tile;
-            _bandRowBytes = checked(_across * tile * _plan.PixelBytes);
+            _bandRowBytes = checked(_across * _plan.RowBytes(tile));
         }
         else
         {
-            _unitRows = Math.Clamp(65536 / Math.Max(1, _rowBytes), 1, _height);
+            int rows = 65536 / Math.Max(1, _rowBytes);
+            if (_plan.Compression == TiffCodes.Jpeg)
+            {
+                // JPEG strips hold whole MCU rows: 16 for 4:2:0, 8 for gray.
+                int mcu = _plan.Photometric == 6 ? 16 : 8;
+                rows = Math.Max(mcu, rows / mcu * mcu);
+            }
+
+            _unitRows = Math.Clamp(rows, 1, _height);
             _across = 1;
             _bandRowBytes = _rowBytes;
+        }
+
+        if (_bandRowBytes > _rowBytes || _plan.Store is TiffStore.Bilevel or TiffStore.Palette)
+        {
+            _padded = new TPixel[tile > 0 ? _across * tile : _width];
+        }
+
+        if (_plan.Store is TiffStore.Bilevel or TiffStore.Palette)
+        {
+            _rgb = new Rgb8[_padded!.Length];
+            _lookup = _plan.Store == TiffStore.Palette ? TiffReduce.Lookup(_plan.Palette) : null;
         }
 
         int down = (_height + _unitRows - 1) / _unitRows;
         _offsets = new ulong[_across * down];
         _counts = new ulong[_across * down];
-        int unitBytes = checked((tile > 0 ? tile * tile * _plan.PixelBytes : _unitRows * _rowBytes));
+        int unitBytes = checked(tile > 0 ? tile * _plan.RowBytes(tile) : _unitRows * _rowBytes);
         _band = ArrayPool<byte>.Shared.Rent(checked(_bandRowBytes * _unitRows));
         _unit = ArrayPool<byte>.Shared.Rent(unitBytes);
         _packed = ArrayPool<byte>.Shared.Rent(Math.Max(PackBits.MaxEncodedLength(unitBytes) + _unitRows, TiffLzwEncoder.MaxEncodedLength(unitBytes)));
+        _batch = _options.ParallelCompression && _start.Context.MaxParallelism > 1
+            && _plan.Compression is TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.PackBits or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4
+            ? _start.Context.MaxParallelism * 2
+            : 1;
         if (_plan.Compression == TiffCodes.Deflate)
         {
             _deflate = new MemoryStream(unitBytes / 2 + 64);
@@ -86,15 +120,16 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         }
 
         Span<byte> target = _band.AsSpan((_y - _bandStart) * _bandRowBytes, _bandRowBytes);
-        Store(row, target[.._rowBytes]);
-        if (_bandRowBytes > _rowBytes)
+        if (_padded is not null)
         {
             // Tiles past the right edge repeat the last pixel, so they compress well.
-            ReadOnlySpan<byte> last = target.Slice(_rowBytes - _plan.PixelBytes, _plan.PixelBytes);
-            for (int at = _rowBytes; at < _bandRowBytes; at += _plan.PixelBytes)
-            {
-                last.CopyTo(target[at..]);
-            }
+            row.CopyTo(_padded);
+            _padded.AsSpan(row.Length).Fill(row[^1]);
+            Store(_padded, target);
+        }
+        else
+        {
+            Store(row, target);
         }
 
         _y++;
@@ -107,6 +142,12 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
     /// <summary>Converts a row to the stored type's bytes, premultiplying when straight alpha is written as associated.</summary>
     private void Store(ReadOnlySpan<TPixel> row, Span<byte> target)
     {
+        if (_plan.Store is TiffStore.Bilevel or TiffStore.Palette)
+        {
+            TiffReduce.Pack(row, target, _plan, _lookup, _rgb);
+            return;
+        }
+
         if (typeof(TPixel) == typeof(Alpha8))
         {
             // Alpha8 is written as gray: its values as they are.
@@ -192,12 +233,12 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         {
             Span<byte> strip = _unit.AsSpan(0, rows * _rowBytes);
             _band.AsSpan(0, strip.Length).CopyTo(strip);
-            EncodeUnit(strip, _rowBytes, rows);
+            EncodeUnit(strip, _rowBytes, rows, _width);
         }
         else
         {
             int tile = _plan.TileSize;
-            int tileRow = tile * _plan.PixelBytes;
+            int tileRow = _plan.RowBytes(tile);
             for (int col = 0; col < _across; col++)
             {
                 Span<byte> unit = _unit.AsSpan(0, tile * tileRow);
@@ -208,7 +249,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
                     _band.AsSpan((from * _bandRowBytes) + (col * tileRow), tileRow).CopyTo(unit[(r * tileRow)..]);
                 }
 
-                EncodeUnit(unit, tileRow, tile);
+                EncodeUnit(unit, tileRow, tile, tile);
             }
         }
 
@@ -216,7 +257,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
     }
 
     /// <summary>Runs a strip or tile through the predictor, the byte order and the compression, and writes it.</summary>
-    private void EncodeUnit(Span<byte> unit, int rowLength, int rows)
+    private void EncodeUnit(Span<byte> unit, int rowLength, int rows, int unitWidth)
     {
         TiffPlan plan = _plan;
         int sampleBytes = plan.Bits / 8;
@@ -243,24 +284,97 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
             }
         }
 
+        if (_batch > 1)
+        {
+            // Compressed later, several units at once on several threads, then written in order.
+            byte[] copy = ArrayPool<byte>.Shared.Rent(unit.Length);
+            unit.CopyTo(copy);
+            _pending.Add((copy, unit.Length, rowLength, rows, unitWidth));
+            if (_pending.Count == _batch)
+            {
+                FlushPending();
+            }
+
+            return;
+        }
+
+        Write(Compress(unit, rowLength, rows, unitWidth, _packed, _deflate));
+    }
+
+    /// <summary>Compresses the units held for parallel compression, each on its own thread, and writes them in order.</summary>
+    private void FlushPending()
+    {
+        if (_pending.Count == 0)
+        {
+            return;
+        }
+
+        byte[][] results = new byte[_pending.Count][];
+        int level = _options.CompressionLevel;
+        Parallel.For(0, _pending.Count, new ParallelOptions { MaxDegreeOfParallelism = _start.Context.MaxParallelism }, i =>
+        {
+            (byte[] data, int length, int rowLength, int rows, int unitWidth) = _pending[i];
+            byte[] scratch = ArrayPool<byte>.Shared.Rent(Math.Max(PackBits.MaxEncodedLength(length) + rows, TiffLzwEncoder.MaxEncodedLength(length)));
+            using MemoryStream? deflate = _plan.Compression == TiffCodes.Deflate ? new MemoryStream((length / 2) + 64) : null;
+            try
+            {
+                results[i] = Compress(data.AsSpan(0, length), rowLength, rows, unitWidth, scratch, deflate).ToArray();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(scratch);
+            }
+        });
+        foreach ((byte[] data, _, _, _, _) in _pending)
+        {
+            ArrayPool<byte>.Shared.Return(data);
+        }
+
+        _pending.Clear();
+        foreach (byte[] result in results)
+        {
+            Write(result);
+        }
+    }
+
+    private void Write(ReadOnlySpan<byte> packed)
+    {
+        _offsets[_unitIndex] = (ulong)_file.Position;
+        _counts[_unitIndex] = (ulong)packed.Length;
+        _unitIndex++;
+        _file.Write(packed);
+    }
+
+    /// <summary>Compresses one unit, into <paramref name="scratch"/> or <paramref name="deflate"/>; returns the compressed bytes.</summary>
+    private ReadOnlySpan<byte> Compress(Span<byte> unit, int rowLength, int rows, int unitWidth, byte[] scratch, MemoryStream? deflate)
+    {
+        TiffPlan plan = _plan;
         ReadOnlySpan<byte> packed;
         switch (plan.Compression)
         {
             case TiffCodes.Lzw:
-                packed = _packed.AsSpan(0, TiffLzwEncoder.Encode(unit, _packed));
+                packed = scratch.AsSpan(0, TiffLzwEncoder.Encode(unit, scratch));
                 break;
             case TiffCodes.PackBits:
                 int n = 0;
                 for (int r = 0; r < rows; r++)
                 {
-                    n += PackBits.Encode(unit.Slice(r * rowLength, rowLength), _packed.AsSpan(n));
+                    n += PackBits.Encode(unit.Slice(r * rowLength, rowLength), scratch.AsSpan(n));
                 }
 
-                packed = _packed.AsSpan(0, n);
+                packed = scratch.AsSpan(0, n);
+                break;
+            case TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4:
+                packed = CcittEncoder.Encode(unit, unitWidth, rows, plan.Compression == TiffCodes.CcittGroup4);
+                break;
+            case TiffCodes.Jpeg:
+                packed = TiffUnitWriter.Jpeg(unit, unitWidth, rows, plan.Photometric == 1, plan.Quality, _start.Context, ref _jpegTables);
+                break;
+            case TiffCodes.Webp:
+                packed = TiffUnitWriter.Webp(unit, unitWidth, rows, plan.Samples == 4, _start.Context);
                 break;
             case TiffCodes.Deflate:
-                MemoryStream deflate = _deflate!;
-                deflate.SetLength(0);
+                deflate!.SetLength(0);
                 using (ZLibStream zlib = new(deflate, new ZLibCompressionOptions { CompressionLevel = _options.CompressionLevel }, leaveOpen: true))
                 {
                     zlib.Write(unit);
@@ -273,10 +387,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
                 break;
         }
 
-        _offsets[_unitIndex] = (ulong)_file.Position;
-        _counts[_unitIndex] = (ulong)packed.Length;
-        _unitIndex++;
-        _file.Write(packed);
+        return packed;
     }
 
     /// <summary>The horizontal predictor's encoding: each sample but a row's first becomes the difference from the one a pixel before.</summary>
@@ -354,6 +465,7 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         }
 
         _completed = true;
+        FlushPending();
         WriteIfd();
         if (_ownsFile)
         {
@@ -414,6 +526,34 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         if (plan.Photometric == 5)
         {
             ifd.Add(TiffTags.InkSet, 3, 1);
+        }
+
+        if (plan.Store == TiffStore.Palette)
+        {
+            ifd.Add(TiffTags.ColorMap, 3, TiffReduce.ColorMap(plan.Palette, plan.Bits));
+        }
+
+        if (plan.Compression == TiffCodes.CcittGroup3)
+        {
+            ifd.Add(TiffTags.T4Options, 4, 0);
+        }
+
+        if (plan.Photometric == 6)
+        {
+            ifd.Add(TiffTags.YCbCrSubSampling, 3, [2, 2]);
+            byte[] reference = new byte[48];
+            ulong[] values = [0, 1, 255, 1, 128, 1, 255, 1, 128, 1, 255, 1];
+            for (int i = 0; i < values.Length; i++)
+            {
+                _file.Put32(reference.AsSpan(i * 4), (uint)values[i]);
+            }
+
+            ifd.AddRaw(TiffTags.ReferenceBlackWhite, 5, 6, reference);
+        }
+
+        if (_jpegTables is not null)
+        {
+            ifd.AddRaw(TiffTags.JpegTables, 7, _jpegTables.Length, _jpegTables);
         }
 
         if (plan.Extra >= 0)

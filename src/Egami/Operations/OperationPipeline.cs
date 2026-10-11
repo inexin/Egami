@@ -258,6 +258,11 @@ internal static class OperationPipeline
         /// <summary>Applies each step's metadata changes (EXIF orientation, dimensions, thumbnail, density) in order.</summary>
         internal void UpdateMetadata(RasterMetadata metadata, Size input)
         {
+            if (Steps.Count > 0)
+            {
+                metadata.FormatDetails?.PixelsChanged();
+            }
+
             for (int i = 0; i < Steps.Count; i++)
             {
                 if (Steps[i] is Color.IUpdatesColor color)

@@ -84,6 +84,11 @@ public abstract class FormatDetails
     public abstract FormatDetails Copy();
 
     /// <summary>Forgets what the details say about color, once the pixels have been converted to another encoding.</summary>
+    /// <summary>Notes that an operation changed the pixels, so details that describe the stored pixels as loaded no longer hold.</summary>
+    internal virtual void PixelsChanged()
+    {
+    }
+
     internal virtual void ClearColorTags()
     {
     }

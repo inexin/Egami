@@ -209,6 +209,8 @@ internal sealed class TiffOutput : IDisposable
 /// <summary>How a page is stored: the pixel type its rows are converted to, and the tags that describe it.</summary>
 internal enum TiffStore
 {
+    Bilevel,
+    Palette,
     Gray8,
     GrayAlpha8,
     Gray16,
@@ -231,16 +233,75 @@ internal enum TiffStore
 internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, int Bits, int Format, int Extra, int Compression, int Predictor,
     int TileSize, bool AssociatedFromStraight)
 {
-    /// <summary>Gets the bytes of a pixel as stored.</summary>
+    /// <summary>Gets the bytes of a pixel as stored, for whole-byte samples.</summary>
     public int PixelBytes => Samples * Bits / 8;
 
-    /// <summary>Chooses how <typeparamref name="TPixel"/> is stored, from the design's table, and the compression and layout from the options and a TIFF source.</summary>
-    public static TiffPlan For<TPixel>(RasterMetadata metadata, WriterOptions options)
+    /// <summary>Gets the palette of a reduced page: 256 entries at most, in index order.</summary>
+    public Rgb8[] Palette { get; init; } = [];
+
+    /// <summary>Gets the quality of JPEG compression.</summary>
+    public int Quality { get; init; } = 75;
+
+    /// <summary>Returns the bytes of a stored row of <paramref name="width"/> pixels.</summary>
+    public int RowBytes(int width) => (int)((((long)width * Samples * Bits) + 7) / 8);
+
+    /// <summary>
+    /// Chooses how <typeparamref name="TPixel"/> is stored, from the design's table (or the smallest exact form, with Reduce), and
+    /// the compression and layout from the options and a TIFF source. <paramref name="whole"/> is the image when Save has it.
+    /// </summary>
+    public static TiffPlan For<TPixel>(RasterMetadata metadata, WriterOptions options, Raster<TPixel>? whole)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         TiffWriterOptions tiff = options as TiffWriterOptions ?? TiffWriterOptions.Default;
         TiffDetails? source = metadata.FormatDetails as TiffDetails;
+        int compression = tiff.Compression is TiffCompression chosen ? (int)chosen : SourceCompression(source, tiff);
+        if (compression is TiffCodes.AdobeDeflate)
+        {
+            compression = TiffCodes.Deflate;
+        }
+
+        if (compression is not (TiffCodes.None or TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.PackBits or TiffCodes.CcittGroup3
+            or TiffCodes.CcittGroup4 or TiffCodes.Jpeg or TiffCodes.Webp))
+        {
+            throw new ArgumentException($"TIFF: {TiffCodes.Name(compression)} compression is read only; it cannot be written.", nameof(options));
+        }
+
+        bool ccitt = compression is TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4;
         TiffStore store = StoreFor<TPixel>();
+        Rgb8[] palette = [];
+        if (ccitt && tiff.Compression is null && !tiff.Reduce && source is { BitsPerSample: 1, Unchanged: true })
+        {
+            // A 1-bit source unchanged since loading is bilevel without looking, so Save and a streamed encode agree.
+            store = TiffStore.Bilevel;
+        }
+        else if ((tiff.Reduce || ccitt) && whole is not null)
+        {
+            (store, palette) = TiffReduce.Analyze(whole, store, allowPalette: tiff.Reduce && !ccitt && compression is not (TiffCodes.Jpeg or TiffCodes.Webp));
+        }
+
+        bool kept = tiff.Compression is null;
+        if (ccitt && store != TiffStore.Bilevel)
+        {
+            if (!kept)
+            {
+                throw new ArgumentException("TIFF: CCITT compression takes 1-bit images only, where every pixel is black or white.", nameof(options));
+            }
+
+            // A source's compression that no longer suits the pixels gives way to the default.
+            (compression, ccitt) = (TiffCodes.Deflate, false);
+        }
+
+        if (kept && compression == TiffCodes.Jpeg && store is not (TiffStore.Rgb8 or TiffStore.Rgb16 or TiffStore.RgbF32 or TiffStore.Gray8
+            or TiffStore.Gray16 or TiffStore.GrayF32))
+        {
+            compression = TiffCodes.Deflate;
+        }
+
+        if (kept && compression == TiffCodes.Webp && store is TiffStore.Cmyk8 or TiffStore.Cmyk16)
+        {
+            compression = TiffCodes.Deflate;
+        }
+
         bool associated = false;
         if (tiff.AssociatedAlpha)
         {
@@ -253,8 +314,17 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
             };
         }
 
+        int paletteBits = palette.Length switch
+        {
+            <= 2 => 1,
+            <= 4 => 2,
+            <= 16 => 4,
+            _ => 8,
+        };
         (int photometric, int samples, int bits, int format, int extra) = store switch
         {
+            TiffStore.Bilevel => (0, 1, 1, 1, -1),
+            TiffStore.Palette => (3, 1, paletteBits, 1, -1),
             TiffStore.Gray8 => (1, 1, 8, 1, -1),
             TiffStore.GrayAlpha8 => (1, 2, 8, 1, associated ? 1 : 2),
             TiffStore.Gray16 => (1, 1, 16, 1, -1),
@@ -273,44 +343,81 @@ internal sealed record TiffPlan(TiffStore Store, int Photometric, int Samples, i
             _ => (2, 4, 32, 3, 1),
         };
 
-        int compression = tiff.Compression is TiffCompression chosen ? (int)chosen : SourceCompression(source);
-        if (compression is TiffCodes.AdobeDeflate)
+        if (compression == TiffCodes.Jpeg)
         {
-            compression = TiffCodes.Deflate;
+            if (store is TiffStore.Rgb8 or TiffStore.Rgb16 or TiffStore.RgbF32)
+            {
+                // RGB goes in as YCbCr 4:2:0, as libtiff's JPEGCOLORMODE does; deeper RGB is narrowed to 8 bits first.
+                (store, photometric, samples, bits, format, extra) = (TiffStore.Rgb8, 6, 3, 8, 1, -1);
+            }
+            else if (store is TiffStore.Gray8 or TiffStore.Gray16 or TiffStore.GrayF32)
+            {
+                (store, photometric, samples, bits, format, extra) = (TiffStore.Gray8, 1, 1, 8, 1, -1);
+            }
+            else if (store is TiffStore.Cmyk8 or TiffStore.Cmyk16)
+            {
+                throw new NotSupportedException("TIFF: JPEG compression of CMYK waits for the JPEG writer's CMYK support (Phase 2.4.3).");
+            }
+            else
+            {
+                throw new ArgumentException("TIFF: JPEG compression takes gray and RGB images without alpha.", nameof(options));
+            }
         }
 
-        if (compression is not (TiffCodes.None or TiffCodes.Lzw or TiffCodes.Deflate or TiffCodes.PackBits))
+        if (compression == TiffCodes.Webp)
         {
-            throw new NotSupportedException($"TIFF: writing {TiffCodes.Name(compression)} compression is not supported yet.");
+            if (store is TiffStore.Cmyk8 or TiffStore.Cmyk16)
+            {
+                throw new ArgumentException("TIFF: WebP compression takes RGB and RGBA images.", nameof(options));
+            }
+
+            bool alpha = store is TiffStore.Rgba8 or TiffStore.Rgba16 or TiffStore.RgbaF32 or TiffStore.GrayAlpha8 or TiffStore.GrayAlpha16
+                or TiffStore.RgbaF16 or TiffStore.PremulRgba8 or TiffStore.PremulRgbaF32;
+            (store, photometric, samples, bits, format, extra, associated) = alpha
+                ? (TiffStore.Rgba8, 2, 4, 8, 1, 2, false)
+                : (TiffStore.Rgb8, 2, 3, 8, 1, -1, false);
+            bool lossless = tiff.Quality == 100 || (tiff.Compression is null && source?.Compression == TiffCompression.Webp);
+            if (!lossless)
+            {
+                throw new NotSupportedException("TIFF: lossy WebP compression waits for the WebP writer's lossy encoder; set Quality to 100 for lossless.");
+            }
         }
 
         int predictor = 1;
-        if (compression is TiffCodes.Lzw or TiffCodes.Deflate)
+        if (compression is TiffCodes.Lzw or TiffCodes.Deflate && bits >= 8 && store != TiffStore.Palette)
         {
             TiffPredictor? wanted = tiff.Predictor ?? (tiff.Compression is null ? source?.Predictor : null);
             predictor = wanted switch
             {
                 TiffPredictor.None => 1,
-                TiffPredictor.Horizontal when format != 3 => 2,
+                TiffPredictor.Horizontal => 2,
                 TiffPredictor.FloatingPoint when format == 3 => 3,
                 _ => format == 3 ? 3 : 2,
             };
-            if (wanted is TiffPredictor.Horizontal && format == 3 && tiff.Predictor is not null)
-            {
-                predictor = 2;
-            }
         }
 
         int tile = tiff.TileSize ?? (source is { TileWidth: int w, TileHeight: int h } && w == h && w % 16 == 0 ? w : 0);
-        return new TiffPlan(store, photometric, samples, bits, format, extra, compression, predictor, tile, associated && store is not (TiffStore.PremulRgba8 or TiffStore.PremulRgbaF32));
+        return new TiffPlan(store, photometric, samples, bits, format, extra, compression, predictor, tile,
+            associated && store is not (TiffStore.PremulRgba8 or TiffStore.PremulRgbaF32))
+        {
+            Palette = palette,
+            Quality = tiff.Quality,
+        };
     }
 
-    /// <summary>Returns a TIFF source's compression when the writer can write it, else Deflate.</summary>
-    private static int SourceCompression(TiffDetails? source) => source?.Compression switch
+    /// <summary>
+    /// Returns a TIFF source's compression when the writer can write it and the options leave it, else Deflate. JPEG and WebP are
+    /// kept only while the raster is unchanged since loading, to avoid a second lossy pass.
+    /// </summary>
+    private static int SourceCompression(TiffDetails? source, TiffWriterOptions options) => source?.Compression switch
     {
         TiffCompression.None => TiffCodes.None,
         TiffCompression.Lzw => TiffCodes.Lzw,
         TiffCompression.PackBits => TiffCodes.PackBits,
+        TiffCompression.CcittGroup3 when source.BitsPerSample == 1 && (options.Reduce || source.Unchanged) => TiffCodes.CcittGroup3,
+        TiffCompression.CcittGroup4 when source.BitsPerSample == 1 && (options.Reduce || source.Unchanged) => TiffCodes.CcittGroup4,
+        TiffCompression.Jpeg when source.Unchanged => TiffCodes.Jpeg,
+        TiffCompression.Webp when source.Unchanged => TiffCodes.Webp,
         _ => TiffCodes.Deflate,
     };
 

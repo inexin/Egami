@@ -3,7 +3,8 @@ Egami's own, and ImageMagick and Pillow able to open each file.
 
 Runs the TiffInteropFiles test with EGAMI_INTEROP_DIR=.cache/tiff-interop, which writes every pixel type in every compression,
 in strips, tiles and BigTIFF, with Egami's decode as raw samples next to each; then, in Docker (alpine:3.20), checks them with
-libtiff 4.6.0 (tiffinfo -D, and tools/tiffref/tiffref.c's raw samples), ImageMagick 7.1.1 and Pillow.
+libtiff 4.6.0 (tiffinfo -D, and tools/tiffref/tiffref.c's raw samples, or its RGBA for 1-bit, palette, CCITT, JPEG and
+WebP pages), ImageMagick 7.1.1 and Pillow.
 
 Usage, from the repo root with Docker running:
   python tools/check-tiff-interop.py
@@ -30,13 +31,30 @@ def inside():
         path = os.path.join(OUT, name)
         problems = []
         info = subprocess.run(["tiffinfo", "-D", path], capture_output=True, text=True)
+        if "Cannot display data" in info.stderr:
+            # tiffinfo -D cannot dump subsampled YCbCr tiles, libtiff's own included; the tags alone must still be clean.
+            info = subprocess.run(["tiffinfo", path], capture_output=True, text=True)
         if info.returncode != 0 or info.stderr.strip():
             problems.append("tiffinfo: " + (info.stderr.strip() or "failed")[:200])
-        raw = subprocess.run(["/tmp/tiffref", "raw", path, "0", "/tmp/out.raw"], capture_output=True, text=True)
-        if raw.returncode != 0:
-            problems.append("libtiff: " + raw.stderr.strip()[:200])
-        elif open("/tmp/out.raw", "rb").read() != open(path + ".raw", "rb").read():
-            problems.append("libtiff's samples differ from Egami's")
+        if name.startswith("rgba-"):
+            # 1-bit, palette, JPEG and WebP pages: libtiff's RGBA against Egami's, JPEG within 2 levels (libjpeg's and Egami's
+            # IDCT and upsampling).
+            rgba = subprocess.run(["/tmp/tiffref", "rgba", path, "0", "/tmp/out.rgba"], capture_output=True, text=True)
+            if rgba.returncode != 0:
+                problems.append("libtiff: " + rgba.stderr.strip()[:200])
+            else:
+                theirs = open("/tmp/out.rgba", "rb").read()
+                mine = open(path + ".rgba", "rb").read()
+                limit = 2 if "jpeg" in name else 0
+                worst = max(abs(a - b) for a, b in zip(theirs, mine)) if len(theirs) == len(mine) else 999
+                if worst > limit:
+                    problems.append(f"libtiff's RGBA differs from Egami's by {worst}")
+        else:
+            raw = subprocess.run(["/tmp/tiffref", "raw", path, "0", "/tmp/out.raw"], capture_output=True, text=True)
+            if raw.returncode != 0:
+                problems.append("libtiff: " + raw.stderr.strip()[:200])
+            elif open("/tmp/out.raw", "rb").read() != open(path + ".raw", "rb").read():
+                problems.append("libtiff's samples differ from Egami's")
         magick = subprocess.run(["magick", path + "[0]", "-depth", "8", "rgba:/tmp/m.rgba"], capture_output=True, text=True)
         if magick.returncode != 0:
             problems.append("ImageMagick: " + magick.stderr.strip()[:200])

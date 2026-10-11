@@ -236,3 +236,175 @@ public class TiffWriterTests
         public override void Write(byte[] buffer, int offset, int count) => inner.Write(buffer, offset, count);
     }
 }
+
+/// <summary>The writer's extras: CCITT, JPEG, WebP, lossless reduction, and keeping a lossy source's compression.</summary>
+public class TiffWriterExtrasTests
+{
+    private static Raster<Gray8> Bilevel()
+    {
+        Raster<Gray8> raster = Raster.Create<Gray8>(203, 71);
+        for (int y = 0; y < raster.Height; y++)
+        {
+            Span<Gray8> row = raster.Row(y);
+            for (int x = 0; x < row.Length; x++)
+            {
+                row[x] = new Gray8((byte)((((x / (1 + (y % 7))) + (y / 5)) % 3 == 0 || x * x % 97 < 9) ? 0 : 255));
+            }
+        }
+
+        return raster;
+    }
+
+    private static byte[] Save(Raster raster, TiffWriterOptions options)
+    {
+        using MemoryStream file = new();
+        raster.Save(file, TiffFormat.Info, options);
+        return file.ToArray();
+    }
+
+    [Theory]
+    [InlineData(TiffCompression.CcittGroup3, 0)]
+    [InlineData(TiffCompression.CcittGroup4, 0)]
+    [InlineData(TiffCompression.CcittGroup4, 16)]
+    public void CcittRoundTripsBilevelImages(TiffCompression compression, int tile)
+    {
+        using Raster<Gray8> source = Bilevel();
+        byte[] file = Save(source, new TiffWriterOptions { Compression = compression, TileSize = tile });
+        using Raster<Gray8> back = Raster.Load<Gray8>(file);
+        TiffDetails details = (TiffDetails)back.Metadata.FormatDetails!;
+        Assert.Equal((compression, 1, TiffPhotometric.WhiteIsZero), (details.Compression, details.BitsPerSample, details.Photometric));
+        Assert.Equal(TiffReference.Bytes(source), TiffReference.Bytes(back));
+    }
+
+    [Fact]
+    public void CcittRefusesImagesThatAreNotBilevel()
+    {
+        using Raster<Gray8> gray = TiffWriterTests.Pattern<Gray8>();
+        Assert.Throws<ArgumentException>(() => Save(gray, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4 }));
+    }
+
+    [Fact]
+    public void ReduceFindsTheSmallestExactForm()
+    {
+        using Raster<Gray8> bilevel = Bilevel();
+        using Raster<Rgba8> bilevelRgba = bilevel.As<Rgba8>();
+        using Raster<Rgb8> grayRgb = TiffWriterTests.Pattern<Gray8>().As<Rgb8>();
+        using Raster<Rgba16> wide = TiffWriterTests.Pattern<Rgba8>().As<Rgba16>();
+        using Raster<Rgb8> fewColors = Raster.Create<Rgb8>(40, 30);
+        for (int y = 0; y < 30; y++)
+        {
+            for (int x = 0; x < 40; x++)
+            {
+                fewColors.Row(y)[x] = new Rgb8((byte)(x % 5 * 60), (byte)(y % 3 * 100), 7);
+            }
+        }
+
+        (Raster Source, TiffPhotometric Photometric, int Bits)[] cases =
+        [
+            (bilevelRgba, TiffPhotometric.WhiteIsZero, 1), (grayRgb, TiffPhotometric.BlackIsZero, 8), (wide, TiffPhotometric.Rgb, 8), (fewColors, TiffPhotometric.Palette, 4),
+        ];
+        foreach ((Raster source, TiffPhotometric photometric, int bits) in cases)
+        {
+            byte[] file = Save(source, new TiffWriterOptions { Reduce = true });
+            using Raster<Rgba16> back = Raster.Load<Rgba16>(file);
+            using Raster<Rgba16> expected = source.As<Rgba16>();
+            TiffDetails details = (TiffDetails)back.Metadata.FormatDetails!;
+            Assert.Equal((photometric, bits), (details.Photometric, details.BitsPerSample));
+            Assert.Equal(TiffReference.Bytes(expected), TiffReference.Bytes(back));
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(32)]
+    public void JpegWritesYCbCrWithSharedTables(int tile)
+    {
+        using Raster<Rgb8> source = Raster.Load<Rgb8>(TiffCorpus.Main.Read("rgb8.tif"));
+        byte[] file = Save(source, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 90, TileSize = tile });
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(file);
+        TiffDetails details = (TiffDetails)back.Metadata.FormatDetails!;
+        Assert.Equal((TiffCompression.Jpeg, TiffPhotometric.YCbCr), (details.Compression, details.Photometric));
+        Assert.True(Psnr(source, back) > 30, $"PSNR {Psnr(source, back):F1} dB");
+    }
+
+    [Fact]
+    public void JpegRefusesAlphaAndWaitsForCmyk()
+    {
+        using Raster<Rgba8> rgba = TiffWriterTests.Pattern<Rgba8>();
+        using Raster<Cmyk8> cmyk = TiffWriterTests.Pattern<Cmyk8>();
+        Assert.Throws<ArgumentException>(() => Save(rgba, new TiffWriterOptions { Compression = TiffCompression.Jpeg }));
+        Assert.Throws<NotSupportedException>(() => Save(cmyk, new TiffWriterOptions { Compression = TiffCompression.Jpeg }));
+    }
+
+    [Fact]
+    public void LosslessWebpRoundTripsExactly()
+    {
+        using Raster<Rgba8> source = TiffWriterTests.Pattern<Rgba8>();
+        byte[] file = Save(source, new TiffWriterOptions { Compression = TiffCompression.Webp, Quality = 100 });
+        using Raster<Rgba8> back = Raster.Load<Rgba8>(file);
+        Assert.Equal(TiffCompression.Webp, ((TiffDetails)back.Metadata.FormatDetails!).Compression);
+        Assert.Equal(TiffReference.Bytes(source), TiffReference.Bytes(back));
+        Assert.Throws<NotSupportedException>(() => Save(source, new TiffWriterOptions { Compression = TiffCompression.Webp, Quality = 80 }));
+    }
+
+    [Fact]
+    public void ALossySourceKeepsItsCompressionOnlyWhileUnchanged()
+    {
+        byte[] data = TiffCorpus.Main.Read("rgb8-jpeg.tif");
+        using Raster loaded = Raster.Load(data);
+        using MemoryStream again = new();
+        loaded.Save(again, TiffFormat.Info);
+        using (Raster back = Raster.Load(again.ToArray()))
+        {
+            Assert.Equal(TiffCompression.Jpeg, ((TiffDetails)back.Metadata.FormatDetails!).Compression);
+        }
+
+        using Raster changed = loaded.Derive(ops => ops.Fit(32, 24), TestContext.Current.CancellationToken);
+        using MemoryStream resized = new();
+        changed.Save(resized, TiffFormat.Info);
+        using Raster back2 = Raster.Load(resized.ToArray());
+        Assert.Equal(TiffCompression.Deflate, ((TiffDetails)back2.Metadata.FormatDetails!).Compression);
+    }
+
+    private static double Psnr(Raster<Rgb8> a, Raster<Rgb8> b)
+    {
+        double sum = 0;
+        long n = 0;
+        for (int y = 0; y < a.Height; y++)
+        {
+            for (int x = 0; x < a.Width; x++)
+            {
+                Rgb8 p = a.Row(y)[x];
+                Rgb8 q = b.Row(y)[x];
+                sum += ((p.R - q.R) * (p.R - q.R)) + ((p.G - q.G) * (p.G - q.G)) + ((p.B - q.B) * (p.B - q.B));
+                n += 3;
+            }
+        }
+
+        return sum == 0 ? 99 : 10 * Math.Log10(255.0 * 255 / (sum / n));
+    }
+
+    [Fact]
+    public void ReduceAndCcittCannotStream()
+    {
+        using MemoryStream output = new();
+        Assert.Throws<NotSupportedException>(() => RasterEncoder.Create<Gray8>(output, TiffFormat.Info, 8, 8, new TiffWriterOptions { Reduce = true }));
+        Assert.Throws<NotSupportedException>(() => RasterEncoder.Create<Gray8>(output, TiffFormat.Info, 8, 8, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4 }));
+    }
+
+    [Theory]
+    [InlineData(TiffCompression.Deflate, 0)]
+    [InlineData(TiffCompression.Lzw, 16)]
+    [InlineData(TiffCompression.PackBits, 0)]
+    [InlineData(TiffCompression.CcittGroup4, 0)]
+    public void ParallelCompressionWritesTheSameFile(TiffCompression compression, int tile)
+    {
+        using Raster<Gray8> bilevel = Bilevel();
+        using Raster<Rgb16> photo = TiffWriterTests.Pattern<Rgb16>(300, 200);
+        Raster source = compression == TiffCompression.CcittGroup4 ? bilevel : photo;
+        byte[] one = Save(source, new TiffWriterOptions { Compression = compression, TileSize = tile });
+        byte[] many = Save(source, new TiffWriterOptions { Compression = compression, TileSize = tile, ParallelCompression = true });
+        Assert.Equal(one, many);
+    }
+}
+

@@ -6,6 +6,7 @@ using Egami.Formats.Png;
 using Egami.Formats.Pnm;
 using Egami.Formats.Qoi;
 using Egami.Formats.Tga;
+using Egami.Formats.Tiff;
 using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Tests.Memory;
@@ -48,6 +49,10 @@ public class EncodeTests
         ["pam"] = new(PnmFormat.Info, () => PnmWriterOptions.Default, Pixel.Rgba8),
         ["ppm-plain"] = new(PnmFormat.Info, () => new PnmWriterOptions { PlainText = true }, Pixel.Rgb8),
         ["pfm"] = new(PnmFormat.Info, () => PnmWriterOptions.Default, Pixel.RgbF32, Unseekable.Refused),
+        ["tiff"] = new(TiffFormat.Info, () => TiffWriterOptions.Default, Pixel.Rgba8),
+        ["tiff-lzw-tiles"] = new(TiffFormat.Info, () => new TiffWriterOptions { Compression = TiffCompression.Lzw, TileSize = 16 }, Pixel.Rgb8),
+        ["tiff-float-big"] = new(TiffFormat.Info, () => new TiffWriterOptions { Layout = TiffLayout.Big, Compression = TiffCompression.Deflate }, Pixel.RgbF32),
+        ["tiff-jpeg"] = new(TiffFormat.Info, () => new TiffWriterOptions { Compression = TiffCompression.Jpeg }, Pixel.Rgb8),
     };
 
     public static TheoryData<string, string> FilesAndCases()
@@ -89,7 +94,7 @@ public class EncodeTests
     public async Task SaveAsyncWritesWhatSaveWrites(string file)
     {
         using Raster raster = Raster.Load(StreamingCorpus.Read(file));
-        foreach (FormatInfo format in new[] { PngFormat.Info, JpegFormat.Info, GifFormat.Info, BmpFormat.Info, TgaFormat.Info, QoiFormat.Info, PnmFormat.Info })
+        foreach (FormatInfo format in new[] { PngFormat.Info, JpegFormat.Info, GifFormat.Info, BmpFormat.Info, TgaFormat.Info, QoiFormat.Info, PnmFormat.Info, TiffFormat.Info })
         {
             using MemoryStream sync = new();
             raster.Save(sync, format);

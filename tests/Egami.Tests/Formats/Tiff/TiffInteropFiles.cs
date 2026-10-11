@@ -39,6 +39,28 @@ public class TiffInteropFiles
 
                 Write(directory!, $"{name}-deflate-big.tif", raster, new TiffWriterOptions { Layout = TiffLayout.Big, TileSize = 32 });
             }
+
+            // The extras: 1-bit and palette pages (Reduce), CCITT, JPEG and lossless WebP. These compare through RGBA.
+            using Raster<Rgb8> photo = Raster.Load<Rgb8>(TiffCorpus.Main.Read("rgb8.tif"));
+            using Raster<Gray8> bilevel = photo.As<Gray8>();
+            for (int y = 0; y < bilevel.Height; y++)
+            {
+                foreach (ref Gray8 p in bilevel.Row(y))
+                {
+                    p = new Gray8(p.L < 110 ? (byte)0 : (byte)255);
+                }
+            }
+
+            using Raster<Rgb8> few = Raster.Load<Rgb8>(TiffCorpus.Main.Read("palette4.tif"));
+            Write(directory!, "rgba-bilevel-g3.tif", bilevel, new TiffWriterOptions { Compression = TiffCompression.CcittGroup3 });
+            Write(directory!, "rgba-bilevel-g4.tif", bilevel, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4 });
+            Write(directory!, "rgba-bilevel-g4-tiles.tif", bilevel, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4, TileSize = 16 });
+            Write(directory!, "rgba-bilevel-packbits.tif", bilevel, new TiffWriterOptions { Compression = TiffCompression.PackBits, Reduce = true });
+            Write(directory!, "rgba-palette-lzw.tif", few, new TiffWriterOptions { Compression = TiffCompression.Lzw, Reduce = true });
+            Write(directory!, "rgba-jpeg-rgb.tif", photo, new TiffWriterOptions { Compression = TiffCompression.Jpeg });
+            Write(directory!, "rgba-jpeg-rgb-tiles.tif", photo, new TiffWriterOptions { Compression = TiffCompression.Jpeg, TileSize = 32 });
+            Write(directory!, "rgba-jpeg-gray.tif", bilevel, new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 95 });
+            Write(directory!, "rgba-webp-rgb.tif", photo, new TiffWriterOptions { Compression = TiffCompression.Webp, Quality = 100 });
         }
         finally
         {
@@ -59,5 +81,7 @@ public class TiffInteropFiles
 
         using Raster back = Raster.Load(path);
         File.WriteAllBytes(path + ".raw", TiffReference.Bytes(back));
+        using Raster<Rgba8> rgba = Raster.Load<Rgba8>(path);
+        File.WriteAllBytes(path + ".rgba", TiffReference.Bytes(rgba));
     }
 }
