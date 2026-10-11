@@ -111,8 +111,8 @@ mastering display's peak), else 1,000 cd/m². `ToneMapping.Reinhard` is a simple
 
 Nine small structs hold colors in the models apps ask for: `HslColor` and `HsvColor` (on encoded sRGB, as CSS and color pickers),
 `XyzColor` (D65, CSS Color 4's XYZ), `LabColor` and `LchColor` (D50, as ICC and CSS Color 4), `OklabColor` and `OklchColor`
-(Ottosson's perceptual space), `YCbCrColor` (BT.601 full range by default, or any `YuvMatrix` and `YuvRange`) and `CmykColor`
-(the plain formula, or a print profile). Each implements `IColorValue<TSelf>`, so it converts from and to `Rgba8` and `RgbaF32`; `ColorConvert.Convert` converts between
+(Ottosson's perceptual space), `YCbCrColor` (BT.601 full range by default, or any `YuvMatrix` and `YuvRange`; values are
+8-bit codes / 255, so gray chroma is 128 / 255, as JPEG stores it) and `CmykColor` (the plain formula, or a print profile). Each implements `IColorValue<TSelf>`, so it converts from and to `Rgba8` and `RgbaF32`; `ColorConvert.Convert` converts between
 any two through XYZ, and `ColorConvert.FromPixels` and `ToPixels` convert whole rows, from pixels in any encoding.
 `LabColor.DeltaE2000` and `OklabColor.Distance` measure how different two colors look.
 

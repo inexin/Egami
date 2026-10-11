@@ -336,9 +336,9 @@ public sealed class RasterOps
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="tone-map"/>
     /// </example>
-    public RasterOps ToneMap(Colors.ToneMapping method = Colors.ToneMapping.Bt2390, float? sourcePeakNits = null)
+    public RasterOps ToneMap(Colors.ToneMapping method = Colors.ToneMapping.Bt2390, double? sourcePeakNits = null)
     {
-        if (sourcePeakNits is float peak && !(float.IsFinite(peak) && peak > 0))
+        if (sourcePeakNits is double peak && !(double.IsFinite(peak) && peak > 0))
         {
             throw new ArgumentOutOfRangeException(nameof(sourcePeakNits), sourcePeakNits, "The peak must be a positive finite number.");
         }

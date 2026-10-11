@@ -3,13 +3,14 @@ using Egami.Pixels;
 namespace Egami.Colors;
 
 /// <summary>
-/// A Y'CbCr color: luma and two chroma differences of encoded sRGB, all 0 to 1 (chroma centered on 0.5). The members without
-/// options use BT.601 at full range, as JPEG does; overloads take a <see cref="YuvMatrix"/> and <see cref="YuvRange"/>, from the
+/// A Y'CbCr color: luma and two chroma differences of encoded sRGB, scaled as 8-bit codes / 255: at full range chroma is
+/// centered on 128 / 255, as JPEG and H.273 store it, so a byte reads as <c>value × 255</c>. The members without options use
+/// BT.601 at full range, as JPEG does; overloads take a <see cref="YuvMatrix"/> and <see cref="YuvRange"/>, from the
 /// coefficient table planar YUV images share.
 /// </summary>
 /// <param name="Y">Luma.</param>
-/// <param name="Cb">Blue difference, 0.5 for gray.</param>
-/// <param name="Cr">Red difference, 0.5 for gray.</param>
+/// <param name="Cb">Blue difference, 128 / 255 for gray.</param>
+/// <param name="Cr">Red difference, 128 / 255 for gray.</param>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="color-values"/>
 /// </example>
@@ -78,15 +79,21 @@ public readonly record struct YCbCrColor(float Y, float Cb, float Cr) : IColorVa
         {
             (double kr, double kb) = YuvCoefficients.Of(matrix);
             y = (kr * c.X) + ((1 - kr - kb) * c.Y) + (kb * c.Z);
-            cb = ((c.Z - y) / (2 * (1 - kb))) + 0.5;
-            cr = ((c.X - y) / (2 * (1 - kr))) + 0.5;
+            // Centered differences, -0.5 to 0.5, then stored as codes: 255 × d + 128 at full range, 224 × d + 128 at limited.
+            double db = (c.Z - y) / (2 * (1 - kb)), dr = (c.X - y) / (2 * (1 - kr));
+            double scale = range == YuvRange.Limited ? 224 : 255;
+            cb = ((scale * db) + 128) / 255;
+            cr = ((scale * dr) + 128) / 255;
         }
 
         if (range == YuvRange.Limited)
         {
             y = (16 + (219 * y)) / 255;
-            cb = (128 + (224 * (cb - 0.5))) / 255;
-            cr = (128 + (224 * (cr - 0.5))) / 255;
+            if (matrix == YuvMatrix.Identity)
+            {
+                cb = (16 + (219 * cb)) / 255;
+                cr = (16 + (219 * cr)) / 255;
+            }
         }
 
         return new YCbCrColor((float)y, (float)cb, (float)cr);
@@ -94,22 +101,19 @@ public readonly record struct YCbCrColor(float Y, float Cb, float Cr) : IColorVa
 
     internal Vector3d ToSrgb(YuvMatrix matrix, YuvRange range)
     {
-        double y = Y, cb = Cb, cr = Cr;
-        if (range == YuvRange.Limited)
-        {
-            y = ((y * 255) - 16) / 219;
-            cb = (((cb * 255) - 128) / 224) + 0.5;
-            cr = (((cr * 255) - 128) / 224) + 0.5;
-        }
-
+        double y = range == YuvRange.Limited ? ((Y * 255) - 16) / 219 : Y;
         if (matrix == YuvMatrix.Identity)
         {
-            return new Vector3d(cr, y, cb);
+            return range == YuvRange.Limited
+                ? new Vector3d(((Cr * 255) - 16) / 219, y, ((Cb * 255) - 16) / 219)
+                : new Vector3d(Cr, y, Cb);
         }
 
+        double scale = range == YuvRange.Limited ? 224 : 255;
+        double db = ((Cb * 255) - 128) / scale, dr = ((Cr * 255) - 128) / scale;
         (double kr, double kb) = YuvCoefficients.Of(matrix);
-        double r = y + (2 * (1 - kr) * (cr - 0.5));
-        double b = y + (2 * (1 - kb) * (cb - 0.5));
+        double r = y + (2 * (1 - kr) * dr);
+        double b = y + (2 * (1 - kb) * db);
         return new Vector3d(r, (y - (kr * r) - (kb * b)) / (1 - kr - kb), b);
     }
 }

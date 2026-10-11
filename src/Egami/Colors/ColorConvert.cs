@@ -197,8 +197,9 @@ public static class ColorConvert
                     }
                     else
                     {
+                        const float Center = 128 / 255f;
                         float y = ((0.299f * p.R) + (0.587f * p.G) + (0.114f * p.B)) / 255f;
-                        colors[i] = Unsafe.BitCast<YCbCrColor, TColor>(new YCbCrColor(y, (((p.B / 255f) - y) / 1.772f) + 0.5f, (((p.R / 255f) - y) / 1.402f) + 0.5f));
+                        colors[i] = Unsafe.BitCast<YCbCrColor, TColor>(new YCbCrColor(y, (((p.B / 255f) - y) / 1.772f) + Center, (((p.R / 255f) - y) / 1.402f) + Center));
                     }
                 }
 

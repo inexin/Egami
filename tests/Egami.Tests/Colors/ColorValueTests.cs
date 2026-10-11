@@ -64,9 +64,16 @@ public class ColorValueTests
         Assert.Equal(new HslColor(180, 1, 0.5f), HslColor.From(cyan));
         Assert.Equal(new HsvColor(0, 0, 128 / 255f), HsvColor.From(gray));
         Assert.Equal(new HsvColor(180, 1, 1), HsvColor.From(cyan));
-        Assert.True(YCbCrColor.From(red).IsCloseTo(new YCbCrColor(0.299f, 0.331264f, 1), 1e-5f));
+        Assert.True(YCbCrColor.From(red).IsCloseTo(new YCbCrColor(0.299f, (128 / 255f) - 0.168736f, (128 / 255f) + 0.5f), 1e-5f));
         Assert.True(YCbCrColor.From(new Rgba8(255, 255, 255, 255), YuvMatrix.Bt709, YuvRange.Limited).IsCloseTo(new YCbCrColor(235 / 255f, 128 / 255f, 128 / 255f), 1e-5f));
         Assert.Equal(red, YCbCrColor.From(red, YuvMatrix.Bt2020Ncl).ToRgba8(YuvMatrix.Bt2020Ncl));
+        Assert.Equal(red, YCbCrColor.From(red, YuvMatrix.Bt709, YuvRange.Limited).ToRgba8(YuvMatrix.Bt709, YuvRange.Limited));
+        Assert.True(YCbCrColor.From(new Rgba8(128, 128, 128, 255)).IsCloseTo(new YCbCrColor(128 / 255f, 128 / 255f, 128 / 255f), 1e-6f));
+
+        // GBR at limited range scales all three channels as luma, as H.273 does.
+        YCbCrColor gbr = YCbCrColor.From(new Rgba8(255, 0, 255, 255), YuvMatrix.Identity, YuvRange.Limited);
+        Assert.True(gbr.IsCloseTo(new YCbCrColor(16 / 255f, 235 / 255f, 235 / 255f), 1e-6f));
+        Assert.Equal(new Rgba8(255, 0, 255, 255), gbr.ToRgba8(YuvMatrix.Identity, YuvRange.Limited));
         Assert.Equal(new YCbCrColor(1, 0, 0.5f), YCbCrColor.From(new Rgba8(127, 255, 0, 255), YuvMatrix.Identity) with { Cr = 0.5f });
         Assert.Equal(new CmykColor(0, 1, 1, 0), CmykColor.From(red));
         Assert.Equal(new CmykColor(0, 0, 0, 1), CmykColor.From(new Rgba8(0, 0, 0, 255)));

@@ -359,7 +359,7 @@ Egami.Metadata.RasterMetadata.Hdr.set -> void
 Egami.Metadata.RasterMetadata.Primaries.get -> Egami.Colors.ColorPrimaries?
 Egami.Metadata.RasterMetadata.Primaries.set -> void
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
-Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, float? sourcePeakNits = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, double? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Pixels.Abgr8
 Egami.Pixels.Abgr8.A -> byte
 Egami.Pixels.Abgr8.Abgr8() -> void

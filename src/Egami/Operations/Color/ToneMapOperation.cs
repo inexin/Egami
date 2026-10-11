@@ -10,7 +10,7 @@ namespace Egami.Operations.Color;
 /// Tone maps linear HDR pixels (reference white 1.0) into 0..1 on max(R, G, B). Recorded unbound; the pipeline binds it to the
 /// raster's <see cref="HdrMetadata"/> for the source peak when none was given.
 /// </summary>
-internal sealed class ToneMapOperation(ToneMapping method, float? sourcePeakNits, HdrMetadata? hdr = null) : IRasterOperation, IUpdatesColor
+internal sealed class ToneMapOperation(ToneMapping method, double? sourcePeakNits, HdrMetadata? hdr = null) : IRasterOperation, IUpdatesColor
 {
     private const double ReferenceWhite = 203;
 
