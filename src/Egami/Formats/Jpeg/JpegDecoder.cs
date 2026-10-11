@@ -155,15 +155,21 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
                 (int)(((long)header.Width * h * size) + (_maxH * 8) - 1) / (_maxH * 8), (int)(((long)header.Height * v * size) + (_maxV * 8) - 1) / (_maxV * 8), _wide);
         }
 
-        _rowBuffer = ArrayPool<byte>.Shared.Rent(header.Width * Math.Max(_channels, _components.Length));
-        _sampleBuffer = ArrayPool<byte>.Shared.Rent(header.Width * _components.Length);
-        _sums = ArrayPool<short>.Shared.Rent(header.Width + 2);
+        (_rowBuffer, _sampleBuffer, _sums) = RentBuffers();
+    }
+
+    /// <summary>Rents the row buffers of one decoder: converted rows, upsampled samples and filter sums, 16-bit ones too for a 12-bit file.</summary>
+    private (byte[] Rows, byte[] Samples, short[] Sums) RentBuffers()
+    {
+        int width = _header.Width;
         if (_wide)
         {
-            _wideRow = ArrayPool<ushort>.Shared.Rent(header.Width * 4);
-            _wideSamples = ArrayPool<ushort>.Shared.Rent(header.Width * _components.Length);
-            _wideSums = ArrayPool<int>.Shared.Rent(header.Width + 2);
+            _wideRow = ArrayPool<ushort>.Shared.Rent(width * 4);
+            _wideSamples = ArrayPool<ushort>.Shared.Rent(width * _components.Length);
+            _wideSums = ArrayPool<int>.Shared.Rent(width + 2);
         }
+
+        return (ArrayPool<byte>.Shared.Rent(width * Math.Max(_channels, _components.Length)), ArrayPool<byte>.Shared.Rent(width * _components.Length), ArrayPool<short>.Shared.Rent(width + 2));
     }
 
     /// <summary>Returns the output size of a dimension at 1/<paramref name="scale"/> scale, rounded up as libjpeg does.</summary>
@@ -220,17 +226,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             LatchQuant(i);
         }
 
-        for (int my = 0; my < _mcusY; my++)
-        {
-            input.CancellationToken.ThrowIfCancellationRequested();
-            TransformBufferedRow(my);
-            if (my > 0)
-            {
-                EmitRows(my - 1);
-            }
-        }
-
-        EmitRows(_mcusY - 1);
+        FinishBuffered(input);
     }
 
     /// <summary>
@@ -771,6 +767,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _sampleBuffer, null!));
         ArrayPool<short>.Shared.Return(Interlocked.Exchange(ref _sums, null!));
         DisposeWide();
+        DisposeParallel();
     }
 
     /// <summary>Converts a quantization table from zigzag to natural order.</summary>
@@ -1125,6 +1122,11 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             blocks += _mcusX * order[i].H * order[i].V;
         }
 
+        if (SplitByRestarts(input, ref reader, scan, dc, ac, firstBlock, blocks))
+        {
+            return;
+        }
+
         reader.BeginScan();
         _arithmetic?.BeginScan(scan);
         EntropyState state = new(count);
@@ -1240,10 +1242,10 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
     /// Entropy-decodes the next MCU row of the scan into <paramref name="slot"/>, with <paramref name="arithmetic"/> when the file
     /// is arithmetic-coded and the Huffman tables otherwise.
     /// </summary>
-    private void DecodeRow(JpegBitReader reader, JpegArithmeticDecoder? arithmetic, JpegHuffmanTable[] dc, JpegHuffmanTable[] ac, Component[] order, EntropyState state, RowSlot slot)
+    private void DecodeRow(JpegBitReader reader, JpegArithmeticDecoder? arithmetic, JpegHuffmanTable[] dc, JpegHuffmanTable[] ac, Component[] order, EntropyState state, RowSlot slot, int fromColumn = 0)
     {
         int restart = _header.RestartInterval;
-        for (int mx = 0; mx < _mcusX; mx++, state.Mcu++)
+        for (int mx = fromColumn; mx < _mcusX; mx++, state.Mcu++)
         {
             if (restart > 0 && state.Mcu > 0 && state.Mcu % restart == 0 && !state.Ended && !state.TakeResynced())
             {
@@ -1577,6 +1579,12 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
 
     private void Problem(string message)
     {
+        if (_speculative)
+        {
+            // A parallel decode only goes ahead on clean data; the caller starts over on one thread.
+            throw new SpeculationFailedException();
+        }
+
         if (_options.Recovery == RecoveryMode.Strict)
         {
             throw new CorruptDataException(JpegFormat.Info.Name, -1, message);
@@ -1812,6 +1820,7 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
         private MemoryHandle[] _pins = [];
         private int _blocksX;
         private int _rowsPerChunk = 1;
+        private bool _shared;
 
         internal int H => h;
 
@@ -1910,6 +1919,25 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
             }
         }
 
+        /// <summary>
+        /// Returns a component with strips of its own that shares this one's coefficients and quantization table, for a decoder
+        /// that transforms other rows of the same image at the same time.
+        /// </summary>
+        internal Component Twin()
+        {
+            return new Component(h, v, blockSize, mcuWidth, mcuHeight, stripWidth, width, height, wide)
+            {
+                Quant = Quant,
+                FirstColumn = FirstColumn,
+                EndColumn = EndColumn,
+                _chunks = _chunks,
+                _pins = _pins,
+                _blocksX = _blocksX,
+                _rowsPerChunk = _rowsPerChunk,
+                _shared = true,
+            };
+        }
+
         /// <summary>Allocates zeroed coefficients for <paramref name="blocksX"/> × <paramref name="blocksY"/> blocks, within the load's memory budget.</summary>
         internal void AllocateCoefficients(BudgetedMemorySource memory, int blocksX, int blocksY)
         {
@@ -1967,14 +1995,17 @@ internal sealed partial class JpegDecoder<TPixel> : IDisposable
                 ArrayPool<ushort>.Shared.Return(wideStrips);
             }
 
-            foreach (MemoryHandle pin in _pins)
+            if (!_shared)
             {
-                pin.Dispose();
-            }
+                foreach (MemoryHandle pin in _pins)
+                {
+                    pin.Dispose();
+                }
 
-            foreach (IMemoryOwner<byte>? chunk in _chunks)
-            {
-                chunk?.Dispose();
+                foreach (IMemoryOwner<byte>? chunk in _chunks)
+                {
+                    chunk?.Dispose();
+                }
             }
 
             _pins = [];

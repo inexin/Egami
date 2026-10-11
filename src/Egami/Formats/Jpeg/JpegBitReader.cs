@@ -13,8 +13,9 @@ internal sealed class JpegBitReader : IDisposable
 {
     private const int ChunkSize = 16 * 1024;
 
-    private readonly EgamiInput _input;
-    private byte[] _chunk = ArrayPool<byte>.Shared.Rent(ChunkSize);
+    private readonly EgamiInput? _input;
+    private readonly bool _pooled = true;
+    private byte[] _chunk;
     private int _position;
     private int _length;
     private ulong _bits;
@@ -26,6 +27,19 @@ internal sealed class JpegBitReader : IDisposable
     internal JpegBitReader(EgamiInput input)
     {
         _input = input;
+        _chunk = ArrayPool<byte>.Shared.Rent(ChunkSize);
+    }
+
+    /// <summary>
+    /// Creates a reader over bytes already in memory, from <paramref name="start"/> to <paramref name="end"/>: the end of the
+    /// bytes is the end of the file. The array stays the caller's.
+    /// </summary>
+    internal JpegBitReader(byte[] data, int start, int end)
+    {
+        _chunk = data;
+        _position = start;
+        _length = end;
+        _pooled = false;
     }
 
     /// <summary>Gets the marker that stopped the data (the byte after 0xFF), or 0 while none has; <see cref="EndOfFile"/> at the end of the file.</summary>
@@ -247,7 +261,7 @@ internal sealed class JpegBitReader : IDisposable
     public void Dispose()
     {
         byte[] chunk = Interlocked.Exchange(ref _chunk, null!);
-        if (chunk is not null)
+        if (chunk is not null && _pooled)
         {
             ArrayPool<byte>.Shared.Return(chunk);
         }
@@ -335,6 +349,11 @@ internal sealed class JpegBitReader : IDisposable
     {
         if (_position == _length)
         {
+            if (_input is null)
+            {
+                return -1;
+            }
+
             if (_mark >= 0)
             {
                 // The bytes since the checkpoint stay, so the decode can go back to it.
@@ -404,7 +423,7 @@ internal sealed class JpegBitReader : IDisposable
     /// </summary>
     internal bool ScanArrived()
     {
-        if (!_input.Incremental || _input.AtEndOfInput)
+        if (_input is null || !_input.Incremental || _input.AtEndOfInput)
         {
             return true;
         }
@@ -436,7 +455,7 @@ internal sealed class JpegBitReader : IDisposable
     private byte InputByte(long offset)
     {
         Span<byte> one = stackalloc byte[1];
-        _input.TryPeekAt(offset, one);
+        _input!.TryPeekAt(offset, one);
         return one[0];
     }
 
