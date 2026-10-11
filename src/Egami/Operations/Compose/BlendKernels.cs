@@ -36,8 +36,13 @@ internal static class BlendKernels
     /// <param name="opacity255">Scales the source before the mode; 255 is full.</param>
     /// <param name="bgr">Whether the low three bytes are blue, green, red, which only the non-separable modes need to know.</param>
     /// <param name="vectorBits">The widest vector to use, or −1 for the hardware's; below 128 runs the scalar path.</param>
+    /// <param name="straightSource">
+    /// Whether the source row holds straight pixels, premultiplied here as each is loaded (round(c·α / 255), as
+    /// PixelConvert premultiplies), which saves a pass over the row. A solid color is always premultiplied.
+    /// </param>
     internal static void Blend8(
-        BlendMode mode, ReadOnlySpan<uint> source, Span<uint> destination, ReadOnlySpan<byte> coverage, int opacity255, bool bgr, int vectorBits = -1)
+        BlendMode mode, ReadOnlySpan<uint> source, Span<uint> destination, ReadOnlySpan<byte> coverage, int opacity255, bool bgr, int vectorBits = -1,
+        bool straightSource = false)
     {
         if (mode == BlendMode.Destination || destination.IsEmpty)
         {
@@ -49,7 +54,7 @@ internal static class BlendKernels
             vectorBits = HardwareBits;
         }
 
-        Context c = new(mode, opacity255, bgr, source.Length == 1, !coverage.IsEmpty);
+        Context c = new(mode, opacity255, bgr, source.Length == 1, !coverage.IsEmpty, straightSource && source.Length != 1);
         ref uint s = ref MemoryMarshal.GetReference(source);
         ref uint d = ref MemoryMarshal.GetReference(destination);
         ref byte k = ref MemoryMarshal.GetReference(coverage);
@@ -143,6 +148,12 @@ internal static class BlendKernels
         {
             TU sv = c.Solid ? TU.Splat(s) : TU.Load(ref s, (nuint)i);
             TU dv = TU.Load(ref d, (nuint)i);
+            if (c.StraightSource)
+            {
+                TU bytes = TU.Splat(0xFF), a = sv >> 24;
+                sv = Div255((sv & bytes) * a) | (Div255(((sv >> 8) & bytes) * a) << 8) | (Div255(((sv >> 16) & bytes) * a) << 16) | (a << 24);
+            }
+
             if (c.Opacity255 != 255)
             {
                 sv = Scale(sv, TU.Splat((uint)c.Opacity255));
@@ -264,6 +275,11 @@ internal static class BlendKernels
         where TC : struct, IChannelLanes<TC>
     {
         TC sv = c.Solid ? solid : TC.Load(ref s, (nuint)i);
+        if (c.StraightSource)
+        {
+            sv = TC.Select(TC.AlphaLanes, sv, Div255C(sv * TC.BroadcastAlpha(sv)));
+        }
+
         return c.Opacity255 == 255 ? sv : Div255C(sv * TC.Splat((ushort)c.Opacity255));
     }
 
@@ -469,33 +485,33 @@ internal static class BlendKernels
             case BlendMode.Lighten:
                 return TF.Max(cb, cs);
             case BlendMode.ColorDodge:
-            {
-                TF q = TF.Min(one, cb / TF.Max(one - cs, TF.Splat(1e-30f)));
-                return TF.Select(TF.Equal(cb, zero), zero, TF.Select(TF.LessOrEqual(one, cs), one, q));
-            }
+                {
+                    TF q = TF.Min(one, cb / TF.Max(one - cs, TF.Splat(1e-30f)));
+                    return TF.Select(TF.Equal(cb, zero), zero, TF.Select(TF.LessOrEqual(one, cs), one, q));
+                }
 
             case BlendMode.ColorBurn:
-            {
-                TF q = one - TF.Min(one, (one - cb) / TF.Max(cs, TF.Splat(1e-30f)));
-                return TF.Select(TF.LessOrEqual(one, cb), one, TF.Select(TF.LessOrEqual(cs, zero), zero, q));
-            }
+                {
+                    TF q = one - TF.Min(one, (one - cb) / TF.Max(cs, TF.Splat(1e-30f)));
+                    return TF.Select(TF.LessOrEqual(one, cb), one, TF.Select(TF.LessOrEqual(cs, zero), zero, q));
+                }
 
             case BlendMode.HardLight:
-            {
-                TF low = cb * two * cs;
-                TF s2 = (two * cs) - one;
-                TF high = cb + s2 - (cb * s2);
-                return TF.Select(TF.LessOrEqual(cs, half), low, high);
-            }
+                {
+                    TF low = cb * two * cs;
+                    TF s2 = (two * cs) - one;
+                    TF high = cb + s2 - (cb * s2);
+                    return TF.Select(TF.LessOrEqual(cs, half), low, high);
+                }
 
             case BlendMode.SoftLight:
-            {
-                TF low = cb - ((one - (two * cs)) * cb * (one - cb));
-                TF dark = ((((TF.Splat(16) * cb) - TF.Splat(12)) * cb) + TF.Splat(4)) * cb;
-                TF dd = TF.Select(TF.LessOrEqual(cb, TF.Splat(0.25f)), dark, TF.Sqrt(cb));
-                TF high = cb + (((two * cs) - one) * (dd - cb));
-                return TF.Select(TF.LessOrEqual(cs, half), low, high);
-            }
+                {
+                    TF low = cb - ((one - (two * cs)) * cb * (one - cb));
+                    TF dark = ((((TF.Splat(16) * cb) - TF.Splat(12)) * cb) + TF.Splat(4)) * cb;
+                    TF dd = TF.Select(TF.LessOrEqual(cb, TF.Splat(0.25f)), dark, TF.Sqrt(cb));
+                    TF high = cb + (((two * cs) - one) * (dd - cb));
+                    return TF.Select(TF.LessOrEqual(cs, half), low, high);
+                }
 
             case BlendMode.Difference:
                 return TF.Max(cb - cs, cs - cb);
@@ -681,11 +697,13 @@ internal static class BlendKernels
         internal readonly bool Covered;
         internal readonly bool Integer;
         internal readonly bool SkipsTransparent;
+        internal readonly bool StraightSource;
         internal readonly uint Ka0, Ka1, Kb0, Kb1;
         internal readonly float LumR, LumG, LumB;
 
-        internal Context(BlendMode mode, int opacity255, bool bgr, bool solid, bool covered)
+        internal Context(BlendMode mode, int opacity255, bool bgr, bool solid, bool covered, bool straightSource = false)
         {
+            StraightSource = straightSource;
             Mode = mode;
             Opacity255 = opacity255;
             Solid = solid;

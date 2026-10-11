@@ -1,6 +1,6 @@
 using Egami.Operations;
-using Egami.Tests.Operations.Blending;
 using Egami.Pixels;
+using Egami.Tests.Operations.Blending;
 
 namespace Egami.Tests.Operations.Scopes;
 

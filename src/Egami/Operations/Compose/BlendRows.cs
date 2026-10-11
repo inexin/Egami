@@ -68,20 +68,28 @@ internal readonly struct BlendRows<TPixel>
 
         if (UsesBytes)
         {
-            uint[] buffer = ArrayPool<uint>.Shared.Rent(2 * destination.Length);
-            try
+            // The kernel premultiplies the straight source as it loads it.
+            ReadOnlySpan<uint> s = MemoryMarshal.Cast<TPixel, uint>(source);
+            if (Opaque(destination))
             {
-                Span<uint> s = buffer.AsSpan(0, destination.Length), d = buffer.AsSpan(destination.Length, destination.Length);
-                Premultiply(source, s);
-                if (KeepsOpaque(_mode) && Opaque(destination))
+                // An opaque pixel is its own premultiplied form: blend the row where it is, and divide back in place only when the
+                // mode can leave it less than opaque.
+                Span<uint> d = MemoryMarshal.Cast<TPixel, uint>(destination);
+                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr, straightSource: true);
+                if (!KeepsOpaque(_mode))
                 {
-                    // An opaque pixel is its own premultiplied form, and this mode leaves it opaque: blend the row where it is.
-                    BlendKernels.Blend8(_mode, s, MemoryMarshal.Cast<TPixel, uint>(destination), coverage, _opacity255, Bgr);
-                    return;
+                    Unpremultiply(d, destination);
                 }
 
+                return;
+            }
+
+            uint[] buffer = ArrayPool<uint>.Shared.Rent(destination.Length);
+            try
+            {
+                Span<uint> d = buffer.AsSpan(0, destination.Length);
                 Premultiply(destination, d);
-                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr);
+                BlendKernels.Blend8(_mode, s, d, coverage, _opacity255, Bgr, straightSource: true);
                 Unpremultiply(d, destination);
             }
             finally
@@ -104,35 +112,6 @@ internal readonly struct BlendRows<TPixel>
             ArrayPool<RgbaF32>.Shared.Return(straight);
         }
     }
-
-    /// <summary>
-    /// Blends premultiplied 8-bit <paramref name="source"/> pixels, in this type's channel order, onto a straight Rgba8 or Bgra8 row; only
-    /// when <see cref="UsesBytes"/> on a straight type. DrawImage reads its source rows straight into this form.
-    /// </summary>
-    internal void BlendPremultiplied(ReadOnlySpan<uint> source, Span<TPixel> destination)
-    {
-        if (KeepsOpaque(_mode) && Opaque(destination))
-        {
-            BlendKernels.Blend8(_mode, source, MemoryMarshal.Cast<TPixel, uint>(destination), default, _opacity255, Bgr);
-            return;
-        }
-
-        uint[] buffer = ArrayPool<uint>.Shared.Rent(destination.Length);
-        try
-        {
-            Span<uint> d = buffer.AsSpan(0, destination.Length);
-            Premultiply(destination, d);
-            BlendKernels.Blend8(_mode, source, d, default, _opacity255, Bgr);
-            Unpremultiply(d, destination);
-        }
-        finally
-        {
-            ArrayPool<uint>.Shared.Return(buffer);
-        }
-    }
-
-    /// <summary>Gets whether this blend takes premultiplied 8-bit source rows for a straight 8-bit destination.</summary>
-    internal bool TakesPremultipliedSource => UsesBytes && Straight8;
 
     /// <summary>Blends straight float <paramref name="source"/> pixels onto <paramref name="destination"/>; only when not <see cref="UsesBytes"/>.</summary>
     internal void BlendStraight(ReadOnlySpan<RgbaF32> source, Span<TPixel> destination, ReadOnlySpan<byte> coverage = default)

@@ -146,6 +146,33 @@ public class BlendKernelTests
         }
     }
 
+    /// <summary>A straight source premultiplied as it loads gives what premultiplying it first gives, on both paths and every width.</summary>
+    [Theory]
+    [InlineData(BlendMode.Multiply)]
+    [InlineData(BlendMode.SourceOver)]
+    [InlineData(BlendMode.Xor)]
+    [InlineData(BlendMode.SoftLight)]
+    [InlineData(BlendMode.Hue)]
+    public void StraightSourcesArePremultipliedOnLoad(BlendMode mode)
+    {
+        Random random = new(11);
+        uint[] straight = new uint[1001], d = new uint[1001];
+        for (int i = 0; i < straight.Length; i++)
+        {
+            straight[i] = (uint)random.Next() | ((uint)random.Next(256) << 24);
+            d[i] = RandomPremultiplied(random);
+        }
+
+        uint[] premultiplied = Premultiplied(System.Runtime.InteropServices.MemoryMarshal.Cast<uint, Rgba8>(straight).ToArray());
+        foreach (int bits in Widths)
+        {
+            uint[] expected = (uint[])d.Clone(), actual = (uint[])d.Clone();
+            BlendKernels.Blend8(mode, premultiplied, expected, default, 200, bgr: false, bits);
+            BlendKernels.Blend8(mode, straight, actual, default, 200, bgr: false, bits, straightSource: true);
+            Assert.Equal(expected, actual);
+        }
+    }
+
     [Fact]
     public void DestinationChangesNothingAndClearClears()
     {

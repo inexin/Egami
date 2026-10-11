@@ -96,29 +96,12 @@ internal sealed class DrawImageOperation(
                 return;
             }
 
-            if (rows.TakesPremultipliedSource && source is Raster<TPixel>)
+            if (rows.UsesBytes && source is Raster<TPixel> typed)
             {
-                uint[] premultiplied = ArrayPool<uint>.Shared.Rent(area.Width);
-                try
+                // The same 8-bit type: the source's own rows go to the kernel as they are, with no copy.
+                for (int y = from; y < to; y++)
                 {
-                    Span<uint> row = premultiplied.AsSpan(0, area.Width);
-                    for (int y = from; y < to; y++)
-                    {
-                        if (typeof(TPixel) == typeof(Bgra8))
-                        {
-                            source.ReadRow(sy + y - area.Y, sx, MemoryMarshal.Cast<uint, PremulBgra8>(row));
-                        }
-                        else
-                        {
-                            source.ReadRow(sy + y - area.Y, sx, MemoryMarshal.Cast<uint, PremulRgba8>(row));
-                        }
-
-                        rows.BlendPremultiplied(row, input.Destination.Row(y).Slice(area.X, area.Width));
-                    }
-                }
-                finally
-                {
-                    ArrayPool<uint>.Shared.Return(premultiplied);
+                    rows.Blend(typed.Row(sy + y - area.Y).Slice(sx, area.Width), input.Destination.Row(y).Slice(area.X, area.Width));
                 }
 
                 return;
