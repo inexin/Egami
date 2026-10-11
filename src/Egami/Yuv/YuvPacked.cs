@@ -20,7 +20,10 @@ public abstract partial class YuvRaster
     /// The interleaved chroma plane of a two-plane layout, or empty when it follows the luma rows in <paramref name="data"/>
     /// (at <paramref name="stride"/> × <see cref="Height"/>). Ignored for YUYV and UYVY.
     /// </param>
-    /// <param name="chromaStride">The distance between chroma rows, in bytes. 0 means the luma stride.</param>
+    /// <param name="chromaStride">
+    /// The distance between chroma rows, in bytes. 0 means the luma stride, or the packed chroma row when an odd width makes
+    /// that longer.
+    /// </param>
     /// <exception cref="ArgumentException">The raster does not match the layout.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A stride is too small or a span too short.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
@@ -50,7 +53,10 @@ public abstract partial class YuvRaster
     /// The interleaved chroma plane of a two-plane layout, or empty to write it after the luma rows in <paramref name="data"/>
     /// (at <paramref name="stride"/> × <see cref="Height"/>). Ignored for YUYV and UYVY.
     /// </param>
-    /// <param name="chromaStride">The distance between chroma rows, in bytes. 0 means the luma stride.</param>
+    /// <param name="chromaStride">
+    /// The distance between chroma rows, in bytes. 0 means the luma stride, or the packed chroma row when an odd width makes
+    /// that longer.
+    /// </param>
     /// <exception cref="ArgumentException">The raster does not match the layout.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A stride is too small or a span too short.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
@@ -112,7 +118,8 @@ internal static class YuvPacked
             long chromaRowBytes = 2L * pairs * layout.SampleBytes;
             if (chromaStride == 0)
             {
-                chromaStride = stride;
+                // The luma stride, as the layouts' chroma usually shares it, unless an odd width packs luma rows too tight.
+                chromaStride = (int)Math.Max(stride, chromaRowBytes);
             }
 
             if (chromaStride < chromaRowBytes)

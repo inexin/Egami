@@ -159,6 +159,27 @@ static void LoadJpeg(Stream stream)
         catch (EgamiException)
         {
         }
+
+        // Phase 2.1.4: the same file decoded into planes, converted, cropped, scaled and encoded back from them.
+        try
+        {
+            YuvRasterInfo info = YuvRaster.Probe(data, context, options);
+            if (info.CanLoad)
+            {
+                using YuvRaster planes = YuvRaster.Load(data, context, options);
+                using Raster rgb = planes.ToRaster();
+                planes.Save(Stream.Null, JpegFormat.Info);
+                using YuvRaster crop = planes.Crop(new Rect(0, 0, Math.Max(1, planes.Width / 2), Math.Max(1, planes.Height / 2)));
+                using YuvRaster small = planes.Resize(Math.Max(1, planes.Width / 3), Math.Max(1, planes.Height / 3));
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+            // A CMYK, YCCK or RGB file has no planes.
+        }
     }
 }
 
