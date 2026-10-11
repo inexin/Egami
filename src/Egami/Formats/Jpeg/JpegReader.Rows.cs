@@ -66,9 +66,14 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
                 rowsAtEnd = true;
             }
 
-            if (marker is >= 0xC0 and <= 0xCF and not 0xC4 and not 0xC8 and not 0xCC && input.TryPeekAt(segment + 7, bytes[..1]))
+            if (marker is >= 0xC0 and <= 0xCF and not 0xC4 and not 0xC8 and not 0xCC && input.TryPeekAt(segment + 2, bytes[..1]))
             {
-                components = bytes[0];
+                // Deeper samples are buffered whole before any row, as are lossless files.
+                rowsAtEnd |= bytes[0] != 8 || marker is 0xC3 or 0xCB;
+                if (input.TryPeekAt(segment + 7, bytes[..1]))
+                {
+                    components = bytes[0];
+                }
             }
 
             if (marker == JpegMarker.Sos)
@@ -94,11 +99,7 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
         return decoder.WorkingBytes(Buffered(header));
     }
 
-    /// <summary>Returns whether the file keeps every coefficient until its last scan: progressive, or a scan per component.</summary>
-    private static bool Buffered(JpegHeader header)
-    {
-        return header.Progressive || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length);
-    }
+    private static bool Buffered(JpegHeader header) => JpegSegmentReader.Buffered(header);
 
     /// <summary>One JPEG image, decoded as its rows are asked for.</summary>
     private sealed class JpegRows : RowSource
@@ -143,7 +144,13 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
 
         public override TResult WithNaturalType<TResult>(INaturalTypeVisitor<TResult> visitor)
         {
-            return _header.Components.Length == 1 ? visitor.Visit<Gray8>() : visitor.Visit<Rgb8>();
+            int count = _header.Components.Length;
+            if (_header.Wide)
+            {
+                return count == 1 ? visitor.Visit<Gray16>() : count == 3 ? visitor.Visit<Rgb16>() : visitor.Visit<Cmyk16>();
+            }
+
+            return count == 1 ? visitor.Visit<Gray8>() : visitor.Visit<Rgb8>();
         }
 
         public override FrameMetadata? NextFrame()

@@ -3,7 +3,10 @@ using Egami.Pixels;
 
 namespace Egami.Formats.Jpeg;
 
-/// <summary>Reads JPEG files: baseline and progressive Huffman-coded, 8-bit, gray, YCbCr, RGB, CMYK and YCCK.</summary>
+/// <summary>
+/// Reads JPEG files: baseline, extended and progressive, Huffman or arithmetic-coded, 8 or 12-bit, and lossless at 2 to 16 bits;
+/// gray, YCbCr, RGB, CMYK and YCCK. Hierarchical files are refused.
+/// </summary>
 internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScaling
 {
     internal static JpegReader Instance { get; } = new();
@@ -45,7 +48,13 @@ internal sealed partial class JpegReader : IFormatReader, Streaming.INativeScali
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
         JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
-        return header.Components.Length == 1 ? Decode<Gray8>(input, header, options) : Decode<Rgb8>(input, header, options);
+        int count = header.Components.Length;
+        if (header.Wide)
+        {
+            return count == 1 ? Decode<Gray16>(input, header, options) : count == 3 ? Decode<Rgb16>(input, header, options) : Decode<Cmyk16>(input, header, options);
+        }
+
+        return count == 1 ? Decode<Gray8>(input, header, options) : Decode<Rgb8>(input, header, options);
     }
 
     /// <summary>Decodes with libjpeg's default look, or replicated chroma when <see cref="JpegReaderOptions.FastUpsampling"/> says so.</summary>

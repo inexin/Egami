@@ -16,7 +16,7 @@ namespace Egami.Formats.Jpeg;
 /// rows above into the raster, so memory is the raster plus a few rows. Progressive files and sequential files with a scan per
 /// component are decoded into a buffer of every coefficient first, scan by scan, and converted the same way after the last scan.
 /// </summary>
-internal sealed class JpegDecoder<TPixel> : IDisposable
+internal sealed partial class JpegDecoder<TPixel> : IDisposable
     where TPixel : unmanaged, IPixelType<TPixel>
 {
     /// <summary>Images with fewer pixels than this decode on one thread; the pipeline only pays off on large ones.</summary>
@@ -46,6 +46,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private readonly int _width;
     private readonly int _height;
     private readonly bool _fast;
+    private readonly bool _wide;
     private readonly int _channels;
     private byte[] _rowBuffer;
     private byte[] _sampleBuffer;
@@ -113,6 +114,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         _planes = planes;
         _warnings = warnings;
         _fast = fastUpsampling;
+        _wide = header.Wide;
         bool single = header.Components.Length == 1;
 
         // A one-component frame is coded non-interleaved: its MCU is one block whatever its sampling factors say.
@@ -150,12 +152,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
             _components[i] = new Component(
                 h, v, size, _maxH * _blockSize, _maxV * _blockSize, _mcusX * h * size,
-                (int)(((long)header.Width * h * size) + (_maxH * 8) - 1) / (_maxH * 8), (int)(((long)header.Height * v * size) + (_maxV * 8) - 1) / (_maxV * 8));
+                (int)(((long)header.Width * h * size) + (_maxH * 8) - 1) / (_maxH * 8), (int)(((long)header.Height * v * size) + (_maxV * 8) - 1) / (_maxV * 8), _wide);
         }
 
         _rowBuffer = ArrayPool<byte>.Shared.Rent(header.Width * Math.Max(_channels, _components.Length));
         _sampleBuffer = ArrayPool<byte>.Shared.Rent(header.Width * _components.Length);
         _sums = ArrayPool<short>.Shared.Rent(header.Width + 2);
+        if (_wide)
+        {
+            _wideRow = ArrayPool<ushort>.Shared.Rent(header.Width * 4);
+            _wideSamples = ArrayPool<ushort>.Shared.Rent(header.Width * _components.Length);
+            _wideSums = ArrayPool<int>.Shared.Rent(header.Width + 2);
+        }
     }
 
     /// <summary>Returns the output size of a dimension at 1/<paramref name="scale"/> scale, rounded up as libjpeg does.</summary>
@@ -170,7 +178,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         using JpegBitReader reader = new(input);
         _arithmetic = _header.Arithmetic ? new JpegArithmeticDecoder(reader, _header) : null;
         JpegScan scan = _header.FirstScan!;
-        if (!_header.Progressive && scan.Components.Length == _components.Length)
+        if (!_wide && !_header.Progressive && scan.Components.Length == _components.Length)
         {
             DecodeStreaming(input, reader, scan);
             return;
@@ -245,7 +253,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         }
 
         JpegScan scan = _header.FirstScan!;
-        if (!_header.Progressive && scan.Components.Length == _components.Length)
+        if (!_wide && !_header.Progressive && scan.Components.Length == _components.Length)
         {
             _pullSequential = true;
             int count = scan.Components.Length;
@@ -400,6 +408,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         _previewed = true;
         int my = y / _mcuRows;
         AdvanceTo(Math.Min(my + 1, _mcusY - 1));
+        if (_wide)
+        {
+            ConvertWideRow(x, y, destination);
+            return;
+        }
+
         int count = _components.Length;
         ReadOnlySpan<byte> a = SampleRow(0, y);
         ReadOnlySpan<byte> b = count > 1 ? SampleRow(1, y) : default;
@@ -412,10 +426,15 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     internal long WorkingBytes(bool buffered)
     {
         long bytes = ((long)_header.Width * Math.Max(_channels, _components.Length)) + ((long)_header.Width * _components.Length) + ((_header.Width + 2) * 2L);
+        if (_wide)
+        {
+            bytes += (_header.Width * (4L + _components.Length) * sizeof(ushort)) + ((_header.Width + 2L) * sizeof(int));
+        }
+
         long blocks = 0;
         foreach (Component c in _components)
         {
-            bytes += 3L * c.StripWidth * c.V * c.BlockSize;
+            bytes += 3L * c.StripWidth * c.V * c.BlockSize * (_wide ? sizeof(ushort) : 1);
             blocks += (long)_mcusX * c.H * (buffered ? _mcusY * c.V : c.V);
         }
 
@@ -443,6 +462,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         int my = y / _mcuRows;
         AdvanceTo(Math.Min(my + 1, _mcusY - 1));
+        if (_wide)
+        {
+            ConvertWideRow(x, y, destination);
+            return;
+        }
+
         int count = _components.Length;
         ReadOnlySpan<byte> a = SampleRow(0, y);
         ReadOnlySpan<byte> b = count > 1 ? SampleRow(1, y) : default;
@@ -623,6 +648,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// <summary>Dequantizes and transforms MCU row <paramref name="my"/> of the coefficient buffer into the strips.</summary>
     private void TransformBufferedRow(int my)
     {
+        if (_wide)
+        {
+            TransformWideRow(my);
+            return;
+        }
+
         Span<short> natural = stackalloc short[64];
         foreach (Component c in _components)
         {
@@ -739,6 +770,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _rowBuffer, null!));
         ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _sampleBuffer, null!));
         ArrayPool<short>.Shared.Return(Interlocked.Exchange(ref _sums, null!));
+        DisposeWide();
     }
 
     /// <summary>Converts a quantization table from zigzag to natural order.</summary>
@@ -1635,6 +1667,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             return;
         }
 
+        if (_wide)
+        {
+            EmitWideRows(my);
+            return;
+        }
+
         int first = my * _mcuRows;
         int last = Math.Min(_height, first + _mcuRows);
         int count = _components.Length;
@@ -1834,10 +1872,11 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// One component's sampling, quantization table and the ring of three MCU-row strips of samples, plus, for a buffered decode,
     /// every coefficient in zigzag order, in chunks of whole block rows that each fit one memory block.
     /// </summary>
-    private sealed unsafe class Component(int h, int v, int blockSize, int mcuWidth, int mcuHeight, int stripWidth, int width, int height) : IDisposable
+    private sealed unsafe class Component(int h, int v, int blockSize, int mcuWidth, int mcuHeight, int stripWidth, int width, int height, bool wide) : IDisposable
     {
         private readonly int _stripHeight = v * blockSize;
-        private byte[] _strips = ArrayPool<byte>.Shared.Rent(3 * stripWidth * v * blockSize);
+        private byte[] _strips = wide ? [] : ArrayPool<byte>.Shared.Rent(3 * stripWidth * v * blockSize);
+        private ushort[] _wideStrips = wide ? ArrayPool<ushort>.Shared.Rent(3 * stripWidth * v * blockSize) : [];
         private IMemoryOwner<byte>?[] _chunks = [];
         private MemoryHandle[] _pins = [];
         private int _blocksX;
@@ -1886,6 +1925,38 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
         internal ReadOnlySpan<byte> Row(int row)
         {
             return Strip(row / _stripHeight).Slice(row % _stripHeight * stripWidth, stripWidth);
+        }
+
+        /// <summary>Gets the 16-bit strip that holds MCU row <paramref name="my"/> of a 12-bit file.</summary>
+        internal Span<ushort> WideStrip(int my)
+        {
+            return _wideStrips.AsSpan(my % 3 * stripWidth * _stripHeight, stripWidth * _stripHeight);
+        }
+
+        /// <summary>Gets 16-bit sample row <paramref name="row"/>, which must be in one of the three strips held.</summary>
+        internal ReadOnlySpan<ushort> WideRow(int row)
+        {
+            return WideStrip(row / _stripHeight).Slice(row % _stripHeight * stripWidth, stripWidth);
+        }
+
+        /// <summary>Dequantizes and transforms one block of a 12-bit file into <paramref name="target"/>.</summary>
+        internal void WideIdct(ReadOnlySpan<short> block, Span<ushort> target)
+        {
+            switch (blockSize)
+            {
+                case 8:
+                    JpegIdct12.Transform(block, Quant, target, stripWidth);
+                    break;
+                case 4:
+                    JpegIdct12.Transform4(block, Quant, target, stripWidth);
+                    break;
+                case 2:
+                    JpegIdct12.Transform2(block, Quant, target, stripWidth);
+                    break;
+                default:
+                    JpegIdct12.Transform1(block, Quant, target, stripWidth);
+                    break;
+            }
         }
 
         /// <summary>Dequantizes and transforms one block into <paramref name="target"/>, at this component's block size.</summary>
@@ -1953,7 +2024,18 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
         public void Dispose()
         {
-            ArrayPool<byte>.Shared.Return(Interlocked.Exchange(ref _strips, null!));
+            byte[] strips = Interlocked.Exchange(ref _strips, []);
+            if (strips.Length > 0)
+            {
+                ArrayPool<byte>.Shared.Return(strips);
+            }
+
+            ushort[] wideStrips = Interlocked.Exchange(ref _wideStrips, []);
+            if (wideStrips.Length > 0)
+            {
+                ArrayPool<ushort>.Shared.Return(wideStrips);
+            }
+
             foreach (MemoryHandle pin in _pins)
             {
                 pin.Dispose();

@@ -9,8 +9,9 @@ internal sealed partial class JpegReader : IYuvFormatReader
     public YuvRaster ReadYuv(EgamiInput input, ReaderOptions options)
     {
         JpegHeader header = JpegSegmentReader.ReadHeader(input, options);
-        ChromaFormat format = PlaneFormat(header) ?? throw new NotSupportedException(
-            $"This JPEG is {header.ColorSpace}, which has no YUV planes; load it with Raster.Load to convert it.");
+        ChromaFormat format = PlaneFormat(header) ?? throw new NotSupportedException(header.Wide || header.Lossless
+            ? $"This JPEG is {(header.Lossless ? "lossless" : $"{header.Precision}-bit")}, which has no 8-bit YUV planes; load it with Raster.Load."
+            : $"This JPEG is {header.ColorSpace}, which has no YUV planes; load it with Raster.Load to convert it.");
         int scale = JpegSegmentReader.ScaleFor(header, options);
         int width = JpegDecoder<Gray8>.ScaledSize(header.Width, scale), height = JpegDecoder<Gray8>.ScaledSize(header.Height, scale);
         if (width < 1 || height < 1)
@@ -65,6 +66,12 @@ internal sealed partial class JpegReader : IYuvFormatReader
     private static ChromaFormat? PlaneFormat(JpegHeader header)
     {
         JpegColorSpace space = header.ColorSpace;
+        if (header.Wide || header.Lossless)
+        {
+            // Deeper samples have no 8-bit planes, and lossless files have no DCT-domain planes to hand over.
+            return null;
+        }
+
         if (space == JpegColorSpace.Gray)
         {
             return ChromaFormat.Yuv400;

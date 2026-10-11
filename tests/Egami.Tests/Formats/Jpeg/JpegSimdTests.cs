@@ -30,6 +30,66 @@ public class JpegSimdTests
         }
     }
 
+    [Theory]
+    [MemberData(nameof(Kinds))]
+    public void TwelveBitIdctVectorEqualsScalar(string kind)
+    {
+        Assert.SkipUnless(Avx2.IsSupported, "AVX2 is not available.");
+        Random random = new(kind.GetHashCode(StringComparison.Ordinal) & 0xFFFF);
+        short[] block = new short[64];
+        ushort[] quant = new ushort[64];
+        ushort[] scalar = new ushort[8 * 11];
+        ushort[] vector = new ushort[8 * 11];
+        for (int trial = 0; trial < 5000; trial++)
+        {
+            Fill(kind, random, block, quant);
+            if (kind == "typical" && trial % 2 == 0)
+            {
+                // 12-bit coefficients reach 16 times the 8-bit range.
+                for (int i = 0; i < 64; i++)
+                {
+                    block[i] = (short)Math.Clamp(block[i] * 16, short.MinValue, short.MaxValue);
+                }
+            }
+
+            Array.Clear(scalar);
+            Array.Clear(vector);
+            JpegIdct12.TransformScalar(block, quant, scalar, 11);
+            JpegIdct12.TransformAvx2(block, quant, vector, 11);
+            Assert.Equal(scalar, vector);
+            Assert.All(scalar, v => Assert.InRange(v, 0, 4095));
+        }
+    }
+
+    [Fact]
+    public void TwelveBitDcFillEqualsTheTransform()
+    {
+        short[] block = new short[64];
+        ushort[] filled = new ushort[64];
+        ushort[] transformed = new ushort[64];
+        foreach (int dc in (int[])[-32768, -16384, -1, 0, 1, 7, 1023, 16383, 32767])
+        {
+            foreach (ushort q in (ushort[])[1, 2, 16, 255, 65535])
+            {
+                block[0] = (short)dc;
+                ushort[] quant = Enumerable.Repeat(q, 64).ToArray();
+                JpegIdct12.TransformScalar(block, quant, transformed, 8);
+                JpegIdct12.FillDc(dc * q, filled, 8);
+                Assert.Equal(transformed, filled);
+                Array.Clear(transformed);
+                Array.Clear(filled);
+                JpegIdct12.Transform4(block, quant, transformed, 8);
+                JpegIdct12.FillDc(dc * q, filled, 8, 4);
+                Assert.Equal(transformed, filled);
+                Array.Clear(transformed);
+                Array.Clear(filled);
+                JpegIdct12.Transform2(block, quant, transformed, 8);
+                JpegIdct12.FillDc(dc * q, filled, 8, 2);
+                Assert.Equal(transformed, filled);
+            }
+        }
+    }
+
     [Fact]
     public void ForwardDctVectorEqualsScalar()
     {

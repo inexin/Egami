@@ -26,7 +26,7 @@ public class JpegDepthTests
     }
 
     /// <summary>Returns whether this step of 2.4.2 decodes the file yet.</summary>
-    private static bool Decodable(JsonElement e) => Int(e, "precision") == 8 && !Flag(e, "lossless");
+    private static bool Decodable(JsonElement e) => !Flag(e, "lossless");
 
     public static TheoryData<string, int> WithScaledReferences()
     {
@@ -158,6 +158,14 @@ public class JpegDepthTests
         using Raster serial = Raster.Load(data, EgamiContext.Default with { MaxParallelism = 1 });
         using Raster parallel = Raster.Load(data, EgamiContext.Default with { MaxParallelism = 8 });
         Assert.Equal(Bytes(serial), Bytes(parallel));
+    }
+
+    [Fact]
+    public void DeepFilesHaveNoYuvPlanes()
+    {
+        using FileStream stream = File.OpenRead(Path.Combine(Images, "p12-420.jpg"));
+        NotSupportedException e = Assert.Throws<NotSupportedException>(() => YuvRaster.Load(stream));
+        Assert.Contains("12-bit", e.Message, StringComparison.Ordinal);
     }
 
     [Fact]

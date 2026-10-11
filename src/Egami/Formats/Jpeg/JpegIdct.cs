@@ -13,7 +13,7 @@ namespace Egami.Formats.Jpeg;
 /// </summary>
 internal static class JpegIdct
 {
-    private const int ConstBits = 13;
+    internal const int ConstBits = 13;
     private const int Pass1Bits = 2;
 
     // The rotation constants of the factorization, cos and sin terms scaled by 2^13.
@@ -202,7 +202,7 @@ internal static class JpegIdct
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<int> Dequantize(ref short coefficients, ref ushort quant, int at)
+    internal static Vector256<int> Dequantize(ref short coefficients, ref ushort quant, int at)
     {
         Vector256<int> values = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref coefficients, (nuint)at));
         Vector256<int> scale = Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref quant, (nuint)at));
@@ -211,7 +211,7 @@ internal static class JpegIdct
 
     /// <summary>Transposes an 8×8 block of 32-bit lanes.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Transpose(
+    internal static void Transpose(
         ref Vector256<int> r0, ref Vector256<int> r1, ref Vector256<int> r2, ref Vector256<int> r3,
         ref Vector256<int> r4, ref Vector256<int> r5, ref Vector256<int> r6, ref Vector256<int> r7)
     {
@@ -243,7 +243,7 @@ internal static class JpegIdct
 
     /// <summary>The scalar 1D pass on eight lanes, operation for operation.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Butterfly(
+    internal static void Butterfly(
         Vector256<int> s0, Vector256<int> s1, Vector256<int> s2, Vector256<int> s3, Vector256<int> s4, Vector256<int> s5, Vector256<int> s6, Vector256<int> s7,
         out Vector256<int> o0, out Vector256<int> o1, out Vector256<int> o2, out Vector256<int> o3, out Vector256<int> o4, out Vector256<int> o5, out Vector256<int> o6, out Vector256<int> o7)
     {
@@ -286,7 +286,7 @@ internal static class JpegIdct
     }
 
     /// <summary>One 1D pass: inputs in frequency order 0..7, outputs in sample order 0..7, scaled by 2^13.</summary>
-    private static void Butterfly(
+    internal static void Butterfly(
         int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7,
         out int o0, out int o1, out int o2, out int o3, out int o4, out int o5, out int o6, out int o7)
     {
@@ -456,7 +456,7 @@ internal static class JpegIdct
     }
 
     /// <summary>One 1D pass of the 4-point reduced transform (inputs 0 to 7 without 4).</summary>
-    private static void Reduced4(int i0, int i1, int i2, int i3, int i5, int i6, int i7, out int o0, out int o1, out int o2, out int o3)
+    internal static void Reduced4(int i0, int i1, int i2, int i3, int i5, int i6, int i7, out int o0, out int o1, out int o2, out int o3)
     {
         int tmp0 = i0 << (ConstBits + 1);
         int tmp2 = (i2 * Fix1_847759065) - (i6 * Fix0_765366865);
@@ -472,7 +472,7 @@ internal static class JpegIdct
     }
 
     /// <summary>One 1D pass of the 2-point reduced transform (inputs 0, 1, 3, 5 and 7).</summary>
-    private static void Reduced2(int i0, int i1, int i3, int i5, int i7, out int o0, out int o1)
+    internal static void Reduced2(int i0, int i1, int i3, int i5, int i7, out int o0, out int o1)
     {
         int tmp10 = i0 << (ConstBits + 2);
         int odd = (i7 * -Fix0_720959822) + (i5 * Fix0_850430095) + (i3 * -Fix1_272758580) + (i1 * Fix3_624509785);
@@ -480,7 +480,7 @@ internal static class JpegIdct
         o1 = tmp10 - odd;
     }
 
-    private static int Descale(int x, int n)
+    internal static int Descale(int x, int n)
     {
         return (x + (1 << (n - 1))) >> n;
     }

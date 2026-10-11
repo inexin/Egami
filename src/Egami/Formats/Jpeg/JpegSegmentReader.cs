@@ -101,10 +101,25 @@ internal static class JpegSegmentReader
         return header;
     }
 
-    /// <summary>Returns the frame's natural layout: Gray8 for one component, Rgb8 otherwise (CMYK and YCCK convert to RGB).</summary>
+    /// <summary>
+    /// Returns the frame's natural layout: for 8-bit samples Gray8 for one component and Rgb8 otherwise (CMYK and YCCK convert to
+    /// RGB); for deeper samples Gray16, Rgb16, or Cmyk16 for four components.
+    /// </summary>
     internal static Pixels.PixelLayoutInfo Layout(JpegHeader header)
     {
-        return header.Components.Length == 1 ? Pixels.Gray8.Layout : Pixels.Rgb8.Layout;
+        int count = header.Components.Length;
+        if (header.Wide)
+        {
+            return count == 1 ? Pixels.Gray16.Layout : count == 3 ? Pixels.Rgb16.Layout : Pixels.Cmyk16.Layout;
+        }
+
+        return count == 1 ? Pixels.Gray8.Layout : Pixels.Rgb8.Layout;
+    }
+
+    /// <summary>Returns whether the decoder keeps every coefficient until the last scan: progressive, 12-bit, or a scan per component.</summary>
+    internal static bool Buffered(JpegHeader header)
+    {
+        return header.Progressive || header.Wide || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length);
     }
 
     /// <summary>
@@ -116,7 +131,7 @@ internal static class JpegSegmentReader
         long width = (header.Width + scale - 1) / scale;
         long height = (header.Height + scale - 1) / scale;
         long bytes = width * height * Layout(header).BytesPerPixel;
-        if (header.Progressive || (header.FirstScan is JpegScan first && first.Components.Length != header.Components.Length))
+        if (Buffered(header))
         {
             long mcusX = (header.Width + (8 * header.MaxH) - 1) / (8 * header.MaxH);
             long mcusY = (header.Height + (8 * header.MaxV) - 1) / (8 * header.MaxV);
