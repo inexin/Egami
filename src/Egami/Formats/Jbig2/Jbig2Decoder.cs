@@ -408,7 +408,7 @@ internal sealed class Jbig2Decoder
                 return false;
             }
 
-            if (_striped && EndRow >= Top)
+            if (_striped && EndRow >= Top && EndRow < Top + Window.Height)
             {
                 // The rows down to the last end row are final and have been served: start the next stripe.
                 Top = EndRow + 1;
@@ -480,8 +480,34 @@ internal sealed class Jbig2Decoder
             return Window.Crop(info.X, info.Y - Top, info.Width, info.Height);
         }
 
-        /// <summary>Gets page row <paramref name="y"/>, which must be final and still kept, as packed words.</summary>
-        internal ReadOnlySpan<ulong> Row(int y) => Window.Row(y - Top);
+        /// <summary>
+        /// Gets page row <paramref name="y"/> as packed words: a row of the window, or the default pixel for a row a stream that
+        /// breaks its own striping never drew.
+        /// </summary>
+        internal ReadOnlySpan<ulong> Row(int y)
+        {
+            if (y >= Top && y - Top < Window.Height)
+            {
+                return Window.Row(y - Top);
+            }
+
+            _blank ??= Blank();
+            return _blank;
+        }
+
+        private ulong[]? _blank;
+
+        private ulong[] Blank()
+        {
+            ulong[] row = new ulong[(Width + 63) >> 6];
+            if (Info.DefaultPixel != 0 && row.Length > 0)
+            {
+                Array.Fill(row, ulong.MaxValue);
+                row[^1] = Jbig2Bitmap.EdgeMask(Width);
+            }
+
+            return row;
+        }
 
         /// <summary>Returns the decoded page, after <see cref="Step"/> has run every segment.</summary>
         internal Jbig2Page Finish()

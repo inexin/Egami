@@ -158,6 +158,11 @@ internal static class Jbig2Generic
     /// <summary>Fills a bitmap from rows of bytes, most significant bit first, each row padded to a byte.</summary>
     internal static void FromBytes(Jbig2Bitmap bitmap, ReadOnlySpan<byte> rows, int rowBytes)
     {
+        if (bitmap.Width == 0 || (long)rowBytes * bitmap.Height > rows.Length)
+        {
+            return;
+        }
+
         int stride = bitmap.Stride;
         ulong edge = Jbig2Bitmap.EdgeMask(bitmap.Width);
         Span<byte> word = stackalloc byte[8];
