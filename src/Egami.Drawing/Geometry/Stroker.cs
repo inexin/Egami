@@ -159,14 +159,14 @@ internal static class Stroker
         builder.MoveTo(points[0] + (half * Normal(first)));
         for (int i = 1; i < n - 1; i++)
         {
-            Join(builder, points[i], Direction(points[i - 1], points[i]), Direction(points[i], points[i + 1]), +1, JoinAt(stroke, smooth[i]), half, tolerance);
+            Join(builder, points[i], Direction(points[i - 1], points[i]), Direction(points[i], points[i + 1]), +1, JoinAt(stroke, smooth[i], Shortest(points, i - 1, i, i + 1)), half, tolerance);
         }
 
         builder.LineTo(points[n - 1] + (half * Normal(last)));
         Cap(builder, points[n - 1], last, stroke.Cap, half, tolerance);
         for (int i = n - 2; i > 0; i--)
         {
-            Join(builder, points[i], -Direction(points[i], points[i + 1]), -Direction(points[i - 1], points[i]), +1, JoinAt(stroke, smooth[i]), half, tolerance);
+            Join(builder, points[i], -Direction(points[i], points[i + 1]), -Direction(points[i - 1], points[i]), +1, JoinAt(stroke, smooth[i], Shortest(points, i - 1, i, i + 1)), half, tolerance);
         }
 
         builder.LineTo(points[0] - (half * Normal(first)));
@@ -190,11 +190,11 @@ internal static class Stroker
             {
                 builder.MoveTo(points[i] + (half * Normal(d0)));
                 started = true;
-                JoinTail(builder, points[i], d0, d1, JoinAt(stroke, smooth[i]), half, tolerance);
+                JoinTail(builder, points[i], d0, d1, JoinAt(stroke, smooth[i], Shortest(points, before, i, after)), half, tolerance);
                 continue;
             }
 
-            Join(builder, points[i], d0, d1, +1, JoinAt(stroke, smooth[i]), half, tolerance);
+            Join(builder, points[i], d0, d1, +1, JoinAt(stroke, smooth[i], Shortest(points, before, i, after)), half, tolerance);
         }
 
         builder.Close();
@@ -229,7 +229,19 @@ internal static class Stroker
         bool outer = cross < 0 || (MathF.Abs(cross) < 1e-6f && dot <= 0);
         if (!outer)
         {
-            builder.LineTo(point);
+            // Inside the turn the two offset lines cross at h·tan(θ/2) before the corner. When both segments are longer than that,
+            // the crossing is the exact inner corner; otherwise the outline runs through the corner point itself, whose small loop
+            // winds the same way as the stroke and is filled over.
+            float overshoot = half * MathF.Abs(cross) / (1 + dot);
+            if (overshoot <= pen.Shortest)
+            {
+                builder.LineTo(point + (half * (n0 + n1) / (1 + dot)));
+            }
+            else
+            {
+                builder.LineTo(point);
+            }
+
             builder.LineTo(b);
             return;
         }
@@ -331,7 +343,11 @@ internal static class Stroker
     }
 
     /// <summary>The join at a point: the pen's own at corners, round where the point lies inside a curve.</summary>
-    private static Pen JoinAt(Stroke stroke, bool smooth) => new(smooth ? LineJoin.Round : stroke.Join, stroke.MiterLimit);
+    private static Pen JoinAt(Stroke stroke, bool smooth, float shortest) => new(smooth ? LineJoin.Round : stroke.Join, stroke.MiterLimit, shortest);
+
+    /// <summary>The shorter of the two segments meeting at <paramref name="at"/>.</summary>
+    private static float Shortest(List<Vector2> points, int before, int at, int after)
+        => MathF.Min(Vector2.Distance(points[before], points[at]), Vector2.Distance(points[at], points[after]));
 
     /// <summary>Wraps an angle to (−π, π].</summary>
     private static double Wrap(double angle)
@@ -355,5 +371,8 @@ internal static class Stroker
     private static Vector2 Normal(Vector2 direction) => new(-direction.Y, direction.X);
 
     /// <summary>The join settings at one corner.</summary>
-    private readonly record struct Pen(LineJoin Join, float MiterLimit);
+    /// <param name="Join">The join.</param>
+    /// <param name="MiterLimit">The miter limit.</param>
+    /// <param name="Shortest">The shorter of the two segments meeting there.</param>
+    private readonly record struct Pen(LineJoin Join, float MiterLimit, float Shortest);
 }

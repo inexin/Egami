@@ -192,8 +192,7 @@ public sealed class RasterCanvas<TPixel> : Canvas
                     return;
                 }
 
-                Path device = path.Transform(m);
-                Path outline = Stroker.Outline(device, stroke with { Width = 1 }, Options.Tolerance);
+                Path outline = Hairline.Outline(path.Transform(m), stroke.Cap, Options.Tolerance);
                 Flattener.Flatten(outline, Matrix3x2.Identity, Options.Tolerance, _edges);
             }
             else
