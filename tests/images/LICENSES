@@ -115,3 +115,14 @@ webp/
 ../reference/webp/
   libwebp 1.3.2's decodes of the files above (RGBA, raw YUV planes and composed animation frames), and its reading of their
   headers, made by tools/make-webp-references.py. Same licenses as the files.
+
+tiff/
+  TIFF files made by tools/make-tiff-references.py from ops/duck.png and ops/egret.png above: base files written byte by byte
+  by the script, variants by libtiff 4.6.0's tiffcp, SGILog and WebP files by tools/tiffref/tiffref.c, metadata added by
+  exiftool 12.80 (with icc/compact/DisplayP3-v4.icc). All metadata values are invented. Public domain, as their sources.
+  libtiff's own sample images are not included (their licenses vary); --pics fetches them into .cache for local tests.
+
+../reference/tiff/
+  libtiff 4.6.0's decodes of the files above (raw samples and RGBA), ImageMagick 7.1.1's RGBA for CMYK, YCbCr and Lab pages,
+  exiftool's reading of the metadata files, and manifest.json, made by tools/make-tiff-references.py. Public domain, as the
+  files they come from.

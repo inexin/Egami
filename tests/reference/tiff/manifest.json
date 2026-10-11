@@ -1,0 +1,6463 @@
+{
+ "tools": "LIBTIFF, Version 4.6.0t; tiff-4.6.0t-r0; Version: ImageMagick 7.1.1-32 Q16-HDRI x86_64 22207 https://imagemagick.org; exiftool 12.80; alpine:3.20",
+ "files": [
+  {
+   "file": "bilevel-bz.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 570
+  },
+  {
+   "file": "bilevel-wz.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 0,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-wz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 570
+  },
+  {
+   "file": "gray2.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 2,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray2.0.raw.gz",
+       "rgba": "gray2.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 954
+  },
+  {
+   "file": "gray4.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 4,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray4.0.raw.gz",
+       "rgba": "gray4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1722
+  },
+  {
+   "file": "gray8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray8.0.raw.gz",
+       "rgba": "gray8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3258
+  },
+  {
+   "file": "gray10.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 10,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray10.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray10.tif: Sorry, can not handle images with 10-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4026
+  },
+  {
+   "file": "gray12.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 12,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray12.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray12.tif: Sorry, can not handle images with 12-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4794
+  },
+  {
+   "file": "gray14.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 14,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray14.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray14.tif: Sorry, can not handle images with 14-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 5562
+  },
+  {
+   "file": "gray16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6330
+  },
+  {
+   "file": "gray8-wz.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 0,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray8-wz.0.raw.gz",
+       "rgba": "gray8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3258
+  },
+  {
+   "file": "gray24.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 24,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray24.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray24.tif: Sorry, can not handle images with 24-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9402
+  },
+  {
+   "file": "gray32.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray32.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12474
+  },
+  {
+   "file": "gray8-signed.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 2,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray8-signed.0.raw.gz",
+       "rgba": "gray8-signed.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3270
+  },
+  {
+   "file": "gray16-signed.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 2,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16-signed.0.raw.gz",
+       "rgba": "gray16-signed.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6342
+  },
+  {
+   "file": "grayf16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf16.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf16.tif: Sorry, can not handle images with IEEE floating-point samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6342
+  },
+  {
+   "file": "grayf32.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf32.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12486
+  },
+  {
+   "file": "grayf64.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 64,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf64.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf64.tif: Sorry, can not handle images with 64-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 24774
+  },
+  {
+   "file": "grayf32-hdr.tif",
+   "tool": "make-tiff-references.py",
+   "note": "values from -0.5 to 3.5",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf32-hdr.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf32-hdr.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12486
+  },
+  {
+   "file": "graya8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 2,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "graya8.0.raw.gz",
+       "rgba": "graya8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6342
+  },
+  {
+   "file": "graya8-assoc.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 2,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       1
+      ],
+      "references": {
+       "raw": "graya8-assoc.0.raw.gz",
+       "rgba": "graya8-assoc.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6342
+  },
+  {
+   "file": "graya16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 2,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "graya16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12486
+  },
+  {
+   "file": "rgb8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9408
+  },
+  {
+   "file": "rgb16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 18624
+  },
+  {
+   "file": "rgbf16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgbf16.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbf16.tif: Sorry, can not handle images with IEEE floating-point samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 18642
+  },
+  {
+   "file": "rgbf32.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 10,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgbf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbf32.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 37074
+  },
+  {
+   "file": "rgb16-planar.tif",
+   "tool": "make-tiff-references.py",
+   "note": "separate planes",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16-planar.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 18648
+  },
+  {
+   "file": "rgbaf32-planar.tif",
+   "tool": "make-tiff-references.py",
+   "note": "separate planes",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgbaf32-planar.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbaf32-planar.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 49410
+  },
+  {
+   "file": "rgba8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgba8.0.raw.gz",
+       "rgba": "rgba8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12494
+  },
+  {
+   "file": "rgba8-assoc.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       1
+      ],
+      "references": {
+       "raw": "rgba8-assoc.0.raw.gz",
+       "rgba": "rgba8-assoc.0.raw.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12494
+  },
+  {
+   "file": "rgba16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgba16.0.raw.gz",
+       "rgba": "rgba8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 24782
+  },
+  {
+   "file": "rgba16-assoc.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       1
+      ],
+      "references": {
+       "raw": "rgba16-assoc.0.raw.gz",
+       "rgba": "rgba8-assoc.0.raw.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 24782
+  },
+  {
+   "file": "rgbaf32.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 8,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgbaf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbaf32.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 49378
+  },
+  {
+   "file": "rgbx8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "an unspecified extra sample",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       0
+      ],
+      "references": {
+       "raw": "rgbx8.0.raw.gz",
+       "rgba": "rgbx8.0.raw.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12494
+  },
+  {
+   "file": "rgb2a8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "alpha and an unspecified sample",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 5,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 25,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2,
+       0
+      ],
+      "references": {
+       "raw": "rgb2a8.0.raw.gz",
+       "rgba": "rgba8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 15568
+  },
+  {
+   "file": "palette1.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette1.0.raw.gz",
+       "rgba": "palette1.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 594
+  },
+  {
+   "file": "palette2.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 2,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette2.0.raw.gz",
+       "rgba": "palette2.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 990
+  },
+  {
+   "file": "palette4.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 4,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette4.0.raw.gz",
+       "rgba": "palette4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1830
+  },
+  {
+   "file": "palette8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette8.0.raw.gz",
+       "rgba": "palette8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4806
+  },
+  {
+   "file": "cmyk8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk8.0.raw.gz",
+       "rgba": "cmyk8.0.rgba.gz",
+       "magick": "cmyk8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12494
+  },
+  {
+   "file": "cmyk16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk16.0.raw.gz",
+       "rgbaError": "tests/images/tiff/cmyk16.tif: Sorry, can not handle image.\nTIFFReadRGBAImage failed",
+       "magick": "cmyk8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 24782
+  },
+  {
+   "file": "cmyka8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 5,
+      "photometric": 5,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 25,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "cmyka8.0.raw.gz",
+       "rgba": "cmyk8.0.rgba.gz",
+       "magick": "cmyka8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 15580
+  },
+  {
+   "file": "inks2.tif",
+   "tool": "make-tiff-references.py",
+   "note": "two inks, InkSet 2",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 2,
+      "photometric": 5,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "inks2.0.raw.gz",
+       "rgbaError": "tests/images/tiff/inks2.tif: Sorry, can not handle separated image with InkSet=2.\nTIFFReadRGBAImage failed",
+       "magick": "inks2.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6380
+  },
+  {
+   "file": "ycbcr11.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 1x1",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr11.0.rgba.gz",
+       "magick": "ycbcr11.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9528
+  },
+  {
+   "file": "ycbcr21.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 2x1",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr21.0.rgba.gz",
+       "magick": "ycbcr21.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6456
+  },
+  {
+   "file": "ycbcr22.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 2x2",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr22.0.rgba.gz",
+       "magick": "ycbcr22.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4920
+  },
+  {
+   "file": "ycbcr42.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 4x2",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr42.0.rgba.gz",
+       "magick": "ycbcr42.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4152
+  },
+  {
+   "file": "ycbcr44.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 4x4",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr44.0.rgba.gz",
+       "magick": "ycbcr44.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3768
+  },
+  {
+   "file": "ycbcr22-zip.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 2x2",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 8,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr22.0.rgba.gz",
+       "magick": "ycbcr22.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4448
+  },
+  {
+   "file": "ycbcr22-bt709.tif",
+   "tool": "make-tiff-references.py",
+   "note": "YCbCr 2x2",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "ycbcr22-bt709.0.rgba.gz",
+       "magick": "ycbcr22-bt709.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4920
+  },
+  {
+   "file": "cielab8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 8,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cielab8.0.raw.gz",
+       "rgba": "cielab8.0.rgba.gz",
+       "magick": "cielab8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9408
+  },
+  {
+   "file": "cielab16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 8,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cielab16.0.raw.gz",
+       "rgba": "cielab16.0.rgba.gz",
+       "magick": "cielab16.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 18624
+  },
+  {
+   "file": "icclab8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 9,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "icclab8.0.raw.gz",
+       "rgbaError": "tests/images/tiff/icclab8.tif: Sorry, can not handle image with PhotometricInterpretation=9.\nTIFFReadRGBAImage failed",
+       "magick": "icclab8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9408
+  },
+  {
+   "file": "icclab16.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 9,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "icclab16.0.raw.gz",
+       "rgbaError": "tests/images/tiff/icclab16.tif: Sorry, can not handle image with PhotometricInterpretation=9.\nTIFFReadRGBAImage failed",
+       "magick": "icclab16.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 18624
+  },
+  {
+   "file": "orientation1.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation1.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation2.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 2,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation2.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation3.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 3,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation3.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation4.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 4,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation5.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 5,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation1.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation6.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 6,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation2.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation7.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 7,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation3.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "orientation8.tif",
+   "tool": "make-tiff-references.py",
+   "note": "",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 8,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2508
+  },
+  {
+   "file": "pages3.tif",
+   "tool": "make-tiff-references.py",
+   "note": "three pages: RGB 64x48, Gray16 64x48, RGB 160x120",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     },
+     {
+      "index": 1,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     },
+     {
+      "index": 2,
+      "sub": -1,
+      "width": 160,
+      "height": 120,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 17,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pages3.2.raw.gz",
+       "rgba": "pages3.2.rgba.gz"
+      }
+     }
+    ],
+    "count": 3
+   },
+   "size": 73586
+  },
+  {
+   "file": "pages-reduced.tif",
+   "tool": "make-tiff-references.py",
+   "note": "a page, its reduced-resolution copy, a second page",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 160,
+      "height": 120,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 17,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pages3.2.raw.gz",
+       "rgba": "pages3.2.rgba.gz"
+      }
+     },
+     {
+      "index": 1,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 1,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     },
+     {
+      "index": 2,
+      "sub": -1,
+      "width": 160,
+      "height": 120,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 51,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pages-reduced.2.raw.gz",
+       "rgba": "pages-reduced.2.rgba.gz"
+      }
+     }
+    ],
+    "count": 3
+   },
+   "size": 86582
+  },
+  {
+   "file": "pyramid-subifd.tif",
+   "tool": "make-tiff-references.py",
+   "note": "SubIFDs of 64x48 and 32x24",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 160,
+      "height": 120,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 17,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 2,
+      "extraSamples": [],
+      "references": {
+       "raw": "pages3.2.raw.gz",
+       "rgba": "pages3.2.rgba.gz"
+      }
+     },
+     {
+      "index": 0,
+      "sub": 0,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 1,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     },
+     {
+      "index": 0,
+      "sub": 1,
+      "width": 32,
+      "height": 24,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 24,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 1,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "orientation1.0.raw.gz",
+       "rgba": "orientation1.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 69724
+  },
+  {
+   "file": "pages-mask.tif",
+   "tool": "make-tiff-references.py",
+   "note": "a page and its transparency mask",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     },
+     {
+      "index": 1,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 4,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 4,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgbaError": "tests/images/tiff/pages-mask.tif: Sorry, can not handle image with PhotometricInterpretation=4.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 2
+   },
+   "size": 9982
+  },
+  {
+   "file": "rgb8-strips5-ifdfirst.tif",
+   "tool": "make-tiff-references.py",
+   "note": "written by this script: 5 rows a strip, IFD first",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 5,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9488
+  },
+  {
+   "file": "rgb8-lzw.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 10476
+  },
+  {
+   "file": "rgb8-lzw-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 7904
+  },
+  {
+   "file": "rgb8-zip-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6924
+  },
+  {
+   "file": "rgb8-zip-p9.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "zip:p9"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8518
+  },
+  {
+   "file": "rgb8-packbits.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "packbits"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 32773,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9488
+  },
+  {
+   "file": "rgb8-jpeg.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-r",
+    "16",
+    "-c",
+    "jpeg"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 7,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-jpeg.0.raw.gz",
+       "rgba": "rgb8-jpeg.0.rgba.gz",
+       "magick": "rgb8-jpeg.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1878
+  },
+  {
+   "file": "rgb8-jpeg-q95.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-r",
+    "16",
+    "-c",
+    "jpeg:95"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 7,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-jpeg-q95.0.raw.gz",
+       "rgba": "rgb8-jpeg-q95.0.rgba.gz",
+       "magick": "rgb8-jpeg-q95.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3064
+  },
+  {
+   "file": "rgb8-jpeg-raw.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-r",
+    "16",
+    "-c",
+    "jpeg:r"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 7,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-jpeg-raw.0.raw.gz",
+       "rgba": "rgb8-jpeg-raw.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2961
+  },
+  {
+   "file": "rgb8-jpeg-tiles.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "jpeg",
+    "-t",
+    "-w",
+    "32",
+    "-l",
+    "16"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 6,
+      "compression": 7,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 32,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-jpeg-tiles.0.raw.gz",
+       "rgba": "rgb8-jpeg-tiles.0.rgba.gz",
+       "magick": "rgb8-jpeg-tiles.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 2024
+  },
+  {
+   "file": "gray8-jpeg.tif",
+   "tool": "tiffcp",
+   "source": "gray8.tif",
+   "options": [
+    "-r",
+    "16",
+    "-c",
+    "jpeg"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 7,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray8-jpeg.0.raw.gz",
+       "rgba": "gray8-jpeg.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1367
+  },
+  {
+   "file": "cmyk8-jpeg.tif",
+   "tool": "tiffcp",
+   "source": "cmyk8.tif",
+   "options": [
+    "-r",
+    "16",
+    "-c",
+    "jpeg:r"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 7,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk8-jpeg.0.raw.gz",
+       "rgba": "cmyk8-jpeg.0.rgba.gz",
+       "magick": "cmyk8-jpeg.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3637
+  },
+  {
+   "file": "rgb8-zstd.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "zstd"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 50000,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8732
+  },
+  {
+   "file": "rgb8-tiles16.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "16"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9504
+  },
+  {
+   "file": "rgb8-tiles32x16-lzw.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "lzw:2",
+    "-t",
+    "-w",
+    "32",
+    "-l",
+    "16"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 32,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8146
+  },
+  {
+   "file": "rgb8-tiles64-zip.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-c",
+    "zip:2",
+    "-t",
+    "-w",
+    "64",
+    "-l",
+    "64"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 64,
+      "tileHeight": 64,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6940
+  },
+  {
+   "file": "rgb8-planar.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-p",
+    "separate"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-planar.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9456
+  },
+  {
+   "file": "rgb8-planar-lzw-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-p",
+    "separate",
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-planar.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8732
+  },
+  {
+   "file": "rgb8-planar-tiles.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-p",
+    "separate",
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "32",
+    "-c",
+    "zip"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 1,
+      "planar": 2,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 32,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8-planar.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12654
+  },
+  {
+   "file": "rgb8-rows1.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-r",
+    "1",
+    "-c",
+    "packbits"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 32773,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 1,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9856
+  },
+  {
+   "file": "rgb8-rows7-zip.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-r",
+    "7",
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 7,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 7188
+  },
+  {
+   "file": "rgb8-be.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-B",
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 7904
+  },
+  {
+   "file": "rgb8-bigtiff.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-8",
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": true,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 7040
+  },
+  {
+   "file": "rgb8-bigtiff-tiles-be.tif",
+   "tool": "tiffcp",
+   "source": "rgb8.tif",
+   "options": [
+    "-8",
+    "-B",
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "16",
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": true,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 10238
+  },
+  {
+   "file": "rgb16-lzw-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgb16.tif",
+   "options": [
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 23136
+  },
+  {
+   "file": "rgb16-zip-pred-be.tif",
+   "tool": "tiffcp",
+   "source": "rgb16.tif",
+   "options": [
+    "-c",
+    "zip:2",
+    "-B"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 17294
+  },
+  {
+   "file": "rgb16-planar-zip-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgb16-planar.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16-planar.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 17374
+  },
+  {
+   "file": "rgbaf32-planar-zip-fp.tif",
+   "tool": "tiffcp",
+   "source": "rgbaf32-planar.tif",
+   "options": [
+    "-c",
+    "zip:3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 3,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgbaf32-planar.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbaf32-planar-zip-fp.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 29632
+  },
+  {
+   "file": "rgb16-tiles-packbits.tif",
+   "tool": "tiffcp",
+   "source": "rgb16.tif",
+   "options": [
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "16",
+    "-c",
+    "packbits"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 32773,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 18798
+  },
+  {
+   "file": "rgba8-lzw-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgba8.tif",
+   "options": [
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgba8.0.raw.gz",
+       "rgba": "rgba8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9482
+  },
+  {
+   "file": "rgba8-planar-zip.tif",
+   "tool": "tiffcp",
+   "source": "rgba8.tif",
+   "options": [
+    "-p",
+    "separate",
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgba8-planar-zip.0.raw.gz",
+       "rgba": "rgba8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 7552
+  },
+  {
+   "file": "rgba8-assoc-zip.tif",
+   "tool": "tiffcp",
+   "source": "rgba8-assoc.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       1
+      ],
+      "references": {
+       "raw": "rgba8-assoc.0.raw.gz",
+       "rgba": "rgba8-assoc.0.raw.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6574
+  },
+  {
+   "file": "rgba16-zip-pred.tif",
+   "tool": "tiffcp",
+   "source": "rgba16.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgba16.0.raw.gz",
+       "rgba": "rgba8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 20754
+  },
+  {
+   "file": "rgbf32-zip-fp.tif",
+   "tool": "tiffcp",
+   "source": "rgbf32.tif",
+   "options": [
+    "-c",
+    "zip:3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 3,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 10,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgbf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbf32-zip-fp.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 29134
+  },
+  {
+   "file": "rgbf32-lzw-fp-be.tif",
+   "tool": "tiffcp",
+   "source": "rgbf32.tif",
+   "options": [
+    "-c",
+    "lzw:3",
+    "-B"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 3,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 10,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgbf32-lzw-fp-be.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbf32-lzw-fp-be.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 37308
+  },
+  {
+   "file": "rgbf32-zip-pred2.tif",
+   "tool": "tiffcp",
+   "source": "rgbf32.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 10,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgbf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbf32-zip-pred2.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 32108
+  },
+  {
+   "file": "rgbf16-zip-fp.tif",
+   "tool": "tiffcp",
+   "source": "rgbf16.tif",
+   "options": [
+    "-c",
+    "zip:3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 3,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgbf16.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbf16-zip-fp.tif: Sorry, can not handle images with IEEE floating-point samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 13318
+  },
+  {
+   "file": "rgbaf32-tiles-zip-fp.tif",
+   "tool": "tiffcp",
+   "source": "rgbaf32.tif",
+   "options": [
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "16",
+    "-c",
+    "zip:3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 3,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "rgbaf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/rgbaf32-tiles-zip-fp.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 36426
+  },
+  {
+   "file": "grayf32-zip-fp.tif",
+   "tool": "tiffcp",
+   "source": "grayf32.tif",
+   "options": [
+    "-c",
+    "zip:3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 3,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf32-zip-fp.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 10038
+  },
+  {
+   "file": "grayf64-zip-fp.tif",
+   "tool": "tiffcp",
+   "source": "grayf64.tif",
+   "options": [
+    "-c",
+    "zip:3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 64,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 3,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf64.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf64-zip-fp.tif: Sorry, can not handle images with 64-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 21340
+  },
+  {
+   "file": "grayf32-be.tif",
+   "tool": "tiffcp",
+   "source": "grayf32.tif",
+   "options": [
+    "-B"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 3,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "grayf32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/grayf32-be.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12506
+  },
+  {
+   "file": "gray8-lzw-pred.tif",
+   "tool": "tiffcp",
+   "source": "gray8.tif",
+   "options": [
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray8.0.raw.gz",
+       "rgba": "gray8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 3006
+  },
+  {
+   "file": "gray16-lzw-pred-be.tif",
+   "tool": "tiffcp",
+   "source": "gray16.tif",
+   "options": [
+    "-c",
+    "lzw:2",
+    "-B"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 7880
+  },
+  {
+   "file": "gray16-tiles-zip.tif",
+   "tool": "tiffcp",
+   "source": "gray16.tif",
+   "options": [
+    "-t",
+    "-w",
+    "32",
+    "-l",
+    "32",
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 32,
+      "tileHeight": 32,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8174
+  },
+  {
+   "file": "gray32-zip-pred.tif",
+   "tool": "tiffcp",
+   "source": "gray32.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 32,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray32.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray32-zip-pred.tif: Sorry, can not handle images with 32-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 12294
+  },
+  {
+   "file": "gray4-packbits.tif",
+   "tool": "tiffcp",
+   "source": "gray4.tif",
+   "options": [
+    "-c",
+    "packbits"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 4,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 32773,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray4.0.raw.gz",
+       "rgba": "gray4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1600
+  },
+  {
+   "file": "gray4-tiles-lzw.tif",
+   "tool": "tiffcp",
+   "source": "gray4.tif",
+   "options": [
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "16",
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 4,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray4.0.raw.gz",
+       "rgba": "gray4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1546
+  },
+  {
+   "file": "gray12-be.tif",
+   "tool": "tiffcp",
+   "source": "gray12.tif",
+   "options": [
+    "-B"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 12,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray12.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray12-be.tif: Sorry, can not handle images with 12-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4806
+  },
+  {
+   "file": "gray12-lzw.tif",
+   "tool": "tiffcp",
+   "source": "gray12.tif",
+   "options": [
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 12,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray12.0.raw.gz",
+       "rgbaError": "tests/images/tiff/gray12-lzw.tif: Sorry, can not handle images with 12-bit samples.\nTIFFReadRGBAImage failed"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6128
+  },
+  {
+   "file": "graya8-planar-lzw.tif",
+   "tool": "tiffcp",
+   "source": "graya8.tif",
+   "options": [
+    "-p",
+    "separate",
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 2,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "graya8-planar-lzw.0.raw.gz",
+       "rgba": "graya8-planar-lzw.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4250
+  },
+  {
+   "file": "graya16-zip-pred.tif",
+   "tool": "tiffcp",
+   "source": "graya16.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 2,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "graya16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8500
+  },
+  {
+   "file": "palette8-lzw.tif",
+   "tool": "tiffcp",
+   "source": "palette8.tif",
+   "options": [
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette8.0.raw.gz",
+       "rgba": "palette8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 5012
+  },
+  {
+   "file": "palette4-packbits.tif",
+   "tool": "tiffcp",
+   "source": "palette4.tif",
+   "options": [
+    "-c",
+    "packbits"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 4,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 32773,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette4.0.raw.gz",
+       "rgba": "palette4.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1706
+  },
+  {
+   "file": "palette8-tiles.tif",
+   "tool": "tiffcp",
+   "source": "palette8.tif",
+   "options": [
+    "-t",
+    "-w",
+    "16",
+    "-l",
+    "16"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 1,
+      "photometric": 3,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "palette8.0.raw.gz",
+       "rgba": "palette8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4902
+  },
+  {
+   "file": "cmyk8-lzw-pred.tif",
+   "tool": "tiffcp",
+   "source": "cmyk8.tif",
+   "options": [
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk8.0.raw.gz",
+       "rgba": "cmyk8.0.rgba.gz",
+       "magick": "cmyk8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 10106
+  },
+  {
+   "file": "cmyk8-planar.tif",
+   "tool": "tiffcp",
+   "source": "cmyk8.tif",
+   "options": [
+    "-p",
+    "separate",
+    "-c",
+    "zip"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 8,
+      "predictor": 1,
+      "planar": 2,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 32,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk8-planar.0.raw.gz",
+       "rgba": "cmyk8.0.rgba.gz",
+       "magick": "cmyk8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9062
+  },
+  {
+   "file": "cmyk16-zip-pred.tif",
+   "tool": "tiffcp",
+   "source": "cmyk16.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 4,
+      "photometric": 5,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cmyk16.0.raw.gz",
+       "rgbaError": "tests/images/tiff/cmyk16-zip-pred.tif: Sorry, can not handle image.\nTIFFReadRGBAImage failed",
+       "magick": "cmyk8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 20582
+  },
+  {
+   "file": "bilevel-g3.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g3"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 3,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 506
+  },
+  {
+   "file": "bilevel-g3-2d.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g3:2d"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 3,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 504
+  },
+  {
+   "file": "bilevel-g3-2d-fill.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g3:2d:fill"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 3,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 528
+  },
+  {
+   "file": "bilevel-g3-wz.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-wz.tif",
+   "options": [
+    "-c",
+    "g3:1d"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 0,
+      "compression": 3,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-wz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 558
+  },
+  {
+   "file": "bilevel-g4.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g4"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 4,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 392
+  },
+  {
+   "file": "bilevel-g4-wz.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-wz.tif",
+   "options": [
+    "-c",
+    "g4"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 0,
+      "compression": 4,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-wz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 398
+  },
+  {
+   "file": "bilevel-g4-rows7.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g4",
+    "-r",
+    "7"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 4,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 7,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 472
+  },
+  {
+   "file": "bilevel-g4-lsb.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g4",
+    "-f",
+    "lsb2msb"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 4,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 2,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 404
+  },
+  {
+   "file": "bilevel-g4-tiles.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "g4",
+    "-t",
+    "-w",
+    "32",
+    "-l",
+    "16"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 4,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": true,
+      "tileWidth": 32,
+      "tileHeight": 16,
+      "rowsPerStrip": 0,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 484
+  },
+  {
+   "file": "bilevel-lsb.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-f",
+    "lsb2msb"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 1,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 2,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 594
+  },
+  {
+   "file": "bilevel-packbits.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "packbits"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 32773,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 554
+  },
+  {
+   "file": "bilevel-lzw.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 458
+  },
+  {
+   "file": "bilevel-zip-lsb.tif",
+   "tool": "tiffcp",
+   "source": "bilevel-bz.tif",
+   "options": [
+    "-c",
+    "zip",
+    "-f",
+    "lsb2msb"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 1,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 2,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "bilevel-bz.0.raw.gz",
+       "rgba": "bilevel-bz.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 456
+  },
+  {
+   "file": "cielab8-lzw.tif",
+   "tool": "tiffcp",
+   "source": "cielab8.tif",
+   "options": [
+    "-c",
+    "lzw"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 8,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "cielab8.0.raw.gz",
+       "rgba": "cielab8.0.rgba.gz",
+       "magick": "cielab8.0.magick.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 8866
+  },
+  {
+   "file": "pages3-zip.tif",
+   "tool": "tiffcp",
+   "source": "pages3.tif",
+   "options": [
+    "-c",
+    "zip:2"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     },
+     {
+      "index": 1,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     },
+     {
+      "index": 2,
+      "sub": -1,
+      "width": 160,
+      "height": 120,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 8,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 17,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pages3.2.raw.gz",
+       "rgba": "pages3.2.rgba.gz"
+      }
+     }
+    ],
+    "count": 3
+   },
+   "size": 50480
+  },
+  {
+   "file": "pages3-bigtiff-be.tif",
+   "tool": "tiffcp",
+   "source": "pages3.tif",
+   "options": [
+    "-8",
+    "-B",
+    "-c",
+    "lzw:2"
+   ],
+   "info": {
+    "bigEndian": true,
+    "bigTiff": true,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     },
+     {
+      "index": 1,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 1,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 48,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "gray16.0.raw.gz",
+       "rgba": "gray16.0.rgba.gz"
+      }
+     },
+     {
+      "index": 2,
+      "sub": -1,
+      "width": 160,
+      "height": 120,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 17,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 2,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "pages3.2.raw.gz",
+       "rgba": "pages3.2.rgba.gz"
+      }
+     }
+    ],
+    "count": 3
+   },
+   "size": 57826
+  },
+  {
+   "file": "logl.tif",
+   "tool": "tiffref logluv",
+   "options": [
+    "logl"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 1,
+      "photometric": 32844,
+      "compression": 34676,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 8,
+      "sampleFormat": 2,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "logl.0.raw.gz",
+       "rgba": "logl.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 4938
+  },
+  {
+   "file": "logluv.tif",
+   "tool": "tiffref logluv",
+   "options": [
+    "logluv"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 32845,
+      "compression": 34676,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 8,
+      "sampleFormat": 2,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "logluv.0.raw.gz",
+       "rgba": "logluv.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 10366
+  },
+  {
+   "file": "logluv24.tif",
+   "tool": "tiffref logluv",
+   "options": [
+    "logluv24"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 32845,
+      "compression": 34677,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 8,
+      "sampleFormat": 2,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "logluv24.0.raw.gz",
+       "rgba": "logluv24.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 9422
+  },
+  {
+   "file": "webp-lossless.tif",
+   "tool": "tiffref webp",
+   "options": [
+    "101"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 50001,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 5830
+  },
+  {
+   "file": "webp-lossless-alpha.tif",
+   "tool": "tiffref webp",
+   "options": [
+    "101"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 4,
+      "photometric": 2,
+      "compression": 50001,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [
+       2
+      ],
+      "references": {
+       "raw": "webp-lossless-alpha.0.raw.gz",
+       "rgba": "webp-lossless-alpha.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 6336
+  },
+  {
+   "file": "webp-lossy.tif",
+   "tool": "tiffref webp",
+   "options": [
+    "80"
+   ],
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 50001,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 16,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "webp-lossy.0.raw.gz",
+       "rgba": "webp-lossy.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 1384
+  },
+  {
+   "file": "meta-exif.tif",
+   "tool": "exiftool",
+   "source": "rgb8-lzw.tif",
+   "options": [
+    "-Artist=Egami Tester",
+    "-Copyright=Public domain",
+    "-Make=Egami",
+    "-Model=Corpus",
+    "-Software=make-tiff-references",
+    "-ImageDescription=A duck",
+    "-DateTime=2026:10:11 12:00:00",
+    "-DateTimeOriginal=2026:10:11 12:00:00",
+    "-ExposureTime=1/125",
+    "-FNumber=5.6",
+    "-ISO=200",
+    "-GPSLatitude=59.91",
+    "-GPSLatitudeRef=N",
+    "-GPSLongitude=10.75",
+    "-GPSLongitudeRef=E",
+    "-XMP-dc:Creator=Egami",
+    "-XMP-dc:Title=Duck",
+    "-IPTC:Keywords=duck",
+    "-IPTC:Keywords=bird",
+    "-IPTC:By-line=Egami Tester"
+   ],
+   "exif": "meta-exif.exif.json",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 8,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 1,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 42,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb8.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 14056
+  },
+  {
+   "file": "meta-icc.tif",
+   "tool": "exiftool",
+   "source": "rgb16-lzw-pred.tif",
+   "options": [
+    "-ICC_Profile<=tests/images/icc/compact/DisplayP3-v4.icc"
+   ],
+   "exif": "meta-icc.exif.json",
+   "info": {
+    "bigEndian": false,
+    "bigTiff": false,
+    "pages": [
+     {
+      "index": 0,
+      "sub": -1,
+      "width": 64,
+      "height": 48,
+      "bits": 16,
+      "samples": 3,
+      "photometric": 2,
+      "compression": 5,
+      "predictor": 2,
+      "planar": 1,
+      "tiled": false,
+      "tileWidth": 0,
+      "tileHeight": 0,
+      "rowsPerStrip": 21,
+      "sampleFormat": 1,
+      "fillOrder": 1,
+      "orientation": 1,
+      "subfileType": 0,
+      "subIfds": 0,
+      "extraSamples": [],
+      "references": {
+       "raw": "rgb16.0.raw.gz",
+       "rgba": "rgb8.0.rgba.gz"
+      }
+     }
+    ],
+    "count": 1
+   },
+   "size": 23628
+  }
+ ]
+}
