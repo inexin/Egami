@@ -170,6 +170,7 @@ internal static class OperationPipeline
                     // A custom step that changes the size: the EXIF dimensions follow it and the thumbnail no longer matches.
                     Geometry.ExifUpkeep.Dimensions(metadata, Sizes[i]);
                     Geometry.ExifUpkeep.DropThumbnail(metadata);
+                    Geometry.ExifUpkeep.Subject(metadata, null);
                 }
 
                 input = Sizes[i];

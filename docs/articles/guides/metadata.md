@@ -33,6 +33,10 @@ its own, capped by `SafetyLimits.MaxMetadataBytes`.
   otherwise show sideways.
 - Resizing and cropping, including your own operations that change the size, update the EXIF pixel dimensions and drop the
   embedded thumbnail, which no longer matches.
+- Every geometry operation moves the EXIF `SubjectArea` and `SubjectLocation` with the picture: shifted by crops and pads,
+  scaled by resizes, mirrored and turned with flips and rotations, clipped to a crop and dropped when the subject leaves it.
+  Their XMP copies, and the XMP `tiff:Orientation`, `exif:PixelXDimension` and `exif:PixelYDimension`, follow the same rules.
+  A tag the file does not have is never added.
 - Color operations change nothing in the metadata.
 
 ## Removing metadata
