@@ -159,10 +159,10 @@ internal sealed partial class Jbig2Reader : IRowSourceReader
         /// <summary>Copies the decode's new warnings and comments into the metadata.</summary>
         private void Report()
         {
-            List<string> warnings = _session.Page.Warnings;
+            List<(string Id, string Message)> warnings = _session.Page.Warnings;
             for (; _warned < warnings.Count; _warned++)
             {
-                Metadata.WarningList.Add(warnings[_warned]);
+                Metadata.WarningList.Add(warnings[_warned].Id, warnings[_warned].Message);
             }
 
             if (_session.Done && Metadata.FormatDetails is Jbig2Details details)

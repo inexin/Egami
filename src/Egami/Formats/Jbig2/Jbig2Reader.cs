@@ -96,9 +96,9 @@ internal sealed partial class Jbig2Reader : IFormatReader, IMultiImageReader
             }
 
             Fill(raster.Metadata, decoder, page, decoded, options);
-            foreach (string warning in decoded.Warnings)
+            foreach ((string id, string warning) in decoded.Warnings)
             {
-                input.Warn(raster, warning);
+                input.Warn(raster, id, warning);
             }
 
             return raster;

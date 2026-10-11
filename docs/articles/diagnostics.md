@@ -108,6 +108,13 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Iptc.Damaged` | Warning | The IPTC datasets would not parse in full; the block is kept as bytes |
 | `Iptc.ResourceBlockDamaged` | Warning | The Photoshop resource block that holds IPTC is damaged; it is kept as bytes |
 | `Iptc.ValueTooLong` | Warning | An IPTC value is longer than the IIM specification allows; it was kept |
+| `Jbig2.ColourExtension` | Warning | A region uses the colour extension (T.88 Amendment 3); it was decoded as bilevel |
+| `Jbig2.ColourPaletteSkipped` | Warning | A colour palette segment was skipped; the page decodes as bilevel |
+| `Jbig2.RegionClipped` | Warning | A region lies partly outside its page; the part outside was dropped |
+| `Jbig2.RegionDamaged` | Warning | A region segment is damaged; it was skipped and the rest of the page decoded |
+| `Jbig2.RegionDataShort` | Warning | A region's arithmetic-coded data ends early; the rest of it is what the decoder makes of 1-bits |
+| `Jbig2.ReservedSegment` | Warning | A segment has a type T.88 reserves; it was skipped |
+| `Jbig2.Truncated` | Warning | The data ends inside a segment; what it holds was decoded |
 | `Jpeg.ArithmeticDamaged` | Warning | Arithmetic-coded data is damaged; the rest of the image is gray |
 | `Jpeg.DataEnded` | Warning | The entropy-coded data ends early; the rest is gray or has less detail |
 | `Jpeg.EncodingChosen` | Info | The color space, chroma sampling and quality a JPEG save used, with `ColorType` left at Auto |

@@ -5,7 +5,7 @@ namespace Egami.Tests;
 /// <summary>Every diagnostic id in the source is in docs/articles/diagnostics.md, and every id there is in the source.</summary>
 public partial class DiagnosticsCatalogTests
 {
-    private const string Sources = "Bmp|Gif|Jpeg|Png|Pnm|Qoi|Tga|Tiff|Webp|Exif|Xmp|Iptc|Icc|Detect|Decode|Limits|Parallel|Streaming|Color|Resize|Operation|Save";
+    private const string Sources = "Bmp|Gif|Jbig2|Jpeg|Png|Pnm|Qoi|Tga|Tiff|Webp|Exif|Xmp|Iptc|Icc|Detect|Decode|Limits|Parallel|Streaming|Color|Resize|Operation|Save";
 
     [Fact]
     public void TheCatalogListsEveryIdOnce()
@@ -57,6 +57,6 @@ public partial class DiagnosticsCatalogTests
     [GeneratedRegex("\"((?:" + Sources + @")\.[A-Z][A-Za-z0-9]+)""")]
     private static partial Regex SourceId();
 
-    [GeneratedRegex(@"^\| `([A-Za-z]+\.[A-Za-z0-9]+)` \|")]
+    [GeneratedRegex(@"^\| `([A-Za-z][A-Za-z0-9]*\.[A-Za-z0-9]+)` \|")]
     private static partial Regex DocsId();
 }

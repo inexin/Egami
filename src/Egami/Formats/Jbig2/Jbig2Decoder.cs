@@ -27,7 +27,8 @@ internal sealed class Jbig2Page
 
     internal List<KeyValuePair<string, string>> Comments { get; } = [];
 
-    internal List<string> Warnings { get; } = [];
+    /// <summary>Gets the warnings, each with its diagnostic id.</summary>
+    internal List<(string Id, string Message)> Warnings { get; } = [];
 }
 
 /// <summary>
@@ -227,7 +228,7 @@ internal sealed class Jbig2Decoder
 
                 return false;
             case Jbig2Segment.ColourPalette:
-                page.Warnings.Add("A colour palette segment (T.88 Amendment 3) was skipped; the page decodes as bilevel.");
+                page.Warnings.Add(("Jbig2.ColourPaletteSkipped", "A colour palette segment (T.88 Amendment 3) was skipped; the page decodes as bilevel."));
                 return false;
             case Jbig2Segment.Extension:
                 Extension(segment, page);
@@ -240,7 +241,7 @@ internal sealed class Jbig2Decoder
         {
             if (segment.Type is not (1 or 2 or 3 or 5 or 8 or 9 or 10 or 11 or 12 or 13 or 14 or 15))
             {
-                page.Warnings.Add($"Segment {segment.Number} has the reserved type {segment.Type} and was skipped.");
+                page.Warnings.Add(("Jbig2.ReservedSegment", $"Segment {segment.Number} has the reserved type {segment.Type} and was skipped."));
             }
 
             return false;
@@ -252,11 +253,11 @@ internal sealed class Jbig2Decoder
         }
         catch (InvalidDataException e) when (!_strict)
         {
-            page.Warnings.Add($"Region segment {segment.Number} is damaged and was skipped: {e.Message}");
+            page.Warnings.Add(("Jbig2.RegionDamaged", $"Region segment {segment.Number} is damaged and was skipped: {e.Message}"));
         }
         catch (EndOfStreamException e) when (!_strict)
         {
-            page.Warnings.Add($"Region segment {segment.Number} is damaged and was skipped: {e.Message}");
+            page.Warnings.Add(("Jbig2.RegionDamaged", $"Region segment {segment.Number} is damaged and was skipped: {e.Message}"));
         }
 
         return false;
@@ -270,7 +271,7 @@ internal sealed class Jbig2Decoder
         Jbig2RegionInfo info = Jbig2RegionInfo.Read(_data, segment);
         if (info.ColourExtension)
         {
-            page.Warnings.Add($"Region segment {segment.Number} uses the colour extension; it decodes as bilevel.");
+            page.Warnings.Add(("Jbig2.ColourExtension", $"Region segment {segment.Number} uses the colour extension; it decodes as bilevel."));
         }
 
         Jbig2Bitmap bitmap;
@@ -328,7 +329,7 @@ internal sealed class Jbig2Decoder
 
         if (info.X < 0 || info.Y < 0 || (long)info.X + bitmap.Width > session.Width || (long)info.Y + bitmap.Height > session.Height)
         {
-            page.Warnings.Add($"Region segment {segment.Number} lies partly outside the page and was clipped.");
+            page.Warnings.Add(("Jbig2.RegionClipped", $"Region segment {segment.Number} lies partly outside the page and was clipped."));
         }
 
         session.Compose(bitmap, info.X, info.Y, info.Combine);
@@ -435,7 +436,7 @@ internal sealed class Jbig2Decoder
                     throw new EndOfStreamException("The JBIG2 data ends inside a segment.");
                 }
 
-                Page.Warnings.Add("The JBIG2 data ends inside a segment; what it holds was decoded.");
+                Page.Warnings.Add(("Jbig2.Truncated", "The JBIG2 data ends inside a segment; what it holds was decoded."));
             }
 
             return true;
@@ -1083,7 +1084,7 @@ internal sealed class Jbig2Decoder
             throw new EndOfStreamException($"Region segment {segment.Number}'s data ends early.");
         }
 
-        page.Warnings.Add($"Region segment {segment.Number}'s data ends early; the rest of it is guessed.");
+        page.Warnings.Add(("Jbig2.RegionDataShort", $"Region segment {segment.Number}'s data ends early; the rest of it is guessed."));
     }
 
     /// <summary>Reads comments (7.4.15) and refuses unknown extensions marked necessary.</summary>
