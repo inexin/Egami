@@ -373,7 +373,7 @@ public abstract partial class YuvRaster : IDisposable
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="planes"/>
 /// </example>
-public sealed class YuvRaster<TSample> : YuvRaster
+public sealed partial class YuvRaster<TSample> : YuvRaster
     where TSample : unmanaged
 {
     /// <summary>Planes start on 64-byte boundaries within one allocation, so vector loads of a row start aligned.</summary>

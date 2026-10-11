@@ -91,6 +91,20 @@ public class YuvBenchmarks
     [Benchmark]
     public void SaveJpegFromRgba8() => _rgba8.Save(Stream.Null, Formats.Jpeg.JpegFormat.Info);
 
+    /// <summary>Phase 2.1.4 task 10: scaling 4:2:0 planes to 720p, as video scales before converting.</summary>
+    [Benchmark]
+    public void ResizePlanesTo720p()
+    {
+        using YuvRaster<byte> small = _yuv8.Resize(1280, 720);
+    }
+
+    /// <summary>The same scale on Rgba8, for comparison.</summary>
+    [Benchmark]
+    public void ResizeRgba8To720p()
+    {
+        using Raster small = _rgba8.Derive(ops => ops.Resize(1280, 720));
+    }
+
     /// <summary>Phase 2.1.4 task 7: a decoder's NV12 frame into planes (single-threaded by design: one pass over memory).</summary>
     [Benchmark]
     public void Nv12ToPlanes() => _yuv8.CopyFromPacked(YuvPackedFormat.Nv12, _nv12);
