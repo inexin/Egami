@@ -352,6 +352,52 @@ Egami.Formats.IRowFormatReader
 Egami.Formats.IRowFormatReader.Open(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Formats.RowReader!
 Egami.Formats.IRowFormatWriter
 Egami.Formats.IRowFormatWriter.Start<TPixel>(System.IO.Stream! output, Egami.Formats.EncodeStart<TPixel>! start) -> Egami.Formats.RowEncoder<TPixel>!
+Egami.Formats.Jbig2.Jbig2CombinationOperator
+Egami.Formats.Jbig2.Jbig2CombinationOperator.And = 1 -> Egami.Formats.Jbig2.Jbig2CombinationOperator
+Egami.Formats.Jbig2.Jbig2CombinationOperator.Or = 0 -> Egami.Formats.Jbig2.Jbig2CombinationOperator
+Egami.Formats.Jbig2.Jbig2CombinationOperator.Xnor = 3 -> Egami.Formats.Jbig2.Jbig2CombinationOperator
+Egami.Formats.Jbig2.Jbig2CombinationOperator.Xor = 2 -> Egami.Formats.Jbig2.Jbig2CombinationOperator
+Egami.Formats.Jbig2.Jbig2Details
+Egami.Formats.Jbig2.Jbig2Details.CombinationOperator.get -> Egami.Formats.Jbig2.Jbig2CombinationOperator
+Egami.Formats.Jbig2.Jbig2Details.CombinationOperator.set -> void
+Egami.Formats.Jbig2.Jbig2Details.Comments.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, string!>>!
+Egami.Formats.Jbig2.Jbig2Details.DefaultPixel.get -> int
+Egami.Formats.Jbig2.Jbig2Details.DefaultPixel.set -> void
+Egami.Formats.Jbig2.Jbig2Details.Jbig2Details() -> void
+Egami.Formats.Jbig2.Jbig2Details.Lossless.get -> bool
+Egami.Formats.Jbig2.Jbig2Details.Lossless.set -> void
+Egami.Formats.Jbig2.Jbig2Details.MaxStripeSize.get -> int
+Egami.Formats.Jbig2.Jbig2Details.MaxStripeSize.set -> void
+Egami.Formats.Jbig2.Jbig2Details.Organisation.get -> Egami.Formats.Jbig2.Jbig2Organisation
+Egami.Formats.Jbig2.Jbig2Details.Organisation.set -> void
+Egami.Formats.Jbig2.Jbig2Details.PageIndex.get -> int
+Egami.Formats.Jbig2.Jbig2Details.PageIndex.set -> void
+Egami.Formats.Jbig2.Jbig2Details.Regions.get -> Egami.Formats.Jbig2.Jbig2RegionKinds
+Egami.Formats.Jbig2.Jbig2Details.Regions.set -> void
+Egami.Formats.Jbig2.Jbig2Details.Striped.get -> bool
+Egami.Formats.Jbig2.Jbig2Details.Striped.set -> void
+Egami.Formats.Jbig2.Jbig2Details.UsesGlobals.get -> bool
+Egami.Formats.Jbig2.Jbig2Details.UsesGlobals.set -> void
+Egami.Formats.Jbig2.Jbig2Format
+Egami.Formats.Jbig2.Jbig2Globals
+Egami.Formats.Jbig2.Jbig2Globals.SegmentCount.get -> int
+Egami.Formats.Jbig2.Jbig2Organisation
+Egami.Formats.Jbig2.Jbig2Organisation.Embedded = 2 -> Egami.Formats.Jbig2.Jbig2Organisation
+Egami.Formats.Jbig2.Jbig2Organisation.RandomAccess = 1 -> Egami.Formats.Jbig2.Jbig2Organisation
+Egami.Formats.Jbig2.Jbig2Organisation.Sequential = 0 -> Egami.Formats.Jbig2.Jbig2Organisation
+Egami.Formats.Jbig2.Jbig2ReaderOptions
+Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.Jbig2.Jbig2ReaderOptions? other) -> bool
+Egami.Formats.Jbig2.Jbig2ReaderOptions.Globals.get -> Egami.Formats.Jbig2.Jbig2Globals?
+Egami.Formats.Jbig2.Jbig2ReaderOptions.Globals.init -> void
+Egami.Formats.Jbig2.Jbig2ReaderOptions.Jbig2ReaderOptions() -> void
+Egami.Formats.Jbig2.Jbig2ReaderOptions.Page.get -> int?
+Egami.Formats.Jbig2.Jbig2ReaderOptions.Page.init -> void
+Egami.Formats.Jbig2.Jbig2RegionKinds
+Egami.Formats.Jbig2.Jbig2RegionKinds.Generic = 1 -> Egami.Formats.Jbig2.Jbig2RegionKinds
+Egami.Formats.Jbig2.Jbig2RegionKinds.Halftone = 8 -> Egami.Formats.Jbig2.Jbig2RegionKinds
+Egami.Formats.Jbig2.Jbig2RegionKinds.None = 0 -> Egami.Formats.Jbig2.Jbig2RegionKinds
+Egami.Formats.Jbig2.Jbig2RegionKinds.Refinement = 2 -> Egami.Formats.Jbig2.Jbig2RegionKinds
+Egami.Formats.Jbig2.Jbig2RegionKinds.Text = 4 -> Egami.Formats.Jbig2.Jbig2RegionKinds
 Egami.Formats.Jpeg.JpegColorType.Cmyk = 2 -> Egami.Formats.Jpeg.JpegColorType
 Egami.Formats.Jpeg.JpegColorType.Ycck = 3 -> Egami.Formats.Jpeg.JpegColorType
 Egami.Formats.Jpeg.JpegDetails.Arithmetic.get -> bool
@@ -1376,6 +1422,11 @@ override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
+override Egami.Formats.Jbig2.Jbig2Details.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Jbig2.Jbig2ReaderOptions.<Clone>$() -> Egami.Formats.Jbig2.Jbig2ReaderOptions!
+override Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Jbig2.Jbig2ReaderOptions.GetHashCode() -> int
+override Egami.Formats.Jbig2.Jbig2ReaderOptions.ToString() -> string!
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
 override Egami.Formats.Tiff.TiffDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Tiff.TiffReaderOptions.<Clone>$() -> Egami.Formats.Tiff.TiffReaderOptions!
@@ -1494,6 +1545,7 @@ override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
+override sealed Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Tiff.TiffReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Operations.DistantLight.Equals(Egami.Operations.Light? other) -> bool
@@ -1602,6 +1654,10 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Formats.Jbig2.Jbig2Format.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Jbig2.Jbig2Globals.Parse(System.ReadOnlySpan<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Jbig2.Jbig2Globals!
+static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator !=(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
+static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator ==(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Tiff.TiffReaderOptions.operator !=(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool

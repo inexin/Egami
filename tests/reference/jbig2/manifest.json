@@ -1,0 +1,534 @@
+{
+ "files": {
+  "book-0-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-0-generic.jb2.0.pbm.gz",
+     "sha1": "a24e9898e67e1540fdbddeca4daee9eb1b16bcb4",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-0-lossy.jb2": {
+   "how": "jbig2 -s -t 0.8 (lossy symbol matching)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-0-lossy.jb2.0.pbm.gz",
+     "sha1": "950c441a0d97b8b6043e8816c71091b5e863d183",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-0-symbol.jb2": {
+   "how": "jbig2 -s (symbol dictionary and text region)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-0-symbol.jb2.0.pbm.gz",
+     "sha1": "a05d9d38aaa35595bf92edc8bb4987a7f9cf6ba7",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-0-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-0-tpgd.jb2.0.pbm.gz",
+     "sha1": "a24e9898e67e1540fdbddeca4daee9eb1b16bcb4",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-3pages-generic.jb2": {
+   "how": "jbig2, three generic pages",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-3pages-generic.jb2.0.pbm.gz",
+     "sha1": "a24e9898e67e1540fdbddeca4daee9eb1b16bcb4",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-3pages-symbol.jb2": {
+   "how": "jbig2 -s, three pages",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-3pages-symbol.jb2.0.pbm.gz",
+     "sha1": "a05d9d38aaa35595bf92edc8bb4987a7f9cf6ba7",
+     "width": 850
+    },
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-3pages-symbol.jb2.1.pbm.gz",
+     "sha1": "beb6f4f58fca3543ca2f5dfacf6a5a0108302037",
+     "width": 850
+    },
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-3pages-symbol.jb2.2.pbm.gz",
+     "sha1": "383fba664200044fd530d43c1791031f60c2846f",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-pdf.0000": {
+   "globals": "book-pdf.sym",
+   "how": "jbig2 -s -p (embedded page stream)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-pdf.0000.0.pbm.gz",
+     "sha1": "a05d9d38aaa35595bf92edc8bb4987a7f9cf6ba7",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-pdf.0001": {
+   "globals": "book-pdf.sym",
+   "how": "jbig2 -s -p (embedded page stream)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-pdf.0001.0.pbm.gz",
+     "sha1": "beb6f4f58fca3543ca2f5dfacf6a5a0108302037",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-pdf.0002": {
+   "globals": "book-pdf.sym",
+   "how": "jbig2 -s -p (embedded page stream)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1100,
+     "jbig2dec_agrees": true,
+     "reference": "book-pdf.0002.0.pbm.gz",
+     "sha1": "383fba664200044fd530d43c1791031f60c2846f",
+     "width": 850
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "book-pdf.sym": {
+   "globals_only": true,
+   "how": "jbig2 -s -p (globals stream)"
+  },
+  "duck-dither-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 480,
+     "jbig2dec_agrees": true,
+     "reference": "duck-dither-generic.jb2.0.pbm.gz",
+     "sha1": "22375d7ab1051b1566ab829b3bb802205f4b053b",
+     "width": 640
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "duck-dither-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 480,
+     "jbig2dec_agrees": true,
+     "reference": "duck-dither-tpgd.jb2.0.pbm.gz",
+     "sha1": "22375d7ab1051b1566ab829b3bb802205f4b053b",
+     "width": 640
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "duck-pdf.0000": {
+   "how": "jbig2 -p (embedded generic page stream)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 480,
+     "jbig2dec_agrees": true,
+     "reference": "duck-pdf.0000.0.pbm.gz",
+     "sha1": "22375d7ab1051b1566ab829b3bb802205f4b053b",
+     "width": 640
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "duck-threshold-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 480,
+     "jbig2dec_agrees": true,
+     "reference": "duck-threshold-generic.jb2.0.pbm.gz",
+     "sha1": "359bed3263db18e32177a6a2e22e9a5dda1cf61f",
+     "width": 640
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "duck-threshold-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 480,
+     "jbig2dec_agrees": true,
+     "reference": "duck-threshold-tpgd.jb2.0.pbm.gz",
+     "sha1": "359bed3263db18e32177a6a2e22e9a5dda1cf61f",
+     "width": 640
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-129x65-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 65,
+     "jbig2dec_agrees": true,
+     "reference": "noise-129x65-generic.jb2.0.pbm.gz",
+     "sha1": "86c769ff80d5106330f8baa7b1daac55cf29a2f4",
+     "width": 129
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-129x65-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 65,
+     "jbig2dec_agrees": true,
+     "reference": "noise-129x65-tpgd.jb2.0.pbm.gz",
+     "sha1": "86c769ff80d5106330f8baa7b1daac55cf29a2f4",
+     "width": 129
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-1x53-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 53,
+     "jbig2dec_agrees": true,
+     "reference": "noise-1x53-generic.jb2.0.pbm.gz",
+     "sha1": "6db50a633ca06517a316b500d7e83c1ccd67694c",
+     "width": 1
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-1x53-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 53,
+     "jbig2dec_agrees": true,
+     "reference": "noise-1x53-tpgd.jb2.0.pbm.gz",
+     "sha1": "6db50a633ca06517a316b500d7e83c1ccd67694c",
+     "width": 1
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-64x64-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 64,
+     "jbig2dec_agrees": true,
+     "reference": "noise-64x64-generic.jb2.0.pbm.gz",
+     "sha1": "9595000f6e69f9bf4cb6978c441ce6da1ea5efd5",
+     "width": 64
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-64x64-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 64,
+     "jbig2dec_agrees": true,
+     "reference": "noise-64x64-tpgd.jb2.0.pbm.gz",
+     "sha1": "9595000f6e69f9bf4cb6978c441ce6da1ea5efd5",
+     "width": 64
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-65x3-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 3,
+     "jbig2dec_agrees": true,
+     "reference": "noise-65x3-generic.jb2.0.pbm.gz",
+     "sha1": "7fffd56bf87c97ce2aaa20c8336b697c83f4edb1",
+     "width": 65
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-65x3-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 3,
+     "jbig2dec_agrees": true,
+     "reference": "noise-65x3-tpgd.jb2.0.pbm.gz",
+     "sha1": "7fffd56bf87c97ce2aaa20c8336b697c83f4edb1",
+     "width": 65
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-67x1-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1,
+     "jbig2dec_agrees": true,
+     "reference": "noise-67x1-generic.jb2.0.pbm.gz",
+     "sha1": "3324c9a046023b67ca328585a70bd69882e47343",
+     "width": 67
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "noise-67x1-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1,
+     "jbig2dec_agrees": true,
+     "reference": "noise-67x1-tpgd.jb2.0.pbm.gz",
+     "sha1": "3324c9a046023b67ca328585a70bd69882e47343",
+     "width": 67
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "shapes-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 150,
+     "jbig2dec_agrees": true,
+     "reference": "shapes-generic.jb2.0.pbm.gz",
+     "sha1": "f1b8d369c51a9a9fb20aca167fab923805c71fd2",
+     "width": 200
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "shapes-lossy.jb2": {
+   "how": "jbig2 -s -t 0.8 (lossy symbol matching)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 150,
+     "jbig2dec_agrees": true,
+     "reference": "shapes-lossy.jb2.0.pbm.gz",
+     "sha1": "f1b8d369c51a9a9fb20aca167fab923805c71fd2",
+     "width": 200
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "shapes-symbol.jb2": {
+   "how": "jbig2 -s (symbol dictionary and text region)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 150,
+     "jbig2dec_agrees": true,
+     "reference": "shapes-symbol.jb2.0.pbm.gz",
+     "sha1": "f1b8d369c51a9a9fb20aca167fab923805c71fd2",
+     "width": 200
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "shapes-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 150,
+     "jbig2dec_agrees": true,
+     "reference": "shapes-tpgd.jb2.0.pbm.gz",
+     "sha1": "f1b8d369c51a9a9fb20aca167fab923805c71fd2",
+     "width": 200
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-page-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1650,
+     "jbig2dec_agrees": true,
+     "reference": "text-page-generic.jb2.0.pbm.gz",
+     "sha1": "359676d32828a8ea6e5805087652b5fb78be115e",
+     "width": 1275
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-page-lossy.jb2": {
+   "how": "jbig2 -s -t 0.8 (lossy symbol matching)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1650,
+     "jbig2dec_agrees": true,
+     "reference": "text-page-lossy.jb2.0.pbm.gz",
+     "sha1": "656d2c4636dd8d3efa7e3c9959f2e5caff7b07ba",
+     "width": 1275
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-page-symbol.jb2": {
+   "how": "jbig2 -s (symbol dictionary and text region)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1650,
+     "jbig2dec_agrees": true,
+     "reference": "text-page-symbol.jb2.0.pbm.gz",
+     "sha1": "6f7b361ef451b1826ffd2735408be9c487b504f7",
+     "width": 1275
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-page-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 1650,
+     "jbig2dec_agrees": true,
+     "reference": "text-page-tpgd.jb2.0.pbm.gz",
+     "sha1": "359676d32828a8ea6e5805087652b5fb78be115e",
+     "width": 1275
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-small-generic.jb2": {
+   "how": "jbig2 (generic region, template 0)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 200,
+     "jbig2dec_agrees": true,
+     "reference": "text-small-generic.jb2.0.pbm.gz",
+     "sha1": "6b9d629aab43f32712bafeb80165029f468815df",
+     "width": 320
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-small-lossy.jb2": {
+   "how": "jbig2 -s -t 0.8 (lossy symbol matching)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 200,
+     "jbig2dec_agrees": true,
+     "reference": "text-small-lossy.jb2.0.pbm.gz",
+     "sha1": "779d1ef014ecf899675cae2d142db5184ada82ce",
+     "width": 320
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-small-symbol.jb2": {
+   "how": "jbig2 -s (symbol dictionary and text region)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 200,
+     "jbig2dec_agrees": true,
+     "reference": "text-small-symbol.jb2.0.pbm.gz",
+     "sha1": "6b9d629aab43f32712bafeb80165029f468815df",
+     "width": 320
+    }
+   ],
+   "pdfium_error": ""
+  },
+  "text-small-tpgd.jb2": {
+   "how": "jbig2 -d (generic region with TPGD)",
+   "jbig2dec_warnings": "",
+   "pages": [
+    {
+     "height": 200,
+     "jbig2dec_agrees": true,
+     "reference": "text-small-tpgd.jb2.0.pbm.gz",
+     "sha1": "6b9d629aab43f32712bafeb80165029f468815df",
+     "width": 320
+    }
+   ],
+   "pdfium_error": ""
+  }
+ },
+ "tools": {
+  "jbig2dec": "jbig2dec 0.20",
+  "jbig2enc": "jbig2enc 0.30",
+  "pypdfium2": "Version: 5.3.0"
+ }
+}

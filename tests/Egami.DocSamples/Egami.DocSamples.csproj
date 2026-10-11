@@ -30,6 +30,9 @@
     <None Include="../images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/duck-cmyk.jpg" Link="images/duck-cmyk.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/tiff/pages3.tif" Link="images/scan.tif" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jbig2/book-3pages-symbol.jb2" Link="images/book.jb2" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jbig2/book-pdf.sym" Link="images/book-globals.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jbig2/book-pdf.0000" Link="images/book-page1.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/synthetic/cmyk-mab-v4.icc" Link="images/cmyk.icc" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

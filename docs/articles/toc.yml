@@ -38,6 +38,8 @@
       href: guides/webp.md
     - name: TIFF
       href: guides/tiff.md
+    - name: JBIG2
+      href: guides/jbig2.md
     - name: Planar YUV
       href: guides/planar-yuv.md
     - name: Custom operations and formats

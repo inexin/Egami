@@ -173,6 +173,50 @@ internal static class CcittFax
         return done * rowBytes;
     }
 
+    /// <summary>
+    /// Decodes MMR as JBIG2 uses it (T.88 6.2.6): Group 4 rows, then an optional EOFB, ending on a byte boundary. Rows that the
+    /// data does not reach stay white. Returns the rows decoded and sets <paramref name="consumed"/> to the bytes used.
+    /// </summary>
+    public static int DecodeMmr(ReadOnlySpan<byte> input, Span<byte> output, int width, int rows, out int consumed)
+    {
+        BitReader bits = new(input);
+        int rowBytes = (width + 7) / 8;
+        int[] a = new int[width + 4];
+        int[] b = new int[width + 4];
+        int referenceCount = 2;
+        b[0] = width;
+        b[1] = width;
+        int done = 0;
+        for (; done < rows; done++)
+        {
+            if (bits.Left >= 24 && bits.Peek(24) == 0x001001)
+            {
+                break;
+            }
+
+            int count = TwoDimensional(ref bits, width, b, referenceCount, a);
+            if (count < 0)
+            {
+                break;
+            }
+
+            Fill(output.Slice(done * rowBytes, rowBytes), a, count, width);
+            (a, b) = (b, a);
+            b[count] = width;
+            b[count + 1] = width;
+            referenceCount = count + 2;
+        }
+
+        if (bits.Left >= 24 && bits.Peek(24) == 0x001001)
+        {
+            bits.Skip(24);
+        }
+
+        bits.Align(8);
+        consumed = (int)(bits.Position >> 3);
+        return done;
+    }
+
     /// <summary>Sets the bits of a row's black runs: changes alternate white to black, black to white.</summary>
     private static void Fill(Span<byte> row, int[] changes, int count, int width)
     {
@@ -361,6 +405,8 @@ internal static class CcittFax
         private long _position;
 
         public readonly long Left => (_data.Length * 8L) - _position;
+
+        public readonly long Position => _position;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly int Peek(int count)
