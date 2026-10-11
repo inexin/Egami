@@ -58,10 +58,10 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `Arithmetic` applies a `PixelMath` operator with a constant, identical to ImageMagick's -evaluate at 8 and 16 bits.
   `Raster.Stack` combines several rasters by mean, median, min or max (`StackMode`) a few rows at a time.
 
-### Streaming decode (in progress)
+### Streaming
 
 - `RasterDecoder`: open an image and read it a band of rows (`ReadRows`) or a frame (`ReadFrame`) at a time, in any pixel
-  type. Formats are decoded into a buffer first for now; `RasterInfo.Access` and `WorkingBytes` say so.
+  type. `RasterInfo.Access` says whether a file streams or is decoded into a buffer first, and `WorkingBytes` what it holds.
 - `ReaderOptions.Region` decodes only a rectangle, for every format, exactly as Load then Crop gives it.
 - `Raster.LoadInto` decodes into a raster the caller already has.
 - PNG, APNG, JPEG, GIF, BMP, TGA, PNM and QOI stream: `RasterDecoder` holds a few rows (or, for animations, one canvas) instead
@@ -88,6 +88,9 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   when the stream can seek.
 - Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at
   least that big, averaging blocks of pixels. JPEG keeps its 1/2, 1/4 and 1/8 IDCT scaling and averages blocks beyond 1/8.
+  The average is bit-identical to a full decode and a box resize, and a quarter-size decode is 1.2 to 2 times as fast as
+  the reference library's `TargetSize` with the Box sampler.
+- `ConvertColorTo` applies to streamed reads too, with the same HDR tone mapping as `ConvertColor`.
 
 ### Metadata
 

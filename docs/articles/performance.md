@@ -6,7 +6,10 @@
   converting afterwards touches every pixel twice.
 - **Use `Derive` for thumbnails.** It reads the source once and writes only the small result; `Copy` then `Apply` copies the full
   image first.
-- **Let JPEG decode small.** `ReaderOptions.MinimumSize` decodes at 1/2, 1/4 or 1/8 scale straight from the DCT.
+- **Decode small.** `ReaderOptions.MinimumSize` decodes JPEG at 1/2, 1/4 or 1/8 scale straight from the DCT, and averages
+  blocks of rows as they are decoded for every other format, so a thumbnail never holds the full image.
+- **Stream large files.** `Raster.Transcode` and `RasterDecoder` hold a few rows instead of the whole image; a leading crop or
+  resize in a transcode chain becomes a decode region or reduction.
 - **Chain operations.** A chain is planned as a whole: a `Crop` before a resize reads only the crop, adjacent color steps run as
   one pass, and `AutoOrient` before a resize turns only the result.
 - **Probe before you load** when you might reject the file.
