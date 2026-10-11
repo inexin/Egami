@@ -71,7 +71,9 @@ internal sealed class TiffPageEncoder<TPixel> : RowEncoder<TPixel>
         }
         else
         {
-            int rows = 65536 / Math.Max(1, _rowBytes);
+            // About 64 KB of uncompressed rows, or 8 KB for LZW, whose table restarts with each strip and adapts better in short ones
+            // (as libtiff's and the reference library's strips are).
+            int rows = (_plan.Compression == TiffCodes.Lzw ? 8192 : 65536) / Math.Max(1, _rowBytes);
             if (_plan.Compression == TiffCodes.Jpeg)
             {
                 // JPEG strips hold whole MCU rows: 16 for 4:2:0, 8 for gray.
