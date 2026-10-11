@@ -9,17 +9,28 @@ using Egami.Pixels;
 namespace Egami.Operations.Compose;
 
 /// <summary>
-/// Draws an area of another raster's first frame onto every frame with Porter–Duff source-over, in place. Only the overlap of the
-/// area, placed at the position, and the destination is touched; the source rows are read from an offset, so no copy is made. With straight alpha, <c>sa</c> = source alpha × opacity and <c>da</c> = destination alpha:
-/// <c>out alpha = sa + da(1 − sa)</c> and <c>out color = (sc·sa + dc·da(1 − sa)) / out alpha</c>.
+/// Draws an area of another raster's first frame onto every frame with a <see cref="BlendMode"/>, in place. Only the overlap of
+/// the area, placed at the position, and the destination is touched; the source rows are read from an offset, so no copy is made.
+/// Source-over on stored values keeps the 1.x kernels: with straight alpha, <c>sa</c> = source alpha × opacity and <c>da</c> =
+/// destination alpha, <c>out alpha = sa + da(1 − sa)</c> and <c>out color = (sc·sa + dc·da(1 − sa)) / out alpha</c>. Every other
+/// mode, and linear light, runs through <see cref="BlendRows{TPixel}"/>.
 /// </summary>
-internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point position, float opacity) : IRasterOperation
+internal sealed class DrawImageOperation(
+    Raster image, Rect sourceArea, Point position, float opacity, BlendMode mode = BlendMode.SourceOver, bool linear = false, Colors.LinearCurve? curve = null)
+    : IRasterOperation, ILinearLight
 {
     /// <summary>Initializes a new instance of the <see cref="DrawImageOperation"/> class that draws the whole image.</summary>
-    public DrawImageOperation(Raster image, Point position, float opacity)
-        : this(image, new Rect(0, 0, image.Width, image.Height), position, opacity)
+    public DrawImageOperation(Raster image, Point position, float opacity, BlendMode mode = BlendMode.SourceOver, bool linear = false)
+        : this(image, new Rect(0, 0, image.Width, image.Height), position, opacity, mode, linear)
     {
     }
+
+    /// <summary>Gets the mode.</summary>
+    internal BlendMode Mode => mode;
+
+    public bool UsesLinearLight => linear;
+
+    public IRasterOperation WithCurve(Colors.LinearCurve curve) => new DrawImageOperation(image, sourceArea, position, opacity, mode, linear, curve);
 
     public Size OutputSize(Size input)
     {
@@ -31,7 +42,7 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
     {
         OperationRows.CopyIfSeparate(input);
         Rect area = new Rect(position.X, position.Y, sourceArea.Width, sourceArea.Height).Intersect(new Rect(0, 0, input.Destination.Width, input.Destination.Height));
-        if (area.IsEmpty || opacity == 0)
+        if (area.IsEmpty || (opacity == 0 && BlendReference.KeepsDestinationAtZeroOpacity(mode)) || mode == BlendMode.Destination)
         {
             return;
         }
@@ -40,7 +51,11 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
         Raster source = image.HasPlane(input.Source) || image.HasPlane(input.Destination) ? image.Derive(_ => { }) : image;
         try
         {
-            if (typeof(TPixel) == typeof(Rgba8) || typeof(TPixel) == typeof(Bgra8))
+            if (mode != BlendMode.SourceOver || linear)
+            {
+                RunBlend(input, source, area);
+            }
+            else if (typeof(TPixel) == typeof(Rgba8) || typeof(TPixel) == typeof(Bgra8))
             {
                 RunBytes(input, source, area);
             }
@@ -60,6 +75,87 @@ internal sealed class DrawImageOperation(Raster image, Rect sourceArea, Point po
                 source.Dispose();
             }
         }
+    }
+
+    /// <summary>Any mode, or linear light, blended by <see cref="BlendRows{TPixel}"/>, which says what type to read the source rows as.</summary>
+    private void RunBlend<TPixel>(OperationInput<TPixel> input, Raster source, Rect area)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        BlendRows<TPixel> rows = new(mode, opacity, linear ? curve ?? Colors.LinearCurve.Srgb : null);
+        int sx = sourceArea.X + area.X - position.X;
+        int sy = sourceArea.Y + area.Y - position.Y;
+        input.ForEachBand((start, end) =>
+        {
+            int from = Math.Max(start, area.Y);
+            int to = Math.Min(end, area.Bottom);
+            if (from >= to)
+            {
+                return;
+            }
+
+            if (rows.TakesPremultipliedSource && source is Raster<TPixel>)
+            {
+                uint[] premultiplied = ArrayPool<uint>.Shared.Rent(area.Width);
+                try
+                {
+                    Span<uint> row = premultiplied.AsSpan(0, area.Width);
+                    for (int y = from; y < to; y++)
+                    {
+                        if (typeof(TPixel) == typeof(Bgra8))
+                        {
+                            source.ReadRow(sy + y - area.Y, sx, MemoryMarshal.Cast<uint, PremulBgra8>(row));
+                        }
+                        else
+                        {
+                            source.ReadRow(sy + y - area.Y, sx, MemoryMarshal.Cast<uint, PremulRgba8>(row));
+                        }
+
+                        rows.BlendPremultiplied(row, input.Destination.Row(y).Slice(area.X, area.Width));
+                    }
+                }
+                finally
+                {
+                    ArrayPool<uint>.Shared.Return(premultiplied);
+                }
+
+                return;
+            }
+
+            if (rows.UsesBytes)
+            {
+                TPixel[] buffer = ArrayPool<TPixel>.Shared.Rent(area.Width);
+                try
+                {
+                    Span<TPixel> row = buffer.AsSpan(0, area.Width);
+                    for (int y = from; y < to; y++)
+                    {
+                        source.ReadRow(sy + y - area.Y, sx, row);
+                        rows.Blend(row, input.Destination.Row(y).Slice(area.X, area.Width));
+                    }
+                }
+                finally
+                {
+                    ArrayPool<TPixel>.Shared.Return(buffer);
+                }
+
+                return;
+            }
+
+            RgbaF32[] straight = ArrayPool<RgbaF32>.Shared.Rent(area.Width);
+            try
+            {
+                Span<RgbaF32> row = straight.AsSpan(0, area.Width);
+                for (int y = from; y < to; y++)
+                {
+                    source.ReadRow(sy + y - area.Y, sx, row);
+                    rows.BlendStraight(row, input.Destination.Row(y).Slice(area.X, area.Width));
+                }
+            }
+            finally
+            {
+                ArrayPool<RgbaF32>.Shared.Return(straight);
+            }
+        });
     }
 
     private void RunBytes<TPixel>(OperationInput<TPixel> input, Raster source, Rect area)

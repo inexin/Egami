@@ -17,6 +17,16 @@ internal static class BlendReference
         return mode >= BlendMode.Multiply;
     }
 
+    /// <summary>
+    /// Gets whether opacity 0 leaves the destination as it is: true for every mode except those whose result depends on where the
+    /// source is (Clear, Source, the In and Out operators, DestinationAtop and Modulate).
+    /// </summary>
+    internal static bool KeepsDestinationAtZeroOpacity(BlendMode mode)
+    {
+        return mode is not (BlendMode.Clear or BlendMode.Source or BlendMode.SourceIn or BlendMode.DestinationIn or BlendMode.SourceOut
+            or BlendMode.DestinationAtop or BlendMode.Modulate);
+    }
+
     /// <summary>Gets whether a mode's blend function mixes channels (Hue, Saturation, Color, Luminosity).</summary>
     internal static bool IsNonSeparable(BlendMode mode)
     {

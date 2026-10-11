@@ -47,6 +47,9 @@ internal interface IChannelLanes<TSelf>
 
     /// <summary>Copies each pixel's alpha lane into its other three lanes.</summary>
     static abstract TSelf BroadcastAlpha(TSelf v);
+
+    /// <summary>Gets whether every lane is zero.</summary>
+    static abstract bool AllZero(TSelf v);
 }
 
 internal readonly struct C128(Vector128<ushort> v) : IChannelLanes<C128>
@@ -95,6 +98,8 @@ internal readonly struct C128(Vector128<ushort> v) : IChannelLanes<C128>
     public static C128 LessOrEqual(C128 a, C128 b) => new(Vector128.LessThanOrEqual(a.V, b.V));
 
     public static C128 Select(C128 mask, C128 a, C128 b) => new(Vector128.ConditionalSelect(mask.V, a.V, b.V));
+
+    public static bool AllZero(C128 v) => v.V == Vector128<ushort>.Zero;
 
     public static C128 BroadcastAlpha(C128 v)
     {
@@ -146,6 +151,8 @@ internal readonly struct C256(Vector256<ushort> v) : IChannelLanes<C256>
     public static C256 LessOrEqual(C256 a, C256 b) => new(Vector256.LessThanOrEqual(a.V, b.V));
 
     public static C256 Select(C256 mask, C256 a, C256 b) => new(Vector256.ConditionalSelect(mask.V, a.V, b.V));
+
+    public static bool AllZero(C256 v) => v.V == Vector256<ushort>.Zero;
 
     public static C256 BroadcastAlpha(C256 v)
     {
@@ -199,6 +206,8 @@ internal readonly struct C512(Vector512<ushort> v) : IChannelLanes<C512>
     public static C512 LessOrEqual(C512 a, C512 b) => new(Vector512.LessThanOrEqual(a.V, b.V));
 
     public static C512 Select(C512 mask, C512 a, C512 b) => new(Vector512.ConditionalSelect(mask.V, a.V, b.V));
+
+    public static bool AllZero(C512 v) => v.V == Vector512<ushort>.Zero;
 
     public static C512 BroadcastAlpha(C512 v)
     {

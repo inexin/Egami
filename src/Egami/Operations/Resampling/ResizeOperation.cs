@@ -340,12 +340,14 @@ internal sealed class ResizeOperation(
 
 /// <summary>
 /// Moves rows between a pixel type and the float working form: four floats per pixel, RGBA in 0..1, encoded or linear,
-/// premultiplied unless the row is opaque. Rgba8, Bgra8 and RgbaF32 have vector paths; other types go through RgbaF32.
+/// premultiplied unless the row is opaque. Rgba8, Bgra8 and RgbaF32 have vector paths; other types go through RgbaF32. CMYK
+/// rows load as their four inks unless <paramref name="inksAsRgb"/> asks for RGB, as blending does.
 /// </summary>
-internal sealed class RowConverter<TPixel>(Colors.LinearCurve? curve)
+internal sealed class RowConverter<TPixel>(Colors.LinearCurve? curve, bool inksAsRgb = false)
     where TPixel : unmanaged, IPixelType<TPixel>
 {
     private readonly bool _linear = curve is not null;
+    private readonly bool _ink = Ink && !inksAsRgb;
 
     private static readonly bool HasAlpha = TPixel.Layout.Alpha != AlphaKind.None;
     private static readonly bool EightBit = TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
@@ -368,7 +370,7 @@ internal sealed class RowConverter<TPixel>(Colors.LinearCurve? curve)
     internal bool Load(ReadOnlySpan<TPixel> source, Span<float> destination)
     {
         Span<float> pixels = destination[..(source.Length * 4)];
-        if (Ink)
+        if (_ink)
         {
             CmykInk.Load(source, pixels);
             return true;
@@ -424,7 +426,7 @@ internal sealed class RowConverter<TPixel>(Colors.LinearCurve? curve)
     internal void Store(Span<float> source, Span<TPixel> destination, bool opaque)
     {
         Span<float> pixels = source[..(destination.Length * 4)];
-        if (Ink)
+        if (_ink)
         {
             CmykInk.Store<TPixel>(pixels, destination);
             return;

@@ -55,6 +55,12 @@ public sealed class OperationCoverageTests : IDisposable
         ["Convolve-Separable"] = (_, _) => ops => ops.Convolve(ConvolutionKernel.Separable([1, 2, 1], [1, 2, 1], divisor: 16), EdgeMode.Wrap),
         ["Convolve-KeepAlpha"] = (_, _) => ops => ops.Convolve(new ConvolutionKernel(3, 3, [0, -1, 0, -1, 4, -1, 0, -1, 0], offset: 0.5f), EdgeMode.Transparent, preserveAlpha: true),
         ["DrawImage"] = (s, logo) => ops => ops.DrawImage(logo, new Point(s.Width / 3, -2), 0.7f),
+        ["DrawImage-Multiply"] = (s, logo) => ops => ops.DrawImage(logo, new Point(s.Width / 4, 1), BlendMode.Multiply, 0.8f),
+        ["DrawImage-DestinationIn"] = (s, logo) => ops => ops.DrawImage(logo, new Point(-1, s.Height / 3), BlendMode.DestinationIn),
+        ["DrawImage-Hue"] = (s, logo) => ops => ops.DrawImage(logo, new Point(s.Width / 3, 0), BlendMode.Hue),
+        ["DrawImage-SoftLight-Linear"] = (s, logo) => ops => ops.DrawImage(logo, new Point(0, 0), BlendMode.SoftLight, 1, ColorSpace.Linear),
+        ["BlendColor"] = (_, _) => ops => ops.BlendColor(new Rgba8(200, 120, 40, 180), BlendMode.Screen),
+        ["DrawArithmetic"] = (s, logo) => ops => ops.DrawArithmetic(logo, new Point(-3, s.Height / 3), 0.2f, 0.5f, 0.6f, 0.01f),
     };
 
     [Theory]

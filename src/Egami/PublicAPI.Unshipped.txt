@@ -528,7 +528,12 @@ Egami.Operations.BlendMode.SourceOut = 7 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.SourceOver = 0 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Subtract = 26 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Xor = 11 -> Egami.Operations.BlendMode
+Egami.Operations.Compositor
+Egami.Operations.RasterOps.BlendColor(Egami.Pixels.Rgba8 color, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, double? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Pixels.Abgr8
 Egami.Pixels.Abgr8.A -> byte
@@ -935,6 +940,11 @@ static Egami.Metadata.XmpArray.Of(Egami.Metadata.XmpArrayKind kind, params Syste
 static Egami.Metadata.XmpData.Parse(System.ReadOnlySpan<byte> packet, Egami.SafetyLimits? limits = null) -> Egami.Metadata.XmpData!
 static Egami.Metadata.XmpName.operator !=(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
 static Egami.Metadata.XmpName.operator ==(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
+static Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode mode, Egami.Pixels.Rgba8 source, Egami.Pixels.Rgba8 destination) -> Egami.Pixels.Rgba8
+static Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode mode, Egami.Pixels.RgbaF32 source, Egami.Pixels.RgbaF32 destination) -> Egami.Pixels.RgbaF32
+static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, Egami.Pixels.Rgba8 color, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
+static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
+static Egami.Operations.Compositor.Blend<TPixel>(Egami.Operations.BlendMode mode, System.ReadOnlySpan<TPixel> source, System.Span<TPixel> destination, System.ReadOnlySpan<byte> coverage, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> void
 static Egami.Pixels.Abgr8.FromRgba8(Egami.Pixels.Rgba8 value) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.FromScaled(System.Numerics.Vector4 rgba) -> Egami.Pixels.Abgr8
 static Egami.Pixels.Abgr8.Layout.get -> Egami.Pixels.PixelLayoutInfo

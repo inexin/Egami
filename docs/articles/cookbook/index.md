@@ -56,6 +56,22 @@ profiles while they decode; files with no color information are taken as sRGB an
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#packed-framebuffer)]
 
+## Watermark with Multiply
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#watermark-multiply)]
+
+A dark logo drawn with `Multiply` reads as ink on the photo: light areas of the logo leave the photo unchanged.
+
+## Tint a photo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#tint)]
+
+## Blend a row in a custom operation
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#blend-row)]
+
+`Compositor.Blend` works on any pixel type, so one custom step serves every raster.
+
 ## Strip metadata
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#strip)]

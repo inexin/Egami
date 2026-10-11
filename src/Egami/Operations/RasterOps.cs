@@ -500,6 +500,121 @@ public sealed class RasterOps
         return Add(new DrawImageOperation(image, clipped, shifted, opacity));
     }
 
+    /// <summary>
+    /// Draws <paramref name="image"/> onto this raster with its top-left corner at <paramref name="position"/>, combining each pixel
+    /// with the one under it by <paramref name="mode"/>. Only the overlap of the image and this raster changes, as when drawing a
+    /// layer: <see cref="BlendMode.SourceIn"/> and <see cref="BlendMode.DestinationIn"/> do not clear what lies outside the image.
+    /// <see cref="BlendMode.SourceOver"/> on stored values gives exactly what <see cref="DrawImage(Raster, Point, float)"/> gives.
+    /// </summary>
+    /// <param name="image">The image to draw, of any pixel type. It must stay undisposed until the chain has run; its first frame is drawn onto every frame.</param>
+    /// <param name="position">Where its top-left corner goes; may be negative.</param>
+    /// <param name="mode">How each pixel combines with the one under it.</param>
+    /// <param name="opacity">Multiplies the image's alpha before the mode: 1 draws it as it is.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>, as browsers and editors blend.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="opacity"/> is outside 0..1, or an enum value is not defined.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Blending.cs" region="draw-image-mode"/>
+    /// </example>
+    public RasterOps DrawImage(Raster image, Point position, BlendMode mode, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        CheckBlend(mode, opacity, colorSpace);
+        return Add(new DrawImageOperation(image, position, opacity, mode, colorSpace == ColorSpace.Linear));
+    }
+
+    /// <summary>
+    /// Draws the part of <paramref name="image"/> inside <paramref name="sourceArea"/> onto this raster with that part's top-left
+    /// corner at <paramref name="position"/>, combining pixels by <paramref name="mode"/> as
+    /// <see cref="DrawImage(Raster, Point, BlendMode, float, ColorSpace)"/> does for the whole image.
+    /// </summary>
+    /// <param name="image">The image to draw from. It must stay undisposed until the chain has run.</param>
+    /// <param name="sourceArea">The part of the image to draw, clipped to the image.</param>
+    /// <param name="position">Where the area's top-left corner goes; may be negative.</param>
+    /// <param name="mode">How each pixel combines with the one under it.</param>
+    /// <param name="opacity">Multiplies the image's alpha before the mode: 1 draws it as it is.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="sourceArea"/> does not overlap the image, <paramref name="opacity"/> is outside 0..1, or an enum value is not defined.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Blending.cs" region="draw-image-mode"/>
+    /// </example>
+    public RasterOps DrawImage(Raster image, Rect sourceArea, Point position, BlendMode mode, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        CheckBlend(mode, opacity, colorSpace);
+        Rect clipped = sourceArea.Intersect(new Rect(0, 0, image.Width, image.Height));
+        if (clipped.IsEmpty)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sourceArea), sourceArea, $"The area does not overlap the {image.Width}×{image.Height} image.");
+        }
+
+        Point shifted = new(position.X + clipped.X - sourceArea.X, position.Y + clipped.Y - sourceArea.Y);
+        return Add(new DrawImageOperation(image, clipped, shifted, opacity, mode, colorSpace == ColorSpace.Linear));
+    }
+
+    /// <summary>
+    /// Blends one color over every pixel by <paramref name="mode"/>: <see cref="BlendMode.Multiply"/> tints, <see cref="BlendMode.Screen"/>
+    /// washes out, <see cref="BlendMode.Color"/> colorizes. The color's own alpha and <paramref name="opacity"/> set how strongly.
+    /// </summary>
+    /// <param name="color">The color, with straight alpha.</param>
+    /// <param name="mode">How the color combines with each pixel.</param>
+    /// <param name="opacity">Multiplies the color's alpha before the mode: 1 uses it as it is.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="opacity"/> is outside 0..1, or an enum value is not defined.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Blending.cs" region="blend-color"/>
+    /// </example>
+    public RasterOps BlendColor(Rgba8 color, BlendMode mode, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        CheckBlend(mode, opacity, colorSpace);
+        return Add(new BlendColorOperation(color, mode, opacity, colorSpace == ColorSpace.Linear));
+    }
+
+    /// <summary>
+    /// Draws <paramref name="image"/> with the arithmetic composite (SVG's feComposite arithmetic operator, Skia's arithmetic blender):
+    /// each channel of the premultiplied result is k1·S·D + k2·S + k3·D + k4, with S the image and D this raster, in 0..1. Only the
+    /// overlap changes. k2 = k3 = 0.5 averages the two; k1 = 1 multiplies them.
+    /// </summary>
+    /// <param name="image">The image to draw. It must stay undisposed until the chain has run; its first frame is drawn onto every frame.</param>
+    /// <param name="position">Where its top-left corner goes; may be negative.</param>
+    /// <param name="k1">The weight of the product S·D.</param>
+    /// <param name="k2">The weight of S.</param>
+    /// <param name="k3">The weight of D.</param>
+    /// <param name="k4">The constant added.</param>
+    /// <param name="clamp">
+    /// Whether each result is kept a valid premultiplied pixel: every channel in 0..1 and color no higher than alpha. Without it, only
+    /// the pixel type's own range applies.
+    /// </param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">A weight is not finite.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Blending.cs" region="draw-arithmetic"/>
+    /// </example>
+    public RasterOps DrawArithmetic(Raster image, Point position, float k1, float k2, float k3, float k4, bool clamp = true)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        CheckWeight(k1, nameof(k1));
+        CheckWeight(k2, nameof(k2));
+        CheckWeight(k3, nameof(k3));
+        CheckWeight(k4, nameof(k4));
+        return Add(new DrawArithmeticOperation(image, position, k1, k2, k3, k4, clamp));
+
+        static void CheckWeight(float k, string name)
+        {
+            if (!float.IsFinite(k))
+            {
+                throw new ArgumentOutOfRangeException(name, k, "The weight must be finite.");
+            }
+        }
+    }
+
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
     internal const float LargeSigma = 100;
 
@@ -524,6 +639,21 @@ public sealed class RasterOps
         }
 
         return radii;
+    }
+
+    private static void CheckBlend(BlendMode mode, float opacity, ColorSpace colorSpace)
+    {
+        if (!Enum.IsDefined(mode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(mode), mode, "The blend mode is not defined.");
+        }
+
+        if (!(opacity >= 0 && opacity <= 1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(opacity), opacity, "Opacity must be from 0 to 1.");
+        }
+
+        CheckFilter(ResampleFilter.Bicubic, colorSpace);
     }
 
     private static void CheckSigma(float sigma)

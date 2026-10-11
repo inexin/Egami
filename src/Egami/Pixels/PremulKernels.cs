@@ -24,7 +24,8 @@ internal static class PremulKernels
         {
             for (; i + 8 <= source.Length; i += 8)
             {
-                Premultiply(Vector256.LoadUnsafe(ref src, (nuint)i)).StoreUnsafe(ref dst, (nuint)i);
+                Vector256<uint> p = Vector256.LoadUnsafe(ref src, (nuint)i);
+                (Vector256.GreaterThanOrEqualAll(p, Vector256.Create(0xFF000000u)) ? p : Premultiply(p)).StoreUnsafe(ref dst, (nuint)i);
             }
         }
 
@@ -50,7 +51,10 @@ internal static class PremulKernels
         {
             for (; i + 8 <= source.Length; i += 8)
             {
-                Unpremultiply(Vector256.LoadUnsafe(ref src, (nuint)i)).StoreUnsafe(ref dst, (nuint)i);
+                Vector256<uint> p = Vector256.LoadUnsafe(ref src, (nuint)i);
+                Vector256<uint> result = Vector256.GreaterThanOrEqualAll(p, Vector256.Create(0xFF000000u)) ? p
+                    : Vector256.LessThanAll(p, Vector256.Create(0x01000000u)) ? Vector256<uint>.Zero : Unpremultiply(p);
+                result.StoreUnsafe(ref dst, (nuint)i);
             }
         }
 

@@ -148,6 +148,11 @@ internal static class BlendKernels
                 sv = Scale(sv, TU.Splat((uint)c.Opacity255));
             }
 
+            if (c.SkipsTransparent && TU.AllZero(sv >> 24))
+            {
+                continue;
+            }
+
             TU result = Float<TU, TF>(in c, sv, dv);
             if (c.Covered)
             {
@@ -288,6 +293,11 @@ internal static class BlendKernels
         for (; i + TC.Pixels <= n; i += TC.Pixels)
         {
             TC sv = LoadSource(in c, ref s, i, solid);
+            if (c.SkipsTransparent && TC.AllZero(TC.BroadcastAlpha(sv)))
+            {
+                continue;
+            }
+
             TC dv = TC.Load(ref d, (nuint)i);
             TC result;
             if (c.Mode == BlendMode.Plus)
@@ -325,8 +335,15 @@ internal static class BlendKernels
         for (; i + TC.Pixels <= n; i += TC.Pixels)
         {
             TC sv = LoadSource(in c, ref s, i, solid);
+            TC sa = TC.BroadcastAlpha(sv);
+            if (TC.AllZero(sa))
+            {
+                // A transparent source leaves the destination as it is in every blend mode.
+                continue;
+            }
+
             TC dv = TC.Load(ref d, (nuint)i);
-            TC sa = TC.BroadcastAlpha(sv), da = TC.BroadcastAlpha(dv);
+            TC da = TC.BroadcastAlpha(dv);
             TC cs = TC.Min(sv, sa), cb = TC.Min(dv, da);
             TC m = TC.Select(alphaLanes, sa * da, TMode.M(cs, cb, sa, da));
             TC result = Div255C((cs * (full - da)) + (cb * (full - sa)) + m);
@@ -655,6 +672,7 @@ internal static class BlendKernels
         internal readonly bool Solid;
         internal readonly bool Covered;
         internal readonly bool Integer;
+        internal readonly bool SkipsTransparent;
         internal readonly uint Ka0, Ka1, Kb0, Kb1;
         internal readonly float LumR, LumG, LumB;
 
@@ -665,6 +683,7 @@ internal static class BlendKernels
             Solid = solid;
             Covered = covered;
             Integer = IsInteger(mode);
+            SkipsTransparent = BlendReference.KeepsDestinationAtZeroOpacity(mode);
             Coefficients(mode, out float ka0, out float ka1, out float kb0, out float kb1);
             Ka0 = (uint)(ka0 * 255);
             Ka1 = unchecked((uint)(int)ka1);

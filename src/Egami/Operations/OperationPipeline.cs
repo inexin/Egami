@@ -242,6 +242,12 @@ internal static class OperationPipeline
                     continue;
                 }
 
+                // Drawing with Destination keeps every pixel as it is.
+                if (steps[i] is Compose.DrawImageOperation { Mode: BlendMode.Destination } or Compose.BlendColorOperation { Mode: BlendMode.Destination })
+                {
+                    continue;
+                }
+
                 if (steps[i] is ColorMatrixOperation color && planned.Count > 0 && planned[^1] is ColorMatrixOperation previous)
                 {
                     planned[^1] = previous.Then(color);
