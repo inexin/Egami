@@ -105,3 +105,13 @@ metadata/synthetic/
 ../reference/metadata/
   ExifTool's reading of every file above (exiftool -j -a -G1 -struct -n), made by tools/make-metadata-references.py. Public
   domain, as the files.
+
+webp/
+  WebP files made by tools/make-webp-references.py with libwebp 1.3.2 (its encoder through tools/webpref/webpref.c, img2webp,
+  gif2webp and webpmux) from ops/duck.png, ops/egret.png, ops/shapes.png, ops/zone.png, pngsuite/basn6a08.png and basn4a08.png,
+  gif/ and apng/ above, with icc/compact/DisplayP3-v4.icc and the EXIF block of jpeg/exif-tags.jpg. Same licenses as their
+  sources. libwebp's own test-data files are not included.
+
+../reference/webp/
+  libwebp 1.3.2's decodes of the files above (RGBA, raw YUV planes and composed animation frames), and its reading of their
+  headers, made by tools/make-webp-references.py. Same licenses as the files.
