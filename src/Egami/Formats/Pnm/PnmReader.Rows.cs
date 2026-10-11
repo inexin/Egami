@@ -103,6 +103,7 @@ internal sealed partial class PnmReader : IRowSourceReader, IIncrementalFormatRe
         private int _frame = -1;
         private int _next;
         private int _failedAt = -1;
+        private byte[]? _narrow;
         private bool _ended;
         private bool _disposed;
 
@@ -193,6 +194,16 @@ internal sealed partial class PnmReader : IRowSourceReader, IIncrementalFormatRe
             if (_failedAt >= 0 && y >= _failedAt)
             {
                 destination.Clear();
+                return;
+            }
+
+            if (typeof(TNatural) == typeof(Gray16) && TPixel.Layout.ChannelType == PixelChannelType.Unorm8)
+            {
+                // 16-bit gray to an 8-bit type narrows first and takes the fast 8-bit conversion, as Load does.
+                Span<byte> narrow = _narrow ??= new byte[_header.Width];
+                narrow = narrow[..destination.Length];
+                Decoder<Gray16>.Narrow(MemoryMarshal.Cast<TNatural, ushort>(Row.Slice(x, destination.Length)), narrow);
+                PixelConvert.Convert<Gray8, TPixel>(MemoryMarshal.Cast<byte, Gray8>(narrow), destination);
                 return;
             }
 

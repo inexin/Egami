@@ -65,6 +65,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private short[]? _pullCoefficients;
     private byte[]? _pullHasAc;
     private int _pullBlocks;
+    private int _pullSlots = 1;
+    private Task? _producer;
+    private SemaphoreSlim? _filled;
+    private SemaphoreSlim? _free;
+    private bool _stopProducer;
+    private System.Runtime.ExceptionServices.ExceptionDispatchInfo? _producerFailure;
     private int _transformed = -1;
     private int _firstNeeded;
     private EgamiInput? _input;
@@ -256,8 +262,21 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
             _reader.BeginScan();
             _pullState = new EntropyState(count);
-            _pullCoefficients = ArrayPool<short>.Shared.Rent(_pullBlocks * 64);
-            _pullHasAc = ArrayPool<byte>.Shared.Rent(_pullBlocks);
+
+            // A large image read whole and from the top entropy-decodes on another thread a few MCU rows ahead, as Load does,
+            // while the caller's thread transforms and converts.
+            bool parallel = !input.Incremental && _firstNeeded == 0 && input.Context.MaxParallelism > 1 && _mcusY >= 4
+                && (ForcePipeline || (_blockSize == 8 && (long)_header.Width * _header.Height >= ParallelPixels));
+            _pullSlots = parallel ? PipelineSlots : 1;
+            _pullCoefficients = ArrayPool<short>.Shared.Rent(_pullSlots * _pullBlocks * 64);
+            _pullHasAc = ArrayPool<byte>.Shared.Rent(_pullSlots * _pullBlocks);
+            if (parallel)
+            {
+                _filled = new SemaphoreSlim(0);
+                _free = new SemaphoreSlim(_pullSlots);
+                _producer = Task.Factory.StartNew(Produce, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }
+
             return;
         }
 
@@ -446,9 +465,20 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
                         continue;
                     }
 
-                    RowSlot slot = new(_pullCoefficients!, 0, _pullHasAc!, 0, _pullFirstBlock);
-                    DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, state, slot);
-                    TransformRow(next, _pullOrder, slot);
+                    if (_producer is not null)
+                    {
+                        // The row was entropy-decoded ahead on the producer thread.
+                        _filled!.Wait();
+                        _producerFailure?.Throw();
+                        TransformRow(next, _pullOrder, PullSlot(next));
+                        _free!.Release();
+                    }
+                    else
+                    {
+                        RowSlot slot = PullSlot(0);
+                        DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, state, slot);
+                        TransformRow(next, _pullOrder, slot);
+                    }
                 }
                 catch (Streaming.NeedsInputException) when (incremental)
                 {
@@ -466,6 +496,62 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
             _transformed = next;
         }
+    }
+
+    /// <summary>Gets the coefficient slot MCU row <paramref name="my"/> is decoded into.</summary>
+    private RowSlot PullSlot(int my)
+    {
+        int slot = my % _pullSlots;
+        return new RowSlot(_pullCoefficients!, slot * _pullBlocks * 64, _pullHasAc!, slot * _pullBlocks, _pullFirstBlock);
+    }
+
+    /// <summary>Entropy-decodes every MCU row in order into the slots, waiting for a free one each time; runs on its own thread.</summary>
+    private void Produce()
+    {
+        try
+        {
+            for (int my = 0; my < _mcusY; my++)
+            {
+                _free!.Wait();
+                if (Volatile.Read(ref _stopProducer))
+                {
+                    return;
+                }
+
+                DecodeRow(_reader!, _pullDc, _pullAc, _pullOrder, _pullState!, PullSlot(my));
+                _filled!.Release();
+            }
+        }
+        catch (Exception e)
+        {
+            // The reading side sees the failure at its next row instead of waiting for a filled slot forever.
+            _producerFailure = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e);
+            _filled!.Release();
+        }
+    }
+
+    /// <summary>Stops the producer thread, if any, and waits for it, before the reader and the slots go away.</summary>
+    private void StopProducer()
+    {
+        if (_producer is null)
+        {
+            return;
+        }
+
+        Volatile.Write(ref _stopProducer, true);
+        _free!.Release();
+        try
+        {
+            _producer.Wait();
+        }
+        catch (AggregateException)
+        {
+            // Reported to the reading side, if it was still reading.
+        }
+
+        _producer = null;
+        _filled!.Dispose();
+        _free.Dispose();
     }
 
     /// <summary>
@@ -607,6 +693,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
     public void Dispose()
     {
+        StopProducer();
         _reader?.Dispose();
         _reader = null;
         if (_pullCoefficients is not null)

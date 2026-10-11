@@ -159,6 +159,58 @@ public class JpegDecodeTests(ITestOutputHelper output)
         Assert.Equal(serial.Metadata.Warnings, pipelined.Metadata.Warnings);
     }
 
+    [Theory]
+    [MemberData(nameof(Sequential))]
+    public void PulledRowsDecodeTheSameOnTheEntropyThread(string file)
+    {
+        byte[] whole = File.ReadAllBytes(Path.Combine(Images, file));
+        foreach ((byte[] data, RecoveryMode mode) in (ValueTuple<byte[], RecoveryMode>[])[(whole, RecoveryMode.Lenient), (whole, RecoveryMode.Strict), (whole[..(whole.Length / 2)], RecoveryMode.Lenient), (whole[..(whole.Length / 2)], RecoveryMode.Strict)])
+        {
+            ReaderOptions options = new() { Recovery = mode };
+            EgamiContext serialContext = EgamiContext.Default with { MaxParallelism = 1 };
+            string? serialError = null;
+            Raster<Rgb8>? serial = null;
+            try
+            {
+                // The same rows pulled on one thread, which the other tests check against Load.
+                using RasterDecoder one = RasterDecoder.Open(data, serialContext, options);
+                serial = one.ReadFrame<Rgb8>()!;
+                serial.Metadata.ReplaceWith(one.Metadata);
+            }
+            catch (CorruptDataException e)
+            {
+                serialError = e.Message;
+            }
+
+            JpegReader.ForcePullPipeline = true;
+            try
+            {
+                EgamiContext parallel = EgamiContext.Default with { MaxParallelism = 4 };
+                if (serialError is not null)
+                {
+                    CorruptDataException e = Assert.Throws<CorruptDataException>(() =>
+                    {
+                        using RasterDecoder failing = RasterDecoder.Open(data, parallel, options);
+                        failing.ReadFrame<Rgb8>()?.Dispose();
+                    });
+                    Assert.Equal(serialError, e.Message);
+                    continue;
+                }
+
+                using RasterDecoder decoder = RasterDecoder.Open(data, parallel, options);
+
+                using Raster<Rgb8> pulled = decoder.ReadFrame<Rgb8>()!;
+                Assert.Equal(Bytes(serial!), Bytes(pulled));
+                Assert.Equal(serial!.Metadata.Warnings, decoder.Metadata.Warnings);
+            }
+            finally
+            {
+                JpegReader.ForcePullPipeline = false;
+                serial?.Dispose();
+            }
+        }
+    }
+
     [Fact]
     public void ThePipelineReportsDamageLikeOneThread()
     {

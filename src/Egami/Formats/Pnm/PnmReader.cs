@@ -563,7 +563,7 @@ internal sealed partial class PnmReader : IFormatReader
         }
 
         /// <summary>Narrows 16-bit samples to the nearest 8-bit value, as Gray16 to Gray8 does: (v × 255 + 32895) >> 16.</summary>
-        private static void Narrow(ReadOnlySpan<ushort> samples, Span<byte> output)
+        internal static void Narrow(ReadOnlySpan<ushort> samples, Span<byte> output)
         {
             int x = 0;
             if (Vector256.IsHardwareAccelerated)

@@ -296,9 +296,11 @@ internal sealed class PngUnpacker
 
         ReadOnlySpan<byte> indices = Indices(scanline, destination.Length);
         ref TPixel entries = ref MemoryMarshal.GetArrayDataReference(table);
+        ref TPixel target = ref MemoryMarshal.GetReference(destination[..indices.Length]);
+        ref byte index = ref MemoryMarshal.GetReference(indices);
         for (int x = 0; x < indices.Length; x++)
         {
-            destination[x] = Unsafe.Add(ref entries, indices[x]);
+            Unsafe.Add(ref target, x) = Unsafe.Add(ref entries, Unsafe.Add(ref index, x));
         }
 
         return true;

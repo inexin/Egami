@@ -18,6 +18,12 @@ public class StreamingBenchmarks
     [ParamsSource(nameof(Scenarios))]
     public string Scenario { get; set; } = string.Empty;
 
+    /// <summary>Gets or sets 1 for one thread, 0 for all cores: the speed gate holds at both.</summary>
+    [Params(1, 0)]
+    public int Threads { get; set; }
+
+    private EgamiContext Context => Threads == 1 ? OneThread : EgamiContext.Default;
+
     public static IEnumerable<string> Scenarios =>
     [
         "png:Photo-RGBA8", "png:Screenshot-RGB8", "png:Palette8", "png:Adam7-RGBA8",
@@ -41,14 +47,14 @@ public class StreamingBenchmarks
     [Benchmark(Baseline = true)]
     public int Load()
     {
-        using Raster<Rgba8> raster = Raster.Load<Rgba8>(_file, OneThread);
+        using Raster<Rgba8> raster = Raster.Load<Rgba8>(_file, Context);
         return raster.Width;
     }
 
     [Benchmark]
     public int ReadRows()
     {
-        using RasterDecoder decoder = RasterDecoder.Open(_file, OneThread);
+        using RasterDecoder decoder = RasterDecoder.Open(_file, Context);
         using Raster<Rgba8> band = Raster.Create<Rgba8>(decoder.Info.Width, 64);
         int rows = 0;
         int n;

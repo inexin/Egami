@@ -11,6 +11,10 @@ namespace Egami.Formats.Jpeg;
 /// </content>
 internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatReader
 {
+    /// <summary>Gets or sets, for tests on this thread, whether row sources use the entropy-decoding thread at any image size.</summary>
+    [ThreadStatic]
+    internal static bool ForcePullPipeline;
+
     public HeaderState HeaderStatus(EgamiInput input, ReaderOptions options)
     {
         // SOI, then marker segments by their lengths, through the first SOS, which is where Open stops. A progressive frame, or a
@@ -115,7 +119,7 @@ internal sealed partial class JpegReader : IRowSourceReader, IIncrementalFormatR
             NativeScale = plan.NativeScale;
             CopyMetadata(header, Metadata);
             bool fast = options is JpegReaderOptions { FastUpsampling: true };
-            _decoder = new JpegDecoder<Rgb8>(header, options, Metadata.WarningList, fast, NativeScale);
+            _decoder = new JpegDecoder<Rgb8>(header, options, Metadata.WarningList, fast, NativeScale) { ForcePipeline = ForcePullPipeline };
             WorkingBytes = _decoder.WorkingBytes(Buffered(header));
         }
 
