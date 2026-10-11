@@ -34,6 +34,7 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     private readonly JpegHeader _header;
     private readonly ReaderOptions _options;
     private readonly Raster<TPixel>? _raster;
+    private readonly YuvRaster<byte>? _planes;
     private readonly List<string> _warnings;
     private readonly Component[] _components;
     private readonly int _maxH;
@@ -76,21 +77,32 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
 
     /// <summary>Creates a decoder whose output is the image scaled by 1/<paramref name="scale"/> (1, 2, 4 or 8).</summary>
     internal JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel> raster, bool fastUpsampling, int scale = 1)
-        : this(header, options, raster, raster.Metadata.WarningList, fastUpsampling, scale)
+        : this(header, options, raster, null, raster.Metadata.WarningList, fastUpsampling, scale)
     {
     }
 
     /// <summary>Creates a decoder for pull mode, with no raster: rows come from <see cref="ReadRow"/>, warnings go to <paramref name="warnings"/>.</summary>
     internal JpegDecoder(JpegHeader header, ReaderOptions options, List<string> warnings, bool fastUpsampling, int scale)
-        : this(header, options, null, warnings, fastUpsampling, scale)
+        : this(header, options, null, null, warnings, fastUpsampling, scale)
     {
     }
 
-    private JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel>? raster, List<string> warnings, bool fastUpsampling, int scale)
+    /// <summary>
+    /// Creates a decoder that writes the components' samples, after the IDCT and before upsampling and color conversion, into the
+    /// planes of <paramref name="planes"/>. Chroma keeps its own resolution when the planes' format matches the file's sampling;
+    /// otherwise it is replicated up to the planes' (4:4:4).
+    /// </summary>
+    internal JpegDecoder(JpegHeader header, ReaderOptions options, YuvRaster<byte> planes, int scale)
+        : this(header, options, null, planes, planes.Metadata.WarningList, fastUpsampling: true, scale)
+    {
+    }
+
+    private JpegDecoder(JpegHeader header, ReaderOptions options, Raster<TPixel>? raster, YuvRaster<byte>? planes, List<string> warnings, bool fastUpsampling, int scale)
     {
         _header = header;
         _options = options;
         _raster = raster;
+        _planes = planes;
         _warnings = warnings;
         _fast = fastUpsampling;
         bool single = header.Components.Length == 1;
@@ -120,9 +132,10 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             }
 
             // Subsampled components are scaled up in the IDCT where they can be, a doubling at a time while it still divides
-            // evenly in both directions, so a scaled decode upsamples less or not at all; this is libjpeg's choice too.
+            // evenly in both directions, so a scaled decode upsamples less or not at all; this is libjpeg's choice too. Planes keep
+            // every component at the scale asked for, as libjpeg's raw output does.
             int size = _blockSize;
-            while (size < 8 && (_maxH * _blockSize) % (h * size * 2) == 0 && (_maxV * _blockSize) % (v * size * 2) == 0)
+            while (planes is null && size < 8 && (_maxH * _blockSize) % (h * size * 2) == 0 && (_maxV * _blockSize) % (v * size * 2) == 0)
             {
                 size *= 2;
             }
@@ -1433,6 +1446,12 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
     /// <summary>Upsamples, converts and writes the output rows of MCU row <paramref name="my"/>, using its neighbors for context.</summary>
     private void EmitRows(int my)
     {
+        if (_planes is not null)
+        {
+            EmitPlanes(_planes, my);
+            return;
+        }
+
         int first = my * _mcuRows;
         int last = Math.Min(_height, first + _mcuRows);
         int count = _components.Length;
@@ -1443,6 +1462,38 @@ internal sealed class JpegDecoder<TPixel> : IDisposable
             ReadOnlySpan<byte> c = count > 2 ? SampleRow(2, y) : default;
             ReadOnlySpan<byte> k = count > 3 ? SampleRow(3, y) : default;
             WriteRow(y, a, b, c, k);
+        }
+    }
+
+    /// <summary>
+    /// Copies the samples of MCU row <paramref name="my"/> into the planes: each component's own rows when its plane has its
+    /// resolution, else rows replicated up to luma resolution.
+    /// </summary>
+    private void EmitPlanes(YuvRaster<byte> planes, int my)
+    {
+        int first = my * _mcuRows;
+        int last = Math.Min(_height, first + _mcuRows);
+        for (int index = 0; index < _components.Length; index++)
+        {
+            YuvPlane<byte> plane = index == 0 ? planes.Y : index == 1 ? planes.U! : planes.V!;
+            Component c = _components[index];
+            if (plane.Width == _width && plane.Height == _height && (c.HorizontalRatio != 1 || c.VerticalRatio != 1))
+            {
+                for (int y = first; y < last; y++)
+                {
+                    SampleRow(index, y).CopyTo(plane.Row(y));
+                }
+
+                continue;
+            }
+
+            // The component's own rows: the MCU row covers whole sample rows of every component.
+            int vr = c.VerticalRatio;
+            int end = Math.Min(plane.Height, (last + vr - 1) / vr);
+            for (int row = first / vr; row < end; row++)
+            {
+                c.Row(row)[..plane.Width].CopyTo(plane.Row(row));
+            }
         }
     }
 

@@ -436,7 +436,7 @@ internal static class FormatPipeline
         }
     }
 
-    private static T Run<T>(Stream stream, EgamiContext context, Func<FormatInfo, EgamiInput, T> read, CancellationToken cancellationToken)
+    internal static T Run<T>(Stream stream, EgamiContext context, Func<FormatInfo, EgamiInput, T> read, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(stream);
         EgamiInput input = new(stream, context, cancellationToken);

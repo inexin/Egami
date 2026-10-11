@@ -841,6 +841,20 @@ Egami.YuvRaster<TSample>.A.get -> Egami.YuvPlane<TSample>?
 Egami.YuvRaster<TSample>.U.get -> Egami.YuvPlane<TSample>?
 Egami.YuvRaster<TSample>.V.get -> Egami.YuvPlane<TSample>?
 Egami.YuvRaster<TSample>.Y.get -> Egami.YuvPlane<TSample>!
+Egami.YuvRasterInfo
+Egami.YuvRasterInfo.<Clone>$() -> Egami.YuvRasterInfo!
+Egami.YuvRasterInfo.BitDepth.get -> int
+Egami.YuvRasterInfo.BitDepth.init -> void
+Egami.YuvRasterInfo.CanLoad.get -> bool
+Egami.YuvRasterInfo.ChromaFormat.get -> Egami.Pixels.ChromaFormat?
+Egami.YuvRasterInfo.ChromaFormat.init -> void
+Egami.YuvRasterInfo.Color.get -> Egami.Pixels.YuvColor?
+Egami.YuvRasterInfo.Color.init -> void
+Egami.YuvRasterInfo.Deconstruct(out Egami.Formats.RasterInfo! Info, out Egami.Pixels.ChromaFormat? ChromaFormat, out int BitDepth, out Egami.Pixels.YuvColor? Color) -> void
+Egami.YuvRasterInfo.Equals(Egami.YuvRasterInfo? other) -> bool
+Egami.YuvRasterInfo.Info.get -> Egami.Formats.RasterInfo!
+Egami.YuvRasterInfo.Info.init -> void
+Egami.YuvRasterInfo.YuvRasterInfo(Egami.Formats.RasterInfo! Info, Egami.Pixels.ChromaFormat? ChromaFormat, int BitDepth, Egami.Pixels.YuvColor? Color) -> void
 override Egami.Colors.Chromaticity.GetHashCode() -> int
 override Egami.Colors.CmykColor.GetHashCode() -> int
 override Egami.Colors.ColorCodePoints.GetHashCode() -> int
@@ -927,6 +941,9 @@ override Egami.YuvConvertOptions.Equals(object? obj) -> bool
 override Egami.YuvConvertOptions.GetHashCode() -> int
 override Egami.YuvConvertOptions.ToString() -> string!
 override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
+override Egami.YuvRasterInfo.Equals(object? obj) -> bool
+override Egami.YuvRasterInfo.GetHashCode() -> int
+override Egami.YuvRasterInfo.ToString() -> string!
 static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.operator !=(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
@@ -1155,8 +1172,16 @@ static Egami.YuvRaster.Create(int width, int height, Egami.Pixels.ChromaFormat c
 static Egami.YuvRaster.Create(int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, bool alpha = false, Egami.EgamiContext? context = null) -> Egami.YuvRaster<ushort>!
 static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, Egami.Pixels.YuvColor color, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<byte>!
 static Egami.YuvRaster.FromRaster(Egami.Raster! source, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, Egami.YuvConvertOptions? options = null) -> Egami.YuvRaster<ushort>!
+static Egami.YuvRaster.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRaster!
+static Egami.YuvRaster.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRaster!
+static Egami.YuvRaster.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRaster!
+static Egami.YuvRaster.Probe(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRasterInfo!
+static Egami.YuvRaster.Probe(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRasterInfo!
+static Egami.YuvRaster.Probe(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.YuvRasterInfo!
 static Egami.YuvRaster.Wrap<TSample>(System.Memory<TSample> y, int yStride, System.Memory<TSample> u, int uStride, System.Memory<TSample> v, int vStride, int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, System.IDisposable? owner = null, Egami.EgamiContext? context = null) -> Egami.YuvRaster<TSample>!
 static Egami.YuvRaster.Wrap<TSample>(System.Memory<TSample> y, int yStride, System.Memory<TSample> u, int uStride, System.Memory<TSample> v, int vStride, System.Memory<TSample> alpha, int alphaStride, int width, int height, Egami.Pixels.ChromaFormat chromaFormat, int bitDepth, Egami.Pixels.YuvColor color, System.IDisposable? owner = null, Egami.EgamiContext? context = null) -> Egami.YuvRaster<TSample>!
+static Egami.YuvRasterInfo.operator !=(Egami.YuvRasterInfo? left, Egami.YuvRasterInfo? right) -> bool
+static Egami.YuvRasterInfo.operator ==(Egami.YuvRasterInfo? left, Egami.YuvRasterInfo? right) -> bool
 static readonly Egami.Metadata.ExifKey.GpsAreaInformation -> Egami.Metadata.ExifKey
 static readonly Egami.Metadata.ExifKey.GpsProcessingMethod -> Egami.Metadata.ExifKey
 static readonly Egami.Metadata.ExifKey.XPAuthor -> Egami.Metadata.ExifKey

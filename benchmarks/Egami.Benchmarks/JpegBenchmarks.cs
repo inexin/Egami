@@ -44,6 +44,14 @@ public class JpegDecodeBenchmarks
         return raster.Width;
     }
 
+    /// <summary>Phase 2.1.4: the file's own planes, with no upsampling or color conversion.</summary>
+    [Benchmark]
+    public int DecodeToYuvPlanes()
+    {
+        using YuvRaster raster = YuvRaster.Load(_file, _context);
+        return raster.Width;
+    }
+
     [Benchmark]
     public int DecodeFastUpsampling()
     {
