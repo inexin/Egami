@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map). Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), and reads TIFF. Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -15,6 +15,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 | BMP | Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24; bit fields; embedded PNG and JPEG; V5 ICC | 24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes; resolution and ICC | `Bgr8`, or `Bgra8` with alpha |
 | TGA | Color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, all origins, TGA 2.0 footer and extension area | 8-bit gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer | `Bgr8`, `Bgra8`, `Gray8` or `GrayAlpha8` |
 | QOI | The whole format, 3 or 4 channels, both colorspaces | 3 or 4 channels, byte-identical to the reference encoder | `Rgb8` or `Rgba8` |
+| TIFF | Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, lossless WebP; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits; see the [TIFF guide](tiff.md) | Not yet | The page's own: `Gray8`, `Gray16`, `Rgb8`, `Rgb16`, `Cmyk8`, `Cmyk16`, float types and more |
 | PNM | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps | P1 to P7, plain or binary; PF and Pf | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16`; `RgbF32` or `GrayF32` for PFM |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
@@ -24,7 +25,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 ## Detection
 
 Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:
 
@@ -32,6 +33,15 @@ that one:
 
 Saving to a path picks the writer from the extension; an animated raster saved as `.png` writes an APNG. Saving to a stream
 takes the format's `Info`.
+
+## Several images in one file
+
+Frames are animation and share one size. A TIFF's pages are separate images, each with its own size and pixel type, so they come
+as a `RasterList` from `Raster.LoadAll`, which owns them; `RasterInfo.ImageCount` says how many there are. Every other format
+gives its one image, so `LoadAll` works on any file. `Raster.SaveAll` writes several rasters to a format that holds several, and
+one raster to any format.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-pages)]
 
 ## PNG
 

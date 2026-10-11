@@ -44,7 +44,7 @@ public sealed record TiffReaderOptions : ReaderOptions
 
 /// <summary>A TIFF compression scheme, by its code in the Compression tag.</summary>
 /// <example>
-/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-save"/>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-details"/>
 /// </example>
 public enum TiffCompression
 {
@@ -96,7 +96,7 @@ public enum TiffCompression
 
 /// <summary>The horizontal differencing applied before LZW or Deflate, from the Predictor tag.</summary>
 /// <example>
-/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-save"/>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-details"/>
 /// </example>
 public enum TiffPredictor
 {
@@ -112,7 +112,7 @@ public enum TiffPredictor
 
 /// <summary>Classic TIFF, with 32-bit offsets and a 4 GB limit, or BigTIFF, with 64-bit offsets.</summary>
 /// <example>
-/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-save"/>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Tiff.cs" region="tiff-details"/>
 /// </example>
 public enum TiffLayout
 {

@@ -14,7 +14,7 @@ public sealed class SampleFiles : IDisposable
         }
     }
 
-    /// <summary>Gets the folder with duck.png, egret.png, duck.jpg, sideways.jpg and pan.gif.</summary>
+    /// <summary>Gets the folder with duck.png, egret.png, duck.jpg, sideways.jpg, pan.gif and scan.tif (three pages).</summary>
     public static string Images { get; } = Path.Combine(AppContext.BaseDirectory, "images");
 
     /// <summary>Gets the working folder: a copy of the images, and where samples write. It is the current directory.</summary>
