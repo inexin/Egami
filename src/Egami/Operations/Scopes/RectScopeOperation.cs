@@ -7,7 +7,7 @@ namespace Egami.Operations.Scopes;
 /// Within(rect): runs a sub-chain so that only pixels inside the rectangle change. Filters read the real pixels around it, so the
 /// result inside equals the whole-image result there; flips mirror the rectangle itself.
 /// </summary>
-internal sealed class RectScopeOperation(Rect rect, IReadOnlyList<IRasterOperation> steps) : IRasterOperation, IAreaStep, IScope
+internal sealed class RectScopeOperation(Rect rect, IReadOnlyList<IRasterOperation> steps) : IRasterOperation, IAreaStep, IScope, Tone.IMeasuredScope
 {
     /// <summary>Gets the sub-chain: recorded until bound, planned after.</summary>
     internal IReadOnlyList<IRasterOperation> Steps => steps;
@@ -19,7 +19,15 @@ internal sealed class RectScopeOperation(Rect rect, IReadOnlyList<IRasterOperati
 
     public IRasterOperation Bind(Func<Colors.LinearCurve?> curve)
     {
-        return new RectScopeOperation(rect, ScopeRunner.Bind(steps, curve));
+        RectScopeOperation bound = new(rect, ScopeRunner.Bind(steps, curve));
+        return Tone.MeasuredScopeOperation.Holds(bound.Steps) ? new Tone.MeasuredScopeOperation(bound) : bound;
+    }
+
+    public IRasterOperation Resolve<TPixel>(IReadOnlyList<PixelPlane<TPixel>> frames, Tone.MeasureScope outer, EgamiContext context, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Tone.MeasureScope inner = outer.Within(rect);
+        return new RectScopeOperation(rect, Tone.MeasuredScopeOperation.ResolveSteps(steps, frames, inner.Area, inner, context, cancellationToken));
     }
 
     public void Validate(Size size)

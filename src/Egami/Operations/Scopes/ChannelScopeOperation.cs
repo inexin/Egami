@@ -11,7 +11,7 @@ namespace Egami.Operations.Scopes;
 /// from the original, as ImageMagick's -channel does. A sub-chain of color matrices never gets here: RasterOps turns it into one
 /// matrix whose other rows are the identity.
 /// </summary>
-internal sealed class ChannelScopeOperation(ColorChannels channels, IReadOnlyList<IRasterOperation> steps) : IRasterOperation, IAreaStep, IScope
+internal sealed class ChannelScopeOperation(ColorChannels channels, IReadOnlyList<IRasterOperation> steps) : IRasterOperation, IAreaStep, IScope, Tone.IMeasuredScope
 {
     public Size OutputSize(Size input)
     {
@@ -20,7 +20,15 @@ internal sealed class ChannelScopeOperation(ColorChannels channels, IReadOnlyLis
 
     public IRasterOperation Bind(Func<Colors.LinearCurve?> curve)
     {
-        return new ChannelScopeOperation(channels, ScopeRunner.Bind(steps, curve));
+        IReadOnlyList<IRasterOperation> bound = ScopeRunner.Bind(steps, curve);
+        ChannelScopeOperation scope = new(channels, bound);
+        return Tone.MeasuredScopeOperation.Holds(bound) ? new Tone.MeasuredScopeOperation(scope) : scope;
+    }
+
+    public IRasterOperation Resolve<TPixel>(IReadOnlyList<PixelPlane<TPixel>> frames, Tone.MeasureScope outer, EgamiContext context, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        return new ChannelScopeOperation(channels, Tone.MeasuredScopeOperation.ResolveSteps(steps, frames, outer.Area, outer.OnChannels(channels), context, cancellationToken));
     }
 
     public void Validate(Size size)

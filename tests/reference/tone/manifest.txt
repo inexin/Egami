@@ -1,0 +1,46 @@
+# Version: ImageMagick 7.1.1-32 Q16-HDRI x86_64 22207 https://imagemagick.org, in alpine:3.20. Lines: <input>.<case> <width> <height> [<auto-threshold level>] <ImageMagick arguments>
+duck.level 640 480 -level 10%,85%,1.3
+duck.plus-level 640 480 +level 20%,70%
+duck.gamma 640 480 -gamma 2.2
+duck.sigmoidal 640 480 -sigmoidal-contrast 5x40%
+duck.sigmoidal-down 640 480 +sigmoidal-contrast 5x40%
+duck.posterize 640 480 +dither -posterize 5
+duck.solarize 640 480 -solarize 60%
+duck.colorize 640 480 -fill 'rgb(255,128,0)' -colorize 30%
+duck.tint 640 480 -fill 'rgb(255,200,150)' -tint 40
+duck.tint-full 640 480 -fill 'rgb(40,90,200)' -tint 100
+duck.duotone 640 480 -grayscale Rec709Luma +level-colors '#1b2a49','#f2c14e'
+duck.threshold 640 480 -threshold 45%
+duck.threshold-channels 640 480 -channel RGB -threshold 40%
+ramp.level 256 48 -level 10%,85%,1.3
+ramp.plus-level 256 48 +level 20%,70%
+ramp.gamma 256 48 -gamma 2.2
+ramp.sigmoidal 256 48 -sigmoidal-contrast 5x40%
+ramp.sigmoidal-down 256 48 +sigmoidal-contrast 5x40%
+ramp.posterize 256 48 +dither -posterize 5
+ramp.solarize 256 48 -solarize 60%
+ramp.colorize 256 48 -fill 'rgb(255,128,0)' -colorize 30%
+ramp.tint 256 48 -fill 'rgb(255,200,150)' -tint 40
+ramp.tint-full 256 48 -fill 'rgb(40,90,200)' -tint 100
+ramp.duotone 256 48 -grayscale Rec709Luma +level-colors '#1b2a49','#f2c14e'
+ramp.threshold 256 48 -threshold 45%
+ramp.threshold-channels 256 48 -channel RGB -threshold 40%
+ramp16.level 256 256 -level 10%,85%,1.3
+ramp16.gamma 256 256 -gamma 2.2
+ramp16.sigmoidal 256 256 -sigmoidal-contrast 5x40%
+ramp16.solarize 256 256 -solarize 60%
+dull.auto-level 640 480 -auto-level
+dull.auto-level-channels 640 480 -channel RGB -auto-level
+dull.contrast-stretch 640 480 -contrast-stretch 2%x1%
+dull.normalize 640 480 -normalize
+dull.auto-gamma 640 480 -auto-gamma
+dull.auto-gamma-channels 640 480 -channel RGB -auto-gamma
+dull.equalize-channels 640 480 -channel RGB -equalize
+cast.white-balance 640 480 -white-balance
+foggy.clahe 640 480 -clahe 80x60+256+2
+foggy.local-contrast 640 480 -local-contrast 10x12.5
+foggy.local-contrast-strong 640 480 -local-contrast 30x60
+duck.hald-clut 640 480 hald.png -hald-clut
+page.auto-threshold-otsu 600 848 32.9412% -auto-threshold OTSU
+page.auto-threshold-triangle 600 848 55.2941% -auto-threshold Triangle
+page.auto-threshold-kapur 600 848 69.8039% -auto-threshold Kapur

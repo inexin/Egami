@@ -736,6 +736,13 @@ public sealed partial class RasterOps
             return Add(matrix.OnlyRows(channels));
         }
 
+        // Any other filter is a function of the pixel alone, so keeping its result in some channels is a filter too.
+        if (planned.Count == 1 && planned[0] is Tone.FilterOperation or ColorMatrixOperation)
+        {
+            Tone.FilterOperation filter = planned[0] as Tone.FilterOperation ?? Tone.FilterOperation.From((ColorMatrixOperation)planned[0]);
+            return Add(new Tone.FilterOperation(filter.Filter.OnlyChannels(channels)));
+        }
+
         return Add(new Scopes.ChannelScopeOperation(channels, steps));
     }
 

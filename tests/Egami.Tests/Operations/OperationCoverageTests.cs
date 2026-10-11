@@ -18,6 +18,8 @@ public sealed class OperationCoverageTests : IDisposable
 
     public static TheoryData<string> Operations() => [.. Chains.Keys];
 
+    private static readonly Lut3D Grade = Lut3D.FromFunction(c => new System.Numerics.Vector3(c.Y, MathF.Sqrt(c.X), c.Z * c.Z), 9);
+
     /// <summary>One chain per operation and mode, each sized relative to its input so it runs on any shape.</summary>
     internal static readonly Dictionary<string, Func<Size, Raster<Rgba8>, Action<RasterOps>>> Chains = new()
     {
@@ -117,6 +119,25 @@ public sealed class OperationCoverageTests : IDisposable
         ["DrawImage-SoftLight-Linear"] = (s, logo) => ops => ops.DrawImage(logo, new Point(0, 0), BlendMode.SoftLight, 1, ColorSpace.Linear),
         ["BlendColor"] = (_, _) => ops => ops.BlendColor(new Rgba8(200, 120, 40, 180), BlendMode.Screen),
         ["DrawArithmetic"] = (s, logo) => ops => ops.DrawArithmetic(logo, new Point(-3, s.Height / 3), 0.2f, 0.5f, 0.6f, 0.01f),
+        ["Tone-Curves"] = (_, _) => ops => ops.Solarize(0.9f).Level(0.1f, 0.9f, 1.2f).SigmoidalContrast(5).Tint(new Rgba8(255, 200, 150, 255), 0.5f),
+        ["Tone-Mixed"] = (_, _) => ops => ops.Posterize(5).Saturation(1.2f).Gamma(1.3f).Duotone(Rgba8.Navy, Rgba8.Yellow),
+        ["Threshold"] = (_, _) => ops => ops.Threshold(0.4f, ThresholdMode.Saturation, Rgba8.Red, Rgba8.Blue),
+        ["Posterize-Ordered"] = (_, _) => ops => ops.Posterize(4, Egami.Quantization.DitherMode.Ordered),
+        ["Posterize-Diffused"] = (_, _) => ops => ops.Posterize(3, Egami.Quantization.DitherMode.FloydSteinberg),
+        ["ColorBlindness"] = (_, _) => ops => ops.SimulateColorBlindness(ColorVisionDeficiency.Deuteranopia, 0.7f),
+        ["HighContrast"] = (_, _) => ops => ops.HighContrast(true, ContrastInvert.Lightness, 0.3f),
+        ["Lut"] = (_, _) => ops => ops.ApplyFilter(ColorFilter.FromLut(Grade)).OnChannels(ColorChannels.Red | ColorChannels.Alpha, c => c.Gamma(1.4f).HueRotate(30)),
+        ["WhiteBalance"] = (_, _) => ops => ops.WhiteBalance(3400, 0.2f).WhiteBalance(new Rgba8(200, 180, 150, 255)),
+        ["AutoLevel"] = (_, _) => ops => ops.AutoLevel(),
+        ["AutoGamma"] = (_, _) => ops => ops.AutoGamma(linked: false),
+        ["Normalize"] = (_, _) => ops => ops.Normalize(),
+        ["Equalize"] = (_, _) => ops => ops.Equalize(),
+        ["Equalize-Channels"] = (_, _) => ops => ops.Equalize(EqualizeMode.Channels),
+        ["AutoWhiteBalance"] = (_, _) => ops => ops.AutoWhiteBalance().AutoWhiteBalance(WhiteBalanceMethod.WhitePatch),
+        ["AutoThreshold"] = (_, _) => ops => ops.AutoThreshold(ThresholdMethod.Kapur),
+        ["AdaptiveThreshold"] = (_, _) => ops => ops.AdaptiveThreshold(0.1f),
+        ["Clahe"] = (_, _) => ops => ops.Clahe(3, 2),
+        ["LocalContrast"] = (_, _) => ops => ops.LocalContrast(0.3f, 0.4f),
     };
 
     [Theory]

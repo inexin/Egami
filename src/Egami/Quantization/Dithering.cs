@@ -15,7 +15,7 @@ internal delegate void RowSource(int y, Span<Rgba8> row);
 internal static class FrameMapper
 {
     /// <summary>The 8 × 8 Bayer matrix, 0 to 63.</summary>
-    private static ReadOnlySpan<byte> Bayer =>
+    internal static ReadOnlySpan<byte> Bayer =>
     [
         0, 32, 8, 40, 2, 34, 10, 42,
         48, 16, 56, 24, 50, 18, 58, 26,

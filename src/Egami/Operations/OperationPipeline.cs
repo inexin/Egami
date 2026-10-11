@@ -319,7 +319,7 @@ internal static class OperationPipeline
 
     /// <summary>
     /// Merges steps that can run as one: a Crop followed by a resize becomes one resize that reads only the crop rectangle, and
-    /// adjacent color matrices become one pass, multiplied together where no clamp falls between them. AutoOrient becomes the
+    /// adjacent color matrices and filters become one pass, matrices multiplied together where no clamp falls between them. AutoOrient becomes the
     /// step its orientation needs; followed by a resize, the resize goes first, on the stored image, so the turn runs on the
     /// small result.
     /// </summary>
@@ -372,10 +372,22 @@ internal static class OperationPipeline
                     continue;
                 }
 
+                // Filters fuse with each other and with color matrices on either side into one pass.
+                if (steps[i] is Tone.FilterOperation or ColorMatrixOperation && planned.Count > 0 && planned[^1] is Tone.FilterOperation or ColorMatrixOperation)
+                {
+                    planned[^1] = AsFilter(planned[^1]).Then(AsFilter(steps[i]));
+                    continue;
+                }
+
                 planned.Add(steps[i]);
             }
 
             return planned;
+        }
+
+        private static Tone.FilterOperation AsFilter(IRasterOperation step)
+        {
+            return step as Tone.FilterOperation ?? Tone.FilterOperation.From((ColorMatrixOperation)step);
         }
     }
 }

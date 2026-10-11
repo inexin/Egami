@@ -15,7 +15,7 @@ namespace Egami.Operations.Scopes;
 /// others keep the original area in a scratch plane counted against MaxTotalBytes. 8-bit targets mix with 8-bit coverage, the
 /// others with float coverage.
 /// </summary>
-internal sealed class MaskScopeOperation : IRasterOperation, IAreaStep, IScope
+internal sealed class MaskScopeOperation : IRasterOperation, IAreaStep, IScope, Tone.IMeasuredScope
 {
     private readonly Mask _mask;
     private readonly IReadOnlyList<IRasterOperation> _steps;
@@ -35,7 +35,16 @@ internal sealed class MaskScopeOperation : IRasterOperation, IAreaStep, IScope
 
     public IRasterOperation Bind(Func<Colors.LinearCurve?> curve)
     {
-        return new MaskScopeOperation(_mask, ScopeRunner.Bind(_steps, curve), new MaskCoverage(_mask));
+        MaskScopeOperation bound = new(_mask, ScopeRunner.Bind(_steps, curve), new MaskCoverage(_mask));
+        return Tone.MeasuredScopeOperation.Holds(bound._steps) ? new Tone.MeasuredScopeOperation(bound) : bound;
+    }
+
+    public IRasterOperation Resolve<TPixel>(IReadOnlyList<PixelPlane<TPixel>> frames, Tone.MeasureScope outer, EgamiContext context, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        MaskCoverage coverage = _coverage ?? new MaskCoverage(_mask);
+        Tone.MeasureScope inner = outer.WithMask(coverage);
+        return new MaskScopeOperation(_mask, Tone.MeasuredScopeOperation.ResolveSteps(_steps, frames, inner.Area, inner, context, cancellationToken), coverage);
     }
 
     public void Validate(Size size)

@@ -10,7 +10,7 @@ public sealed class RectScopeTests : IDisposable
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    /// <summary>The same-size operations of 1.x and stage A whose whole-image result, kept in the area, is the scoped result.</summary>
+    /// <summary>The same-size operations of 1.x and later whose whole-image result, kept in the area, is the scoped result.</summary>
     public static TheoryData<string> SameSize()
     {
         string[] moves = ["Flip-Horizontal", "Flip-Vertical", "Flip-Both"];
@@ -23,7 +23,9 @@ public sealed class RectScopeTests : IDisposable
             RasterOps ops = Record(chain(size, logo));
             // Moves and transforms work in the area's own coordinates, so they are not the whole-image result kept in the area.
             bool moving = moves.Contains(name) || ((string[])["Rotate", "Transform", "QuadDistort", "Skew", "Warp", "Displace", "Offset", "Tile"]).Any(p => name.StartsWith(p, StringComparison.Ordinal));
-            if (!moving && ops.Steps.All(s => s.OutputSize(size) == size))
+            // Measured and local tone steps (2.5.3) treat the area as their image, by design, and so do dither patterns.
+            bool measuring = ((string[])["AutoLevel", "AutoGamma", "Normalize", "Equalize", "AutoWhiteBalance", "AutoThreshold", "AdaptiveThreshold", "Clahe", "LocalContrast", "Posterize-"]).Any(p => name.StartsWith(p, StringComparison.Ordinal));
+            if (!moving && !measuring && ops.Steps.All(s => s.OutputSize(size) == size))
             {
                 data.Add(name);
             }
