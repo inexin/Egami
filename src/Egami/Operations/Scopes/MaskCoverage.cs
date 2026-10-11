@@ -20,7 +20,10 @@ internal sealed class MaskCoverage
     private readonly MaskChannel _channel;
     private readonly bool _inverted;
 
-    internal MaskCoverage(Mask mask)
+    /// <summary>Initializes a new instance of the <see cref="MaskCoverage"/> class.</summary>
+    /// <param name="mask">The mask.</param>
+    /// <param name="scan">Whether to find the box of non-zero coverage; without it, <see cref="Bounds"/> is everywhere.</param>
+    internal MaskCoverage(Mask mask, bool scan = true)
     {
         _source = mask.Source ?? throw new ArgumentNullException(nameof(mask), "The mask has no raster.");
         _offset = mask.Offset;
@@ -30,7 +33,7 @@ internal sealed class MaskCoverage
             : _source.Layout.ChannelOrder == PixelChannelOrder.Gray ? MaskChannel.Red
             : _source.Layout.HasAlpha ? MaskChannel.Alpha
             : MaskChannel.Luminance;
-        Bounds = _inverted ? Everywhere : Scan();
+        Bounds = _inverted || !scan ? Everywhere : Scan();
     }
 
     private MaskCoverage(MaskCoverage other, Raster source)

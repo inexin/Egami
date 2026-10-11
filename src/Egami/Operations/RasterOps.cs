@@ -662,6 +662,147 @@ public sealed class RasterOps
         return Add(new Scopes.MaskScopeOperation(mask, Scopes.ScopeRunner.Record(build, nameof(build))));
     }
 
+    /// <summary>
+    /// Rearranges the working RGBA channels: each output channel takes the input channel, or the constant, its argument names.
+    /// Swapping red and blue, or copying green into alpha, is one color matrix, so it fuses with neighbouring color steps into one
+    /// pass.
+    /// </summary>
+    /// <param name="red">Where the output's red comes from.</param>
+    /// <param name="green">Where the output's green comes from.</param>
+    /// <param name="blue">Where the output's blue comes from.</param>
+    /// <param name="alpha">Where the output's alpha comes from. Has no effect on pixel types without alpha.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">A source is not defined.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Channels.cs" region="shuffle"/>
+    /// </example>
+    public RasterOps ShuffleChannels(ChannelSource red, ChannelSource green, ChannelSource blue, ChannelSource alpha)
+    {
+        float[] values = new float[20];
+        ReadOnlySpan<ChannelSource> sources = [red, green, blue, alpha];
+        for (int row = 0; row < 4; row++)
+        {
+            ChannelSource source = sources[row];
+            if (!Enum.IsDefined(source))
+            {
+                throw new ArgumentOutOfRangeException(row switch { 0 => nameof(red), 1 => nameof(green), 2 => nameof(blue), _ => nameof(alpha) }, source, "The channel source is not defined.");
+            }
+
+            switch (source)
+            {
+                case ChannelSource.Zero:
+                    break;
+                case ChannelSource.One:
+                    values[(row * 5) + 4] = 1;
+                    break;
+                default:
+                    values[(row * 5) + (int)source] = 1;
+                    break;
+            }
+        }
+
+        return ColorMatrix(new ColorMatrix(values));
+    }
+
+    /// <summary>
+    /// Runs the operations <paramref name="build"/> adds and keeps their result only in <paramref name="channels"/>, as ImageMagick's
+    /// -channel does: <c>OnChannels(ColorChannels.Alpha, o => o.Blur(2))</c> softens only the alpha. Channels are the working RGBA,
+    /// with a gray raster's red, green and blue its gray value. Color steps alone (Brightness, ShuffleChannels, a color matrix)
+    /// become one matrix with the other channels left as they are, so they cost nothing extra; other chains run once and the other
+    /// channels are restored. Combines with Within in either order.
+    /// </summary>
+    /// <param name="channels">The channels the result is kept in.</param>
+    /// <param name="build">Adds the operations. Each must keep the size, as in <see cref="Within(Rect, Action{RasterOps})"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="channels"/> holds values that are not channels.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="build"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">An operation inside would change the size or the color encoding; the message names it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Channels.cs" region="on-channels"/>
+    /// </example>
+    public RasterOps OnChannels(ColorChannels channels, Action<RasterOps> build)
+    {
+        if ((channels & ~ColorChannels.All) != 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(channels), channels, "Only Red, Green, Blue and Alpha are channels.");
+        }
+
+        IReadOnlyList<IRasterOperation> steps = Scopes.ScopeRunner.Record(build, nameof(build));
+        List<IRasterOperation> planned = OperationPipeline.PlanSteps(steps);
+        if (planned.Count == 1 && planned[0] is ColorMatrixOperation matrix)
+        {
+            return Add(matrix.OnlyRows(channels));
+        }
+
+        return Add(new Scopes.ChannelScopeOperation(channels, steps));
+    }
+
+    /// <summary>
+    /// Makes the image a gray picture of its alpha: red, green and blue become the alpha value and alpha becomes opaque, as
+    /// ImageMagick's -alpha extract does. A color matrix, so it fuses with neighbouring color steps.
+    /// </summary>
+    /// <returns>This builder.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Channels.cs" region="alpha"/>
+    /// </example>
+    public RasterOps AlphaToGray()
+    {
+        return ColorMatrix(new ColorMatrix([0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]));
+    }
+
+    /// <summary>
+    /// Sets alpha to the luminance of the stored values, 0.212656 R + 0.715158 G + 0.072186 B (the Rec. 709 weights as ImageMagick
+    /// derives them from the sRGB primaries), and keeps the color, exactly as ImageMagick's -alpha copy does; on a gray raster this
+    /// turns the gray into alpha. A color matrix, so it fuses with neighbouring color steps.
+    /// To also black out the color, as Skia's luma filter does, follow it with <c>OnChannels(ColorChannels.Color, o => o.FillColor(Rgba8.Black))</c>.
+    /// </summary>
+    /// <returns>This builder.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Channels.cs" region="alpha"/>
+    /// </example>
+    public RasterOps LuminanceToAlpha()
+    {
+        return ColorMatrix(new ColorMatrix([1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, LumaR, LumaG, LumaB, 0, 0]));
+    }
+
+    /// <summary>
+    /// Sets alpha to <paramref name="mask"/>'s coverage and keeps the color: a gray image from elsewhere becomes the transparency.
+    /// Outside the mask raster coverage is 0, so pixels there become transparent, unless the mask is inverted.
+    /// </summary>
+    /// <param name="mask">The coverage: a raster of any size and type, placed at its offset, read by its channel.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentException">The mask has no raster.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The mask's channel is not defined.</exception>
+    /// <remarks>The mask raster must stay undisposed until the chain has run. Copying a raster's own coverage reads from a copy.</remarks>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Channels.cs" region="alpha"/>
+    /// </example>
+    public RasterOps CopyAlpha(Mask mask)
+    {
+        CheckMask(mask, nameof(mask));
+        return Add(new CopyAlphaOperation(mask));
+    }
+
+    /// <summary>
+    /// Composites the image over <paramref name="background"/> and makes it opaque, as ImageMagick's -alpha remove and the reference library's
+    /// BackgroundColor do. The background's own alpha is ignored. Saving a JPEG with a Background option uses the same arithmetic.
+    /// </summary>
+    /// <param name="background">The color to show through transparent pixels.</param>
+    /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="colorSpace"/> is not defined.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Channels.cs" region="alpha"/>
+    /// </example>
+    public RasterOps Flatten(Rgba8 background, ColorSpace colorSpace = ColorSpace.Encoded)
+    {
+        CheckFilter(ResampleFilter.Bicubic, colorSpace);
+        return Add(new FlattenOperation(background, colorSpace == ColorSpace.Linear));
+    }
+
+    // Rec. 709 luminance weights as ImageMagick computes intensity, so LuminanceToAlpha equals -alpha copy at 8 and 16 bits.
+    private const float LumaR = 0.212656f, LumaG = 0.715158f, LumaB = 0.072186f;
+
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
     internal const float LargeSigma = 100;
 

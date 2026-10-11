@@ -43,6 +43,12 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `Within(Mask, …)` mixes the chain's result with the original by a `Mask`'s coverage: any raster's gray value, alpha or
   luminance (`MaskChannel`), placed at an offset and optionally inverted. Coverage 0 and full are exact; 16-bit masks keep their
   gradient on 16-bit images. Scopes nest.
+- `ExtractChannel` returns one channel (`ColorChannel`) as a gray raster and `CombineChannels` builds an image from gray rasters,
+  both identical to ImageMagick's -separate and -combine at 8 and 16 bits. `ShuffleChannels` rearranges channels (`ChannelSource`)
+  as one color matrix that fuses with the other color steps. `OnChannels` keeps a chain's result only in chosen channels
+  (`ColorChannels`), as ImageMagick's -channel does.
+- `AlphaToGray`, `LuminanceToAlpha`, `CopyAlpha` and `Flatten` match ImageMagick's -alpha extract, copy and remove; the JPEG
+  writer's Background option now runs on Flatten's arithmetic, with unchanged bytes.
 
 ### Streaming decode (in progress)
 

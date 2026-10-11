@@ -547,6 +547,27 @@ Egami.Operations.BlendMode.SourceOut = 7 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.SourceOver = 0 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Subtract = 26 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Xor = 11 -> Egami.Operations.BlendMode
+Egami.Operations.ChannelSource
+Egami.Operations.ChannelSource.Alpha = 3 -> Egami.Operations.ChannelSource
+Egami.Operations.ChannelSource.Blue = 2 -> Egami.Operations.ChannelSource
+Egami.Operations.ChannelSource.Green = 1 -> Egami.Operations.ChannelSource
+Egami.Operations.ChannelSource.One = 5 -> Egami.Operations.ChannelSource
+Egami.Operations.ChannelSource.Red = 0 -> Egami.Operations.ChannelSource
+Egami.Operations.ChannelSource.Zero = 4 -> Egami.Operations.ChannelSource
+Egami.Operations.ColorChannel
+Egami.Operations.ColorChannel.Alpha = 3 -> Egami.Operations.ColorChannel
+Egami.Operations.ColorChannel.Blue = 2 -> Egami.Operations.ColorChannel
+Egami.Operations.ColorChannel.Green = 1 -> Egami.Operations.ColorChannel
+Egami.Operations.ColorChannel.Luminance = 4 -> Egami.Operations.ColorChannel
+Egami.Operations.ColorChannel.Red = 0 -> Egami.Operations.ColorChannel
+Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.All = Egami.Operations.ColorChannels.Color | Egami.Operations.ColorChannels.Alpha -> Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.Alpha = 8 -> Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.Blue = 4 -> Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.Color = Egami.Operations.ColorChannels.Red | Egami.Operations.ColorChannels.Green | Egami.Operations.ColorChannels.Blue -> Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.Green = 2 -> Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.None = 0 -> Egami.Operations.ColorChannels
+Egami.Operations.ColorChannels.Red = 1 -> Egami.Operations.ColorChannels
 Egami.Operations.Compositor
 Egami.Operations.Mask
 Egami.Operations.Mask.Channel.get -> Egami.Operations.MaskChannel
@@ -568,11 +589,17 @@ Egami.Operations.MaskChannel.Blue = 5 -> Egami.Operations.MaskChannel
 Egami.Operations.MaskChannel.Green = 4 -> Egami.Operations.MaskChannel
 Egami.Operations.MaskChannel.Luminance = 1 -> Egami.Operations.MaskChannel
 Egami.Operations.MaskChannel.Red = 3 -> Egami.Operations.MaskChannel
+Egami.Operations.RasterOps.AlphaToGray() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.BlendColor(Egami.Pixels.Rgba8 color, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ConvertColor(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.CopyAlpha(Egami.Operations.Mask mask) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Flatten(Egami.Pixels.Rgba8 background, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.OnChannels(Egami.Operations.ColorChannels channels, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.ShuffleChannels(Egami.Operations.ChannelSource red, Egami.Operations.ChannelSource green, Egami.Operations.ChannelSource blue, Egami.Operations.ChannelSource alpha) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ToneMap(Egami.Colors.ToneMapping method = Egami.Colors.ToneMapping.Bt2390, double? sourcePeakNits = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Within(Egami.Operations.Mask mask, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Within(Egami.Rect area, System.Action<Egami.Operations.RasterOps!>! build) -> Egami.Operations.RasterOps!
@@ -786,6 +813,8 @@ Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
 Egami.Raster.ConvertColor<TTo>(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Raster<TTo>!
+Egami.Raster.ExtractChannel(Egami.Operations.ColorChannel channel) -> Egami.Raster!
+Egami.Raster.ExtractChannel<TPixel>(Egami.Operations.ColorChannel channel) -> Egami.Raster<TPixel>!
 Egami.RasterDecoder
 Egami.RasterDecoder.Append(System.ReadOnlySpan<byte> data) -> void
 Egami.RasterDecoder.CurrentFrame.get -> Egami.Metadata.FrameMetadata?
@@ -1171,6 +1200,7 @@ static Egami.Pixels.YuvColor.Jpeg.get -> Egami.Pixels.YuvColor
 static Egami.Pixels.YuvColor.operator !=(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.operator ==(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.TryFromH273(int matrixCoefficients, bool fullRange, Egami.Pixels.ChromaSiting siting, out Egami.Pixels.YuvColor color) -> bool
+static Egami.Raster.CombineChannels<TPixel>(Egami.Raster! red, Egami.Raster! green, Egami.Raster! blue, Egami.Raster? alpha = null) -> Egami.Raster<TPixel>!
 static Egami.Raster.LoadInto<TPixel>(string! path, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
 static Egami.Raster.LoadInto<TPixel>(System.IO.Stream! stream, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void
 static Egami.Raster.LoadInto<TPixel>(System.ReadOnlyMemory<byte> data, Egami.Raster<TPixel>! target, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> void

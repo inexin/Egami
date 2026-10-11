@@ -985,7 +985,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             {
                 Span<Rgba8> rgba = MemoryMarshal.Cast<byte, Rgba8>(workspace.Rgba.AsSpan(0, _width * 4));
                 PixelConvert.Convert(source, rgba);
-                Composite(rgba, background);
+                Operations.Compose.FlattenKernels.Flatten8(rgba, background);
                 Span<Rgb8> composited = MemoryMarshal.Cast<byte, Rgb8>(converted.AsSpan(0, _width * 3));
                 PixelConvert.Convert<Rgba8, Rgb8>(rgba, composited);
                 return converted.AsSpan(0, _width * 3);
@@ -1021,22 +1021,6 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                 ReadOnlySpan<byte> row0 = full.AsSpan(r * factorY * _paddedWidth, _paddedWidth);
                 ReadOnlySpan<byte> row1 = factorY == 2 ? full.AsSpan(((r * 2) + 1) * _paddedWidth, _paddedWidth) : row0;
                 JpegEncodeKernels.Downsample(row0, row1, factorY == 2, output);
-            }
-        }
-
-        /// <summary>Blends each pixel over <paramref name="background"/> by its alpha, then makes it opaque.</summary>
-        private static void Composite(Span<Rgba8> pixels, Rgba8 background)
-        {
-            for (int x = 0; x < pixels.Length; x++)
-            {
-                Rgba8 p = pixels[x];
-                int a = p.A;
-                int inverse = 255 - a;
-                pixels[x] = new Rgba8(
-                    (byte)(((p.R * a) + (background.R * inverse) + 127) / 255),
-                    (byte)(((p.G * a) + (background.G * inverse) + 127) / 255),
-                    (byte)(((p.B * a) + (background.B * inverse) + 127) / 255),
-                    255);
             }
         }
     }

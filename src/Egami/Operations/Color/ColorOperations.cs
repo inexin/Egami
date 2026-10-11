@@ -67,6 +67,28 @@ internal sealed class ColorMatrixOperation : IRasterOperation, Scopes.IRunsOnVie
         return false;
     }
 
+    /// <summary>Returns this chain with each row for a channel outside <paramref name="channels"/> made the identity, so those channels pass through.</summary>
+    internal ColorMatrixOperation OnlyRows(ColorChannels channels)
+    {
+        ColorMatrix[] stages = new ColorMatrix[_count];
+        Span<float> values = stackalloc float[20];
+        for (int i = 0; i < _count; i++)
+        {
+            for (int row = 0; row < 4; row++)
+            {
+                bool keep = ((int)channels & (1 << row)) != 0;
+                for (int column = 0; column < 5; column++)
+                {
+                    values[(row * 5) + column] = keep ? _stages[i][row, column] : column == row ? 1 : 0;
+                }
+            }
+
+            stages[i] = new ColorMatrix(values);
+        }
+
+        return new ColorMatrixOperation(stages, _count);
+    }
+
     /// <summary>Returns this chain followed by <paramref name="next"/>, fusing across stages that cannot clip.</summary>
     internal ColorMatrixOperation Then(ColorMatrixOperation next)
     {

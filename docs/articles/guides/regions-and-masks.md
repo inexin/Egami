@@ -1,4 +1,4 @@
-# Regions and masks
+# Regions, masks and channels
 
 Any chain that keeps the image's size can run on part of the image: inside a rectangle with `Within(Rect, …)`, or through a gray
 mask with `Within(Mask, …)`. The inner chain is the same lambda `Apply` and `Derive` take.
@@ -29,6 +29,32 @@ coverage is 0 (full when inverted).
 - Coverage is 8-bit for 8-bit images and float for 16-bit and float ones, so a 16-bit mask keeps its gradient on a 16-bit photo.
 - Masking an image with itself reads the mask from a copy.
 - A soft edge is the mask's own business: blur the mask raster first for a feathered selection.
+
+## Channels
+
+`ExtractChannel` pulls one channel (`ColorChannel`: red, green, blue, alpha or luminance) out as a gray raster, `Gray8` from 8-bit
+images, `Gray16` from 16-bit ones and `GrayF32` from float ones; `CombineChannels` builds an image from three or four gray rasters.
+Both equal ImageMagick's -separate and -combine at 8 and 16 bits.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#extract-combine)]
+
+`ShuffleChannels` rearranges channels in place, each output channel taking an input channel or a constant (`ChannelSource`). It is a
+color matrix, so it fuses with Brightness, Contrast and the other color steps.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#shuffle)]
+
+`OnChannels` is a scope like `Within`: the chain runs, and its result is kept only in the chosen channels (`ColorChannels`). Color
+steps alone become one matrix with the other channels left alone, so they cost nothing extra.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#on-channels)]
+
+## Alpha
+
+`AlphaToGray` shows alpha as gray (ImageMagick's -alpha extract), `LuminanceToAlpha` turns brightness into alpha (-alpha copy),
+`CopyAlpha` takes alpha from a mask, and `Flatten` composites onto a background color and makes the image opaque (-alpha remove). The
+JPEG writer's Background option flattens with the same arithmetic.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Channels.cs#alpha)]
 
 ## Nesting
 
