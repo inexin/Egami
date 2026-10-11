@@ -25,12 +25,12 @@ internal enum ResizeKind
 /// </summary>
 internal sealed class ResizeOperation(
     ResizeKind mode, int width, int height, ResampleFilter filter, ColorSpace colorSpace, Anchor anchor = Anchor.Center, bool enlarge = true, Rect? crop = null,
-    Colors.LinearCurve? curve = null)
+    Colors.LinearCurve? curve = null, (double X, double Y, double Width, double Height)? window = null)
     : IRasterOperation, INeedsNewPlane, IHoldsBuffers, Geometry.IUpdatesMetadata, ILinearLight
 {
     public bool UsesLinearLight => colorSpace == ColorSpace.Linear;
 
-    public IRasterOperation WithCurve(Colors.LinearCurve linear) => new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, crop, linear);
+    public IRasterOperation WithCurve(Colors.LinearCurve linear) => new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, crop, linear, window);
 
     private Colors.LinearCurve? Curve => colorSpace == ColorSpace.Linear ? curve ?? Colors.LinearCurve.Srgb : null;
 
@@ -52,13 +52,13 @@ internal sealed class ResizeOperation(
     internal ResizeOperation BeforeOrienting(Metadata.ImageOrientation orientation)
     {
         bool swaps = orientation >= Metadata.ImageOrientation.Transpose;
-        return new ResizeOperation(mode, swaps ? height : width, swaps ? width : height, filter, colorSpace, StoredAnchor(anchor, orientation), enlarge, crop, curve);
+        return new ResizeOperation(mode, swaps ? height : width, swaps ? width : height, filter, colorSpace, StoredAnchor(anchor, orientation), enlarge, crop, curve, window);
     }
 
     /// <summary>Returns this resize reading only <paramref name="rect"/> of its input, as a Crop before it would.</summary>
     internal ResizeOperation WithCrop(Rect rect)
     {
-        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, rect, curve);
+        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, rect, curve, window);
     }
 
     /// <summary>Maps an anchor in the upright image to the same point of the stored image.</summary>
@@ -95,6 +95,16 @@ internal sealed class ResizeOperation(
     /// <summary>Gets whether this resize already reads a sub-rectangle chosen by a merged Crop.</summary>
     internal bool HasCrop => crop is not null;
 
+    /// <summary>
+    /// Returns a resize of the source window (<paramref name="x"/>, <paramref name="y"/>, <paramref name="sourceWidth"/>,
+    /// <paramref name="sourceHeight"/>), which may sit at fractional positions inside the image, to <paramref name="output"/>:
+    /// how a transform that only scales and moves runs.
+    /// </summary>
+    internal static ResizeOperation Window(double x, double y, double sourceWidth, double sourceHeight, Size output, ResampleFilter filter, ColorSpace colorSpace, Colors.LinearCurve? curve)
+    {
+        return new ResizeOperation(ResizeKind.Stretch, output.Width, output.Height, filter, colorSpace, curve: curve, window: (x, y, sourceWidth, sourceHeight));
+    }
+
     /// <summary>Gets the sub-rectangle a merged Crop chose, if any.</summary>
     internal Rect? CropRect => crop;
 
@@ -104,7 +114,7 @@ internal sealed class ResizeOperation(
     /// <summary>Returns this resize reading its whole input, for when the crop is done before it (by a decoder's Region).</summary>
     internal ResizeOperation WithoutCrop()
     {
-        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, null, curve);
+        return new ResizeOperation(mode, width, height, filter, colorSpace, anchor, enlarge, null, curve, window);
     }
 
     /// <summary>
@@ -259,6 +269,13 @@ internal sealed class ResizeOperation(
         if (!new Rect(0, 0, input.Width, input.Height).Contains(area))
         {
             throw new ArgumentOutOfRangeException($"The crop rectangle {area} leaves the {input.Width}×{input.Height} image.", innerException: null);
+        }
+
+        if (window is (double wx, double wy, double ww, double wh))
+        {
+            // A transform's pure scale: this window of the image, at any fractional position, stretched onto the output.
+            _plan = new Plan(input, new Size(width, height), wx, wy, ww, wh, area, false);
+            return _plan;
         }
 
         double aw = area.Width;

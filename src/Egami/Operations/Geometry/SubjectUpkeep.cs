@@ -57,6 +57,30 @@ internal sealed class SubjectMap(Func<double, double, (double X, double Y)> poin
             output,
             false);
     }
+
+    /// <summary>
+    /// A transform: an input point at continuous position p lands at <paramref name="forward"/>(p) − <paramref name="offset"/> on
+    /// a canvas of <paramref name="output"/>. Sizes scale by the Jacobian at the input's center (exact for affine matrices).
+    /// </summary>
+    public static SubjectMap Transform(Operations.Homography forward, (double X, double Y) offset, Size input, Size output)
+    {
+        double cx = input.Width / 2.0, cy = input.Height / 2.0;
+        (double x0, double y0) = forward.Map(cx, cy);
+        (double x1, double y1) = forward.Map(cx + 1, cy);
+        (double x2, double y2) = forward.Map(cx, cy + 1);
+        double a = x1 - x0, b = x2 - x0, c = y1 - y0, d = y2 - y0;
+        double scale = Math.Sqrt(Math.Abs((a * d) - (b * c)));
+        return new(
+            (x, y) =>
+            {
+                (double u, double v) = forward.Map(x + 0.5, y + 0.5);
+                return double.IsFinite(u) && double.IsFinite(v) && forward.W(x + 0.5, y + 0.5) > 0 ? (u - offset.X - 0.5, v - offset.Y - 0.5) : (-1, -1);
+            },
+            (w, h) => ((w * Math.Abs(a)) + (h * Math.Abs(b)), (w * Math.Abs(c)) + (h * Math.Abs(d))),
+            double.IsFinite(scale) ? scale : 1,
+            output,
+            true);
+    }
 }
 
 /// <summary>

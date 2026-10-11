@@ -17,7 +17,7 @@ namespace Egami.Operations;
 /// raster.Apply(ops => ops.Add(new MyOperation()));
 /// </code>
 /// </example>
-public sealed class RasterOps
+public sealed partial class RasterOps
 {
     private static int _groups;
 

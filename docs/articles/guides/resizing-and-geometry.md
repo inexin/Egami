@@ -38,6 +38,41 @@ bright detail on dark backgrounds, such as text or stars.
 a canvas the size of the rotated bounding box, with the corners filled with the background color. `FillColor` paints a rectangle,
 or the whole image.
 
+## Transforms and perspective
+
+`Transform` takes any affine matrix (`Matrix3x2`), perspective matrix (`Homography`) or 3D matrix (`Matrix4x4`, projected as CSS
+`matrix3d` draws a flat element). Matrices map source positions to destination positions, with the origin at the image's top-left
+corner and pixel centers at +0.5, as Skia and ImageMagick's `-distort` do; they compose with `*`, left first.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#transform)]
+
+The result is the transformed image's bounding box, rounded to whole pixels, unless `TransformOptions.Viewport` picks a rectangle
+of the destination plane. Where the image keeps or gains size, each output pixel blends the filter's kernel around its source point,
+exactly as `Rotate` does; where it shrinks or tilts away, the filter weighs an ellipse covering the pixel's footprint in the source
+(elliptical weighted averaging, as ImageMagick's `-distort` does), so fine detail fades to its average instead of aliasing into
+moiré. Footprints are capped at 32 source pixels, so a plane stretching to the horizon aliases slightly in the far distance. A
+transform that only scales equals `Resize`, and a pure rotation equals `Rotate`, pixel for pixel.
+
+`Homography.FromQuad` builds the perspective that moves four points onto four others, such as a photographed page onto an upright
+canvas:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#homography)]
+
+`TransformOptions` (a `SamplingOptions` with a viewport) chooses the filter, the color space it blends in, what samples outside
+the source read (`Edges`: transparent background, or the image clamped, mirrored or wrapped), and the background color:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#transform-options)]
+
+`Skew` shears about the image center and `QuadDistort` moves the image's four corners to four points:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#skew)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#quad-distort)]
+
+A transform whose viewport has the input's size keeps the size, so it runs inside `Within`. A perspective that sends a corner of
+the image to infinity or behind the viewer has no finite bounds, so it needs a viewport. Like `Rotate`, a transform sets the EXIF
+orientation to Normal, updates the dimensions, drops the thumbnail and moves the subject area through the matrix.
+
 ## Orientation
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Geometry.cs#auto-orient)]
