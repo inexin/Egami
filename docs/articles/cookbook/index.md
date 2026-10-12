@@ -336,7 +336,29 @@ Canny's white-on-black map works directly as a `Mask`; thicken it with `Dilate` 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#emoji-caption)]
 
-Color glyphs draw in color on every canvas; on a raster they are cached as images, like other glyphs.
+Color glyphs draw in color on every canvas; on a raster they are cached as images, like other glyphs. A cluster with emoji
+presentation prefers a color face from the fallback list; text presentation (VS15) prefers an outline face.
+
+## An Arabic caption
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#arabic-caption)]
+
+The shaper picks each letter's joining form and the bidi algorithm orders the words; the origin is still the line's left end, so
+right alignment subtracts the measured advance.
+
+## A Hindi label with fallback
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#hindi-fallback)]
+
+Fallback works on whole grapheme clusters, so a conjunct never splits across two faces. `FontFallback.System` would find an
+installed Devanagari face instead, at the cost of output that depends on the machine.
+
+## Searchable text in a PDF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#pdf-text)]
+
+A `GlyphRun` from the shaper carries the text and a cluster per glyph, in visual order; that is all a PDF writer needs for
+ToUnicode and ActualText.
 
 ## A label along a curve
 

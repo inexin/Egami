@@ -424,39 +424,102 @@ public class Text
         using Raster<Rgba8> image = Raster.Create(360, 50, Rgba8.White);
 
         #region emoji-caption
-        // A caption mixing words and emoji: each run of characters goes to the first face that has them, and the runs are drawn one
-        // after another. (Shaping across faces, with emoji sequences and fallback lists, comes with 2.8's text layout.)
+        // A caption mixing words and emoji: the emoji fall back to the color face, cluster by cluster, so a ZWJ sequence or a flag
+        // stays whole; one call shapes and draws every run.
         string caption = "Launch day \U0001F680 thanks, team \U0001F389";
-        var fonts = new[] { new Font(text, 20), new Font(emoji, 20) };
-        float x = 8;
+        var fallback = new FontCollection();
+        fallback.Add(emoji);
+        var options = new Egami.Fonts.Shaping.ShapingOptions { Fallback = new Egami.Fonts.Shaping.FontFallback(fallback.Families) };
         using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
         {
-            int start = 0;
-            while (start < caption.Length)
-            {
-                Font font = fonts[Pick(caption, start)];
-                int end = start;
-                while (end < caption.Length && Pick(caption, end) == Pick(caption, start))
-                {
-                    end += char.IsSurrogatePair(caption, end) ? 2 : 1;
-                }
-
-                string piece = caption[start..end];
-                canvas.DrawText(piece, new Vector2(x, 32), font, Rgba8.Black);
-                x += font.MeasureText(piece).Advance;
-                start = end;
-            }
-        }
-
-        // The index of the first font with a glyph for the character at i, or the first font.
-        int Pick(string s, int i)
-        {
-            int c = char.ConvertToUtf32(s, i);
-            return Math.Max(0, Array.FindIndex(fonts, f => f.Typeface.GetGlyph(c) != 0));
+            canvas.DrawText(caption, new Vector2(8, 32), new Font(text, 20), Rgba8.Black, options);
         }
         #endregion
 
-        Assert.True(x > 200);
+        bool colored = false;
+        for (int y = 0; y < image.Height && !colored; y++)
+        {
+            for (int px = 0; px < image.Width && !colored; px++)
+            {
+                Rgba8 c = image.GetPixel(px, y);
+                colored = c.R != c.G || c.G != c.B;
+            }
+        }
+
+        Assert.True(colored);
+    }
+
+    [Fact]
+    public void ArabicCaption()
+    {
+        Typeface arabic = Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansArabic-Regular.ttf"));
+
+        #region arabic-caption
+        // An Arabic caption, right-aligned: the shaper joins the letters and puts the words in right-to-left order, and the measured
+        // advance places the line's right end at the margin.
+        using Raster<Rgba8> photo = Raster.Create(640, 120, new Rgba8(40, 60, 80, 255));
+        var font = new Font(arabic, 32);
+        string caption = "\u0645\u0631\u062D\u0628\u0627\u0020\u0628\u0627\u0644\u0639\u0627\u0644\u0645";
+        float width = font.MeasureText(caption).Advance;
+        using (RasterCanvas<Rgba8> canvas = photo.CreateCanvas())
+        {
+            canvas.DrawText(caption, new Vector2(photo.Width - 24 - width, 80), font, Rgba8.White);
+        }
+        #endregion
+
+        Assert.Equal(1, font.Shape(caption).BidiLevel);
+    }
+
+    [Fact]
+    public void HindiLabelWithFallback()
+    {
+        Typeface latin = Typeface.FromFile(FontFile);
+        Typeface devanagari = Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansDevanagari-Regular.ttf"));
+        using Raster<Rgba8> image = Raster.Create(400, 60, Rgba8.White);
+
+        #region hindi-fallback
+        // A label in Hindi and English with a Latin font: Devanagari clusters (conjuncts, vowel signs, the reph) fall back whole to
+        // the Devanagari face, and the Indic shaper reorders them.
+        var families = new FontCollection();
+        families.Add(devanagari);
+        var options = new Egami.Fonts.Shaping.ShapingOptions
+        {
+            Language = "hi",
+            Fallback = new Egami.Fonts.Shaping.FontFallback(families.Families),
+        };
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawText("Price: \u0915\u0940\u092E\u0924\u0020\u0915\u094D\u0937\u0947\u0924\u094D\u0930", new Vector2(10, 40), new Font(latin, 22), Rgba8.Black, options);
+        }
+        #endregion
+
+        Egami.Fonts.Shaping.ShapedText shaped = Egami.Fonts.Shaping.TextShaper.Shape("Price: \u0915\u0940\u092E\u0924\u0020\u0915\u094D\u0937\u0947\u0924\u094D\u0930", new Font(latin, 22), options);
+        Assert.Contains(shaped.Lines[0].Runs, r => r.Font.Typeface == devanagari);
+    }
+
+    [Fact]
+    public void SearchableTextForAPdf()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region pdf-text
+        // What a PDF writer needs to keep shaped text searchable: each glyph's cluster points back into the text. A glyph that
+        // stands for several characters (the "ffi" ligature) maps to all of them in ToUnicode; a cluster whose glyphs were
+        // reordered or merged (Indic, Arabic marks) goes in an ActualText span instead.
+        GlyphRun run = new Font(face, 11).Shape("office hours");
+        var toUnicode = new Dictionary<ushort, string>();
+        for (int i = 0; i < run.Count; i++)
+        {
+            int start = run.Clusters[i];
+            int end = i + 1 < run.Count ? run.Clusters[i + 1] : run.Text!.Length;
+            if (end > start)
+            {
+                toUnicode.TryAdd(run.Glyphs[i], run.Text![start..end]);
+            }
+        }
+        #endregion
+
+        Assert.Contains("ffi", toUnicode.Values);
     }
 
     [Fact]

@@ -234,6 +234,38 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
+### Egami.Fonts 1.0.0-preview.3: text shaping
+
+OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's, in the same preview package. See
+[Unicode text and shaping](docs/articles/guides/unicode-text.md).
+
+- Unicode 17.0 in `Egami.Fonts.Unicode`, from Egami's own tables (never the runtime's): `UnicodeData` (categories, scripts and
+  script extensions, bidi, joining, combining, Indic, vertical orientation, East Asian width, emoji properties), `Bidi.Resolve`
+  (UAX #9 with isolates, brackets and mirroring; `BidiResult.Reorder` for a line), `TextSegmenter` graphemes and words (UAX #29)
+  and `Script` with its OpenType tags. Unicode's BidiTest, BidiCharacterTest, GraphemeBreakTest and WordBreakTest pass in full.
+- `TextShaper.ShapeRun` shapes one run into a reusable `GlyphBuffer` (glyph ids, UTF-16 clusters, `GlyphFlags`, positions) with
+  every GSUB and GPOS lookup type, FeatureVariations, the variation deltas of variable fonts, vertical runs (vmtx, VORG, VVAR) and
+  HarfBuzz's script shapers: Arabic and its family (with fallback shaping from the presentation forms), Hebrew, the nine Indic
+  scripts, Khmer, Myanmar, Thai and Lao, Hangul and the Universal Shaping Engine. `RunProperties` give the script, BCP 47 language,
+  direction, `FontFeature`s (HarfBuzz's syntax: `FontFeature.Parse("liga=0")`) and `ClusterLevel`.
+- `TextShaper.Shape` shapes whole text: lines at hard breaks, bidi, script and span runs (`ShapingOptions`, `TextSpan`) and font
+  fallback per grapheme cluster (`FontFallback`, `IFontFallbackResolver`, the opt-in `SystemFontFallback`), returning `ShapedText`.
+- `Font.Shape` and `Font.MeasureText` take `ShapingOptions` and shape with all of the font's features; text without ligature or
+  mark rules gives 2.7.1's glyphs and positions. `GlyphRun` gains `BidiLevel`, `Script` and `Language`.
+- `Typeface.Layout` lists scripts, language systems and features and gives `GetClosure`, hb-subset's GSUB closure;
+  `SubsetOptions.LayoutClosure` keeps it and the layout tables, for subsets that are shaped again.
+- Gates: glyphs, clusters, positions and flags equal hb-shape 14.5.1's on all 276 AOTS tests, 4,974 of HarfBuzz's 4,987
+  in-house tests (the rest test fonts without outlines, the Zawgyi encoding, repeated axis tags, other shapers and output Egami
+  leaves out) and 24 corpus runs in 15 scripts; the closure equals HarfBuzz's on 1,116 cases. Shaping is faster than
+  the reference font library 2.1.3 on English, Arabic and Hindi pages (3.7, 7.5 and 13.4 against 41, 64 and 269 ms) and about half
+  HarfBuzzSharp's speed.
+- Fuzz targets `shaping` and `bidi`.
+
+### Egami.Drawing 1.0.0-preview.6
+
+- `Canvas.DrawText` takes `ShapingOptions` and draws shaped text (with fallback fonts when the options list them);
+  `Canvas.DrawShapedText` draws a `ShapedText` shaped once. Latin text draws as before, at the same speed.
+
 ### Egami.Fonts 1.0.0-preview.2
 
 Web, variable and color fonts, in the same preview package. See [Variable fonts](docs/articles/guides/text.md#variable-fonts),
