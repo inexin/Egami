@@ -178,6 +178,16 @@ public sealed class BidiResult : IDisposable
     /// <summary>Gets the original Bidi_Class of every UTF-16 unit.</summary>
     internal ReadOnlySpan<BidiClass> Classes => Alive(_classes).AsSpan(0, Length);
 
+    /// <summary>The paragraphs: UTF-16 ranges and their levels.</summary>
+    internal IReadOnlyList<(int Start, int End, int Level)> Paragraphs
+    {
+        get
+        {
+            Alive(_levels);
+            return _paragraphs;
+        }
+    }
+
     /// <summary>
     /// Orders one line for display (rules L1 and L2): splits it into runs of equal level, with the line's trailing whitespace at
     /// the paragraph level, and returns the runs from left to right. The units of a right-to-left run are drawn last to first.

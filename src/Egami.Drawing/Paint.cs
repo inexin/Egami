@@ -12,7 +12,7 @@ namespace Egami.Drawing;
 /// The kinds are <see cref="SolidPaint"/>, the gradients (<see cref="LinearGradient"/>, <see cref="RadialGradient"/>,
 /// <see cref="ConicalGradient"/>, <see cref="SweepGradient"/>), <see cref="ImagePaint"/>, <see cref="NoisePaint"/>,
 /// <see cref="BlendPaint"/>, <see cref="ColorMatrixPaint"/> and <see cref="CustomPaint"/>. A color converts to a solid paint where a
-/// paint is expected.
+/// paint is expected. A paint is an <see cref="Egami.Fonts.Layout.ITextPaint"/>, so a paragraph's text style can carry it.
 /// <para>
 /// A paint other than a solid one has its own coordinates: <see cref="LocalMatrix"/> maps them into the canvas's local
 /// coordinates, so a gradient or an image turns and scales with the canvas transform, and further with its own matrix.
@@ -21,7 +21,7 @@ namespace Egami.Drawing;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="paints"/>
 /// </example>
-public abstract record class Paint
+public abstract record class Paint : Egami.Fonts.Layout.ITextPaint
 {
     private readonly BlendMode _blendMode;
     private readonly float _opacity = 1;

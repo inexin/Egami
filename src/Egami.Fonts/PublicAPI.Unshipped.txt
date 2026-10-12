@@ -1633,3 +1633,293 @@ static Egami.Fonts.Layout.LineBreaks.Enumerate(System.ReadOnlySpan<char> text, E
 ~override Egami.Fonts.Layout.LineBreak.ToString() -> string
 ~override Egami.Fonts.Layout.LineBreakOptions.Equals(object obj) -> bool
 ~override Egami.Fonts.Layout.LineBreakOptions.ToString() -> string
+Egami.Fonts.Layout.ITextPaint
+Egami.Fonts.Layout.LineFill
+Egami.Fonts.Layout.LineFill.Balanced = 1 -> Egami.Fonts.Layout.LineFill
+Egami.Fonts.Layout.LineFill.Greedy = 0 -> Egami.Fonts.Layout.LineFill
+Egami.Fonts.Layout.LineHeight
+Egami.Fonts.Layout.LineHeight.Equals(Egami.Fonts.Layout.LineHeight other) -> bool
+Egami.Fonts.Layout.LineHeight.Kind.get -> Egami.Fonts.Layout.LineHeightKind
+Egami.Fonts.Layout.LineHeight.LineHeight() -> void
+Egami.Fonts.Layout.LineHeight.Value.get -> float
+Egami.Fonts.Layout.LineHeightKind
+Egami.Fonts.Layout.LineHeightKind.Absolute = 2 -> Egami.Fonts.Layout.LineHeightKind
+Egami.Fonts.Layout.LineHeightKind.Multiple = 1 -> Egami.Fonts.Layout.LineHeightKind
+Egami.Fonts.Layout.LineHeightKind.Normal = 0 -> Egami.Fonts.Layout.LineHeightKind
+Egami.Fonts.Layout.Paragraph
+Egami.Fonts.Layout.Paragraph.RichText.get -> Egami.Fonts.Layout.RichText!
+Egami.Fonts.Layout.Paragraph.Style.get -> Egami.Fonts.Layout.ParagraphStyle!
+Egami.Fonts.Layout.Paragraph.Text.get -> string!
+Egami.Fonts.Layout.ParagraphStyle
+Egami.Fonts.Layout.ParagraphStyle.<Clone>$() -> Egami.Fonts.Layout.ParagraphStyle!
+Egami.Fonts.Layout.ParagraphStyle.Align.get -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.ParagraphStyle.Align.init -> void
+Egami.Fonts.Layout.ParagraphStyle.AlignLast.get -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.ParagraphStyle.AlignLast.init -> void
+Egami.Fonts.Layout.ParagraphStyle.DefaultStyle.get -> Egami.Fonts.Layout.TextStyle!
+Egami.Fonts.Layout.ParagraphStyle.DefaultStyle.init -> void
+Egami.Fonts.Layout.ParagraphStyle.Direction.get -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Layout.ParagraphStyle.Direction.init -> void
+Egami.Fonts.Layout.ParagraphStyle.Ellipsis.get -> string?
+Egami.Fonts.Layout.ParagraphStyle.Ellipsis.init -> void
+Egami.Fonts.Layout.ParagraphStyle.Equals(Egami.Fonts.Layout.ParagraphStyle? other) -> bool
+Egami.Fonts.Layout.ParagraphStyle.Fallback.get -> Egami.Fonts.Shaping.FontFallback!
+Egami.Fonts.Layout.ParagraphStyle.Fallback.init -> void
+Egami.Fonts.Layout.ParagraphStyle.Hyphen.get -> string?
+Egami.Fonts.Layout.ParagraphStyle.Hyphen.init -> void
+Egami.Fonts.Layout.ParagraphStyle.Justify.get -> Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.ParagraphStyle.Justify.init -> void
+Egami.Fonts.Layout.ParagraphStyle.LineBreaking.get -> Egami.Fonts.Layout.LineBreakOptions
+Egami.Fonts.Layout.ParagraphStyle.LineBreaking.init -> void
+Egami.Fonts.Layout.ParagraphStyle.LineFill.get -> Egami.Fonts.Layout.LineFill
+Egami.Fonts.Layout.ParagraphStyle.LineFill.init -> void
+Egami.Fonts.Layout.ParagraphStyle.MaxHeight.get -> float?
+Egami.Fonts.Layout.ParagraphStyle.MaxHeight.init -> void
+Egami.Fonts.Layout.ParagraphStyle.MaxLines.get -> int?
+Egami.Fonts.Layout.ParagraphStyle.MaxLines.init -> void
+Egami.Fonts.Layout.ParagraphStyle.ParagraphStyle() -> void
+Egami.Fonts.Layout.ParagraphStyle.Strut.get -> Egami.Fonts.Layout.Strut?
+Egami.Fonts.Layout.ParagraphStyle.Strut.init -> void
+Egami.Fonts.Layout.ParagraphStyle.TabSize.get -> float
+Egami.Fonts.Layout.ParagraphStyle.TabSize.init -> void
+Egami.Fonts.Layout.ParagraphStyle.TabStops.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.TabStop>?
+Egami.Fonts.Layout.ParagraphStyle.TabStops.init -> void
+Egami.Fonts.Layout.ParagraphStyle.TextOrientation.get -> Egami.Fonts.Layout.TextOrientation
+Egami.Fonts.Layout.ParagraphStyle.TextOrientation.init -> void
+Egami.Fonts.Layout.ParagraphStyle.TrimEdges.get -> bool
+Egami.Fonts.Layout.ParagraphStyle.TrimEdges.init -> void
+Egami.Fonts.Layout.ParagraphStyle.WritingMode.get -> Egami.Fonts.Layout.WritingMode
+Egami.Fonts.Layout.ParagraphStyle.WritingMode.init -> void
+Egami.Fonts.Layout.Placeholder
+Egami.Fonts.Layout.Placeholder.Alignment.get -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.Placeholder.Alignment.init -> void
+Egami.Fonts.Layout.Placeholder.BaselineOffset.get -> float
+Egami.Fonts.Layout.Placeholder.BaselineOffset.init -> void
+Egami.Fonts.Layout.Placeholder.Deconstruct(out float Width, out float Height, out Egami.Fonts.Layout.PlaceholderAlignment Alignment, out float BaselineOffset) -> void
+Egami.Fonts.Layout.Placeholder.Equals(Egami.Fonts.Layout.Placeholder other) -> bool
+Egami.Fonts.Layout.Placeholder.Height.get -> float
+Egami.Fonts.Layout.Placeholder.Height.init -> void
+Egami.Fonts.Layout.Placeholder.Placeholder() -> void
+Egami.Fonts.Layout.Placeholder.Placeholder(float Width, float Height, Egami.Fonts.Layout.PlaceholderAlignment Alignment = Egami.Fonts.Layout.PlaceholderAlignment.Baseline, float BaselineOffset = 0) -> void
+Egami.Fonts.Layout.Placeholder.Width.get -> float
+Egami.Fonts.Layout.Placeholder.Width.init -> void
+Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.PlaceholderAlignment.AboveBaseline = 1 -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.PlaceholderAlignment.Baseline = 0 -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.PlaceholderAlignment.BelowBaseline = 2 -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.PlaceholderAlignment.Bottom = 4 -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.PlaceholderAlignment.Middle = 5 -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.PlaceholderAlignment.Top = 3 -> Egami.Fonts.Layout.PlaceholderAlignment
+Egami.Fonts.Layout.RichText
+Egami.Fonts.Layout.RichText.Placeholders.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.Placeholder>!
+Egami.Fonts.Layout.RichText.RichText(string! text, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.StyleSpan>? spans = null, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.Placeholder>? placeholders = null) -> void
+Egami.Fonts.Layout.RichText.Spans.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.StyleSpan>!
+Egami.Fonts.Layout.RichText.Text.get -> string!
+Egami.Fonts.Layout.RichTextBuilder
+Egami.Fonts.Layout.RichTextBuilder.AddPlaceholder(Egami.Fonts.Layout.Placeholder placeholder) -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RichTextBuilder.Append(string! text) -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RichTextBuilder.Append(System.ReadOnlySpan<char> text) -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RichTextBuilder.Depth.get -> int
+Egami.Fonts.Layout.RichTextBuilder.Length.get -> int
+Egami.Fonts.Layout.RichTextBuilder.Pop() -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RichTextBuilder.Push(Egami.Fonts.Layout.TextStyle! style) -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RichTextBuilder.RichTextBuilder() -> void
+Egami.Fonts.Layout.RichTextBuilder.ToRichText() -> Egami.Fonts.Layout.RichText!
+Egami.Fonts.Layout.Strut
+Egami.Fonts.Layout.Strut.<Clone>$() -> Egami.Fonts.Layout.Strut!
+Egami.Fonts.Layout.Strut.Equals(Egami.Fonts.Layout.Strut? other) -> bool
+Egami.Fonts.Layout.Strut.FontFamilies.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontFamily!>?
+Egami.Fonts.Layout.Strut.FontFamilies.init -> void
+Egami.Fonts.Layout.Strut.FontStyle.get -> Egami.Fonts.FontStyle?
+Egami.Fonts.Layout.Strut.FontStyle.init -> void
+Egami.Fonts.Layout.Strut.Force.get -> bool
+Egami.Fonts.Layout.Strut.Force.init -> void
+Egami.Fonts.Layout.Strut.LineHeight.get -> Egami.Fonts.Layout.LineHeight
+Egami.Fonts.Layout.Strut.LineHeight.init -> void
+Egami.Fonts.Layout.Strut.Size.get -> float?
+Egami.Fonts.Layout.Strut.Size.init -> void
+Egami.Fonts.Layout.Strut.Strut() -> void
+Egami.Fonts.Layout.StyleSpan
+Egami.Fonts.Layout.StyleSpan.Deconstruct(out int Start, out int Length, out Egami.Fonts.Layout.TextStyle! Style) -> void
+Egami.Fonts.Layout.StyleSpan.End.get -> int
+Egami.Fonts.Layout.StyleSpan.Equals(Egami.Fonts.Layout.StyleSpan other) -> bool
+Egami.Fonts.Layout.StyleSpan.Length.get -> int
+Egami.Fonts.Layout.StyleSpan.Length.init -> void
+Egami.Fonts.Layout.StyleSpan.Start.get -> int
+Egami.Fonts.Layout.StyleSpan.Start.init -> void
+Egami.Fonts.Layout.StyleSpan.Style.get -> Egami.Fonts.Layout.TextStyle!
+Egami.Fonts.Layout.StyleSpan.Style.init -> void
+Egami.Fonts.Layout.StyleSpan.StyleSpan() -> void
+Egami.Fonts.Layout.StyleSpan.StyleSpan(int Start, int Length, Egami.Fonts.Layout.TextStyle! Style) -> void
+Egami.Fonts.Layout.TabAlignment
+Egami.Fonts.Layout.TabAlignment.Center = 2 -> Egami.Fonts.Layout.TabAlignment
+Egami.Fonts.Layout.TabAlignment.Decimal = 3 -> Egami.Fonts.Layout.TabAlignment
+Egami.Fonts.Layout.TabAlignment.End = 1 -> Egami.Fonts.Layout.TabAlignment
+Egami.Fonts.Layout.TabAlignment.Start = 0 -> Egami.Fonts.Layout.TabAlignment
+Egami.Fonts.Layout.TabStop
+Egami.Fonts.Layout.TabStop.Alignment.get -> Egami.Fonts.Layout.TabAlignment
+Egami.Fonts.Layout.TabStop.Alignment.init -> void
+Egami.Fonts.Layout.TabStop.Deconstruct(out float Position, out Egami.Fonts.Layout.TabAlignment Alignment) -> void
+Egami.Fonts.Layout.TabStop.Equals(Egami.Fonts.Layout.TabStop other) -> bool
+Egami.Fonts.Layout.TabStop.Position.get -> float
+Egami.Fonts.Layout.TabStop.Position.init -> void
+Egami.Fonts.Layout.TabStop.TabStop() -> void
+Egami.Fonts.Layout.TabStop.TabStop(float Position, Egami.Fonts.Layout.TabAlignment Alignment = Egami.Fonts.Layout.TabAlignment.Start) -> void
+Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlign.Center = 4 -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlign.End = 1 -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlign.Justify = 5 -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlign.Left = 2 -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlign.Right = 3 -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlign.Start = 0 -> Egami.Fonts.Layout.TextAlign
+Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.Auto = 0 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.Center = 5 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.End = 2 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.Justify = 6 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.Left = 3 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.Right = 4 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextAlignLast.Start = 1 -> Egami.Fonts.Layout.TextAlignLast
+Egami.Fonts.Layout.TextDecoration
+Egami.Fonts.Layout.TextDecoration.<Clone>$() -> Egami.Fonts.Layout.TextDecoration!
+Egami.Fonts.Layout.TextDecoration.Color.get -> Egami.Pixels.Rgba8?
+Egami.Fonts.Layout.TextDecoration.Color.init -> void
+Egami.Fonts.Layout.TextDecoration.Equals(Egami.Fonts.Layout.TextDecoration? other) -> bool
+Egami.Fonts.Layout.TextDecoration.Lines.get -> Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.TextDecoration.Lines.init -> void
+Egami.Fonts.Layout.TextDecoration.Paint.get -> Egami.Fonts.Layout.ITextPaint?
+Egami.Fonts.Layout.TextDecoration.Paint.init -> void
+Egami.Fonts.Layout.TextDecoration.SkipInk.get -> Egami.Fonts.Layout.TextDecorationSkipInk
+Egami.Fonts.Layout.TextDecoration.SkipInk.init -> void
+Egami.Fonts.Layout.TextDecoration.Style.get -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextDecoration.Style.init -> void
+Egami.Fonts.Layout.TextDecoration.TextDecoration() -> void
+Egami.Fonts.Layout.TextDecoration.Thickness.get -> float?
+Egami.Fonts.Layout.TextDecoration.Thickness.init -> void
+Egami.Fonts.Layout.TextDecoration.UnderlineOffset.get -> float?
+Egami.Fonts.Layout.TextDecoration.UnderlineOffset.init -> void
+Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.TextDecorationLines.LineThrough = 4 -> Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.TextDecorationLines.None = 0 -> Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.TextDecorationLines.Overline = 2 -> Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.TextDecorationLines.Underline = 1 -> Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.TextDecorationSkipInk
+Egami.Fonts.Layout.TextDecorationSkipInk.Auto = 0 -> Egami.Fonts.Layout.TextDecorationSkipInk
+Egami.Fonts.Layout.TextDecorationSkipInk.None = 1 -> Egami.Fonts.Layout.TextDecorationSkipInk
+Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextDecorationStyle.Dashed = 3 -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextDecorationStyle.Dotted = 2 -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextDecorationStyle.Double = 1 -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextDecorationStyle.Solid = 0 -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextDecorationStyle.Wavy = 4 -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.TextJustify.Auto = 0 -> Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.TextJustify.InterCharacter = 2 -> Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.TextJustify.InterWord = 1 -> Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.TextJustify.None = 3 -> Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.TextOrientation
+Egami.Fonts.Layout.TextOrientation.Mixed = 0 -> Egami.Fonts.Layout.TextOrientation
+Egami.Fonts.Layout.TextOrientation.Sideways = 2 -> Egami.Fonts.Layout.TextOrientation
+Egami.Fonts.Layout.TextOrientation.Upright = 1 -> Egami.Fonts.Layout.TextOrientation
+Egami.Fonts.Layout.TextShadow
+Egami.Fonts.Layout.TextShadow.BlurRadius.get -> float
+Egami.Fonts.Layout.TextShadow.BlurRadius.init -> void
+Egami.Fonts.Layout.TextShadow.Color.get -> Egami.Pixels.Rgba8
+Egami.Fonts.Layout.TextShadow.Color.init -> void
+Egami.Fonts.Layout.TextShadow.Deconstruct(out System.Numerics.Vector2 Offset, out float BlurRadius, out Egami.Pixels.Rgba8 Color) -> void
+Egami.Fonts.Layout.TextShadow.Equals(Egami.Fonts.Layout.TextShadow other) -> bool
+Egami.Fonts.Layout.TextShadow.Offset.get -> System.Numerics.Vector2
+Egami.Fonts.Layout.TextShadow.Offset.init -> void
+Egami.Fonts.Layout.TextShadow.TextShadow() -> void
+Egami.Fonts.Layout.TextShadow.TextShadow(System.Numerics.Vector2 Offset, float BlurRadius, Egami.Pixels.Rgba8 Color) -> void
+Egami.Fonts.Layout.TextStyle
+Egami.Fonts.Layout.TextStyle.<Clone>$() -> Egami.Fonts.Layout.TextStyle!
+Egami.Fonts.Layout.TextStyle.Background.get -> Egami.Pixels.Rgba8?
+Egami.Fonts.Layout.TextStyle.Background.init -> void
+Egami.Fonts.Layout.TextStyle.BackgroundPaint.get -> Egami.Fonts.Layout.ITextPaint?
+Egami.Fonts.Layout.TextStyle.BackgroundPaint.init -> void
+Egami.Fonts.Layout.TextStyle.BaselineShift.get -> float?
+Egami.Fonts.Layout.TextStyle.BaselineShift.init -> void
+Egami.Fonts.Layout.TextStyle.Color.get -> Egami.Pixels.Rgba8?
+Egami.Fonts.Layout.TextStyle.Color.init -> void
+Egami.Fonts.Layout.TextStyle.Decoration.get -> Egami.Fonts.Layout.TextDecoration?
+Egami.Fonts.Layout.TextStyle.Decoration.init -> void
+Egami.Fonts.Layout.TextStyle.Equals(Egami.Fonts.Layout.TextStyle? other) -> bool
+Egami.Fonts.Layout.TextStyle.Features.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.FontFeature>?
+Egami.Fonts.Layout.TextStyle.Features.init -> void
+Egami.Fonts.Layout.TextStyle.FontFamilies.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontFamily!>?
+Egami.Fonts.Layout.TextStyle.FontFamilies.init -> void
+Egami.Fonts.Layout.TextStyle.FontStyle.get -> Egami.Fonts.FontStyle?
+Egami.Fonts.Layout.TextStyle.FontStyle.init -> void
+Egami.Fonts.Layout.TextStyle.Language.get -> string?
+Egami.Fonts.Layout.TextStyle.Language.init -> void
+Egami.Fonts.Layout.TextStyle.LetterSpacing.get -> float?
+Egami.Fonts.Layout.TextStyle.LetterSpacing.init -> void
+Egami.Fonts.Layout.TextStyle.LineHeight.get -> Egami.Fonts.Layout.LineHeight?
+Egami.Fonts.Layout.TextStyle.LineHeight.init -> void
+Egami.Fonts.Layout.TextStyle.Paint.get -> Egami.Fonts.Layout.ITextPaint?
+Egami.Fonts.Layout.TextStyle.Paint.init -> void
+Egami.Fonts.Layout.TextStyle.Shadows.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.TextShadow>?
+Egami.Fonts.Layout.TextStyle.Shadows.init -> void
+Egami.Fonts.Layout.TextStyle.Size.get -> float?
+Egami.Fonts.Layout.TextStyle.Size.init -> void
+Egami.Fonts.Layout.TextStyle.TextStyle() -> void
+Egami.Fonts.Layout.TextStyle.Variations.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontVariation>?
+Egami.Fonts.Layout.TextStyle.Variations.init -> void
+Egami.Fonts.Layout.TextStyle.WordSpacing.get -> float?
+Egami.Fonts.Layout.TextStyle.WordSpacing.init -> void
+Egami.Fonts.Layout.WritingMode
+Egami.Fonts.Layout.WritingMode.HorizontalTb = 0 -> Egami.Fonts.Layout.WritingMode
+Egami.Fonts.Layout.WritingMode.VerticalLr = 2 -> Egami.Fonts.Layout.WritingMode
+Egami.Fonts.Layout.WritingMode.VerticalRl = 1 -> Egami.Fonts.Layout.WritingMode
+override Egami.Fonts.Layout.LineHeight.GetHashCode() -> int
+override Egami.Fonts.Layout.ParagraphStyle.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.ParagraphStyle.GetHashCode() -> int
+override Egami.Fonts.Layout.ParagraphStyle.ToString() -> string!
+override Egami.Fonts.Layout.Placeholder.GetHashCode() -> int
+override Egami.Fonts.Layout.Strut.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.Strut.GetHashCode() -> int
+override Egami.Fonts.Layout.Strut.ToString() -> string!
+override Egami.Fonts.Layout.StyleSpan.GetHashCode() -> int
+override Egami.Fonts.Layout.TabStop.GetHashCode() -> int
+override Egami.Fonts.Layout.TextDecoration.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.TextDecoration.GetHashCode() -> int
+override Egami.Fonts.Layout.TextDecoration.ToString() -> string!
+override Egami.Fonts.Layout.TextShadow.GetHashCode() -> int
+override Egami.Fonts.Layout.TextStyle.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.TextStyle.GetHashCode() -> int
+override Egami.Fonts.Layout.TextStyle.ToString() -> string!
+static Egami.Fonts.Layout.LineHeight.Absolute(float height) -> Egami.Fonts.Layout.LineHeight
+static Egami.Fonts.Layout.LineHeight.Multiple(float factor) -> Egami.Fonts.Layout.LineHeight
+static Egami.Fonts.Layout.LineHeight.Normal.get -> Egami.Fonts.Layout.LineHeight
+static Egami.Fonts.Layout.LineHeight.operator !=(Egami.Fonts.Layout.LineHeight left, Egami.Fonts.Layout.LineHeight right) -> bool
+static Egami.Fonts.Layout.LineHeight.operator ==(Egami.Fonts.Layout.LineHeight left, Egami.Fonts.Layout.LineHeight right) -> bool
+static Egami.Fonts.Layout.Paragraph.Create(Egami.Fonts.Layout.RichText! text, Egami.Fonts.Layout.ParagraphStyle! style) -> Egami.Fonts.Layout.Paragraph!
+static Egami.Fonts.Layout.Paragraph.Create(string! text, Egami.Fonts.Layout.ParagraphStyle! style) -> Egami.Fonts.Layout.Paragraph!
+static Egami.Fonts.Layout.ParagraphStyle.Default.get -> Egami.Fonts.Layout.ParagraphStyle!
+static Egami.Fonts.Layout.ParagraphStyle.operator !=(Egami.Fonts.Layout.ParagraphStyle? left, Egami.Fonts.Layout.ParagraphStyle? right) -> bool
+static Egami.Fonts.Layout.ParagraphStyle.operator ==(Egami.Fonts.Layout.ParagraphStyle? left, Egami.Fonts.Layout.ParagraphStyle? right) -> bool
+static Egami.Fonts.Layout.Placeholder.operator !=(Egami.Fonts.Layout.Placeholder left, Egami.Fonts.Layout.Placeholder right) -> bool
+static Egami.Fonts.Layout.Placeholder.operator ==(Egami.Fonts.Layout.Placeholder left, Egami.Fonts.Layout.Placeholder right) -> bool
+static Egami.Fonts.Layout.Strut.operator !=(Egami.Fonts.Layout.Strut? left, Egami.Fonts.Layout.Strut? right) -> bool
+static Egami.Fonts.Layout.Strut.operator ==(Egami.Fonts.Layout.Strut? left, Egami.Fonts.Layout.Strut? right) -> bool
+static Egami.Fonts.Layout.StyleSpan.operator !=(Egami.Fonts.Layout.StyleSpan left, Egami.Fonts.Layout.StyleSpan right) -> bool
+static Egami.Fonts.Layout.StyleSpan.operator ==(Egami.Fonts.Layout.StyleSpan left, Egami.Fonts.Layout.StyleSpan right) -> bool
+static Egami.Fonts.Layout.TabStop.operator !=(Egami.Fonts.Layout.TabStop left, Egami.Fonts.Layout.TabStop right) -> bool
+static Egami.Fonts.Layout.TabStop.operator ==(Egami.Fonts.Layout.TabStop left, Egami.Fonts.Layout.TabStop right) -> bool
+static Egami.Fonts.Layout.TextDecoration.operator !=(Egami.Fonts.Layout.TextDecoration? left, Egami.Fonts.Layout.TextDecoration? right) -> bool
+static Egami.Fonts.Layout.TextDecoration.operator ==(Egami.Fonts.Layout.TextDecoration? left, Egami.Fonts.Layout.TextDecoration? right) -> bool
+static Egami.Fonts.Layout.TextShadow.operator !=(Egami.Fonts.Layout.TextShadow left, Egami.Fonts.Layout.TextShadow right) -> bool
+static Egami.Fonts.Layout.TextShadow.operator ==(Egami.Fonts.Layout.TextShadow left, Egami.Fonts.Layout.TextShadow right) -> bool
+static Egami.Fonts.Layout.TextStyle.operator !=(Egami.Fonts.Layout.TextStyle? left, Egami.Fonts.Layout.TextStyle? right) -> bool
+static Egami.Fonts.Layout.TextStyle.operator ==(Egami.Fonts.Layout.TextStyle? left, Egami.Fonts.Layout.TextStyle? right) -> bool
+~override Egami.Fonts.Layout.LineHeight.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.LineHeight.ToString() -> string
+~override Egami.Fonts.Layout.Placeholder.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.Placeholder.ToString() -> string
+~override Egami.Fonts.Layout.StyleSpan.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.StyleSpan.ToString() -> string
+~override Egami.Fonts.Layout.TabStop.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.TabStop.ToString() -> string
+~override Egami.Fonts.Layout.TextShadow.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.TextShadow.ToString() -> string
