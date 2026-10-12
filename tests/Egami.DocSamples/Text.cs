@@ -15,6 +15,10 @@ public class Text
 
     private static string FontFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf");
 
+    private static string VariableFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "RobotoFlex-subset.ttf");
+
+    private static string WebFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.woff2");
+
     [Fact]
     public void LoadAFace()
     {
@@ -37,6 +41,50 @@ public class Text
         Assert.Equal(FontFileKind.Sfnt, probe.Kind);
         Assert.Empty(seen);
         Assert.Equal(face.GlyphCount, lenient.GlyphCount);
+    }
+
+    [Fact]
+    public void WebFonts()
+    {
+        #region web
+        // WOFF and WOFF2 files load like any font: they are unwrapped into an ordinary font in memory once.
+        Typeface face = Typeface.FromFile(WebFile);
+        FontFileKind container = face.Container;
+        string? metadata = face.GetWoffMetadata();
+        #endregion
+
+        Assert.Equal(FontFileKind.Woff2, container);
+        Assert.Equal("Noto Sans", face.FamilyName);
+        Assert.Null(metadata);
+    }
+
+    [Fact]
+    public void VariableFonts()
+    {
+        #region variable
+        // A variable font's axes and named instances, and the face at any position on them.
+        Typeface flex = Typeface.FromFile(VariableFile);
+        foreach (VariationAxis axis in flex.VariationAxes)
+        {
+            Console.WriteLine($"{axis.Tag} {axis.Name}: {axis.Min} to {axis.Max}, default {axis.Default}");
+        }
+
+        Typeface semiBold = flex.WithVariations(FontVariation.Weight(600), FontVariation.Width(90));
+        Typeface black = flex.WithNamedInstance(flex.NamedInstances.Count - 1);
+
+        // The optical size follows the font size unless the face sets it (OpticalSizing.None turns that off).
+        var caption = new Font(semiBold, 11);
+        Typeface drawn = caption.EffectiveTypeface;
+
+        // For a PDF, the subset is a static font at the face's position, which every viewer draws as it is.
+        FontSubset subset = FontSubsetter.Subset(semiBold, caption.Shape("Static at 600").Glyphs.ToArray());
+        #endregion
+
+        Assert.True(flex.IsVariable);
+        Assert.Contains(FontVariation.Weight(600), semiBold.Variations);
+        Assert.Contains(FontVariation.OpticalSize(11), drawn.Variations);
+        Assert.NotEqual(flex.PostScriptName, black.PostScriptName);
+        Assert.False(subset.ToTypeface().IsVariable);
     }
 
     [Fact]

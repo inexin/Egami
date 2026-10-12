@@ -42,6 +42,8 @@
     <None Include="../images/icc/synthetic/cmyk-mab-v4.icc" Link="images/cmyk.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/SourceSans3-Regular.otf" Link="fonts/SourceSans3-Regular.otf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/derived/RobotoFlex-subset.ttf" Link="fonts/RobotoFlex-subset.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/derived/NotoSans-Regular.woff2" Link="fonts/NotoSans-Regular.woff2" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

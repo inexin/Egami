@@ -1,14 +1,15 @@
 # Fonts and text
 
-Egami.Fonts is a separate package that reads TrueType and OpenType fonts in managed code: faces, glyph outlines, metrics, kerning,
-installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Both are previews
+Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
+outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Both are previews
 (Egami.Fonts 1.0.0-preview.1): the API may still change before 1.0. Egami ships no font: text needs a face from a file, a stream,
 memory or the installed fonts.
 
 ## Faces
 
 A `Typeface` is one face, immutable and shared by every thread. `Typeface.FromFile`, `FromStream` and `FromMemory` read TrueType
-(.ttf), OpenType CFF (.otf), collections (.ttc, .otc, with a face index) and bare CFF; `FromCff` reads a bare CFF stream as PDF
+(.ttf), OpenType CFF and CFF2 (.otf), collections (.ttc, .otc, with a face index), WOFF and WOFF2 (.woff, .woff2, collections
+too) and bare CFF; `FromCff` reads a bare CFF stream as PDF
 embeds it, with `CffOptions` for the units per em and widths it lacks. `FontLoader.Probe` tells a `FontProbe` (its `FontFileKind`,
 face count and `FontOutlines`) from the header, and `FontLoader.LoadAll` loads every face of a collection.
 
@@ -18,11 +19,41 @@ face count and `FontOutlines`) from the header, and `FontLoader.LoadAll` loads e
 - Loading is lenient: a missing or damaged name, OS/2, hhea, hmtx, post or cmap table gets a documented default and a
   `Font.MissingTable` or `Font.BadTable` diagnostic, and a broken glyph draws empty with `Font.BadGlyph`. Only a font with no
   readable glyph data throws `CorruptDataException`. `FontLoadOptions.Strict` throws on the first problem instead.
-- WOFF, WOFF2, CFF2 and variable fonts arrive in 2.7.2; a variable TrueType font draws its default instance.
+- A WOFF or WOFF2 file is unwrapped once into an ordinary font in new memory (zlib, and Brotli through .NET's own decoder, with
+  WOFF2's glyf, loca and hmtx transforms); the compressed bytes are not kept. `Container` says where a face came from, and
+  `GetWoffMetadata` and `GetWoffPrivateData` return the file's own blocks. Every decoded table equals the reference decoders'.
 - `GetNames` returns every `FontNameRecord`; `TryGetTable` returns any table's bytes by `FontTag`. `Embedding` reports the
   `FontEmbedding` permissions, which Egami never enforces.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cff)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#web)]
+
+## Variable fonts
+
+A variable font is one file that holds a range of designs along its axes, such as weight from 100 to 900. `IsVariable`,
+`VariationAxes` (each a `VariationAxis` with its range) and `NamedInstances` (each a `NamedInstance`, such as "Bold") describe it.
+`WithVariations` returns the face at a position, given as `FontVariation` values, and `WithNamedInstance` at a named one: an
+ordinary immutable `Typeface` sharing the file's memory, whose outlines, advances, extents, kerning, names and subsets all answer
+for that position. `Variations` gives a face's position.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#variable)]
+
+- Positions clamp to each axis; axes the font lacks are ignored, and the default position is the face itself. Faces at a position
+  are cached, so drawing at one position costs what a static font costs.
+- Outlines vary through gvar (TrueType) or CFF2's blends, advances through HVAR (or phantom points), the extents through MVAR and
+  kerning through GDEF's deltas, with avar versions 1 and 2. At 25 positions in each test font every outline and advance equals
+  fontTools' within 1/64 unit.
+- A named instance takes the instance's names; another position keeps the default's names and gets a PostScript name of its own
+  (Adobe Technical Note 5902), such as `NotoSans_650wght`.
+- `FontCollection` lists a variable face's named instances as faces, and `FontFamily.Match` places the face anywhere its weight,
+  width and slant or italic axes reach, as CSS does: weight 450 is drawn at 450, not snapped to 400.
+- With `Font.OpticalSizing` at `OpticalSizing.Auto` (the default), a face with an opsz axis it leaves at the default is drawn at
+  opsz equal to the size in canvas units; `Font.EffectiveTypeface` is the face drawn.
+- `SubsetOptions.Variations` (by default the face's own position) makes the subset a static font at that position, written as an
+  instancer would: the varied outlines rounded to whole units, metrics, OS/2 and post at the position, CFF2 written as CFF and the
+  variation tables left out. Its outlines, advances and bearings equal fontTools' instancer's, so a PDF shows the position.
+- A variable font's GSUB feature variations (glyph swaps by position) arrive with shaping in 2.8.
 
 ## Glyphs and metrics
 
