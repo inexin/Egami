@@ -44,7 +44,35 @@ internal sealed partial class SvgResolver
             if (CssUrl.TryParse(item, out CssUrl url))
             {
                 SvgElement? target = SvgStyleValues.LocalId(url.Url) is string id ? _document.FindById(id) : null;
-                SvgFilterGraph? graph = target is not null && target.Name == "filter" && target.IsSvgOrBare(_document) ? FilterElement(target, element, box, context) : null;
+                if (target is not null && _active.Contains(target))
+                {
+                    // A filter met again inside its own feImage: the element there draws unfiltered, as resvg draws it.
+                    _report.Warn("Svg.BadReference", $"The filter \"url({SvgGeometry.Clip(url.Url)})\" is part of a reference cycle; the element draws unfiltered.", element);
+                    return null;
+                }
+
+                bool outer = _filtering.Add(element);
+                SvgFilterGraph? graph;
+                try
+                {
+                    graph = target is not null && target.Name == "filter" && target.IsSvgOrBare(_document) ? FilterElement(target, element, box, context) : null;
+                }
+                finally
+                {
+                    if (outer)
+                    {
+                        _filtering.Remove(element);
+                    }
+                }
+
+                if (_filterNamesItsUser && outer)
+                {
+                    // An feImage that draws the filtered element itself makes the filter invalid; the element draws unfiltered.
+                    _filterNamesItsUser = false;
+                    _report.Warn("Svg.BadReference", $"The filter \"url({SvgGeometry.Clip(url.Url)})\" draws the element it filters; the element draws unfiltered.", element);
+                    return null;
+                }
+
                 if (graph is null)
                 {
                     invalidUrl = true;
@@ -150,7 +178,14 @@ internal sealed partial class SvgResolver
                     continue;
                 }
 
-                RectF? sub = Subregion(child, primitiveBox, region, b, lengths);
+                // feOffset's subregion defaults to its input's, as resvg resolves it, so an offset tile stays a tile for feTile.
+                RectF defaults = region;
+                if (child.Name == "feOffset" && Input(child, "in", primitives, results) is { Source: SvgFilterSource.Result } offsetInput)
+                {
+                    defaults = primitives[offsetInput.Index].Region;
+                }
+
+                RectF? sub = Subregion(child, primitiveBox, defaults, b, lengths);
                 if (sub is not RectF subregion)
                 {
                     break;
@@ -291,8 +326,9 @@ internal sealed partial class SvgResolver
 
             case "feBlend":
             {
+                // feBlend takes Compositing 1's keywords only: plus-lighter is not one, so it falls back to normal, as resvg reads it.
                 string mode = fe.Attributes["mode"]?.Trim() ?? "normal";
-                return new SvgBlend(region, linear, In(), In2(), SvgStyleParsing.TryBlendMode(mode, out BlendMode m) ? m : BlendMode.SourceOver);
+                return new SvgBlend(region, linear, In(), In2(), mode != "plus-lighter" && SvgStyleParsing.TryBlendMode(mode, out BlendMode m) ? m : BlendMode.SourceOver);
             }
 
             case "feComposite":
@@ -592,6 +628,12 @@ internal sealed partial class SvgResolver
         if (!href.TrimStart().StartsWith("data:", StringComparison.OrdinalIgnoreCase) && SvgStyleValues.LocalId(href) is string id && href.TrimStart().StartsWith('#'))
         {
             SvgElement? target = _document.FindById(id);
+            if (target is not null && _filtering.Contains(target))
+            {
+                _filterNamesItsUser = true;
+                return null;
+            }
+
             if (target is null || !Enter(target, fe))
             {
                 return null;
@@ -599,7 +641,14 @@ internal sealed partial class SvgResolver
 
             try
             {
-                return Element(target, context);
+                // Drawn as a use element at the subregion's corner would draw it, as resvg places it.
+                SvgNode? node = Element(target, context);
+                return node is null ? null : new SvgGroup
+                {
+                    Children = [node],
+                    Transform = Matrix3x2.CreateTranslation(region.X, region.Y),
+                    Bounds = Bounds([node]),
+                };
             }
             finally
             {
@@ -627,7 +676,13 @@ internal sealed partial class SvgResolver
     {
         primitive = null;
         largeRegion = false;
-        List<CssComponentValue> args = [.. function.Arguments.Where(a => a is not CssTokenValue { Token.Kind: CssTokenKind.Whitespace or CssTokenKind.Comma })];
+        // No filter function takes commas (Filter Effects 1 section 13): a list with one is invalid, as resvg reads it.
+        if (function.Arguments.Any(a => a is CssTokenValue { Token.Kind: CssTokenKind.Comma }))
+        {
+            return false;
+        }
+
+        List<CssComponentValue> args = [.. function.Arguments.Where(a => a is not CssTokenValue { Token.Kind: CssTokenKind.Whitespace })];
         RectF none = default;
         string name = function.Name.ToLowerInvariant();
         float Amount(float fallback, float max = float.PositiveInfinity)
@@ -766,6 +821,11 @@ internal sealed partial class SvgResolver
             case "blur":
             {
                 float sigma = 0;
+                if (args.Count > 1)
+                {
+                    return false;
+                }
+
                 if (args.Count > 0)
                 {
                     if (!SvgStyleValues.TryLength(args[0], out SvgLength l) || l.Value < 0 || l.IsPercent)

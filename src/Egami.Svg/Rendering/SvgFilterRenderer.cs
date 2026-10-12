@@ -39,6 +39,23 @@ internal static class SvgFilterRenderer
         double area = region.Width * (double)sx * region.Height * sy;
         if (area > MaxPixels)
         {
+            // A region far larger than what can show is cut to the visible area with a margin, so it keeps its resolution.
+            RectF visible = canvas.LocalClipBounds;
+            float margin = Math.Max(visible.Width, visible.Height) / 4;
+            visible = visible.Inflate(margin, margin);
+            float x0 = Math.Max(region.Left, visible.Left), y0 = Math.Max(region.Top, visible.Top);
+            float x1 = Math.Min(region.Right, visible.Right), y1 = Math.Min(region.Bottom, visible.Bottom);
+            if (!(x1 > x0 && y1 > y0))
+            {
+                return;
+            }
+
+            region = new RectF(x0, y0, x1 - x0, y1 - y0);
+            area = region.Width * (double)sx * region.Height * sy;
+        }
+
+        if (area > MaxPixels)
+        {
             float down = (float)Math.Sqrt(MaxPixels / area);
             sx *= down;
             sy *= down;
@@ -138,7 +155,16 @@ internal static class SvgFilterRenderer
             {
                 Rect sub = Intersect(frame.Pixels(primitive.Region), _region);
                 RgbaF32[] pixels = Primitive(primitive, sub);
-                Clear(pixels, sub);
+
+                // An feOffset that took its input's subregion keeps that subregion for feTile but is not cut to it: the moved
+                // pixels stay, as resvg draws them.
+                bool moved = primitive is SvgOffset { In.Source: SvgFilterSource.Result } offset && offset.In.Index < graph.Primitives.Count &&
+                    graph.Primitives[offset.In.Index].Region == offset.Region;
+                if (!moved)
+                {
+                    Clear(pixels, sub);
+                }
+
                 _results.Add(new Image(pixels, primitive.Linear, sub));
             }
 
@@ -455,45 +481,19 @@ internal static class SvgFilterRenderer
         }
 
         /// <summary>feConvolveMatrix: SVG's kernel is applied rotated half a turn, about the target pixel.</summary>
-        private RgbaF32[] Convolve(RgbaF32[] pixels, SvgConvolve convolve)
-        {
-            int ox = convolve.OrderX, oy = convolve.OrderY;
-            float[] flipped = new float[ox * oy];
-            for (int j = 0; j < oy; j++)
-            {
-                for (int i = 0; i < ox; i++)
-                {
-                    flipped[(j * ox) + i] = convolve.Kernel[((oy - 1 - j) * ox) + (ox - 1 - i)];
-                }
-            }
-
-            ConvolutionKernel kernel = new(ox, oy, flipped, convolve.Divisor, convolve.Bias);
-            using (Raster<RgbaF32> r = Wrap(pixels))
-            {
-                Operate(r, pixels, ops => ops.Convolve(kernel, convolve.Edge, convolve.PreserveAlpha));
-            }
-
-            // The kernel runs about its center; a target elsewhere moves the result.
-            int shiftX = (ox - 1 - convolve.TargetX) - (ox / 2), shiftY = (oy - 1 - convolve.TargetY) - (oy / 2);
-            return shiftX == 0 && shiftY == 0 ? pixels : Offset(pixels, -shiftX, -shiftY);
-        }
+        private RgbaF32[] Convolve(RgbaF32[] pixels, SvgConvolve convolve) => SvgFilterKernels.Convolve(pixels, W, H, convolve);
 
         private RgbaF32[] Lighting(RgbaF32[] pixels, SvgLighting lighting, bool linear)
         {
             RgbaF32 color = linear ? ToLinear(lighting.Color) : lighting.Color;
-            Rgba8 color8 = new((byte)Math.Clamp((int)MathF.Round(color.R * 255), 0, 255), (byte)Math.Clamp((int)MathF.Round(color.G * 255), 0, 255), (byte)Math.Clamp((int)MathF.Round(color.B * 255), 0, 255), 255);
             float scale = (frame.Sx + frame.Sy) / 2;
-            Light light = lighting.Light switch
+            SvgLight light = lighting.Light switch
             {
-                SvgDistantLight d => new DistantLight(d.Azimuth, d.Elevation) { Color = color8 },
-                SvgPointLight p => new PointLight(Position(p.Position, scale)) { Color = color8 },
-                SvgSpotLight s => new SpotLight(Position(s.Position, scale), Position(s.PointsAt, scale), s.Exponent, s.ConeAngle ?? 90) { Color = color8 },
-                _ => new DistantLight(0, 0) { Color = color8 },
+                SvgPointLight p => p with { Position = Position(p.Position, scale) },
+                SvgSpotLight s => s with { Position = Position(s.Position, scale), PointsAt = Position(s.PointsAt, scale) },
+                _ => lighting.Light,
             };
-            LightingModel model = lighting.Specular ? LightingModel.Specular(lighting.Constant, lighting.Exponent) : LightingModel.Diffuse(lighting.Constant);
-            using Raster<RgbaF32> r = Wrap(pixels);
-            Operate(r, pixels, ops => ops.Lighting(light, model, new LightingOptions { SurfaceScale = lighting.SurfaceScale, Height = HeightSource.Alpha }));
-            return pixels;
+            return SvgFilterKernels.Light(pixels, W, H, lighting with { SurfaceScale = lighting.SurfaceScale }, light, color);
         }
 
         private Vector3 Position(Vector3 user, float scale)

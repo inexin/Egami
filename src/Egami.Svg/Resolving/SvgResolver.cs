@@ -68,6 +68,10 @@ internal sealed partial class SvgResolver
     private readonly IReadOnlyList<string> _languages;
     private readonly Dictionary<SvgElement, (SvgStyle Style, CssComputedStyle Css)> _original = new(IdentityComparer.Instance);
     private readonly HashSet<SvgElement> _active = new(IdentityComparer.Instance);
+
+    /// <summary>The elements whose filters are being resolved, and whether an feImage named one of them.</summary>
+    private readonly HashSet<SvgElement> _filtering = new(IdentityComparer.Instance);
+    private bool _filterNamesItsUser;
     private readonly Dictionary<SvgElement, bool> _useCycles = new(IdentityComparer.Instance);
     private int _depth;
     private long _elements;
