@@ -121,7 +121,7 @@ public class PathEffectTests
         }
 
         Path holes = Square.Apply(PathEffect.HatchPath(Matrix3x2.CreateScale(25), Path.Circle(Vector2.Zero, 2)));
-        Assert.Equal(25, holes.Contours.Count);
+        Assert.Equal(16, holes.Contours.Count);
         Assert.Throws<ArgumentException>(() => PathEffect.Hatch(Matrix3x2.CreateScale(0)));
     }
 

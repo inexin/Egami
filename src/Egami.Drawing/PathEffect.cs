@@ -115,12 +115,15 @@ public abstract record class PathEffect
     }
 
     /// <summary>
-    /// Returns an effect that repeats a shape along each contour, every <paramref name="advance"/> units starting at
-    /// <paramref name="phase"/>, as Skia's 1D path effect does. The result is the shapes, filled by the shape's fill rule.
+    /// Returns an effect that repeats a shape along each contour, every <paramref name="advance"/> units, as Skia's 1D path effect
+    /// does. The result is the shapes, filled by the shape's fill rule.
     /// </summary>
     /// <param name="shape">The shape, around its own origin, which goes on the path.</param>
     /// <param name="advance">The distance between copies.</param>
-    /// <param name="phase">Where the first copy goes; taken modulo the advance.</param>
+    /// <param name="phase">
+    /// How far into the repeat each contour starts, as a dash pattern's phase is (and as Skia and PostScript read it): the first
+    /// copy goes at the advance less the phase, modulo the advance.
+    /// </param>
     /// <param name="style">How each copy is placed.</param>
     /// <returns>The effect.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="advance"/> is not positive, or a value is not finite or defined.</exception>
@@ -147,7 +150,7 @@ public abstract record class PathEffect
 
     /// <summary>
     /// Returns an effect that hatches the area a path covers with parallel lines, as Skia's 2D line effect does: the lines are the
-    /// rows y = 0, ±1, ±2 and so on of a lattice, mapped into the path's space by <paramref name="lattice"/>, cut where they leave the
+    /// rows through the centers of a lattice's cells (y = ½, 1½ and so on, and below), mapped into the path's space by <paramref name="lattice"/>, cut where they leave the
     /// area by its fill rule. With a width, each line is outlined to it, so the result is filled; with width 0 the lines are left
     /// open, for a stroke to draw.
     /// </summary>
@@ -175,7 +178,7 @@ public abstract record class PathEffect
     /// Returns an effect that stamps a shape at every point of a lattice inside the area a path covers, as Skia's 2D path effect
     /// does. The result is the shapes, filled by the shape's fill rule.
     /// </summary>
-    /// <param name="lattice">The transform from lattice space, where the points are the integer coordinates, into the path's space.</param>
+    /// <param name="lattice">The transform from lattice space, where the points are the centers of the unit cells (x and y at a half), into the path's space.</param>
     /// <param name="shape">The shape, around its own origin, placed at each point.</param>
     /// <returns>The effect.</returns>
     /// <exception cref="ArgumentException"><paramref name="lattice"/> cannot be inverted.</exception>
@@ -420,7 +423,8 @@ public abstract record class PathEffect
         internal override Path Apply(Path path)
         {
             PathMeasure measure = new(path);
-            double phase = Phase % Advance;
+            // The phase is an offset into the repeat, so the first copy lies that much less than an advance along.
+            double phase = -Phase % Advance;
             if (phase < 0)
             {
                 phase += Advance;
@@ -522,7 +526,9 @@ public abstract record class PathEffect
                 maxY = Math.Max(maxY, Math.Max(a.Y, b.Y));
             }
 
-            double rows = Math.Floor(maxY) - Math.Ceiling(minY) + 1;
+            // Rows through the cells' centers, as Skia's lattice has them.
+            double first = Math.Ceiling(minY - 0.5) + 0.5;
+            double rows = Math.Floor(maxY - 0.5) + 0.5 - first + 1;
             if (edges.Count == 0 || !(rows > 0))
             {
                 return Path.Empty;
@@ -535,7 +541,7 @@ public abstract record class PathEffect
 
             PathBuilder lines = new();
             List<(double X, int Winding)> crossings = [];
-            for (double y = Math.Ceiling(minY); y <= maxY; y++)
+            for (double y = first; y <= maxY; y++)
             {
                 foreach ((double x0, double x1) in Scanlines.Spans(edges, y, path.FillRule, crossings))
                 {
@@ -567,7 +573,9 @@ public abstract record class PathEffect
                 Vector2.Transform(new Vector2(bounds.Right, bounds.Bottom), Inverse),
             ];
             RectF box = RectF.FromPoints(corners);
-            double columns = Math.Floor(box.Right) - Math.Ceiling(box.Left) + 1, rows = Math.Floor(box.Bottom) - Math.Ceiling(box.Top) + 1;
+            // The cells' centers, as Skia's lattice has them.
+            float left = MathF.Ceiling(box.Left - 0.5f) + 0.5f, top = MathF.Ceiling(box.Top - 0.5f) + 0.5f;
+            double columns = Math.Floor(box.Right - left) + 1, rows = Math.Floor(box.Bottom - top) + 1;
             if (!(columns > 0 && rows > 0))
             {
                 return Path.Empty;
@@ -579,9 +587,9 @@ public abstract record class PathEffect
             }
 
             PathBuilder builder = new();
-            for (float j = MathF.Ceiling(box.Top); j <= box.Bottom; j++)
+            for (float j = top; j <= box.Bottom; j++)
             {
-                for (float i = MathF.Ceiling(box.Left); i <= box.Right; i++)
+                for (float i = left; i <= box.Right; i++)
                 {
                     Vector2 point = Vector2.Transform(new Vector2(i, j), Lattice);
                     if (path.Contains(point))
