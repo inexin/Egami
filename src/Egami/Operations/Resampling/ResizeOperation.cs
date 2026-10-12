@@ -41,7 +41,7 @@ internal sealed class ResizeOperation(
         Geometry.ExifUpkeep.Dimensions(metadata, output);
         Geometry.ExifUpkeep.DropThumbnail(metadata);
         Plan plan = PlanFor(input);
-        Geometry.ExifUpkeep.Subject(metadata, Geometry.SubjectMap.Resize(input, plan.SourceX, plan.SourceY, plan.SourceWidth, plan.SourceHeight, plan.Output));
+        Geometry.ExifUpkeep.Subject(metadata, Geometry.SubjectMap.Resize(input, plan.SourceX, plan.SourceY, plan.SourceWidth, plan.SourceHeight, plan.Output), input);
     }
 
     /// <summary>

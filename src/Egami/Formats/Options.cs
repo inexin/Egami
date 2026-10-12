@@ -45,6 +45,18 @@ public record ReaderOptions
     /// </example>
     public Colors.ColorProfile? ConvertColorTo { get; init; }
 
+    /// <summary>
+    /// Gets how to read the HDR rendition of a file that carries a gain map (Ultra HDR, ISO 21496-1 and Apple JPEGs), or
+    /// <see langword="null"/> (the default) to read the SDR base image as stored, with the map kept in
+    /// <see cref="Metadata.RasterMetadata.GainMap"/>. Set, the load gives linear <see cref="Pixels.RgbaF16"/> with 1.0 as SDR
+    /// white; a file without a gain map loads as it would without it. <see cref="Region"/> and <see cref="MinimumSize"/> cannot
+    /// be combined with it.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Hdr.cs" region="gain-map"/>
+    /// </example>
+    public HdrDecode? Hdr { get; init; }
+
     /// <summary>Gets the frames to read. Defaults to all of them. Use <c>..1</c> for only the first frame.</summary>
     public Range Frames { get; init; } = Range.All;
 
@@ -77,6 +89,19 @@ public record ReaderOptions
     /// that take a <see cref="FormatInfo"/>, such as <see cref="Raster.Load(Stream, FormatInfo, EgamiContext?, ReaderOptions?)"/>.
     /// </summary>
     internal FormatInfo? Format { get; init; }
+}
+
+/// <summary>How to read the HDR rendition of an image with a gain map, for <see cref="ReaderOptions.Hdr"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Hdr.cs" region="gain-map"/>
+/// </example>
+public sealed record HdrDecode
+{
+    /// <summary>
+    /// Gets the display headroom to render for: the display's peak over SDR white, linear (4 for a display four times as bright
+    /// as SDR white), or <see langword="null"/> (the default) for the gain map's full HDR capacity.
+    /// </summary>
+    public double? Headroom { get; init; }
 }
 
 /// <summary>How a decode produces rows, as <see cref="RasterInfo.Access"/> reports it.</summary>

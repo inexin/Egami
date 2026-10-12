@@ -49,6 +49,9 @@ internal enum SaveKeeps
 
     /// <summary>Every kind of metadata.</summary>
     Metadata = Exif | Xmp | Iptc | Icc | Text | Resolution,
+
+    /// <summary>An HDR gain map (HDR Design question 11), or the caller's choice to leave it out.</summary>
+    GainMap = 1 << 12,
 }
 
 /// <summary>
@@ -92,6 +95,11 @@ internal static class SaveLosses
         {
             string to = (keeps & SaveKeeps.Wide) != 0 ? "16-bit" : "8-bit";
             context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.DepthReduced", $"{format} holds no floating-point samples here; they were written as {to} integers, values outside 0 to 1 clipped.");
+            if (whole is not null && Brightest(whole) is > 1 and float peak)
+            {
+                // HDR Design question 14: clamp as other libraries do, and name the operation that would have kept the highlights.
+                context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.HdrClipped", $"The raster holds light up to {peak:0.##} times reference white, which {format} clipped to 1; tone map it first with ToneMap to keep the highlights.");
+            }
         }
         else if (!isFloat && layout.BitsPerChannel > 8 && (keeps & SaveKeeps.Wide) == 0)
         {
@@ -106,6 +114,11 @@ internal static class SaveLosses
         if (!start.Options.StripMetadata && Dropped(start.Metadata, keeps, textKeys ?? s_comment) is string dropped)
         {
             context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.MetadataDropped", $"{format} cannot hold {dropped}; it was not written.");
+        }
+
+        if (!start.Options.StripMetadata && start.Metadata.GainMap is not null && (keeps & SaveKeeps.GainMap) == 0)
+        {
+            context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Save.GainMapDropped", $"{format} holds no gain map; the image was written as its SDR base. Save as JPEG to keep the HDR rendition.");
         }
 
         diagnostics?.Complete();
@@ -176,6 +189,35 @@ internal static class SaveLosses
         }
 
         return false;
+    }
+
+    /// <summary>Returns the largest color sample of a floating-point raster.</summary>
+    private static float Brightest<TPixel>(Raster<TPixel> raster)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        RgbaF32[] row = ArrayPool<RgbaF32>.Shared.Rent(raster.Width);
+        try
+        {
+            float peak = 0;
+            for (int f = 0; f < raster.FrameCount; f++)
+            {
+                for (int y = 0; y < raster.Height; y++)
+                {
+                    Span<RgbaF32> pixels = row.AsSpan(0, raster.Width);
+                    PixelConvert.Convert<TPixel, RgbaF32>(raster.Frames[f].Row(y), pixels);
+                    foreach (RgbaF32 p in pixels)
+                    {
+                        peak = MathF.Max(peak, MathF.Max(p.R, MathF.Max(p.G, p.B)));
+                    }
+                }
+            }
+
+            return peak;
+        }
+        finally
+        {
+            ArrayPool<RgbaF32>.Shared.Return(row);
+        }
     }
 
     private static bool IsOpaque<TPixel>(Raster<TPixel> raster)

@@ -171,3 +171,28 @@ analysis/
 ../reference/analysis/
   ImageMagick 7.1.1's compare metrics, difference images and identify -verbose statistics, and Python imagehash 4.3.1's phash
   and dhash, for the files above, made by tools/make-analysis-references.py. Same licenses as the inputs.
+
+radiance/, ../reference/radiance/
+  Radiance pictures made by tools/make-hdr-references.py (tools/hdrref/hdrcorpus.py, and ImageMagick 7.1 for
+  desk-magick.hdr) from a 96 x 64 crop of ScanLines/Desk.exr and from generated ramps; the decodes are stb_image's (public
+  domain or MIT) or hdrcorpus.py's, as manifest.json says. Desk.exr is from the openexr-images set, Copyright (c) 2004
+  Industrial Light & Magic, BSD 3-clause license (see .cache/openexr-images/LICENSE after running the script).
+
+mpf/, ../reference/mpf/
+  apple-gainmap-new.jpg and apple-gainmap-old.jpg are libultrahdr's tests/data/apple_gainmap_*.jpg (libultrahdr 2.0.2),
+  CC-BY-4.0. uhdr-*.jpg are Ultra HDR files libultrahdr's ultrahdr_app wrote from a 256 x 192 crop of openexr-images'
+  ScanLines/Desk.exr (BSD 3-clause, as radiance/ above). stereo-*.jpg and preview.jpg are Multi-Picture files
+  tools/hdrref/hdrcorpus.py assembled from ImageMagick gradients; no outside content. The references are ExifTool's MPF
+  listings of each file, made by tools/make-hdr-references.py mpf.
+
+exr/, ../reference/exr/
+  OpenEXR files tools/hdrref/hdrcorpus.py wrote with OpenEXR 3.5.2 (its Python bindings, exrmaketiled, exrmultipart and
+  RgbaOutputFile) from crops of openexr-images' ScanLines/Desk.exr (BSD 3-clause, as radiance/ above) and generated
+  channels. The references are OpenEXR's decodes of each file, made by tools/make-hdr-references.py exr.
+
+gainmap/, ../reference/gainmap/
+  apple-gainmap-*.jpg are libultrahdr's tests/data/apple_gainmap_*.jpg (libultrahdr 2.0.2), CC-BY-4.0. uhdr-*.jpg are
+  Ultra HDR files libultrahdr's ultrahdr_app wrote from crops of openexr-images' ScanLines/Desk.exr (BSD 3-clause, as
+  radiance/ above); adobe-xmp.jpg is uhdr-default.jpg with its ISO 21496-1 metadata swapped for Adobe's hdrgm XMP by
+  tools/hdrref/hdrcorpus.py. The references are libultrahdr's metadata and linear half-float decodes at three display
+  boosts, made by tools/make-hdr-references.py gainmap.

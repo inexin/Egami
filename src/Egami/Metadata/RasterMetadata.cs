@@ -240,6 +240,13 @@ public sealed class RasterMetadata
     /// <summary>Gets or sets the HDR mastering display and light levels the file gave (PNG mDCV and cLLI), or <see langword="null"/>.</summary>
     public Colors.HdrMetadata? Hdr { get; set; }
 
+    /// <summary>
+    /// Gets or sets the HDR gain map the file carried (Ultra HDR, ISO 21496-1 or Apple JPEGs), or <see langword="null"/>. The JPEG
+    /// writer writes it back while the raster keeps the size it was read at; geometry operations carry it, and operations that
+    /// change pixel values drop it.
+    /// </summary>
+    public Colors.GainMap? GainMap { get; set; }
+
     /// <summary>Gets or sets the name of the format the raster was read from, such as "PNG", or <see langword="null"/>.</summary>
     public string? FormatName { get; set; }
 
@@ -439,6 +446,7 @@ public sealed class RasterMetadata
             CodePoints = CodePoints,
             Primaries = Primaries,
             Hdr = Hdr,
+            GainMap = GainMap,
             FormatName = FormatName,
             FormatDetails = FormatDetails?.Copy(),
             LoopCount = LoopCount,
@@ -467,6 +475,7 @@ public sealed class RasterMetadata
         CodePoints = source.CodePoints;
         Primaries = source.Primaries;
         Hdr = source.Hdr;
+        GainMap = source.GainMap;
         FormatName = source.FormatName;
         FormatDetails = source.FormatDetails;
         LoopCount = source.LoopCount;

@@ -1,0 +1,325 @@
+{
+ "tool": "libultrahdr 2.0.2 (uhdrref.c), linear half-float RGBA at each display boost",
+ "files": {
+  "adobe-xmp.jpg": {
+   "width": 256,
+   "height": 192,
+   "gainmapWidth": 256,
+   "gainmapHeight": 192,
+   "maxContentBoost": [
+    49.2610664,
+    49.2610664,
+    49.2610664
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 49.2610664,
+   "useBaseColorSpace": 1,
+   "outputGamut": 0,
+   "boosts": [
+    2.0,
+    4.0,
+    49.2610664
+   ]
+  },
+  "apple-gainmap-new.jpg": {
+   "width": 384,
+   "height": 512,
+   "gainmapWidth": 192,
+   "gainmapHeight": 256,
+   "maxContentBoost": [
+    23.1474762,
+    23.1474762,
+    23.1474762
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 23.1474762,
+   "useBaseColorSpace": 0,
+   "outputGamut": 1,
+   "boosts": [
+    2.0,
+    4.0,
+    23.1474762
+   ]
+  },
+  "apple-gainmap-old.jpg": {
+   "width": 384,
+   "height": 512,
+   "gainmapWidth": 192,
+   "gainmapHeight": 256,
+   "maxContentBoost": [
+    8,
+    8,
+    8
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 8,
+   "useBaseColorSpace": 0,
+   "outputGamut": 1,
+   "boosts": [
+    2.0,
+    4.0,
+    8.0
+   ]
+  },
+  "uhdr-default.jpg": {
+   "width": 256,
+   "height": 192,
+   "gainmapWidth": 256,
+   "gainmapHeight": 192,
+   "maxContentBoost": [
+    49.2610817,
+    49.2610817,
+    49.2610817
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 49.2610817,
+   "useBaseColorSpace": 1,
+   "outputGamut": 0,
+   "boosts": [
+    2.0,
+    4.0,
+    49.2610817
+   ]
+  },
+  "uhdr-gamma.jpg": {
+   "width": 320,
+   "height": 240,
+   "gainmapWidth": 320,
+   "gainmapHeight": 240,
+   "maxContentBoost": [
+    49.2610817,
+    49.2610817,
+    49.2610817
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    2,
+    2,
+    2
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 49.2610817,
+   "useBaseColorSpace": 1,
+   "outputGamut": 0,
+   "boosts": [
+    2.0,
+    4.0,
+    49.2610817
+   ]
+  },
+  "uhdr-mono-map.jpg": {
+   "width": 256,
+   "height": 192,
+   "gainmapWidth": 256,
+   "gainmapHeight": 192,
+   "maxContentBoost": [
+    49.2610817,
+    49.2610817,
+    49.2610817
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 49.2610817,
+   "useBaseColorSpace": 1,
+   "outputGamut": 0,
+   "boosts": [
+    2.0,
+    4.0,
+    49.2610817
+   ]
+  },
+  "uhdr-quarter-map.jpg": {
+   "width": 256,
+   "height": 192,
+   "gainmapWidth": 64,
+   "gainmapHeight": 48,
+   "maxContentBoost": [
+    49.2610817,
+    49.2610817,
+    49.2610817
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 49.2610817,
+   "useBaseColorSpace": 1,
+   "outputGamut": 0,
+   "boosts": [
+    2.0,
+    4.0,
+    49.2610817
+   ]
+  },
+  "uhdr-third-map.jpg": {
+   "width": 320,
+   "height": 240,
+   "gainmapWidth": 106,
+   "gainmapHeight": 80,
+   "maxContentBoost": [
+    49.2610817,
+    49.2610817,
+    49.2610817
+   ],
+   "minContentBoost": [
+    1,
+    1,
+    1
+   ],
+   "gamma": [
+    1,
+    1,
+    1
+   ],
+   "offsetSdr": [
+    0,
+    0,
+    0
+   ],
+   "offsetHdr": [
+    0,
+    0,
+    0
+   ],
+   "hdrCapacityMin": 1,
+   "hdrCapacityMax": 49.2610817,
+   "useBaseColorSpace": 1,
+   "outputGamut": 0,
+   "boosts": [
+    2.0,
+    4.0,
+    49.2610817
+   ]
+  }
+ }
+}

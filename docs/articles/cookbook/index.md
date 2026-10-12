@@ -555,3 +555,24 @@ Keep the 64-bit hashes in a database column; a lookup within a few bits finds re
 ## A looping sticker on an animated background
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#sticker)]
+
+## A render pass from OpenEXR as JPEG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#cookbook-exr-layer)]
+
+`ExrReaderOptions.Layer` picks a pass by name; `ExrDetails` lists the parts and layers a file has. `ToneMap` rolls off what is
+brighter than white instead of clipping it. See the [HDR guide](../guides/hdr.md).
+
+## Show an Ultra HDR photo as HDR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#cookbook-ultrahdr-view)]
+
+The gain map is applied for the display's headroom: 1 gives the SDR picture, and the map's own capacity (leave `Headroom` null)
+the full HDR rendition.
+
+## Make an Ultra HDR JPEG from an OpenEXR render
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#cookbook-exr-to-ultrahdr)]
+
+The SDR picture is the render tone mapped with BT.2390; the gain map, half the size here, brings the HDR render back.
+

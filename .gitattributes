@@ -7,3 +7,6 @@
 *.cube binary
 # SVG test files keep their exact bytes (line endings matter in text and xml:space tests).
 tests/svg/** -text
+*.hdr binary
+*.exr binary
+*.gz binary

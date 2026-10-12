@@ -1,0 +1,19 @@
+{
+ "MPF0:MPFVersion": "0100",
+ "MPF0:NumberOfImages": 2,
+ "MPImage1:DependentImage1EntryNumber": 0,
+ "MPImage1:DependentImage2EntryNumber": 0,
+ "MPImage1:MPImageFlags": 0,
+ "MPImage1:MPImageFormat": 0,
+ "MPImage1:MPImageLength": 28713,
+ "MPImage1:MPImageStart": 0,
+ "MPImage1:MPImageType": 196608,
+ "MPImage2:DependentImage1EntryNumber": 0,
+ "MPImage2:DependentImage2EntryNumber": 0,
+ "MPImage2:MPImage2": "(Binary data 17001 bytes, use -b option to extract)",
+ "MPImage2:MPImageFlags": 0,
+ "MPImage2:MPImageFormat": 0,
+ "MPImage2:MPImageLength": 17001,
+ "MPImage2:MPImageStart": 28713,
+ "MPImage2:MPImageType": 0
+}

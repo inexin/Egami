@@ -45,6 +45,9 @@ using DrawingPath = Egami.Drawing.Path;
 // on one thread or four, with and without concealment: each frame must decode, conceal or fail with an EgamiException.
 // The shaping target (Phase 2.8.1) shapes texts in many scripts with a font that loads, with features and directions its bytes pick,
 // and takes its GSUB closure; the bidi target reads its bytes as UTF-16 text and resolves, reorders, segments and shapes it.
+// The radiance, exr and gainmap targets (Phase 2.9.1) load Radiance pictures (which must write back and write again to the same
+// bytes), OpenEXR files every way (each part, layer, window and channel, written back as OpenEXR), and JPEGs with an MPF index
+// and a gain map (every MP image, the HDR rendition at two headrooms, a crop and turn, and a JPEG save that must keep the map).
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -155,7 +158,10 @@ static Action<Stream> Target(string name) => name switch
     "egdr" => LoadDrawing,
     "shaping" => ShapeFont,
     "bidi" => ResolveBidi,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi."),
+    "radiance" => LoadRadiance,
+    "exr" => LoadExr,
+    "gainmap" => LoadGainMap,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi."),
 };
 
 static EgamiContext Context()
@@ -2322,6 +2328,139 @@ static void CheckTiling(string text, bool graphemes, List<Egami.Fonts.Unicode.Te
     if (next != text.Length)
     {
         throw new InvalidOperationException($"{kind}s end at {next} of {text.Length}.");
+    }
+}
+
+static void LoadRadiance(Stream stream)
+{
+    EgamiContext context = Context() with { Formats = [Egami.Formats.Radiance.RadianceFormat.Info] };
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery };
+        try
+        {
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster<RgbF32> raster = Raster.Load<RgbF32>(data, context, options);
+            using Raster<RgbF32> forward = Raster.Load<RgbF32>(new ForwardOnlyStream(data), context, options);
+            if (info.Width != raster.Width || info.Height != raster.Height)
+            {
+                throw new InvalidOperationException("Probe and Load disagree.");
+            }
+
+            // What the writer writes reads back to the same floats, so it writes again to the same bytes.
+            using MemoryStream written = new();
+            raster.Save(written, Egami.Formats.Radiance.RadianceFormat.Info);
+            using Raster<RgbF32> again = Raster.Load<RgbF32>(written.ToArray(), context);
+            using MemoryStream twice = new();
+            again.Save(twice, Egami.Formats.Radiance.RadianceFormat.Info);
+            if (!written.ToArray().AsSpan().SequenceEqual(twice.ToArray()))
+            {
+                throw new InvalidOperationException("A Radiance file Egami wrote does not write back to the same bytes.");
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+static void LoadExr(Stream stream)
+{
+    EgamiContext context = Context() with { Formats = [Egami.Formats.Exr.ExrFormat.Info] };
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        try
+        {
+            Egami.Formats.Exr.ExrReaderOptions options = new() { Recovery = recovery };
+            Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using Raster<RgbaF32> forward = Raster.Load<RgbaF32>(new ForwardOnlyStream(data), context, options);
+            using RasterList parts = Raster.LoadAll(data, context, options);
+            var details = (Egami.Formats.Exr.ExrDetails)raster.Metadata.FormatDetails!;
+            for (int part = 0; part < Math.Min(details.Parts.Count, 4); part++)
+            {
+                Egami.Formats.Exr.ExrPart header = details.Parts[part];
+                foreach (string? layer in header.Layers.Take(3).Prepend(null))
+                {
+                    try
+                    {
+                        using Raster display = Raster.Load(data, context, options with { Part = part, Layer = layer, Window = Egami.Formats.Exr.ExrWindow.Display });
+                    }
+                    catch (EgamiException)
+                    {
+                    }
+                }
+
+                foreach (Egami.Formats.Exr.ExrChannel channel in header.Channels.Take(3))
+                {
+                    try
+                    {
+                        using Raster<GrayF32> one = Egami.Formats.Exr.ExrImage.ReadChannel(new MemoryStream(data), channel.Name, options with { Part = part }, context);
+                    }
+                    catch (EgamiException)
+                    {
+                    }
+                }
+            }
+
+            // What loads writes back, and reads again at the same size.
+            foreach (Egami.Formats.Exr.ExrCompression compression in new[] { Egami.Formats.Exr.ExrCompression.Zip, Egami.Formats.Exr.ExrCompression.Piz })
+            {
+                using MemoryStream written = new();
+                forward.Save(written, Egami.Formats.Exr.ExrFormat.Info, new Egami.Formats.Exr.ExrWriterOptions { Compression = compression });
+                using Raster<RgbaF32> again = Raster.Load<RgbaF32>(written.ToArray(), context);
+                if (again.Width != forward.Width || again.Height != forward.Height)
+                {
+                    throw new InvalidOperationException("An OpenEXR file Egami wrote reads back at another size.");
+                }
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+static void LoadGainMap(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery };
+        try
+        {
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster raster = Raster.Load(data, context, options);
+            using RasterList images = Raster.LoadAll(data, context, options);
+            if (info.ImageCount != images.Count)
+            {
+                throw new InvalidOperationException("Probe and LoadAll count the MP images differently.");
+            }
+
+            using Raster<RgbaF16> full = Raster.Load<RgbaF16>(data, context, options with { Hdr = new HdrDecode() });
+            using Raster<RgbaF16> some = Raster.Load<RgbaF16>(new ForwardOnlyStream(data), context, options with { Hdr = new HdrDecode { Headroom = 2 } });
+            if (raster.Metadata.GainMap is not GainMap map)
+            {
+                continue;
+            }
+
+            using Raster<RgbaF16> applied = map.Apply(raster, 3);
+            using Raster moved = raster.Derive(ops => ops.Crop(raster.Width / 5, raster.Height / 7, Math.Max(1, raster.Width / 2), Math.Max(1, raster.Height / 2)).Rotate(90));
+            using MemoryStream written = new();
+            moved.Save(written, JpegFormat.Info);
+            using Raster again = Raster.Load(written.ToArray(), context);
+            // A map that no longer has the image's shape (the file's sizes disagreed) is dropped with Save.GainMapDropped.
+            if (moved.Metadata.GainMap is GainMap kept && JpegGainMapWriter.Fits(kept, moved.Width, moved.Height) && again.Metadata.GainMap is null)
+            {
+                throw new InvalidOperationException("A JPEG save lost the gain map.");
+            }
+        }
+        catch (EgamiException)
+        {
+        }
     }
 }
 

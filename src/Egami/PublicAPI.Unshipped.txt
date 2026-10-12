@@ -232,6 +232,80 @@ Egami.Colors.ColorTransformOptions.SourcePeakNits.get -> double?
 Egami.Colors.ColorTransformOptions.SourcePeakNits.init -> void
 Egami.Colors.ColorTransformOptions.ToneMapping.get -> Egami.Colors.ToneMapping
 Egami.Colors.ColorTransformOptions.ToneMapping.init -> void
+Egami.Colors.GainMap
+Egami.Colors.GainMap.Apply(Egami.Raster! baseImage, double? headroom = null) -> Egami.Raster<Egami.Pixels.RgbaF16>!
+Egami.Colors.GainMap.Channels.get -> int
+Egami.Colors.GainMap.GainMap(Egami.Colors.GainMapInfo! info, Egami.Raster! image) -> void
+Egami.Colors.GainMap.Height.get -> int
+Egami.Colors.GainMap.Info.get -> Egami.Colors.GainMapInfo!
+Egami.Colors.GainMap.ToRaster(Egami.EgamiContext? context = null) -> Egami.Raster!
+Egami.Colors.GainMap.Width.get -> int
+Egami.Colors.GainMap.WithInfo(Egami.Colors.GainMapInfo! info) -> Egami.Colors.GainMap!
+Egami.Colors.GainMapFormat
+Egami.Colors.GainMapFormat.AdobeXmp = 1 -> Egami.Colors.GainMapFormat
+Egami.Colors.GainMapFormat.Apple = 2 -> Egami.Colors.GainMapFormat
+Egami.Colors.GainMapFormat.Iso21496 = 0 -> Egami.Colors.GainMapFormat
+Egami.Colors.GainMapInfo
+Egami.Colors.GainMapInfo.<Clone>$() -> Egami.Colors.GainMapInfo!
+Egami.Colors.GainMapInfo.AlternateProfile.get -> Egami.Colors.ColorProfile?
+Egami.Colors.GainMapInfo.AlternateProfile.init -> void
+Egami.Colors.GainMapInfo.BaseRenditionIsHdr.get -> bool
+Egami.Colors.GainMapInfo.BaseRenditionIsHdr.init -> void
+Egami.Colors.GainMapInfo.Equals(Egami.Colors.GainMapInfo? other) -> bool
+Egami.Colors.GainMapInfo.Format.get -> Egami.Colors.GainMapFormat
+Egami.Colors.GainMapInfo.Format.init -> void
+Egami.Colors.GainMapInfo.GainMapInfo() -> void
+Egami.Colors.GainMapInfo.GainMapMax.get -> Egami.Colors.GainMapValues
+Egami.Colors.GainMapInfo.GainMapMax.init -> void
+Egami.Colors.GainMapInfo.GainMapMin.get -> Egami.Colors.GainMapValues
+Egami.Colors.GainMapInfo.GainMapMin.init -> void
+Egami.Colors.GainMapInfo.Gamma.get -> Egami.Colors.GainMapValues
+Egami.Colors.GainMapInfo.Gamma.init -> void
+Egami.Colors.GainMapInfo.HdrCapacityMax.get -> double
+Egami.Colors.GainMapInfo.HdrCapacityMax.init -> void
+Egami.Colors.GainMapInfo.HdrCapacityMin.get -> double
+Egami.Colors.GainMapInfo.HdrCapacityMin.init -> void
+Egami.Colors.GainMapInfo.OffsetHdr.get -> Egami.Colors.GainMapValues
+Egami.Colors.GainMapInfo.OffsetHdr.init -> void
+Egami.Colors.GainMapInfo.OffsetSdr.get -> Egami.Colors.GainMapValues
+Egami.Colors.GainMapInfo.OffsetSdr.init -> void
+Egami.Colors.GainMapInfo.UseBaseColorSpace.get -> bool
+Egami.Colors.GainMapInfo.UseBaseColorSpace.init -> void
+Egami.Colors.GainMapInfo.Weight(double headroom) -> double
+Egami.Colors.GainMapOptions
+Egami.Colors.GainMapOptions.<Clone>$() -> Egami.Colors.GainMapOptions!
+Egami.Colors.GainMapOptions.Equals(Egami.Colors.GainMapOptions? other) -> bool
+Egami.Colors.GainMapOptions.GainMapOptions() -> void
+Egami.Colors.GainMapOptions.Gamma.get -> double
+Egami.Colors.GainMapOptions.Gamma.init -> void
+Egami.Colors.GainMapOptions.Headroom.get -> double?
+Egami.Colors.GainMapOptions.Headroom.init -> void
+Egami.Colors.GainMapOptions.MaxContentBoost.get -> double?
+Egami.Colors.GainMapOptions.MaxContentBoost.init -> void
+Egami.Colors.GainMapOptions.MinContentBoost.get -> double?
+Egami.Colors.GainMapOptions.MinContentBoost.init -> void
+Egami.Colors.GainMapOptions.MultiChannel.get -> bool
+Egami.Colors.GainMapOptions.MultiChannel.init -> void
+Egami.Colors.GainMapOptions.Offset.get -> double
+Egami.Colors.GainMapOptions.Offset.init -> void
+Egami.Colors.GainMapOptions.Quality.get -> int
+Egami.Colors.GainMapOptions.Quality.init -> void
+Egami.Colors.GainMapOptions.Scale.get -> int
+Egami.Colors.GainMapOptions.Scale.init -> void
+Egami.Colors.GainMapValues
+Egami.Colors.GainMapValues.Blue.get -> double
+Egami.Colors.GainMapValues.Blue.init -> void
+Egami.Colors.GainMapValues.Deconstruct(out double Red, out double Green, out double Blue) -> void
+Egami.Colors.GainMapValues.Equals(Egami.Colors.GainMapValues other) -> bool
+Egami.Colors.GainMapValues.GainMapValues() -> void
+Egami.Colors.GainMapValues.GainMapValues(double all) -> void
+Egami.Colors.GainMapValues.GainMapValues(double Red, double Green, double Blue) -> void
+Egami.Colors.GainMapValues.Green.get -> double
+Egami.Colors.GainMapValues.Green.init -> void
+Egami.Colors.GainMapValues.IsUniform.get -> bool
+Egami.Colors.GainMapValues.Red.get -> double
+Egami.Colors.GainMapValues.Red.init -> void
+Egami.Colors.GainMapValues.this[int channel].get -> double
 Egami.Colors.HdrMetadata
 Egami.Colors.HdrMetadata.<Clone>$() -> Egami.Colors.HdrMetadata!
 Egami.Colors.HdrMetadata.Equals(Egami.Colors.HdrMetadata? other) -> bool
@@ -450,6 +524,137 @@ Egami.Formats.EncodeStart<TPixel>.Seekable.get -> bool
 Egami.Formats.EncodeStart<TPixel>.Streaming.get -> bool
 Egami.Formats.EncodeStart<TPixel>.Whole.get -> Egami.Raster<TPixel>?
 Egami.Formats.EncodeStart<TPixel>.Width.get -> int
+Egami.Formats.Exr.ExrChannel
+Egami.Formats.Exr.ExrChannel.<Clone>$() -> Egami.Formats.Exr.ExrChannel!
+Egami.Formats.Exr.ExrChannel.Deconstruct(out string! Name, out Egami.Formats.Exr.ExrPixelType PixelType, out int XSampling, out int YSampling, out bool PerceptuallyLinear) -> void
+Egami.Formats.Exr.ExrChannel.Equals(Egami.Formats.Exr.ExrChannel? other) -> bool
+Egami.Formats.Exr.ExrChannel.ExrChannel(string! Name, Egami.Formats.Exr.ExrPixelType PixelType, int XSampling = 1, int YSampling = 1, bool PerceptuallyLinear = false) -> void
+Egami.Formats.Exr.ExrChannel.Name.get -> string!
+Egami.Formats.Exr.ExrChannel.Name.init -> void
+Egami.Formats.Exr.ExrChannel.PerceptuallyLinear.get -> bool
+Egami.Formats.Exr.ExrChannel.PerceptuallyLinear.init -> void
+Egami.Formats.Exr.ExrChannel.PixelType.get -> Egami.Formats.Exr.ExrPixelType
+Egami.Formats.Exr.ExrChannel.PixelType.init -> void
+Egami.Formats.Exr.ExrChannel.XSampling.get -> int
+Egami.Formats.Exr.ExrChannel.XSampling.init -> void
+Egami.Formats.Exr.ExrChannel.YSampling.get -> int
+Egami.Formats.Exr.ExrChannel.YSampling.init -> void
+Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.B44 = 6 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.B44A = 7 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Dwaa = 8 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Dwab = 9 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Htj2k256 = 11 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Htj2k32 = 12 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.None = 0 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Piz = 4 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Pxr24 = 5 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Rle = 1 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Zip = 3 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Zips = 2 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrCompression.Zstd = 10 -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrDetails
+Egami.Formats.Exr.ExrDetails.DataWindow.get -> Egami.Rect
+Egami.Formats.Exr.ExrDetails.DisplayWindow.get -> Egami.Rect
+Egami.Formats.Exr.ExrDetails.ExrDetails() -> void
+Egami.Formats.Exr.ExrDetails.Layer.get -> string!
+Egami.Formats.Exr.ExrDetails.Layer.set -> void
+Egami.Formats.Exr.ExrDetails.Part.get -> int
+Egami.Formats.Exr.ExrDetails.Part.set -> void
+Egami.Formats.Exr.ExrDetails.Parts.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Exr.ExrPart!>!
+Egami.Formats.Exr.ExrDetails.Parts.set -> void
+Egami.Formats.Exr.ExrDetails.Window.get -> Egami.Rect
+Egami.Formats.Exr.ExrDetails.Window.set -> void
+Egami.Formats.Exr.ExrFormat
+Egami.Formats.Exr.ExrHeaderEntry
+Egami.Formats.Exr.ExrHeaderEntry.<Clone>$() -> Egami.Formats.Exr.ExrHeaderEntry!
+Egami.Formats.Exr.ExrHeaderEntry.Deconstruct(out string! Name, out string! Type, out System.ReadOnlyMemory<byte> Value) -> void
+Egami.Formats.Exr.ExrHeaderEntry.Equals(Egami.Formats.Exr.ExrHeaderEntry? other) -> bool
+Egami.Formats.Exr.ExrHeaderEntry.ExrHeaderEntry(string! Name, string! Type, System.ReadOnlyMemory<byte> Value) -> void
+Egami.Formats.Exr.ExrHeaderEntry.Name.get -> string!
+Egami.Formats.Exr.ExrHeaderEntry.Name.init -> void
+Egami.Formats.Exr.ExrHeaderEntry.Type.get -> string!
+Egami.Formats.Exr.ExrHeaderEntry.Type.init -> void
+Egami.Formats.Exr.ExrHeaderEntry.Value.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Exr.ExrHeaderEntry.Value.init -> void
+Egami.Formats.Exr.ExrImage
+Egami.Formats.Exr.ExrLevelMode
+Egami.Formats.Exr.ExrLevelMode.MipMap = 1 -> Egami.Formats.Exr.ExrLevelMode
+Egami.Formats.Exr.ExrLevelMode.OneLevel = 0 -> Egami.Formats.Exr.ExrLevelMode
+Egami.Formats.Exr.ExrLevelMode.RipMap = 2 -> Egami.Formats.Exr.ExrLevelMode
+Egami.Formats.Exr.ExrPart
+Egami.Formats.Exr.ExrPart.<Clone>$() -> Egami.Formats.Exr.ExrPart!
+Egami.Formats.Exr.ExrPart.Attributes.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Exr.ExrHeaderEntry!>!
+Egami.Formats.Exr.ExrPart.Attributes.init -> void
+Egami.Formats.Exr.ExrPart.Channels.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Exr.ExrChannel!>!
+Egami.Formats.Exr.ExrPart.Channels.init -> void
+Egami.Formats.Exr.ExrPart.Chromaticities.get -> Egami.Colors.ColorPrimaries?
+Egami.Formats.Exr.ExrPart.Chromaticities.init -> void
+Egami.Formats.Exr.ExrPart.ColorInteropId.get -> string?
+Egami.Formats.Exr.ExrPart.ColorInteropId.init -> void
+Egami.Formats.Exr.ExrPart.Compression.get -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrPart.Compression.init -> void
+Egami.Formats.Exr.ExrPart.DataWindow.get -> Egami.Rect
+Egami.Formats.Exr.ExrPart.DataWindow.init -> void
+Egami.Formats.Exr.ExrPart.DecreasingY.get -> bool
+Egami.Formats.Exr.ExrPart.DecreasingY.init -> void
+Egami.Formats.Exr.ExrPart.DisplayWindow.get -> Egami.Rect
+Egami.Formats.Exr.ExrPart.DisplayWindow.init -> void
+Egami.Formats.Exr.ExrPart.Equals(Egami.Formats.Exr.ExrPart? other) -> bool
+Egami.Formats.Exr.ExrPart.ExrPart() -> void
+Egami.Formats.Exr.ExrPart.FramesPerSecond.get -> double?
+Egami.Formats.Exr.ExrPart.FramesPerSecond.init -> void
+Egami.Formats.Exr.ExrPart.Kind.get -> Egami.Formats.Exr.ExrPartKind
+Egami.Formats.Exr.ExrPart.Kind.init -> void
+Egami.Formats.Exr.ExrPart.Layers.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.Exr.ExrPart.Layers.init -> void
+Egami.Formats.Exr.ExrPart.LevelMode.get -> Egami.Formats.Exr.ExrLevelMode
+Egami.Formats.Exr.ExrPart.LevelMode.init -> void
+Egami.Formats.Exr.ExrPart.Name.get -> string!
+Egami.Formats.Exr.ExrPart.Name.init -> void
+Egami.Formats.Exr.ExrPart.PixelAspectRatio.get -> double
+Egami.Formats.Exr.ExrPart.PixelAspectRatio.init -> void
+Egami.Formats.Exr.ExrPart.TileSize.get -> Egami.Size?
+Egami.Formats.Exr.ExrPart.TileSize.init -> void
+Egami.Formats.Exr.ExrPart.TimeCode.get -> ulong?
+Egami.Formats.Exr.ExrPart.TimeCode.init -> void
+Egami.Formats.Exr.ExrPart.View.get -> string?
+Egami.Formats.Exr.ExrPart.View.init -> void
+Egami.Formats.Exr.ExrPart.WhiteLuminance.get -> double?
+Egami.Formats.Exr.ExrPart.WhiteLuminance.init -> void
+Egami.Formats.Exr.ExrPartKind
+Egami.Formats.Exr.ExrPartKind.DeepScanline = 2 -> Egami.Formats.Exr.ExrPartKind
+Egami.Formats.Exr.ExrPartKind.DeepTiled = 3 -> Egami.Formats.Exr.ExrPartKind
+Egami.Formats.Exr.ExrPartKind.Scanline = 0 -> Egami.Formats.Exr.ExrPartKind
+Egami.Formats.Exr.ExrPartKind.Tiled = 1 -> Egami.Formats.Exr.ExrPartKind
+Egami.Formats.Exr.ExrPixelType
+Egami.Formats.Exr.ExrPixelType.Float = 2 -> Egami.Formats.Exr.ExrPixelType
+Egami.Formats.Exr.ExrPixelType.Half = 1 -> Egami.Formats.Exr.ExrPixelType
+Egami.Formats.Exr.ExrPixelType.UInt = 0 -> Egami.Formats.Exr.ExrPixelType
+Egami.Formats.Exr.ExrReaderOptions
+Egami.Formats.Exr.ExrReaderOptions.Equals(Egami.Formats.Exr.ExrReaderOptions? other) -> bool
+Egami.Formats.Exr.ExrReaderOptions.ExrReaderOptions() -> void
+Egami.Formats.Exr.ExrReaderOptions.Layer.get -> string?
+Egami.Formats.Exr.ExrReaderOptions.Layer.init -> void
+Egami.Formats.Exr.ExrReaderOptions.Part.get -> int
+Egami.Formats.Exr.ExrReaderOptions.Part.init -> void
+Egami.Formats.Exr.ExrReaderOptions.Window.get -> Egami.Formats.Exr.ExrWindow
+Egami.Formats.Exr.ExrReaderOptions.Window.init -> void
+Egami.Formats.Exr.ExrWindow
+Egami.Formats.Exr.ExrWindow.Data = 0 -> Egami.Formats.Exr.ExrWindow
+Egami.Formats.Exr.ExrWindow.Display = 1 -> Egami.Formats.Exr.ExrWindow
+Egami.Formats.Exr.ExrWriterOptions
+Egami.Formats.Exr.ExrWriterOptions.Compression.get -> Egami.Formats.Exr.ExrCompression
+Egami.Formats.Exr.ExrWriterOptions.Compression.init -> void
+Egami.Formats.Exr.ExrWriterOptions.ExrWriterOptions() -> void
+Egami.Formats.Exr.ExrWriterOptions.PixelType.get -> Egami.Formats.Exr.ExrPixelType?
+Egami.Formats.Exr.ExrWriterOptions.PixelType.init -> void
+Egami.Formats.HdrDecode
+Egami.Formats.HdrDecode.<Clone>$() -> Egami.Formats.HdrDecode!
+Egami.Formats.HdrDecode.Equals(Egami.Formats.HdrDecode? other) -> bool
+Egami.Formats.HdrDecode.HdrDecode() -> void
+Egami.Formats.HdrDecode.Headroom.get -> double?
+Egami.Formats.HdrDecode.Headroom.init -> void
 Egami.Formats.Ico.CurFormat
 Egami.Formats.Ico.IcoDetails
 Egami.Formats.Ico.IcoDetails.BitsPerPixel.get -> int
@@ -553,6 +758,8 @@ Egami.Formats.Jpeg.JpegDetails.Arithmetic.get -> bool
 Egami.Formats.Jpeg.JpegDetails.Arithmetic.set -> void
 Egami.Formats.Jpeg.JpegDetails.Lossless.get -> bool
 Egami.Formats.Jpeg.JpegDetails.Lossless.set -> void
+Egami.Formats.Jpeg.JpegDetails.MultiPicture.get -> Egami.Formats.Jpeg.MpfData?
+Egami.Formats.Jpeg.JpegDetails.MultiPicture.set -> void
 Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.get -> System.ReadOnlyMemory<byte>
 Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.set -> void
 Egami.Formats.Jpeg.JpegDetails.Precision.get -> int
@@ -592,10 +799,57 @@ Egami.Formats.Jpeg.JpegTransformResult
 Egami.Formats.Jpeg.JpegTransformResult.Height.get -> int
 Egami.Formats.Jpeg.JpegTransformResult.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
 Egami.Formats.Jpeg.JpegTransformResult.Width.get -> int
+Egami.Formats.Jpeg.JpegWriterOptions.GainMap.get -> Egami.Colors.GainMapOptions?
+Egami.Formats.Jpeg.JpegWriterOptions.GainMap.init -> void
+Egami.Formats.Jpeg.JpegWriterOptions.KeepGainMap.get -> bool
+Egami.Formats.Jpeg.JpegWriterOptions.KeepGainMap.init -> void
 Egami.Formats.Jpeg.JpegWriterOptions.Precision.get -> int
 Egami.Formats.Jpeg.JpegWriterOptions.Precision.init -> void
 Egami.Formats.Jpeg.JpegWriterOptions.Progressive.get -> bool
 Egami.Formats.Jpeg.JpegWriterOptions.Progressive.init -> void
+Egami.Formats.Jpeg.MpfData
+Egami.Formats.Jpeg.MpfData.<Clone>$() -> Egami.Formats.Jpeg.MpfData!
+Egami.Formats.Jpeg.MpfData.Equals(Egami.Formats.Jpeg.MpfData? other) -> bool
+Egami.Formats.Jpeg.MpfData.Images.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jpeg.MpfImage!>!
+Egami.Formats.Jpeg.MpfData.Images.init -> void
+Egami.Formats.Jpeg.MpfData.MpfData() -> void
+Egami.Formats.Jpeg.MpfData.Version.get -> string!
+Egami.Formats.Jpeg.MpfData.Version.init -> void
+Egami.Formats.Jpeg.MpfImage
+Egami.Formats.Jpeg.MpfImage.<Clone>$() -> Egami.Formats.Jpeg.MpfImage!
+Egami.Formats.Jpeg.MpfImage.DataFormat.get -> int
+Egami.Formats.Jpeg.MpfImage.DataFormat.init -> void
+Egami.Formats.Jpeg.MpfImage.DependentImage1.get -> int
+Egami.Formats.Jpeg.MpfImage.DependentImage1.init -> void
+Egami.Formats.Jpeg.MpfImage.DependentImage2.get -> int
+Egami.Formats.Jpeg.MpfImage.DependentImage2.init -> void
+Egami.Formats.Jpeg.MpfImage.Equals(Egami.Formats.Jpeg.MpfImage? other) -> bool
+Egami.Formats.Jpeg.MpfImage.IsDependentChild.get -> bool
+Egami.Formats.Jpeg.MpfImage.IsDependentChild.init -> void
+Egami.Formats.Jpeg.MpfImage.IsDependentParent.get -> bool
+Egami.Formats.Jpeg.MpfImage.IsDependentParent.init -> void
+Egami.Formats.Jpeg.MpfImage.IsRepresentative.get -> bool
+Egami.Formats.Jpeg.MpfImage.IsRepresentative.init -> void
+Egami.Formats.Jpeg.MpfImage.Length.get -> long
+Egami.Formats.Jpeg.MpfImage.Length.init -> void
+Egami.Formats.Jpeg.MpfImage.MpfImage() -> void
+Egami.Formats.Jpeg.MpfImage.Offset.get -> long
+Egami.Formats.Jpeg.MpfImage.Offset.init -> void
+Egami.Formats.Jpeg.MpfImage.Type.get -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImage.Type.init -> void
+Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.BaselinePrimary = 196608 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.Disparity = 131074 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.GainMap = 327680 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.LargeThumbnail16K = 65541 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.LargeThumbnail4K = 65539 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.LargeThumbnail8K = 65540 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.LargeThumbnailFullHd = 65538 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.LargeThumbnailVga = 65537 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.MultiAngle = 131075 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.OriginalPreservation = 262144 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.Panorama = 131073 -> Egami.Formats.Jpeg.MpfImageType
+Egami.Formats.Jpeg.MpfImageType.Undefined = 0 -> Egami.Formats.Jpeg.MpfImageType
 Egami.Formats.Jpeg2000.Jpeg2000Channel
 Egami.Formats.Jpeg2000.Jpeg2000Channel.Association.get -> int
 Egami.Formats.Jpeg2000.Jpeg2000Channel.Association.init -> void
@@ -772,6 +1026,35 @@ Egami.Formats.Psd.PsdResource.Id.init -> void
 Egami.Formats.Psd.PsdResource.Name.get -> string!
 Egami.Formats.Psd.PsdResource.Name.init -> void
 Egami.Formats.Psd.PsdResource.PsdResource(int Id, string! Name, System.ReadOnlyMemory<byte> Data) -> void
+Egami.Formats.Radiance.RadianceDetails
+Egami.Formats.Radiance.RadianceDetails.ColorCorrection.get -> (double Red, double Green, double Blue)?
+Egami.Formats.Radiance.RadianceDetails.ColorCorrection.set -> void
+Egami.Formats.Radiance.RadianceDetails.Exposure.get -> double?
+Egami.Formats.Radiance.RadianceDetails.Exposure.set -> void
+Egami.Formats.Radiance.RadianceDetails.HeaderLines.get -> System.Collections.Generic.IList<string!>!
+Egami.Formats.Radiance.RadianceDetails.Orientation.get -> string!
+Egami.Formats.Radiance.RadianceDetails.Orientation.set -> void
+Egami.Formats.Radiance.RadianceDetails.PixelAspectRatio.get -> double?
+Egami.Formats.Radiance.RadianceDetails.PixelAspectRatio.set -> void
+Egami.Formats.Radiance.RadianceDetails.PixelFormat.get -> Egami.Formats.Radiance.RadiancePixelFormat
+Egami.Formats.Radiance.RadianceDetails.PixelFormat.set -> void
+Egami.Formats.Radiance.RadianceDetails.Primaries.get -> Egami.Colors.ColorPrimaries?
+Egami.Formats.Radiance.RadianceDetails.Primaries.set -> void
+Egami.Formats.Radiance.RadianceDetails.RadianceDetails() -> void
+Egami.Formats.Radiance.RadianceDetails.Software.get -> string?
+Egami.Formats.Radiance.RadianceDetails.Software.set -> void
+Egami.Formats.Radiance.RadianceDetails.View.get -> string?
+Egami.Formats.Radiance.RadianceDetails.View.set -> void
+Egami.Formats.Radiance.RadianceFormat
+Egami.Formats.Radiance.RadiancePixelFormat
+Egami.Formats.Radiance.RadiancePixelFormat.Rgbe = 0 -> Egami.Formats.Radiance.RadiancePixelFormat
+Egami.Formats.Radiance.RadiancePixelFormat.Xyze = 1 -> Egami.Formats.Radiance.RadiancePixelFormat
+Egami.Formats.Radiance.RadianceWriterOptions
+Egami.Formats.Radiance.RadianceWriterOptions.Compress.get -> bool
+Egami.Formats.Radiance.RadianceWriterOptions.Compress.init -> void
+Egami.Formats.Radiance.RadianceWriterOptions.Exposure.get -> double?
+Egami.Formats.Radiance.RadianceWriterOptions.Exposure.init -> void
+Egami.Formats.Radiance.RadianceWriterOptions.RadianceWriterOptions() -> void
 Egami.Formats.RasterAccess
 Egami.Formats.RasterAccess.Buffered = 0 -> Egami.Formats.RasterAccess
 Egami.Formats.RasterAccess.Streamed = 1 -> Egami.Formats.RasterAccess
@@ -783,6 +1066,8 @@ Egami.Formats.RasterInfo.WorkingBytes.get -> long
 Egami.Formats.RasterInfo.WorkingBytes.init -> void
 Egami.Formats.ReaderOptions.ConvertColorTo.get -> Egami.Colors.ColorProfile?
 Egami.Formats.ReaderOptions.ConvertColorTo.init -> void
+Egami.Formats.ReaderOptions.Hdr.get -> Egami.Formats.HdrDecode?
+Egami.Formats.ReaderOptions.Hdr.init -> void
 Egami.Formats.ReaderOptions.Region.get -> Egami.Rect?
 Egami.Formats.ReaderOptions.Region.init -> void
 Egami.Formats.RowEncoder<TPixel>
@@ -1046,6 +1331,8 @@ Egami.Metadata.IptcKey.Record.get -> byte
 Egami.Metadata.IptcKey.Record.init -> void
 Egami.Metadata.RasterMetadata.CodePoints.get -> Egami.Colors.ColorCodePoints?
 Egami.Metadata.RasterMetadata.CodePoints.set -> void
+Egami.Metadata.RasterMetadata.GainMap.get -> Egami.Colors.GainMap?
+Egami.Metadata.RasterMetadata.GainMap.set -> void
 Egami.Metadata.RasterMetadata.GetColorProfile() -> Egami.Colors.ColorProfile!
 Egami.Metadata.RasterMetadata.Hdr.get -> Egami.Colors.HdrMetadata?
 Egami.Metadata.RasterMetadata.Hdr.set -> void
@@ -1956,6 +2243,13 @@ override Egami.Colors.ColorProfile.ToString() -> string!
 override Egami.Colors.ColorTransformOptions.Equals(object? obj) -> bool
 override Egami.Colors.ColorTransformOptions.GetHashCode() -> int
 override Egami.Colors.ColorTransformOptions.ToString() -> string!
+override Egami.Colors.GainMapInfo.Equals(object? obj) -> bool
+override Egami.Colors.GainMapInfo.GetHashCode() -> int
+override Egami.Colors.GainMapInfo.ToString() -> string!
+override Egami.Colors.GainMapOptions.Equals(object? obj) -> bool
+override Egami.Colors.GainMapOptions.GetHashCode() -> int
+override Egami.Colors.GainMapOptions.ToString() -> string!
+override Egami.Colors.GainMapValues.GetHashCode() -> int
 override Egami.Colors.HdrMetadata.Equals(object? obj) -> bool
 override Egami.Colors.HdrMetadata.GetHashCode() -> int
 override Egami.Colors.HdrMetadata.ToString() -> string!
@@ -1972,6 +2266,23 @@ override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
+override Egami.Formats.Exr.ExrChannel.Equals(object? obj) -> bool
+override Egami.Formats.Exr.ExrChannel.GetHashCode() -> int
+override Egami.Formats.Exr.ExrChannel.ToString() -> string!
+override Egami.Formats.Exr.ExrDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Exr.ExrHeaderEntry.Equals(object? obj) -> bool
+override Egami.Formats.Exr.ExrHeaderEntry.GetHashCode() -> int
+override Egami.Formats.Exr.ExrHeaderEntry.ToString() -> string!
+override Egami.Formats.Exr.ExrPart.Equals(object? obj) -> bool
+override Egami.Formats.Exr.ExrPart.GetHashCode() -> int
+override Egami.Formats.Exr.ExrPart.ToString() -> string!
+override Egami.Formats.Exr.ExrReaderOptions.<Clone>$() -> Egami.Formats.Exr.ExrReaderOptions!
+override Egami.Formats.Exr.ExrReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Exr.ExrReaderOptions.GetHashCode() -> int
+override Egami.Formats.Exr.ExrReaderOptions.ToString() -> string!
+override Egami.Formats.HdrDecode.Equals(object? obj) -> bool
+override Egami.Formats.HdrDecode.GetHashCode() -> int
+override Egami.Formats.HdrDecode.ToString() -> string!
 override Egami.Formats.Ico.IcoDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Ico.IcoEntry.Equals(object? obj) -> bool
 override Egami.Formats.Ico.IcoEntry.GetHashCode() -> int
@@ -1985,6 +2296,12 @@ override Egami.Formats.Jbig2.Jbig2ReaderOptions.<Clone>$() -> Egami.Formats.Jbig
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.GetHashCode() -> int
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.ToString() -> string!
+override Egami.Formats.Jpeg.MpfData.Equals(object? obj) -> bool
+override Egami.Formats.Jpeg.MpfData.GetHashCode() -> int
+override Egami.Formats.Jpeg.MpfData.ToString() -> string!
+override Egami.Formats.Jpeg.MpfImage.Equals(object? obj) -> bool
+override Egami.Formats.Jpeg.MpfImage.GetHashCode() -> int
+override Egami.Formats.Jpeg.MpfImage.ToString() -> string!
 override Egami.Formats.Jpeg2000.Jpeg2000Channel.GetHashCode() -> int
 override Egami.Formats.Jpeg2000.Jpeg2000Component.GetHashCode() -> int
 override Egami.Formats.Jpeg2000.Jpeg2000Details.Copy() -> Egami.Metadata.FormatDetails!
@@ -1999,6 +2316,7 @@ override Egami.Formats.Psd.PsdLayer.ToString() -> string!
 override Egami.Formats.Psd.PsdResource.Equals(object? obj) -> bool
 override Egami.Formats.Psd.PsdResource.GetHashCode() -> int
 override Egami.Formats.Psd.PsdResource.ToString() -> string!
+override Egami.Formats.Radiance.RadianceDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
 override Egami.Formats.Tiff.TiffDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Tiff.TiffReaderOptions.<Clone>$() -> Egami.Formats.Tiff.TiffReaderOptions!
@@ -2122,6 +2440,7 @@ override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
+override sealed Egami.Formats.Exr.ExrReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Ico.IcoReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
@@ -2193,6 +2512,14 @@ static Egami.Colors.ColorTransform.Create(Egami.Colors.ColorProfile! source, Ega
 static Egami.Colors.ColorTransformOptions.Default.get -> Egami.Colors.ColorTransformOptions!
 static Egami.Colors.ColorTransformOptions.operator !=(Egami.Colors.ColorTransformOptions? left, Egami.Colors.ColorTransformOptions? right) -> bool
 static Egami.Colors.ColorTransformOptions.operator ==(Egami.Colors.ColorTransformOptions? left, Egami.Colors.ColorTransformOptions? right) -> bool
+static Egami.Colors.GainMap.Create(Egami.Raster! hdr, Egami.Raster? sdr = null, Egami.Colors.GainMapOptions? options = null) -> Egami.Colors.GainMap!
+static Egami.Colors.GainMapInfo.operator !=(Egami.Colors.GainMapInfo? left, Egami.Colors.GainMapInfo? right) -> bool
+static Egami.Colors.GainMapInfo.operator ==(Egami.Colors.GainMapInfo? left, Egami.Colors.GainMapInfo? right) -> bool
+static Egami.Colors.GainMapOptions.Default.get -> Egami.Colors.GainMapOptions!
+static Egami.Colors.GainMapOptions.operator !=(Egami.Colors.GainMapOptions? left, Egami.Colors.GainMapOptions? right) -> bool
+static Egami.Colors.GainMapOptions.operator ==(Egami.Colors.GainMapOptions? left, Egami.Colors.GainMapOptions? right) -> bool
+static Egami.Colors.GainMapValues.operator !=(Egami.Colors.GainMapValues left, Egami.Colors.GainMapValues right) -> bool
+static Egami.Colors.GainMapValues.operator ==(Egami.Colors.GainMapValues left, Egami.Colors.GainMapValues right) -> bool
 static Egami.Colors.HdrMetadata.operator !=(Egami.Colors.HdrMetadata? left, Egami.Colors.HdrMetadata? right) -> bool
 static Egami.Colors.HdrMetadata.operator ==(Egami.Colors.HdrMetadata? left, Egami.Colors.HdrMetadata? right) -> bool
 static Egami.Colors.HslColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.HslColor
@@ -2251,6 +2578,21 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Formats.Exr.ExrChannel.operator !=(Egami.Formats.Exr.ExrChannel? left, Egami.Formats.Exr.ExrChannel? right) -> bool
+static Egami.Formats.Exr.ExrChannel.operator ==(Egami.Formats.Exr.ExrChannel? left, Egami.Formats.Exr.ExrChannel? right) -> bool
+static Egami.Formats.Exr.ExrFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Exr.ExrHeaderEntry.operator !=(Egami.Formats.Exr.ExrHeaderEntry? left, Egami.Formats.Exr.ExrHeaderEntry? right) -> bool
+static Egami.Formats.Exr.ExrHeaderEntry.operator ==(Egami.Formats.Exr.ExrHeaderEntry? left, Egami.Formats.Exr.ExrHeaderEntry? right) -> bool
+static Egami.Formats.Exr.ExrImage.ReadChannel(string! path, string! channel, Egami.Formats.Exr.ExrReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
+static Egami.Formats.Exr.ExrImage.ReadChannel(System.IO.Stream! stream, string! channel, Egami.Formats.Exr.ExrReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
+static Egami.Formats.Exr.ExrPart.operator !=(Egami.Formats.Exr.ExrPart? left, Egami.Formats.Exr.ExrPart? right) -> bool
+static Egami.Formats.Exr.ExrPart.operator ==(Egami.Formats.Exr.ExrPart? left, Egami.Formats.Exr.ExrPart? right) -> bool
+static Egami.Formats.Exr.ExrReaderOptions.Default.get -> Egami.Formats.Exr.ExrReaderOptions!
+static Egami.Formats.Exr.ExrReaderOptions.operator !=(Egami.Formats.Exr.ExrReaderOptions? left, Egami.Formats.Exr.ExrReaderOptions? right) -> bool
+static Egami.Formats.Exr.ExrReaderOptions.operator ==(Egami.Formats.Exr.ExrReaderOptions? left, Egami.Formats.Exr.ExrReaderOptions? right) -> bool
+static Egami.Formats.Exr.ExrWriterOptions.Default.get -> Egami.Formats.Exr.ExrWriterOptions!
+static Egami.Formats.HdrDecode.operator !=(Egami.Formats.HdrDecode? left, Egami.Formats.HdrDecode? right) -> bool
+static Egami.Formats.HdrDecode.operator ==(Egami.Formats.HdrDecode? left, Egami.Formats.HdrDecode? right) -> bool
 static Egami.Formats.Ico.CurFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Ico.IcoEntry.operator !=(Egami.Formats.Ico.IcoEntry? left, Egami.Formats.Ico.IcoEntry? right) -> bool
 static Egami.Formats.Ico.IcoEntry.operator ==(Egami.Formats.Ico.IcoEntry? left, Egami.Formats.Ico.IcoEntry? right) -> bool
@@ -2267,6 +2609,10 @@ static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator ==(Egami.Formats.Jbig2.Jb
 static Egami.Formats.Jpeg.JpegTransform.Apply(string! sourcePath, string! destinationPath, Egami.Formats.Jpeg.JpegTransformOptions! options, Egami.EgamiContext? context = null) -> Egami.Formats.Jpeg.JpegTransformResult!
 static Egami.Formats.Jpeg.JpegTransform.Apply(System.IO.Stream! source, System.IO.Stream! destination, Egami.Formats.Jpeg.JpegTransformOptions! options, Egami.EgamiContext? context = null) -> Egami.Formats.Jpeg.JpegTransformResult!
 static Egami.Formats.Jpeg.JpegTransformOptions.Default.get -> Egami.Formats.Jpeg.JpegTransformOptions!
+static Egami.Formats.Jpeg.MpfData.operator !=(Egami.Formats.Jpeg.MpfData? left, Egami.Formats.Jpeg.MpfData? right) -> bool
+static Egami.Formats.Jpeg.MpfData.operator ==(Egami.Formats.Jpeg.MpfData? left, Egami.Formats.Jpeg.MpfData? right) -> bool
+static Egami.Formats.Jpeg.MpfImage.operator !=(Egami.Formats.Jpeg.MpfImage? left, Egami.Formats.Jpeg.MpfImage? right) -> bool
+static Egami.Formats.Jpeg.MpfImage.operator ==(Egami.Formats.Jpeg.MpfImage? left, Egami.Formats.Jpeg.MpfImage? right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000Channel.operator !=(Egami.Formats.Jpeg2000.Jpeg2000Channel left, Egami.Formats.Jpeg2000.Jpeg2000Channel right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000Channel.operator ==(Egami.Formats.Jpeg2000.Jpeg2000Channel left, Egami.Formats.Jpeg2000.Jpeg2000Channel right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000Component.operator !=(Egami.Formats.Jpeg2000.Jpeg2000Component left, Egami.Formats.Jpeg2000.Jpeg2000Component right) -> bool
@@ -2279,6 +2625,8 @@ static Egami.Formats.Psd.PsdLayer.operator !=(Egami.Formats.Psd.PsdLayer? left, 
 static Egami.Formats.Psd.PsdLayer.operator ==(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
 static Egami.Formats.Psd.PsdResource.operator !=(Egami.Formats.Psd.PsdResource? left, Egami.Formats.Psd.PsdResource? right) -> bool
 static Egami.Formats.Psd.PsdResource.operator ==(Egami.Formats.Psd.PsdResource? left, Egami.Formats.Psd.PsdResource? right) -> bool
+static Egami.Formats.Radiance.RadianceFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Radiance.RadianceWriterOptions.Default.get -> Egami.Formats.Radiance.RadianceWriterOptions!
 static Egami.Formats.Tiff.TiffFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Tiff.TiffReaderOptions.operator !=(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
@@ -2635,6 +2983,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Colors.CmykColor.ToString() -> string
 ~override Egami.Colors.ColorCodePoints.Equals(object obj) -> bool
 ~override Egami.Colors.ColorCodePoints.ToString() -> string
+~override Egami.Colors.GainMapValues.Equals(object obj) -> bool
+~override Egami.Colors.GainMapValues.ToString() -> string
 ~override Egami.Colors.HslColor.Equals(object obj) -> bool
 ~override Egami.Colors.HslColor.ToString() -> string
 ~override Egami.Colors.HsvColor.Equals(object obj) -> bool

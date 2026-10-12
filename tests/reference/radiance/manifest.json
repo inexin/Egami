@@ -1,0 +1,25 @@
+{
+ "tool": "stb_image 2c980bb5 where it reads the file, else hdrcorpus.py's decode",
+ "files": {
+  "desk-flat.hdr": "stb_image",
+  "desk-header.hdr": "stb_image",
+  "desk-magick.hdr": "stb_image",
+  "desk-mixed.hdr": "hdrcorpus.py (stb_image reads the scanlines after a flat one as flat)",
+  "desk-old.hdr": "stb_image",
+  "desk-rgbe-signature.hdr": "stb_image",
+  "desk-rle.hdr": "stb_image",
+  "desk-xyze.hdr": "hdrcorpus.py",
+  "extremes.hdr": "stb_image",
+  "narrow.hdr": "stb_image",
+  "orient-nx-ny.hdr": "hdrcorpus.py",
+  "orient-nx-py.hdr": "hdrcorpus.py",
+  "orient-ny-nx.hdr": "hdrcorpus.py",
+  "orient-ny-px.hdr": "stb_image",
+  "orient-px-ny.hdr": "hdrcorpus.py",
+  "orient-px-py.hdr": "hdrcorpus.py",
+  "orient-py-nx.hdr": "hdrcorpus.py",
+  "orient-py-px.hdr": "hdrcorpus.py",
+  "runs-old.hdr": "hdrcorpus.py (stb_image does not expand old-style repeat pixels)",
+  "runs-rle.hdr": "stb_image"
+ }
+}

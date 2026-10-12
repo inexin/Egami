@@ -157,7 +157,7 @@ public sealed class Raster<TPixel> : Raster
             }
         }
 
-        plan.UpdateMetadata(Metadata, new Size(Width, Height));
+        plan.UpdateMetadata(Metadata, new Size(Width, Height), Context);
         if (plan.ChangesGeometry(new Size(Width, Height)))
         {
             ClearStoredLayout(_frames);
@@ -296,7 +296,7 @@ public sealed class Raster<TPixel> : Raster
         }
 
         RasterMetadata metadata = derived;
-        plan.UpdateMetadata(metadata, new Size(Width, Height));
+        plan.UpdateMetadata(metadata, new Size(Width, Height), Context);
         if (plan.ChangesGeometry(new Size(Width, Height)))
         {
             ClearStoredLayout(frames);

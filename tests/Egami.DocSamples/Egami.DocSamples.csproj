@@ -25,6 +25,10 @@
   <ItemGroup>
     <None Include="../images/ops/duck.png" Link="images/duck.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/radiance/desk-rle.hdr" Link="images/desk.hdr" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/mpf/uhdr-default.jpg" Link="images/ultrahdr.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/exr/layers.exr" Link="images/render.exr" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/exr/aov-zip.exr" Link="images/aov.exr" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/exif-orientation-6.jpg" Link="images/sideways.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/duck-420.jpg" Link="images/duck.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />

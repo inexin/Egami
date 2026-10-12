@@ -34,7 +34,7 @@ internal sealed class WarpOperation(IWarp warp, SamplingOptions options, Colors.
         }
 
         // A warp can move the subject anywhere, so its area is dropped.
-        ExifUpkeep.Subject(metadata, null);
+        ExifUpkeep.Subject(metadata, null, input);
     }
 
     public void Run<TPixel>(OperationInput<TPixel> input)
@@ -187,7 +187,7 @@ internal sealed class OffsetOperation(int dx, int dy, EdgeMode edges, Rgba8 back
 
     public void UpdateMetadata(Metadata.RasterMetadata metadata, Size input, Size output)
     {
-        ExifUpkeep.Subject(metadata, null);
+        ExifUpkeep.Subject(metadata, null, input);
     }
 
     public void Run<TPixel>(OperationInput<TPixel> input)
@@ -265,7 +265,7 @@ internal sealed class TileOperation(int width, int height, Point origin, Rect? a
     {
         ExifUpkeep.Dimensions(metadata, output);
         ExifUpkeep.DropThumbnail(metadata);
-        ExifUpkeep.Subject(metadata, null);
+        ExifUpkeep.Subject(metadata, null, input);
     }
 
     public void Run<TPixel>(OperationInput<TPixel> input)

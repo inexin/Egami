@@ -47,6 +47,12 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             throw new InvalidOperationException($"JPEG holds at most 65,535 × 65,535 pixels; the image is {start.Width} × {start.Height}.");
         }
 
+        if (jpeg.GainMap is Colors.GainMapOptions gainMap)
+        {
+            Raster<TPixel> hdr = start.Whole ?? throw new NotSupportedException("JpegWriterOptions.GainMap needs the whole raster to make the gain map; save the raster rather than streaming its rows.");
+            return new UltraHdrWriter<TPixel>(output, hdr, gainMap, jpeg);
+        }
+
         return new RowWriter<TPixel>(output, start, jpeg);
     }
 
@@ -90,25 +96,53 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     {
         private readonly Encoder<TPixel> _encoder;
         private readonly JpegBitWriter _writer;
+        private readonly Stream _output;
+
+        /// <summary>The gain map image to append, or null; with one, the base image is kept in <see cref="_base"/> until complete.</summary>
+        private readonly byte[]? _map;
+        private readonly MemoryStream? _base;
 
         internal RowWriter(Stream output, EncodeStart<TPixel> start, JpegWriterOptions jpeg)
         {
             _encoder = new(start, jpeg);
+            _output = output;
             SaveKeeps alpha = jpeg.Background is null ? SaveKeeps.None : SaveKeeps.Alpha;
             SaveKeeps wide = jpeg.Precision == 12 ? SaveKeeps.Wide : SaveKeeps.None;
-            SaveLosses.Report(start, "JPEG", alpha | wide | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Iptc | SaveKeeps.Icc | SaveKeeps.Comment | SaveKeeps.Resolution);
+            SaveLosses.Report(start, "JPEG", alpha | wide | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Iptc | SaveKeeps.Icc | SaveKeeps.Comment | SaveKeeps.Resolution | SaveKeeps.GainMap);
+            ReadOnlyMemory<byte>? xmp = null;
+            if (!jpeg.StripMetadata && jpeg.KeepGainMap && start.Metadata.GainMap is Colors.GainMap gainMap)
+            {
+                if (JpegGainMapWriter.Fits(gainMap, start.Width, start.Height))
+                {
+                    _map = JpegGainMapWriter.MapImage(gainMap, start.Context);
+                    _base = new MemoryStream();
+                    xmp = JpegGainMapWriter.BaseXmp(start.Metadata.XmpData, _map.Length);
+                }
+                else
+                {
+                    SaveLosses.Report(start.Context, "Save.GainMapDropped", $"The gain map is {gainMap.Width} × {gainMap.Height}, which no longer fits the {start.Width} × {start.Height} image; the image was written as its SDR base.");
+                }
+            }
+
             if (jpeg.ColorType == JpegColorType.Auto)
             {
                 DiagnosticReporter? diagnostics = null;
                 start.Context.Emit(ref diagnostics, DiagnosticLevel.Info, "Jpeg.EncodingChosen", $"JPEG is written as {_encoder.Describe} at quality {jpeg.Quality}, chosen from the pixel type and the options left at their defaults.");
             }
 
-            _writer = new(output);
+            _writer = new(_base ?? output);
             _writer.Marker(JpegMarker.Soi);
             _encoder.WriteIdentification(_writer, jpeg.StripMetadata ? null : start.Metadata.Resolution);
             if (!jpeg.StripMetadata)
             {
-                WriteMetadata(_writer, start.Metadata, start.Options.ProfileToWrite(start.Metadata), start.Context);
+                WriteMetadata(_writer, start.Metadata, start.Options.ProfileToWrite(start.Metadata), start.Context, xmp);
+            }
+
+            if (_map is not null)
+            {
+                // The MPF index is written with zero sizes and filled in once the base image's length is known.
+                Segment(_writer, JpegMarker.App2, [.. JpegGainMap.IsoId, .. JpegGainMapWriter.IsoVersion]);
+                _writer.Raw(JpegGainMapWriter.Mpf(0, 0, 0));
             }
 
             _encoder.WriteHeaders(_writer);
@@ -133,12 +167,79 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             _encoder.EndScan(_writer);
             _writer.Marker(JpegMarker.Eoi);
             _writer.Flush();
+            if (_base is not null && _map is not null)
+            {
+                byte[] image = _base.GetBuffer();
+                int length = (int)_base.Length;
+                int at = image.AsSpan(0, length).IndexOf(JpegGainMapWriter.Mpf(0, 0, 0));
+                JpegGainMapWriter.Mpf(length, at + 8, _map.Length).CopyTo(image, at);
+                _output.Write(image, 0, length);
+                _output.Write(_map);
+            }
         }
 
         protected override void Dispose(bool disposing)
         {
             _encoder.Dispose();
             _writer.Dispose();
+            _base?.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+
+    /// <summary>
+    /// Writes an HDR raster as Ultra HDR: the tone mapped SDR base image with the gain map <see cref="Colors.GainMap.Create"/>
+    /// makes, through the ordinary writer, which appends the map. The rows the caller passes are ignored; the base is written whole.
+    /// </summary>
+    private sealed class UltraHdrWriter<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly Raster<Rgb8> _base;
+        private readonly RowWriter<Rgb8> _writer;
+
+        internal UltraHdrWriter(Stream output, Raster<TPixel> hdr, Colors.GainMapOptions options, JpegWriterOptions jpeg)
+        {
+            (_base, _) = Colors.GainMap.Encode(hdr, null, options);
+            try
+            {
+                JpegWriterOptions plain = new()
+                {
+                    Quality = jpeg.Quality,
+                    Subsampling = jpeg.Subsampling,
+                    OptimizeHuffman = jpeg.OptimizeHuffman,
+                    RestartInterval = jpeg.RestartInterval,
+                    Progressive = jpeg.Progressive,
+                    StripMetadata = jpeg.StripMetadata,
+                    OmitSrgbProfile = jpeg.OmitSrgbProfile,
+                };
+                _writer = new RowWriter<Rgb8>(output, RowEncoding.Whole(_base, plain), plain);
+            }
+            catch
+            {
+                _base.Dispose();
+                throw;
+            }
+        }
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            throw new NotSupportedException("An Ultra HDR JPEG is written from the whole raster.");
+        }
+
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            return _writer.WriteWhole(_base);
+        }
+
+        public override void Complete()
+        {
+            _writer.Complete();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _writer.Dispose();
+            _base.Dispose();
             base.Dispose(disposing);
         }
     }
@@ -193,7 +294,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
     /// EXIF (APP1), ICC (APP2 chunks), XMP (APP1, with extended XMP when large), Photoshop resources with the IPTC (APP13) and
     /// comments, in that order.
     /// </summary>
-    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile, EgamiContext? context = null)
+    private static void WriteMetadata(JpegBitWriter writer, RasterMetadata metadata, ReadOnlyMemory<byte> profile, EgamiContext? context = null, ReadOnlyMemory<byte>? xmp = null)
     {
         // An EXIF block too large for one segment loses its thumbnail first; if it is still too large it is left out.
         if (metadata.Exif is ExifData exifData)
@@ -244,7 +345,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         }
 
         JpegDetails? details = metadata.FormatDetails as JpegDetails;
-        WriteXmp(writer, metadata.Xmp.Span, details is null ? default : details.ExtendedXmp.Span);
+        WriteXmp(writer, (xmp ?? metadata.Xmp).Span, details is null ? default : details.ExtendedXmp.Span);
         WritePhotoshop(writer, metadata, details?.PhotoshopResources ?? default);
 
         foreach (TextEntry entry in metadata.Text)

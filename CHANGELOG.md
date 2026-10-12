@@ -19,6 +19,31 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   takes at most 1.5 times libvpx's time at 720p and 1080p on one thread and on all cores.
 - Lossy WebP decodes about 30% faster: the VP8 token loop keeps its decoder state in registers and the loop filter works in
   saturating 8-bit lanes, with the same pixels as before.
+### Radiance, OpenEXR and HDR gain maps
+
+- `RadianceFormat` reads Radiance pictures (RGBE and XYZE, flat, old and new run-length scanlines, all eight scan orders) to
+  linear `RgbF32`, bit for bit what stb_image decodes, and writes RGBE with run-length scanlines. `RadianceDetails` keeps the
+  header; the brightest value is measured into `HdrMetadata.MaxContentLightLevel`.
+- `ExrFormat` reads OpenEXR scanline, tiled and multi-part files with NONE, RLE, ZIPS, ZIP, PIZ, PXR24, B44, B44A, DWAA and DWAB,
+  half, float and uint channels, layers and luminance-chroma images, equal to OpenEXR 3.5.2's decode (DWA within one half-float
+  step) on the openexr-images set. `ExrDetails` lists parts, channels, layers, windows and every header attribute;
+  `ExrReaderOptions` picks the part, layer and window, and `ExrImage.ReadChannel` loads one channel. A damaged chunk table is
+  rebuilt (`Exr.ChunkTableRebuilt`), and blocks that cannot be read are left black (`Exr.BlocksDamaged`). The writer writes
+  NONE, RLE, ZIPS, ZIP or PIZ in half or float, read back by OpenEXR to the same values.
+- JPEG reads the CIPA Multi-Picture index: `JpegDetails.MultiPicture` lists the images with ExifTool's offsets and sizes,
+  `Raster.Probe` counts them and `Raster.LoadAll` loads each.
+- Gain maps: Ultra HDR, ISO 21496-1, Adobe hdrgm and Apple JPEGs load with `RasterMetadata.GainMap` (`GainMap`, `GainMapInfo`);
+  `ReaderOptions.Hdr` (`HdrDecode`) or `GainMap.Apply` gives the HDR rendition for a display headroom, within about 1% of
+  libultrahdr 2.0.2. JPEG saves write the map back with MPF, ISO 21496-1 and hdrgm metadata as Skia and libultrahdr write
+  them (`JpegWriterOptions.KeepGainMap`); crops, turns, flips and resizes move it, pixel operations drop it
+  (`Operation.GainMapDropped`), as do other formats (`Save.GainMapDropped`). `JpegWriterOptions.GainMap` and `GainMap.Create`
+  (`GainMapOptions`, libultrahdr's defaults) write Ultra HDR from an HDR raster; libultrahdr decodes Egami's files to the same
+  HDR image.
+- Saving a floating-point raster with light above reference white to an 8 or 16-bit format reports `Save.HdrClipped`.
+- Speed, single thread on Linux: Radiance decodes and encodes 1.3 to 1.9 times as fast as stb_image; Ultra HDR decodes 2 to 3
+  times and encodes 1.1 to 1.7 times as fast as libultrahdr; OpenEXR NONE, RLE, ZIP, ZIPS and PIZ are level with the OpenEXR
+  library or faster, PXR24, B44 and DWA 1.2 to 1.6 times slower. With all cores Egami is faster than OpenEXR on every
+  compression but DWA.
 
 ### ICO and CUR
 

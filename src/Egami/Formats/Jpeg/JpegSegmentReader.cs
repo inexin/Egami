@@ -32,6 +32,12 @@ internal static class JpegSegmentReader
     /// </summary>
     internal static JpegHeader ReadHeader(EgamiInput input, ReaderOptions options, JpegHeader? seed = null)
     {
+        if (seed is null && options is JpegReaderOptions { MultiPictureIndex: > 0 } picked)
+        {
+            SkipToMultiPicture(input, picked);
+            options = picked with { MultiPictureIndex = 0 };
+        }
+
         if (input.ReadByte() != 0xFF || input.ReadByte() != JpegMarker.Soi)
         {
             throw input.Corrupt(0, "The file does not start with a JPEG start-of-image marker.");
@@ -91,13 +97,14 @@ internal static class JpegSegmentReader
             try
             {
                 Span<byte> payload = data.AsSpan(0, length);
+                long payloadAt = input.Position;
                 input.ReadExactly(payload);
                 if (header.Segments is not null && IsMetadata(marker))
                 {
                     header.Segments.Add((marker, payload.ToArray()));
                 }
 
-                ReadSegment(input, header, marker, payload, at, iccChunks, ref iccCount, ref extended);
+                ReadSegment(input, header, marker, payload, at, payloadAt, iccChunks, ref iccCount, ref extended);
             }
             finally
             {
@@ -283,13 +290,36 @@ internal static class JpegSegmentReader
         }
     }
 
+    /// <summary>
+    /// Moves the input to the start of image <see cref="JpegReaderOptions.MultiPictureIndex"/> of the file's MPF index, which
+    /// lies after the primary image: the primary's header is read for the index, and the bytes up to the image skipped.
+    /// </summary>
+    private static void SkipToMultiPicture(EgamiInput input, JpegReaderOptions options)
+    {
+        JpegHeader primary = ReadHeader(input, options with { MultiPictureIndex = 0, ReadMetadata = true });
+        IReadOnlyList<MpfImage> images = primary.Details.MultiPicture?.Images ?? [];
+        int index = options.MultiPictureIndex;
+        if (index >= images.Count)
+        {
+            throw input.Corrupt(0, $"The file has no Multi-Picture image {index + 1}.");
+        }
+
+        long offset = images[index].Offset;
+        if (offset < input.Position)
+        {
+            throw input.Corrupt(0, $"Multi-Picture image {index + 1} starts at {offset}, inside the primary image.");
+        }
+
+        input.Skip(offset - input.Position);
+    }
+
     private static bool IsMetadata(byte marker)
     {
         return marker is (>= JpegMarker.App0 and <= JpegMarker.App15) or JpegMarker.Com;
     }
 
     private static void ReadSegment(
-        EgamiInput input, JpegHeader header, byte marker, ReadOnlySpan<byte> payload, long at, Dictionary<int, byte[]> iccChunks, ref int iccCount, ref ExtendedXmpParts? extended)
+        EgamiInput input, JpegHeader header, byte marker, ReadOnlySpan<byte> payload, long at, long payloadAt, Dictionary<int, byte[]> iccChunks, ref int iccCount, ref ExtendedXmpParts? extended)
     {
         switch (marker)
         {
@@ -320,6 +350,14 @@ internal static class JpegSegmentReader
                 break;
             case JpegMarker.App1:
                 ReadApp1(header, payload, input.Limits.MaxMetadataBytes, ref extended);
+                break;
+            case JpegMarker.App2 when payload.StartsWith(Mpf.Id):
+                // CIPA DC-007: the TIFF header follows the identifier, and the offsets of the images after the first count from it.
+                header.Details.MultiPicture ??= Mpf.Parse(payload, payloadAt + Mpf.Id.Length, header.Metadata.WarningList);
+                header.HasMetadata = true;
+                break;
+            case JpegMarker.App2 when payload.StartsWith(JpegGainMap.IsoId):
+                header.IsoGainMap ??= payload[JpegGainMap.IsoId.Length..].ToArray();
                 break;
             case JpegMarker.App2:
                 ReadIcc(header, payload, iccChunks, ref iccCount);

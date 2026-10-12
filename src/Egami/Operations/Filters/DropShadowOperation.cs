@@ -73,11 +73,13 @@ internal sealed class DropShadowOperation : IRasterOperation, INeedsNewPlane, IU
 
     public void UpdateMetadata(RasterMetadata metadata, Size input, Size output)
     {
+        // The shadow changes pixels, so a gain map no longer matches them.
+        metadata.GainMap = null;
         if (input != output)
         {
             (int left, int top, _, _) = Margins();
             ExifUpkeep.Dimensions(metadata, output);
-            ExifUpkeep.Subject(metadata, SubjectMap.Pad(new Point(left, top), output));
+            ExifUpkeep.Subject(metadata, SubjectMap.Pad(new Point(left, top), output), input);
         }
     }
 

@@ -316,33 +316,49 @@ internal static class OperationPipeline
             }
         }
 
-        /// <summary>Applies each step's metadata changes (EXIF orientation, dimensions, thumbnail, density) in order.</summary>
-        internal void UpdateMetadata(RasterMetadata metadata, Size input)
+        /// <summary>
+        /// Applies each step's metadata changes (EXIF orientation, dimensions, thumbnail, density, gain map) in order. A gain map
+        /// follows geometry steps and is dropped by any step that changes pixel values, reported as Operation.GainMapDropped.
+        /// </summary>
+        internal void UpdateMetadata(RasterMetadata metadata, Size input, EgamiContext? context = null)
         {
             if (Steps.Count > 0)
             {
                 metadata.FormatDetails?.PixelsChanged();
             }
 
+            Colors.GainMap? gainMap = metadata.GainMap;
             for (int i = 0; i < Steps.Count; i++)
             {
                 if (Steps[i] is Color.IUpdatesColor color)
                 {
                     color.UpdateMetadata(metadata);
+                    metadata.GainMap = null;
                 }
                 else if (Steps[i] is IUpdatesMetadata updates)
                 {
                     updates.UpdateMetadata(metadata, input, Sizes[i]);
                 }
-                else if (Sizes[i] != input)
+                else
                 {
-                    // A custom step that changes the size: the EXIF dimensions follow it and the thumbnail no longer matches.
-                    Geometry.ExifUpkeep.Dimensions(metadata, Sizes[i]);
-                    Geometry.ExifUpkeep.DropThumbnail(metadata);
-                    Geometry.ExifUpkeep.Subject(metadata, null);
+                    metadata.GainMap = null;
+                    if (Sizes[i] != input)
+                    {
+                        // A custom step that changes the size: the EXIF dimensions follow it and the thumbnail no longer matches.
+                        Geometry.ExifUpkeep.Dimensions(metadata, Sizes[i]);
+                        Geometry.ExifUpkeep.DropThumbnail(metadata);
+                        Geometry.ExifUpkeep.Subject(metadata, null, input);
+                    }
                 }
 
                 input = Sizes[i];
+            }
+
+            if (gainMap is not null && metadata.GainMap is null && context is not null)
+            {
+                DiagnosticReporter? diagnostics = null;
+                context.Emit(ref diagnostics, DiagnosticLevel.Warning, "Operation.GainMapDropped", $"A step changed pixel values or moved them in a way the gain map cannot follow; the gain map was dropped, so the image saves as SDR only.");
+                diagnostics?.Complete();
             }
         }
 

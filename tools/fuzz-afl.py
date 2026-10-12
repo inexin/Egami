@@ -35,7 +35,9 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "psdfile": "tests/images/psd/*[0-9].psd tests/images/psd/*-r*.psd tests/images/psd/layers.psd tests/images/psd/metadata.psd tests/images/psd/*.psb tests/images/psd/bad/*",
          "psddata": "tests/images/fuzz/psddata-seeds/*",
          "egdr": "tests/images/fuzz/egdr-seeds/*",
-         "shaping": "tests/images/fuzz/shaping-seeds/*", "bidi": "tests/images/fuzz/bidi-seeds/*"}
+         "shaping": "tests/images/fuzz/shaping-seeds/*", "bidi": "tests/images/fuzz/bidi-seeds/*",
+         "radiance": "tests/images/radiance/*.hdr", "exr": "tests/images/exr/*.exr",
+         "gainmap": "tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg"}
 
 SCRIPT = """
 set -e

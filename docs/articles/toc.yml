@@ -8,6 +8,8 @@
       href: guides/resizing-and-geometry.md
     - name: Pixel types
       href: guides/pixel-types.md
+    - name: HDR files
+      href: guides/hdr.md
     - name: Color
       href: guides/color.md
     - name: Color management

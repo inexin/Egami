@@ -91,6 +91,8 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Decode.ScaleChosen` | Info | For `ReaderOptions.MinimumSize`, the 1/N scale the reader decodes at and the box factor after it |
 | `Detect.Format` | Info | The format detected, and how |
 | `Exif.Damaged` | Warning | The EXIF block would not parse in full; it is kept as bytes |
+| `Exr.BlocksDamaged` | Warning | Blocks of an OpenEXR part cannot be read or decompressed; their pixels are zero |
+| `Exr.ChunkTableRebuilt` | Warning | An OpenEXR part's chunk offset table is incomplete or damaged; it was rebuilt by walking the chunks |
 | `Font.BadColorGlyph` | Warning | A glyph's color data (COLR, sbix, CBDT or SVG) is damaged, cyclic or deeper than 64 paints; the part that cannot be drawn is left out, or the glyph draws as its outline (Egami.Fonts) |
 | `Font.BadContainer` | Warning | A WOFF or WOFF2 file's header or blocks disagree with its data (a wrong length, a misplaced metadata block); the tables are still read (Egami.Fonts) |
 | `Font.BadDirectory` | Warning | A font's table directory lists a table outside the file; it was dropped or cut short (Egami.Fonts) |
@@ -133,7 +135,9 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jpeg.EoiMissing` | Warning | The file ends before its end-of-image marker; the scans so far were decoded |
 | `Jpeg.ExtendedXmpIncomplete` | Warning | The extended XMP packet is missing parts; it was dropped |
 | `Jpeg.ExtendedXmpOverLimit` | Warning | The extended XMP packet is over the metadata limit; it was dropped |
+| `Jpeg.GainMapDropped` | Warning | A gain map was found but its metadata or image cannot be read; the SDR image loads without it |
 | `Jpeg.IccIncomplete` | Warning | Parts of the ICC profile are missing; it was dropped |
+| `Jpeg.MpfDamaged` | Warning | The Multi-Picture Format index is damaged; only the primary image is listed and loaded |
 | `Jpeg.PhotoshopOverLimit` | Warning | The Photoshop resource block is over the metadata limit; it was dropped |
 | `Jpeg.RestartResync` | Warning | A restart marker is missing or out of order; decoding picked up at the next one |
 | `Jpeg.SegmentTruncated` | Warning | A segment between scans is cut off |
@@ -146,6 +150,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jpeg2000.Truncated` | Warning | The codestream ends before its last packet; what it holds was decoded |
 | `Limits.Exceeded` | Debug | A safety limit is about to fail the load: its name, the limit and the value found |
 | `Operation.ChainPlanned` | Info | The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped |
+| `Operation.GainMapDropped` | Warning | A step changed pixel values, or moved them in a way the gain map cannot follow; the gain map was dropped and the image saves as SDR only |
 | `Parallel.Bands` | Debug | How many bands and threads a parallel decode or encode uses |
 | `Png.ActlAfterData` | Warning | The acTL chunk comes after the image data; the file is read as a still PNG |
 | `Png.ActlFrameCount` | Warning | The acTL chunk gives an impossible frame count; the file is read as a still PNG |
@@ -191,11 +196,14 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Qoi.DataAfterEnd` | Warning | Data follows the last pixel where the end marker should be |
 | `Qoi.EndMarkerMissing` | Warning | The file ends without the QOI end marker |
 | `Qoi.RowsMissing` | Warning | The file ends early; the rows not decoded are transparent black |
+| `Radiance.RowsMissing` | Warning | The file ends early; the scanlines not decoded are black |
 | `Save.AlphaDropped` | Warning | The format, as written with these options, has no alpha; translucent pixels were written opaque |
 | `Save.ColorsQuantized` | Warning | The image has more colors than the palette holds; it was reduced |
 | `Save.ConvertedToRgb` | Warning | The format holds no CMYK; the inks were converted to RGB |
 | `Save.DepthReduced` | Warning | Samples deeper than the format holds were rounded, or floating-point samples clipped to integers |
 | `Save.FramesDropped` | Warning | The format holds one image here; only the first frame was written |
+| `Save.GainMapDropped` | Warning | The format holds no gain map, or the map no longer fits the image; the SDR base was written without it |
+| `Save.HdrClipped` | Warning | An HDR raster with light above reference white was saved to a format that holds 0 to 1; the highlights were clipped and ToneMap would have kept them |
 | `Save.IcoFitted` | Warning | A raster larger than an icon entry's 256 × 256 was fitted to 256 |
 | `Save.MetadataDropped` | Warning | Metadata the format cannot hold, or that is too large for it, was not written |
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |

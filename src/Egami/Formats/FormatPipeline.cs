@@ -16,6 +16,11 @@ internal static class FormatPipeline
 
         if (Reshapes(options))
         {
+            if (options.Hdr is not null)
+            {
+                throw new NotSupportedException("ReaderOptions.Hdr cannot be combined with Region or MinimumSize; load the HDR image, then crop or resize it.");
+            }
+
             using RasterDecoder decoder = RasterDecoder.Open(stream, context, options, owned: null);
             return Named(decoder.ReadAll(), decoder.Info.Format);
         }
@@ -43,6 +48,11 @@ internal static class FormatPipeline
 
         if (Reshapes(options))
         {
+            if (options.Hdr is not null)
+            {
+                throw new NotSupportedException("ReaderOptions.Hdr cannot be combined with Region or MinimumSize; load the HDR image, then crop or resize it.");
+            }
+
             using RasterDecoder decoder = RasterDecoder.Open(stream, context, options, owned: null);
             return Named(decoder.ReadAll<TPixel>(), decoder.Info.Format);
         }

@@ -13,7 +13,7 @@ namespace Egami.Tests.Formats;
 public class FuzzRegressionTests
 {
     private static readonly string Fuzz = Path.Combine(AppContext.BaseDirectory, "images", "fuzz");
-    private static readonly string[] SimpleFolders = ["bmp", "tga", "qoi", "pnm"];
+    private static readonly string[] SimpleFolders = ["bmp", "tga", "qoi", "pnm", "exr"];
 
     public static TheoryData<string> JpegFiles() => [.. Directory.GetFiles(Path.Combine(Fuzz, "jpeg")).Select(p => Path.GetFileName(p)).Order(StringComparer.Ordinal)];
 

@@ -59,7 +59,11 @@ internal static class ExifUpkeep
     }
 
     /// <summary>Moves SubjectArea and SubjectLocation, in EXIF and XMP, as <paramref name="map"/> moves the picture; null drops them.</summary>
-    internal static void Subject(RasterMetadata metadata, SubjectMap? map) => SubjectUpkeep.Apply(metadata, map);
+    internal static void Subject(RasterMetadata metadata, SubjectMap? map, Size input)
+    {
+        SubjectUpkeep.Apply(metadata, map);
+        GainMapUpkeep.Apply(metadata, map, input);
+    }
 
     /// <summary>Drops the thumbnail, which no longer shows the image.</summary>
     internal static void DropThumbnail(RasterMetadata metadata)
@@ -123,7 +127,7 @@ internal sealed class CropOperation(Rect rect) : IRasterOperation, IUpdatesMetad
     {
         ExifUpkeep.Dimensions(metadata, output);
         ExifUpkeep.DropThumbnail(metadata);
-        ExifUpkeep.Subject(metadata, SubjectMap.Crop(new Rect(rect.X, rect.Y, output.Width, output.Height)));
+        ExifUpkeep.Subject(metadata, SubjectMap.Crop(new Rect(rect.X, rect.Y, output.Width, output.Height)), input);
     }
 
     /// <summary>Gets the rectangle kept.</summary>
@@ -164,7 +168,7 @@ internal sealed class PadOperation(int width, int height, Rgba8 color, Anchor an
     public void UpdateMetadata(RasterMetadata metadata, Size input, Size output)
     {
         ExifUpkeep.Dimensions(metadata, output);
-        ExifUpkeep.Subject(metadata, SubjectMap.Pad(anchor.Offset(new Size(width, height), input), output));
+        ExifUpkeep.Subject(metadata, SubjectMap.Pad(anchor.Offset(new Size(width, height), input), output), input);
     }
 
     public Size OutputSize(Size input)
@@ -223,7 +227,7 @@ internal sealed class FlipOperation(bool horizontal, bool vertical) : IRasterOpe
     {
         ExifUpkeep.Upright(metadata);
         ExifUpkeep.DropThumbnail(metadata);
-        ExifUpkeep.Subject(metadata, SubjectMap.Flip(input, horizontal, vertical));
+        ExifUpkeep.Subject(metadata, SubjectMap.Flip(input, horizontal, vertical), input);
     }
 
     public Size OutputSize(Size input)
@@ -337,7 +341,7 @@ internal sealed class RotateQuarterOperation(bool fromLastRow, bool reversed) : 
         ExifUpkeep.Dimensions(metadata, output);
         ExifUpkeep.SwapResolution(metadata);
         ExifUpkeep.DropThumbnail(metadata);
-        ExifUpkeep.Subject(metadata, SubjectMap.Quarter(input, fromLastRow, reversed));
+        ExifUpkeep.Subject(metadata, SubjectMap.Quarter(input, fromLastRow, reversed), input);
     }
 
     public bool NeedsNewPlane(Size input)

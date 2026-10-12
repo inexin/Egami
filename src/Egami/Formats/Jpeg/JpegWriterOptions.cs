@@ -140,4 +140,29 @@ public sealed class JpegWriterOptions : WriterOptions
     /// <see langword="null"/>.
     /// </summary>
     public Rgba8? Background { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether a gain map the raster carries (<see cref="Metadata.RasterMetadata.GainMap"/>, from an Ultra
+    /// HDR, ISO 21496-1 or Apple file) is written back: the gain map JPEG after the image, an MPF index, ISO 21496-1 metadata and
+    /// Adobe's hdrgm XMP with a GContainer directory, so HDR displays show the HDR rendition. A map read from the file is copied
+    /// as it was stored; one an operation moved is encoded again. <see cref="WriterOptions.StripMetadata"/> leaves it out too.
+    /// Defaults to <see langword="true"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Hdr.cs" region="gain-map-keep"/>
+    /// </example>
+    public bool KeepGainMap { get; init; } = true;
+
+    /// <summary>
+    /// Gets how to write an HDR raster as an Ultra HDR JPEG (HDR Design question 10), or <see langword="null"/> (the default) to
+    /// write its pixels as they are. Set, the raster is tone mapped with <see cref="Colors.ToneMapping.Bt2390"/> to the SDR base
+    /// image, written at <see cref="Quality"/>, and <see cref="Colors.GainMap.Create"/> makes the map that brings the HDR raster
+    /// back, written after it as <see cref="KeepGainMap"/> says. To choose the SDR rendition yourself, set
+    /// <see cref="Metadata.RasterMetadata.GainMap"/> of the SDR raster to <see cref="Colors.GainMap.Create"/>'s map and save that.
+    /// Needs the whole raster, so a streamed encode throws <see cref="NotSupportedException"/>.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Hdr.cs" region="gain-map-write"/>
+    /// </example>
+    public Colors.GainMapOptions? GainMap { get; init; }
 }

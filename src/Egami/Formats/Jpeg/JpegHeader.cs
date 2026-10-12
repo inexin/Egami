@@ -132,6 +132,9 @@ internal sealed class JpegHeader
 
     internal JpegDetails Details { get; } = new();
 
+    /// <summary>Gets or sets the ISO 21496-1 gain map metadata (APP2 after its identifier), or null.</summary>
+    internal byte[]? IsoGainMap { get; set; }
+
     internal bool HasMetadata { get; set; }
 
     /// <summary>Gets the color model, from the component count and the JFIF and Adobe segments, as libjpeg decides it.</summary>

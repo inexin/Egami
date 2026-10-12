@@ -29,6 +29,9 @@ Targets:
 | `instance` | Variable fonts subsetted at positions the bytes pick: the static instance must re-load as a static font and read as `font` does | `tests/images/fuzz/instance-seeds/*` |
 | `shaping` | Fonts that load shape texts in ten scripts (Latin ligatures and marks, Arabic, Devanagari, Khmer, Myanmar, Thai, Tibetan, Hangul, emoji, mixed bidi) run by run and through `TextShaper.Shape`, with features, directions and cluster levels the bytes pick, and the GSUB closure of each text's glyphs is taken; nothing may throw and every cluster must stay in its run | `tests/images/fuzz/shaping-seeds/*` |
 | `bidi` | The bytes as UTF-16 text: resolved in every direction, reordered over line cuts the bytes pick (runs must cover each line exactly), split into graphemes and words (which must tile the text) and shaped with an embedded Arabic font | `tests/images/fuzz/bidi-seeds/*` |
+| `radiance` | Radiance pictures: probed and loaded leniently and strictly, from a stream that cannot seek; what loads must write back and write again to the same bytes | `tests/images/radiance/*.hdr` |
+| `exr` | OpenEXR files: probed and loaded leniently and strictly, every part, the first layers in the display window and the first channels alone, then written back as ZIP and PIZ | `tests/images/exr/*.exr` |
+| `gainmap` | JPEGs with an MPF index and a gain map: every MP image, the HDR rendition at full capacity and at a headroom of 2, the map applied, a crop and turn saved as JPEG, which must keep the map | `tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg` |
 
 ## Running locally (Linux or WSL)
 

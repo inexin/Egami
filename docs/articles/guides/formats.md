@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, and Windows icons and cursors, and reads JBIG2, JPEG 2000 and Photoshop's PSD and PSB. Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, and Windows icons and cursors, and reads JBIG2, JPEG 2000 and Photoshop's PSD and PSB. Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -20,6 +20,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 | JPEG 2000 | All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes; see the [JPEG 2000 guide](jpeg2000.md) | No | `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8` or their 16-bit forms, by depth and color space |
 | ICO, CUR | Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by `MinimumSize` or index; cursor hotspots; see the [ICO guide](ico.md) | One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots | `Rgba8` |
 | PSD, PSB | The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata; see the [PSD guide](psd.md) | No | By mode and depth: `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8`, their 16-bit forms, float types |
+| Radiance | RGBE and XYZE, every scan order, flat, old repeat-pixel and per-channel run-length scanlines; see the [HDR guide](hdr.md) | RGBE, run-length encoded or flat, optional EXPOSURE line | `RgbF32`, linear |
 | PNM | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps | P1 to P7, plain or binary; PF and Pf | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16`; `RgbF32` or `GrayF32` for PFM |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
@@ -29,7 +30,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 ## Detection
 
 Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, JPEG 2000, ICO, CUR, PSD, then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, ICO, CUR, PSD, Radiance, then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:
 

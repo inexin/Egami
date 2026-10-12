@@ -82,6 +82,12 @@ public sealed class JpegDetails : FormatDetails
     /// </summary>
     public ReadOnlyMemory<byte> PhotoshopResources { get; set; }
 
+    /// <summary>
+    /// Gets or sets the file's Multi-Picture Format index (APP2 "MPF"), which lists the images stored after the primary one, such
+    /// as previews, stereo views or a gain map; <see langword="null"/> when the file has none. The JPEG writer does not write it.
+    /// </summary>
+    public MpfData? MultiPicture { get; set; }
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
@@ -97,6 +103,7 @@ public sealed class JpegDetails : FormatDetails
             ScaleDenominator = ScaleDenominator,
             ExtendedXmp = ExtendedXmp.ToArray(),
             PhotoshopResources = PhotoshopResources.ToArray(),
+            MultiPicture = MultiPicture,
         };
         foreach (JpegComponent component in Components)
         {

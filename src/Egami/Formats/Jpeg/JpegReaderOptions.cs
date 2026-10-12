@@ -15,4 +15,7 @@ public sealed record JpegReaderOptions : ReaderOptions
     /// decoders look.
     /// </summary>
     public bool FastUpsampling { get; init; }
+
+    /// <summary>Gets which image of the file's MPF index to load: 0, the primary, unless LoadAll asks for another.</summary>
+    internal int MultiPictureIndex { get; init; }
 }

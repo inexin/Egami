@@ -203,7 +203,7 @@ public abstract partial class Raster
             Metadata.RasterMetadata metadata = first.Metadata.Copy();
             Operations.Geometry.ExifUpkeep.Dimensions(metadata, size);
             Operations.Geometry.ExifUpkeep.DropThumbnail(metadata);
-            Operations.Geometry.ExifUpkeep.Subject(metadata, null);
+            Operations.Geometry.ExifUpkeep.Subject(metadata, null, size);
             Raster<TPixel> canvas = new(plane, metadata, first.Context);
             try
             {

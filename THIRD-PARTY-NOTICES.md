@@ -232,3 +232,42 @@ HarfBuzz is distributed under the "Old MIT" license:
     FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
     ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
     PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+## OpenEXR
+
+Egami's OpenEXR reader and writer are written from the OpenEXR file layout documentation, but closely follow OpenEXR's
+decompressors so the pixels match its decode bit for bit: the PIZ wavelet and Huffman coder, PXR24, the B44 and B44A block
+packing with their log table, DWAA and DWAB (the channel rules, zigzag order, AVX-ordered inverse DCT and the nonlinear
+lookup), and RgbaInputFile's luminance-chroma to RGB filter and saturation fix were studied in OpenEXR 3.5.2. OpenEXR is
+distributed under the BSD 3-clause license:
+
+    Copyright (c) Contributors to the OpenEXR Project. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+    following conditions are met: redistributions of source code must retain the above copyright notice, this list of
+    conditions and the following disclaimer; redistributions in binary form must reproduce the above copyright notice, this
+    list of conditions and the following disclaimer in the documentation and/or other materials provided with the
+    distribution; neither the name of the copyright holder nor the names of its contributors may be used to endorse or
+    promote products derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+    USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+    OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## libultrahdr
+
+Egami's gain map code is written from ISO 21496-1, Adobe's Gain Map Specification 1.0 and Android's Ultra HDR format, with
+these details taken from libultrahdr 2.0.2 so files and renditions match it: the headroom formula for Apple's maker note tags
+33 and 48, the corner-aligned map sampling, the gain limits and dark-pixel cap when making a map, and the encoder defaults.
+libultrahdr is distributed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
+
+    Copyright 2022 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+    License. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+    on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations under the License.

@@ -54,7 +54,7 @@ internal sealed class TransformOperation(Func<Size, Homography> matrixFor, Trans
 
         ExifUpkeep.Dimensions(metadata, output);
         ExifUpkeep.DropThumbnail(metadata);
-        ExifUpkeep.Subject(metadata, SubjectMap.Transform(plan.Forward, plan.Offset, input, output));
+        ExifUpkeep.Subject(metadata, SubjectMap.Transform(plan.Forward, plan.Offset, input, output), input);
     }
 
     public void Run<TPixel>(OperationInput<TPixel> input)
