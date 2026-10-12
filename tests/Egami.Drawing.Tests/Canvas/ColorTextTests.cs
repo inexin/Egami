@@ -88,16 +88,16 @@ public class ColorTextTests
     }
 
     [Fact]
-    public void SavedDrawingsKeepColorGlyphs()
+    public void SavedPicturesKeepColorGlyphs()
     {
-        var recorder = new DrawingRecorder(new RectF(0, 0, 260, 70));
+        var recorder = new PictureRecorder(new RectF(0, 0, 260, 70));
         recorder.DrawText("😀🚀 ok", new Vector2(6, 52), new Font(ColrV1.Value, 40), Rgba8.Black);
-        Drawing drawing = recorder.Finish();
+        Picture picture = recorder.Finish();
         using var stream = new MemoryStream();
-        drawing.Save(stream);
+        picture.Save(stream);
         stream.Position = 0;
-        Drawing loaded = Drawing.Load(stream);
-        using Raster<Rgba8> a = drawing.ToRaster<Rgba8>();
+        Picture loaded = Picture.Load(stream);
+        using Raster<Rgba8> a = picture.ToRaster<Rgba8>();
         using Raster<Rgba8> b = loaded.ToRaster<Rgba8>();
         Assert.Contains(Pixels(b), p => Chroma(p) > 60);
         // Premultiplied, so transparent pixels compare equal whatever their color. The saved glyphs draw at their exact positions,

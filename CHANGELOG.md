@@ -276,7 +276,7 @@ Text quality, text on a path and color glyphs. See [Rendering quality](docs/arti
 - Color glyphs draw in color through ordinary canvas calls (clips by glyph outlines, solid and gradient fills, transforms and
   layers with blend modes; images for sbix and CBDT), so every backend gets them; on a raster they are cached as premultiplied
   images per palette and color. The glyph is one group under the paint's alpha; the paint's color fills foreground entries.
-  `DrawingRecorder` and .egdr files keep color glyphs as the calls they draw with.
+  `PictureRecorder` and .egdr files keep color glyphs as the calls they draw with.
 - Gates against SkiaSharp 4.153: variable text at 12 to 48 pixels in five fonts and subpixel-positioned text at 9 to 24 pixels in
   four within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area; COLR v0 and v1 glyphs within
   a mean level of SkiaSharp's own drawing at 24 to 96 pixels, sbix and CBDT within 2. Aliased, LCD, light-hinted and synthetic text

@@ -293,12 +293,12 @@ internal sealed class EgdrWriter
             case DrawGlyphRunCall c:
                 {
                     // Text is saved as what the default hook draws for it, since a file holds no fonts: its outlines, and color
-                    // glyphs as the clips, fills and images they draw with, in a drawing of their own.
+                    // glyphs as the clips, fills and images they draw with, in a picture of their own.
                     if (HasColorGlyphs(c.Run))
                     {
-                        var recorder = new DrawingRecorder(RectF.FromEdges(-1e6f, -1e6f, 1e6f, 1e6f)) { ExpandText = true };
+                        var recorder = new PictureRecorder(RectF.FromEdges(-1e6f, -1e6f, 1e6f, 1e6f)) { ExpandText = true };
                         recorder.DrawGlyphRun(c.Run, c.Origin, c.Paint);
-                        WriteCall(b, new DrawDrawingCall(recorder.Finish(), Matrix3x2.Identity, null, false));
+                        WriteCall(b, new DrawPictureCall(recorder.Finish(), Matrix3x2.Identity, null, false));
                         break;
                     }
 

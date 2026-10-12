@@ -129,7 +129,7 @@ public sealed class PictureRecorder : Canvas
 
     /// <summary>
     /// Gets or sets whether glyph runs are recorded as what the default hook draws for them (color glyphs as canvas calls, the
-    /// rest as one path) instead of as runs; a saved drawing, which holds no fonts, records text this way.
+    /// rest as one path) instead of as runs; a saved picture, which holds no fonts, records text this way.
     /// </summary>
     internal bool ExpandText { get; set; }
 
