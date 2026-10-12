@@ -44,6 +44,11 @@ Egami.Svg.SvgContent.Line.get -> int
 Egami.Svg.SvgContent.Parent.get -> Egami.Svg.SvgElement?
 Egami.Svg.SvgContent.Remove() -> void
 Egami.Svg.SvgContentList
+Egami.Svg.SvgDecodeOptions
+Egami.Svg.SvgDecodeOptions.Equals(Egami.Svg.SvgDecodeOptions? other) -> bool
+Egami.Svg.SvgDecodeOptions.Scale.get -> float
+Egami.Svg.SvgDecodeOptions.Scale.init -> void
+Egami.Svg.SvgDecodeOptions.SvgDecodeOptions() -> void
 Egami.Svg.SvgDocument
 Egami.Svg.SvgDocument.Description.get -> string?
 Egami.Svg.SvgDocument.Draw(Egami.Drawing.Canvas! canvas, Egami.Drawing.RectF? box = null, Egami.Svg.SvgRenderOptions? options = null) -> void
@@ -99,6 +104,7 @@ Egami.Svg.SvgFontOptions.GenericFamilies.init -> void
 Egami.Svg.SvgFontOptions.SvgFontOptions() -> void
 Egami.Svg.SvgFontOptions.UseSystemFonts.get -> bool
 Egami.Svg.SvgFontOptions.UseSystemFonts.init -> void
+Egami.Svg.SvgFormat
 Egami.Svg.SvgGroup
 Egami.Svg.SvgGroup.Children.get -> System.Collections.Generic.IReadOnlyList<Egami.Svg.SvgNode!>!
 Egami.Svg.SvgGroup.Children.init -> void
@@ -287,6 +293,10 @@ override Egami.Svg.SvgClip.GetHashCode() -> int
 override Egami.Svg.SvgClip.ToString() -> string!
 override Egami.Svg.SvgComment.Clone() -> Egami.Svg.SvgContent!
 override Egami.Svg.SvgComment.ToString() -> string!
+override Egami.Svg.SvgDecodeOptions.<Clone>$() -> Egami.Svg.SvgDecodeOptions!
+override Egami.Svg.SvgDecodeOptions.Equals(object? obj) -> bool
+override Egami.Svg.SvgDecodeOptions.GetHashCode() -> int
+override Egami.Svg.SvgDecodeOptions.ToString() -> string!
 override Egami.Svg.SvgElement.Clone() -> Egami.Svg.SvgContent!
 override Egami.Svg.SvgElement.ToString() -> string!
 override Egami.Svg.SvgFilter.Equals(object? obj) -> bool
@@ -333,12 +343,15 @@ override Egami.Svg.SvgTextRun.ToString() -> string!
 override Egami.Svg.SvgWriteOptions.Equals(object? obj) -> bool
 override Egami.Svg.SvgWriteOptions.GetHashCode() -> int
 override Egami.Svg.SvgWriteOptions.ToString() -> string!
+override sealed Egami.Svg.SvgDecodeOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Svg.SvgGroup.Equals(Egami.Svg.SvgNode? other) -> bool
 override sealed Egami.Svg.SvgImage.Equals(Egami.Svg.SvgNode? other) -> bool
 override sealed Egami.Svg.SvgPath.Equals(Egami.Svg.SvgNode? other) -> bool
 override sealed Egami.Svg.SvgTextRun.Equals(Egami.Svg.SvgNode? other) -> bool
 static Egami.Svg.SvgClip.operator !=(Egami.Svg.SvgClip? left, Egami.Svg.SvgClip? right) -> bool
 static Egami.Svg.SvgClip.operator ==(Egami.Svg.SvgClip? left, Egami.Svg.SvgClip? right) -> bool
+static Egami.Svg.SvgDecodeOptions.operator !=(Egami.Svg.SvgDecodeOptions? left, Egami.Svg.SvgDecodeOptions? right) -> bool
+static Egami.Svg.SvgDecodeOptions.operator ==(Egami.Svg.SvgDecodeOptions? left, Egami.Svg.SvgDecodeOptions? right) -> bool
 static Egami.Svg.SvgDocument.Load(string! path, Egami.Svg.SvgLoadOptions? options = null) -> Egami.Svg.SvgDocument!
 static Egami.Svg.SvgDocument.Load(System.IO.Stream! stream, Egami.Svg.SvgLoadOptions? options = null) -> Egami.Svg.SvgDocument!
 static Egami.Svg.SvgDocument.Parse(string! text, Egami.Svg.SvgLoadOptions? options = null) -> Egami.Svg.SvgDocument!
@@ -347,6 +360,7 @@ static Egami.Svg.SvgFilter.operator ==(Egami.Svg.SvgFilter? left, Egami.Svg.SvgF
 static Egami.Svg.SvgFontOptions.Default.get -> Egami.Svg.SvgFontOptions!
 static Egami.Svg.SvgFontOptions.operator !=(Egami.Svg.SvgFontOptions? left, Egami.Svg.SvgFontOptions? right) -> bool
 static Egami.Svg.SvgFontOptions.operator ==(Egami.Svg.SvgFontOptions? left, Egami.Svg.SvgFontOptions? right) -> bool
+static Egami.Svg.SvgFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Svg.SvgGroup.operator !=(Egami.Svg.SvgGroup? left, Egami.Svg.SvgGroup? right) -> bool
 static Egami.Svg.SvgGroup.operator ==(Egami.Svg.SvgGroup? left, Egami.Svg.SvgGroup? right) -> bool
 static Egami.Svg.SvgImage.operator !=(Egami.Svg.SvgImage? left, Egami.Svg.SvgImage? right) -> bool

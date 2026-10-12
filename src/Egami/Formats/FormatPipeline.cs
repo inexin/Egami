@@ -677,10 +677,13 @@ internal static class FormatPipeline
             signatureLength = Math.Max(signatureLength, format.SignatureLength);
         }
 
+        // A header shorter than asked for is the whole data: every format looks at it, so a short file of a format whose
+        // signature allows for a long prolog (SVG's) is still found.
         ReadOnlySpan<byte> header = input.Peek(signatureLength);
+        bool whole = header.Length < signatureLength;
         foreach (FormatInfo format in context.Formats)
         {
-            if (header.Length >= format.SignatureLength && format.Matches(header))
+            if ((whole || header.Length >= format.SignatureLength) && format.Matches(header))
             {
                 if (format.Reader is null)
                 {

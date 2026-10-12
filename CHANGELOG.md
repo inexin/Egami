@@ -286,6 +286,10 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
   clips, layers with opacity, CSS blend modes and masks, images and text as glyph outlines or `text` elements, with shared
   `defs` (`SvgWriteOptions`). What SVG cannot express is drawn by Egami into an embedded PNG and reported as
   `Svg.FallbackImage`. Read back by Egami.Svg its files draw like the canvas calls, and Chromium and Inkscape open them cleanly.
+- `SvgFormat.Info` registers SVG and SVGZ as an Egami format with `EgamiContext.WithFormat`, so `Raster.Load` draws a file at
+  its own size (times `SvgDecodeOptions.Scale`) and `Raster.Probe` gives the size without drawing. It is found by its `svg`
+  root, opens nothing outside the file, and only reads. Detection now passes data shorter than the longest registered
+  signature to every format, as `SignatureMatcher` describes, so short SVG files are found.
 - Gates: on resvg's own test suite, 94 to 100% of the shapes, painting, structure, paint-server and masking tests match resvg's
   reference renders (at most 0.5% of pixels differ, allowing a one-pixel shift; deviations are listed with reasons in
   egami-compare), 99% of the filter tests and 98.7% of the text tests (78% of the text tests are also close to

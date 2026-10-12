@@ -29,7 +29,7 @@ public sealed record FormatInfo
     /// <summary>Gets the file extensions without the dot, such as "png", the preferred one first. Used only to pick a writer when saving to a path.</summary>
     public IReadOnlyList<string> Extensions { get; init; } = [];
 
-    /// <summary>Gets how many leading bytes <see cref="Matches"/> needs.</summary>
+    /// <summary>Gets how many leading bytes <see cref="Matches"/> needs; data shorter than the longest signature registered is passed to it whole.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 65,536.</exception>
     public required int SignatureLength
     {

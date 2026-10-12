@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Egami.Drawing;
 using Egami.Fonts;
+using Egami.Formats;
 using Egami.Pixels;
 using Egami.Svg;
 
@@ -124,6 +125,32 @@ public class Svg
         Assert.Equal((24, 24), (icon.Width, icon.Height));
         Assert.Equal(512, large.Height);
         Assert.Equal(48, onWhite.Width);
+    }
+
+    [Fact]
+    public void LoadThroughRaster()
+    {
+        string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.svg");
+        File.WriteAllText(path, Icon);
+        try
+        {
+            #region svg-format
+            // SVG as an Egami format: Raster.Load draws a file at its own size, Raster.Probe reads the size without drawing.
+            EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
+            RasterInfo info = Raster.Probe(path, context);
+            using Raster<Rgba8> icon = Raster.Load<Rgba8>(path, context);
+
+            // Twice the size, for a high-density screen.
+            using Raster<Rgba8> sharp = Raster.Load<Rgba8>(path, context, new SvgDecodeOptions { Scale = 2 });
+            #endregion
+            Assert.Equal((24, 24), (info.Width, info.Height));
+            Assert.Equal(24, icon.Width);
+            Assert.Equal(48, sharp.Width);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     [Fact]

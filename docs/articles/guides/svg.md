@@ -83,6 +83,20 @@ turn system fonts off, so the output does not depend on the machine.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#fonts)]
 
+## Loading SVG as a raster
+
+`SvgFormat.Info` makes SVG an Egami format: register it with `EgamiContext.WithFormat`, and `Raster.Load` reads .svg and
+.svgz files drawn at their own size, `Raster.Probe` gives that size without drawing, and `RasterDecoder` and the rest of
+Egami's loading take them like any image. It is found by content, not by extension: an `svg` root element after any XML
+declaration, comments and DOCTYPE, or gzip data that starts so. `SvgDecodeOptions.Scale` draws at a multiple of the size,
+for icons on high-density screens, and `Recovery = Strict` throws on what a lenient load skips; a lenient load keeps the
+`Svg.*` warnings in the raster's `Metadata.Warnings`. The context's safety limits apply, and nothing outside the file is
+opened, so images it links are not drawn; text uses the machine's fonts. The format never writes: save SVG with
+`SvgDocument.Save` or `SvgCanvas`. For a resolver, your own fonts, a target size or a background, load an `SvgDocument` and
+call `Rasterize`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-format)]
+
 ## The render tree
 
 Drawing works from the render tree, `SvgDocument.RenderTree`: the elements with their styles applied, units in pixels, `use`
