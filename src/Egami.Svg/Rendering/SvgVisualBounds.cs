@@ -29,69 +29,69 @@ internal static class SvgVisualBounds
         switch (node)
         {
             case SvgPath path:
-            {
-                RectF bounds = path.Bounds;
-                if (path.Stroke is Stroke stroke && path.StrokePaint is not null)
                 {
-                    if (path.NonScalingStroke || !(stroke.Width > 0))
+                    RectF bounds = path.Bounds;
+                    if (path.Stroke is Stroke stroke && path.StrokePaint is not null)
                     {
-                        return null;
+                        if (path.NonScalingStroke || !(stroke.Width > 0))
+                        {
+                            return null;
+                        }
+
+                        float miter = stroke.Join == LineJoin.Miter ? Math.Max(stroke.MiterLimit, 1) : 1;
+                        float reach = stroke.Width / 2 * Math.Max(miter, MathF.Sqrt(2));
+                        bounds = bounds.Inflate(reach, reach);
+                    }
+                    else if (path.Fill is null)
+                    {
+                        bounds = RectF.Empty;
                     }
 
-                    float miter = stroke.Join == LineJoin.Miter ? Math.Max(stroke.MiterLimit, 1) : 1;
-                    float reach = stroke.Width / 2 * Math.Max(miter, MathF.Sqrt(2));
-                    bounds = bounds.Inflate(reach, reach);
-                }
-                else if (path.Fill is null)
-                {
-                    bounds = RectF.Empty;
-                }
-
-                if (path.Markers is SvgGroup markers)
-                {
-                    if (InParent(markers) is not RectF m)
+                    if (path.Markers is SvgGroup markers)
                     {
-                        return null;
+                        if (InParent(markers) is not RectF m)
+                        {
+                            return null;
+                        }
+
+                        bounds = Union(bounds, m);
                     }
 
-                    bounds = Union(bounds, m);
+                    return bounds;
                 }
-
-                return bounds;
-            }
 
             case SvgGroup group:
-            {
-                RectF bounds = RectF.Empty;
-                foreach (SvgNode child in group.Children)
                 {
-                    if (InParent(child) is not RectF b)
+                    RectF bounds = RectF.Empty;
+                    foreach (SvgNode child in group.Children)
                     {
-                        return null;
+                        if (InParent(child) is not RectF b)
+                        {
+                            return null;
+                        }
+
+                        bounds = Union(bounds, b);
                     }
 
-                    bounds = Union(bounds, b);
+                    return group.ClipRect is RectF clip ? Intersect(bounds, clip) : bounds;
                 }
-
-                return group.ClipRect is RectF clip ? Intersect(bounds, clip) : bounds;
-            }
 
             case SvgTextRun text:
-            {
-                RectF bounds = text.Bounds;
-                if (text.Stroke is Stroke stroke && text.StrokePaint is not null)
                 {
-                    if (!(stroke.Width > 0))
+                    RectF bounds = text.Bounds;
+                    if (text.Stroke is Stroke stroke && text.StrokePaint is not null)
                     {
-                        return null;
+                        if (!(stroke.Width > 0))
+                        {
+                            return null;
+                        }
+
+                        float reach = stroke.Width / 2 * Math.Max(stroke.Join == LineJoin.Miter ? Math.Max(stroke.MiterLimit, 1) : 1, MathF.Sqrt(2));
+                        bounds = bounds.Inflate(reach, reach);
                     }
 
-                    float reach = stroke.Width / 2 * Math.Max(stroke.Join == LineJoin.Miter ? Math.Max(stroke.MiterLimit, 1) : 1, MathF.Sqrt(2));
-                    bounds = bounds.Inflate(reach, reach);
+                    return bounds;
                 }
-
-                return bounds;
-            }
 
             case SvgImage image:
                 return image.ClipRect is RectF c ? Intersect(image.Destination, c) : image.Destination;

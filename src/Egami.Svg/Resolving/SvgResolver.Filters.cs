@@ -297,158 +297,158 @@ internal sealed partial class SvgResolver
         switch (fe.Name)
         {
             case "feGaussianBlur":
-            {
-                (float sx, float sy) = StdDeviation(fe, scale, 0);
-                return new SvgBlur(region, linear, In(), sx, sy);
-            }
+                {
+                    (float sx, float sy) = StdDeviation(fe, scale, 0);
+                    return new SvgBlur(region, linear, In(), sx, sy);
+                }
 
             case "feOffset":
                 return new SvgOffset(region, linear, In(), Number("dx", 0) * scale.X, Number("dy", 0) * scale.Y);
             case "feDropShadow":
-            {
-                (float sx, float sy) = StdDeviation(fe, scale, 2);
-                RgbaF32 color = Color(style.FloodColor, style.FloodOpacity);
-                return new SvgDropShadow(region, linear, In(), Number("dx", 2) * scale.X, Number("dy", 2) * scale.Y, sx, sy, color);
-            }
+                {
+                    (float sx, float sy) = StdDeviation(fe, scale, 2);
+                    RgbaF32 color = Color(style.FloodColor, style.FloodOpacity);
+                    return new SvgDropShadow(region, linear, In(), Number("dx", 2) * scale.X, Number("dy", 2) * scale.Y, sx, sy, color);
+                }
 
             case "feFlood":
                 return new SvgFlood(region, linear, Color(style.FloodColor, style.FloodOpacity));
             case "feMerge":
-            {
-                List<SvgFilterInput> inputs = [];
-                foreach (SvgElement node in fe.Elements("feMergeNode"))
                 {
-                    inputs.Add(Input(node, "in", primitives, results));
+                    List<SvgFilterInput> inputs = [];
+                    foreach (SvgElement node in fe.Elements("feMergeNode"))
+                    {
+                        inputs.Add(Input(node, "in", primitives, results));
+                    }
+
+                    return new SvgMerge(region, linear, inputs);
                 }
 
-                return new SvgMerge(region, linear, inputs);
-            }
-
             case "feBlend":
-            {
-                // feBlend takes Compositing 1's keywords only: plus-lighter is not one, so it falls back to normal, as resvg reads it.
-                string mode = fe.Attributes["mode"]?.Trim() ?? "normal";
-                return new SvgBlend(region, linear, In(), In2(), mode != "plus-lighter" && SvgStyleParsing.TryBlendMode(mode, out BlendMode m) ? m : BlendMode.SourceOver);
-            }
+                {
+                    // feBlend takes Compositing 1's keywords only: plus-lighter is not one, so it falls back to normal, as resvg reads it.
+                    string mode = fe.Attributes["mode"]?.Trim() ?? "normal";
+                    return new SvgBlend(region, linear, In(), In2(), mode != "plus-lighter" && SvgStyleParsing.TryBlendMode(mode, out BlendMode m) ? m : BlendMode.SourceOver);
+                }
 
             case "feComposite":
-            {
-                SvgCompositeOperator op = fe.Attributes["operator"]?.Trim() switch
                 {
-                    "in" => SvgCompositeOperator.In,
-                    "out" => SvgCompositeOperator.Out,
-                    "atop" => SvgCompositeOperator.Atop,
-                    "xor" => SvgCompositeOperator.Xor,
-                    "lighter" => SvgCompositeOperator.Lighter,
-                    "arithmetic" => SvgCompositeOperator.Arithmetic,
-                    _ => SvgCompositeOperator.Over,
-                };
-                return new SvgComposite(region, linear, In(), In2(), op, new Vector4(Number("k1", 0), Number("k2", 0), Number("k3", 0), Number("k4", 0)));
-            }
+                    SvgCompositeOperator op = fe.Attributes["operator"]?.Trim() switch
+                    {
+                        "in" => SvgCompositeOperator.In,
+                        "out" => SvgCompositeOperator.Out,
+                        "atop" => SvgCompositeOperator.Atop,
+                        "xor" => SvgCompositeOperator.Xor,
+                        "lighter" => SvgCompositeOperator.Lighter,
+                        "arithmetic" => SvgCompositeOperator.Arithmetic,
+                        _ => SvgCompositeOperator.Over,
+                    };
+                    return new SvgComposite(region, linear, In(), In2(), op, new Vector4(Number("k1", 0), Number("k2", 0), Number("k3", 0), Number("k4", 0)));
+                }
 
             case "feColorMatrix":
                 return new SvgColorMatrix(region, linear, In(), ColorMatrixValues(fe.Attributes["type"]?.Trim(), List("values")));
             case "feComponentTransfer":
-            {
-                SvgTransferFunction r = SvgTransferFunction.Identity, g = r, b = r, a = r;
-                foreach (SvgElement func in fe.Elements())
                 {
-                    SvgTransferFunction? f = Transfer(func);
-                    switch (func.Name)
+                    SvgTransferFunction r = SvgTransferFunction.Identity, g = r, b = r, a = r;
+                    foreach (SvgElement func in fe.Elements())
                     {
-                        case "feFuncR" when f is not null: r = f; break;
-                        case "feFuncG" when f is not null: g = f; break;
-                        case "feFuncB" when f is not null: b = f; break;
-                        case "feFuncA" when f is not null: a = f; break;
+                        SvgTransferFunction? f = Transfer(func);
+                        switch (func.Name)
+                        {
+                            case "feFuncR" when f is not null: r = f; break;
+                            case "feFuncG" when f is not null: g = f; break;
+                            case "feFuncB" when f is not null: b = f; break;
+                            case "feFuncA" when f is not null: a = f; break;
+                        }
                     }
-                }
 
-                return new SvgComponentTransfer(region, linear, In(), r, g, b, a);
-            }
+                    return new SvgComponentTransfer(region, linear, In(), r, g, b, a);
+                }
 
             case "feConvolveMatrix":
                 return (SvgPrimitive?)Convolve(fe, region, linear, In(), List) ?? Dummy(region, linear);
             case "feMorphology":
-            {
-                bool dilate = fe.Attributes["operator"]?.Trim() == "dilate";
-                float rx = 1, ry = 1;
-                if (List("radius") is List<double> radius)
                 {
-                    (double x, double y) = radius.Count switch { 1 => (radius[0], radius[0]), 2 => (radius[0], radius[1]), _ => (0d, 0d) };
-                    if (x == 0 && y == 0)
+                    bool dilate = fe.Attributes["operator"]?.Trim() == "dilate";
+                    float rx = 1, ry = 1;
+                    if (List("radius") is List<double> radius)
                     {
-                        (x, y) = (1, 1);
-                    }
-                    else if (x == 0)
-                    {
-                        x = 1;
-                    }
-                    else if (y == 0)
-                    {
-                        y = 1;
+                        (double x, double y) = radius.Count switch { 1 => (radius[0], radius[0]), 2 => (radius[0], radius[1]), _ => (0d, 0d) };
+                        if (x == 0 && y == 0)
+                        {
+                            (x, y) = (1, 1);
+                        }
+                        else if (x == 0)
+                        {
+                            x = 1;
+                        }
+                        else if (y == 0)
+                        {
+                            y = 1;
+                        }
+
+                        if (x > 0 && y > 0)
+                        {
+                            (rx, ry) = ((float)x, (float)y);
+                        }
                     }
 
-                    if (x > 0 && y > 0)
-                    {
-                        (rx, ry) = ((float)x, (float)y);
-                    }
+                    return new SvgMorphology(region, linear, In(), dilate, rx * scale.X, ry * scale.Y);
                 }
-
-                return new SvgMorphology(region, linear, In(), dilate, rx * scale.X, ry * scale.Y);
-            }
 
             case "feDiffuseLighting":
             case "feSpecularLighting":
-            {
-                bool specular = fe.Name == "feSpecularLighting";
-                float exponent = Number("specularExponent", 1);
-                if (specular && exponent is < 1 or > 128)
                 {
-                    return Dummy(region, linear);
-                }
+                    bool specular = fe.Name == "feSpecularLighting";
+                    float exponent = Number("specularExponent", 1);
+                    if (specular && exponent is < 1 or > 128)
+                    {
+                        return Dummy(region, linear);
+                    }
 
-                SvgLight? light = Light(fe);
-                if (light is null)
-                {
-                    return Dummy(region, linear);
-                }
+                    SvgLight? light = Light(fe);
+                    if (light is null)
+                    {
+                        return Dummy(region, linear);
+                    }
 
-                RgbaF32 color = Color(style.LightingColor, 1);
-                return new SvgLighting(
-                    region, linear, In(), specular, Number("surfaceScale", 1), Number(specular ? "specularConstant" : "diffuseConstant", 1), exponent, color, light);
-            }
+                    RgbaF32 color = Color(style.LightingColor, 1);
+                    return new SvgLighting(
+                        region, linear, In(), specular, Number("surfaceScale", 1), Number(specular ? "specularConstant" : "diffuseConstant", 1), exponent, color, light);
+                }
 
             case "feDisplacementMap":
-            {
-                static ColorChannel Channel(string? text) => text?.Trim() switch
                 {
-                    "R" => ColorChannel.Red,
-                    "G" => ColorChannel.Green,
-                    "B" => ColorChannel.Blue,
-                    _ => ColorChannel.Alpha,
-                };
-
-                return new SvgDisplacement(
-                    region, linear, In(), In2(), Number("scale", 0) * ((scale.X + scale.Y) / 2), Channel(fe.Attributes["xChannelSelector"]), Channel(fe.Attributes["yChannelSelector"]));
-            }
-
-            case "feTurbulence":
-            {
-                float fx = 0, fy = 0;
-                if (List("baseFrequency") is List<double> frequency && frequency.Count is 1 or 2)
-                {
-                    (double x, double y) = frequency.Count == 2 ? (frequency[0], frequency[1]) : (frequency[0], frequency[0]);
-                    if (x >= 0 && y >= 0)
+                    static ColorChannel Channel(string? text) => text?.Trim() switch
                     {
-                        (fx, fy) = ((float)x, (float)y);
-                    }
+                        "R" => ColorChannel.Red,
+                        "G" => ColorChannel.Green,
+                        "B" => ColorChannel.Blue,
+                        _ => ColorChannel.Alpha,
+                    };
+
+                    return new SvgDisplacement(
+                        region, linear, In(), In2(), Number("scale", 0) * ((scale.X + scale.Y) / 2), Channel(fe.Attributes["xChannelSelector"]), Channel(fe.Attributes["yChannelSelector"]));
                 }
 
-                int octaves = (int)MathF.Round(Math.Max(0, Number("numOctaves", 1)));
-                return new SvgTurbulence(
-                    region, linear, fx, fy, octaves, (int)MathF.Truncate(Number("seed", 0)), fe.Attributes["stitchTiles"]?.Trim() == "stitch",
-                    fe.Attributes["type"]?.Trim() == "fractalNoise");
-            }
+            case "feTurbulence":
+                {
+                    float fx = 0, fy = 0;
+                    if (List("baseFrequency") is List<double> frequency && frequency.Count is 1 or 2)
+                    {
+                        (double x, double y) = frequency.Count == 2 ? (frequency[0], frequency[1]) : (frequency[0], frequency[0]);
+                        if (x >= 0 && y >= 0)
+                        {
+                            (fx, fy) = ((float)x, (float)y);
+                        }
+                    }
+
+                    int octaves = (int)MathF.Round(Math.Max(0, Number("numOctaves", 1)));
+                    return new SvgTurbulence(
+                        region, linear, fx, fy, octaves, (int)MathF.Truncate(Number("seed", 0)), fe.Attributes["stitchTiles"]?.Trim() == "stitch",
+                        fe.Attributes["type"]?.Trim() == "fractalNoise");
+                }
 
             case "feTile":
                 return new SvgTile(region, linear, In());
@@ -490,10 +490,10 @@ internal sealed partial class SvgResolver
         switch (type)
         {
             case "saturate":
-            {
-                float s = values is { Count: > 0 } ? Math.Clamp((float)values[0], 0, 1) : 1;
-                return Saturate(s);
-            }
+                {
+                    float s = values is { Count: > 0 } ? Math.Clamp((float)values[0], 0, 1) : 1;
+                    return Saturate(s);
+                }
 
             case "hueRotate":
                 return HueRotate(values is { Count: > 0 } ? (float)values[0] : 0);
@@ -601,15 +601,15 @@ internal sealed partial class SvgResolver
                 case "fePointLight":
                     return new SvgPointLight(new Vector3(Number("x", 0), Number("y", 0), Number("z", 0)));
                 case "feSpotLight":
-                {
-                    float exponent = Number("specularExponent", 1);
-                    float? cone = child.Attributes["limitingConeAngle"] is string c && SvgNumbers.TryParse(c, out double cv) ? (float)cv : null;
-                    return new SvgSpotLight(
-                        new Vector3(Number("x", 0), Number("y", 0), Number("z", 0)),
-                        new Vector3(Number("pointsAtX", 0), Number("pointsAtY", 0), Number("pointsAtZ", 0)),
-                        exponent > 0 ? exponent : 1,
-                        cone);
-                }
+                    {
+                        float exponent = Number("specularExponent", 1);
+                        float? cone = child.Attributes["limitingConeAngle"] is string c && SvgNumbers.TryParse(c, out double cv) ? (float)cv : null;
+                        return new SvgSpotLight(
+                            new Vector3(Number("x", 0), Number("y", 0), Number("z", 0)),
+                            new Vector3(Number("pointsAtX", 0), Number("pointsAtY", 0), Number("pointsAtZ", 0)),
+                            exponent > 0 ? exponent : 1,
+                            cone);
+                    }
             }
         }
 
@@ -700,177 +700,177 @@ internal sealed partial class SvgResolver
         switch (name)
         {
             case "grayscale":
-            {
-                float a = Amount(1, 1);
-                if (!(a >= 0))
                 {
-                    return false;
-                }
+                    float a = Amount(1, 1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
 
-                float r = 1 - a;
-                primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic,
-                [
-                    0.2126f + (0.7874f * r), 0.7152f - (0.7152f * r), 0.0722f - (0.0722f * r), 0, 0,
+                    float r = 1 - a;
+                    primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic,
+                    [
+                        0.2126f + (0.7874f * r), 0.7152f - (0.7152f * r), 0.0722f - (0.0722f * r), 0, 0,
                     0.2126f - (0.2126f * r), 0.7152f + (0.2848f * r), 0.0722f - (0.0722f * r), 0, 0,
                     0.2126f - (0.2126f * r), 0.7152f - (0.7152f * r), 0.0722f + (0.9278f * r), 0, 0,
                     0, 0, 0, 1, 0,
                 ]);
-                return true;
-            }
-
-            case "sepia":
-            {
-                float a = Amount(1, 1);
-                if (!(a >= 0))
-                {
-                    return false;
+                    return true;
                 }
 
-                float r = 1 - a;
-                primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic,
-                [
-                    0.393f + (0.607f * r), 0.769f - (0.769f * r), 0.189f - (0.189f * r), 0, 0,
+            case "sepia":
+                {
+                    float a = Amount(1, 1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
+
+                    float r = 1 - a;
+                    primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic,
+                    [
+                        0.393f + (0.607f * r), 0.769f - (0.769f * r), 0.189f - (0.189f * r), 0, 0,
                     0.349f - (0.349f * r), 0.686f + (0.314f * r), 0.168f - (0.168f * r), 0, 0,
                     0.272f - (0.272f * r), 0.534f - (0.534f * r), 0.131f + (0.869f * r), 0, 0,
                     0, 0, 0, 1, 0,
                 ]);
-                return true;
-            }
+                    return true;
+                }
 
             case "saturate":
-            {
-                float a = Amount(1);
-                if (!(a >= 0))
                 {
-                    return false;
-                }
+                    float a = Amount(1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
 
-                primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic, Saturate(a));
-                return true;
-            }
+                    primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic, Saturate(a));
+                    return true;
+                }
 
             case "hue-rotate":
-            {
-                float degrees = 0;
-                if (args.Count > 0)
                 {
-                    if (!CssAngle.TryParse(args[0], allowNumber: args[0] is CssTokenValue { Token: { Kind: CssTokenKind.Number, Number: 0 } }, out CssAngle angle))
+                    float degrees = 0;
+                    if (args.Count > 0)
                     {
-                        return false;
+                        if (!CssAngle.TryParse(args[0], allowNumber: args[0] is CssTokenValue { Token: { Kind: CssTokenKind.Number, Number: 0 } }, out CssAngle angle))
+                        {
+                            return false;
+                        }
+
+                        degrees = (float)angle.Degrees;
                     }
 
-                    degrees = (float)angle.Degrees;
+                    primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic, HueRotate(degrees));
+                    return true;
                 }
-
-                primitive = new SvgColorMatrix(none, false, SvgFilterInput.Graphic, HueRotate(degrees));
-                return true;
-            }
 
             case "invert":
-            {
-                float a = Amount(1, 1);
-                if (!(a >= 0))
                 {
-                    return false;
-                }
+                    float a = Amount(1, 1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
 
-                SvgTransferFunction f = new("table", [a, 1 - a], 1, 0, 1, 1, 0);
-                primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, f, f, f, SvgTransferFunction.Identity);
-                return true;
-            }
+                    SvgTransferFunction f = new("table", [a, 1 - a], 1, 0, 1, 1, 0);
+                    primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, f, f, f, SvgTransferFunction.Identity);
+                    return true;
+                }
 
             case "opacity":
-            {
-                float a = Amount(1, 1);
-                if (!(a >= 0))
                 {
-                    return false;
-                }
+                    float a = Amount(1, 1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
 
-                SvgTransferFunction i = SvgTransferFunction.Identity;
-                primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, i, i, i, new SvgTransferFunction("table", [0, a], 1, 0, 1, 1, 0));
-                return true;
-            }
+                    SvgTransferFunction i = SvgTransferFunction.Identity;
+                    primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, i, i, i, new SvgTransferFunction("table", [0, a], 1, 0, 1, 1, 0));
+                    return true;
+                }
 
             case "brightness":
-            {
-                float a = Amount(1);
-                if (!(a >= 0))
                 {
-                    return false;
-                }
+                    float a = Amount(1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
 
-                SvgTransferFunction f = new("linear", [], a, 0, 1, 1, 0);
-                primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, f, f, f, SvgTransferFunction.Identity);
-                return true;
-            }
+                    SvgTransferFunction f = new("linear", [], a, 0, 1, 1, 0);
+                    primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, f, f, f, SvgTransferFunction.Identity);
+                    return true;
+                }
 
             case "contrast":
-            {
-                float a = Amount(1);
-                if (!(a >= 0))
                 {
-                    return false;
-                }
+                    float a = Amount(1);
+                    if (!(a >= 0))
+                    {
+                        return false;
+                    }
 
-                SvgTransferFunction f = new("linear", [], a, (-0.5f * a) + 0.5f, 1, 1, 0);
-                primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, f, f, f, SvgTransferFunction.Identity);
-                return true;
-            }
+                    SvgTransferFunction f = new("linear", [], a, (-0.5f * a) + 0.5f, 1, 1, 0);
+                    primitive = new SvgComponentTransfer(none, false, SvgFilterInput.Graphic, f, f, f, SvgTransferFunction.Identity);
+                    return true;
+                }
 
             case "blur":
-            {
-                float sigma = 0;
-                if (args.Count > 1)
                 {
-                    return false;
-                }
-
-                if (args.Count > 0)
-                {
-                    if (!SvgStyleValues.TryLength(args[0], out SvgLength l) || l.Value < 0 || l.IsPercent)
+                    float sigma = 0;
+                    if (args.Count > 1)
                     {
                         return false;
                     }
 
-                    sigma = l.ToPixels(context.Lengths, SvgAxis.Other);
-                }
+                    if (args.Count > 0)
+                    {
+                        if (!SvgStyleValues.TryLength(args[0], out SvgLength l) || l.Value < 0 || l.IsPercent)
+                        {
+                            return false;
+                        }
 
-                primitive = new SvgBlur(none, false, SvgFilterInput.Graphic, sigma, sigma);
-                largeRegion = true;
-                return true;
-            }
+                        sigma = l.ToPixels(context.Lengths, SvgAxis.Other);
+                    }
+
+                    primitive = new SvgBlur(none, false, SvgFilterInput.Graphic, sigma, sigma);
+                    largeRegion = true;
+                    return true;
+                }
 
             case "drop-shadow":
-            {
-                CssColor color = style.Color;
-                List<float> lengths = [];
-                foreach (CssComponentValue arg in args)
                 {
-                    if (SvgStyleValues.TryLength(arg, out SvgLength l) && !l.IsPercent)
+                    CssColor color = style.Color;
+                    List<float> lengths = [];
+                    foreach (CssComponentValue arg in args)
                     {
-                        lengths.Add(l.ToPixels(context.Lengths, SvgAxis.Other));
+                        if (SvgStyleValues.TryLength(arg, out SvgLength l) && !l.IsPercent)
+                        {
+                            lengths.Add(l.ToPixels(context.Lengths, SvgAxis.Other));
+                        }
+                        else if (SvgStyleValues.TryColor([arg], out CssColor c, out _))
+                        {
+                            color = c.IsCurrentColor ? style.Color : c;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
-                    else if (SvgStyleValues.TryColor([arg], out CssColor c, out _))
-                    {
-                        color = c.IsCurrentColor ? style.Color : c;
-                    }
-                    else
+
+                    if (lengths.Count is < 2 or > 3 || (lengths.Count == 3 && lengths[2] < 0))
                     {
                         return false;
                     }
-                }
 
-                if (lengths.Count is < 2 or > 3 || (lengths.Count == 3 && lengths[2] < 0))
-                {
-                    return false;
+                    float s = lengths.Count == 3 ? lengths[2] : 0;
+                    primitive = new SvgDropShadow(none, false, SvgFilterInput.Graphic, lengths[0], lengths[1], s, s, new RgbaF32(color.R, color.G, color.B, color.A));
+                    largeRegion = true;
+                    return true;
                 }
-
-                float s = lengths.Count == 3 ? lengths[2] : 0;
-                primitive = new SvgDropShadow(none, false, SvgFilterInput.Graphic, lengths[0], lengths[1], s, s, new RgbaF32(color.R, color.G, color.B, color.A));
-                largeRegion = true;
-                return true;
-            }
 
             default:
                 return false;

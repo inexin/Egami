@@ -66,24 +66,24 @@ internal sealed record SvgTransferFunction(string Type, float[] Table, float Slo
         switch (Type)
         {
             case "table" when Table.Length > 0:
-            {
-                int n = Table.Length - 1;
-                if (n == 0)
                 {
-                    return Table[0];
+                    int n = Table.Length - 1;
+                    if (n == 0)
+                    {
+                        return Table[0];
+                    }
+
+                    float x = c * n;
+                    int k = Math.Clamp((int)MathF.Floor(x), 0, n - 1);
+                    return Table[k] + ((x - k) * (Table[k + 1] - Table[k]));
                 }
 
-                float x = c * n;
-                int k = Math.Clamp((int)MathF.Floor(x), 0, n - 1);
-                return Table[k] + ((x - k) * (Table[k + 1] - Table[k]));
-            }
-
             case "discrete" when Table.Length > 0:
-            {
-                int n = Table.Length;
-                int k = Math.Clamp((int)MathF.Floor(c * n), 0, n - 1);
-                return Table[k];
-            }
+                {
+                    int n = Table.Length;
+                    int k = Math.Clamp((int)MathF.Floor(c * n), 0, n - 1);
+                    return Table[k];
+                }
 
             case "linear":
                 return (Slope * c) + Intercept;

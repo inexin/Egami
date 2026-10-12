@@ -22,27 +22,27 @@ internal static class SvgShapes
             case "rect":
                 return Rect(element, geometry, context, report);
             case "circle":
-            {
-                float r = geometry.Length(element, "r", context, SvgAxis.Other, 0);
-                if (r < 0)
                 {
-                    report.Warn("Svg.BadAttribute", $"The circle's r is negative ({r}); it is not drawn.", element);
+                    float r = geometry.Length(element, "r", context, SvgAxis.Other, 0);
+                    if (r < 0)
+                    {
+                        report.Warn("Svg.BadAttribute", $"The circle's r is negative ({r}); it is not drawn.", element);
+                    }
+
+                    return r > 0 ? Ellipse(geometry.Length(element, "cx", context, SvgAxis.X, 0), geometry.Length(element, "cy", context, SvgAxis.Y, 0), r, r) : null;
                 }
 
-                return r > 0 ? Ellipse(geometry.Length(element, "cx", context, SvgAxis.X, 0), geometry.Length(element, "cy", context, SvgAxis.Y, 0), r, r) : null;
-            }
-
             case "ellipse":
-            {
-                // A negative radius is an error that falls back to auto (SVG 2), as resvg reads it.
-                float? rx = geometry.Auto(element, "rx", context, SvgAxis.X);
-                float? ry = geometry.Auto(element, "ry", context, SvgAxis.Y);
-                rx = rx < 0 ? null : rx;
-                ry = ry < 0 ? null : ry;
-                float x = rx ?? ry ?? 0, y = ry ?? rx ?? 0;
+                {
+                    // A negative radius is an error that falls back to auto (SVG 2), as resvg reads it.
+                    float? rx = geometry.Auto(element, "rx", context, SvgAxis.X);
+                    float? ry = geometry.Auto(element, "ry", context, SvgAxis.Y);
+                    rx = rx < 0 ? null : rx;
+                    ry = ry < 0 ? null : ry;
+                    float x = rx ?? ry ?? 0, y = ry ?? rx ?? 0;
 
-                return x > 0 && y > 0 ? Ellipse(geometry.Length(element, "cx", context, SvgAxis.X, 0), geometry.Length(element, "cy", context, SvgAxis.Y, 0), x, y) : null;
-            }
+                    return x > 0 && y > 0 ? Ellipse(geometry.Length(element, "cx", context, SvgAxis.X, 0), geometry.Length(element, "cy", context, SvgAxis.Y, 0), x, y) : null;
+                }
 
             case "line":
                 return new PathBuilder()

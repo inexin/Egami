@@ -98,24 +98,24 @@ internal static class SvgFilterKernels
         switch (light)
         {
             case SvgDistantLight d:
-            {
-                float az = d.Azimuth * MathF.PI / 180, el = d.Elevation * MathF.PI / 180;
-                distant = new Vector3(MathF.Cos(az) * MathF.Cos(el), MathF.Sin(az) * MathF.Cos(el), MathF.Sin(el));
-                break;
-            }
-
-            case SvgSpotLight s:
-            {
-                Vector3 direction = s.PointsAt - s.Position;
-                spotValid = direction.LengthSquared() > 0;
-                spotDirection = spotValid ? Vector3.Normalize(direction) : Vector3.Zero;
-                if (s.ConeAngle is float cone)
                 {
-                    coneCos = MathF.Cos(Math.Abs(cone) * MathF.PI / 180);
+                    float az = d.Azimuth * MathF.PI / 180, el = d.Elevation * MathF.PI / 180;
+                    distant = new Vector3(MathF.Cos(az) * MathF.Cos(el), MathF.Sin(az) * MathF.Cos(el), MathF.Sin(el));
+                    break;
                 }
 
-                break;
-            }
+            case SvgSpotLight s:
+                {
+                    Vector3 direction = s.PointsAt - s.Position;
+                    spotValid = direction.LengthSquared() > 0;
+                    spotDirection = spotValid ? Vector3.Normalize(direction) : Vector3.Zero;
+                    if (s.ConeAngle is float cone)
+                    {
+                        coneCos = MathF.Cos(Math.Abs(cone) * MathF.PI / 180);
+                    }
+
+                    break;
+                }
         }
 
         float A(int x, int y) => pixels[(y * width) + x].A;
@@ -136,20 +136,20 @@ internal static class SvgFilterKernels
                         l = SafeNormalize(p.Position - new Vector3(x, y, scale * A(x, y)));
                         break;
                     case SvgSpotLight s:
-                    {
-                        l = SafeNormalize(s.Position - new Vector3(x, y, scale * A(x, y)));
-                        float minusLDotS = -Vector3.Dot(l, spotDirection);
-                        if (!spotValid || minusLDotS <= 0 || minusLDotS < coneCos)
                         {
-                            lit = Vector3.Zero;
-                        }
-                        else
-                        {
-                            lit *= MathF.Pow(minusLDotS, s.Exponent);
-                        }
+                            l = SafeNormalize(s.Position - new Vector3(x, y, scale * A(x, y)));
+                            float minusLDotS = -Vector3.Dot(l, spotDirection);
+                            if (!spotValid || minusLDotS <= 0 || minusLDotS < coneCos)
+                            {
+                                lit = Vector3.Zero;
+                            }
+                            else
+                            {
+                                lit *= MathF.Pow(minusLDotS, s.Exponent);
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
 
                     default:
                         l = Vector3.UnitZ;

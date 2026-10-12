@@ -101,13 +101,13 @@ internal static class SvgMarkerVertices
                     segments.Add(new Segment(Kind.Line, default, default, previous));
                     break;
                 case PathVerb.Quad:
-                {
-                    Vector2 c = points[p], e = points[p + 1];
-                    p += 2;
-                    segments.Add(new Segment(Kind.Cubic, (previous + (2 * c)) / 3, (e + (2 * c)) / 3, e));
-                    previous = e;
-                    break;
-                }
+                    {
+                        Vector2 c = points[p], e = points[p + 1];
+                        p += 2;
+                        segments.Add(new Segment(Kind.Cubic, (previous + (2 * c)) / 3, (e + (2 * c)) / 3, e));
+                        previous = e;
+                        break;
+                    }
 
                 case PathVerb.Cubic:
                     segments.Add(new Segment(Kind.Cubic, points[p], points[p + 1], points[p + 2]));
@@ -149,10 +149,10 @@ internal static class SvgMarkerVertices
                 case Kind.Close when previous.Kind == Kind.Line:
                     return LineAngle(previous.P, SubpathStart(path, index));
                 case Kind.Close when previous.Kind == Kind.Cubic:
-                {
-                    Vector2 prev = PreviousVertex(path, index), next = SubpathStart(path, index);
-                    return CurvesAngle(prev, previous.P2, previous.P, next, next);
-                }
+                    {
+                        Vector2 prev = PreviousVertex(path, index), next = SubpathStart(path, index);
+                        return CurvesAngle(prev, previous.P2, previous.P, next, next);
+                    }
 
                 default:
                     return 0;
@@ -167,18 +167,18 @@ internal static class SvgMarkerVertices
             case (Kind.Move, Kind.Cubic):
                 return LineAngle(a.P, b.P1);
             case (Kind.Line, Kind.Line):
-            {
-                Vector2 prev = PreviousVertex(path, index);
-                return BisectorAngle(prev, a.P, a.P, b.P);
-            }
+                {
+                    Vector2 prev = PreviousVertex(path, index);
+                    return BisectorAngle(prev, a.P, a.P, b.P);
+                }
 
             case (Kind.Cubic, Kind.Cubic):
                 return CurvesAngle(PreviousVertex(path, index), a.P2, a.P, b.P1, b.P);
             case (Kind.Line, Kind.Cubic):
-            {
-                Vector2 prev = PreviousVertex(path, index);
-                return CurvesAngle(prev, prev, a.P, b.P1, b.P);
-            }
+                {
+                    Vector2 prev = PreviousVertex(path, index);
+                    return CurvesAngle(prev, prev, a.P, b.P1, b.P);
+                }
 
             case (Kind.Cubic, Kind.Line):
                 return CurvesAngle(PreviousVertex(path, index), a.P2, a.P, b.P, b.P);
@@ -187,10 +187,10 @@ internal static class SvgMarkerVertices
             case (Kind.Cubic, Kind.Move):
                 return Near(a.P, a.P2) ? LineAngle(PreviousVertex(path, index), a.P) : LineAngle(a.P2, a.P);
             case (Kind.Line, Kind.Close):
-            {
-                Vector2 prev = PreviousVertex(path, index), next = SubpathStart(path, index);
-                return BisectorAngle(prev, a.P, a.P, next);
-            }
+                {
+                    Vector2 prev = PreviousVertex(path, index), next = SubpathStart(path, index);
+                    return BisectorAngle(prev, a.P, a.P, next);
+                }
 
             case (Kind.Move or Kind.Cubic, Kind.Close):
                 return LineAngle(PreviousVertex(path, index), SubpathStart(path, index));

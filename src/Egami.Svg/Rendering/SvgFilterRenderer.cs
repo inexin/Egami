@@ -253,173 +253,173 @@ internal static class SvgFilterRenderer
                 case SvgOffset offset:
                     return Offset(Copy(offset.In, linear), offset.Dx * frame.Sx, offset.Dy * frame.Sy);
                 case SvgDropShadow shadow:
-                {
-                    RgbaF32[] input = Copy(shadow.In, linear);
-                    RgbaF32 color = linear ? ToLinear(shadow.Color) : shadow.Color;
-                    RgbaF32[] shade = new RgbaF32[input.Length];
-                    for (int i = 0; i < input.Length; i++)
                     {
-                        shade[i] = new RgbaF32(color.R, color.G, color.B, color.A * input[i].A);
-                    }
+                        RgbaF32[] input = Copy(shadow.In, linear);
+                        RgbaF32 color = linear ? ToLinear(shadow.Color) : shadow.Color;
+                        RgbaF32[] shade = new RgbaF32[input.Length];
+                        for (int i = 0; i < input.Length; i++)
+                        {
+                            shade[i] = new RgbaF32(color.R, color.G, color.B, color.A * input[i].A);
+                        }
 
-                    shade = Offset(Blur(shade, shadow.SigmaX * frame.Sx, shadow.SigmaY * frame.Sy), shadow.Dx * frame.Sx, shadow.Dy * frame.Sy);
-                    return Over(input, shade);
-                }
+                        shade = Offset(Blur(shade, shadow.SigmaX * frame.Sx, shadow.SigmaY * frame.Sy), shadow.Dx * frame.Sx, shadow.Dy * frame.Sy);
+                        return Over(input, shade);
+                    }
 
                 case SvgFlood flood:
-                {
-                    RgbaF32 color = linear ? ToLinear(flood.Color) : flood.Color;
-                    RgbaF32[] pixels = new RgbaF32[W * H];
-                    for (int y = sub.Y; y < sub.Y + sub.Height; y++)
                     {
-                        pixels.AsSpan((y * W) + sub.X, sub.Width).Fill(color);
-                    }
+                        RgbaF32 color = linear ? ToLinear(flood.Color) : flood.Color;
+                        RgbaF32[] pixels = new RgbaF32[W * H];
+                        for (int y = sub.Y; y < sub.Y + sub.Height; y++)
+                        {
+                            pixels.AsSpan((y * W) + sub.X, sub.Width).Fill(color);
+                        }
 
-                    return pixels;
-                }
+                        return pixels;
+                    }
 
                 case SvgMerge merge:
-                {
-                    RgbaF32[] pixels = new RgbaF32[W * H];
-                    foreach (SvgFilterInput input in merge.Inputs)
                     {
-                        pixels = Over(Input(input, linear).Pixels, pixels);
-                    }
+                        RgbaF32[] pixels = new RgbaF32[W * H];
+                        foreach (SvgFilterInput input in merge.Inputs)
+                        {
+                            pixels = Over(Input(input, linear).Pixels, pixels);
+                        }
 
-                    return pixels;
-                }
+                        return pixels;
+                    }
 
                 case SvgBlend blend:
                     return Draw(Copy(blend.In2, linear), Input(blend.In, linear).Pixels, blend.Mode);
                 case SvgComposite composite:
-                {
-                    RgbaF32[] destination = Copy(composite.In2, linear);
-                    RgbaF32[] top = Input(composite.In, linear).Pixels;
-                    if (composite.Operator == SvgCompositeOperator.Arithmetic)
                     {
-                        using Raster<RgbaF32> d = Wrap(destination);
-                        using Raster<RgbaF32> s = Wrap(top);
-                        Operate(d, destination, ops => ops.DrawArithmetic(s, new Point(0, 0), composite.K.X, composite.K.Y, composite.K.Z, composite.K.W, clamp: true));
-                        return destination;
-                    }
+                        RgbaF32[] destination = Copy(composite.In2, linear);
+                        RgbaF32[] top = Input(composite.In, linear).Pixels;
+                        if (composite.Operator == SvgCompositeOperator.Arithmetic)
+                        {
+                            using Raster<RgbaF32> d = Wrap(destination);
+                            using Raster<RgbaF32> s = Wrap(top);
+                            Operate(d, destination, ops => ops.DrawArithmetic(s, new Point(0, 0), composite.K.X, composite.K.Y, composite.K.Z, composite.K.W, clamp: true));
+                            return destination;
+                        }
 
-                    BlendMode mode = composite.Operator switch
-                    {
-                        SvgCompositeOperator.In => BlendMode.SourceIn,
-                        SvgCompositeOperator.Out => BlendMode.SourceOut,
-                        SvgCompositeOperator.Atop => BlendMode.SourceAtop,
-                        SvgCompositeOperator.Xor => BlendMode.Xor,
-                        SvgCompositeOperator.Lighter => BlendMode.Plus,
-                        _ => BlendMode.SourceOver,
-                    };
-                    return Draw(destination, top, mode);
-                }
+                        BlendMode mode = composite.Operator switch
+                        {
+                            SvgCompositeOperator.In => BlendMode.SourceIn,
+                            SvgCompositeOperator.Out => BlendMode.SourceOut,
+                            SvgCompositeOperator.Atop => BlendMode.SourceAtop,
+                            SvgCompositeOperator.Xor => BlendMode.Xor,
+                            SvgCompositeOperator.Lighter => BlendMode.Plus,
+                            _ => BlendMode.SourceOver,
+                        };
+                        return Draw(destination, top, mode);
+                    }
 
                 case SvgColorMatrix matrix:
-                {
-                    RgbaF32[] pixels = Copy(matrix.In, linear);
-                    using Raster<RgbaF32> r = Wrap(pixels);
-                    Operate(r, pixels, ops => ops.ColorMatrix(new ColorMatrix(matrix.Matrix)));
-                    return pixels;
-                }
-
-                case SvgComponentTransfer transfer:
-                {
-                    RgbaF32[] pixels = Copy(transfer.In, linear);
-                    for (int i = 0; i < pixels.Length; i++)
                     {
-                        RgbaF32 p = pixels[i];
-                        pixels[i] = new RgbaF32(
-                            Math.Clamp(transfer.R.Apply(p.R), 0, 1), Math.Clamp(transfer.G.Apply(p.G), 0, 1), Math.Clamp(transfer.B.Apply(p.B), 0, 1), Math.Clamp(transfer.A.Apply(p.A), 0, 1));
+                        RgbaF32[] pixels = Copy(matrix.In, linear);
+                        using Raster<RgbaF32> r = Wrap(pixels);
+                        Operate(r, pixels, ops => ops.ColorMatrix(new ColorMatrix(matrix.Matrix)));
+                        return pixels;
                     }
 
-                    return pixels;
-                }
+                case SvgComponentTransfer transfer:
+                    {
+                        RgbaF32[] pixels = Copy(transfer.In, linear);
+                        for (int i = 0; i < pixels.Length; i++)
+                        {
+                            RgbaF32 p = pixels[i];
+                            pixels[i] = new RgbaF32(
+                                Math.Clamp(transfer.R.Apply(p.R), 0, 1), Math.Clamp(transfer.G.Apply(p.G), 0, 1), Math.Clamp(transfer.B.Apply(p.B), 0, 1), Math.Clamp(transfer.A.Apply(p.A), 0, 1));
+                        }
+
+                        return pixels;
+                    }
 
                 case SvgConvolve convolve:
                     return Convolve(Copy(convolve.In, linear), convolve);
                 case SvgMorphology morphology:
-                {
-                    RgbaF32[] pixels = Copy(morphology.In, linear);
-                    int rx = (int)MathF.Round(morphology.RadiusX * frame.Sx), ry = (int)MathF.Round(morphology.RadiusY * frame.Sy);
-                    if (rx <= 0 && ry <= 0)
                     {
+                        RgbaF32[] pixels = Copy(morphology.In, linear);
+                        int rx = (int)MathF.Round(morphology.RadiusX * frame.Sx), ry = (int)MathF.Round(morphology.RadiusY * frame.Sy);
+                        if (rx <= 0 && ry <= 0)
+                        {
+                            return pixels;
+                        }
+
+                        using Raster<RgbaF32> r = Wrap(pixels);
+                        Operate(r, pixels, ops => _ = morphology.Dilate ? ops.Dilate(Math.Max(rx, 0), Math.Max(ry, 0)) : ops.Erode(Math.Max(rx, 0), Math.Max(ry, 0)));
                         return pixels;
                     }
-
-                    using Raster<RgbaF32> r = Wrap(pixels);
-                    Operate(r, pixels, ops => _ = morphology.Dilate ? ops.Dilate(Math.Max(rx, 0), Math.Max(ry, 0)) : ops.Erode(Math.Max(rx, 0), Math.Max(ry, 0)));
-                    return pixels;
-                }
 
                 case SvgLighting lighting:
                     return Lighting(Copy(lighting.In, linear), lighting, linear);
                 case SvgDisplacement displacement:
-                {
-                    RgbaF32[] pixels = Copy(displacement.In, linear);
-                    RgbaF32[] map = (RgbaF32[])Input(displacement.In2, linear).Pixels.Clone();
-                    using Raster<RgbaF32> r = Wrap(pixels);
-                    using Raster<RgbaF32> m = Wrap(map);
-                    Operate(r, pixels, ops => ops.Displace(m, displacement.Scale * frame.Sx, displacement.Scale * frame.Sy, displacement.X, displacement.Y));
-                    return pixels;
-                }
+                    {
+                        RgbaF32[] pixels = Copy(displacement.In, linear);
+                        RgbaF32[] map = (RgbaF32[])Input(displacement.In2, linear).Pixels.Clone();
+                        using Raster<RgbaF32> r = Wrap(pixels);
+                        using Raster<RgbaF32> m = Wrap(map);
+                        Operate(r, pixels, ops => ops.Displace(m, displacement.Scale * frame.Sx, displacement.Scale * frame.Sy, displacement.X, displacement.Y));
+                        return pixels;
+                    }
 
                 case SvgTurbulence turbulence:
-                {
-                    RgbaF32[] pixels = new RgbaF32[W * H];
-                    if (turbulence.FrequencyX < 0 || turbulence.FrequencyY < 0)
                     {
-                        return pixels;
-                    }
-
-                    Size? stitch = turbulence.Stitch ? new Size(Math.Max(1, (int)MathF.Round(primitive.Region.Width)), Math.Max(1, (int)MathF.Round(primitive.Region.Height))) : null;
-                    NoisePaint noise = turbulence.Fractal
-                        ? NoisePaint.Fractal(turbulence.FrequencyX, turbulence.FrequencyY, Math.Clamp(turbulence.Octaves, 0, NoisePaint.MaxOctaves), turbulence.Seed, stitch)
-                        : NoisePaint.Turbulence(turbulence.FrequencyX, turbulence.FrequencyY, Math.Clamp(turbulence.Octaves, 0, NoisePaint.MaxOctaves), turbulence.Seed, stitch);
-                    using Raster<RgbaF32> r = Wrap(pixels);
-                    using RasterCanvas<RgbaF32> c = r.CreateCanvas();
-                    c.Translate(-frame.X, -frame.Y);
-                    c.Scale(frame.Sx, frame.Sy);
-                    c.FillRect(primitive.Region, noise with { BlendMode = BlendMode.Source });
-                    return pixels;
-                }
-
-                case SvgTile tile:
-                {
-                    Image input = Input(tile.In, linear);
-                    Rect from = input.Region;
-                    RgbaF32[] pixels = new RgbaF32[W * H];
-                    if (from.Width <= 0 || from.Height <= 0)
-                    {
-                        return pixels;
-                    }
-
-                    for (int y = sub.Y; y < sub.Y + sub.Height; y++)
-                    {
-                        int sy = from.Y + Mod(y - from.Y, from.Height);
-                        for (int x = sub.X; x < sub.X + sub.Width; x++)
+                        RgbaF32[] pixels = new RgbaF32[W * H];
+                        if (turbulence.FrequencyX < 0 || turbulence.FrequencyY < 0)
                         {
-                            pixels[(y * W) + x] = input.Pixels[(sy * W) + from.X + Mod(x - from.X, from.Width)];
+                            return pixels;
                         }
-                    }
 
-                    return pixels;
-                }
-
-                case SvgFeImage image:
-                {
-                    RgbaF32[] pixels = new RgbaF32[W * H];
-                    if (image.Content is SvgNode node)
-                    {
+                        Size? stitch = turbulence.Stitch ? new Size(Math.Max(1, (int)MathF.Round(primitive.Region.Width)), Math.Max(1, (int)MathF.Round(primitive.Region.Height))) : null;
+                        NoisePaint noise = turbulence.Fractal
+                            ? NoisePaint.Fractal(turbulence.FrequencyX, turbulence.FrequencyY, Math.Clamp(turbulence.Octaves, 0, NoisePaint.MaxOctaves), turbulence.Seed, stitch)
+                            : NoisePaint.Turbulence(turbulence.FrequencyX, turbulence.FrequencyY, Math.Clamp(turbulence.Octaves, 0, NoisePaint.MaxOctaves), turbulence.Seed, stitch);
                         using Raster<RgbaF32> r = Wrap(pixels);
                         using RasterCanvas<RgbaF32> c = r.CreateCanvas();
                         c.Translate(-frame.X, -frame.Y);
                         c.Scale(frame.Sx, frame.Sy);
-                        SvgRenderer.Draw(c, node, options, depth + 1);
+                        c.FillRect(primitive.Region, noise with { BlendMode = BlendMode.Source });
+                        return pixels;
                     }
 
-                    return linear ? Convert(pixels, toLinear: true) : pixels;
-                }
+                case SvgTile tile:
+                    {
+                        Image input = Input(tile.In, linear);
+                        Rect from = input.Region;
+                        RgbaF32[] pixels = new RgbaF32[W * H];
+                        if (from.Width <= 0 || from.Height <= 0)
+                        {
+                            return pixels;
+                        }
+
+                        for (int y = sub.Y; y < sub.Y + sub.Height; y++)
+                        {
+                            int sy = from.Y + Mod(y - from.Y, from.Height);
+                            for (int x = sub.X; x < sub.X + sub.Width; x++)
+                            {
+                                pixels[(y * W) + x] = input.Pixels[(sy * W) + from.X + Mod(x - from.X, from.Width)];
+                            }
+                        }
+
+                        return pixels;
+                    }
+
+                case SvgFeImage image:
+                    {
+                        RgbaF32[] pixels = new RgbaF32[W * H];
+                        if (image.Content is SvgNode node)
+                        {
+                            using Raster<RgbaF32> r = Wrap(pixels);
+                            using RasterCanvas<RgbaF32> c = r.CreateCanvas();
+                            c.Translate(-frame.X, -frame.Y);
+                            c.Scale(frame.Sx, frame.Sy);
+                            SvgRenderer.Draw(c, node, options, depth + 1);
+                        }
+
+                        return linear ? Convert(pixels, toLinear: true) : pixels;
+                    }
 
                 default:
                     return new RgbaF32[W * H];
