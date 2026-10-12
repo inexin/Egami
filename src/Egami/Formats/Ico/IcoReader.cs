@@ -199,6 +199,11 @@ internal sealed class IcoReader : IFormatReader, IRowSourceReader, IMultiImageRe
     /// </summary>
     private static Raster<Rgba8> DecodeBmp(EgamiInput input, ReadOnlySpan<byte> entry, DibLayout dib, ReaderOptions options)
     {
+        if (dib.HeaderSize == 40 && dib.Compression == 0 && dib.Bits is 24 or 32 && dib.PixelOffset + (dib.ColorStride * dib.Height) <= entry.Length)
+        {
+            return DecodeDirect(input, entry, dib, options);
+        }
+
         byte[] file = new byte[14 + entry.Length];
         file[0] = (byte)'B';
         file[1] = (byte)'M';
@@ -221,6 +226,53 @@ internal sealed class IcoReader : IFormatReader, IRowSourceReader, IMultiImageRe
             if (dib.Bits < 32 || !AlphaUsed(entry, dib, raster))
             {
                 ApplyMask(entry, dib, raster, options.Recovery == RecoveryMode.Strict);
+            }
+
+            return raster;
+        }
+        catch
+        {
+            raster.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Decodes the common entries without the BMP reader: complete 24 and 32-bit rows under a plain BITMAPINFOHEADER, which the
+    /// BMP reader would decode to the same pixels, swizzled straight into place.
+    /// </summary>
+    private static Raster<Rgba8> DecodeDirect(EgamiInput input, ReadOnlySpan<byte> entry, DibLayout dib, ReaderOptions options)
+    {
+        int width = dib.Width;
+        int height = dib.Height;
+        int stride = (int)dib.ColorStride;
+        Raster<Rgba8> raster = input.CreateRaster<Rgba8>(width, height);
+        try
+        {
+            for (int fileRow = 0; fileRow < height; fileRow++)
+            {
+                ReadOnlySpan<byte> row = entry.Slice(dib.PixelOffset + (fileRow * stride), stride);
+                Span<Rgba8> target = raster.Row(height - 1 - fileRow);
+                if (dib.Bits == 32)
+                {
+                    PixelConvert.Convert<Bgra8, Rgba8>(MemoryMarshal.Cast<byte, Bgra8>(row[..(width * 4)]), target);
+                }
+                else
+                {
+                    PixelConvert.Convert<Bgr8, Rgba8>(MemoryMarshal.Cast<byte, Bgr8>(row[..(width * 3)]), target);
+                }
+            }
+
+            if (dib.Bits < 32 || !AlphaUsed(entry, dib, raster))
+            {
+                ApplyMask(entry, dib, raster, options.Recovery == RecoveryMode.Strict);
+            }
+
+            int xppm = BinaryPrimitives.ReadInt32LittleEndian(entry[24..]);
+            int yppm = BinaryPrimitives.ReadInt32LittleEndian(entry[28..]);
+            if (xppm > 0 && yppm > 0)
+            {
+                raster.Metadata.Resolution = new Resolution(xppm, yppm, ResolutionUnit.PerMeter);
             }
 
             return raster;
