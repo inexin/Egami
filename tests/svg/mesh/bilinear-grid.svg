@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <meshgradient id="m" gradientUnits="userSpaceOnUse" x="10" y="10">
+    <meshrow>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#84945f"/>
+        <stop path="l 0,60" style="stop-color:#764b73"/>
+        <stop path="l -60,0" style="stop-color:#8d4b2b"/>
+        <stop path="l 0,-60" style="stop-color:#dc4007"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#764b73"/>
+        <stop path="l 0,60" style="stop-color:#5f4224"/>
+        <stop path="l -60,0" style="stop-color:#86e6df"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#5f4224"/>
+        <stop path="l 0,60" style="stop-color:#6d960f"/>
+        <stop path="l -60,0" style="stop-color:#4783b6"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="l 0,60" style="stop-color:#8d4b2b"/>
+        <stop path="l -60,0" style="stop-color:#badca0"/>
+        <stop path="l 0,-60" style="stop-color:#77f9db"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,60" style="stop-color:#86e6df"/>
+        <stop path="l -60,0" style="stop-color:#3cb186"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,60" style="stop-color:#4783b6"/>
+        <stop path="l -60,0" style="stop-color:#e545e1"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="l 0,60" style="stop-color:#badca0"/>
+        <stop path="l -60,0" style="stop-color:#675bb6"/>
+        <stop path="l 0,-60" style="stop-color:#e35a96"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,60" style="stop-color:#3cb186"/>
+        <stop path="l -60,0" style="stop-color:#81beeb"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,60" style="stop-color:#e545e1"/>
+        <stop path="l -60,0" style="stop-color:#868fca"/>
+      </meshpatch>
+    </meshrow>
+    </meshgradient>
+  </defs>
+  <rect x="0" y="0" width="200" height="200" fill="url(#m)"/>
+</svg>

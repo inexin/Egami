@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <meshgradient id="m" gradientUnits="userSpaceOnUse" x="20" y="20" type="bicubic">
+    <meshrow>
+      <meshpatch>
+        <stop path="c 15.1566,5.45639 30.3133,-5.45639 45.4699,0" style="stop-color:#367e8a"/>
+        <stop path="c -0.293851,18.2523 16.9643,30.5033 16.6705,48.7556" style="stop-color:#829525"/>
+        <stop path="c -21.6277,-4.91733 -40.5127,12.5359 -62.1404,7.61854" style="stop-color:#b785b8"/>
+        <stop path="c 6.7649,-18.7914 -6.7649,-37.5828 0,-56.3742" style="stop-color:#8672a1"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c 21.7495,7.82982 43.499,-7.82982 65.2485,0" style="stop-color:#829525"/>
+        <stop path="c -9.94048,18.2658 1.00428,39.7487 -8.9362,58.0145" style="stop-color:#e69bee"/>
+        <stop path="c -12.1029,-7.84331 -27.5389,-1.41557 -39.6418,-9.25888" style="stop-color:#4c528c"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c 16.4272,5.91379 32.8544,-5.91379 49.2816,0" style="stop-color:#e69bee"/>
+        <stop path="c -6.78028,18.8341 6.78028,37.6682 0,56.5023" style="stop-color:#cbc93c"/>
+        <stop path="c -19.5874,-6.48208 -38.6304,7.99426 -58.2178,1.51219" style="stop-color:#540523"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="c -8.4088,18.0001 3.28642,37.8444 -5.12239,55.8445" style="stop-color:#b785b8"/>
+        <stop path="c -18.7812,-7.46673 -38.2368,5.59302 -57.018,-1.87371" style="stop-color:#2a8c68"/>
+        <stop path="c 5.56227,-15.4508 -5.56227,-30.9015 0,-46.3523" style="stop-color:#3eac0e"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c -1.44414,14.9256 11.879,26.0946 10.4348,41.0201" style="stop-color:#4c528c"/>
+        <stop path="c -19.0675,-4.76872 -36.1315,10.3342 -55.199,5.56548" style="stop-color:#c3cee0"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c -5.35556,14.8766 5.35556,29.7531 0,44.6297" style="stop-color:#540523"/>
+        <stop path="c -15.676,-6.43307 -32.107,4.33574 -47.783,-2.09733" style="stop-color:#3039ba"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="c -5.19978,18.988 9.54438,36.4119 4.3446,55.3999" style="stop-color:#2a8c68"/>
+        <stop path="c -20.4542,-7.36351 -40.9084,7.36351 -61.3626,0" style="stop-color:#638ae7"/>
+        <stop path="c 6.87283,-19.0912 -6.87283,-38.1824 0,-57.2736" style="stop-color:#5c30f9"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c -10.1124,19.315 1.72272,41.6503 -8.38968,60.9653" style="stop-color:#c3cee0"/>
+        <stop path="c -14.1549,-5.09577 -28.3098,5.09577 -42.4647,0" style="stop-color:#6ff890"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c -7.06416,19.6227 7.06416,39.2453 0,58.868" style="stop-color:#3039ba"/>
+        <stop path="c -18.7242,-6.74072 -37.4485,6.74072 -56.1727,0" style="stop-color:#82343e"/>
+      </meshpatch>
+    </meshrow>
+    </meshgradient>
+  </defs>
+  <rect x="0" y="0" width="200" height="200" fill="url(#m)"/>
+</svg>

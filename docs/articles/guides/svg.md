@@ -58,6 +58,11 @@ Rendering follows resvg, the closest static SVG renderer, where SVG leaves a cho
 test suite. Styles come from Egami.Css: style sheets in `style` elements (with media queries), the `style` attribute and
 presentation attributes, with selectors up to Selectors level 4.
 
+Paint servers are linear and radial gradients, patterns and the mesh gradients Inkscape writes (`meshgradient`, SVG 2's
+draft): each patch is a Coons patch with a color at each corner, blended bilinearly or, with `type="bicubic"`, smoothly
+across patches. Outside its patches a mesh paints nothing. A mesh that names another with `href` takes its rows and keeps
+its own x and y, as Inkscape reads it.
+
 ## The render tree
 
 Drawing works from the render tree, `SvgDocument.RenderTree`: the elements with their styles applied, units in pixels, `use`

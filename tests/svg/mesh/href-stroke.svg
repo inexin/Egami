@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <meshgradient id="base" gradientUnits="userSpaceOnUse" x="10" y="10">
+    <meshrow>
+      <meshpatch>
+        <stop path="c 29.036,10.453 58.0721,-10.453 87.1081,0" style="stop-color:#84945f"/>
+        <stop path="c -9.60275,32.0095 14.7036,62.1826 5.10088,94.192" style="stop-color:#764b73"/>
+        <stop path="c -30.5001,-11.7214 -61.7089,9.75245 -92.209,-1.96894" style="stop-color:#dc4007"/>
+        <stop path="c 11.0668,-30.741 -11.0668,-61.4821 0,-92.2231" style="stop-color:#6d960f"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c 30.964,11.147 61.9279,-11.147 92.8919,0" style="stop-color:#764b73"/>
+        <stop path="c -10.3474,28.7429 10.3474,57.4858 0,86.2287" style="stop-color:#5f4224"/>
+        <stop path="c -30.2193,-7.88047 -57.5717,15.8438 -87.791,7.96334" style="stop-color:#8d4b2b"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="c -12.111,27.9496 6.66877,57.8584 -5.44228,85.808" style="stop-color:#dc4007"/>
+        <stop path="c -28.9222,-10.412 -57.8445,10.412 -86.7667,0" style="stop-color:#4783b6"/>
+        <stop path="c 10.5332,-29.259 -10.5332,-58.5179 0,-87.7769" style="stop-color:#86e6df"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="c -11.2526,31.2571 11.2526,62.5142 0,93.7713" style="stop-color:#8d4b2b"/>
+        <stop path="c -31.0778,-11.188 -62.1555,11.188 -93.2333,0" style="stop-color:#77f9db"/>
+      </meshpatch>
+    </meshrow>
+    </meshgradient>
+    <meshgradient id="m" xlink:href="#base"/>
+  </defs>
+  <circle cx="100" cy="100" r="70" fill="none" stroke="url(#m)" stroke-width="40"/>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <meshgradient id="m" gradientUnits="userSpaceOnUse" x="10" y="30" type="bicubic">
+    <meshrow>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#f289b3"/>
+        <stop path="l 0,70" style="stop-color:#49c305"/>
+        <stop path="l -60,0" style="stop-color:#53ad6b"/>
+        <stop path="l 0,-70" style="stop-color:#4ae1bc"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#49c305"/>
+        <stop path="l 0,70" style="stop-color:#bff78c"/>
+        <stop path="l -60,0" style="stop-color:#1e6626"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#bff78c"/>
+        <stop path="l 0,70" style="stop-color:#eb7400"/>
+        <stop path="l -60,0" style="stop-color:#accf2c"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="l 0,70" style="stop-color:#53ad6b"/>
+        <stop path="l -60,0" style="stop-color:#2ed8e3"/>
+        <stop path="l 0,-70" style="stop-color:#091f72"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,70" style="stop-color:#1e6626"/>
+        <stop path="l -60,0" style="stop-color:#39d845"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,70" style="stop-color:#accf2c"/>
+        <stop path="l -60,0" style="stop-color:#a0531a"/>
+      </meshpatch>
+    </meshrow>
+    </meshgradient>
+  </defs>
+  <rect x="0" y="0" width="200" height="200" fill="url(#m)"/>
+</svg>

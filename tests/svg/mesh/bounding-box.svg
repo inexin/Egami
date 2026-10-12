@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <meshgradient id="m" x="0" y="0">
+    <meshrow>
+      <meshpatch>
+        <stop path="l 0.5,0" style="stop-color:#a54dca"/>
+        <stop path="l 0,0.5" style="stop-color:#182530"/>
+        <stop path="l -0.5,0" style="stop-color:#d6237b"/>
+        <stop path="l 0,-0.5" style="stop-color:#132cde"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0.5,0" style="stop-color:#182530"/>
+        <stop path="l 0,0.5" style="stop-color:#bb1d6d"/>
+        <stop path="l -0.5,0" style="stop-color:#2ed91e"/>
+      </meshpatch>
+    </meshrow>
+    <meshrow>
+      <meshpatch>
+        <stop path="l 0,0.5" style="stop-color:#d6237b"/>
+        <stop path="l -0.5,0" style="stop-color:#cb1971"/>
+        <stop path="l 0,-0.5" style="stop-color:#3f721f"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 0,0.5" style="stop-color:#2ed91e"/>
+        <stop path="l -0.5,0" style="stop-color:#174494"/>
+      </meshpatch>
+    </meshrow>
+    </meshgradient>
+  </defs>
+  <ellipse cx="100" cy="100" rx="90" ry="60" fill="url(#m)"/>
+</svg>

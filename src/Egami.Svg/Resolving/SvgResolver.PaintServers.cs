@@ -38,6 +38,7 @@ internal sealed partial class SvgResolver
         {
             "linearGradient" or "radialGradient" => Gradient(server, bounds, context, out paint),
             "pattern" => Pattern(server, bounds, context, out paint),
+            "meshgradient" => Mesh(server, bounds, context, out paint),
             _ => PaintResult.Missing,
         };
     }

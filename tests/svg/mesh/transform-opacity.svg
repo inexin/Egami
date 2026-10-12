@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <meshgradient id="m" gradientUnits="userSpaceOnUse" x="40" y="60" gradientTransform="rotate(20 100 100)">
+    <meshrow>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#e7eee7;stop-opacity:1"/>
+        <stop path="l 0,80" style="stop-color:#615ef3;stop-opacity:0.5"/>
+        <stop path="l -60,0" style="stop-color:#15cae7;stop-opacity:0.2"/>
+        <stop path="l 0,-80" style="stop-color:#9b482e;stop-opacity:1"/>
+      </meshpatch>
+      <meshpatch>
+        <stop path="l 60,0" style="stop-color:#615ef3;stop-opacity:1"/>
+        <stop path="l 0,80" style="stop-color:#5f30e4;stop-opacity:0.5"/>
+        <stop path="l -60,0" style="stop-color:#500720;stop-opacity:0.2"/>
+      </meshpatch>
+    </meshrow>
+    </meshgradient>
+  </defs>
+  <rect x="0" y="0" width="200" height="200" fill="#ddd"/>
+  <rect x="10" y="10" width="180" height="180" fill="url(#m)"/>
+</svg>
