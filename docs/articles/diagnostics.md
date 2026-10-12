@@ -91,6 +91,11 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Decode.ScaleChosen` | Info | For `ReaderOptions.MinimumSize`, the 1/N scale the reader decodes at and the box factor after it |
 | `Detect.Format` | Info | The format detected, and how |
 | `Exif.Damaged` | Warning | The EXIF block would not parse in full; it is kept as bytes |
+| `Font.BadDirectory` | Warning | A font's table directory lists a table outside the file; it was dropped or cut short (Egami.Fonts) |
+| `Font.BadGlyph` | Warning | A glyph's data cannot be read; it draws empty (Egami.Fonts) |
+| `Font.BadTable` | Warning | A font table is damaged; its documented default is used (Egami.Fonts) |
+| `Font.FileSkipped` | Warning | A file in a font folder cannot be indexed; it is left out of the collection (Egami.Fonts) |
+| `Font.MissingTable` | Warning | A font lacks a table; its documented default is used (Egami.Fonts) |
 | `Gif.BlockTruncated` | Warning | The file ends inside a block |
 | `Gif.ColorTableMissing` | Warning | A frame has no color table; it is drawn transparent |
 | `Gif.ControlExtensionShort` | Warning | A graphic control extension is shorter than 4 bytes |

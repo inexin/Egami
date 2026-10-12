@@ -1,6 +1,9 @@
 namespace Egami.Fonts;
 
 /// <summary>Whether a face is upright, italic or oblique.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 public enum FontSlant
 {
     /// <summary>Upright, the normal style.</summary>
@@ -20,6 +23,9 @@ public enum FontSlant
 /// <param name="Weight">The weight, 1 to 1000; 400 is normal and 700 bold.</param>
 /// <param name="Width">The width class, 1 (ultra-condensed) to 9 (ultra-expanded); 5 is normal.</param>
 /// <param name="Slant">Upright, italic or oblique.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 public readonly record struct FontStyle(int Weight = 400, int Width = 5, FontSlant Slant = FontSlant.Upright)
 {
     /// <summary>Gets weight 400, width 5, upright.</summary>

@@ -18,6 +18,7 @@
   <!-- Egami's public API only: no InternalsVisibleTo from the core (2.6.1 question 1). -->
   <ItemGroup>
     <ProjectReference Include="..\Egami\Egami.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

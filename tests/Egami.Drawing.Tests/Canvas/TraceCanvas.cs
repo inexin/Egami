@@ -42,6 +42,9 @@ internal sealed class TraceCanvas(float width, float height) : Drawing.Canvas(wi
     protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
         => Calls.Add(F($"DrawImage {image.Width}x{image.Height} {R(source)} {R(destination)} {sampling.Filter} {(paint is null ? "default" : P(paint))}"));
 
+    protected override void OnDrawGlyphRun(Egami.Fonts.GlyphRun run, Vector2 origin, Paint paint)
+        => Calls.Add(F($"DrawGlyphRun {run.Count} {run.Font.Size} {origin.X} {origin.Y} {run.Text} {P(paint)}"));
+
     protected override void Dispose(bool disposing)
     {
         Disposed = true;

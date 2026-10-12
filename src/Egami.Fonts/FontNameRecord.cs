@@ -6,4 +6,7 @@ namespace Egami.Fonts;
 /// <param name="EncodingId">The platform's encoding.</param>
 /// <param name="LanguageId">The platform's language code, such as 0x409 for US English on Windows.</param>
 /// <param name="Value">The string.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public readonly record struct FontNameRecord(int NameId, int PlatformId, int EncodingId, int LanguageId, string Value);

@@ -3,6 +3,9 @@ using System.Numerics;
 namespace Egami.Fonts;
 
 /// <summary>Styling a face lacks, which a matched <see cref="Font"/> asks the renderer to synthesize (drawn from 2.7.2 on).</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 [Flags]
 public enum FontSynthesis
 {
@@ -24,6 +27,9 @@ public enum FontSynthesis
 /// There is no DPI: a 12-unit font on a raster is 12 pixels per em, and the canvas transform scales it like any other drawing. Use
 /// <see cref="FromPoints(Typeface, float, float)"/> to size from points at a resolution.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="caption"/>
+/// </example>
 public readonly record struct Font
 {
     private readonly bool _noKerning;

@@ -19,7 +19,7 @@ namespace Egami.Drawing;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="canvas"/>
 /// </example>
-public abstract class Canvas : IDisposable
+public abstract partial class Canvas : IDisposable
 {
     private readonly Stack<State> _saved = new();
     private State _state;

@@ -1,6 +1,9 @@
 namespace Egami.Fonts;
 
 /// <summary>How a face stores its glyph outlines.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public enum FontOutlines
 {
     /// <summary>TrueType quadratic outlines in the 'glyf' table.</summary>

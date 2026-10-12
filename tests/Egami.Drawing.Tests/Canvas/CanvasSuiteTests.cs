@@ -167,6 +167,8 @@ public class CanvasSuiteTests
             ("DrawImage", c => c.DrawImage(image, new Vector2(2, 2)), "DrawImage"),
             ("DrawImage rect", c => c.DrawImage(image, new RectF(0, 0, 20, 20)), "DrawImage"),
             ("DrawImage source", c => c.DrawImage(image, new RectF(1, 1, 4, 4), new RectF(0, 0, 20, 20), new SamplingOptions { Filter = ResampleFilter.Bilinear }, new SolidPaint(Rgba8.Black) { Opacity = 0.5f }), "DrawImage"),
+            ("DrawText", c => c.DrawText("Hi", new Vector2(2, 9), new Fonts.Font(TextTests.Noto.Value, 9), Rgba8.Red), "DrawGlyphRun"),
+            ("DrawGlyphRun", c => c.DrawGlyphRun(new Fonts.Font(TextTests.Noto.Value, 9).Shape("Hi"), Vector2.Zero, Rgba8.Red), "DrawGlyphRun"),
             ("Restore", c => c.Restore(), "Restore"),
         ];
 

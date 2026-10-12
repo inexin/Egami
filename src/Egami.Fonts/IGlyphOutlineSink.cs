@@ -6,6 +6,9 @@ namespace Egami.Fonts;
 /// by <see cref="Close"/> and not sent.
 /// </summary>
 /// <remarks>TrueType outlines arrive as lines and quadratic curves, CFF outlines as lines and cubic curves; neither is converted.</remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="glyphs"/>
+/// </example>
 public interface IGlyphOutlineSink
 {
     /// <summary>Starts a contour at a point.</summary>

@@ -3,6 +3,9 @@ using Egami.Fonts.Matching;
 namespace Egami.Fonts;
 
 /// <summary>The faces of one family in a <see cref="FontCollection"/>, matched by style.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 public sealed class FontFamily
 {
     private readonly FaceEntry[] _entries;

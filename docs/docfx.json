@@ -10,6 +10,10 @@
         {
           "src": "../src/Egami.Drawing",
           "files": [ "Egami.Drawing.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Fonts",
+          "files": [ "Egami.Fonts.csproj" ]
         }
       ],
       "dest": "api",

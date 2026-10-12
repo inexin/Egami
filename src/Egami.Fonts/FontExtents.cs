@@ -20,6 +20,9 @@ namespace Egami.Fonts;
 /// <param name="StrikeoutSize">The strikeout line's thickness.</param>
 /// <param name="ItalicAngle">The slant in degrees counter-clockwise from vertical: negative for text leaning right.</param>
 /// <param name="BoundingBox">The box around every glyph of the face.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="glyphs"/>
+/// </example>
 public readonly record struct FontExtents(
     float Ascent,
     float Descent,

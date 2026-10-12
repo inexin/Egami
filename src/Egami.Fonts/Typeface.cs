@@ -21,6 +21,9 @@ namespace Egami.Fonts;
 /// diagnostics they raise. All glyph metrics and outlines are in font units with y up; <see cref="Font"/> scales them to a size.
 /// </para>
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public sealed partial class Typeface
 {
     private readonly ReadOnlyMemory<byte> _data;
@@ -139,6 +142,9 @@ public sealed partial class Typeface
     /// <exception cref="UnsupportedFormatException">The file is not a font Egami reads.</exception>
     /// <exception cref="CorruptDataException">The font has no readable glyph data, or is damaged and <see cref="FontLoadOptions.Strict"/> is set.</exception>
     /// <exception cref="LimitExceededException">The file is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+    /// </example>
     public static Typeface FromFile(string path, int index = 0, FontLoadOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -155,6 +161,9 @@ public sealed partial class Typeface
     /// <exception cref="UnsupportedFormatException">The data is not a font Egami reads.</exception>
     /// <exception cref="CorruptDataException">The font has no readable glyph data, or is damaged and <see cref="FontLoadOptions.Strict"/> is set.</exception>
     /// <exception cref="LimitExceededException">The data is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+    /// </example>
     public static Typeface FromStream(Stream stream, int index = 0, FontLoadOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -171,6 +180,9 @@ public sealed partial class Typeface
     /// <exception cref="UnsupportedFormatException">The data is not a font Egami reads.</exception>
     /// <exception cref="CorruptDataException">The font has no readable glyph data, or is damaged and <see cref="FontLoadOptions.Strict"/> is set.</exception>
     /// <exception cref="LimitExceededException">The data is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+    /// </example>
     public static Typeface FromMemory(ReadOnlyMemory<byte> data, int index = 0, FontLoadOptions? options = null)
     {
         options ??= FontLoadOptions.Default;
@@ -215,6 +227,9 @@ public sealed partial class Typeface
     /// <exception cref="UnsupportedFormatException">The data is CFF2 or uses Type 1 charstrings.</exception>
     /// <exception cref="CorruptDataException">The CFF structures cannot be read.</exception>
     /// <exception cref="LimitExceededException">The data is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="cff"/>
+    /// </example>
     public static Typeface FromCff(ReadOnlyMemory<byte> data, CffOptions? options = null)
     {
         options ??= CffOptions.Default;

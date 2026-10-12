@@ -3,6 +3,9 @@ using Egami.Fonts.Parsing;
 namespace Egami.Fonts;
 
 /// <summary>Tells what font data holds and loads every face of a collection.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public static class FontLoader
 {
     /// <summary>
@@ -20,6 +23,9 @@ public static class FontLoader
     /// <exception cref="UnsupportedFormatException">The file is not a font Egami reads.</exception>
     /// <exception cref="CorruptDataException">A face has no readable glyph data, or is damaged and strict loading is set.</exception>
     /// <exception cref="LimitExceededException">The file is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+    /// </example>
     public static IReadOnlyList<Typeface> LoadAll(string path, FontLoadOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -34,6 +40,9 @@ public static class FontLoader
     /// <exception cref="UnsupportedFormatException">The data is not a font Egami reads.</exception>
     /// <exception cref="CorruptDataException">A face has no readable glyph data, or is damaged and strict loading is set.</exception>
     /// <exception cref="LimitExceededException">The data is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+    /// </example>
     public static IReadOnlyList<Typeface> LoadAll(ReadOnlyMemory<byte> data, FontLoadOptions? options = null)
     {
         FontProbe probe = Probe(data.Span);

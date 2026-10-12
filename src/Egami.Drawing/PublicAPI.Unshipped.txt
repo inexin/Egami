@@ -13,12 +13,14 @@ Egami.Drawing.Canvas.ClipRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Draw
 Egami.Drawing.Canvas.Concat(System.Numerics.Matrix3x2 matrix) -> void
 Egami.Drawing.Canvas.DeviceClipBounds.get -> Egami.Drawing.RectF
 Egami.Drawing.Canvas.Dispose() -> void
+Egami.Drawing.Canvas.DrawGlyphRun(Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, System.Numerics.Vector2 position, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawLine(System.Numerics.Vector2 start, System.Numerics.Vector2 end, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawPaint(Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
+Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.FillArc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.FillCircle(System.Numerics.Vector2 center, float radius, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.FillOval(Egami.Drawing.RectF oval, Egami.Drawing.Paint! paint) -> void
@@ -92,6 +94,8 @@ Egami.Drawing.FallbackImage.Image.init -> void
 Egami.Drawing.FillRule
 Egami.Drawing.FillRule.EvenOdd = 1 -> Egami.Drawing.FillRule
 Egami.Drawing.FillRule.NonZero = 0 -> Egami.Drawing.FillRule
+Egami.Drawing.FontExtensions
+Egami.Drawing.GlyphCache
 Egami.Drawing.LineCap
 Egami.Drawing.LineCap.Butt = 0 -> Egami.Drawing.LineCap
 Egami.Drawing.LineCap.Round = 1 -> Egami.Drawing.LineCap
@@ -269,6 +273,13 @@ static Egami.Drawing.DrawingExtensions.Draw(this Egami.Operations.RasterOps! ope
 static Egami.Drawing.DrawingExtensions.Draw(this Egami.Operations.RasterOps! operations, System.Action<Egami.Drawing.Canvas!>! draw, Egami.Drawing.CanvasOptions? options = null) -> Egami.Operations.RasterOps!
 static Egami.Drawing.FallbackImage.operator !=(Egami.Drawing.FallbackImage? left, Egami.Drawing.FallbackImage? right) -> bool
 static Egami.Drawing.FallbackImage.operator ==(Egami.Drawing.FallbackImage? left, Egami.Drawing.FallbackImage? right) -> bool
+static Egami.Drawing.FontExtensions.GetGlyphPath(this Egami.Fonts.Font font, ushort glyph) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.GetTextPath(this Egami.Fonts.Font font, string! text, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.ToRectF(this Egami.Fonts.TextBounds bounds) -> Egami.Drawing.RectF
+static Egami.Drawing.GlyphCache.ByteLimit.get -> long
+static Egami.Drawing.GlyphCache.ByteLimit.set -> void
+static Egami.Drawing.GlyphCache.Clear() -> void
 static Egami.Drawing.Paint.implicit operator Egami.Drawing.Paint!(Egami.Pixels.Rgba8 color) -> Egami.Drawing.Paint!
 static Egami.Drawing.Paint.implicit operator Egami.Drawing.Paint!(Egami.Pixels.RgbaF32 color) -> Egami.Drawing.Paint!
 static Egami.Drawing.Paint.operator !=(Egami.Drawing.Paint? left, Egami.Drawing.Paint? right) -> bool
@@ -303,6 +314,7 @@ static Egami.Drawing.Stroke.operator ==(Egami.Drawing.Stroke? left, Egami.Drawin
 virtual Egami.Drawing.Canvas.Dispose(bool disposing) -> void
 virtual Egami.Drawing.Canvas.OnClipRect(Egami.Drawing.RectF rect, Egami.Drawing.ClipOp op, bool antialias) -> void
 virtual Egami.Drawing.Canvas.OnClipRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Drawing.ClipOp op, bool antialias) -> void
+virtual Egami.Drawing.Canvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawOval(Egami.Drawing.RectF oval, Egami.Drawing.Stroke? stroke, Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawPaint(Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void

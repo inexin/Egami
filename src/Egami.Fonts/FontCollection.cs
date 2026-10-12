@@ -5,6 +5,9 @@ using Egami.Fonts.Matching;
 namespace Egami.Fonts;
 
 /// <summary>A generic family name, matched against fixed per-platform preference lists.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 public enum GenericFamily
 {
     /// <summary>A sans-serif face, such as Segoe UI, Helvetica Neue or DejaVu Sans.</summary>
@@ -26,6 +29,9 @@ public enum GenericFamily
 /// <summary>A matched face and the styling it lacks, from <see cref="FontFamily.Match(FontStyle)"/>.</summary>
 /// <param name="Typeface">The face.</param>
 /// <param name="Synthesis">The bold or italic the face lacks compared with the style asked for.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 public readonly record struct FontMatch(Typeface Typeface, FontSynthesis Synthesis)
 {
     /// <summary>Returns the matched face at a size, carrying the synthesis.</summary>
@@ -49,6 +55,9 @@ public readonly record struct FontMatch(Typeface Typeface, FontSynthesis Synthes
 /// lookups see the faces added before they started.
 /// </para>
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+/// </example>
 public sealed class FontCollection : IReadOnlyCollection<FontFamily>
 {
     private static readonly Lazy<FontCollection> s_system = new(() => new FontCollection(isSystem: true));
@@ -60,6 +69,9 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
 
     /// <summary>Initializes an empty collection.</summary>
     /// <param name="options">How faces are loaded when matched, or <see langword="null"/> for <see cref="FontLoadOptions.Default"/>.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+    /// </example>
     public FontCollection(FontLoadOptions? options = null)
     {
         Options = options ?? FontLoadOptions.Default;

@@ -5,6 +5,9 @@ namespace Egami.Fonts;
 /// <param name="YMin">The bottom edge.</param>
 /// <param name="XMax">The right edge.</param>
 /// <param name="YMax">The top edge.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="glyphs"/>
+/// </example>
 public readonly record struct GlyphExtents(float XMin, float YMin, float XMax, float YMax)
 {
     /// <summary>Gets an empty box, the extents of a glyph with no outline such as the space.</summary>

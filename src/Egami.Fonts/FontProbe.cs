@@ -1,6 +1,9 @@
 namespace Egami.Fonts;
 
 /// <summary>What kind of font data some bytes hold, as <see cref="FontLoader.Probe(ReadOnlySpan{byte})"/> sees it.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public enum FontFileKind
 {
     /// <summary>Not font data Egami recognizes.</summary>
@@ -26,4 +29,7 @@ public enum FontFileKind
 /// <param name="Kind">What the data is.</param>
 /// <param name="FaceCount">The number of faces: 1 for a single font or CFF, the collection's count, 0 when unknown.</param>
 /// <param name="Outlines">How the first face stores outlines, when that can be told from the header.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public readonly record struct FontProbe(FontFileKind Kind, int FaceCount, FontOutlines? Outlines);

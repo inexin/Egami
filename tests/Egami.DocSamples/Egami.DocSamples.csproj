@@ -37,11 +37,14 @@
     <None Include="../images/jpeg2000/rgb-lossy.j2k" Link="images/photo.j2k" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/synthetic/cmyk-mab-v4.icc" Link="images/cmyk.icc" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/SourceSans3-Regular.otf" Link="fonts/SourceSans3-Regular.otf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
     <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Fonts\Egami.Fonts.csproj" />
     <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
     <ProjectReference Include="..\..\samples\Color\Color.csproj" />
     <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />

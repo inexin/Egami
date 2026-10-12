@@ -318,6 +318,18 @@ Barrel takes the PanoTools coefficients a lens database such as lensfun gives fo
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#mip-chain)]
 
+## A caption on a photo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#caption)]
+
+## A label measured to fit
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#measure)]
+
+## A font subset for a PDF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset)]
+
 ## A contact sheet
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Combining.cs#grid)]

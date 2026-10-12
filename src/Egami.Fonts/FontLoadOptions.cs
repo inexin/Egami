@@ -7,6 +7,9 @@ namespace Egami.Fonts;
 /// id <c>Font.MissingTable</c> or <c>Font.BadTable</c>; a glyph that cannot be read draws empty with <c>Font.BadGlyph</c>.
 /// <see cref="Strict"/> turns the first such problem into a <see cref="CorruptDataException"/>.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public sealed record FontLoadOptions
 {
     /// <summary>Gets the default options: lenient, in <see cref="EgamiContext.Default"/>.</summary>
@@ -25,6 +28,9 @@ public sealed record FontLoadOptions
 }
 
 /// <summary>What a bare CFF stream lacks and an sfnt would supply, for <see cref="Typeface.FromCff(ReadOnlyMemory{byte}, CffOptions?)"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public sealed record CffOptions
 {
     /// <summary>Gets the default options: units per em from the FontMatrix and widths from the charstrings.</summary>

@@ -4,6 +4,9 @@ namespace Egami.Fonts;
 /// The embedding permissions a face declares in its OS/2 fsType field. Egami reports them and never enforces them; a caller that
 /// embeds fonts, such as a PDF writer, decides what to do.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
+/// </example>
 [Flags]
 public enum FontEmbedding
 {

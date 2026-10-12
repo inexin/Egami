@@ -3,6 +3,9 @@ using Egami.Fonts.Subsetting;
 namespace Egami.Fonts;
 
 /// <summary>What <see cref="FontSubsetter"/> writes.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
+/// </example>
 public enum SubsetFormat
 {
     /// <summary>The input's own kind: TrueType for 'glyf' faces, OpenType CFF for CFF faces, bare CFF for a bare CFF face.</summary>
@@ -19,6 +22,9 @@ public enum SubsetFormat
 }
 
 /// <summary>How <see cref="FontSubsetter.Subset(Typeface, IEnumerable{ushort}, SubsetOptions?)"/> writes a subset.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
+/// </example>
 public sealed record SubsetOptions
 {
     /// <summary>Gets the default options: the input's format, dense renumbering, a character map, no extra tables, no name prefix.</summary>
@@ -44,6 +50,9 @@ public sealed record SubsetOptions
 }
 
 /// <summary>A font holding only some glyphs of another, from <see cref="FontSubsetter"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
+/// </example>
 public sealed class FontSubset
 {
     private readonly ushort[] _oldIds;
@@ -82,6 +91,9 @@ public sealed class FontSubset
 /// Glyph 0 (.notdef) is always kept. The subsetter reads <see cref="Typeface.Embedding"/> but never enforces it: the caller decides
 /// whether a face may be subsetted and embedded.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
+/// </example>
 public static class FontSubsetter
 {
     /// <summary>Writes a subset of a face.</summary>
@@ -92,6 +104,9 @@ public static class FontSubsetter
     /// <exception cref="ArgumentOutOfRangeException">A glyph id is past the face's glyph count.</exception>
     /// <exception cref="ArgumentException">The format needs outlines of the other kind, such as CFF output from a TrueType face.</exception>
     /// <exception cref="CorruptDataException">A kept glyph's data cannot be read.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
+    /// </example>
     public static FontSubset Subset(Typeface face, IEnumerable<ushort> glyphs, SubsetOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(face);

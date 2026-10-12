@@ -18,7 +18,7 @@ namespace Egami.Drawing;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="canvas"/>
 /// </example>
-public sealed class RasterCanvas<TPixel> : Canvas
+public sealed partial class RasterCanvas<TPixel> : Canvas
     where TPixel : unmanaged, IPixelType<TPixel>
 {
     private readonly PixelPlane<TPixel> _plane;

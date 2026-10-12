@@ -7,6 +7,9 @@ namespace Egami.Fonts;
 /// baseline's left end, y down, in canvas units), and optionally the source text with the UTF-16 index each glyph came from, which
 /// lets a PDF writer keep text searchable.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="caption"/>
+/// </example>
 public sealed class GlyphRun
 {
     private readonly ushort[] _glyphs;
@@ -123,6 +126,9 @@ public sealed class GlyphRun
 /// <param name="Top">The top edge.</param>
 /// <param name="Right">The right edge.</param>
 /// <param name="Bottom">The bottom edge.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="measure"/>
+/// </example>
 public readonly record struct TextBounds(float Left, float Top, float Right, float Bottom)
 {
     /// <summary>Gets the empty box.</summary>
@@ -168,6 +174,9 @@ public readonly record struct TextBounds(float Left, float Top, float Right, flo
 /// <param name="Ascent">The font's ascent, positive.</param>
 /// <param name="Descent">The font's descent, negative.</param>
 /// <param name="LineHeight">The distance from one baseline to the next.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="measure"/>
+/// </example>
 public readonly record struct TextMeasure(float Advance, TextBounds InkBounds, int LineCount, float Ascent, float Descent, float LineHeight)
 {
     /// <summary>Gets the height of the line boxes: the first line's ascent to the last line's descent.</summary>

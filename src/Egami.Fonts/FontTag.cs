@@ -2,6 +2,9 @@ namespace Egami.Fonts;
 
 /// <summary>A four-byte OpenType tag, such as the table tag <c>glyf</c> or the feature tag <c>kern</c>.</summary>
 /// <param name="Value">The tag's four bytes, first byte in the high bits.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="load"/>
+/// </example>
 public readonly record struct FontTag(uint Value)
 {
     /// <summary>Initializes a tag from its text, such as <c>"OS/2"</c>; shorter text is padded with spaces.</summary>
