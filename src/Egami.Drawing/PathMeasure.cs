@@ -252,6 +252,9 @@ public sealed class ContourMeasure
         return kept.Count == 0 || !(total > 0) || !double.IsFinite(total) ? null : new ContourMeasure([.. kept], [.. starts], [.. ts], [.. lengths], closed, closingLine);
     }
 
+    /// <summary>Returns segment <paramref name="index"/> of the contour.</summary>
+    internal Segment SegmentAt(int index) => _segments[index];
+
     /// <summary>Returns the segment and parameter at a distance along the contour.</summary>
     internal (int Index, double T) Locate(double distance)
     {

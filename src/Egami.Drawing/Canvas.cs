@@ -257,6 +257,12 @@ public abstract partial class Canvas : IDisposable
     {
         Check(paint, stroke);
         CheckRect(rect, nameof(rect));
+        if (stroke.Effect is not null)
+        {
+            DrawWithEffect(Path.Rect(rect), stroke, paint);
+            return;
+        }
+
         OnDrawRect(rect, stroke, paint);
     }
 
@@ -279,6 +285,12 @@ public abstract partial class Canvas : IDisposable
     public void StrokeRoundRect(RoundRect roundRect, Stroke stroke, Paint paint)
     {
         Check(paint, stroke);
+        if (stroke.Effect is not null)
+        {
+            DrawWithEffect(Path.RoundRect(roundRect), stroke, paint);
+            return;
+        }
+
         OnDrawRoundRect(roundRect, stroke, paint);
     }
 
@@ -303,6 +315,12 @@ public abstract partial class Canvas : IDisposable
     {
         Check(paint, stroke);
         CheckRect(oval, nameof(oval));
+        if (stroke.Effect is not null)
+        {
+            DrawWithEffect(Path.Oval(oval), stroke, paint);
+            return;
+        }
+
         OnDrawOval(oval, stroke, paint);
     }
 
@@ -336,7 +354,14 @@ public abstract partial class Canvas : IDisposable
         Finite(radius, nameof(radius));
         if (radius >= 0)
         {
-            OnDrawOval(new RectF(center.X - radius, center.Y - radius, 2 * radius, 2 * radius), stroke, paint);
+            RectF oval = new(center.X - radius, center.Y - radius, 2 * radius, 2 * radius);
+            if (stroke.Effect is not null)
+            {
+                DrawWithEffect(Path.Oval(oval), stroke, paint);
+                return;
+            }
+
+            OnDrawOval(oval, stroke, paint);
         }
     }
 
@@ -369,7 +394,14 @@ public abstract partial class Canvas : IDisposable
         CheckRect(oval, nameof(oval));
         Finite(startDegrees, nameof(startDegrees));
         Finite(sweepDegrees, nameof(sweepDegrees));
-        OnDrawPath(Path.Arc(oval, startDegrees, sweepDegrees), stroke, paint);
+        Path arc = Path.Arc(oval, startDegrees, sweepDegrees);
+        if (stroke.Effect is not null)
+        {
+            DrawWithEffect(arc, stroke, paint);
+            return;
+        }
+
+        OnDrawPath(arc, stroke, paint);
     }
 
     /// <summary>Fills the ring between two round rectangles, as <see cref="Path.Ring"/> describes.</summary>
@@ -412,7 +444,11 @@ public abstract partial class Canvas : IDisposable
     {
         ArgumentNullException.ThrowIfNull(path);
         Check(paint, stroke);
-        if (path.Points.Length > 0)
+        if (stroke.Effect is not null)
+        {
+            DrawWithEffect(path, stroke, paint);
+        }
+        else if (path.Points.Length > 0)
         {
             OnDrawPath(path, stroke, paint);
         }
@@ -431,6 +467,12 @@ public abstract partial class Canvas : IDisposable
         Check(paint, stroke);
         FinitePoint(start, nameof(start));
         FinitePoint(end, nameof(end));
+        if (stroke.Effect is not null)
+        {
+            DrawWithEffect(Path.Line(start, end), stroke, paint);
+            return;
+        }
+
         OnDrawPoints(PointMode.Lines, [start, end], stroke, paint);
     }
 
@@ -452,10 +494,39 @@ public abstract partial class Canvas : IDisposable
             FinitePoint(p, nameof(points));
         }
 
-        if (!points.IsEmpty)
+        if (points.IsEmpty)
         {
-            OnDrawPoints(mode, points, stroke, paint);
+            return;
         }
+
+        if (stroke.Effect is not null)
+        {
+            // The same paths the default hook draws, each through the effect.
+            switch (mode)
+            {
+                case PointMode.Points:
+                    foreach (Vector2 p in points)
+                    {
+                        DrawWithEffect(new PathBuilder().MoveTo(p).LineTo(p).ToPath(), stroke.Cap == LineCap.Butt ? stroke with { Cap = LineCap.Square } : stroke, paint);
+                    }
+
+                    break;
+                case PointMode.Lines:
+                    for (int i = 0; i + 1 < points.Length; i += 2)
+                    {
+                        DrawWithEffect(Path.Line(points[i], points[i + 1]), stroke, paint);
+                    }
+
+                    break;
+                default:
+                    DrawWithEffect(Path.Polygon(points, close: false), stroke, paint);
+                    break;
+            }
+
+            return;
+        }
+
+        OnDrawPoints(mode, points, stroke, paint);
     }
 
     /// <summary>Fills the whole clip with a paint.</summary>
@@ -739,6 +810,16 @@ public abstract partial class Canvas : IDisposable
         if (op == ClipOp.Intersect)
         {
             _state = _state with { ClipBounds = localBounds.IsEmpty ? RectF.Empty : _state.ClipBounds.Intersect(MapRect(localBounds, _state.Matrix)) };
+        }
+    }
+
+    /// <summary>Strokes the path a stroke's effect makes, with the effect taken off the stroke: backends see the result only.</summary>
+    private void DrawWithEffect(Path path, Stroke stroke, Paint paint)
+    {
+        Path effected = path.Apply(stroke.Effect!);
+        if (effected.Points.Length > 0)
+        {
+            OnDrawPath(effected, stroke with { Effect = null }, paint);
         }
     }
 

@@ -100,6 +100,12 @@ public sealed record class Stroke
     /// </summary>
     public DashPattern? Dash { get; init; }
 
+    /// <summary>
+    /// Gets an effect the canvas applies to the path before it is dashed and stroked, as Skia orders them, or <see langword="null"/>
+    /// for none. Backends receive the effect's result as the path to stroke. Defaults to <see langword="null"/>.
+    /// </summary>
+    public PathEffect? Effect { get; init; }
+
     /// <summary>Gets a value indicating whether this is a hairline: width 0.</summary>
     public bool IsHairline => Width == 0;
 }

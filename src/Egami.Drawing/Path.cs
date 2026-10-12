@@ -167,6 +167,18 @@ public sealed partial class Path
         return builder.ToPath(FillRule);
     }
 
+    /// <summary>Returns the path an effect makes of this one, such as its dashes or its corners rounded.</summary>
+    /// <param name="effect">The effect.</param>
+    /// <returns>The new path.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="effects"/>
+    /// </example>
+    public Path Apply(PathEffect effect)
+    {
+        ArgumentNullException.ThrowIfNull(effect);
+        return effect.Apply(this);
+    }
+
     /// <summary>Returns the same outline with another fill rule.</summary>
     /// <param name="fillRule">The fill rule.</param>
     /// <returns>The path; this one when the rule is the same.</returns>

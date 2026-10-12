@@ -3,6 +3,7 @@ abstract Egami.Drawing.Canvas.OnClipPath(Egami.Drawing.Path! path, Egami.Drawing
 abstract Egami.Drawing.Canvas.OnDrawImage(Egami.Raster! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint? paint) -> void
 abstract Egami.Drawing.Canvas.OnDrawPath(Egami.Drawing.Path! path, Egami.Drawing.Stroke? stroke, Egami.Drawing.Paint! paint) -> void
 abstract Egami.Drawing.Paint.<Clone>$() -> Egami.Drawing.Paint!
+abstract Egami.Drawing.PathEffect.<Clone>$() -> Egami.Drawing.PathEffect!
 Egami.Drawing.Canvas
 Egami.Drawing.Canvas.Canvas(float width, float height) -> void
 Egami.Drawing.Canvas.Clear(Egami.Pixels.Rgba8 color) -> void
@@ -128,6 +129,7 @@ Egami.Drawing.Paint.Opacity.get -> float
 Egami.Drawing.Paint.Opacity.init -> void
 Egami.Drawing.Paint.Paint(Egami.Drawing.Paint! original) -> void
 Egami.Drawing.Path
+Egami.Drawing.Path.Apply(Egami.Drawing.PathEffect! effect) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Bounds.get -> Egami.Drawing.RectF
 Egami.Drawing.Path.Contains(System.Numerics.Vector2 point) -> bool
 Egami.Drawing.Path.Contours.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.Path!>!
@@ -175,6 +177,10 @@ Egami.Drawing.PathBuilder.ToPath(Egami.Drawing.FillRule fillRule = Egami.Drawing
 Egami.Drawing.PathDirection
 Egami.Drawing.PathDirection.Clockwise = 0 -> Egami.Drawing.PathDirection
 Egami.Drawing.PathDirection.CounterClockwise = 1 -> Egami.Drawing.PathDirection
+Egami.Drawing.PathEffect
+Egami.Drawing.PathEffect.PathEffect(Egami.Drawing.PathEffect! original) -> void
+Egami.Drawing.PathEffect.Plus(Egami.Drawing.PathEffect! other) -> Egami.Drawing.PathEffect!
+Egami.Drawing.PathEffect.Then(Egami.Drawing.PathEffect! next) -> Egami.Drawing.PathEffect!
 Egami.Drawing.PathMeasure
 Egami.Drawing.PathMeasure.Contours.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.ContourMeasure!>!
 Egami.Drawing.PathMeasure.PathMeasure(Egami.Drawing.Path! path, bool forceClosed = false) -> void
@@ -247,12 +253,18 @@ Egami.Drawing.SolidPaint.Color.init -> void
 Egami.Drawing.SolidPaint.Equals(Egami.Drawing.SolidPaint? other) -> bool
 Egami.Drawing.SolidPaint.SolidPaint(Egami.Pixels.Rgba8 color) -> void
 Egami.Drawing.SolidPaint.SolidPaint(Egami.Pixels.RgbaF32 color) -> void
+Egami.Drawing.StampStyle
+Egami.Drawing.StampStyle.Morph = 2 -> Egami.Drawing.StampStyle
+Egami.Drawing.StampStyle.Rotate = 1 -> Egami.Drawing.StampStyle
+Egami.Drawing.StampStyle.Translate = 0 -> Egami.Drawing.StampStyle
 Egami.Drawing.Stroke
 Egami.Drawing.Stroke.<Clone>$() -> Egami.Drawing.Stroke!
 Egami.Drawing.Stroke.Cap.get -> Egami.Drawing.LineCap
 Egami.Drawing.Stroke.Cap.init -> void
 Egami.Drawing.Stroke.Dash.get -> Egami.Drawing.DashPattern?
 Egami.Drawing.Stroke.Dash.init -> void
+Egami.Drawing.Stroke.Effect.get -> Egami.Drawing.PathEffect?
+Egami.Drawing.Stroke.Effect.init -> void
 Egami.Drawing.Stroke.Equals(Egami.Drawing.Stroke? other) -> bool
 Egami.Drawing.Stroke.IsHairline.get -> bool
 Egami.Drawing.Stroke.Join.get -> Egami.Drawing.LineJoin
@@ -290,6 +302,9 @@ override Egami.Drawing.Paint.Equals(object? obj) -> bool
 override Egami.Drawing.Paint.GetHashCode() -> int
 override Egami.Drawing.Paint.ToString() -> string!
 override Egami.Drawing.Path.ToString() -> string!
+override Egami.Drawing.PathEffect.Equals(object? obj) -> bool
+override Egami.Drawing.PathEffect.GetHashCode() -> int
+override Egami.Drawing.PathEffect.ToString() -> string!
 override Egami.Drawing.RectF.GetHashCode() -> int
 override Egami.Drawing.RoundRect.GetHashCode() -> int
 override Egami.Drawing.RoundRect.ToString() -> string!
@@ -342,6 +357,15 @@ static Egami.Drawing.Path.Ring(Egami.Drawing.RoundRect outer, Egami.Drawing.Roun
 static Egami.Drawing.Path.RoundRect(Egami.Drawing.RoundRect roundRect) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Star(System.Numerics.Vector2 center, float outerRadius, float innerRadius, int points, float rotationDegrees = 0) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.TryParseSvg(System.ReadOnlySpan<char> data, out Egami.Drawing.Path? path) -> bool
+static Egami.Drawing.PathEffect.Corner(float radius) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathEffect.Dash(Egami.Drawing.DashPattern! pattern) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathEffect.Hatch(System.Numerics.Matrix3x2 lattice, float width = 0) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathEffect.HatchPath(System.Numerics.Matrix3x2 lattice, Egami.Drawing.Path! shape) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathEffect.Jitter(float segmentLength, float deviation, ulong seed = 0) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathEffect.operator !=(Egami.Drawing.PathEffect? left, Egami.Drawing.PathEffect? right) -> bool
+static Egami.Drawing.PathEffect.operator ==(Egami.Drawing.PathEffect? left, Egami.Drawing.PathEffect? right) -> bool
+static Egami.Drawing.PathEffect.Stamp(Egami.Drawing.Path! shape, float advance, float phase = 0, Egami.Drawing.StampStyle style = Egami.Drawing.StampStyle.Translate) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathEffect.Trim(float start, float end, bool inverted = false) -> Egami.Drawing.PathEffect!
 static Egami.Drawing.RectF.Empty.get -> Egami.Drawing.RectF
 static Egami.Drawing.RectF.FromEdges(float left, float top, float right, float bottom) -> Egami.Drawing.RectF
 static Egami.Drawing.RectF.FromPoints(System.ReadOnlySpan<System.Numerics.Vector2> points) -> Egami.Drawing.RectF
@@ -375,6 +399,9 @@ virtual Egami.Drawing.Canvas.OnSetMatrix(System.Numerics.Matrix3x2 matrix) -> vo
 virtual Egami.Drawing.Paint.EqualityContract.get -> System.Type!
 virtual Egami.Drawing.Paint.Equals(Egami.Drawing.Paint? other) -> bool
 virtual Egami.Drawing.Paint.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Egami.Drawing.PathEffect.EqualityContract.get -> System.Type!
+virtual Egami.Drawing.PathEffect.Equals(Egami.Drawing.PathEffect? other) -> bool
+virtual Egami.Drawing.PathEffect.PrintMembers(System.Text.StringBuilder! builder) -> bool
 ~override Egami.Drawing.CornerRadii.Equals(object obj) -> bool
 ~override Egami.Drawing.CornerRadii.ToString() -> string
 ~override Egami.Drawing.RectF.Equals(object obj) -> bool
