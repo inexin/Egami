@@ -38,13 +38,14 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "shaping": "tests/images/fuzz/shaping-seeds/*", "bidi": "tests/images/fuzz/bidi-seeds/*",
          "radiance": "tests/images/radiance/*.hdr", "exr": "tests/images/exr/*.exr",
          "gainmap": "tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg",
-         "css": "tests/images/fuzz/css-seeds/*"}
+         "css": "tests/images/fuzz/css-seeds/*", "paragraph": "tests/images/fuzz/paragraph-seeds/*"}
 
 SCRIPT = """
 set -e
 mkdir -p /build/tests
 cp -r /src/src /build/
 cp -r /src/tests/Egami.Fuzz /build/tests/
+mkdir -p /build/tests/fonts/derived && cp /src/tests/fonts/derived/NotoSansCJK-layout-subset.otf /build/tests/fonts/derived/
 cp /src/Directory.Build.props /src/Directory.Packages.props /src/global.json /build/
 cp /src/.editorconfig /build/ 2>/dev/null || true
 find /build -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {{}} +

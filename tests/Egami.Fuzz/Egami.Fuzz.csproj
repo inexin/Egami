@@ -20,6 +20,8 @@
   <ItemGroup>
     <!-- The bidi target's one font: Noto Sans Arabic (OFL) cut to its Latin and Arabic glyphs with their layout closure. -->
     <EmbeddedResource Include="NotoSansArabic-subset.ttf" LogicalName="NotoSansArabic-subset.ttf" />
+    <!-- The paragraph target's second font: tests/fonts' Chinese, Japanese and Korean layout subset (fuzz-afl.py copies it in). -->
+    <EmbeddedResource Include="..\fonts\derived\NotoSansCJK-layout-subset.otf" LogicalName="NotoSansCJK-layout-subset.otf" />
   </ItemGroup>
 
 </Project>

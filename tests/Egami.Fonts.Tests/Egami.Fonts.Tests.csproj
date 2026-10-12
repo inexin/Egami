@@ -20,4 +20,9 @@
     <ProjectReference Include="..\..\src\Egami.Fonts\Egami.Fonts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The paragraph fuzz target, run in process by the robustness suite. -->
+    <Compile Include="..\Egami.Fuzz\ParagraphFuzzTarget.cs" Link="Layout\ParagraphFuzzTarget.cs" />
+  </ItemGroup>
+
 </Project>

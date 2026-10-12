@@ -973,7 +973,9 @@ internal sealed class LineBuilder
             max = Math.Max(max, Measure(lineStart, ContentEnd(lineStart, _text.Length)));
         }
 
-        return (min, max);
+        // Negative letter spacing can make a whole line narrower than its widest piece; max-content is never below min-content,
+        // as Blink clamps it.
+        return (min, Math.Max(min, max));
     }
 
     /// <summary>A placeholder's box relative to the baseline, for the alignments that hang off the baseline.</summary>

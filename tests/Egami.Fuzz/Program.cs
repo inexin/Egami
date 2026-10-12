@@ -164,7 +164,8 @@ static Action<Stream> Target(string name) => name switch
     "exr" => LoadExr,
     "gainmap" => LoadGainMap,
     "css" => stream => Egami.Fuzz.CssFuzzTarget.Run(ReadAll(stream)),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css."),
+    "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph."),
 };
 
 static EgamiContext Context()
@@ -2256,6 +2257,22 @@ static void ResolveBidi(Stream stream)
     using Stream fontData = typeof(RecordingSink).Assembly.GetManifestResourceStream("NotoSansArabic-subset.ttf")!;
     var font = new Egami.Fonts.Font(Egami.Fonts.Typeface.FromMemory(ReadAll(fontData)), 16);
     CheckShaped(Egami.Fonts.Shaping.TextShaper.Shape(text, font, new Egami.Fonts.Shaping.ShapingOptions { Direction = directions[seed & 3] }), text.Length);
+}
+
+// The paragraph target's fonts: the bidi target's Latin and Arabic subset, then the Chinese, Japanese and Korean layout subset.
+static Egami.Fonts.Typeface[] ParagraphFaces()
+{
+    using Stream arabic = typeof(RecordingSink).Assembly.GetManifestResourceStream("NotoSansArabic-subset.ttf")!;
+    using Stream cjk = typeof(RecordingSink).Assembly.GetManifestResourceStream("NotoSansCJK-layout-subset.otf")!;
+    return [Egami.Fonts.Typeface.FromMemory(ReadAll(arabic)), Egami.Fonts.Typeface.FromMemory(ReadAll(cjk))];
+}
+
+// Draws the paragraph on a small canvas, culled to it, as Canvas.DrawTextLayout does for any backend.
+static void DrawParagraph(Egami.Fonts.Layout.TextLayout layout)
+{
+    using Raster<Rgba8> image = Raster.Create<Rgba8>(64, 64);
+    using Egami.Drawing.RasterCanvas<Rgba8> canvas = Egami.Drawing.DrawingExtensions.CreateCanvas(image);
+    canvas.DrawTextLayout(layout, new System.Numerics.Vector2(-8, -8), placeholderPainter: (c, _, box) => c.FillRect(box, new Egami.Drawing.SolidPaint(Rgba8.Black)));
 }
 
 static void CheckReorder(Egami.Fonts.Unicode.BidiResult result, int start, int length)
