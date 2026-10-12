@@ -157,4 +157,49 @@ public class ParagraphLayout
         Assert.True(right.Index > position.Index);
         Assert.True(word.Length > 0);
     }
+
+    [Fact]
+    public void Decorations()
+    {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSans-Regular.ttf"));
+        fonts.TryGetFamily("Noto Sans", out FontFamily family);
+        #region decorations
+        TextStyle underlined = new()
+        {
+            FontFamilies = [family],
+            Decoration = new TextDecoration { Lines = TextDecorationLines.Underline, Style = TextDecorationStyle.Wavy },
+        };
+        TextLayout layout = Paragraph.Create("Typography, quickly", new ParagraphStyle { DefaultStyle = underlined }).Layout(400);
+
+        foreach (DecorationShape line in layout.Decorations)
+        {
+            // Top and Thickness place the line; Segments skip the descenders of y, p, g and q.
+            System.Console.WriteLine($"{line.Line} at {line.Top}: {line.Segments.Count} pieces");
+        }
+
+        // Or everything as outlines, to fill with any path renderer.
+        PathRecorder path = new();
+        layout.ToPath(path);
+        #endregion
+
+        Assert.True(layout.Decorations[0].Segments.Count > 1);
+        Assert.True(path.Count > 0);
+    }
+
+    private sealed class PathRecorder : IGlyphOutlineSink
+    {
+        public int Count { get; private set; }
+
+        public void MoveTo(float x, float y) => Count++;
+
+        public void LineTo(float x, float y) => Count++;
+
+        public void QuadTo(float cx, float cy, float x, float y) => Count++;
+
+        public void CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y) => Count++;
+
+        public void Close() => Count++;
+    }
 }

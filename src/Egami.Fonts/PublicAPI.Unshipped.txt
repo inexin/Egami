@@ -2044,3 +2044,30 @@ static Egami.Fonts.Layout.TextPosition.operator ==(Egami.Fonts.Layout.TextPositi
 ~override Egami.Fonts.Layout.CaretLine.ToString() -> string
 ~override Egami.Fonts.Layout.TextPosition.Equals(object obj) -> bool
 ~override Egami.Fonts.Layout.TextPosition.ToString() -> string
+Egami.Fonts.Layout.DecorationSegment
+Egami.Fonts.Layout.DecorationSegment.Deconstruct(out float Left, out float Right) -> void
+Egami.Fonts.Layout.DecorationSegment.DecorationSegment() -> void
+Egami.Fonts.Layout.DecorationSegment.DecorationSegment(float Left, float Right) -> void
+Egami.Fonts.Layout.DecorationSegment.Equals(Egami.Fonts.Layout.DecorationSegment other) -> bool
+Egami.Fonts.Layout.DecorationSegment.Left.get -> float
+Egami.Fonts.Layout.DecorationSegment.Left.init -> void
+Egami.Fonts.Layout.DecorationSegment.Right.get -> float
+Egami.Fonts.Layout.DecorationSegment.Right.init -> void
+Egami.Fonts.Layout.DecorationShape
+Egami.Fonts.Layout.DecorationShape.AddTo(Egami.Fonts.IGlyphOutlineSink! sink) -> void
+Egami.Fonts.Layout.DecorationShape.Color.get -> Egami.Pixels.Rgba8
+Egami.Fonts.Layout.DecorationShape.Line.get -> Egami.Fonts.Layout.TextDecorationLines
+Egami.Fonts.Layout.DecorationShape.LineIndex.get -> int
+Egami.Fonts.Layout.DecorationShape.Paint.get -> Egami.Fonts.Layout.ITextPaint?
+Egami.Fonts.Layout.DecorationShape.Segments.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.DecorationSegment>!
+Egami.Fonts.Layout.DecorationShape.Style.get -> Egami.Fonts.Layout.TextDecorationStyle
+Egami.Fonts.Layout.DecorationShape.StyleIndex.get -> int
+Egami.Fonts.Layout.DecorationShape.Thickness.get -> float
+Egami.Fonts.Layout.DecorationShape.Top.get -> float
+Egami.Fonts.Layout.TextLayout.Decorations.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.DecorationShape!>!
+Egami.Fonts.Layout.TextLayout.ToPath(Egami.Fonts.IGlyphOutlineSink! sink) -> void
+override Egami.Fonts.Layout.DecorationSegment.GetHashCode() -> int
+static Egami.Fonts.Layout.DecorationSegment.operator !=(Egami.Fonts.Layout.DecorationSegment left, Egami.Fonts.Layout.DecorationSegment right) -> bool
+static Egami.Fonts.Layout.DecorationSegment.operator ==(Egami.Fonts.Layout.DecorationSegment left, Egami.Fonts.Layout.DecorationSegment right) -> bool
+~override Egami.Fonts.Layout.DecorationSegment.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.DecorationSegment.ToString() -> string

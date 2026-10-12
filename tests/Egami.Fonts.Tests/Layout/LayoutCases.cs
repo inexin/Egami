@@ -92,6 +92,16 @@ internal static class LayoutCases
         WordSpacing = Float(s, "wordSpacing"),
         LineHeight = s.TryGetProperty("lineHeight", out JsonElement lh) ? LineHeight(lh) : null,
         BaselineShift = Float(s, "baselineShift"),
+        Decoration = s.TryGetProperty("decoration", out JsonElement d) ? Decoration(d) : null,
+    };
+
+    private static TextDecoration Decoration(JsonElement d) => new()
+    {
+        Lines = d.GetProperty("lines").EnumerateArray().Aggregate(TextDecorationLines.None, (a, l) => a | System.Enum.Parse<TextDecorationLines>(l.GetString()!)),
+        Style = EnumOf(d, "style", TextDecorationStyle.Solid),
+        SkipInk = EnumOf(d, "skipInk", TextDecorationSkipInk.Auto),
+        Thickness = Float(d, "thickness"),
+        UnderlineOffset = Float(d, "underlineOffset"),
     };
 
     private static LineHeight LineHeight(JsonElement e) =>

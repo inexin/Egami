@@ -51,7 +51,12 @@ internal static class LayoutReferences
         IReadOnlyList<Caret>? Carets,
         IReadOnlyList<Hit>? Hits,
         IReadOnlyList<Selection>? Selections,
-        float[]? Ellipsis);
+        float[]? Ellipsis,
+        IReadOnlyList<IReadOnlyList<DecorationInk>?>? Decorations);
+
+    /// <summary>One band of decoration ink on a line (one line of a decoration, two for double): its top and bottom and the x
+    /// runs with ink, where gaps between runs are skip-ink.</summary>
+    public sealed record DecorationInk(float Top, float Bottom, IReadOnlyList<float[]> Runs);
 
     /// <summary>
     /// A line: its first UTF-16 index and its line box along the block axis (over, baseline, under: y in horizontal layouts, x
@@ -106,7 +111,11 @@ internal static class LayoutReferences
         l.TryGetProperty("selections", out JsonElement selections)
             ? [.. selections.EnumerateArray().Select(s => new Selection(s[0].GetInt32(), s[1].GetInt32(), [.. s[2].EnumerateArray().Select(Floats).OfType<float[]>()]))]
             : null,
-        l.TryGetProperty("ellipsis", out JsonElement ellipsis) ? Floats(ellipsis) : null);
+        l.TryGetProperty("ellipsis", out JsonElement ellipsis) ? Floats(ellipsis) : null,
+        l.TryGetProperty("decorations", out JsonElement decorations)
+            ? [.. decorations.EnumerateArray().Select(line => line.ValueKind == JsonValueKind.Null ? null : (IReadOnlyList<DecorationInk>)[.. line.EnumerateArray().Select(b =>
+                new DecorationInk(b.GetProperty("top").GetSingle(), b.GetProperty("bottom").GetSingle(), [.. b.GetProperty("runs").EnumerateArray().Select(Floats).OfType<float[]>()]))])]
+            : null);
 
     private static float[]? Floats(JsonElement e) => e.ValueKind == JsonValueKind.Null ? null : [.. e.EnumerateArray().Select(v => v.GetSingle())];
 }

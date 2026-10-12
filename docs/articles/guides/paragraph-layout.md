@@ -157,6 +157,21 @@ Hit tests, carets and selection rectangles equal Chromium's (`caretPositionFromP
 `Range.getClientRects`) on Latin with ligatures, mixed bidi, Arabic, a right-to-left paragraph, emoji, hard breaks and a
 clamped paragraph.
 
+### Decorations
+
+A `TextDecoration` on a `TextStyle` draws underlines, overlines and line-throughs, solid, double, dotted, dashed or wavy.
+`TextLayout.Decorations` gives each as a `DecorationShape` per decorated stretch of a line: one position and thickness for the
+stretch, and its `Segments`, with gaps cut where glyph ink crosses an underline or overline (`SkipInk.Auto`, the default;
+Chinese, Japanese and Korean glyphs never cut). `AddTo` writes a shape's outline, and `TextLayout.ToPath` writes the whole layout,
+glyphs then decorations, to any `IGlyphOutlineSink`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#decorations)]
+
+Positions follow Chromium's `text-decoration` rules rather than the font's underline values: the thickness is a tenth of the
+font size, floored to whole pixels; the underline sits half a thickness below the baseline (or `UnderlineOffset` below it);
+the overline on the ascent; the line-through a third of the ascent up. Thicknesses, positions and skip-ink gaps equal
+Chromium's ink within half a pixel on sans and serif text. Vertical layouts have no decorations yet.
+
 ### Vertical lines
 
 `WritingMode.VerticalRl` stacks top-to-bottom lines from right to left, as Chinese and Japanese books, and `VerticalLr` from

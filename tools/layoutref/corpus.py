@@ -39,6 +39,15 @@ CHINESE = "人人生而自由，在尊严和权利上一律平等。他们赋有
 VERTICAL_MIXED = "日本語の縦書きテキスト。ABC と 2024 年、「かっこ」も含む。"
 
 
+DESCENDERS = "Typography: quickly gyp jq, Pyjama flying Ouija."
+ACCENTS = "Over ÀÉÎÕÜ Ŷ ÅBC dhl tf."
+
+
+def decorate(text, lines, style="Solid", skipInk="Auto", **extra):
+    """A span decorating the whole text."""
+    return {"start": 0, "length": len(text), "style": {"decoration": {"lines": lines, "style": style, "skipInk": skipInk, **extra}}}
+
+
 def udhr(root, name, line=None):
     """One UDHR paragraph: the given line of the text, or the first after the title lines with at least 100 characters."""
     for folder in ("shaping", "layout"):
@@ -170,6 +179,15 @@ def features(root):
         case("interaction-hard-break", LATIN, "One line\n\nthree lines\n", widths=[300], queries=interaction),
         case("interaction-clamp", LATIN, english, widths=[200], style={"maxLines": 2, "ellipsis": "\u2026"}, queries=interaction),
         case("interaction-vertical", CJK, VERTICAL_MIXED, widths=[120], style={"writingMode": "VerticalRl"}, queries=interaction),
+        # Decorations and skip-ink (question 13): each span decorated, the decorations' ink recorded per line.
+        case("decoration-underline", LATIN, DESCENDERS, widths=[400, 160], spans=[decorate(DESCENDERS, ["Underline"])]),
+        case("decoration-underline-serif", SERIF, DESCENDERS, widths=[400], spans=[decorate(DESCENDERS, ["Underline"])]),
+        case("decoration-underline-none", LATIN, DESCENDERS, widths=[400], spans=[decorate(DESCENDERS, ["Underline"], skipInk="None")]),
+        case("decoration-overline", LATIN, ACCENTS, widths=[400], size=24, spans=[decorate(ACCENTS, ["Overline"])]),
+        case("decoration-line-through", LATIN, DESCENDERS, widths=[400], spans=[decorate(DESCENDERS, ["LineThrough"])]),
+        case("decoration-thick", LATIN, DESCENDERS, widths=[400], size=24,
+             spans=[decorate(DESCENDERS, ["Underline"], thickness=3, underlineOffset=4)]),
+        case("decoration-double", LATIN, DESCENDERS, widths=[400], size=24, spans=[decorate(DESCENDERS, ["Underline"], style="Double")]),
         # Intrinsic widths with Anywhere lowering min-content (question 5).
         case("intrinsic-anywhere", LATIN, LONG_WORD, widths=[None], style={"overflowWrap": "Anywhere"}),
     ]

@@ -92,6 +92,17 @@ def text_css(fonts, style, base_size=None):
     if "baselineShift" in style:
         # BaselineShift is positive downward in Egami's y-down coordinates; CSS vertical-align lengths raise.
         css.append(f"vertical-align: {-style['baselineShift']}px")
+    if "decoration" in style:
+        d = style["decoration"]
+        lines = " ".join({"Underline": "underline", "Overline": "overline", "LineThrough": "line-through"}[x] for x in d["lines"])
+        css.append(f"text-decoration-line: {lines}")
+        css.append(f"text-decoration-style: {d.get('style', 'Solid').lower()}")
+        css.append(f"text-decoration-skip-ink: {'none' if d.get('skipInk') == 'None' else 'auto'}")
+        css.append("text-decoration-color: black")
+        if "thickness" in d:
+            css.append(f"text-decoration-thickness: {d['thickness']}px")
+        if "underlineOffset" in d:
+            css.append(f"text-underline-offset: {d['underlineOffset']}px")
     return "; ".join(css)
 
 
@@ -543,6 +554,53 @@ def ellipsis_box(browser, html, bid, box):
     return [columns[0] / SCALE, (columns[-1] + 1) / SCALE]
 
 
+def decoration_ink(browser, html, bid, boxes):
+    """Per line, where the text decorations put ink: the glyphs are drawn transparent and the decorations black, so the ink is
+    theirs; at 4 device pixels per CSS pixel, the rows with ink and, per row band, the column runs (gaps are skip-ink)."""
+    page = browser.new_page(viewport={"width": 2000, "height": 2000}, device_scale_factor=SCALE)
+    hidden = html.replace("</style>", ".t { color: transparent !important; }</style>")
+    with open("/tmp/decoration.html", "w", encoding="utf-8") as f:
+        f.write(hidden)
+    page.goto("file:///tmp/decoration.html")
+    page.evaluate("Promise.all([...document.fonts].map(f => f.load()))")
+    r = page.evaluate(f"(() => {{ const q = document.getElementById('{bid}').getBoundingClientRect(); return [q.x, q.y, q.width, q.height]; }})()")
+    # Overlines can sit above the first line box, so the capture starts a margin above the block.
+    margin = 8
+    shot = page.screenshot(clip={"x": r[0], "y": r[1] - margin, "width": r[2] + 20, "height": r[3] + margin})
+    page.close()
+    width, height, channels, rows = decode_png(shot)
+    result = []
+    for k, box in enumerate(boxes):
+        if box is None:
+            result.append(None)
+            continue
+        top = box[0] - (margin if k == 0 else 0)
+        y0, y1 = int(round((top + margin) * SCALE)), min(height, int(round((box[2] + margin) * SCALE)))
+        ink_rows = [y for y in range(y0, y1) if any(rows[y][x * channels] < 128 for x in range(width))]
+        if not ink_rows:
+            result.append([])
+            continue
+        # Bands of consecutive ink rows: one per decoration line (two for double).
+        bands = []
+        for y in ink_rows:
+            if bands and y == bands[-1][1] + 1:
+                bands[-1][1] = y
+            else:
+                bands.append([y, y])
+        lines = []
+        for b0, b1 in bands:
+            cols = [x for x in range(width) if any(rows[y][x * channels] < 128 for y in range(b0, b1 + 1))]
+            runs = []
+            for x in cols:
+                if runs and x == runs[-1][1] + 1:
+                    runs[-1][1] = x
+                else:
+                    runs.append([x, x])
+            lines.append({"top": b0 / SCALE - margin, "bottom": (b1 + 1) / SCALE - margin, "runs": [[a / SCALE, (b + 1) / SCALE] for a, b in runs]})
+        result.append(lines)
+    return result
+
+
 def run_group(page, cases):
     results = []
     for c in cases:
@@ -569,6 +627,9 @@ def run_group(page, cases):
             page.evaluate("Promise.all([...document.fonts].map(f => f.load()))")
             result = page.evaluate(SCRIPT, {"id": bid, "text": c["text"], "queries": c["queries"]})
             result["width"] = width
+            if any("decoration" in sp["style"] for sp in c["spans"]):
+                with open(path, encoding="utf-8") as f:
+                    result["decorations"] = decoration_ink(page.context.browser, f.read(), bid, [l["box"] for l in result["lines"]])
             if "maxLines" in c["style"] and len(result["lines"]) > c["style"]["maxLines"]:
                 line = result["lines"][c["style"]["maxLines"] - 1]
                 kept = line["box"]
