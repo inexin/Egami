@@ -51,6 +51,58 @@ public class TextQualityTests
     }
 
     [Fact]
+    public void OverlappingContoursDrawAsTheirUnion()
+    {
+        // A variable font keeps overlapping contours (Source Serif's serifs overlap its stems); its glyphs draw as the union of
+        // their contours, not with the overlaps' edges counted twice, so the glyph cache's mask is near filling the merged outline.
+        Typeface face = Typeface.FromFile(TextTests.FontPath("derived/SourceSerif4-VF-subset.otf"));
+        var font = new Font(face, 48) { Subpixel = false };
+        GlyphRun shaped = font.Shape("hnx");
+        GlyphRun run = GlyphRun.Create(font, shaped.Glyphs, [new Vector2(0, 0), new Vector2(40, 0), new Vector2(85, 0)]);
+        using Raster<Rgba8> cached = Raster.Create(140, 60, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = cached.CreateCanvas())
+        {
+            canvas.DrawGlyphRun(run, new Vector2(5, 50), Rgba8.Black);
+        }
+
+        using Raster<Rgba8> merged = Raster.Create(140, 60, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = merged.CreateCanvas())
+        {
+            canvas.FillPath(run.ToPath(new Vector2(5, 50)).Simplify(), new SolidPaint(Rgba8.Black));
+        }
+
+        using Raster<Rgba8> unmerged = Raster.Create(140, 60, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = unmerged.CreateCanvas())
+        {
+            canvas.FillPath(run.ToPath(new Vector2(5, 50)), new SolidPaint(Rgba8.Black));
+        }
+
+        // Darker overlap edges are what the merge removes: the cached glyphs are near the merged fill and further from the raw one
+        // (the cache and FillPath flatten curves at different points, so even the merged fill differs a little).
+        (double toMerged, int worst) = Difference(cached, merged);
+        (double toUnmerged, _) = Difference(cached, unmerged);
+        Assert.True(toMerged < 0.15 && worst <= 32, $"Against the merged outline: mean {toMerged:F3}, largest {worst} levels.");
+        Assert.True(toUnmerged > 1.5 * toMerged, $"Against the raw outline: mean {toUnmerged:F3}; merged {toMerged:F3}.");
+    }
+
+    private static (double Mean, int Max) Difference(Raster<Rgba8> a, Raster<Rgba8> b)
+    {
+        long sum = 0;
+        int max = 0;
+        for (int y = 0; y < a.Height; y++)
+        {
+            for (int x = 0; x < a.Width; x++)
+            {
+                int d = Math.Abs(a.GetPixel(x, y).R - b.GetPixel(x, y).R);
+                sum += d;
+                max = Math.Max(max, d);
+            }
+        }
+
+        return (sum / (double)(a.Width * a.Height), max);
+    }
+
+    [Fact]
     public void SubpixelOriginsRoundToQuarterPixels()
     {
         Assert.Equal((10, 0), RasterCanvas<Rgba8>.Snap(10.1f, true));

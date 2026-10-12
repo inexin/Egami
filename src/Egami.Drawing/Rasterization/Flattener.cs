@@ -91,12 +91,13 @@ internal static class Flattener
     }
 
     /// <summary>Flattens one quadratic into <paramref name="output"/> as points after the start.</summary>
-    internal static void Quad(Vector2 p0, Vector2 p1, Vector2 p2, float tolerance, List<Vector2> output)
+    internal static void Quad(Vector2 p0, Vector2 p1, Vector2 p2, float tolerance, List<Vector2> output, bool cutAtVertex = true)
     {
-        if (SplitAtVertex(p0, p1, p2, out Vector2 a1, out Vector2 m, out Vector2 b1))
+        // The halves have their vertices at their ends, so they are not cut again (rounding at huge coordinates could say otherwise).
+        if (cutAtVertex && SplitAtVertex(p0, p1, p2, out Vector2 a1, out Vector2 m, out Vector2 b1))
         {
-            Quad(p0, a1, m, tolerance, output);
-            Quad(m, b1, p2, tolerance, output);
+            Quad(p0, a1, m, tolerance, output, false);
+            Quad(m, b1, p2, tolerance, output, false);
             return;
         }
 
@@ -117,12 +118,12 @@ internal static class Flattener
         return n >= 1 ? (int)MathF.Min(n, MaxSegments) : 1;
     }
 
-    private static void Quad(Vector2 p0, Vector2 p1, Vector2 p2, float tolerance, EdgeList edges)
+    private static void Quad(Vector2 p0, Vector2 p1, Vector2 p2, float tolerance, EdgeList edges, bool cutAtVertex = true)
     {
-        if (SplitAtVertex(p0, p1, p2, out Vector2 a1, out Vector2 m, out Vector2 b1))
+        if (cutAtVertex && SplitAtVertex(p0, p1, p2, out Vector2 a1, out Vector2 m, out Vector2 b1))
         {
-            Quad(p0, a1, m, tolerance, edges);
-            Quad(m, b1, p2, tolerance, edges);
+            Quad(p0, a1, m, tolerance, edges, false);
+            Quad(m, b1, p2, tolerance, edges, false);
             return;
         }
 

@@ -13,6 +13,13 @@ internal static class CffEncoding
         var w = new ByteWriter();
         foreach ((int op, double[] operands) in entries)
         {
+            // Only CFF is written: operators it reserves, such as CFF2's vsindex, blend, vstore and maxstack (22 to 25) that a
+            // damaged CFF2 font may carry in the wrong DICT, are left out.
+            if (op is >= 22 and <= 27)
+            {
+                continue;
+            }
+
             bool wide = fixedWidth?.Contains(op) == true;
             foreach (double value in operands)
             {

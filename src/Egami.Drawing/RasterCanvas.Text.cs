@@ -296,7 +296,14 @@ public sealed partial class RasterCanvas<TPixel>
         Path path = builder.ToPath();
         if ((style.Synthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty)
         {
+            // The outset merges the contours too.
             path = path.Offset(Synthesis.BoldOutset(emY));
+        }
+        else if (!path.IsEmpty && face.MayOverlap(glyph))
+        {
+            // The coverage rasterizer adds up overlapping contours, which darkens their edges where they cross inside a pixel;
+            // merged first, the mask is the exact area, as for any other glyph. Masks are cached, so this is paid once.
+            path = path.Simplify();
         }
 
         return path;

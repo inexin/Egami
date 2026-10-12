@@ -104,6 +104,17 @@ internal ref struct FontReader
 internal static class BigEndian
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static byte UInt8(ReadOnlySpan<byte> data, int offset)
+    {
+        if ((uint)offset >= (uint)data.Length)
+        {
+            throw FontErrors.Truncated(offset);
+        }
+
+        return data[offset];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ushort UInt16(ReadOnlySpan<byte> data, int offset)
     {
         if (offset < 0 || offset > data.Length - 2)

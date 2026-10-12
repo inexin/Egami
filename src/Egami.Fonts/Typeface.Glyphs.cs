@@ -43,6 +43,46 @@ public sealed partial class Typeface
 
     internal GlyfTable? Glyf => _glyf;
 
+    /// <summary>
+    /// Gets whether a glyph's contours may overlap one another: any glyph of a variable font, whose outlines keep their overlaps
+    /// so they can vary, and a TrueType glyph marked OVERLAP_SIMPLE or OVERLAP_COMPOUND. Rasterizers that add up coverage draw
+    /// such overlaps too dark at their edges unless the outline is merged first.
+    /// </summary>
+    internal bool MayOverlap(ushort glyph)
+    {
+        if (IsVariable)
+        {
+            return true;
+        }
+
+        if (_glyf is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            ReadOnlySpan<byte> data = _glyf.GetGlyphData(glyph, out _);
+            if (data.Length < 10)
+            {
+                return false;
+            }
+
+            int contours = BigEndian.Int16(data, 0);
+            if (contours < 0)
+            {
+                return (BigEndian.UInt16(data, 10) & 0x0400) != 0;
+            }
+
+            int instructions = BigEndian.UInt16(data, 10 + (contours * 2));
+            return contours > 0 && (BigEndian.UInt8(data, 12 + (contours * 2) + instructions) & 0x40) != 0;
+        }
+        catch (CorruptDataException)
+        {
+            return false;
+        }
+    }
+
     internal CffFont? Cff => _cff;
 
     internal MaxpTable? Maxp => _maxp;

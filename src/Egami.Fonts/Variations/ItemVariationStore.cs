@@ -185,7 +185,7 @@ internal sealed class ItemVariationStore
             }
             else
             {
-                delta = set.LongWords ? BigEndian.Int16(data, at) : (sbyte)data[at];
+                delta = set.LongWords ? BigEndian.Int16(data, at) : (sbyte)BigEndian.UInt8(data, at);
                 at += set.LongWords ? 2 : 1;
             }
 

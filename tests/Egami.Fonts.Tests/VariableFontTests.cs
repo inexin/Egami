@@ -146,6 +146,20 @@ public class VariableFontTests
     }
 
     [Fact]
+    public void OverlapsAreKnown()
+    {
+        // Variable glyphs may overlap; a static instance keeps the OVERLAP_SIMPLE flag fontTools' instancer sets; static fonts do not.
+        Typeface variable = TestFonts.Load("derived/NotoSans-VF-subset.ttf");
+        ushort a = variable.GetGlyph('A');
+        Assert.True(variable.MayOverlap(a));
+        Assert.True(variable.WithVariations([FontVariation.Weight(700)]).MayOverlap(a));
+        Assert.False(TestFonts.Load("NotoSans-Regular.ttf").MayOverlap(a));
+        Typeface instance = FontSubsetter.Subset(variable, [0, a], new SubsetOptions { RetainGlyphIds = true, Variations = [FontVariation.Weight(700)] }).ToTypeface();
+        Assert.False(instance.IsVariable);
+        Assert.True(instance.MayOverlap(a));
+    }
+
+    [Fact]
     public void PositionsAreSharedAndClamped()
     {
         Typeface face = TestFonts.Load("derived/NotoSans-VF-subset.ttf");

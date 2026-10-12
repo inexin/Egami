@@ -18,6 +18,7 @@ internal static class Instancer
     private const int ArgsAreXY = 0x0002;
     private const int RoundXYToGrid = 0x0004;
     private const int MoreComponents = 0x0020;
+    private const int OverlapCompound = 0x0400;
     private const int HaveInstructions = 0x0100;
 
     /// <summary>The variation tables an instance leaves out, even when asked to keep them.</summary>
@@ -142,7 +143,8 @@ internal static class Instancer
         x[n + 1] = pp1 + advance;
         gvar?.AddDeltas(glyph, coords, x, y, points.ContourEnds, dx, dy);
 
-        // The original's ends, instructions and on-curve and overlap flags stay; coordinates are rounded as fontTools' otRound.
+        // The original's ends, instructions and on-curve flags stay; coordinates are rounded as fontTools' otRound. The contours keep
+        // their overlaps, so, as fontTools' instancer does, the glyph is marked OVERLAP_SIMPLE for rasterizers that must merge them.
         var rounded = new List<(int X, int Y, bool On)>(n);
         int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
         for (int i = 0; i < n; i++)
@@ -167,8 +169,8 @@ internal static class Instancer
         }
 
         int instructionLength = BigEndian.UInt16(data, endsAt + (contours * 2));
-        ReadOnlySpan<byte> instructions = data.Slice(endsAt + (contours * 2) + 2, instructionLength);
-        bool overlap = n > 0 && (data[endsAt + (contours * 2) + 2 + instructionLength] & 0x40) != 0;
+        ReadOnlySpan<byte> instructions = BigEndian.Slice(data, endsAt + (contours * 2) + 2, instructionLength);
+        bool overlap = n > 0;
         var w = new ByteWriter(16 + (n * 5));
         Woff.Woff2Glyf.WriteSimple(w, contours, (short)minX, (short)minY, (short)maxX, (short)maxY, ends, instructions, rounded, overlap);
         return (w.ToArray(), x[n] + dx[n], x[n + 1] + dx[n + 1], minX);
@@ -222,6 +224,11 @@ internal static class Instancer
             if (i < m - 1)
             {
                 flags |= MoreComponents;
+            }
+
+            if (i == 0)
+            {
+                flags |= OverlapCompound;
             }
 
             w.U16(flags);

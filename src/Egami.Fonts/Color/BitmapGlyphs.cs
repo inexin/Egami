@@ -175,7 +175,7 @@ internal sealed class CbdtTables
             int arrayOffset = (int)BigEndian.UInt32(data, at);
             int tables = (int)Math.Min(BigEndian.UInt32(data, at + 8), (uint)(data.Length / 8));
             int start = BigEndian.UInt16(data, at + 40), end = BigEndian.UInt16(data, at + 42);
-            int ppem = data[at + 45], depth = data[at + 46];
+            int ppem = BigEndian.UInt8(data, at + 45), depth = BigEndian.UInt8(data, at + 46);
             if (depth == 32 && ppem > 0)
             {
                 sizes.Add(new Size(ppem, arrayOffset, tables, start, end));

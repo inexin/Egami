@@ -123,6 +123,38 @@ public class ColorTextTests
     }
 
     [Fact]
+    public void FuzzFindingsDraw()
+    {
+        // COLR fonts AFL++ found crashes with, among them a transform so large that flattening a curve recursed without end.
+        string folder = System.IO.Path.Combine(TextTests.FontPath(string.Empty), "..", "images", "fuzz", "font-regressions");
+        foreach (string file in Directory.GetFiles(folder, "colr-*"))
+        {
+            Typeface face;
+            try
+            {
+                face = Typeface.FromFile(file);
+            }
+            catch (EgamiException)
+            {
+                continue;
+            }
+
+            using Raster<Rgba8> image = Raster.Create(120, 60, Rgba8.White);
+            using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+            for (int g = 0; g < Math.Min(face.GlyphCount, 40); g++)
+            {
+                try
+                {
+                    canvas.DrawGlyphRun(GlyphRun.Create(new Font(face, 30), [(ushort)g], [new Vector2(10, 45)]), Vector2.Zero, Rgba8.Black);
+                }
+                catch (EgamiException)
+                {
+                }
+            }
+        }
+    }
+
+    [Fact]
     public void PalettesChangeTheColors()
     {
         Typeface face = Typeface.FromFile(TextTests.FontPath("test_glyphs-glyf_colr_1.ttf"));

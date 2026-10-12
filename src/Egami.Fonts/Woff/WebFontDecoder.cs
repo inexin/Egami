@@ -138,8 +138,9 @@ internal static class WebFontDecoder
                 throw FontErrors.Corrupt(offset, $"The WOFF {Name(tag)} does not inflate to its original length.");
             }
         }
-        catch (InvalidDataException e)
+        catch (Exception e) when (e is InvalidDataException or IOException)
         {
+            // ZLibStream throws InvalidDataException for bad data and ZLibException, an IOException, for some broken streams.
             throw FontErrors.Corrupt(offset, $"The WOFF {Name(tag)} does not inflate ({e.Message}).");
         }
 

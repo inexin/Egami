@@ -56,6 +56,19 @@ public class NewTableRobustnessTests
         }
     }
 
+    /// <summary>The inputs AFL++ found crashes with in 2.7.2's first 10-minute runs (WOFF, COLR, the instancer), now failing as documented.</summary>
+    [Fact]
+    public void FuzzFindingsStayFixed()
+    {
+        string[] files = [.. Directory.GetFiles(Path.Combine(TestFonts.Root, "tests", "images", "fuzz", "font-regressions"))
+            .Where(f => Path.GetFileName(f).Split('-')[0] is "woff" or "colr" or "instance")];
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            Exercise(File.ReadAllBytes(file));
+        }
+    }
+
     [Fact]
     public void ColrCyclesAreCut()
     {

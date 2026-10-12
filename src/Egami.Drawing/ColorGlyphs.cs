@@ -14,7 +14,9 @@ namespace Egami.Drawing;
 /// </summary>
 internal static class ColorGlyphDrawing
 {
-    private static readonly SamplingOptions s_bitmapSampling = new() { Filter = ResampleFilter.Bilinear };
+    // Bitmap glyphs shrink with a box filter, which averages the pixels each output pixel covers, and grow bilinearly.
+    private static readonly SamplingOptions s_shrinkSampling = new() { Filter = ResampleFilter.Box };
+    private static readonly SamplingOptions s_growSampling = new() { Filter = ResampleFilter.Bilinear };
 
     /// <summary>Gets whether a font draws a glyph in color.</summary>
     public static bool IsColor(Font font, Typeface face, ushort glyph)
@@ -65,7 +67,8 @@ internal static class ColorGlyphDrawing
                     using (image)
                     {
                         GlyphExtents b = bitmap.Bounds;
-                        canvas.DrawImage(image, RectF.FromEdges(b.XMin * scale, -b.YMax * scale, b.XMax * scale, -b.YMin * scale), s_bitmapSampling);
+                        var target = RectF.FromEdges(b.XMin * scale, -b.YMax * scale, b.XMax * scale, -b.YMin * scale);
+                        canvas.DrawImage(image, target, target.Width < image.Width ? s_shrinkSampling : s_growSampling);
                     }
                 }
 
@@ -159,12 +162,9 @@ internal static class ColorGlyphDrawing
             return ([new GradientStop(0, default(RgbaF32))], 0, 1);
         }
 
+        // The extend mode applies outside the stops' own range, so a repeat's period is first stop to last, wherever they lie.
         float min = line.Stops[0].Offset, max = line.Stops[^1].Offset;
-        if (min >= 0 && max <= 1)
-        {
-            (min, max) = (0, 1);
-        }
-        else if (max - min < 1e-6f)
+        if (max - min < 1e-6f)
         {
             max = min + 1e-6f;
         }

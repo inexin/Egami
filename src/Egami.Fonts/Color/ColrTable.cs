@@ -218,7 +218,7 @@ internal sealed class ColrTable
         }
 
         ReadOnlySpan<byte> data = _data.Span;
-        if (data[_clipList] != 1)
+        if (BigEndian.UInt8(data, _clipList) != 1)
         {
             return null;
         }
@@ -241,7 +241,7 @@ internal sealed class ColrTable
             else
             {
                 int box = _clipList + (int)BigEndian.UInt24(data, at + 4);
-                int format = data[box];
+                int format = BigEndian.UInt8(data, box);
                 float x0 = BigEndian.Int16(data, box + 1), y0 = BigEndian.Int16(data, box + 3);
                 float x1 = BigEndian.Int16(data, box + 5), y1 = BigEndian.Int16(data, box + 7);
                 if (format == 2)
@@ -317,7 +317,7 @@ internal sealed class ColrTable
             {
                 case 1:
                     {
-                        int count = data[at + 1];
+                        int count = BigEndian.UInt8(data, at + 1);
                         uint first = BigEndian.UInt32(data, at + 2);
                         var layers = new List<ColorPaint>(count);
                         for (int i = 0; i < count; i++)
@@ -501,7 +501,7 @@ internal sealed class ColrTable
                 case 32:
                     {
                         int source = at + (int)BigEndian.UInt24(data, at + 1);
-                        int mode = data[at + 4];
+                        int mode = BigEndian.UInt8(data, at + 4);
                         int backdrop = at + (int)BigEndian.UInt24(data, at + 5);
                         ColorPaint? s = Paint(source, depth + 1), b = Paint(backdrop, depth + 1);
                         if (mode >= s_modes.Length)
@@ -525,7 +525,7 @@ internal sealed class ColrTable
         private ColorLine Line(int at, bool variable)
         {
             ReadOnlySpan<byte> data = table._data.Span;
-            int extend = data[at];
+            int extend = BigEndian.UInt8(data, at);
             int count = BigEndian.UInt16(data, at + 1);
             int size = variable ? 10 : 6;
             if (at + 3 + ((long)count * size) > data.Length)
