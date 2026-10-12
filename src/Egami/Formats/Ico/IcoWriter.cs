@@ -178,7 +178,8 @@ internal sealed class IcoWriter : IFormatWriter, IMultiImageWriter
         if (entry.Encoding == IcoEntryEncoding.Png)
         {
             using MemoryStream png = new();
-            PngWriter.Instance.Write(pixels, png, new PngWriterOptions { Reduce = true, StripMetadata = options.StripMetadata, OmitSrgbProfile = options.OmitSrgbProfile });
+            // Always 8-bit RGBA: Windows' icon decoder skips PNG entries of other color types.
+            PngWriter.Instance.Write(pixels, png, new PngWriterOptions { ColorType = PngColorType.Rgba, BitDepth = 8, StripMetadata = options.StripMetadata, OmitSrgbProfile = options.OmitSrgbProfile });
             return png.ToArray();
         }
 
