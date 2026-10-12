@@ -97,7 +97,9 @@ internal static class CffSubsetter
         }
 
         // Subroutines: renumber the used ones, or keep every slot with unused bodies emptied when a call is computed.
-        bool renumber = !usage.Unrewritable;
+        // A global subroutine that calls local ones can be rewritten only when one font dict's local numbering applies.
+        bool globalsCallLocals = usage.Sites.Any(p => p.Key.Kind == CharStringKind.Global && p.Value.Values.Any(site => !site.Global));
+        bool renumber = !usage.Unrewritable && !(globalsCallLocals && fds.Length > 1);
         int oldGlobalCount = cff.GlobalSubrs.Count;
         Dictionary<int, int> globalMap = SubrMap(usage.Global, oldGlobalCount, renumber);
         var localMaps = new Dictionary<int, int>[cff.Privates.Length];
@@ -142,7 +144,7 @@ internal static class CffSubsetter
         }
 
         // Subroutine INDEX contents.
-        List<byte[]> globalSubrs = Subrs(cff.GlobalSubrs, globalMap, i => new CharStringId(CharStringKind.Global, 0, i), usage, globalMap, null, cff, -1, renumber);
+        List<byte[]> globalSubrs = Subrs(cff.GlobalSubrs, globalMap, i => new CharStringId(CharStringKind.Global, 0, i), usage, globalMap, localMaps[fds[0]], cff, -1, renumber);
         var localSubrs = new Dictionary<int, List<byte[]>>();
         foreach (int fd in fds)
         {
