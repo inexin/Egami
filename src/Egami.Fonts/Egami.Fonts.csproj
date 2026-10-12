@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Egami.Fonts</RootNamespace>
     <PackageId>Egami.Fonts</PackageId>
-    <Version>1.0.0-preview.3</Version>
+    <Version>1.0.0-preview.4</Version>
     <Description>TrueType and OpenType (CFF) fonts for Egami: faces, glyph outlines, metrics, kerning, installed fonts and subsetting, in managed code.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>

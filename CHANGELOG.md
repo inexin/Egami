@@ -287,6 +287,36 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
   custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts. It stays a preview
   until Egap's HTML reader has used it.
 
+### Egami.Fonts 1.0.0-preview.4: paragraph layout
+
+Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same preview package. See
+[Paragraph layout](docs/articles/guides/paragraph-layout.md).
+
+- `LineBreaks.Enumerate`: UAX #14 break opportunities (Unicode 17) with CSS's `word-break`, `overflow-wrap` and `line-break`
+  strictness and the Chinese, Japanese and Korean rules; LineBreakTest.txt passes in full.
+- `Paragraph.Create` takes a string or `RichText` (`RichTextBuilder`: nested `TextStyle` spans and inline `Placeholder` boxes)
+  and a `ParagraphStyle`; `Layout(width)` gives a `TextLayout` of `TextLine`s and `LayoutRun`s with shaped glyph runs, per
+  character font fallback in CSS's order, bidi per line, alignment and justification (`TextJustify`), tabs and tab stops,
+  line heights and struts, soft hyphens, balanced filling, `MaxLines` and `MaxHeight` with an ellipsis, and vertical writing
+  (`WritingMode`, `TextOrientation`). `LineFlow` lays out a line at a time at changing widths, for columns and wrap-around.
+- Interaction: `HitTest`, `GetCaret` (with a second caret at bidi boundaries and GDEF ligature carets), `MoveCaret`,
+  `GetSelectionRects`, word and line boundaries; min-content and max-content widths, ink bounds and placeholder boxes.
+- Decorations: underline, overline and line-through, solid, double, dotted, dashed or wavy, with skip-ink, as
+  `TextLayout.Decorations`; `TextLayout.ToPath` writes glyphs and decorations to an outline sink.
+- Gates: line breaks, line boxes, glyph origins, intrinsic widths, ellipses, hit tests, carets, selections and decoration ink
+  equal headless Chromium 129's on a corpus of eleven scripts at five widths and the feature cases (the few differences are
+  Chromium's own, listed in the tests). Breaking 1 MB of mixed text takes 17 ms against the reference font library 2.1.3's 2.6 s;
+  a 2,000-word page at three widths 7.8 ms against 118 ms; 10,000 hit tests 19 ms against 196 ms.
+- Fuzz target `paragraph`, and a robustness suite on the same harness.
+
+### Egami.Drawing 1.0.0-preview.7
+
+- `Canvas.DrawTextLayout` draws a laid-out paragraph in CSS's order (shadows, backgrounds, underlines, glyphs and placeholders,
+  line-throughs), skipping lines outside the clip; an ellipsis or a soft hyphen's hyphen is marked content with ActualText.
+  `Canvas.DrawText` into a `RectF` with `VerticalAlign` lays out and draws in one call, and `TextLayout.ToPath(origin)` gives a
+  `Path`. Drawn paragraphs are within 2 levels of the exact coverage on over 99% of pixels, closer than SkiaSharp, and drawing
+  costs at most 10% over drawing the glyph runs alone.
+
 ### Egami.Fonts 1.0.0-preview.3: text shaping
 
 OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's, in the same preview package. See

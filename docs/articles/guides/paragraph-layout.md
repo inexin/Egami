@@ -196,7 +196,8 @@ positions are y (a line's `Left` and `Width`, a run's `X`, a caret's `X`), acros
 Chromium's `writing-mode` output on Japanese, Chinese and mixed Latin.
 
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
-images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.
+images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes, and
+`Rewind` to a line's start to take back a line that does not fit.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#flow)]
 

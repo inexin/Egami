@@ -227,6 +227,165 @@ public class ParagraphLayout
         Assert.False(outline.IsEmpty);
     }
 
+    private static FontFamily Noto()
+    {
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf"));
+        return fonts.Families[0];
+    }
+
+    [Fact]
+    public void CaptionInABox()
+    {
+        FontFamily family = Noto();
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(400, 300);
+        using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+        #region caption-box
+        // A caption wrapped into the bottom of a photo, centred, on a translucent band as tall as the lines.
+        RectF box = new(20, 200, 360, 80);
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [family], Size = 15, Color = Rgba8.White },
+            Align = TextAlign.Center,
+            MaxLines = 3,
+        };
+        TextLayout layout = Paragraph.Create("Harbour at dawn, seen from the old lighthouse; the fishing boats leave before the ferries.", style).Layout(box.Width);
+        float top = box.Y + box.Height - layout.Height;
+        canvas.FillRect(new RectF(box.X - 8, top - 6, box.Width + 16, layout.Height + 12), new SolidPaint(new Rgba8(0, 0, 0, 140)));
+        canvas.DrawTextLayout(layout, new System.Numerics.Vector2(box.X, top));
+        #endregion
+
+        Assert.True(layout.Lines.Count >= 2);
+    }
+
+    [Fact]
+    public void JustifiedArticleColumn()
+    {
+        FontFamily family = Noto();
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(300, 600);
+        using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+        canvas.Clear(Rgba8.White);
+        string[] paragraphs =
+        [
+            "Typesetting a column means choosing where lines end. Greedy filling takes as many words as fit; balanced filling evens the lines out.",
+            "Justified text stretches the spaces of every line but the last, and hyphenates at soft hyphens (ex\u00ADam\u00ADple) when a word would leave a gap.",
+        ];
+        #region article-column
+        // A justified column: each paragraph balanced, indented by its first line, with space between paragraphs.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [family], Size = 13, LineHeight = LineHeight.Multiple(1.4f) },
+            Align = TextAlign.Justify,
+            LineFill = LineFill.Balanced,
+        };
+        float y = 10;
+        foreach (string text in paragraphs)
+        {
+            TextLayout layout = Paragraph.Create(text, style).Layout(260);
+            canvas.DrawTextLayout(layout, new System.Numerics.Vector2(20, y));
+            y += layout.Height + 8;
+        }
+        #endregion
+
+        Assert.True(y > 100);
+    }
+
+    [Fact]
+    public void ChatBubble()
+    {
+        FontFamily text = Noto();
+        FontCollection emojiFonts = new();
+        emojiFonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoColorEmoji-COLRv1-subset.ttf"));
+        FontFamily emoji = emojiFonts.Families[0];
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(320, 140);
+        using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+        canvas.Clear(Rgba8.White);
+        #region chat-bubble
+        // A chat bubble: at most two lines, cut with an ellipsis; the bubble shrinks to the longest line, so short messages get
+        // short bubbles. Emoji come from the second family, character by character.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [text, emoji], Size = 15, Color = Rgba8.White },
+            MaxLines = 2,
+        };
+        TextLayout message = Paragraph.Create("See you at the caf\u00E9 at eight? I will bring the maps, the snacks and the long list of places we still have not seen \U0001F389", style).Layout(240);
+        RoundRect bubble = new(new RectF(12, 12, message.LongestLine + 24, message.Height + 16), 14);
+        canvas.FillRoundRect(bubble, new SolidPaint(new Rgba8(0, 120, 255, 255)));
+        canvas.DrawTextLayout(message, new System.Numerics.Vector2(24, 20));
+        bool cut = message.DidExceed;                       // true: offer "show more"
+        #endregion
+
+        Assert.True(cut);
+        Assert.True(message.Lines[^1].Ellipsized);
+    }
+
+    [Fact]
+    public void JapaneseVerticalText()
+    {
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansCJK-layout-subset.otf"));
+        FontFamily family = fonts.Families[0];
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(240, 320);
+        using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+        canvas.Clear(Rgba8.White);
+        #region vertical-japanese
+        // Japanese set vertically, columns right to left: the width given to Layout is the column height, and DrawText into a
+        // rectangle puts the first column at its right edge.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [family], Size = 18, Language = "ja" },
+            WritingMode = WritingMode.VerticalRl,
+            LineBreaking = new LineBreakOptions(Strictness: LineBreakStrictness.Strict),
+        };
+        TextLayout layout = canvas.DrawText("\u8AF8\u56FD\u9593\u306E\u53CB\u597D\u95A2\u4FC2\u306E\u767A\u5C55\u3092\u4FC3\u9032\u3059\u308B\u3053\u3068\u304C\u809D\u8981\u3067\u3042\u308B\u306E\u3067\u3001\u56FD\u969B\u9023\u5408\u306E\u8AF8\u56FD\u6C11\u306F\u3001\u56FD\u9023\u61B2\u7AE0\u306B\u304A\u3044\u3066\u3001\u57FA\u672C\u7684\u4EBA\u6A29\u3001\u4EBA\u9593\u306E\u5C0A\u53B3\u53CA\u3073\u4FA1\u5024\u4E26\u3073\u306B\u7537\u5973\u306E\u540C\u6A29\u306B\u3064\u3044\u3066\u306E\u4FE1\u5FF5\u3092\u518D\u78BA\u8A8D\u3057", new RectF(10, 10, 220, 300), style);
+        #endregion
+
+        Assert.True(layout.Lines.Count >= 3);
+        Assert.Equal(300, layout.Height);
+    }
+
+    [Fact]
+    public void TwoColumnPage()
+    {
+        FontFamily family = Noto();
+        string article = string.Join(" ", Enumerable.Repeat("Flowing text continues from the foot of one column to the head of the next, line by line, at whatever width each place allows.", 6));
+        using PictureRecorder page = new(new RectF(0, 0, 595, 842));
+        #region two-columns
+        // One article flowed down two columns of a page: LineFlow hands out one line at a time at the width asked for, so the
+        // first column can be narrowed beside a picture and the rest carries on in the second. On Egap's PDF canvas the same
+        // calls write searchable text.
+        ParagraphStyle style = new() { DefaultStyle = new TextStyle { FontFamilies = [family], Size = 10 }, Align = TextAlign.Justify };
+        LineFlow flow = Paragraph.Create(article, style).CreateFlow();
+        (float X, float Top, float Bottom)[] columns = [(40, 60, 300), (310, 60, 300)];
+        foreach ((float x, float top, float bottom) in columns)
+        {
+            float y = top;
+            while (!flow.IsComplete)
+            {
+                float width = x == 40 && y < 160 ? 150 : 245;      // beside a picture at the top of column one
+                TextLine line = flow.NextLine(width)!;
+                if (y + line.Height > bottom)
+                {
+                    flow.Rewind(line.Start);                        // that line goes to the next column
+                    break;
+                }
+
+                foreach (LayoutRun run in line.Runs)
+                {
+                    if (run.Glyphs is { Count: > 0 } glyphs)
+                    {
+                        page.DrawGlyphRun(glyphs, new System.Numerics.Vector2(x, y), new SolidPaint(Rgba8.Black));
+                    }
+                }
+
+                y += line.Height;
+            }
+        }
+        #endregion
+
+        Assert.True(flow.IsComplete);
+    }
+
     private sealed class PathRecorder : IGlyphOutlineSink
     {
         public int Count { get; private set; }

@@ -53,6 +53,7 @@
     <None Include="../fonts/derived/RobotoFlex-subset.ttf" Link="fonts/RobotoFlex-subset.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/derived/NotoSans-Regular.woff2" Link="fonts/NotoSans-Regular.woff2" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/derived/NotoColorEmoji-COLRv1-subset.ttf" Link="fonts/NotoColorEmoji-COLRv1-subset.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/derived/NotoSansCJK-layout-subset.otf" Link="fonts/NotoSansCJK-layout-subset.otf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

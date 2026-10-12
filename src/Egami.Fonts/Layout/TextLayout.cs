@@ -367,8 +367,21 @@ public sealed class LineFlow
         _next = 0;
     }
 
-    /// <summary>Takes back the lines from <paramref name="position"/> on.</summary>
-    internal void Rewind(int position) => _next = position;
+    /// <summary>
+    /// Takes back the lines from <paramref name="position"/> on, so the next <see cref="NextLine(float)"/> lays out from there
+    /// again: a line that did not fit at the foot of a column goes back to start the next one (<see cref="TextLine.Start"/>).
+    /// </summary>
+    /// <param name="position">A line's start, at most <see cref="Position"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="position"/> is negative or past <see cref="Position"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="two-columns"/>
+    /// </example>
+    public void Rewind(int position)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(position);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(position, _next);
+        _next = position;
+    }
 
     internal LineDraft? NextDraft(float width)
     {
