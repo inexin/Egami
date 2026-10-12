@@ -9,7 +9,7 @@ namespace Egami.Fonts.Layout;
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="layout"/>
 /// </example>
-public sealed class TextLayout
+public sealed partial class TextLayout
 {
     internal TextLayout(Paragraph paragraph, float width, IReadOnlyList<TextLine> lines, TextSegment? hidden = null)
     {

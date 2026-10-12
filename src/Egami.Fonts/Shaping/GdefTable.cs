@@ -85,6 +85,46 @@ internal sealed class GdefTable
 
     public int LigCaretListOffset => _ligCaretList;
 
+    /// <summary>
+    /// The caret positions inside a ligature glyph from the LigCaretList, in font units along the run (formats 1 and 3, whose
+    /// coordinates are fixed; format 2's contour points are left out).
+    /// </summary>
+    /// <returns>The number of carets written, 0 when the font gives none for the glyph.</returns>
+    public int GetLigatureCarets(uint glyph, Span<short> carets)
+    {
+        ReadOnlySpan<byte> d = _data.Span;
+        if (_ligCaretList == 0 || _ligCaretList + 4 > d.Length)
+        {
+            return 0;
+        }
+
+        int index = Coverage(d, Off16(d, _ligCaretList, _ligCaretList), glyph);
+        if (index < 0 || index >= U16(d, _ligCaretList + 2))
+        {
+            return 0;
+        }
+
+        int ligGlyph = Off16(d, _ligCaretList, _ligCaretList + 4 + (index * 2));
+        if (ligGlyph == 0 || ligGlyph + 2 > d.Length)
+        {
+            return 0;
+        }
+
+        int count = Math.Min(U16(d, ligGlyph), carets.Length);
+        for (int i = 0; i < count; i++)
+        {
+            int value = Off16(d, ligGlyph, ligGlyph + 2 + (i * 2));
+            if (value == 0 || value + 4 > d.Length || U16(d, value) == 2)
+            {
+                return 0;
+            }
+
+            carets[i] = S16(d, value + 2);
+        }
+
+        return count;
+    }
+
     /// <summary>The glyph's class: GDEF class 1 to 4 (0 when unclassified).</summary>
     public int GetGlyphClass(uint glyph) => ClassOf(_data.Span, _glyphClassDef, glyph);
 

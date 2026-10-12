@@ -6,7 +6,7 @@ alignment and justification, line height, spacing, tabs, max lines and ellipsis,
 decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of `GlyphRun`s and
 decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.
 
-Phase 2.8.2 is landing: line breaking, rich text, line filling, line boxes and alignment are in; line limits, hit testing
+Phase 2.8.2 is landing: line breaking, rich text, line layout, metrics and hit testing are in; vertical lines, decorations
 and drawing follow, and this guide grows with them.
 
 ## Line breaking
@@ -134,6 +134,28 @@ without wrapping), equal to Chromium's; `FirstBaseline` and `LastBaseline` for a
 of the glyphs' ink and placeholder boxes, which can reach past the layout box; `PlaceholderRects`, one `TextBounds` per
 placeholder in order, where the caller draws them; and `GetLineAt` and `GetLineAtY` to find the line holding a character or
 a height.
+
+### Hit testing, carets and selection
+
+Editors and selectable text build on four queries, all read-only and safe from any thread:
+
+- `HitTest` turns a point into the nearest `TextPosition`: a UTF-16 index at a grapheme cluster boundary and a `TextAffinity`
+  that says which side it belongs to where an index has two places (the end of one line and the start of the next, or a
+  direction change). Points outside the lines go to the nearest one; at a direction change, the position is the one the
+  surrounding text gives the edge, as browsers resolve it.
+- `GetCaret` says where to draw a `Caret`: its primary `CaretLine`, and at a bidi boundary a secondary one at the other
+  direction's edge. Inside a ligature, carets use the font's GDEF caret values, or split the ligature evenly by grapheme.
+- `MoveCaret` steps by `CaretMove`: grapheme, word, line start and end, paragraph start and end, and line up and down keeping
+  a preferred x across short lines.
+- `GetSelectionRects` covers a range with rectangles, one per visually contiguous piece on each line, as tall as the line box
+  or, with `SelectionHeight.Tight`, the fonts' ascent and descent. `GetWordBoundary` and `GetLineBoundary` give the word and
+  line around an index.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#carets)]
+
+Hit tests, carets and selection rectangles equal Chromium's (`caretPositionFromPoint`, collapsed ranges and
+`Range.getClientRects`) on Latin with ligatures, mixed bidi, Arabic, a right-to-left paragraph, emoji, hard breaks and a
+clamped paragraph.
 
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
 images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.

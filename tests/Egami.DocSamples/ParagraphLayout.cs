@@ -128,4 +128,33 @@ public class ParagraphLayout
         Assert.Equal(4, first.Count);
         Assert.True(flow.IsComplete);
     }
+
+    [Fact]
+    public void CaretsAndSelection()
+    {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSans-Regular.ttf"));
+        fonts.TryGetFamily("Noto Sans", out FontFamily family);
+        ParagraphStyle style = new() { DefaultStyle = new TextStyle { FontFamilies = [family] } };
+        TextLayout layout = Paragraph.Create("Click anywhere in this text to place a caret.", style).Layout(160);
+        #region carets
+        // A click: the nearest caret position, then where to draw the caret.
+        TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+        Caret caret = layout.GetCaret(position);
+        CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+        // Arrow keys: logical moves, and line moves that keep the column.
+        TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+        TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+        // A selection: rectangles to fill, one per visually contiguous piece on each line.
+        IReadOnlyList<TextBounds> highlight = layout.GetSelectionRects(position.Index, down.Index);
+        Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click
+        #endregion
+
+        Assert.True(highlight.Count >= 1);
+        Assert.True(right.Index > position.Index);
+        Assert.True(word.Length > 0);
+    }
 }

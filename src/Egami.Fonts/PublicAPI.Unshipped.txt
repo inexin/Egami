@@ -1977,3 +1977,70 @@ Egami.Fonts.Layout.TextLayout.LastBaseline.get -> float
 Egami.Fonts.Layout.TextLayout.MaxIntrinsicWidth.get -> float
 Egami.Fonts.Layout.TextLayout.MinIntrinsicWidth.get -> float
 Egami.Fonts.Layout.TextLayout.PlaceholderRects.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.TextBounds>!
+Egami.Fonts.Layout.Caret
+Egami.Fonts.Layout.Caret.Caret() -> void
+Egami.Fonts.Layout.Caret.Caret(Egami.Fonts.Layout.CaretLine Primary, Egami.Fonts.Layout.CaretLine? Secondary) -> void
+Egami.Fonts.Layout.Caret.Deconstruct(out Egami.Fonts.Layout.CaretLine Primary, out Egami.Fonts.Layout.CaretLine? Secondary) -> void
+Egami.Fonts.Layout.Caret.Equals(Egami.Fonts.Layout.Caret other) -> bool
+Egami.Fonts.Layout.Caret.Primary.get -> Egami.Fonts.Layout.CaretLine
+Egami.Fonts.Layout.Caret.Primary.init -> void
+Egami.Fonts.Layout.Caret.Secondary.get -> Egami.Fonts.Layout.CaretLine?
+Egami.Fonts.Layout.Caret.Secondary.init -> void
+Egami.Fonts.Layout.CaretLine
+Egami.Fonts.Layout.CaretLine.Bottom.get -> float
+Egami.Fonts.Layout.CaretLine.Bottom.init -> void
+Egami.Fonts.Layout.CaretLine.CaretLine() -> void
+Egami.Fonts.Layout.CaretLine.CaretLine(float X, float Top, float Bottom) -> void
+Egami.Fonts.Layout.CaretLine.Deconstruct(out float X, out float Top, out float Bottom) -> void
+Egami.Fonts.Layout.CaretLine.Equals(Egami.Fonts.Layout.CaretLine other) -> bool
+Egami.Fonts.Layout.CaretLine.Top.get -> float
+Egami.Fonts.Layout.CaretLine.Top.init -> void
+Egami.Fonts.Layout.CaretLine.X.get -> float
+Egami.Fonts.Layout.CaretLine.X.init -> void
+Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.LineDown = 9 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.LineEnd = 5 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.LineStart = 4 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.LineUp = 8 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.NextGrapheme = 0 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.NextWord = 2 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.ParagraphEnd = 7 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.ParagraphStart = 6 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.PreviousGrapheme = 1 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.CaretMove.PreviousWord = 3 -> Egami.Fonts.Layout.CaretMove
+Egami.Fonts.Layout.SelectionHeight
+Egami.Fonts.Layout.SelectionHeight.Line = 0 -> Egami.Fonts.Layout.SelectionHeight
+Egami.Fonts.Layout.SelectionHeight.Tight = 1 -> Egami.Fonts.Layout.SelectionHeight
+Egami.Fonts.Layout.TextAffinity
+Egami.Fonts.Layout.TextAffinity.Downstream = 0 -> Egami.Fonts.Layout.TextAffinity
+Egami.Fonts.Layout.TextAffinity.Upstream = 1 -> Egami.Fonts.Layout.TextAffinity
+Egami.Fonts.Layout.TextLayout.GetCaret(Egami.Fonts.Layout.TextPosition position) -> Egami.Fonts.Layout.Caret
+Egami.Fonts.Layout.TextLayout.GetLineBoundary(int index) -> Egami.Fonts.Unicode.TextSegment
+Egami.Fonts.Layout.TextLayout.GetSelectionRects(int start, int end, Egami.Fonts.Layout.SelectionHeight height = Egami.Fonts.Layout.SelectionHeight.Line) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.TextBounds>!
+Egami.Fonts.Layout.TextLayout.GetWordBoundary(int index) -> Egami.Fonts.Unicode.TextSegment
+Egami.Fonts.Layout.TextLayout.HitTest(System.Numerics.Vector2 point) -> Egami.Fonts.Layout.TextPosition
+Egami.Fonts.Layout.TextLayout.MoveCaret(Egami.Fonts.Layout.TextPosition position, Egami.Fonts.Layout.CaretMove move, float preferredX = NaN) -> Egami.Fonts.Layout.TextPosition
+Egami.Fonts.Layout.TextPosition
+Egami.Fonts.Layout.TextPosition.Affinity.get -> Egami.Fonts.Layout.TextAffinity
+Egami.Fonts.Layout.TextPosition.Affinity.init -> void
+Egami.Fonts.Layout.TextPosition.Deconstruct(out int Index, out Egami.Fonts.Layout.TextAffinity Affinity) -> void
+Egami.Fonts.Layout.TextPosition.Equals(Egami.Fonts.Layout.TextPosition other) -> bool
+Egami.Fonts.Layout.TextPosition.Index.get -> int
+Egami.Fonts.Layout.TextPosition.Index.init -> void
+Egami.Fonts.Layout.TextPosition.TextPosition() -> void
+Egami.Fonts.Layout.TextPosition.TextPosition(int Index, Egami.Fonts.Layout.TextAffinity Affinity = Egami.Fonts.Layout.TextAffinity.Downstream) -> void
+override Egami.Fonts.Layout.Caret.GetHashCode() -> int
+override Egami.Fonts.Layout.CaretLine.GetHashCode() -> int
+override Egami.Fonts.Layout.TextPosition.GetHashCode() -> int
+static Egami.Fonts.Layout.Caret.operator !=(Egami.Fonts.Layout.Caret left, Egami.Fonts.Layout.Caret right) -> bool
+static Egami.Fonts.Layout.Caret.operator ==(Egami.Fonts.Layout.Caret left, Egami.Fonts.Layout.Caret right) -> bool
+static Egami.Fonts.Layout.CaretLine.operator !=(Egami.Fonts.Layout.CaretLine left, Egami.Fonts.Layout.CaretLine right) -> bool
+static Egami.Fonts.Layout.CaretLine.operator ==(Egami.Fonts.Layout.CaretLine left, Egami.Fonts.Layout.CaretLine right) -> bool
+static Egami.Fonts.Layout.TextPosition.operator !=(Egami.Fonts.Layout.TextPosition left, Egami.Fonts.Layout.TextPosition right) -> bool
+static Egami.Fonts.Layout.TextPosition.operator ==(Egami.Fonts.Layout.TextPosition left, Egami.Fonts.Layout.TextPosition right) -> bool
+~override Egami.Fonts.Layout.Caret.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.Caret.ToString() -> string
+~override Egami.Fonts.Layout.CaretLine.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.CaretLine.ToString() -> string
+~override Egami.Fonts.Layout.TextPosition.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.TextPosition.ToString() -> string
