@@ -11,14 +11,12 @@ namespace Egami.Fonts.Tests.Shaping;
 /// </summary>
 public sealed class LayoutClosureTests
 {
-    /// <summary>HarfBuzz test fonts with GSUB that Typeface does not load: they have no outlines, or only CBDT bitmaps.</summary>
+    /// <summary>HarfBuzz test fonts with GSUB that Typeface does not load: they have no outlines. CBDT-only fonts load since 2.7.2.</summary>
     private static readonly HashSet<string> s_unloadable =
     [
-        "tests/fonts/harfbuzz/in-house/fonts/3cf6f8ac6d647473a43a3100e7494b202b2cfafe.ttf",
         "tests/fonts/harfbuzz/in-house/fonts/755160ddba002332349fda3eb999e629d63dccf6.ttf",
         "tests/fonts/harfbuzz/in-house/fonts/932ad5132c2761297c74e9976fe25b08e5ffa10b.ttf",
         "tests/fonts/harfbuzz/in-house/fonts/a59fd13f1525a91cbe529c882e93d9d1fbb80463.ttf",
-        "tests/fonts/harfbuzz/in-house/fonts/ee39587d13b2afa5499cc79e45780aa79293bbd4.ttf",
     ];
 
     [Fact]
