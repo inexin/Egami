@@ -5,7 +5,8 @@ tests and selections from a pinned headless Chromium.
    UDHR in XML project at the commit 2.8.1's shaping corpus pins) into tests/reference/layout/texts; the other scripts reuse
    tests/reference/shaping/texts.
 2. Cuts Noto Sans CJK SC (fetched to .cache/fonts, SHA-256 checked) down to the corpus's characters in the egami-fontref image
-   (tools/layoutref/derive.py) as tests/fonts/derived/NotoSansCJK-layout-subset.otf.
+   (built from tools/fontref, as 2.7.1 and 2.7.2 build it; tools/layoutref/derive.py) as
+   tests/fonts/derived/NotoSansCJK-layout-subset.otf.
 3. Builds the egami-layoutref image (tools/layoutref/Dockerfile: Chromium 129 through Playwright 1.47.0, pinned by digest) and
    runs tools/layoutref/layout.py, which writes tests/reference/layout/corpus.json.gz and features.json.gz.
 4. With --check, runs the layout a second time into .cache/layoutref and fails unless both runs give the same bytes.
@@ -73,6 +74,7 @@ def docker(image, *args):
 def main():
     texts()
     download(CJK_URL, os.path.join(".cache", "fonts", "NotoSansCJKsc-Regular.otf"), CJK_SHA256)
+    subprocess.run(["docker", "build", "-q", "-t", FONTREF_IMAGE, os.path.join("tools", "fontref")], check=True)
     docker(FONTREF_IMAGE, "python", "/w/tools/layoutref/derive.py", "/w")
     subprocess.run(["docker", "build", "-q", "-t", IMAGE, os.path.join("tools", "layoutref")], check=True)
     docker(IMAGE, "python", "/w/tools/layoutref/layout.py", "/w")

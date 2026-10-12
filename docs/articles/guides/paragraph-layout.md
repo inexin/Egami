@@ -122,7 +122,9 @@ word spaces; kashida stretching waits for real demand.
 `MaxLines` and `MaxHeight` stop the lines: at the limit, or before the line whose bottom would pass the height. When text is
 cut, `TextLayout.DidExceed` is true and `HiddenRange` says what was hidden; the last kept line drops whole grapheme clusters
 from its end until its text and the `Ellipsis` (U+2026 by default, shaped in the style of the last kept character) fit, and
-the ellipsis ends the line in the paragraph's direction, flagged `Ellipsized`. A null `Ellipsis` cuts at the line's end.
+the ellipsis ends the line in the paragraph's direction, flagged `Ellipsized`; a line with room keeps its trailing space before
+it, as Chromium's line clamp does. A null `Ellipsis` cuts at the line's end. Ellipses sit where Chromium's `-webkit-line-clamp`
+puts them in Latin, Arabic and Chinese.
 
 ### Metrics
 

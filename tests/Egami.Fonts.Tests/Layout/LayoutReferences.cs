@@ -39,7 +39,8 @@ internal static class LayoutReferences
         JsonElement Placeholders,
         IReadOnlyList<Layout> Layouts);
 
-    /// <summary>One width's layout; <see cref="Width"/> is null for no wrapping.</summary>
+    /// <summary>One width's layout; <see cref="Width"/> is null for no wrapping. <see cref="Ellipsis"/> is the left and right of a
+    /// line clamp's ellipsis ink on the last kept line, when the recorder found it.</summary>
     public sealed record Layout(
         float? Width,
         float Height,
@@ -49,7 +50,8 @@ internal static class LayoutReferences
         IReadOnlyList<Grapheme> Graphemes,
         IReadOnlyList<Caret>? Carets,
         IReadOnlyList<Hit>? Hits,
-        IReadOnlyList<Selection>? Selections);
+        IReadOnlyList<Selection>? Selections,
+        float[]? Ellipsis);
 
     /// <summary>
     /// A line: its first UTF-16 index and its line box along the block axis (over, baseline, under: y in horizontal layouts, x
@@ -103,7 +105,8 @@ internal static class LayoutReferences
         l.TryGetProperty("hits", out JsonElement hits) ? [.. hits.EnumerateArray().Select(h => new Hit(h[0].GetSingle(), h[1].GetSingle(), h[2].ValueKind == JsonValueKind.Null ? null : h[2].GetInt32()))] : null,
         l.TryGetProperty("selections", out JsonElement selections)
             ? [.. selections.EnumerateArray().Select(s => new Selection(s[0].GetInt32(), s[1].GetInt32(), [.. s[2].EnumerateArray().Select(Floats).OfType<float[]>()]))]
-            : null);
+            : null,
+        l.TryGetProperty("ellipsis", out JsonElement ellipsis) ? Floats(ellipsis) : null);
 
     private static float[]? Floats(JsonElement e) => e.ValueKind == JsonValueKind.Null ? null : [.. e.EnumerateArray().Select(v => v.GetSingle())];
 }

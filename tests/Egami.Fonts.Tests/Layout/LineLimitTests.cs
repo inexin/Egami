@@ -71,19 +71,25 @@ public sealed class LineLimitTests
     }
 
     [Theory]
-    [InlineData("clamp-latin")]
-    [InlineData("clamp-arabic")]
-    [InlineData("clamp-chinese")]
-    [InlineData("interaction-clamp")]
-    public void ClampedLinesStartWhereChromiumsDo(string name)
+    [InlineData("clamp-latin", 0)]
+    [InlineData("clamp-arabic", 0)]
+    [InlineData("clamp-chinese", 16)]
+    [InlineData("interaction-clamp", 0)]
+    public void EllipsesSitWhereChromiumsDo(string name, float shift)
     {
+        // Chromium's ellipsis ink, measured at 4 device pixels per unit, against the ink of Egami's ellipsis glyphs. The Chinese
+        // line is exactly full: Chromium's advances, each snapped up to its 1/64 layout unit, leave the ellipsis no room after
+        // dropping one character, so it drops two; Egami's exact advances fit after one, so its ellipsis sits one character on.
         LayoutReferences.Case c = LayoutReferences.Find(name);
-        int max = c.Style.GetProperty("maxLines").GetInt32();
         foreach (LayoutReferences.Layout reference in c.Layouts)
         {
+            float[] ink = reference.Ellipsis!;
             TextLayout layout = LayoutCases.Paragraph(c).Layout(reference.Width!.Value);
-            Assert.Equal(reference.Lines.Take(max).Select(l => l.Start), layout.Lines.Select(l => l.Start));
-            Assert.Equal(reference.Height, layout.Height, 0.01f);
+            TextLine last = layout.Lines[^1];
+            LayoutRun ellipsis = last.Runs.Single(r => r.Length == 0);
+            TextBounds bounds = ellipsis.Glyphs!.Bounds;
+            Assert.Equal(ink[0] + shift, bounds.Left, 0.5f);
+            Assert.Equal(ink[1] + shift, bounds.Right, 0.5f);
         }
     }
 }

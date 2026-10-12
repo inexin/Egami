@@ -1093,22 +1093,28 @@ internal sealed class LineBuilder
     }
 
     /// <summary>
-    /// The last kept line made room for the ellipsis: whole grapheme clusters dropped from its logical end until the content and
-    /// the ellipsis (shaped in the style of the last kept character) fit the width, trailing spaces dropped, and the ellipsis
-    /// placed at the line's end in the paragraph's direction. <paramref name="hidden"/> is where the hidden text starts.
+    /// The last kept line made room for the ellipsis: whole grapheme clusters dropped from its logical end until the text and the
+    /// ellipsis (shaped in the style of the last kept character) fit the width, and the ellipsis placed at the line's end in the
+    /// paragraph's direction. As in Chromium's line clamp, a line that has room keeps its trailing spaces before the ellipsis.
+    /// <paramref name="hidden"/> is where the hidden text starts.
     /// </summary>
     public LineDraft Ellipsize(LineDraft line, float width, out int hidden)
     {
-        int cut = line.ContentEnd;
+        int cut = line.End;
+        while (cut > line.Start && IsHardBreakAt(cut - 1))
+        {
+            cut--;
+        }
+
         int styleIndex = _paragraph.RichText.SpanAt(Math.Max(line.Start, cut - 1)) + 1;
         (Font font, GlyphBuffer glyphs) = _paragraph.Ellipses![styleIndex];
         float room = glyphs.Advance;
-        while (cut > line.Start && float.IsFinite(width) && Measure(line.Start, ContentEnd(line.Start, cut)) + room > width + Epsilon)
+        while (cut > line.Start && float.IsFinite(width) && Measure(line.Start, cut) + room > width + Epsilon)
         {
             cut = PreviousGrapheme(cut, line.Start);
         }
 
-        int content = ContentEnd(line.Start, cut);
+        int content = cut;
         hidden = content;
         LineDraft kept = Build(line.Start, content, false, false);
         bool rtl = (kept.ParagraphLevel & 1) != 0;
@@ -1151,7 +1157,7 @@ internal sealed class LineBuilder
             End = line.End,
             HardBreak = false,
             Runs = runs,
-            ContentWidth = kept.ContentWidth + advance,
+            ContentWidth = Measure(line.Start, content) + advance,
             HangWidth = 0,
             Ascent = Math.Max(ascent, line.Ascent),
             Descent = Math.Max(descent, line.Descent),

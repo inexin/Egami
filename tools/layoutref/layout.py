@@ -23,7 +23,9 @@ Usage (inside the egami-layoutref image, from tools/make-layout-references.py): 
 import gzip
 import json
 import os
+import struct
 import sys
+import zlib
 
 sys.path.insert(0, os.path.dirname(__file__))
 import corpus  # noqa: E402
@@ -481,6 +483,66 @@ SEGMENT = r"""
 """
 
 
+def decode_png(data):
+    """RGBA rows of a non-interlaced 8-bit RGB or RGBA PNG, as Chromium's screenshots are."""
+    pos = 8
+    idat = b""
+    width = height = channels = 0
+    while pos < len(data):
+        length, kind = struct.unpack(">I4s", data[pos:pos + 8])
+        chunk = data[pos + 8:pos + 8 + length]
+        if kind == b"IHDR":
+            width, height, depth, color = struct.unpack(">IIBB", chunk[:10])
+            channels = {2: 3, 6: 4}[color]
+        elif kind == b"IDAT":
+            idat += chunk
+        pos += 12 + length
+    raw = zlib.decompress(idat)
+    stride = width * channels
+    rows, prev = [], bytearray(stride)
+    for y in range(height):
+        f = raw[y * (stride + 1)]
+        line = bytearray(raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)])
+        for i in range(stride):
+            a = line[i - channels] if i >= channels else 0
+            b = prev[i]
+            c = prev[i - channels] if i >= channels else 0
+            if f == 1:
+                line[i] = (line[i] + a) & 255
+            elif f == 2:
+                line[i] = (line[i] + b) & 255
+            elif f == 3:
+                line[i] = (line[i] + (a + b) // 2) & 255
+            elif f == 4:
+                pa, pb, pc = abs(b - c), abs(a - c), abs(a + b - 2 * c)
+                line[i] = (line[i] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
+        rows.append(line)
+        prev = line
+    return width, height, channels, rows
+
+
+SCALE = 4
+
+
+def ellipsis_box(browser, html, bid, box):
+    """The horizontal extent of the line clamp's ellipsis on the last kept line: the text is drawn transparent, so the only ink
+    left is the ellipsis, which takes the block's color; measured at 4 device pixels per CSS pixel."""
+    page = browser.new_page(viewport={"width": 2000, "height": 2000}, device_scale_factor=SCALE)
+    hidden = html.replace("</style>", ".t { color: transparent; } .ph { background: transparent !important; }</style>")
+    with open("/tmp/ellipsis.html", "w", encoding="utf-8") as f:
+        f.write(hidden)
+    page.goto("file:///tmp/ellipsis.html")
+    page.evaluate("Promise.all([...document.fonts].map(f => f.load()))")
+    r = page.evaluate(f"(() => {{ const q = document.getElementById('{bid}').getBoundingClientRect(); return [q.x, q.y, q.width, q.height]; }})()")
+    shot = page.screenshot(clip={"x": r[0], "y": r[1] + box[0], "width": r[2], "height": box[2] - box[0]})
+    page.close()
+    width, height, channels, rows = decode_png(shot)
+    columns = [x for x in range(width) if any(row[x * channels] < 160 for row in rows)]
+    if not columns:
+        return None
+    return [columns[0] / SCALE, (columns[-1] + 1) / SCALE]
+
+
 def run_group(page, cases):
     results = []
     for c in cases:
@@ -507,6 +569,16 @@ def run_group(page, cases):
             page.evaluate("Promise.all([...document.fonts].map(f => f.load()))")
             result = page.evaluate(SCRIPT, {"id": bid, "text": c["text"], "queries": c["queries"]})
             result["width"] = width
+            if "maxLines" in c["style"] and len(result["lines"]) > c["style"]["maxLines"]:
+                line = result["lines"][c["style"]["maxLines"] - 1]
+                kept = line["box"]
+                if kept is None:
+                    # No markers on that line: its first grapheme's rectangle gives the band.
+                    first = next(g for g in result["graphemes"] if g[0] >= line["start"] and g[1] is not None)
+                    kept = [first[2], None, first[2] + first[4]]
+                if kept is not None:
+                    with open(path, encoding="utf-8") as f:
+                        result["ellipsis"] = ellipsis_box(page.context.browser, f.read(), bid, kept)
             layouts.append(result)
         results.append({"case": c, "layouts": layouts})
         print(f"  {c['name']}: {', '.join(str(len(x['lines'])) for x in layouts)} lines", flush=True)
