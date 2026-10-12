@@ -149,7 +149,7 @@ public class StrokeTests
         Assert.Equal(Math.PI * ((30 * 30) - (10 * 10)), ring, 0.1 * 2 * Math.PI * (30 + 10));
     }
 
-    internal static double Coverage(Action<Drawing.Canvas> draw, int size = 64)
+    internal static double Coverage(Action<Egami.Drawing.Canvas> draw, int size = 64)
     {
         using Raster<GrayF32> raster = Raster.Create<GrayF32>(size, size);
         using (RasterCanvas<GrayF32> canvas = raster.CreateCanvas())

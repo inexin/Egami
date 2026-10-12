@@ -48,6 +48,25 @@ public class RoundRectTests
     }
 
     [Fact]
+    public void ARoundRectRebuildsToItself()
+    {
+        // Scaling can take a tiny radius to zero on one axis; the corner is then square, so building it again changes nothing.
+        RoundRect r = new(new RectF(0, 0, 10, 1e-30f), new CornerRadii(new Vector2(1e-20f, 1e-25f), new Vector2(9, 1), Vector2.One, Vector2.One));
+        Assert.Equal(r, new RoundRect(r.Bounds, r.Radii));
+
+        // Scaled radii round down, so they fit exactly and a second scaling finds nothing to do.
+        Random random = new(9);
+        for (int i = 0; i < 10_000; i++)
+        {
+            RectF bounds = new(0, 0, (float)random.NextDouble() * 50, (float)random.NextDouble() * 50);
+            RoundRect a = new(bounds, new CornerRadii(R(random), R(random), R(random), R(random)));
+            Assert.Equal(a, new RoundRect(a.Bounds, a.Radii));
+        }
+
+        static Vector2 R(Random random) => new((float)random.NextDouble() * 60, (float)random.NextDouble() * 60);
+    }
+
+    [Fact]
     public void KindsAreRecognized()
     {
         Assert.Equal(RoundRectKind.Empty, new RoundRect(new RectF(0, 0, 0, 10), 3).Kind);

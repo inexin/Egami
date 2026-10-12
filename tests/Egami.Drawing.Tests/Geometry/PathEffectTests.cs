@@ -160,9 +160,9 @@ public class PathEffectTests
         double[] nodes = [0, -0.5384693101056831, 0.5384693101056831, -0.9061798459386640, 0.9061798459386640];
         double[] weights = [0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891];
         double area = 0;
-        Drawing.Geometry.Segment.ReadContours(path, true, (segments, _, _, _) =>
+        Egami.Drawing.Geometry.Segment.ReadContours(path, true, (segments, _, _, _) =>
         {
-            foreach (Drawing.Geometry.Segment s in segments)
+            foreach (Egami.Drawing.Geometry.Segment s in segments)
             {
                 for (int i = 0; i < nodes.Length; i++)
                 {

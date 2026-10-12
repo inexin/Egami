@@ -17,7 +17,7 @@ public class CanvasSuiteTests
     [MemberData(nameof(Backends))]
     public void SaveAndRestoreBringBackTheTransformAndClip(string backend)
     {
-        using Drawing.Canvas canvas = Create(backend);
+        using Egami.Drawing.Canvas canvas = Create(backend);
         Assert.Equal(1, canvas.SaveCount);
         Assert.Equal(new RectF(0, 0, 64, 48), canvas.DeviceClipBounds);
         int first = canvas.Save();
@@ -49,7 +49,7 @@ public class CanvasSuiteTests
     [MemberData(nameof(Backends))]
     public void TransformsCompose(string backend)
     {
-        using Drawing.Canvas canvas = Create(backend);
+        using Egami.Drawing.Canvas canvas = Create(backend);
         canvas.Translate(10, 20);
         canvas.Rotate(90);
         Vector2 p = Vector2.Transform(new Vector2(1, 0), canvas.Matrix);
@@ -72,7 +72,7 @@ public class CanvasSuiteTests
     [MemberData(nameof(Backends))]
     public void ClipBoundsShrinkOnlyForIntersections(string backend)
     {
-        using Drawing.Canvas canvas = Create(backend);
+        using Egami.Drawing.Canvas canvas = Create(backend);
         canvas.ClipRect(new RectF(4, 4, 30, 30), ClipOp.Difference);
         Assert.Equal(new RectF(0, 0, 64, 48), canvas.DeviceClipBounds);
         canvas.ClipPath(Path.Circle(new Vector2(20, 20), 10));
@@ -91,7 +91,7 @@ public class CanvasSuiteTests
     [MemberData(nameof(Backends))]
     public void BadArgumentsThrowAndEmptyShapesDrawNothing(string backend)
     {
-        using Drawing.Canvas canvas = Create(backend);
+        using Egami.Drawing.Canvas canvas = Create(backend);
         Assert.Throws<ArgumentException>(() => canvas.Translate(float.NaN, 0));
         Assert.Throws<ArgumentException>(() => canvas.FillRect(new RectF(float.NaN, 0, 1, 1), Rgba8.Red));
         Assert.Throws<ArgumentException>(() => canvas.FillCircle(new Vector2(0, float.PositiveInfinity), 3, Rgba8.Red));
@@ -116,7 +116,7 @@ public class CanvasSuiteTests
     [MemberData(nameof(Backends))]
     public void DisposeRestoresAndThenDrawingThrows(string backend)
     {
-        Drawing.Canvas canvas = Create(backend);
+        Egami.Drawing.Canvas canvas = Create(backend);
         canvas.Save();
         canvas.Save();
         canvas.Dispose();
@@ -135,7 +135,7 @@ public class CanvasSuiteTests
     public void EveryPublicCallReachesExactlyOneHook()
     {
         using Raster<Rgba8> image = Raster.Create<Rgba8>(8, 6);
-        (string Call, Action<Drawing.Canvas> Act, string Hook)[] calls =
+        (string Call, Action<Egami.Drawing.Canvas> Act, string Hook)[] calls =
         [
             ("Save", c => c.Save(), "Save"),
             ("Translate", c => c.Translate(1, 2), "SetMatrix"),
@@ -174,7 +174,7 @@ public class CanvasSuiteTests
 
         using TraceCanvas canvas = new(100, 100);
         canvas.Save();
-        foreach ((string call, Action<Drawing.Canvas> act, string hook) in calls)
+        foreach ((string call, Action<Egami.Drawing.Canvas> act, string hook) in calls)
         {
             canvas.Calls.Clear();
             act(canvas);
@@ -227,9 +227,9 @@ public class CanvasSuiteTests
         Assert.Equal(0, image.GetPixel(10, 10).A);
     }
 
-    private static Drawing.Canvas Create(string backend) => backend == "raster" ? Raster.Create<Rgba8>(64, 48).CreateCanvas() : new TraceCanvas(64, 48);
+    private static Egami.Drawing.Canvas Create(string backend) => backend == "raster" ? Raster.Create<Rgba8>(64, 48).CreateCanvas() : new TraceCanvas(64, 48);
 
-    private sealed class PathOnlyCanvas() : Drawing.Canvas(10, 10)
+    private sealed class PathOnlyCanvas() : Egami.Drawing.Canvas(10, 10)
     {
         public int Paths { get; private set; }
 

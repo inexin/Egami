@@ -214,6 +214,13 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
         Matrix3x2 toDevice = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(sx, sy)
             * Matrix3x2.CreateTranslation(destination.X, destination.Y) * matrix;
 
+        // A transform that collapses the image (a zero scale, or one that overflowed) covers no area: nothing to draw.
+        float det = toDevice.GetDeterminant();
+        if (!(MathF.Abs(det) > 0 && float.IsFinite(det) && float.IsFinite(toDevice.M31) && float.IsFinite(toDevice.M32)))
+        {
+            return;
+        }
+
         Raster<TPixel>? converted = image as Raster<TPixel>;
         bool owned = converted is null;
         converted ??= image.As<TPixel>();
@@ -239,6 +246,11 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
             // The source is cut to the whole pixels it uses, so samples near its edges read only pixels inside it.
             Rect crop = source.RoundOut();
             Matrix3x2 cropToDevice = Matrix3x2.CreateTranslation(crop.X, crop.Y) * toDevice;
+            Homography placement = Homography.FromAffine(cropToDevice);
+            if (!placement.TryInvert(out _))
+            {
+                return;
+            }
             TransformOptions options = new()
             {
                 Filter = sampling.Filter,

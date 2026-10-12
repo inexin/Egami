@@ -205,6 +205,30 @@ Mixing in Oklch keeps the hues from turning gray between stops, and `Dither` hid
 
 See [Layers](../guides/drawing.md#layers).
 
+## Stretch a button image to any size
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#stretchable-button)]
+
+The corners keep their size and the edges and center stretch. An Android .9.png carries its own lattice: see
+[Nine-patches and lattices](../guides/drawing.md#nine-patches-and-lattices).
+
+## Draw a particle field
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#atlas)]
+
+## Shade a gradient mesh
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#gradient-mesh)]
+
+See [Meshes and patches](../guides/drawing.md#meshes-and-patches).
+
+## Reuse a logo at any size
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#recording)]
+
+The drawing is recorded once and replayed as vectors, so it is sharp at every size; `cacheAsImage` trades that for speed when
+it is drawn many times at one size.
+
 ## Watermark with Multiply
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#watermark-multiply)]

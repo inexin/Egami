@@ -136,7 +136,10 @@ public readonly record struct RoundRect
         {
             for (int i = 0; i < 4; i++)
             {
-                r[i] = new Vector2((float)(r[i].X * f), (float)(r[i].Y * f));
+                // Rounded down, so the scaled radii fit and scaling them again changes nothing; a radius the factor takes to zero
+                // on one axis makes a square corner, as it would have been given.
+                r[i] = new Vector2(Down(r[i].X * f), Down(r[i].Y * f));
+                r[i] = r[i].X <= 0 || r[i].Y <= 0 ? Vector2.Zero : r[i];
             }
         }
 
@@ -216,6 +219,12 @@ public readonly record struct RoundRect
     private static Vector2 Grow(Vector2 radius, float delta) => radius == Vector2.Zero ? radius : Vector2.Max(radius + new Vector2(delta), Vector2.Zero);
 
     private static double Ratio(double f, double side, double sum) => sum > side ? Math.Min(f, side / sum) : f;
+
+    private static float Down(double v)
+    {
+        float s = (float)v;
+        return s > v ? MathF.BitDecrement(s) : s;
+    }
 
     private static bool InCorner(Vector2 point, Vector2 center, Vector2 radius, bool inCornerBox)
     {

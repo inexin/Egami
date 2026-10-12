@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Egami.Drawing</RootNamespace>
     <PackageId>Egami.Drawing</PackageId>
-    <Version>1.0.0-preview.3</Version>
-    <Description>Antialiased paths, shapes, strokes, clips and images on a canvas for Egami, with backends beyond the raster.</Description>
+    <Version>1.0.0-preview.4</Version>
+    <Description>Antialiased paths, shapes, strokes, clips, images, paints, layers, meshes and recorded drawings on a canvas for Egami, with backends beyond the raster.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>

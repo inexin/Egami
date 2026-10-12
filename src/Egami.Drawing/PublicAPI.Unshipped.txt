@@ -31,12 +31,18 @@ Egami.Drawing.Canvas.ClipRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Draw
 Egami.Drawing.Canvas.Concat(System.Numerics.Matrix3x2 matrix) -> void
 Egami.Drawing.Canvas.DeviceClipBounds.get -> Egami.Drawing.RectF
 Egami.Drawing.Canvas.Dispose() -> void
+Egami.Drawing.Canvas.DrawAtlas(Egami.Raster! image, System.ReadOnlySpan<Egami.Drawing.SpriteTransform> transforms, System.ReadOnlySpan<Egami.Drawing.RectF> sources, System.ReadOnlySpan<Egami.Pixels.RgbaF32> colors = default(System.ReadOnlySpan<Egami.Pixels.RgbaF32>), Egami.Operations.BlendMode colorBlend = Egami.Operations.BlendMode.Modulate, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.RectF? cull = null, Egami.Drawing.Paint? paint = null) -> void
+Egami.Drawing.Canvas.DrawDrawing(Egami.Drawing.Drawing! drawing, System.Numerics.Matrix3x2? matrix = null, Egami.Drawing.Paint? paint = null, bool cacheAsImage = false) -> void
 Egami.Drawing.Canvas.DrawGlyphRun(Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, System.Numerics.Vector2 position, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
+Egami.Drawing.Canvas.DrawImageLattice(Egami.Raster! image, Egami.Drawing.Lattice! lattice, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
+Egami.Drawing.Canvas.DrawImageNinePatch(Egami.Raster! image, Egami.Rect center, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawLine(System.Numerics.Vector2 start, System.Numerics.Vector2 end, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
+Egami.Drawing.Canvas.DrawMesh(Egami.Drawing.Mesh! mesh, Egami.Drawing.Paint! paint, Egami.Operations.BlendMode colorBlend = Egami.Operations.BlendMode.Modulate, System.ReadOnlySpan<Egami.Drawing.GradientStop> valueStops = default(System.ReadOnlySpan<Egami.Drawing.GradientStop>)) -> void
 Egami.Drawing.Canvas.DrawPaint(Egami.Drawing.Paint! paint) -> void
+Egami.Drawing.Canvas.DrawPatch(Egami.Drawing.Patch! patch, Egami.Drawing.Paint? paint = null, Egami.Operations.BlendMode colorBlend = Egami.Operations.BlendMode.Modulate, System.ReadOnlySpan<Egami.Drawing.GradientStop> valueStops = default(System.ReadOnlySpan<Egami.Drawing.GradientStop>)) -> void
 Egami.Drawing.Canvas.DrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawShadow(Egami.Drawing.Path! path, Egami.Drawing.ShadowOptions? options = null) -> void
 Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint) -> void
@@ -138,7 +144,28 @@ Egami.Drawing.DashPattern.Equals(Egami.Drawing.DashPattern? other) -> bool
 Egami.Drawing.DashPattern.Intervals.get -> System.Collections.Generic.IReadOnlyList<float>!
 Egami.Drawing.DashPattern.Phase.get -> float
 Egami.Drawing.DashPattern.Scaled(float factor) -> Egami.Drawing.DashPattern!
+Egami.Drawing.Drawing
+Egami.Drawing.Drawing.Bounds.get -> Egami.Drawing.RectF
+Egami.Drawing.Drawing.CallCount.get -> int
+Egami.Drawing.Drawing.Playback(Egami.Drawing.Canvas! canvas) -> void
+Egami.Drawing.Drawing.Save(System.IO.Stream! stream) -> void
+Egami.Drawing.Drawing.ToRaster<TPixel>(float scale = 1, Egami.Drawing.CanvasOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<TPixel>!
 Egami.Drawing.DrawingExtensions
+Egami.Drawing.DrawingPaint
+Egami.Drawing.DrawingPaint.Drawing.get -> Egami.Drawing.Drawing!
+Egami.Drawing.DrawingPaint.Drawing.init -> void
+Egami.Drawing.DrawingPaint.DrawingPaint(Egami.Drawing.Drawing! drawing, Egami.Drawing.TileMode tileX = Egami.Drawing.TileMode.Repeat, Egami.Drawing.TileMode tileY = Egami.Drawing.TileMode.Repeat, Egami.Drawing.RectF? tile = null) -> void
+Egami.Drawing.DrawingPaint.Equals(Egami.Drawing.DrawingPaint? other) -> bool
+Egami.Drawing.DrawingPaint.Tile.get -> Egami.Drawing.RectF
+Egami.Drawing.DrawingPaint.Tile.init -> void
+Egami.Drawing.DrawingPaint.TileX.get -> Egami.Drawing.TileMode
+Egami.Drawing.DrawingPaint.TileX.init -> void
+Egami.Drawing.DrawingPaint.TileY.get -> Egami.Drawing.TileMode
+Egami.Drawing.DrawingPaint.TileY.init -> void
+Egami.Drawing.DrawingRecorder
+Egami.Drawing.DrawingRecorder.CallCount.get -> int
+Egami.Drawing.DrawingRecorder.DrawingRecorder(Egami.Drawing.RectF bounds) -> void
+Egami.Drawing.DrawingRecorder.Finish() -> Egami.Drawing.Drawing!
 Egami.Drawing.FallbackImage
 Egami.Drawing.FallbackImage.<Clone>$() -> Egami.Drawing.FallbackImage!
 Egami.Drawing.FallbackImage.Deconstruct(out Egami.Raster<Egami.Pixels.RgbaF32>! Image, out Egami.Drawing.RectF DeviceBounds) -> void
@@ -199,6 +226,23 @@ Egami.Drawing.InterpolationSpace.Encoded = 0 -> Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.LinearSrgb = 1 -> Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.Oklab = 2 -> Egami.Drawing.InterpolationSpace
 Egami.Drawing.InterpolationSpace.Oklch = 3 -> Egami.Drawing.InterpolationSpace
+Egami.Drawing.Lattice
+Egami.Drawing.Lattice.<Clone>$() -> Egami.Drawing.Lattice!
+Egami.Drawing.Lattice.Bounds.get -> Egami.Rect?
+Egami.Drawing.Lattice.Bounds.init -> void
+Egami.Drawing.Lattice.CellColors.get -> System.Collections.Generic.IReadOnlyList<Egami.Pixels.RgbaF32>?
+Egami.Drawing.Lattice.CellColors.init -> void
+Egami.Drawing.Lattice.CellCount.get -> int
+Egami.Drawing.Lattice.CellKinds.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.LatticeCellKind>?
+Egami.Drawing.Lattice.CellKinds.init -> void
+Egami.Drawing.Lattice.Equals(Egami.Drawing.Lattice? other) -> bool
+Egami.Drawing.Lattice.Lattice(System.ReadOnlySpan<int> xDivs, System.ReadOnlySpan<int> yDivs) -> void
+Egami.Drawing.Lattice.XDivs.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Drawing.Lattice.YDivs.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Drawing.LatticeCellKind
+Egami.Drawing.LatticeCellKind.Default = 0 -> Egami.Drawing.LatticeCellKind
+Egami.Drawing.LatticeCellKind.FixedColor = 2 -> Egami.Drawing.LatticeCellKind
+Egami.Drawing.LatticeCellKind.Transparent = 1 -> Egami.Drawing.LatticeCellKind
 Egami.Drawing.LayerOptions
 Egami.Drawing.LayerOptions.<Clone>$() -> Egami.Drawing.LayerOptions!
 Egami.Drawing.LayerOptions.Backdrop.get -> System.Action<Egami.Operations.RasterOps!>?
@@ -239,6 +283,31 @@ Egami.Drawing.MaskBlur.MaskBlur() -> void
 Egami.Drawing.MaskBlur.MaskBlur(float sigma, Egami.Drawing.BlurStyle style = Egami.Drawing.BlurStyle.Normal) -> void
 Egami.Drawing.MaskBlur.Sigma.get -> float
 Egami.Drawing.MaskBlur.Style.get -> Egami.Drawing.BlurStyle
+Egami.Drawing.Mesh
+Egami.Drawing.Mesh.Bounds.get -> Egami.Drawing.RectF
+Egami.Drawing.Mesh.Colors.get -> System.ReadOnlyMemory<Egami.Pixels.RgbaF32>
+Egami.Drawing.Mesh.Indices.get -> System.ReadOnlyMemory<int>
+Egami.Drawing.Mesh.Mesh(Egami.Drawing.MeshMode mode, System.ReadOnlySpan<System.Numerics.Vector2> positions, System.ReadOnlySpan<Egami.Pixels.RgbaF32> colors = default(System.ReadOnlySpan<Egami.Pixels.RgbaF32>), System.ReadOnlySpan<System.Numerics.Vector2> texCoords = default(System.ReadOnlySpan<System.Numerics.Vector2>), System.ReadOnlySpan<float> values = default(System.ReadOnlySpan<float>), System.ReadOnlySpan<int> indices = default(System.ReadOnlySpan<int>)) -> void
+Egami.Drawing.Mesh.Mode.get -> Egami.Drawing.MeshMode
+Egami.Drawing.Mesh.Positions.get -> System.ReadOnlyMemory<System.Numerics.Vector2>
+Egami.Drawing.Mesh.TexCoords.get -> System.ReadOnlyMemory<System.Numerics.Vector2>
+Egami.Drawing.Mesh.TriangleCount.get -> int
+Egami.Drawing.Mesh.Values.get -> System.ReadOnlyMemory<float>
+Egami.Drawing.MeshMode
+Egami.Drawing.MeshMode.Fan = 2 -> Egami.Drawing.MeshMode
+Egami.Drawing.MeshMode.Strip = 1 -> Egami.Drawing.MeshMode
+Egami.Drawing.MeshMode.Triangles = 0 -> Egami.Drawing.MeshMode
+Egami.Drawing.NinePatch
+Egami.Drawing.NinePatch.<Clone>$() -> Egami.Drawing.NinePatch!
+Egami.Drawing.NinePatch.Deconstruct(out Egami.Raster! Image, out Egami.Drawing.Lattice! Lattice, out Egami.Rect? Padding) -> void
+Egami.Drawing.NinePatch.Equals(Egami.Drawing.NinePatch? other) -> bool
+Egami.Drawing.NinePatch.Image.get -> Egami.Raster!
+Egami.Drawing.NinePatch.Image.init -> void
+Egami.Drawing.NinePatch.Lattice.get -> Egami.Drawing.Lattice!
+Egami.Drawing.NinePatch.Lattice.init -> void
+Egami.Drawing.NinePatch.NinePatch(Egami.Raster! Image, Egami.Drawing.Lattice! Lattice, Egami.Rect? Padding) -> void
+Egami.Drawing.NinePatch.Padding.get -> Egami.Rect?
+Egami.Drawing.NinePatch.Padding.init -> void
 Egami.Drawing.NoisePaint
 Egami.Drawing.NoisePaint.BaseFrequencyX.get -> float
 Egami.Drawing.NoisePaint.BaseFrequencyY.get -> float
@@ -266,6 +335,18 @@ Egami.Drawing.Paint.Opacity.get -> float
 Egami.Drawing.Paint.Opacity.init -> void
 Egami.Drawing.Paint.Paint(Egami.Drawing.Paint! original) -> void
 Egami.Drawing.Paint.WithColorMatrix(Egami.Operations.ColorMatrix matrix) -> Egami.Drawing.Paint!
+Egami.Drawing.Patch
+Egami.Drawing.Patch.Bounds.get -> Egami.Drawing.RectF
+Egami.Drawing.Patch.CornerColors.get -> System.ReadOnlyMemory<Egami.Pixels.RgbaF32>
+Egami.Drawing.Patch.CornerTexCoords.get -> System.ReadOnlyMemory<System.Numerics.Vector2>
+Egami.Drawing.Patch.CornerValues.get -> System.ReadOnlyMemory<float>
+Egami.Drawing.Patch.Evaluate(float u, float v) -> System.Numerics.Vector2
+Egami.Drawing.Patch.Kind.get -> Egami.Drawing.PatchKind
+Egami.Drawing.Patch.Points.get -> System.ReadOnlyMemory<System.Numerics.Vector2>
+Egami.Drawing.Patch.ToTensorNet() -> System.Numerics.Vector2[]!
+Egami.Drawing.PatchKind
+Egami.Drawing.PatchKind.Coons = 0 -> Egami.Drawing.PatchKind
+Egami.Drawing.PatchKind.Tensor = 1 -> Egami.Drawing.PatchKind
 Egami.Drawing.Path
 Egami.Drawing.Path.Apply(Egami.Drawing.PathEffect! effect) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Bounds.get -> Egami.Drawing.RectF
@@ -440,6 +521,20 @@ Egami.Drawing.SolidPaint.Color.init -> void
 Egami.Drawing.SolidPaint.Equals(Egami.Drawing.SolidPaint? other) -> bool
 Egami.Drawing.SolidPaint.SolidPaint(Egami.Pixels.Rgba8 color) -> void
 Egami.Drawing.SolidPaint.SolidPaint(Egami.Pixels.RgbaF32 color) -> void
+Egami.Drawing.SpriteTransform
+Egami.Drawing.SpriteTransform.Deconstruct(out float ScaleCos, out float ScaleSin, out float Tx, out float Ty) -> void
+Egami.Drawing.SpriteTransform.Equals(Egami.Drawing.SpriteTransform other) -> bool
+Egami.Drawing.SpriteTransform.ScaleCos.get -> float
+Egami.Drawing.SpriteTransform.ScaleCos.init -> void
+Egami.Drawing.SpriteTransform.ScaleSin.get -> float
+Egami.Drawing.SpriteTransform.ScaleSin.init -> void
+Egami.Drawing.SpriteTransform.SpriteTransform() -> void
+Egami.Drawing.SpriteTransform.SpriteTransform(float ScaleCos, float ScaleSin, float Tx, float Ty) -> void
+Egami.Drawing.SpriteTransform.ToMatrix() -> System.Numerics.Matrix3x2
+Egami.Drawing.SpriteTransform.Tx.get -> float
+Egami.Drawing.SpriteTransform.Tx.init -> void
+Egami.Drawing.SpriteTransform.Ty.get -> float
+Egami.Drawing.SpriteTransform.Ty.init -> void
 Egami.Drawing.StampStyle
 Egami.Drawing.StampStyle.Morph = 2 -> Egami.Drawing.StampStyle
 Egami.Drawing.StampStyle.Rotate = 1 -> Egami.Drawing.StampStyle
@@ -515,6 +610,10 @@ override Egami.Drawing.CustomPaint.ToString() -> string!
 override Egami.Drawing.DashPattern.Equals(object? obj) -> bool
 override Egami.Drawing.DashPattern.GetHashCode() -> int
 override Egami.Drawing.DashPattern.ToString() -> string!
+override Egami.Drawing.DrawingPaint.<Clone>$() -> Egami.Drawing.DrawingPaint!
+override Egami.Drawing.DrawingPaint.Equals(object? obj) -> bool
+override Egami.Drawing.DrawingPaint.GetHashCode() -> int
+override Egami.Drawing.DrawingPaint.ToString() -> string!
 override Egami.Drawing.FallbackImage.Equals(object? obj) -> bool
 override Egami.Drawing.FallbackImage.GetHashCode() -> int
 override Egami.Drawing.FallbackImage.ToString() -> string!
@@ -531,6 +630,9 @@ override Egami.Drawing.ImagePaint.<Clone>$() -> Egami.Drawing.ImagePaint!
 override Egami.Drawing.ImagePaint.Equals(object? obj) -> bool
 override Egami.Drawing.ImagePaint.GetHashCode() -> int
 override Egami.Drawing.ImagePaint.ToString() -> string!
+override Egami.Drawing.Lattice.Equals(object? obj) -> bool
+override Egami.Drawing.Lattice.GetHashCode() -> int
+override Egami.Drawing.Lattice.ToString() -> string!
 override Egami.Drawing.LayerOptions.Equals(object? obj) -> bool
 override Egami.Drawing.LayerOptions.GetHashCode() -> int
 override Egami.Drawing.LayerOptions.ToString() -> string!
@@ -539,6 +641,9 @@ override Egami.Drawing.LinearGradient.Equals(object? obj) -> bool
 override Egami.Drawing.LinearGradient.GetHashCode() -> int
 override Egami.Drawing.LinearGradient.ToString() -> string!
 override Egami.Drawing.MaskBlur.GetHashCode() -> int
+override Egami.Drawing.NinePatch.Equals(object? obj) -> bool
+override Egami.Drawing.NinePatch.GetHashCode() -> int
+override Egami.Drawing.NinePatch.ToString() -> string!
 override Egami.Drawing.NoisePaint.<Clone>$() -> Egami.Drawing.NoisePaint!
 override Egami.Drawing.NoisePaint.Equals(object? obj) -> bool
 override Egami.Drawing.NoisePaint.GetHashCode() -> int
@@ -567,6 +672,7 @@ override Egami.Drawing.SolidPaint.<Clone>$() -> Egami.Drawing.SolidPaint!
 override Egami.Drawing.SolidPaint.Equals(object? obj) -> bool
 override Egami.Drawing.SolidPaint.GetHashCode() -> int
 override Egami.Drawing.SolidPaint.ToString() -> string!
+override Egami.Drawing.SpriteTransform.GetHashCode() -> int
 override Egami.Drawing.Stroke.Equals(object? obj) -> bool
 override Egami.Drawing.Stroke.GetHashCode() -> int
 override Egami.Drawing.Stroke.ToString() -> string!
@@ -581,6 +687,7 @@ override sealed Egami.Drawing.BlendPaint.Equals(Egami.Drawing.Paint? other) -> b
 override sealed Egami.Drawing.ColorMatrixPaint.Equals(Egami.Drawing.Paint? other) -> bool
 override sealed Egami.Drawing.ConicalGradient.Equals(Egami.Drawing.Gradient? other) -> bool
 override sealed Egami.Drawing.CustomPaint.Equals(Egami.Drawing.Paint? other) -> bool
+override sealed Egami.Drawing.DrawingPaint.Equals(Egami.Drawing.Paint? other) -> bool
 override sealed Egami.Drawing.Gradient.Equals(Egami.Drawing.Paint? other) -> bool
 override sealed Egami.Drawing.ImagePaint.Equals(Egami.Drawing.Paint? other) -> bool
 override sealed Egami.Drawing.LinearGradient.Equals(Egami.Drawing.Gradient? other) -> bool
@@ -604,9 +711,12 @@ static Egami.Drawing.CustomPaint.operator !=(Egami.Drawing.CustomPaint? left, Eg
 static Egami.Drawing.CustomPaint.operator ==(Egami.Drawing.CustomPaint? left, Egami.Drawing.CustomPaint? right) -> bool
 static Egami.Drawing.DashPattern.operator !=(Egami.Drawing.DashPattern? left, Egami.Drawing.DashPattern? right) -> bool
 static Egami.Drawing.DashPattern.operator ==(Egami.Drawing.DashPattern? left, Egami.Drawing.DashPattern? right) -> bool
+static Egami.Drawing.Drawing.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Drawing.Drawing!
 static Egami.Drawing.DrawingExtensions.CreateCanvas<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Drawing.CanvasOptions? options = null) -> Egami.Drawing.RasterCanvas<TPixel>!
 static Egami.Drawing.DrawingExtensions.Draw(this Egami.Operations.RasterOps! operations, System.Action<Egami.Drawing.Canvas!, int>! draw, Egami.Drawing.CanvasOptions? options = null) -> Egami.Operations.RasterOps!
 static Egami.Drawing.DrawingExtensions.Draw(this Egami.Operations.RasterOps! operations, System.Action<Egami.Drawing.Canvas!>! draw, Egami.Drawing.CanvasOptions? options = null) -> Egami.Operations.RasterOps!
+static Egami.Drawing.DrawingPaint.operator !=(Egami.Drawing.DrawingPaint? left, Egami.Drawing.DrawingPaint? right) -> bool
+static Egami.Drawing.DrawingPaint.operator ==(Egami.Drawing.DrawingPaint? left, Egami.Drawing.DrawingPaint? right) -> bool
 static Egami.Drawing.FallbackImage.operator !=(Egami.Drawing.FallbackImage? left, Egami.Drawing.FallbackImage? right) -> bool
 static Egami.Drawing.FallbackImage.operator ==(Egami.Drawing.FallbackImage? left, Egami.Drawing.FallbackImage? right) -> bool
 static Egami.Drawing.FontExtensions.GetGlyphPath(this Egami.Fonts.Font font, ushort glyph) -> Egami.Drawing.Path!
@@ -628,12 +738,18 @@ static Egami.Drawing.GradientStop.operator !=(Egami.Drawing.GradientStop left, E
 static Egami.Drawing.GradientStop.operator ==(Egami.Drawing.GradientStop left, Egami.Drawing.GradientStop right) -> bool
 static Egami.Drawing.ImagePaint.operator !=(Egami.Drawing.ImagePaint? left, Egami.Drawing.ImagePaint? right) -> bool
 static Egami.Drawing.ImagePaint.operator ==(Egami.Drawing.ImagePaint? left, Egami.Drawing.ImagePaint? right) -> bool
+static Egami.Drawing.Lattice.NinePatch(Egami.Rect center) -> Egami.Drawing.Lattice!
+static Egami.Drawing.Lattice.operator !=(Egami.Drawing.Lattice? left, Egami.Drawing.Lattice? right) -> bool
+static Egami.Drawing.Lattice.operator ==(Egami.Drawing.Lattice? left, Egami.Drawing.Lattice? right) -> bool
 static Egami.Drawing.LayerOptions.operator !=(Egami.Drawing.LayerOptions? left, Egami.Drawing.LayerOptions? right) -> bool
 static Egami.Drawing.LayerOptions.operator ==(Egami.Drawing.LayerOptions? left, Egami.Drawing.LayerOptions? right) -> bool
 static Egami.Drawing.LinearGradient.operator !=(Egami.Drawing.LinearGradient? left, Egami.Drawing.LinearGradient? right) -> bool
 static Egami.Drawing.LinearGradient.operator ==(Egami.Drawing.LinearGradient? left, Egami.Drawing.LinearGradient? right) -> bool
 static Egami.Drawing.MaskBlur.operator !=(Egami.Drawing.MaskBlur left, Egami.Drawing.MaskBlur right) -> bool
 static Egami.Drawing.MaskBlur.operator ==(Egami.Drawing.MaskBlur left, Egami.Drawing.MaskBlur right) -> bool
+static Egami.Drawing.NinePatch.FromAndroid(Egami.Raster! raster) -> Egami.Drawing.NinePatch!
+static Egami.Drawing.NinePatch.operator !=(Egami.Drawing.NinePatch? left, Egami.Drawing.NinePatch? right) -> bool
+static Egami.Drawing.NinePatch.operator ==(Egami.Drawing.NinePatch? left, Egami.Drawing.NinePatch? right) -> bool
 static Egami.Drawing.NoisePaint.Fractal(float baseFrequencyX, float baseFrequencyY, int octaves = 1, int seed = 0, Egami.Size? stitchSize = null) -> Egami.Drawing.NoisePaint!
 static Egami.Drawing.NoisePaint.operator !=(Egami.Drawing.NoisePaint? left, Egami.Drawing.NoisePaint? right) -> bool
 static Egami.Drawing.NoisePaint.operator ==(Egami.Drawing.NoisePaint? left, Egami.Drawing.NoisePaint? right) -> bool
@@ -643,6 +759,8 @@ static Egami.Drawing.Paint.implicit operator Egami.Drawing.Paint!(Egami.Pixels.R
 static Egami.Drawing.Paint.implicit operator Egami.Drawing.Paint!(Egami.Pixels.RgbaF32 color) -> Egami.Drawing.Paint!
 static Egami.Drawing.Paint.operator !=(Egami.Drawing.Paint? left, Egami.Drawing.Paint? right) -> bool
 static Egami.Drawing.Paint.operator ==(Egami.Drawing.Paint? left, Egami.Drawing.Paint? right) -> bool
+static Egami.Drawing.Patch.Coons(System.ReadOnlySpan<System.Numerics.Vector2> points, System.ReadOnlySpan<Egami.Pixels.RgbaF32> cornerColors = default(System.ReadOnlySpan<Egami.Pixels.RgbaF32>), System.ReadOnlySpan<float> cornerValues = default(System.ReadOnlySpan<float>), System.ReadOnlySpan<System.Numerics.Vector2> cornerTexCoords = default(System.ReadOnlySpan<System.Numerics.Vector2>)) -> Egami.Drawing.Patch!
+static Egami.Drawing.Patch.Tensor(System.ReadOnlySpan<System.Numerics.Vector2> points, System.ReadOnlySpan<Egami.Pixels.RgbaF32> cornerColors = default(System.ReadOnlySpan<Egami.Pixels.RgbaF32>), System.ReadOnlySpan<float> cornerValues = default(System.ReadOnlySpan<float>), System.ReadOnlySpan<System.Numerics.Vector2> cornerTexCoords = default(System.ReadOnlySpan<System.Numerics.Vector2>)) -> Egami.Drawing.Patch!
 static Egami.Drawing.Path.Arc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Circle(System.Numerics.Vector2 center, float radius) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Empty.get -> Egami.Drawing.Path!
@@ -685,6 +803,9 @@ static Egami.Drawing.SoftMask.operator !=(Egami.Drawing.SoftMask? left, Egami.Dr
 static Egami.Drawing.SoftMask.operator ==(Egami.Drawing.SoftMask? left, Egami.Drawing.SoftMask? right) -> bool
 static Egami.Drawing.SolidPaint.operator !=(Egami.Drawing.SolidPaint? left, Egami.Drawing.SolidPaint? right) -> bool
 static Egami.Drawing.SolidPaint.operator ==(Egami.Drawing.SolidPaint? left, Egami.Drawing.SolidPaint? right) -> bool
+static Egami.Drawing.SpriteTransform.FromRotationScale(float scale, float degrees, System.Numerics.Vector2 position, System.Numerics.Vector2 anchor = default(System.Numerics.Vector2)) -> Egami.Drawing.SpriteTransform
+static Egami.Drawing.SpriteTransform.operator !=(Egami.Drawing.SpriteTransform left, Egami.Drawing.SpriteTransform right) -> bool
+static Egami.Drawing.SpriteTransform.operator ==(Egami.Drawing.SpriteTransform left, Egami.Drawing.SpriteTransform right) -> bool
 static Egami.Drawing.Stroke.Hairline.get -> Egami.Drawing.Stroke!
 static Egami.Drawing.Stroke.operator !=(Egami.Drawing.Stroke? left, Egami.Drawing.Stroke? right) -> bool
 static Egami.Drawing.Stroke.operator ==(Egami.Drawing.Stroke? left, Egami.Drawing.Stroke? right) -> bool
@@ -696,9 +817,14 @@ static Egami.Drawing.SweepGradient.operator ==(Egami.Drawing.SweepGradient? left
 virtual Egami.Drawing.Canvas.Dispose(bool disposing) -> void
 virtual Egami.Drawing.Canvas.OnClipRect(Egami.Drawing.RectF rect, Egami.Drawing.ClipOp op, bool antialias) -> void
 virtual Egami.Drawing.Canvas.OnClipRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Drawing.ClipOp op, bool antialias) -> void
+virtual Egami.Drawing.Canvas.OnDrawAtlas(Egami.Raster! image, System.ReadOnlySpan<Egami.Drawing.SpriteTransform> transforms, System.ReadOnlySpan<Egami.Drawing.RectF> sources, System.ReadOnlySpan<Egami.Pixels.RgbaF32> colors, Egami.Operations.BlendMode colorBlend, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint? paint) -> void
+virtual Egami.Drawing.Canvas.OnDrawDrawing(Egami.Drawing.Drawing! drawing, System.Numerics.Matrix3x2 matrix, Egami.Drawing.Paint? paint, bool cacheAsImage) -> void
 virtual Egami.Drawing.Canvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
+virtual Egami.Drawing.Canvas.OnDrawLattice(Egami.Raster! image, Egami.Drawing.Lattice! lattice, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint? paint) -> void
+virtual Egami.Drawing.Canvas.OnDrawMesh(Egami.Drawing.Mesh! mesh, Egami.Drawing.Paint! paint, Egami.Operations.BlendMode colorBlend, System.ReadOnlySpan<Egami.Drawing.GradientStop> valueStops) -> void
 virtual Egami.Drawing.Canvas.OnDrawOval(Egami.Drawing.RectF oval, Egami.Drawing.Stroke? stroke, Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawPaint(Egami.Drawing.Paint! paint) -> void
+virtual Egami.Drawing.Canvas.OnDrawPatch(Egami.Drawing.Patch! patch, Egami.Drawing.Paint! paint, Egami.Operations.BlendMode colorBlend, System.ReadOnlySpan<Egami.Drawing.GradientStop> valueStops) -> void
 virtual Egami.Drawing.Canvas.OnDrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawRect(Egami.Drawing.RectF rect, Egami.Drawing.Stroke? stroke, Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Drawing.Stroke? stroke, Egami.Drawing.Paint! paint) -> void
@@ -724,3 +850,5 @@ virtual Egami.Drawing.PathEffect.PrintMembers(System.Text.StringBuilder! builder
 ~override Egami.Drawing.RectF.Equals(object obj) -> bool
 ~override Egami.Drawing.RectF.ToString() -> string
 ~override Egami.Drawing.RoundRect.Equals(object obj) -> bool
+~override Egami.Drawing.SpriteTransform.Equals(object obj) -> bool
+~override Egami.Drawing.SpriteTransform.ToString() -> string

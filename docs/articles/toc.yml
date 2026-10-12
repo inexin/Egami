@@ -26,6 +26,8 @@
       href: guides/compositing.md
     - name: Drawing
       href: guides/drawing.md
+    - name: The .egdr format
+      href: guides/egdr-format.md
     - name: Fonts and text
       href: guides/text.md
     - name: Unicode text

@@ -259,7 +259,7 @@ public class LayerTests
         Assert.Equal(["SaveLayer 0.25 Screen False", "Save", "Restore", "RestoreLayer"], canvas.Calls);
     }
 
-    private static void Compare<TPixel>(int tolerance, Action<Drawing.Canvas, bool> draw)
+    private static void Compare<TPixel>(int tolerance, Action<Egami.Drawing.Canvas, bool> draw)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         using Raster<TPixel> layered = Raster.Create<TPixel>(80, 60), direct = Raster.Create<TPixel>(80, 60);

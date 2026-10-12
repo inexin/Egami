@@ -38,7 +38,9 @@ using DrawingPath = Egami.Drawing.Path;
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
 // (Phase 2.3.3) loads PSD and PSB files every way (whole, as other pixel types, from a stream that cannot seek, rows, regions,
 // reductions), which must agree; psddata puts its input behind a small header its first bytes choose (mode, depth, compression,
-// PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly.
+// PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly. The egdr target
+// (Phase 2.6.4) loads recorded drawings: a drawing that loads must save and load again to the same bytes, and replays on a
+// small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested drawings.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -140,7 +142,8 @@ static Action<Stream> Target(string name) => name switch
     "icoentry" => LoadIcoEntry,
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry, psdfile, psddata."),
+    "egdr" => LoadDrawing,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry, psdfile, psddata, egdr."),
 };
 
 static EgamiContext Context()
@@ -1726,6 +1729,37 @@ static void ParseSvgPath(Stream stream)
     }
 
     static bool Same(DrawingPath a, DrawingPath b) => a.Verbs.SequenceEqual(b.Verbs) && a.Points.SequenceEqual(b.Points);
+}
+
+static void LoadDrawing(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    try
+    {
+        Egami.Drawing.Drawing drawing = Egami.Drawing.Drawing.Load(new MemoryStream(data), context);
+        byte[] first = SaveDrawing(drawing);
+        byte[] second = SaveDrawing(Egami.Drawing.Drawing.Load(new MemoryStream(first), context));
+        if (!first.AsSpan().SequenceEqual(second))
+        {
+            throw new InvalidOperationException("A loaded drawing does not save to the same bytes twice.");
+        }
+
+        using Raster<Rgba8> target = Raster.Create<Rgba8>(32, 32, context);
+        using Egami.Drawing.RasterCanvas<Rgba8> canvas = new(target);
+        canvas.Scale(32 / MathF.Max(drawing.Bounds.Width, drawing.Bounds.Height));
+        canvas.DrawDrawing(drawing);
+    }
+    catch (EgamiException)
+    {
+    }
+
+    static byte[] SaveDrawing(Egami.Drawing.Drawing drawing)
+    {
+        using MemoryStream output = new();
+        drawing.Save(output);
+        return output.ToArray();
+    }
 }
 
 static byte[] ReadAll(Stream stream)

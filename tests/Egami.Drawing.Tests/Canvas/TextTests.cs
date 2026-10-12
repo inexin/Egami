@@ -262,7 +262,7 @@ public class TextTests
         Assert.True(worst <= tolerance, $"The largest difference is {worst} levels.");
     }
 
-    private sealed class PathCounter() : Drawing.Canvas(20, 20)
+    private sealed class PathCounter() : Egami.Drawing.Canvas(20, 20)
     {
         public int Paths { get; private set; }
 

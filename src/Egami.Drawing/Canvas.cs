@@ -46,6 +46,19 @@ public abstract partial class Canvas : IDisposable
         _state = new State(Matrix3x2.Identity, new RectF(0, 0, width, height));
     }
 
+    /// <summary>Initializes a new instance of the <see cref="Canvas"/> class whose clip starts as a rectangle that may not start at the origin, for a recorder.</summary>
+    /// <param name="bounds">The starting clip, finite and not empty; its size is the canvas's.</param>
+    private protected Canvas(RectF bounds)
+        : this(bounds.Width, bounds.Height)
+    {
+        if (!bounds.IsFinite)
+        {
+            throw new ArgumentException("The bounds must be finite.", nameof(bounds));
+        }
+
+        _state = new State(Matrix3x2.Identity, bounds);
+    }
+
     /// <summary>Gets the drawing surface's width in device units.</summary>
     public float Width { get; }
 

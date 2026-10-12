@@ -189,6 +189,36 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
+### Egami.Drawing 1.0.0-preview.4
+
+Advanced drawing, in the same preview package. See [Nine-patches and lattices](docs/articles/guides/drawing.md#nine-patches-and-lattices),
+[Meshes and patches](docs/articles/guides/drawing.md#meshes-and-patches), [Recorded drawings](docs/articles/guides/drawing.md#recorded-drawings)
+and [the .egdr format](docs/articles/guides/egdr-format.md).
+
+- `DrawImageNinePatch` and `DrawImageLattice` with `Lattice` (x and y divisions, bounds, `LatticeCellKind` and cell colors), as
+  Skia's; fixed spans shrink in proportion when the destination is small. The raster backend draws the cells as one mesh, so they
+  meet without seams, each sampled inside its own part of the image. `NinePatch.FromAndroid` reads .9.png markers into the
+  image, its lattice and its content padding. Within a mean level of SkiaSharp's drawImageNine and drawImageLattice.
+- `DrawAtlas` with `SpriteTransform` (Skia's RSXform) and optional colors combined by a blend mode; each sprite blends on its own.
+  Within a mean level of SkiaSharp's drawAtlas. 10,000 16-pixel sprites draw in 23 ms against the reference drawing library 2.1.7's 35 to
+  43 ms drawing them one by one.
+- `Mesh` (`MeshMode` `Triangles`, `Strip` or `Fan`, with colors, texture coordinates, values and indices) and `DrawMesh`: the
+  triangles' union is filled once, antialiased on its outer edge only, so meshes have no cracks; Gouraud colors in the canvas's
+  color space, textures mapped through any paint, and per-vertex values mapped through gradient stops for PDF's mesh shadings.
+  Within a mean level of SkiaSharp's drawVertices.
+- `Patch.Coons` and `Patch.Tensor` with corner colors, values or texture coordinates and `DrawPatch`, cut into triangles until
+  they stray less than a quarter of a device pixel, later parts covering earlier ones where a patch folds, as PDF requires.
+  Within a mean level of SkiaSharp's drawPatch.
+- `DrawingRecorder` records any canvas code into an immutable `Drawing`: `DrawDrawing` replays it under a matrix, with a paint
+  that merges it as one layer or as an image cached at the current scale; `Playback`, `ToRaster`. `DrawingPaint` tiles a
+  drawing as a pattern rendered at the device scale. Within a mean level of SkiaSharp's drawPicture and picture shaders.
+- `Drawing.Save` and `Drawing.Load`: Egami's own documented binary format, .egdr, versioned and chunked, with images as PNG;
+  loading checks every count and number, honors `SafetyLimits` and bounds nesting and replay, and has a fuzz target (`egdr`).
+- Backends get `OnDrawLattice`, `OnDrawAtlas`, `OnDrawMesh`, `OnDrawPatch` and `OnDrawDrawing`, with defaults: images per cell or
+  sprite, meshes through the raster fallback, patches as meshes, drawings replayed.
+- Fixed: `DrawImage` under a transform that collapses the image threw; it draws nothing. Scaling overlapping `RoundRect` radii
+  was not idempotent; scaled radii now round down.
+
 ### Egami.Drawing 1.0.0-preview.3
 
 Paints and layers, in the same preview package. See [Gradients](docs/articles/guides/drawing.md#gradients),

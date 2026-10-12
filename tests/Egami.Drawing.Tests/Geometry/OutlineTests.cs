@@ -77,7 +77,7 @@ public class OutlineTests
         Assert.Throws<ArgumentOutOfRangeException>(() => circle.Offset(1, LineJoin.Miter, 0.5f));
     }
 
-    private static byte[] Draw(Action<Drawing.Canvas> draw, float scale)
+    private static byte[] Draw(Action<Egami.Drawing.Canvas> draw, float scale)
     {
         int size = (int)(64 * scale);
         using Raster<Rgba8> raster = Raster.Create<Rgba8>(size, size);

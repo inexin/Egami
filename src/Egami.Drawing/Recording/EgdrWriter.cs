@@ -1,0 +1,741 @@
+using System.Buffers.Binary;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
+using Egami.Fonts;
+using Egami.Operations;
+using Egami.Pixels;
+
+namespace Egami.Drawing.Recording;
+
+/// <summary>The constants of the .egdr format, which docs/articles/formats/egdr.md specifies.</summary>
+internal static class Egdr
+{
+    internal const ushort Major = 1;
+    internal const ushort Minor = 0;
+
+    /// <summary>The deepest nesting of drawings a file may hold, counting drawing paints.</summary>
+    internal const int MaxNesting = 64;
+
+    /// <summary>The most calls a loaded drawing may replay, nested drawings expanded.</summary>
+    internal const long MaxExpandedCalls = 50_000_000;
+
+    internal static ReadOnlySpan<byte> Signature => [0x89, (byte)'E', (byte)'G', (byte)'D', (byte)'R', 0x0D, 0x0A, 0x1A];
+
+    internal static uint Tag(string type) => BinaryPrimitives.ReadUInt32LittleEndian([(byte)type[0], (byte)type[1], (byte)type[2], (byte)type[3]]);
+
+    internal static readonly uint Image = Tag("IMAG");
+    internal static readonly uint PathChunk = Tag("PATH");
+    internal static readonly uint DrawingChunk = Tag("DRAW");
+    internal static readonly uint End = Tag("DEND");
+
+    internal enum Op : byte
+    {
+        Save = 1,
+        Restore = 2,
+        SaveLayer = 3,
+        SetMatrix = 4,
+        ClipRect = 5,
+        ClipRoundRect = 6,
+        ClipPath = 7,
+        DrawPaint = 8,
+        DrawRect = 9,
+        DrawRoundRect = 10,
+        DrawOval = 11,
+        DrawPath = 12,
+        DrawPoints = 13,
+        DrawImage = 14,
+        DrawLattice = 15,
+        DrawAtlas = 16,
+        DrawMesh = 17,
+        DrawPatch = 18,
+        DrawDrawing = 19,
+    }
+
+    internal enum PaintKind : byte
+    {
+        Solid = 1,
+        Linear = 2,
+        Radial = 3,
+        Conical = 4,
+        Sweep = 5,
+        Image = 6,
+        Noise = 7,
+        Blend = 8,
+        ColorMatrix = 9,
+        Drawing = 10,
+    }
+}
+
+/// <summary>
+/// Writes a drawing as .egdr: every image, path and nested drawing once, as its own chunk, in the order first used, then the
+/// drawing's calls referring to them by number.
+/// </summary>
+internal sealed class EgdrWriter
+{
+    private readonly Stream _stream;
+    private readonly Dictionary<Raster, int> _images = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<Path, int> _paths = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<Drawing, int> _drawings = new(ReferenceEqualityComparer.Instance);
+
+    private EgdrWriter(Stream stream)
+    {
+        _stream = stream;
+    }
+
+    internal static void Write(Drawing drawing, Stream stream)
+    {
+        EgdrWriter writer = new(stream);
+        stream.Write(Egdr.Signature);
+        Span<byte> version = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt16LittleEndian(version, Egdr.Major);
+        BinaryPrimitives.WriteUInt16LittleEndian(version[2..], Egdr.Minor);
+        stream.Write(version);
+        writer.DrawingIndex(drawing);
+        writer.Chunk(Egdr.End, []);
+    }
+
+    private void Chunk(uint type, ReadOnlySpan<byte> payload)
+    {
+        Span<byte> header = stackalloc byte[8];
+        BinaryPrimitives.WriteUInt32LittleEndian(header, type);
+        BinaryPrimitives.WriteUInt32LittleEndian(header[4..], checked((uint)payload.Length));
+        _stream.Write(header);
+        _stream.Write(payload);
+    }
+
+    private int ImageIndex(Raster image)
+    {
+        if (!_images.TryGetValue(image, out int index))
+        {
+            using MemoryStream png = new();
+            image.Save(png, "png");
+            Chunk(Egdr.Image, png.GetBuffer().AsSpan(0, (int)png.Length));
+            index = _images.Count;
+            _images[image] = index;
+        }
+
+        return index;
+    }
+
+    private int PathIndex(Path path)
+    {
+        if (!_paths.TryGetValue(path, out int index))
+        {
+            Buffer b = new();
+            b.U8((byte)path.FillRule);
+            b.U32((uint)path.Verbs.Length);
+            foreach (PathVerb v in path.Verbs)
+            {
+                b.U8((byte)v);
+            }
+
+            b.U32((uint)path.Points.Length);
+            foreach (Vector2 p in path.Points)
+            {
+                b.Point(p);
+            }
+
+            Chunk(Egdr.PathChunk, b.Span);
+            index = _paths.Count;
+            _paths[path] = index;
+        }
+
+        return index;
+    }
+
+    private int DrawingIndex(Drawing drawing)
+    {
+        if (_drawings.TryGetValue(drawing, out int index))
+        {
+            return index;
+        }
+
+        // Everything a call refers to is written before the drawing's own chunk.
+        Buffer b = new();
+        b.Rect(drawing.Bounds);
+        ReadOnlySpan<DrawingCall> calls = drawing.Calls;
+        b.U32((uint)calls.Length);
+        for (int i = 0; i < calls.Length; i++)
+        {
+            try
+            {
+                WriteCall(b, calls[i]);
+            }
+            catch (NotSupportedException e)
+            {
+                throw new NotSupportedException($"Call {i} of the drawing cannot be saved: {e.Message}", e);
+            }
+        }
+
+        Chunk(Egdr.DrawingChunk, b.Span);
+        index = _drawings.Count;
+        _drawings[drawing] = index;
+        return index;
+    }
+
+    private void WriteCall(Buffer b, DrawingCall call)
+    {
+        switch (call)
+        {
+            case SaveCall:
+                b.Op(Egdr.Op.Save);
+                break;
+            case RestoreCall:
+                b.Op(Egdr.Op.Restore);
+                break;
+            case SaveLayerCall c:
+                b.Op(Egdr.Op.SaveLayer);
+                LayerOptions o = c.Options;
+                if (o.Filter is not null || o.Backdrop is not null || o.Mask is not null)
+                {
+                    throw new NotSupportedException("a layer's filter, backdrop and soft mask are C# code, which a file cannot hold.");
+                }
+
+                b.F32(o.Opacity);
+                b.U8((byte)o.BlendMode);
+                b.Bool(o.Isolated);
+                b.Bool(o.Bounds is not null);
+                if (o.Bounds is RectF bounds)
+                {
+                    b.Rect(bounds);
+                }
+
+                break;
+            case SetMatrixCall c:
+                b.Op(Egdr.Op.SetMatrix);
+                b.Matrix(c.Matrix);
+                break;
+            case ClipRectCall c:
+                b.Op(Egdr.Op.ClipRect);
+                b.Rect(c.Rect);
+                b.U8((byte)c.Op);
+                b.Bool(c.Antialias);
+                break;
+            case ClipRoundRectCall c:
+                b.Op(Egdr.Op.ClipRoundRect);
+                b.RoundRect(c.RoundRect);
+                b.U8((byte)c.Op);
+                b.Bool(c.Antialias);
+                break;
+            case ClipPathCall c:
+                {
+                    int path = PathIndex(c.Path);
+                    b.Op(Egdr.Op.ClipPath);
+                    b.U32((uint)path);
+                    b.U8((byte)c.Op);
+                    b.Bool(c.Antialias);
+                    break;
+                }
+
+            case DrawPaintCall c:
+                {
+                    Buffer paint = PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawPaint);
+                    b.Append(paint);
+                    break;
+                }
+
+            case DrawRectCall c:
+                Shape(b, Egdr.Op.DrawRect, c.Stroke, c.Paint, s => s.Rect(c.Rect));
+                break;
+            case DrawRoundRectCall c:
+                Shape(b, Egdr.Op.DrawRoundRect, c.Stroke, c.Paint, s => s.RoundRect(c.RoundRect));
+                break;
+            case DrawOvalCall c:
+                Shape(b, Egdr.Op.DrawOval, c.Stroke, c.Paint, s => s.Rect(c.Oval));
+                break;
+            case DrawPathCall c:
+                {
+                    int path = PathIndex(c.Path);
+                    Shape(b, Egdr.Op.DrawPath, c.Stroke, c.Paint, s => s.U32((uint)path));
+                    break;
+                }
+
+            case DrawGlyphRunCall c:
+                {
+                    // Text is saved as its outlines: a file holds no fonts. It draws the same, through the default hook.
+                    int path = PathIndex(c.Run.ToPath(c.Origin));
+                    Shape(b, Egdr.Op.DrawPath, null, c.Paint, s => s.U32((uint)path));
+                    break;
+                }
+
+            case DrawPointsCall c:
+                {
+                    Buffer paint = PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawPoints);
+                    b.U8((byte)c.Mode);
+                    b.U32((uint)c.Points.Length);
+                    foreach (Vector2 p in c.Points)
+                    {
+                        b.Point(p);
+                    }
+
+                    b.Stroke(c.Stroke);
+                    b.Append(paint);
+                    break;
+                }
+
+            case DrawImageCall c:
+                {
+                    int image = ImageIndex(c.Image);
+                    Buffer? paint = c.Paint is null ? null : PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawImage);
+                    b.U32((uint)image);
+                    b.Rect(c.Source);
+                    b.Rect(c.Destination);
+                    b.Sampling(c.Sampling);
+                    b.OptionalPaint(paint);
+                    break;
+                }
+
+            case DrawLatticeCall c:
+                {
+                    int image = ImageIndex(c.Image);
+                    Buffer? paint = c.Paint is null ? null : PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawLattice);
+                    b.U32((uint)image);
+                    Lattice l = c.Lattice;
+                    b.U32((uint)l.XDivs.Count);
+                    foreach (int x in l.XDivs)
+                    {
+                        b.I32(x);
+                    }
+
+                    b.U32((uint)l.YDivs.Count);
+                    foreach (int y in l.YDivs)
+                    {
+                        b.I32(y);
+                    }
+
+                    b.Bool(l.Bounds is not null);
+                    if (l.Bounds is Rect r)
+                    {
+                        b.I32(r.X);
+                        b.I32(r.Y);
+                        b.I32(r.Width);
+                        b.I32(r.Height);
+                    }
+
+                    b.Bool(l.CellKinds is not null);
+                    foreach (LatticeCellKind k in l.CellKinds ?? [])
+                    {
+                        b.U8((byte)k);
+                    }
+
+                    b.Bool(l.CellColors is not null);
+                    foreach (RgbaF32 color in l.CellColors ?? [])
+                    {
+                        b.Color(color);
+                    }
+
+                    b.Rect(c.Destination);
+                    b.Sampling(c.Sampling);
+                    b.OptionalPaint(paint);
+                    break;
+                }
+
+            case DrawAtlasCall c:
+                {
+                    int image = ImageIndex(c.Image);
+                    Buffer? paint = c.Paint is null ? null : PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawAtlas);
+                    b.U32((uint)image);
+                    b.U32((uint)c.Transforms.Length);
+                    foreach (SpriteTransform t in c.Transforms)
+                    {
+                        b.F32(t.ScaleCos);
+                        b.F32(t.ScaleSin);
+                        b.F32(t.Tx);
+                        b.F32(t.Ty);
+                    }
+
+                    foreach (RectF s in c.Sources)
+                    {
+                        b.Rect(s);
+                    }
+
+                    b.Bool(c.Colors.Length > 0);
+                    foreach (RgbaF32 color in c.Colors)
+                    {
+                        b.Color(color);
+                    }
+
+                    b.U8((byte)c.ColorBlend);
+                    b.Sampling(c.Sampling);
+                    b.OptionalPaint(paint);
+                    break;
+                }
+
+            case DrawMeshCall c:
+                {
+                    Buffer paint = PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawMesh);
+                    Mesh m = c.Mesh;
+                    b.U8((byte)m.Mode);
+                    b.U32((uint)m.Positions.Length);
+                    foreach (Vector2 p in m.Positions.Span)
+                    {
+                        b.Point(p);
+                    }
+
+                    b.U8((byte)((m.Colors.IsEmpty ? 0 : 1) | (m.TexCoords.IsEmpty ? 0 : 2) | (m.Values.IsEmpty ? 0 : 4) | (m.Indices.IsEmpty ? 0 : 8)));
+                    foreach (RgbaF32 color in m.Colors.Span)
+                    {
+                        b.Color(color);
+                    }
+
+                    foreach (Vector2 t in m.TexCoords.Span)
+                    {
+                        b.Point(t);
+                    }
+
+                    foreach (float v in m.Values.Span)
+                    {
+                        b.F32(v);
+                    }
+
+                    if (!m.Indices.IsEmpty)
+                    {
+                        b.U32((uint)m.Indices.Length);
+                        foreach (int i in m.Indices.Span)
+                        {
+                            b.I32(i);
+                        }
+                    }
+
+                    b.Append(paint);
+                    b.U8((byte)c.ColorBlend);
+                    b.Stops(c.Stops);
+                    break;
+                }
+
+            case DrawPatchCall c:
+                {
+                    Buffer paint = PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawPatch);
+                    Patch p = c.Patch;
+                    b.U8((byte)p.Kind);
+                    foreach (Vector2 point in p.Points.Span)
+                    {
+                        b.Point(point);
+                    }
+
+                    b.U8((byte)((p.CornerColors.IsEmpty ? 0 : 1) | (p.CornerTexCoords.IsEmpty ? 0 : 2) | (p.CornerValues.IsEmpty ? 0 : 4)));
+                    foreach (RgbaF32 color in p.CornerColors.Span)
+                    {
+                        b.Color(color);
+                    }
+
+                    foreach (Vector2 t in p.CornerTexCoords.Span)
+                    {
+                        b.Point(t);
+                    }
+
+                    foreach (float v in p.CornerValues.Span)
+                    {
+                        b.F32(v);
+                    }
+
+                    b.Append(paint);
+                    b.U8((byte)c.ColorBlend);
+                    b.Stops(c.Stops);
+                    break;
+                }
+
+            case DrawDrawingCall c:
+                {
+                    int drawing = DrawingIndex(c.Drawing);
+                    Buffer? paint = c.Paint is null ? null : PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawDrawing);
+                    b.U32((uint)drawing);
+                    b.Matrix(c.Matrix);
+                    b.OptionalPaint(paint);
+                    b.Bool(c.CacheAsImage);
+                    break;
+                }
+
+            default:
+                throw new NotSupportedException($"{call.GetType().Name} has no .egdr form.");
+        }
+    }
+
+    private void Shape(Buffer b, Egdr.Op op, Stroke? stroke, Paint paint, Action<Buffer> geometry)
+    {
+        Buffer p = PaintBytes(paint);
+        b.Op(op);
+        geometry(b);
+        b.Bool(stroke is not null);
+        if (stroke is not null)
+        {
+            b.Stroke(stroke);
+        }
+
+        b.Append(p);
+    }
+
+    /// <summary>A paint's bytes; images and drawings it uses are written as chunks first.</summary>
+    private Buffer PaintBytes(Paint paint)
+    {
+        Buffer b = new();
+        switch (paint)
+        {
+            case SolidPaint s:
+                b.U8((byte)Egdr.PaintKind.Solid);
+                Common(b, paint);
+                b.Color(s.Color);
+                break;
+            case LinearGradient g:
+                b.U8((byte)Egdr.PaintKind.Linear);
+                Common(b, paint);
+                b.Point(g.Start);
+                b.Point(g.End);
+                GradientCommon(b, g);
+                break;
+            case RadialGradient g:
+                b.U8((byte)Egdr.PaintKind.Radial);
+                Common(b, paint);
+                b.Point(g.Center);
+                b.F32(g.Radius);
+                GradientCommon(b, g);
+                break;
+            case ConicalGradient g:
+                b.U8((byte)Egdr.PaintKind.Conical);
+                Common(b, paint);
+                b.Point(g.Start);
+                b.F32(g.StartRadius);
+                b.Point(g.End);
+                b.F32(g.EndRadius);
+                GradientCommon(b, g);
+                break;
+            case SweepGradient g:
+                b.U8((byte)Egdr.PaintKind.Sweep);
+                Common(b, paint);
+                b.Point(g.Center);
+                b.F32(g.StartAngle);
+                b.F32(g.EndAngle);
+                GradientCommon(b, g);
+                break;
+            case ImagePaint i:
+                {
+                    int image = ImageIndex(i.Image);
+                    b.U8((byte)Egdr.PaintKind.Image);
+                    Common(b, paint);
+                    b.U32((uint)image);
+                    b.U8((byte)i.TileX);
+                    b.U8((byte)i.TileY);
+                    b.Sampling(i.Sampling);
+                    break;
+                }
+
+            case NoisePaint n:
+                b.U8((byte)Egdr.PaintKind.Noise);
+                Common(b, paint);
+                b.U8((byte)n.Type);
+                b.F32(n.BaseFrequencyX);
+                b.F32(n.BaseFrequencyY);
+                b.I32(n.Octaves);
+                b.I32(n.Seed);
+                b.Bool(n.TileSize is not null);
+                if (n.TileSize is Size size)
+                {
+                    b.I32(size.Width);
+                    b.I32(size.Height);
+                }
+
+                break;
+            case BlendPaint bp:
+                {
+                    Buffer destination = PaintBytes(bp.Destination), source = PaintBytes(bp.Source);
+                    b.U8((byte)Egdr.PaintKind.Blend);
+                    Common(b, paint);
+                    b.Append(destination);
+                    b.Append(source);
+                    b.U8((byte)bp.Mode);
+                    break;
+                }
+
+            case ColorMatrixPaint cm:
+                {
+                    Buffer source = PaintBytes(cm.Source);
+                    b.U8((byte)Egdr.PaintKind.ColorMatrix);
+                    Common(b, paint);
+                    b.Append(source);
+                    for (int r = 0; r < 4; r++)
+                    {
+                        for (int c = 0; c < 5; c++)
+                        {
+                            b.F32(cm.Matrix[r, c]);
+                        }
+                    }
+
+                    break;
+                }
+
+            case DrawingPaint dp:
+                {
+                    int drawing = DrawingIndex(dp.Drawing);
+                    b.U8((byte)Egdr.PaintKind.Drawing);
+                    Common(b, paint);
+                    b.U32((uint)drawing);
+                    b.U8((byte)dp.TileX);
+                    b.U8((byte)dp.TileY);
+                    b.Rect(dp.Tile);
+                    break;
+                }
+
+            default:
+                throw new NotSupportedException($"a {paint.GetType().Name} runs C# code, which a file cannot hold.");
+        }
+
+        return b;
+    }
+
+    private static void Common(Buffer b, Paint paint)
+    {
+        b.U8((byte)paint.BlendMode);
+        b.F32(paint.Opacity);
+        b.U8((byte)((paint.Antialias ? 1 : 0) | (paint.Dither ? 2 : 0) | (paint.Blur is null ? 0 : 4)));
+        b.Matrix(paint.LocalMatrix);
+        if (paint.Blur is MaskBlur blur)
+        {
+            b.F32(blur.Sigma);
+            b.U8((byte)blur.Style);
+        }
+    }
+
+    private static void GradientCommon(Buffer b, Gradient g)
+    {
+        b.Stops([.. g.Stops]);
+        b.U8((byte)g.Tile);
+        b.U8((byte)((g.ExtendStart ? 1 : 0) | (g.ExtendEnd ? 2 : 0) | (g.Premultiplied ? 4 : 0)));
+        b.U8((byte)g.Interpolation.Space);
+        b.U8((byte)g.Interpolation.Hue);
+    }
+
+    /// <summary>A growing little-endian byte buffer.</summary>
+    private sealed class Buffer
+    {
+        private byte[] _bytes = new byte[64];
+        private int _length;
+
+        internal ReadOnlySpan<byte> Span => _bytes.AsSpan(0, _length);
+
+        internal void U8(byte v) => Take(1)[0] = v;
+
+        internal void Bool(bool v) => U8(v ? (byte)1 : (byte)0);
+
+        internal void Op(Egdr.Op op) => U8((byte)op);
+
+        internal void U32(uint v) => BinaryPrimitives.WriteUInt32LittleEndian(Take(4), v);
+
+        internal void I32(int v) => BinaryPrimitives.WriteInt32LittleEndian(Take(4), v);
+
+        internal void F32(float v) => BinaryPrimitives.WriteSingleLittleEndian(Take(4), v);
+
+        internal void Point(Vector2 p)
+        {
+            F32(p.X);
+            F32(p.Y);
+        }
+
+        internal void Rect(RectF r)
+        {
+            F32(r.X);
+            F32(r.Y);
+            F32(r.Width);
+            F32(r.Height);
+        }
+
+        internal void RoundRect(RoundRect r)
+        {
+            Rect(r.Bounds);
+            Point(r.Radii.TopLeft);
+            Point(r.Radii.TopRight);
+            Point(r.Radii.BottomRight);
+            Point(r.Radii.BottomLeft);
+        }
+
+        internal void Matrix(Matrix3x2 m)
+        {
+            F32(m.M11);
+            F32(m.M12);
+            F32(m.M21);
+            F32(m.M22);
+            F32(m.M31);
+            F32(m.M32);
+        }
+
+        internal void Color(RgbaF32 c)
+        {
+            F32(c.R);
+            F32(c.G);
+            F32(c.B);
+            F32(c.A);
+        }
+
+        internal void Stops(GradientStop[] stops)
+        {
+            U32((uint)stops.Length);
+            foreach (GradientStop s in stops)
+            {
+                F32(s.Offset);
+                Color(s.Color);
+            }
+        }
+
+        internal void Stroke(Stroke s)
+        {
+            F32(s.Width);
+            U8((byte)s.Cap);
+            U8((byte)s.Join);
+            F32(s.MiterLimit);
+            Bool(s.Dash is not null);
+            if (s.Dash is DashPattern dash)
+            {
+                U32((uint)dash.Intervals.Count);
+                foreach (float i in dash.Intervals)
+                {
+                    F32(i);
+                }
+
+                F32(dash.Phase);
+            }
+        }
+
+        internal void Sampling(SamplingOptions s)
+        {
+            U8((byte)s.Filter);
+            U8((byte)s.ColorSpace);
+            U8((byte)s.Edges);
+            U8(s.Background.R);
+            U8(s.Background.G);
+            U8(s.Background.B);
+            U8(s.Background.A);
+        }
+
+        internal void OptionalPaint(Buffer? paint)
+        {
+            Bool(paint is not null);
+            if (paint is not null)
+            {
+                Append(paint);
+            }
+        }
+
+        internal void Append(Buffer other) => other.Span.CopyTo(Take(other._length));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Span<byte> Take(int n)
+        {
+            if (_length + n > _bytes.Length)
+            {
+                Array.Resize(ref _bytes, Math.Max(_bytes.Length * 2, _length + n));
+            }
+
+            Span<byte> s = _bytes.AsSpan(_length, n);
+            _length += n;
+            return s;
+        }
+    }
+}

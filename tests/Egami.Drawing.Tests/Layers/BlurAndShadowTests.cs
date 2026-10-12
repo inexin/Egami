@@ -123,7 +123,7 @@ public class BlurAndShadowTests
         return pixels;
     }
 
-    private static Rgba8[] Draw(Action<Drawing.Canvas> draw, bool transparent = false)
+    private static Rgba8[] Draw(Action<Egami.Drawing.Canvas> draw, bool transparent = false)
     {
         using Raster<Rgba8> raster = Raster.Create(108, 80, transparent ? default : Rgba8.White);
         using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas())

@@ -23,10 +23,12 @@ internal sealed class ImageShader : Shader
     private readonly ResampleFilter _filter;
     private readonly bool _linear;
     private readonly float _support;
+    private readonly int _level;
 
-    private ImageShader(PremulRgbaF32[] texels, int width, int height, Matrix3x2 inverse, ImagePaint paint)
+    private ImageShader(PremulRgbaF32[] texels, int width, int height, Matrix3x2 inverse, ImagePaint paint, int level)
     {
         _texels = texels;
+        _level = level;
         _width = width;
         _height = height;
         _inverse = inverse;
@@ -49,10 +51,7 @@ internal sealed class ImageShader : Shader
     internal static ImageShader Create(ImagePaint paint, Matrix3x2 inverse)
     {
         Raster image = paint.Image;
-
-        // Device → image scale: the longer of the inverse's columns. Past 2, sample the mip level that brings it under 2.
-        float footprint = MathF.Max(new Vector2(inverse.M11, inverse.M12).Length(), new Vector2(inverse.M21, inverse.M22).Length());
-        int level = paint.Sampling.Filter == ResampleFilter.Nearest || !(footprint >= 2) ? 0 : (int)MathF.Floor(MathF.Log2(footprint));
+        int level = Level(paint, inverse);
         Raster source = image;
         MipChain? chain = null;
         try
@@ -68,12 +67,27 @@ internal sealed class ImageShader : Shader
             float sx = source.Width / (float)image.Width, sy = source.Height / (float)image.Height;
             Matrix3x2 toLevel = inverse * Matrix3x2.CreateScale(sx, sy);
             PremulRgbaF32[] texels = Texels(source, paint.Sampling.ColorSpace == ColorSpace.Linear);
-            return new ImageShader(texels, source.Width, source.Height, toLevel, paint);
+            return new ImageShader(texels, source.Width, source.Height, toLevel, paint, level);
         }
         finally
         {
             chain?.Dispose();
         }
+    }
+
+    /// <summary>
+    /// Returns the shader of the same paint under another mapping, sharing this one's texels when the mapping samples the same mip
+    /// level: a mesh's textured triangles and an atlas's sprites differ only in their mapping.
+    /// </summary>
+    internal ImageShader Rebase(ImagePaint paint, Matrix3x2 inverse)
+    {
+        if (Level(paint, inverse) != _level)
+        {
+            return Create(paint, inverse);
+        }
+
+        Matrix3x2 toLevel = inverse * Matrix3x2.CreateScale(_width / (float)paint.Image.Width, _height / (float)paint.Image.Height);
+        return new ImageShader(_texels, _width, _height, toLevel, paint, _level);
     }
 
     public override void Shade(int y, int x, Span<PremulRgbaF32> row)
@@ -93,6 +107,13 @@ internal sealed class ImageShader : Shader
                 row[i] = ToEncoded(row[i]);
             }
         }
+    }
+
+    /// <summary>Device → image scale: the longer of the inverse's columns. Past 2, the mip level that brings it under 2.</summary>
+    private static int Level(ImagePaint paint, Matrix3x2 inverse)
+    {
+        float footprint = MathF.Max(new Vector2(inverse.M11, inverse.M12).Length(), new Vector2(inverse.M21, inverse.M22).Length());
+        return paint.Sampling.Filter == ResampleFilter.Nearest || !(footprint >= 2) ? 0 : (int)MathF.Floor(MathF.Log2(footprint));
     }
 
     /// <summary>Maps a texel index into 0..size − 1 by a tile mode, or −1 for Decal outside.</summary>

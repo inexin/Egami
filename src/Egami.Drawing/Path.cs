@@ -6,7 +6,7 @@ using Egami.Operations;
 namespace Egami.Drawing;
 
 /// <summary>
-/// An outline of contours made of lines, quadratic and cubic Bézier curves, with the <see cref="Drawing.FillRule"/> that says which
+/// An outline of contours made of lines, quadratic and cubic Bézier curves, with the <see cref="Egami.Drawing.FillRule"/> that says which
 /// points it covers when filled. A path never changes after it is built, so one path can be drawn from many threads and kept by any
 /// canvas backend. Coordinates are float pixels, y down. Build one with <see cref="PathBuilder"/> or a shape helper such as
 /// <see cref="Circle"/>.

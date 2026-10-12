@@ -9,7 +9,7 @@ namespace Egami.Drawing.Tests.Canvas;
 /// A backend that never touches pixels: it writes each hook call as a line of text, the way a PDF page would write operators.
 /// The canvas suite runs on it as well as on the raster canvas, which shows the hook contract works for a non-raster backend.
 /// </summary>
-internal sealed class TraceCanvas(float width, float height) : Drawing.Canvas(width, height)
+internal sealed class TraceCanvas(float width, float height) : Egami.Drawing.Canvas(width, height)
 {
     public List<string> Calls { get; } = [];
 
@@ -73,10 +73,10 @@ internal sealed class TraceCanvas(float width, float height) : Drawing.Canvas(wi
         base.Dispose(disposing);
     }
 
-    internal FallbackImage? Fallback(Action<Drawing.Canvas> draw, float scale) => RasterizeFallback(draw, scale);
+    internal FallbackImage? Fallback(Action<Egami.Drawing.Canvas> draw, float scale) => RasterizeFallback(draw, scale);
 
     /// <summary>A custom paint runs C#, which a vector page cannot hold: it goes through the raster fallback, as a PDF backend would.</summary>
-    private bool Fallback(Paint paint, Action<Drawing.Canvas> draw)
+    private bool Fallback(Paint paint, Action<Egami.Drawing.Canvas> draw)
     {
         if (paint is not CustomPaint)
         {
