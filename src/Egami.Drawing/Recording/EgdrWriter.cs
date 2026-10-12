@@ -192,6 +192,26 @@ internal sealed class EgdrWriter
         return index;
     }
 
+    private static bool HasColorGlyphs(GlyphRun run)
+    {
+        Font font = run.Font;
+        Typeface face = font.EffectiveTypeface;
+        if (!font.ColorGlyphs || (face.ColorFormats & ~ColorGlyphFormats.Svg) == 0)
+        {
+            return false;
+        }
+
+        foreach (ushort glyph in run.Glyphs)
+        {
+            if (face.HasColorGlyph(glyph))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void WriteCall(Buffer b, DrawingCall call)
     {
         switch (call)
@@ -272,7 +292,16 @@ internal sealed class EgdrWriter
 
             case DrawGlyphRunCall c:
                 {
-                    // Text is saved as its outlines: a file holds no fonts. It draws the same, through the default hook.
+                    // Text is saved as what the default hook draws for it, since a file holds no fonts: its outlines, and color
+                    // glyphs as the clips, fills and images they draw with, in a drawing of their own.
+                    if (HasColorGlyphs(c.Run))
+                    {
+                        var recorder = new DrawingRecorder(RectF.FromEdges(-1e6f, -1e6f, 1e6f, 1e6f)) { ExpandText = true };
+                        recorder.DrawGlyphRun(c.Run, c.Origin, c.Paint);
+                        WriteCall(b, new DrawDrawingCall(recorder.Finish(), Matrix3x2.Identity, null, false));
+                        break;
+                    }
+
                     int path = PathIndex(c.Run.ToPath(c.Origin));
                     Shape(b, Egdr.Op.DrawPath, null, c.Paint, s => s.U32((uint)path));
                     break;

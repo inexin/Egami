@@ -116,7 +116,22 @@ public sealed class PictureRecorder : Canvas
     protected override void OnEndMarkedContent() => _calls.Add(EndMarkedContentCall.Instance);
 
     /// <inheritdoc/>
-    protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint) => _calls.Add(new DrawGlyphRunCall(run, origin, paint));
+    protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)
+    {
+        if (ExpandText)
+        {
+            base.OnDrawGlyphRun(run, origin, paint);
+            return;
+        }
+
+        _calls.Add(new DrawGlyphRunCall(run, origin, paint));
+    }
+
+    /// <summary>
+    /// Gets or sets whether glyph runs are recorded as what the default hook draws for them (color glyphs as canvas calls, the
+    /// rest as one path) instead of as runs; a saved drawing, which holds no fonts, records text this way.
+    /// </summary>
+    internal bool ExpandText { get; set; }
 
     /// <inheritdoc/>
     protected override void OnDrawLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawLatticeCall(image, lattice, destination, sampling, paint));

@@ -88,6 +88,26 @@ public class ColorTextTests
     }
 
     [Fact]
+    public void SavedDrawingsKeepColorGlyphs()
+    {
+        var recorder = new DrawingRecorder(new RectF(0, 0, 260, 70));
+        recorder.DrawText("😀🚀 ok", new Vector2(6, 52), new Font(ColrV1.Value, 40), Rgba8.Black);
+        Drawing drawing = recorder.Finish();
+        using var stream = new MemoryStream();
+        drawing.Save(stream);
+        stream.Position = 0;
+        Drawing loaded = Drawing.Load(stream);
+        using Raster<Rgba8> a = drawing.ToRaster<Rgba8>();
+        using Raster<Rgba8> b = loaded.ToRaster<Rgba8>();
+        Assert.Contains(Pixels(b), p => Chroma(p) > 60);
+        // Premultiplied, so transparent pixels compare equal whatever their color. The saved glyphs draw at their exact positions,
+        // the cached ones at quarter pixels, so edges differ by up to an eighth of a pixel.
+        int[] diffs = [.. Pixels(a).Zip(Pixels(b)).Select(p => Math.Max(Math.Abs(p.First.A - p.Second.A), Math.Abs((p.First.R * p.First.A / 255) - (p.Second.R * p.Second.A / 255))))];
+        Assert.True(diffs.Average() < 1, $"The mean difference is {diffs.Average()} levels.");
+        Assert.True(diffs.Max() <= 64, $"The largest difference is {diffs.Max()} levels.");
+    }
+
+    [Fact]
     public void TheGlyphIsOneGroupUnderThePaintsAlpha()
     {
         var font = new Font(ColrV1.Value, 40);
