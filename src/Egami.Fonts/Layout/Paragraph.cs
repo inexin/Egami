@@ -94,9 +94,9 @@ public sealed class Paragraph
         float boxWidth = float.IsFinite(width) ? width : drafts.Count == 0 ? 0 : drafts.Max(d => d.ContentWidth);
         List<TextLine> lines = new(drafts.Count);
         float top = 0;
-        foreach (LineDraft draft in drafts)
+        for (int i = 0; i < drafts.Count; i++)
         {
-            TextLine line = flow.Builder.Finish(draft, boxWidth, top);
+            TextLine line = flow.Builder.Finish(drafts[i], boxWidth, top, Style.TrimEdges && i == 0, Style.TrimEdges && i == drafts.Count - 1);
             lines.Add(line);
             top = line.Bottom;
         }
@@ -421,8 +421,6 @@ internal static class Itemizer
         int scriptIndex = 0;
         int placeholder = 0;
         List<Pending> pending = [];
-        Font? previousFont = null;
-        int previousStyle = -1;
         foreach (TextSegment cluster in TextSegmenter.Graphemes(text))
         {
             while (scriptIndex + 1 < scripts.Count && cluster.Start >= scripts[scriptIndex].Start + scripts[scriptIndex].Length)
@@ -446,13 +444,10 @@ internal static class Itemizer
                 // Placeholders, tabs and breaks are runs of their own, in the style's primary font for their line box.
                 Font own = style.Primary ?? styles[0].Primary ?? default;
                 pending.Add(new Pending(cluster.Start, cluster.Length, kind, level, script, styleIndex, style.ShapingGroup, own, kind == RunKind.Placeholder ? placeholder++ : -1));
-                previousFont = null;
                 continue;
             }
 
-            Font font = ChooseFont(clusterText, style, styleIndex == previousStyle ? previousFont : null, paragraph.Fallback, script, fonts);
-            previousFont = font;
-            previousStyle = styleIndex;
+            Font font = ChooseFont(clusterText, style, paragraph.Fallback, script, fonts);
             if (pending.Count > 0 && pending[^1] is { Kind: RunKind.Text } last && last.Level == level && last.Script == script
                 && last.Group == style.ShapingGroup && last.Font == font && last.Start + last.Length == cluster.Start)
             {
@@ -498,17 +493,14 @@ internal static class Itemizer
     private static bool IsHardBreak(int cp) => cp is 0x0A or 0x0B or 0x0C or 0x0D or 0x85 or 0x2028 or 0x2029;
 
     /// <summary>
-    /// The font for one grapheme cluster: a shared character (space, punctuation) keeps the previous cluster's font when that maps
-    /// it; then the style's families in order, the paragraph's fallback families and resolver, the first that maps every
-    /// character, emoji presentation preferring color faces; else the primary font, which draws .notdef.
+    /// The font for one grapheme cluster, as CSS matches fonts: the style's families in order, then the paragraph's fallback
+    /// families and resolver, the first that maps every character, emoji presentation preferring color faces; else the primary
+    /// font, which draws .notdef. Spaces and punctuation take the first family that has them, as browsers do, not the font of
+    /// the text around them.
     /// </summary>
-    private static Font ChooseFont(ReadOnlySpan<char> cluster, ResolvedStyle style, Font? previous, FontFallback fallback, Script script, FontCache fonts)
+    private static Font ChooseFont(ReadOnlySpan<char> cluster, ResolvedStyle style, FontFallback fallback, Script script, FontCache fonts)
     {
         Font primary = style.Primary!.Value;
-        if (previous is Font p && p != primary && IsShared(cluster) && TextItemizer.Maps(p.Typeface, cluster))
-        {
-            return p;
-        }
 
         bool emoji = TextItemizer.WantsEmoji(cluster);
         bool textPresentation = !emoji && cluster.Contains('\uFE0E');
@@ -561,6 +553,4 @@ internal static class Itemizer
         return false;
     }
 
-    private static bool IsShared(ReadOnlySpan<char> cluster) =>
-        UnicodeData.GetScript(TextSegmenter.CodePointAt(cluster, 0, out _)).IsShared && !TextItemizer.WantsEmoji(cluster);
 }

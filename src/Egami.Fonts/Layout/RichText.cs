@@ -48,7 +48,7 @@ public enum PlaceholderAlignment
     /// <summary>The box's bottom is the line box's bottom.</summary>
     Bottom = 4,
 
-    /// <summary>The box's middle is the middle of the text's ascent and descent.</summary>
+    /// <summary>The box's middle sits half the paragraph font's x-height above the baseline (CSS <c>vertical-align: middle</c>).</summary>
     Middle = 5,
 }
 

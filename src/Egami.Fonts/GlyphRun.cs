@@ -45,6 +45,9 @@ public sealed class GlyphRun
     /// <summary>Gets the number of glyphs.</summary>
     public int Count => _glyphs.Length;
 
+    /// <summary>The pen advance after glyph <paramref name="index"/>: the shaped one when the run has them, else the font's.</summary>
+    internal float AdvanceAt(int index) => _advances is null ? Font.GetAdvance(_glyphs[index]) : _advances[index];
+
     /// <summary>Gets the glyph ids.</summary>
     public ReadOnlySpan<ushort> Glyphs => _glyphs;
 

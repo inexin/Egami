@@ -417,7 +417,7 @@ internal sealed class LineBuilder
                 if (_text[i] == '\t')
                 {
                     pen += p[i] - p[cur];
-                    pen = NextTabStop(pen);
+                    pen += TabAdvance(pen, i, end);
                     cur = i + 1;
                 }
             }
@@ -480,7 +480,52 @@ internal sealed class LineBuilder
         return buffer;
     }
 
-    private float NextTabStop(float pen)
+    /// <summary>
+    /// The advance of the tab at <paramref name="tab"/> with the pen at <paramref name="pen"/>: to the next tab stop, where the
+    /// text up to the next tab (or <paramref name="limit"/>) starts, ends, centres or puts its first decimal separator by the
+    /// stop's alignment; never backwards.
+    /// </summary>
+    private float TabAdvance(float pen, int tab, int limit)
+    {
+        TabStop stop = NextTabStop(pen);
+        if (stop.Alignment == TabAlignment.Start)
+        {
+            return stop.Position - pen;
+        }
+
+        int end = tab + 1;
+        while (end < limit && _text[end] != '\t')
+        {
+            end++;
+        }
+
+        float[] p = _m.Prefix;
+        float segment = p[end] - p[tab + 1];
+        float before = stop.Alignment switch
+        {
+            TabAlignment.End => segment,
+            TabAlignment.Center => segment / 2,
+            _ => DecimalOffset(tab + 1, end),
+        };
+        return Math.Max(0, stop.Position - before - pen);
+    }
+
+    /// <summary>The width from a segment's start to its first decimal separator (a full stop, comma or U+066B), or the whole
+    /// segment when it has none.</summary>
+    private float DecimalOffset(int start, int end)
+    {
+        for (int i = start; i < end; i++)
+        {
+            if (_text[i] is '.' or ',' or '\u066B')
+            {
+                return _m.Prefix[i] - _m.Prefix[start];
+            }
+        }
+
+        return _m.Prefix[end] - _m.Prefix[start];
+    }
+
+    private TabStop NextTabStop(float pen)
     {
         ParagraphStyle style = _paragraph.Style;
         if (style.TabStops is { } stops)
@@ -489,7 +534,7 @@ internal sealed class LineBuilder
             {
                 if (stop.Position > pen + Epsilon)
                 {
-                    return stop.Position;
+                    return stop;
                 }
             }
         }
@@ -497,7 +542,7 @@ internal sealed class LineBuilder
         float interval = TabInterval();
         if (interval <= 0)
         {
-            return pen;
+            return new TabStop(pen);
         }
 
         // CSS Text 3: a tab advances to the next stop at least half a space away.
@@ -507,7 +552,7 @@ internal sealed class LineBuilder
             next += interval;
         }
 
-        return next;
+        return new TabStop(next);
     }
 
     private float TabInterval()
@@ -716,7 +761,7 @@ internal sealed class LineBuilder
                 advance = _paragraph.RichText.Placeholders[run.Placeholder].Width + _m.Spacing[start];
                 break;
             case RunKind.Tab:
-                advance = NextTabStop(pen) - pen;
+                advance = TabAdvance(pen, start, lineEnd);
                 break;
         }
 
@@ -753,67 +798,166 @@ internal sealed class LineBuilder
         }
     }
 
-    /// <summary>The line box above and below the baseline: each run's font ascent and descent with half its line gap (CSS
-    /// <c>line-height: normal</c>), placeholders by their alignment.</summary>
+    /// <summary>
+    /// The line box above and below the baseline (CSS Inline Layout 3): the root inline box (the paragraph's default style, the
+    /// strut CSS gives every line), the <see cref="ParagraphStyle.Strut"/>, and each run's inline box, moved by its baseline
+    /// shift; placeholders by their alignment, those aligned to the line box's top or bottom stretching it last. With
+    /// <see cref="Strut.Force"/> the strut alone sets the line box.
+    /// </summary>
     private (float Ascent, float Descent) LineMetrics(List<DraftRun> pieces, int start)
     {
-        float ascent = 0, descent = 0;
-        bool any = false;
+        float top, bottom;
+        (top, bottom) = RootBox();
+        if (StrutBox() is (float StrutTop, float StrutBottom) strut)
+        {
+            if (_paragraph.Style.Strut!.Force)
+            {
+                return (-strut.StrutTop, strut.StrutBottom);
+            }
+
+            top = Math.Min(top, strut.StrutTop);
+            bottom = Math.Max(bottom, strut.StrutBottom);
+        }
+
+        List<Placeholder> stretching = [];
         foreach (DraftRun piece in pieces)
         {
+            ResolvedStyle style = _paragraph.Styles[piece.Style];
+            float t, b;
             if (piece.Kind == RunKind.Placeholder)
             {
                 Placeholder box = _paragraph.RichText.Placeholders[piece.Placeholder];
-                (float a, float d) = box.Alignment switch
+                if (box.Alignment is PlaceholderAlignment.Top or PlaceholderAlignment.Bottom)
                 {
-                    PlaceholderAlignment.Baseline => (box.BaselineOffset, box.Height - box.BaselineOffset),
-                    PlaceholderAlignment.AboveBaseline => (box.Height, 0f),
-                    PlaceholderAlignment.BelowBaseline => (0f, box.Height),
-                    _ => (0f, 0f),
-                };
-                ascent = Math.Max(ascent, a);
-                descent = Math.Max(descent, d);
-                continue;
+                    stretching.Add(box);
+                    continue;
+                }
+
+                (t, b) = PlaceholderBox(box);
+            }
+            else
+            {
+                (t, b) = InlineBox(piece.Font, style.LineHeight);
             }
 
-            (float fa, float fd) = FontBox(piece.Font);
-            ascent = Math.Max(ascent, fa);
-            descent = Math.Max(descent, fd);
-            any = true;
+            t += style.BaselineShift;
+            b += style.BaselineShift;
+            top = Math.Min(top, t);
+            bottom = Math.Max(bottom, b);
         }
 
-        if (!any && _paragraph.Styles[_paragraph.RichText.SpanAt(start) + 1].Primary is Font f)
+        float ascent = -top, descent = bottom;
+        foreach (Placeholder box in stretching)
         {
-            (float fa, float fd) = FontBox(f);
-            ascent = Math.Max(ascent, fa);
-            descent = Math.Max(descent, fd);
+            if (box.Height > ascent + descent)
+            {
+                if (box.Alignment == PlaceholderAlignment.Top)
+                {
+                    descent = box.Height - ascent;
+                }
+                else
+                {
+                    ascent = box.Height - descent;
+                }
+            }
         }
 
         return (ascent, descent);
     }
 
-    private static (float Ascent, float Descent) FontBox(Font font)
+    /// <summary>The root inline box: the default style's primary font and line height.</summary>
+    private (float Top, float Bottom) RootBox()
+    {
+        ResolvedStyle root = _paragraph.Styles[0];
+        return root.Primary is Font f ? InlineBox(f, root.LineHeight) : (0, 0);
+    }
+
+    private (float StrutTop, float StrutBottom)? StrutBox()
+    {
+        if (_paragraph.Style.Strut is not Strut strut)
+        {
+            return null;
+        }
+
+        ResolvedStyle root = _paragraph.Styles[0];
+        IReadOnlyList<FontFamily> families = strut.FontFamilies ?? root.Families;
+        if (families.Count == 0)
+        {
+            return null;
+        }
+
+        FontMatch match = families[0].Match(strut.FontStyle ?? root.FontStyle);
+        Font font = new(match.Typeface, strut.Size ?? root.Size) { Synthesis = match.Synthesis };
+        return InlineBox(font, strut.LineHeight);
+    }
+
+    /// <summary>A placeholder's box relative to the baseline, for the alignments that hang off the baseline.</summary>
+    private (float Top, float Bottom) PlaceholderBox(Placeholder box) => box.Alignment switch
+    {
+        PlaceholderAlignment.Baseline => (-box.BaselineOffset, box.Height - box.BaselineOffset),
+        PlaceholderAlignment.AboveBaseline => (-box.Height, 0),
+        PlaceholderAlignment.BelowBaseline => (0, box.Height),
+
+        // CSS vertical-align: middle: the box's middle half the root font's x-height above the baseline.
+        _ => (-(RootXHeight() / 2) - (box.Height / 2), -(RootXHeight() / 2) + (box.Height / 2)),
+    };
+
+    private float RootXHeight() => _paragraph.Styles[0].Primary is Font f ? f.Extents.XHeight : 0;
+
+    /// <summary>
+    /// A text inline box relative to the baseline: the font's ascent and descent rounded to whole units, as browsers round them,
+    /// then the half-leading from the line height, the top half rounded down; a computed line height is floored to 1/64 unit,
+    /// browsers' layout unit, so stacked lines do not drift. <see cref="LineHeight.Normal"/> adds the font's rounded line gap.
+    /// </summary>
+    internal static (float Top, float Bottom) InlineBox(Font font, LineHeight lineHeight)
+    {
+        (float a, float d, float gap) = Rounded(font);
+        float height = lineHeight.Kind switch
+        {
+            LineHeightKind.Multiple => LayoutUnit(lineHeight.Value * font.Size),
+            LineHeightKind.Absolute => LayoutUnit(lineHeight.Value),
+            _ => a + d + gap,
+        };
+        float leading = height - (a + d);
+        float half = MathF.Floor(leading / 2);
+        return (-(a + half), d + (leading - half));
+    }
+
+    /// <summary>A font's ascent, descent and line gap rounded to whole units, as browsers keep them.</summary>
+    internal static (float Ascent, float Descent, float LineGap) Rounded(Font font)
     {
         FontExtents e = font.Extents;
-        float half = e.LineGap / 2;
-        return (e.Ascent + half, -e.Descent + half);
+        return (MathF.Floor(e.Ascent + 0.5f), MathF.Floor(-e.Descent + 0.5f), MathF.Floor(e.LineGap + 0.5f));
     }
+
+    /// <summary>A length floored to 1/64, browsers' layout unit.</summary>
+    internal static float LayoutUnit(float value) => MathF.Floor(value * 64) / 64;
 
     /// <summary>Places a draft: its content starts at the start edge (left, or right in right-to-left paragraphs), its top at
     /// <paramref name="top"/>.</summary>
-    public TextLine Finish(LineDraft draft, float width, float top)
+    public TextLine Finish(LineDraft draft, float width, float top, bool trimTop = false, bool trimBottom = false)
     {
+        // CSS text-box-trim: the first line's box starts at the root font's ascent, the last one's ends at its descent.
+        float lineAscent = draft.Ascent, lineDescent = draft.Descent;
+        if ((trimTop || trimBottom) && _paragraph.Styles[0].Primary is Font root)
+        {
+            (float a, float d, _) = Rounded(root);
+            lineAscent = trimTop ? a : lineAscent;
+            lineDescent = trimBottom ? d : lineDescent;
+        }
+
         bool rtl = (draft.ParagraphLevel & 1) != 0;
         float boxWidth = float.IsFinite(width) ? width : draft.ContentWidth;
         float left = rtl ? boxWidth - draft.ContentWidth : 0;
 
         // Hanging spaces sit past the content's end: right of it in left-to-right paragraphs, left of it in right-to-left ones.
         float origin = rtl ? left - draft.HangWidth : left;
-        float baseline = top + draft.Ascent;
+        float baseline = top + lineAscent;
         List<LayoutRun> runs = new(draft.Runs.Count);
         foreach (DraftRun piece in draft.Runs)
         {
             float x = origin + piece.X;
+            float shift = _paragraph.Styles[piece.Style].BaselineShift;
             GlyphRun? glyphs = null;
             if (piece.Kind == RunKind.Text)
             {
@@ -821,7 +965,7 @@ internal sealed class LineBuilder
                 float pen = x;
                 for (int g = 0; g < points.Length; g++)
                 {
-                    points[g] = new Vector2(pen + piece.Offsets[g].X, baseline - piece.Offsets[g].Y);
+                    points[g] = new Vector2(pen + piece.Offsets[g].X, baseline + shift - piece.Offsets[g].Y);
                     pen += piece.Advances[g];
                 }
 
@@ -843,6 +987,6 @@ internal sealed class LineBuilder
             runs.Add(new LayoutRun(kind, piece.Start, piece.Length, piece.Level, piece.Style, x, piece.Advance, glyphs, piece.Kind == RunKind.Placeholder ? piece.Placeholder : -1));
         }
 
-        return new TextLine(draft.Start, draft.End - draft.Start, top, draft.Ascent, draft.Descent, left, draft.ContentWidth, draft.HardBreak, false, runs);
+        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, draft.ContentWidth, draft.HardBreak, false, runs);
     }
 }

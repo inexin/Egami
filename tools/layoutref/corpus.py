@@ -86,7 +86,7 @@ def features(root):
     cases = [
         # Line breaking switches (question 5).
         case("word-break-break-all", LATIN, english, widths=[90, 170], style={"wordBreak": "BreakAll"}),
-        case("word-break-keep-all", CJK, KOREAN, widths=[90, 170], style={"wordBreak": "KeepAll"}),
+        case("word-break-keep-all", CJK, KOREAN, widths=[90, 170], style={"wordBreak": "KeepAll", "language": "ko"}),
         case("word-break-keep-all-chinese", CJK, CHINESE, widths=[90, 170], style={"wordBreak": "KeepAll"}),
         case("overflow-wrap-normal", LATIN, LONG_WORD, widths=[120, 200]),
         case("overflow-wrap-anywhere", LATIN, LONG_WORD, widths=[120, 200], style={"overflowWrap": "Anywhere"}),

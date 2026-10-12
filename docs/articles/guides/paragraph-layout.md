@@ -6,7 +6,7 @@ alignment and justification, line height, spacing, tabs, max lines and ellipsis,
 decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of `GlyphRun`s and
 decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.
 
-Phase 2.8.2 is landing: line breaking, rich text and line filling are in; line boxes, alignment, hit testing and drawing
+Phase 2.8.2 is landing: line breaking, rich text, line filling and line boxes are in; alignment, hit testing and drawing
 follow, and this guide grows with them.
 
 ## Line breaking
@@ -83,6 +83,28 @@ order. A run is glyphs (`Glyphs`, a `GlyphRun` already at its layout position), 
 - `LineFill.Balanced` evens the lines of a short paragraph (up to 6 lines): of the breaks that fit, the ones that leave the
   least squared space on every line, the last included, as Chromium's `text-wrap: balance` does.
 - `float.PositiveInfinity` lays the paragraph out without wrapping; the box is then as wide as the longest line.
+
+### Line boxes and spacing
+
+Line boxes follow CSS Inline Layout 3, with the numbers browsers use:
+
+- Each run's inline box is its font's ascent and descent, rounded to whole units as browsers round them, plus the leading
+  its `LineHeight` adds: `Normal` adds the font's line gap, `Multiple` and `Absolute` set the height (a computed height is
+  floored to 1/64 unit, browsers' layout unit, so stacked lines do not drift). The leading is split half above and half below,
+  the top half rounded down. A `BaselineShift` moves the box down (or up, when negative).
+- Every line also holds the root inline box, from the paragraph's `DefaultStyle`, as CSS's strut does; a `Strut` adds a
+  minimum box of its own, and with `Force` it alone sets every line box, for line grids.
+- Placeholders sit by their alignment: on the baseline at an offset, above or below it, or at the middle (half the default
+  font's x-height above the baseline, as CSS's `middle`); boxes aligned to the line's top or bottom stretch it last.
+- `TrimEdges` drops the space above the first line's text and below the last one's (CSS `text-box-trim`).
+- Letter spacing follows each grapheme cluster and word spacing each word separator; tabs advance to the next of the
+  `TabStops`, which align the text after them at their start, end, centre or first decimal separator, or else to the next
+  multiple of `TabSize` spaces, at least half a space on.
+- Characters take the first family that has them, as CSS matches fonts, so spaces and punctuation between words of another
+  script stay in the first family.
+
+Line boxes equal Chromium's within 0.01 unit on every line-height, strut, spacing, tab, placeholder and mixed-font case, and
+glyph positions equal its within 0.01 once its 1/64 layout unit is allowed for.
 
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
 images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.
