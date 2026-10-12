@@ -32,8 +32,8 @@ public partial class DiagnosticsCatalogTests
         foreach (string line in File.ReadLines(Path.Combine(root, "docs", "articles", "diagnostics.md")))
         {
             Match match = DocsId().Match(line);
-            // Egami.Fonts' ids are checked by its own tests.
-            if (match.Success && !match.Groups[1].Value.StartsWith("Font.", StringComparison.Ordinal))
+            // Egami.Fonts' ids are checked by its own tests; Egami.Drawing's are raised outside the core.
+            if (match.Success && !match.Groups[1].Value.StartsWith("Font.", StringComparison.Ordinal) && !line.Contains("(Egami.Drawing) |", StringComparison.Ordinal))
             {
                 inDocs.Add(match.Groups[1].Value);
             }
