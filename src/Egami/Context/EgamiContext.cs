@@ -21,7 +21,7 @@ public sealed record EgamiContext
     private readonly int _maxParallelism = Environment.ProcessorCount;
     private readonly SafetyLimits _limits = SafetyLimits.Default;
     private readonly DiagnosticLevel _diagnosticLevel = DiagnosticLevel.Warning;
-    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Webp.WebpFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info, Egami.Formats.Tiff.TiffFormat.Info, Egami.Formats.Jbig2.Jbig2Format.Info, Egami.Formats.Jpeg2000.Jpeg2000Format.Info, Egami.Formats.Tga.TgaFormat.Info];
+    private readonly IReadOnlyList<FormatInfo> _formats = [Egami.Formats.Png.PngFormat.Info, Egami.Formats.Jpeg.JpegFormat.Info, Egami.Formats.Gif.GifFormat.Info, Egami.Formats.Webp.WebpFormat.Info, Egami.Formats.Bmp.BmpFormat.Info, Egami.Formats.Qoi.QoiFormat.Info, Egami.Formats.Pnm.PnmFormat.Info, Egami.Formats.Tiff.TiffFormat.Info, Egami.Formats.Jbig2.Jbig2Format.Info, Egami.Formats.Jpeg2000.Jpeg2000Format.Info, Egami.Formats.Ico.IcoFormat.Info, Egami.Formats.Ico.CurFormat.Info, Egami.Formats.Tga.TgaFormat.Info];
 
     private static EgamiContext? s_default;
 

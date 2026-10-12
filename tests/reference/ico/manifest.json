@@ -1,0 +1,657 @@
+{
+ "files": {
+  "bad/no-entries.ico": {
+   "magick": [],
+   "magickError": "identify: memory allocation failed `/w/tests/images/ico/bad/no-entries.ico' @ error/icon.c/ReadICONImage/352.",
+   "pillow": [],
+   "truth": 0
+  },
+  "bad/no-mask.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ]
+   ],
+   "magickError": "identify: unexpected end-of-file '/w/tests/images/ico/bad/no-mask.ico': Invalid argument @ error/icon.c/ReadICONImage/801.",
+   "pillow": [
+    [
+     16,
+     16
+    ]
+   ],
+   "truth": 0
+  },
+  "bad/not-an-image.ico": {
+   "magick": [],
+   "magickError": "identify: improper image header `/w/tests/images/ico/bad/not-an-image.ico' @ error/icon.c/ReadICONImage/461.",
+   "pillow": [
+    "Truncated File Read"
+   ],
+   "truth": 0
+  },
+  "bad/offset-in-directory.ico": {
+   "magick": [],
+   "magickError": "identify: improper image header `/w/tests/images/ico/bad/offset-in-directory.ico' @ error/icon.c/ReadICONImage/755.",
+   "pillow": [
+    "Truncated File Read"
+   ],
+   "truth": 0
+  },
+  "bad/one-bad-entry.ico": {
+   "magick": [],
+   "magickError": "identify: improper image header `/w/tests/images/ico/bad/one-bad-entry.ico' @ error/icon.c/ReadICONImage/461.",
+   "pillow": [
+    [
+     16,
+     16
+    ],
+    "Truncated File Read"
+   ],
+   "truth": 0
+  },
+  "bad/overlap.ico": {
+   "magick": [],
+   "magickError": "identify: insufficient image data in file `/w/tests/images/ico/bad/overlap.ico' @ error/icon.c/ReadICONImage/468.",
+   "pillow": [
+    [
+     16,
+     16
+    ],
+    "Unsupported BMP header type (0)"
+   ],
+   "truth": 0
+  },
+  "bad/truncated.ico": {
+   "magick": [],
+   "magickError": "identify: unexpected end-of-file `/w/tests/images/ico/bad/truncated.ico' @ error/icon.c/ReadICONImage/370.",
+   "pillow": [
+    "buffer is not large enough"
+   ],
+   "truth": 0
+  },
+  "bmp-13x7.ico": {
+   "magick": [
+    [
+     13,
+     7
+    ],
+    [
+     13,
+     7
+    ]
+   ],
+   "pillow": [
+    [
+     13,
+     7
+    ],
+    [
+     13,
+     7
+    ]
+   ],
+   "truth": 2
+  },
+  "bmp-1x1.ico": {
+   "magick": [
+    [
+     1,
+     1
+    ]
+   ],
+   "pillow": [
+    [
+     1,
+     1
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp-256.ico": {
+   "magick": [
+    [
+     256,
+     256
+    ]
+   ],
+   "pillow": [
+    [
+     256,
+     256
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp-33.ico": {
+   "magick": [
+    [
+     33,
+     33
+    ],
+    [
+     33,
+     33
+    ]
+   ],
+   "pillow": [
+    [
+     33,
+     33
+    ],
+    [
+     33,
+     33
+    ]
+   ],
+   "truth": 2
+  },
+  "bmp1.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ]
+   ],
+   "pillow": [
+    [
+     16,
+     16
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp16-565.ico": {
+   "magick": [],
+   "magickError": "identify: insufficient image data in file `/w/tests/images/ico/bmp16-565.ico' @ error/icon.c/ReadICONImage/515.",
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp16.ico": {
+   "magick": [],
+   "magickError": "identify: insufficient image data in file `/w/tests/images/ico/bmp16.ico' @ error/icon.c/ReadICONImage/515.",
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp24.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp32-fields.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp32-mask-ones.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp32-zero-alpha.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp32.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp4.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ]
+   ],
+   "pillow": [
+    [
+     16,
+     16
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp8-short-palette.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "bmp8.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "cursor-set.cur": {
+   "magick": [
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ]
+   ],
+   "pillow": "Truncated File Read",
+   "truth": 2
+  },
+  "cursor.cur": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 1
+  },
+  "dir-mismatch.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ]
+   ],
+   "pillow": [
+    [
+     16,
+     16
+    ]
+   ],
+   "truth": 1
+  },
+  "magick-16colors.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 0
+  },
+  "magick-auto.ico": {
+   "magick": [
+    [
+     256,
+     256
+    ],
+    [
+     64,
+     64
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     16,
+     16
+    ]
+   ],
+   "pillow": [
+    [
+     256,
+     256
+    ],
+    [
+     64,
+     64
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     16,
+     16
+    ]
+   ],
+   "truth": 0
+  },
+  "magick.cur": {
+   "magick": [
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 0
+  },
+  "pillow-bmp.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ]
+   ],
+   "pillow": [
+    [
+     16,
+     16
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ]
+   ],
+   "truth": 0
+  },
+  "pillow-png.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     256,
+     256
+    ]
+   ],
+   "pillow": [
+    [
+     16,
+     16
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     256,
+     256
+    ]
+   ],
+   "truth": 0
+  },
+  "png-256.ico": {
+   "magick": [
+    [
+     256,
+     256
+    ]
+   ],
+   "pillow": [
+    [
+     256,
+     256
+    ]
+   ],
+   "truth": 1
+  },
+  "png-odd.ico": {
+   "magick": [
+    [
+     40,
+     24
+    ]
+   ],
+   "pillow": [
+    [
+     40,
+     24
+    ]
+   ],
+   "truth": 1
+  },
+  "set-depths.ico": {
+   "magick": [
+    [
+     32,
+     32
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     32,
+     32
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 3
+  },
+  "set-unsorted.ico": {
+   "magick": [
+    [
+     48,
+     48
+    ],
+    [
+     16,
+     16
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     32,
+     32
+    ]
+   ],
+   "pillow": [
+    [
+     48,
+     48
+    ],
+    [
+     16,
+     16
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     32,
+     32
+    ]
+   ],
+   "truth": 4
+  },
+  "set.ico": {
+   "magick": [
+    [
+     16,
+     16
+    ],
+    [
+     24,
+     24
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     64,
+     64
+    ],
+    [
+     256,
+     256
+    ]
+   ],
+   "pillow": [
+    [
+     16,
+     16
+    ],
+    [
+     24,
+     24
+    ],
+    [
+     32,
+     32
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     64,
+     64
+    ],
+    [
+     256,
+     256
+    ]
+   ],
+   "truth": 6
+  }
+ },
+ "tools": {
+  "imagemagick": "Version: ImageMagick 7.1.2-32 Q16-HDRI x86_64 24766 https://imagemagick.org",
+  "pillow": "12.3.0"
+ }
+}

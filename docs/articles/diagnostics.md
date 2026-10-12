@@ -110,6 +110,10 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Gif.UnknownBlock` | Warning | An unknown block where a block introducer was expected |
 | `Gif.XmpTrailerMissing` | Warning | The XMP application extension lacks its magic trailer |
 | `Icc.Unusable` | Warning | The embedded ICC profile is damaged or of a kind Egami cannot use; colors are read as if it were absent |
+| `Ico.DirectoryMismatch` | Warning | An icon's directory gives a size its entry's own header contradicts; the header's was used |
+| `Ico.EntryDamaged` | Warning | The entry Load picked could not be decoded; the next best was loaded |
+| `Ico.EntrySkipped` | Warning | An icon entry lies outside the file, overlaps another or is neither PNG nor BMP; it was skipped |
+| `Ico.MaskMissing` | Warning | A BMP entry ends before its AND mask; the rows without one are opaque |
 | `Iptc.Damaged` | Warning | The IPTC datasets would not parse in full; the block is kept as bytes |
 | `Iptc.ResourceBlockDamaged` | Warning | The Photoshop resource block that holds IPTC is damaged; it is kept as bytes |
 | `Iptc.ValueTooLong` | Warning | An IPTC value is longer than the IIM specification allows; it was kept |
@@ -182,6 +186,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Save.ConvertedToRgb` | Warning | The format holds no CMYK; the inks were converted to RGB |
 | `Save.DepthReduced` | Warning | Samples deeper than the format holds were rounded, or floating-point samples clipped to integers |
 | `Save.FramesDropped` | Warning | The format holds one image here; only the first frame was written |
+| `Save.IcoFitted` | Warning | A raster larger than an icon entry's 256 × 256 was fitted to 256 |
 | `Save.MetadataDropped` | Warning | Metadata the format cannot hold, or that is too large for it, was not written |
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |

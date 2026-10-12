@@ -312,7 +312,7 @@ public class RegionAndReductionTests
     public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
 
     // A TIFF pyramid's levels serve reduced decodes, so its reductions are its smaller pages, not box averages.
-    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif")];
+    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif" && !IsIconSet(f))];
 
     public static TheoryData<string> Jpeg() => [.. StreamingCorpus.Files.Where(IsJpeg)];
 
@@ -591,6 +591,9 @@ public class RegionAndReductionTests
 
     /// <summary>Returns whether a file is a JPEG the IDCT can reduce: any but a lossless one, which has no DCT.</summary>
     private static bool IsJpeg2000(string file) => file.StartsWith("jpeg2000/", StringComparison.Ordinal);
+
+    /// <summary>Gets whether a file is an icon of several entries, where MinimumSize picks an entry before reducing (IcoReaderTests).</summary>
+    private static bool IsIconSet(string file) => file.StartsWith("ico/", StringComparison.Ordinal) && Raster.Probe(StreamingCorpus.Read(file)).ImageCount > 1;
 
     private static bool IsJpeg(string file)
     {

@@ -143,3 +143,7 @@ geometry/
 ../reference/geometry/
   ImageMagick 7.1.1's outputs and kernel tables for the inputs above and ops/zone.png and ops/duck.png, made by
   tools/make-geometry-references.py. Same licenses as the inputs.
+
+ico/, ../reference/ico/
+  ICO and CUR files made by tools/make-ico-references.py from ops/duck.png and ops/egret.png above (hand-written entries, Pillow
+  12.3 and ImageMagick 7.1.2), and the decodes of every entry by ImageMagick and Pillow. Public domain, as their sources.
