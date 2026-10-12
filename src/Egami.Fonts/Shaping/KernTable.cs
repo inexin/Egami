@@ -75,7 +75,7 @@ internal sealed class KernTable
     public bool HasMachineKerning => _subtables.Exists(s => s.Format == 1);
 
     /// <summary>Applies every horizontal (or vertical) subtable as HarfBuzz's kern machine does.</summary>
-    public void Apply(LayoutBuffer buffer, GdefTable gdef, uint kernMask)
+    public void Apply(LayoutBuffer buffer, GdefTable gdef, uint kernMask, ShapeFont font)
     {
         ReadOnlySpan<byte> d = _data.Span;
         bool horizontal = LayoutBuffer.IsHorizontal(buffer.Direction);
@@ -103,7 +103,7 @@ internal sealed class KernTable
                 buffer.Reverse();
             }
 
-            Kern(buffer, gdef, kernMask, offset, format, crossStream);
+            Kern(buffer, gdef, kernMask, offset, format, crossStream, font);
             if (reverse)
             {
                 buffer.Reverse();
@@ -111,7 +111,7 @@ internal sealed class KernTable
         }
     }
 
-    private void Kern(LayoutBuffer buffer, GdefTable gdef, uint kernMask, int subtable, int format, bool crossStream)
+    private void Kern(LayoutBuffer buffer, GdefTable gdef, uint kernMask, int subtable, int format, bool crossStream, ShapeFont font)
     {
         LayoutApplier c = new(LayoutTable.EmptyGpos, gdef, buffer);
         c.SetLookupMask(kernMask);
@@ -143,6 +143,7 @@ internal sealed class KernTable
             {
                 if (horizontal)
                 {
+                    kern = font.EmScaleX(kern);
                     if (crossStream)
                     {
                         pos[j].YOffset = kern;
@@ -159,6 +160,7 @@ internal sealed class KernTable
                 }
                 else
                 {
+                    kern = font.EmScaleY(kern);
                     if (crossStream)
                     {
                         pos[j].XOffset = kern;

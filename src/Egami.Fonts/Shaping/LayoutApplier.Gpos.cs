@@ -64,7 +64,7 @@ internal sealed partial class LayoutApplier
         {
             int value = S16(d, v);
             ret |= value != 0;
-            pos.XOffset = SaturateAdd(pos.XOffset, value);
+            pos.XOffset = SaturateAdd(pos.XOffset, EmScale(value, XMult));
             v += 2;
         }
 
@@ -72,7 +72,7 @@ internal sealed partial class LayoutApplier
         {
             int value = S16(d, v);
             ret |= value != 0;
-            pos.YOffset = SaturateAdd(pos.YOffset, value);
+            pos.YOffset = SaturateAdd(pos.YOffset, EmScale(value, YMult));
             v += 2;
         }
 
@@ -82,7 +82,7 @@ internal sealed partial class LayoutApplier
             ret |= value != 0;
             if (horizontal)
             {
-                pos.XAdvance = SaturateAdd(pos.XAdvance, value);
+                pos.XAdvance = SaturateAdd(pos.XAdvance, EmScale(value, XMult));
             }
 
             v += 2;
@@ -94,7 +94,7 @@ internal sealed partial class LayoutApplier
             ret |= value != 0;
             if (!horizontal)
             {
-                pos.YAdvance = SaturateSub(pos.YAdvance, value);
+                pos.YAdvance = SaturateSub(pos.YAdvance, EmScale(value, YMult));
             }
 
             v += 2;
@@ -107,19 +107,19 @@ internal sealed partial class LayoutApplier
 
         if ((format & XPlaDevice) != 0)
         {
-            pos.XOffset = SaturateAdd(pos.XOffset, DeviceDelta(baseOffset, v, ref ret));
+            pos.XOffset = SaturateAdd(pos.XOffset, DeviceDelta(baseOffset, v, XMultF, ref ret));
             v += 2;
         }
 
         if ((format & YPlaDevice) != 0)
         {
-            pos.YOffset = SaturateAdd(pos.YOffset, DeviceDelta(baseOffset, v, ref ret));
+            pos.YOffset = SaturateAdd(pos.YOffset, DeviceDelta(baseOffset, v, YMultF, ref ret));
             v += 2;
         }
 
         if ((format & XAdvDevice) != 0)
         {
-            int delta = DeviceDelta(baseOffset, v, ref ret);
+            int delta = DeviceDelta(baseOffset, v, XMultF, ref ret);
             if (horizontal)
             {
                 pos.XAdvance = SaturateAdd(pos.XAdvance, delta);
@@ -130,7 +130,7 @@ internal sealed partial class LayoutApplier
 
         if ((format & YAdvDevice) != 0)
         {
-            int delta = DeviceDelta(baseOffset, v, ref ret);
+            int delta = DeviceDelta(baseOffset, v, YMultF, ref ret);
             if (!horizontal)
             {
                 pos.YAdvance = SaturateSub(pos.YAdvance, delta);
@@ -140,8 +140,14 @@ internal sealed partial class LayoutApplier
         return ret;
     }
 
-    /// <summary>A variation-index device table's delta, rounded; hinting device tables give nothing (Egami does not hint layout).</summary>
-    private int DeviceDelta(int baseOffset, int at, ref bool ret)
+    /// <summary>A font-unit value scaled as HarfBuzz's em_mult: 16.16 fixed point, rounded.</summary>
+    private static int EmScale(int value, long mult) => (int)(((value * mult) + 32768) >> 16);
+
+    /// <summary>
+    /// A variation-index device table's delta, scaled and rounded as em_scalef; hinting device tables give
+    /// nothing (Egami does not hint layout).
+    /// </summary>
+    private int DeviceDelta(int baseOffset, int at, float mult, ref bool ret)
     {
         ReadOnlySpan<byte> d = D;
         int device = Off16(d, baseOffset, at);
@@ -156,10 +162,11 @@ internal sealed partial class LayoutApplier
             return 0;
         }
 
-        return (int)MathF.Round(VariationDelta!(U16(d, device), U16(d, device + 2)));
+        return RoundF(VariationDelta!(U16(d, device), U16(d, device + 2)) * mult);
     }
 
-    private float AnchorDelta(int device)
+    /// <summary>An anchor's device delta, rounded as get_x_delta and get_y_delta give it.</summary>
+    private int AnchorDelta(int device, float mult)
     {
         ReadOnlySpan<byte> d = D;
         if (device == 0 || VariationDelta is null || U16(d, device + 4) != 0x8000)
@@ -167,7 +174,7 @@ internal sealed partial class LayoutApplier
             return 0;
         }
 
-        return VariationDelta(U16(d, device), U16(d, device + 2));
+        return RoundF(VariationDelta(U16(d, device), U16(d, device + 2)) * mult);
     }
 
     /// <summary>Whether an anchor fits in the table, as HarfBuzz checks one before using it (GPOS anchors are checked lazily).</summary>
@@ -235,12 +242,12 @@ internal sealed partial class LayoutApplier
             return;
         }
 
-        x = S16(d, anchor + 2);
-        y = S16(d, anchor + 4);
+        x = S16(d, anchor + 2) * XMultF;
+        y = S16(d, anchor + 4) * YMultF;
         if (format == 3 && VariationDelta is not null)
         {
-            x += AnchorDelta(Off16(d, anchor, anchor + 6));
-            y += AnchorDelta(Off16(d, anchor, anchor + 8));
+            x += AnchorDelta(Off16(d, anchor, anchor + 6), XMultF);
+            y += AnchorDelta(Off16(d, anchor, anchor + 8), YMultF);
         }
     }
 
@@ -946,7 +953,7 @@ internal sealed partial class LayoutApplier
         }
     }
 
-    public static int RoundF(float v) => (int)MathF.Round(v, MidpointRounding.AwayFromZero);
+    public static int RoundF(float v) => (int)MathF.Floor(v + .5f);
 
     public static int SaturateAdd(int a, int b) => (int)Math.Clamp((long)a + b, int.MinValue, int.MaxValue);
 

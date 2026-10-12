@@ -37,3 +37,5 @@ too, with their licenses, and tools/fontref/derive_272.py cuts them down.
 
 The shaping fonts, HarfBuzz's tests and hb-shape's references in tests/reference/shaping come from
 `python tools/make-shaping-references.py`, which pins every download by SHA-256 and runs HarfBuzz 14.5.1 in Docker.
+The GSUB closure references in tests/reference/shaping/closure come from `python tools/make-closure-references.py`, which
+runs hb-subset's closure in the same image.

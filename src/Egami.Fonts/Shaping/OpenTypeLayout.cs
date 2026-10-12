@@ -1,8 +1,9 @@
 namespace Egami.Fonts.Shaping;
 
 /// <summary>
-/// What a face's OpenType layout tables (GSUB and GPOS) offer: the scripts, language systems and features they list. A table
-/// whose structure is damaged is left out whole, as the shaper leaves it out.
+/// What a face's OpenType layout tables (GSUB and GPOS) offer: the scripts, language systems and features they list, and the
+/// glyphs GSUB can produce from a set of glyphs. A table whose structure is damaged is left out whole, as the shaper leaves it
+/// out.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/Shaping.cs" region="layout"/>
@@ -101,6 +102,61 @@ public sealed class OpenTypeLayout
         }
 
         return [.. tags.Where(t => t != 0).Select(t => new FontTag(t))];
+    }
+
+    /// <summary>
+    /// Gets the layout features hb-subset keeps by default, which <see cref="GetClosure"/> follows when no features are given: the
+    /// common ones (such as <c>ccmp</c>, <c>liga</c>, <c>locl</c>, <c>calt</c> and <c>kern</c>), fractions, vertical forms,
+    /// East Asian spacing, and those the Arabic, Hangul, Tibetan and Indic shapers apply; not discretionary ones such as
+    /// <c>smcp</c>, <c>dlig</c> or <c>ss01</c>.
+    /// </summary>
+    public static IReadOnlyList<FontTag> DefaultClosureFeatures { get; } = [.. GsubClosure.DefaultFeatures.Select(t => new FontTag(t))];
+
+    /// <summary>Gets every feature tag GSUB and GPOS list, in tag order.</summary>
+    public IReadOnlyList<FontTag> Features
+    {
+        get
+        {
+            SortedSet<uint> tags = [];
+            foreach (LayoutTable table in Tables)
+            {
+                for (int i = 0; i < table.FeatureCount; i++)
+                {
+                    tags.Add(table.GetFeatureTag(i));
+                }
+            }
+
+            return [.. tags.Where(t => t != 0).Select(t => new FontTag(t))];
+        }
+    }
+
+    /// <summary>
+    /// Gets the glyphs the face's GSUB substitutions can produce from <paramref name="glyphs"/>: the glyphs themselves and every
+    /// glyph a lookup of the given features (in any script and language system, with the lookups their contextual rules call
+    /// and their feature variations) can substitute for them, repeated until nothing is added. This is the layout closure
+    /// hb-subset computes, so a subset that keeps these glyphs can be shaped again as the full face would be.
+    /// </summary>
+    /// <param name="glyphs">The glyph ids to start from, such as those of the characters a page uses; ids the face does not have are ignored.</param>
+    /// <param name="features">
+    /// The feature tags whose lookups are followed, or null for <see cref="DefaultClosureFeatures"/>; pass <see cref="Features"/>
+    /// to follow every feature and an empty list to follow none.
+    /// </param>
+    /// <returns>The glyph ids, ascending when enumerated.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Shaping.cs" region="closure"/>
+    /// </example>
+    public IReadOnlySet<ushort> GetClosure(IEnumerable<ushort> glyphs, IEnumerable<FontTag>? features = null)
+    {
+        ArgumentNullException.ThrowIfNull(glyphs);
+        GlyphBitSet set = new(_tables.GlyphCount);
+        foreach (ushort glyph in glyphs)
+        {
+            set.Add(glyph);
+        }
+
+        HashSet<uint> filter = [.. (features ?? DefaultClosureFeatures).Select(t => t.Value)];
+        GsubClosure.Close(_tables.Gsub, filter, set);
+        return new SortedSet<ushort>(set.Glyphs().Select(g => (ushort)g));
     }
 
     private IEnumerable<LayoutTable> Tables => [_tables.Gsub, _tables.Gpos];

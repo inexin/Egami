@@ -26,6 +26,9 @@ internal sealed class RunRequest
     public uint NotFound;
     public uint NotFoundVariationSelector = uint.MaxValue;
 
+    /// <summary>What an em measures in the positions, as hb_font_set_scale; 0 for font units.</summary>
+    public int Scale;
+
     /// <summary>The code points before and after the run, nearest first.</summary>
     public int[] PreContext = [];
     public int[] PostContext = [];
@@ -74,7 +77,7 @@ internal static class RunShaper
         buffer.PreContext = request.PreContext;
         buffer.PostContext = request.PostContext;
 
-        ShapeFont font = new(face);
+        ShapeFont font = new(face, request.Scale);
         int[] coords = font.NormalizedCoordinates;
         int[] variations = [font.Layout.Gsub.FindFeatureVariations(coords), font.Layout.Gpos.FindFeatureVariations(coords)];
         string languages = string.Join(",", request.LanguageTags);

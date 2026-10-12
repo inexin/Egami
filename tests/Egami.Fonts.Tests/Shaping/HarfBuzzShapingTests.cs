@@ -13,9 +13,8 @@ public sealed class HarfBuzzShapingTests
     }
 
     /// <summary>
-    /// HarfBuzz's in-house test files that wait for a later 2.8.1 task (vertical runs 13, variable fonts 14), or test what Egami leaves
-    /// out (fonts without outlines, the Zawgyi script, a dfont collection, an sbix-only font, other shapers, synthetic emboldening,
-    /// extents output).
+    /// HarfBuzz's in-house test files that test what Egami leaves out: fonts without outlines, the Zawgyi script, repeated axis tags,
+    /// a dfont collection, an sbix-only font, other shapers, synthetic emboldening, extents output.
     /// </summary>
     private static readonly Dictionary<string, string> s_waiting = new()
     {
@@ -23,10 +22,7 @@ public sealed class HarfBuzzShapingTests
         ["indic-misc.tests"] = "a font without outlines, which Typeface does not load",
         ["myanmar-zawgyi.tests"] = "the Qaag (Zawgyi) script, which Script does not have",
         ["context-matching.tests"] = "a font without outlines, which Typeface does not load",
-        ["spaces.tests"] = "task 13",
-        ["vertical.tests"] = "task 13",
-        ["variations.tests"] = "task 14",
-        ["variations-rvrn.tests"] = "task 14",
+        ["variations.tests"] = "an fvar with three axes of one tag, all of which hb-shape sets but Typeface.WithVariations sets the first",
         ["collections.tests"] = "a dfont collection",
         ["emoji.tests"] = "an sbix-only font",
         ["color-fonts.tests"] = "extents output",

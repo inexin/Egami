@@ -503,7 +503,14 @@ internal static class OtShaper
     private static void ApplyLookups(ShapePlan plan, ShapeFont font, LayoutBuffer buffer, int tableIndex)
     {
         LayoutTable table = tableIndex == 0 ? font.Layout.Gsub : font.Layout.Gpos;
-        LayoutApplier c = new(table, font.Layout.Gdef, buffer) { VariationDelta = font.VariationDelta };
+        LayoutApplier c = new(table, font.Layout.Gdef, buffer)
+        {
+            VariationDelta = font.VariationDelta,
+            XMult = font.XMult,
+            YMult = font.YMult,
+            XMultF = font.XMultF,
+            YMultF = font.YMultF,
+        };
         List<ShapeMap.LookupMap> lookups = plan.Map.Lookups[tableIndex];
         int i = 0;
         foreach (ShapeMap.StageMap stage in plan.Map.Stages[tableIndex])
@@ -605,11 +612,14 @@ internal static class OtShaper
         }
         else
         {
+            // The v origin is subtracted even when it is only the fallback.
             for (int i = 0; i < count; i++)
             {
-                buffer.Pos[i].YAdvance = -font.UnitsPerEm;
-                buffer.Pos[i].XOffset = -(font.GetHAdvance(buffer.Info[i].Codepoint) / 2);
-                buffer.Pos[i].YOffset = -font.UnitsPerEm;
+                uint glyph = buffer.Info[i].Codepoint;
+                buffer.Pos[i].YAdvance = font.GetVAdvance(glyph);
+                font.GetVOrigin(glyph, out int x, out int y);
+                buffer.Pos[i].XOffset -= x;
+                buffer.Pos[i].YOffset -= y;
             }
         }
 
@@ -640,7 +650,7 @@ internal static class OtShaper
 
         if (plan.ApplyKern)
         {
-            font.Layout.Kern.Apply(buffer, font.Layout.Gdef, plan.KernMask);
+            font.Layout.Kern.Apply(buffer, font.Layout.Gdef, plan.KernMask, font);
         }
 
         if (plan.ZeroMarks && plan.Shaper.ZeroWidthMarks == ZeroWidthMarks.ByGdefLate)

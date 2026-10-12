@@ -137,4 +137,21 @@ public class Shaping
         Assert.NotNull(system.Resolver);
         Assert.Empty(none.Families);
     }
+
+    [Fact]
+    public void LayoutClosure()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region closure
+        // The glyphs a web font subset needs so that it shapes "office" as the full font does: the characters' glyphs and every
+        // glyph GSUB can turn them into (the "ffi" ligature, for one).
+        ushort[] used = [0, .. "office".Select(c => face.GetGlyph(c))];
+        IReadOnlySet<ushort> keep = face.Layout.GetClosure(used);                           // hb-subset's default features
+        IReadOnlySet<ushort> all = face.Layout.GetClosure(used, face.Layout.Features);      // every feature, small caps too
+        #endregion
+
+        Assert.True(keep.Count > used.Distinct().Count());
+        Assert.True(all.IsSupersetOf(keep));
+    }
 }

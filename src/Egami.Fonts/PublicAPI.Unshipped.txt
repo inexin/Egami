@@ -311,7 +311,9 @@ Egami.Fonts.Shaping.GlyphPosition.YAdvance.init -> void
 Egami.Fonts.Shaping.GlyphPosition.YOffset.get -> float
 Egami.Fonts.Shaping.GlyphPosition.YOffset.init -> void
 Egami.Fonts.Shaping.OpenTypeLayout
+Egami.Fonts.Shaping.OpenTypeLayout.Features.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
 Egami.Fonts.Shaping.OpenTypeLayout.GetFeatures(Egami.Fonts.FontTag script, Egami.Fonts.FontTag? language = null) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
+Egami.Fonts.Shaping.OpenTypeLayout.GetClosure(System.Collections.Generic.IEnumerable<ushort>! glyphs, System.Collections.Generic.IEnumerable<Egami.Fonts.FontTag>? features = null) -> System.Collections.Generic.IReadOnlySet<ushort>!
 Egami.Fonts.Shaping.OpenTypeLayout.GetLanguageSystems(Egami.Fonts.FontTag script) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
 Egami.Fonts.Shaping.OpenTypeLayout.HasGlyphClasses.get -> bool
 Egami.Fonts.Shaping.OpenTypeLayout.HasGpos.get -> bool
@@ -820,6 +822,7 @@ static Egami.Fonts.Shaping.FontFeature.TabularFigures.get -> Egami.Fonts.Shaping
 static Egami.Fonts.Shaping.FontFeature.TryParse(string? text, out Egami.Fonts.Shaping.FontFeature feature) -> bool
 static Egami.Fonts.Shaping.GlyphPosition.operator !=(Egami.Fonts.Shaping.GlyphPosition left, Egami.Fonts.Shaping.GlyphPosition right) -> bool
 static Egami.Fonts.Shaping.GlyphPosition.operator ==(Egami.Fonts.Shaping.GlyphPosition left, Egami.Fonts.Shaping.GlyphPosition right) -> bool
+static Egami.Fonts.Shaping.OpenTypeLayout.DefaultClosureFeatures.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
 static Egami.Fonts.Shaping.RunProperties.operator !=(Egami.Fonts.Shaping.RunProperties left, Egami.Fonts.Shaping.RunProperties right) -> bool
 static Egami.Fonts.Shaping.RunProperties.operator ==(Egami.Fonts.Shaping.RunProperties left, Egami.Fonts.Shaping.RunProperties right) -> bool
 static Egami.Fonts.Shaping.TextShaper.ShapeRun(System.ReadOnlySpan<char> text, int start, int length, Egami.Fonts.Font font, Egami.Fonts.Shaping.RunProperties properties, Egami.Fonts.Shaping.GlyphBuffer! buffer) -> void

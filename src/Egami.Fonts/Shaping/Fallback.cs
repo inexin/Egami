@@ -179,7 +179,7 @@ internal static class Fallback
             return;
         }
 
-        int yGap = font.UnitsPerEm / 16;
+        int yGap = font.YScale / 16;
         ref GlyphPos pos = ref buffer.Pos[i];
         pos.XOffset = 0;
         pos.YOffset = 0;
@@ -411,7 +411,7 @@ internal static class Fallback
         GlyphInfo[] info = buffer.Info;
         GlyphPos[] pos = buffer.Pos;
         bool horizontal = LayoutBuffer.IsHorizontal(buffer.Direction);
-        int scale = font.UnitsPerEm;
+        int scale = horizontal ? font.XScale : font.YScale;
         for (int i = 0; i < buffer.Len; i++)
         {
             if (!UnicodeProps.IsUnicodeSpace(info[i]) || (info[i].GlyphProps & GlyphProps.Ligated) != 0)
@@ -472,6 +472,10 @@ internal static class Fallback
                             {
                                 pos[i].XAdvance = font.GetHAdvance(glyph);
                             }
+                            else
+                            {
+                                pos[i].YAdvance = font.GetVAdvance(glyph);
+                            }
 
                             break;
                         }
@@ -484,6 +488,10 @@ internal static class Fallback
                         if (horizontal)
                         {
                             pos[i].XAdvance = font.GetHAdvance(period);
+                        }
+                        else
+                        {
+                            pos[i].YAdvance = font.GetVAdvance(period);
                         }
                     }
 

@@ -278,6 +278,47 @@ internal sealed class LayoutTable
         return true;
     }
 
+    /// <summary>
+    /// Adds the lookups of every FeatureVariations record's substitute for a feature in <paramref name="featureIndexes"/>, whatever
+    /// the record's conditions, as HarfBuzz's feature_variation_collect_lookups.
+    /// </summary>
+    public void CollectFeatureVariationLookups(IReadOnlySet<int> featureIndexes, ISet<int> lookups)
+    {
+        ReadOnlySpan<byte> d = Data.Span;
+        int baseOffset = _featureVariations;
+        if (baseOffset == 0 || U16(d, baseOffset) != 1)
+        {
+            return;
+        }
+
+        uint count = U32(d, baseOffset + 4);
+        for (int i = 0; i < count && i < 65536; i++)
+        {
+            int substitution = Off32(d, baseOffset, baseOffset + 8 + (i * 8) + 4);
+            if (substitution == 0 || U16(d, substitution) != 1)
+            {
+                continue;
+            }
+
+            int records = U16(d, substitution + 4);
+            for (int j = 0; j < records; j++)
+            {
+                int r = substitution + 6 + (j * 6);
+                if (!featureIndexes.Contains(U16(d, r)))
+                {
+                    continue;
+                }
+
+                int feature = Off32(d, substitution, r + 2);
+                int lookupCount = feature == 0 ? 0 : U16(d, feature + 2);
+                for (int k = 0; k < lookupCount; k++)
+                {
+                    lookups.Add(U16(d, feature + 4 + (k * 2)));
+                }
+            }
+        }
+    }
+
     private int FindFeatureSubstitute(int variationsIndex, int featureIndex)
     {
         ReadOnlySpan<byte> d = Data.Span;

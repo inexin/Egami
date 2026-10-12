@@ -50,6 +50,14 @@ internal sealed partial class LayoutApplier
     /// <summary>Resolves a variation-index device table to a delta, or null when the font is not varied.</summary>
     public Func<int, int, float>? VariationDelta;
 
+    /// <summary>The 16.16 multipliers HarfBuzz's em_scale applies to GPOS values: 0x10000 when positions are in font units.</summary>
+    public long XMult = 0x10000;
+    public long YMult = 0x10000;
+
+    /// <summary>The float multipliers em_fscale and em_scalef apply to anchors and device deltas.</summary>
+    public float XMultF = 1;
+    public float YMultF = 1;
+
     public LayoutApplier(LayoutTable table, GdefTable gdef, LayoutBuffer buffer)
     {
         Table = table;

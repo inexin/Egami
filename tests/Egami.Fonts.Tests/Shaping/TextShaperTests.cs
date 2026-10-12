@@ -48,6 +48,20 @@ public sealed class TextShaperTests
     }
 
     [Fact]
+    public void TopToBottomRunsUseVerticalMetricsAtTheFacesPosition()
+    {
+        Typeface face = Typeface.FromFile(Path.Combine(TestFonts.Root, "tests", "fonts", "harfbuzz", "in-house", "fonts", "NotoSansCJK-VF.abc.otf"));
+        RunProperties vertical = new() { Direction = TextDirection.TopToBottom };
+        GlyphBuffer regular = new(), bold = new();
+        TextShaper.ShapeRun("AB", 0, 2, new Font(face, face.UnitsPerEm), vertical, regular);
+        TextShaper.ShapeRun("AB", 0, 2, new Font(face.WithVariations(FontVariation.Weight(700)), face.UnitsPerEm), vertical, bold);
+
+        // hb-shape --direction=t (with --variations=wght=700): VORG origins, vmtx advances, half the varied h advance.
+        Assert.Equal([new GlyphPosition(0, -1000, -287, -880), new GlyphPosition(0, -1000, -316, -880)], regular.Positions.ToArray());
+        Assert.Equal([new GlyphPosition(0, -1000, -320, -880), new GlyphPosition(0, -1000, -340, -880)], bold.Positions.ToArray());
+    }
+
+    [Fact]
     public void RunsArePartOfTheirText()
     {
         GlyphBuffer glyphs = new();

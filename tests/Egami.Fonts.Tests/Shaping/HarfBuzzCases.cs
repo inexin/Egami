@@ -35,8 +35,10 @@ internal static class HarfBuzzCases
         RunRequest request = new();
         bool noPositions = false, noClusters = false, showFlags = true;
         int faceIndex = 0;
-        foreach (string option in c.Options)
+        List<FontVariation> variations = [];
+        for (int o = 0; o < c.Options.Length; o++)
         {
+            string option = c.Options[o];
             string name = option;
             string value = "";
             int eq = option.IndexOf('=');
@@ -44,6 +46,11 @@ internal static class HarfBuzzCases
             {
                 name = option[..eq];
                 value = option[(eq + 1)..].Trim('"');
+            }
+            else if (option == "--variations" && o + 1 < c.Options.Length)
+            {
+                // hb-shape also takes the value as the next argument.
+                value = c.Options[++o].Trim('"');
             }
 
             switch (name)
@@ -123,6 +130,17 @@ internal static class HarfBuzzCases
                 case "--not-found-variation-selector-glyph":
                     request.NotFoundVariationSelector = uint.Parse(value, CultureInfo.InvariantCulture);
                     break;
+                case "--variations":
+                    foreach (string setting in value.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        string[] parts = setting.Trim().Split('=');
+                        variations.Add(new FontVariation(parts[0].PadRight(4), float.Parse(parts[1], CultureInfo.InvariantCulture)));
+                    }
+
+                    break;
+                case "--font-size":
+                    request.Scale = int.Parse(value, CultureInfo.InvariantCulture);
+                    break;
                 case "--face-index":
                     faceIndex = int.Parse(value, CultureInfo.InvariantCulture);
                     break;
@@ -164,6 +182,11 @@ internal static class HarfBuzzCases
         catch (Exception e) when (e is CorruptDataException or NotSupportedException or ArgumentException or UnsupportedFormatException)
         {
             return new Result(c, false, "font " + e.Message, null);
+        }
+
+        if (variations.Count > 0)
+        {
+            face = face.WithVariations([.. variations]);
         }
 
         int[] codePoints = ParseUnicodes(c.Unicodes);

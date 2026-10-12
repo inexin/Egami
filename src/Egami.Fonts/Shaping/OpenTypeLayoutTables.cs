@@ -22,7 +22,11 @@ internal sealed class OpenTypeLayoutTables
         Gpos = Read(face, "GPOS", d => LayoutSanitizer.SanitizeLayout(d.Span, true), d => new LayoutTable(d, true), LayoutTable.EmptyGpos);
         Kern = face.TryGetTable(new FontTag("kern"), out ReadOnlyMemory<byte> kern) ? new KernTable(kern) : KernTable.Empty;
         Cmap = ReadCmap(face);
+        GlyphCount = face.GlyphCount;
     }
+
+    /// <summary>Gets the face's glyph count.</summary>
+    public int GlyphCount { get; }
 
     private static CmapTable ReadCmap(Typeface face)
     {
