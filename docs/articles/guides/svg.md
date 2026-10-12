@@ -83,6 +83,13 @@ turn system fonts off, so the output does not depend on the machine.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#fonts)]
 
+Color fonts with an OpenType SVG table, such as many emoji fonts, draw in color through `SvgGlyphRenderer`, an
+`IColorGlyphRenderer` that Egami.Drawing asks when `CanvasOptions.ColorGlyphs` holds it: each glyph's document is read once
+per font. A glyph that also has a COLR version 1 form draws that instead; COLR version 0, sbix and CBDT come after SVG.
+`Rasterize` uses the renderer already; set it yourself on any other raster canvas.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-glyphs)]
+
 ## Loading SVG as a raster
 
 `SvgFormat.Info` makes SVG an Egami format: register it with `EgamiContext.WithFormat`, and `Raster.Load` reads .svg and

@@ -21,6 +21,9 @@ public sealed partial class RasterCanvas<TPixel>
     private bool _lcdFallbackReported;
 
     /// <inheritdoc/>
+    private protected override IColorGlyphRenderer? ColorGlyphRenderer => Options.ColorGlyphs;
+
+    /// <inheritdoc/>
     /// <remarks>
     /// Under a scale-and-translate transform, glyphs up to 256 device pixels per em are drawn from <see cref="GlyphCache"/> masks:
     /// with <see cref="Font.Subpixel"/> their x origins round to quarter pixels (each phase its own mask) and y to whole pixels,
@@ -31,6 +34,12 @@ public sealed partial class RasterCanvas<TPixel>
     protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)
     {
         if (_clip.Bounds.IsEmpty)
+        {
+            return;
+        }
+
+        run = DrawRendererGlyphs(run, origin, paint);
+        if (run.Count == 0)
         {
             return;
         }

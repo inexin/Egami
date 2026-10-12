@@ -105,6 +105,9 @@ Egami.Svg.SvgFontOptions.SvgFontOptions() -> void
 Egami.Svg.SvgFontOptions.UseSystemFonts.get -> bool
 Egami.Svg.SvgFontOptions.UseSystemFonts.init -> void
 Egami.Svg.SvgFormat
+Egami.Svg.SvgGlyphRenderer
+Egami.Svg.SvgGlyphRenderer.Formats.get -> Egami.Fonts.ColorGlyphFormats
+Egami.Svg.SvgGlyphRenderer.TryDraw(Egami.Drawing.Canvas! canvas, Egami.Fonts.Font font, ushort glyph, System.Numerics.Matrix3x2 transform, Egami.Drawing.Paint! paint) -> bool
 Egami.Svg.SvgGroup
 Egami.Svg.SvgGroup.Children.get -> System.Collections.Generic.IReadOnlyList<Egami.Svg.SvgNode!>!
 Egami.Svg.SvgGroup.Children.init -> void
@@ -361,6 +364,7 @@ static Egami.Svg.SvgFontOptions.Default.get -> Egami.Svg.SvgFontOptions!
 static Egami.Svg.SvgFontOptions.operator !=(Egami.Svg.SvgFontOptions? left, Egami.Svg.SvgFontOptions? right) -> bool
 static Egami.Svg.SvgFontOptions.operator ==(Egami.Svg.SvgFontOptions? left, Egami.Svg.SvgFontOptions? right) -> bool
 static Egami.Svg.SvgFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Svg.SvgGlyphRenderer.Instance.get -> Egami.Svg.SvgGlyphRenderer!
 static Egami.Svg.SvgGroup.operator !=(Egami.Svg.SvgGroup? left, Egami.Svg.SvgGroup? right) -> bool
 static Egami.Svg.SvgGroup.operator ==(Egami.Svg.SvgGroup? left, Egami.Svg.SvgGroup? right) -> bool
 static Egami.Svg.SvgImage.operator !=(Egami.Svg.SvgImage? left, Egami.Svg.SvgImage? right) -> bool

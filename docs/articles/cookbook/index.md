@@ -200,6 +200,16 @@ Egami.Svg draws as resvg does where SVG leaves a choice; see [SVG](../guides/svg
 
 A symbol's viewBox fits it into each cell; the same calls draw on a PDF page.
 
+## Label an SVG with your own fonts
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#fonts)]
+
+With system fonts off, the label looks the same on every machine.
+
+## Flow SVG text into a shape
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#wrapped-text)]
+
 ## Paint a dusk sky
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#sky-gradient)]

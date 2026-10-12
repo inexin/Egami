@@ -279,6 +279,9 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
   (`SvgFontOptions`) gives the fonts: the caller's collection, the document's `@font-face` rules, then the machine's unless
   turned off. SVG 2's wrapped text: `inline-size` lines as 2.8.2's paragraph layout fills them, and `shape-inside` text flowed
   into shapes as Inkscape flows it (16 of 20 samples match Inkscape's export).
+- OpenType SVG glyphs: `SvgGlyphRenderer.Instance` draws an SVG table's glyphs in color. Egami.Drawing gains the hook it
+  plugs into, `IColorGlyphRenderer` on `CanvasOptions.ColorGlyphs`, asked after COLR version 1 and before COLR version 0,
+  sbix and CBDT.
 - Filters: every SVG 1.1 primitive, feDropShadow and the CSS filter functions, in linearRGB or sRGB, run in a raster lined up
   with the device pixels (`SvgRenderOptions.FilterScale` sets its resolution on vector canvases). feGaussianBlur is SVG's three
   box blurs on premultiplied colors; feConvolveMatrix and the lighting primitives follow the specification's kernels.

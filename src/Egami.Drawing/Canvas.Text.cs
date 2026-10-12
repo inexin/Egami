@@ -151,6 +151,12 @@ public abstract partial class Canvas
     /// <param name="paint">The paint.</param>
     protected virtual void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)
     {
+        run = DrawRendererGlyphs(run, origin, paint);
+        if (run.Count == 0)
+        {
+            return;
+        }
+
         Font font = run.Font;
         Typeface face = font.EffectiveTypeface;
         if (font.ColorGlyphs && (face.ColorFormats & ~ColorGlyphFormats.Svg) != 0)
@@ -203,6 +209,43 @@ public abstract partial class Canvas
         }
 
         return plain is null ? run : Subrun(run, plain);
+    }
+
+    /// <summary>Gets the renderer for color glyph formats this canvas does not draw itself; none on a canvas without options.</summary>
+    private protected virtual IColorGlyphRenderer? ColorGlyphRenderer => null;
+
+    /// <summary>
+    /// Draws the glyphs of a run that <see cref="ColorGlyphRenderer"/> draws (those without a COLR version 1 glyph, which comes
+    /// first) and returns the run of the rest.
+    /// </summary>
+    private protected GlyphRun DrawRendererGlyphs(GlyphRun run, Vector2 origin, Paint paint)
+    {
+        Font font = run.Font;
+        Typeface face = font.EffectiveTypeface;
+        if (ColorGlyphRenderer is not IColorGlyphRenderer renderer || !font.ColorGlyphs || (face.ColorFormats & renderer.Formats) == 0)
+        {
+            return run;
+        }
+
+        ReadOnlySpan<ushort> glyphs = run.Glyphs;
+        ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
+        bool colrV1 = (face.ColorFormats & ColorGlyphFormats.ColrV1) != 0;
+        List<int>? rest = null;
+        for (int i = 0; i < glyphs.Length; i++)
+        {
+            bool first = colrV1 && face.HasColorGlyph(glyphs[i]) && face.TryGetColorGlyph(glyphs[i], font.Palette, out ColorGlyph? color) && color.Format == ColorGlyphFormats.ColrV1;
+            Matrix3x2 transform = transforms.IsEmpty ? Matrix3x2.CreateTranslation(origin + run.Positions[i]) : transforms[i].ToMatrix() * Matrix3x2.CreateTranslation(origin);
+            if (!first && renderer.TryDraw(this, font, glyphs[i], transform, paint))
+            {
+                rest ??= [.. Enumerable.Range(0, i)];
+            }
+            else
+            {
+                rest?.Add(i);
+            }
+        }
+
+        return rest is null ? run : Subrun(run, rest);
     }
 
     /// <summary>The glyphs of a run at the given indices, with their positions or transforms, text and clusters.</summary>

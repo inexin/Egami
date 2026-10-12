@@ -62,8 +62,11 @@ Egami.Drawing.Canvas.DrawPatch(Egami.Drawing.Patch! patch, Egami.Drawing.Paint? 
 Egami.Drawing.Canvas.DrawPicture(Egami.Drawing.Picture! picture, System.Numerics.Matrix3x2? matrix = null, Egami.Drawing.Paint? paint = null, bool cacheAsImage = false) -> void
 Egami.Drawing.Canvas.DrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawShadow(Egami.Drawing.Path! path, Egami.Drawing.ShadowOptions? options = null) -> void
-Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint, Egami.Fonts.Shaping.ShapingOptions? options = null) -> void
 Egami.Drawing.Canvas.DrawShapedText(Egami.Fonts.Shaping.ShapedText! text, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
+Egami.Drawing.Canvas.DrawText(Egami.Fonts.Layout.RichText! text, Egami.Drawing.RectF rect, Egami.Fonts.Layout.ParagraphStyle! style, Egami.Drawing.VerticalAlign verticalAlign = Egami.Drawing.VerticalAlign.Top) -> Egami.Fonts.Layout.TextLayout!
+Egami.Drawing.Canvas.DrawText(string! text, Egami.Drawing.RectF rect, Egami.Fonts.Layout.ParagraphStyle! style, Egami.Drawing.VerticalAlign verticalAlign = Egami.Drawing.VerticalAlign.Top) -> Egami.Fonts.Layout.TextLayout!
+Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint, Egami.Fonts.Shaping.ShapingOptions? options = null) -> void
+Egami.Drawing.Canvas.DrawTextLayout(Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin, Egami.Drawing.RectF? visibleRect = null, Egami.Drawing.PlaceholderPainter? placeholderPainter = null) -> void
 Egami.Drawing.Canvas.DrawTextOnPath(string! text, Egami.Drawing.Path! path, Egami.Fonts.Font font, Egami.Drawing.Paint! paint, Egami.Drawing.TextOnPathOptions? options = null) -> void
 Egami.Drawing.Canvas.EndMarkedContent() -> void
 Egami.Drawing.Canvas.FillArc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees, Egami.Drawing.Paint! paint) -> void
@@ -104,6 +107,8 @@ Egami.Drawing.Canvas.Width.get -> float
 Egami.Drawing.CanvasOptions
 Egami.Drawing.CanvasOptions.<Clone>$() -> Egami.Drawing.CanvasOptions!
 Egami.Drawing.CanvasOptions.CanvasOptions() -> void
+Egami.Drawing.CanvasOptions.ColorGlyphs.get -> Egami.Drawing.IColorGlyphRenderer?
+Egami.Drawing.CanvasOptions.ColorGlyphs.init -> void
 Egami.Drawing.CanvasOptions.ColorSpace.get -> Egami.Operations.ColorSpace
 Egami.Drawing.CanvasOptions.ColorSpace.init -> void
 Egami.Drawing.CanvasOptions.Equals(Egami.Drawing.CanvasOptions? other) -> bool
@@ -218,6 +223,9 @@ Egami.Drawing.HueMethod.Decreasing = 3 -> Egami.Drawing.HueMethod
 Egami.Drawing.HueMethod.Increasing = 2 -> Egami.Drawing.HueMethod
 Egami.Drawing.HueMethod.Longer = 1 -> Egami.Drawing.HueMethod
 Egami.Drawing.HueMethod.Shorter = 0 -> Egami.Drawing.HueMethod
+Egami.Drawing.IColorGlyphRenderer
+Egami.Drawing.IColorGlyphRenderer.Formats.get -> Egami.Fonts.ColorGlyphFormats
+Egami.Drawing.IColorGlyphRenderer.TryDraw(Egami.Drawing.Canvas! canvas, Egami.Fonts.Font font, ushort glyph, System.Numerics.Matrix3x2 transform, Egami.Drawing.Paint! paint) -> bool
 Egami.Drawing.ImagePaint
 Egami.Drawing.ImagePaint.Equals(Egami.Drawing.ImagePaint? other) -> bool
 Egami.Drawing.ImagePaint.Image.get -> Egami.Raster!
@@ -472,6 +480,7 @@ Egami.Drawing.PixelGeometry.BgrVertical = 4 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PixelGeometry.RgbHorizontal = 1 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PixelGeometry.RgbVertical = 3 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PixelGeometry.Unknown = 0 -> Egami.Drawing.PixelGeometry
+Egami.Drawing.PlaceholderPainter
 Egami.Drawing.PointMode
 Egami.Drawing.PointMode.Lines = 1 -> Egami.Drawing.PointMode
 Egami.Drawing.PointMode.Points = 0 -> Egami.Drawing.PointMode
@@ -655,6 +664,10 @@ Egami.Drawing.TileMode.Clamp = 0 -> Egami.Drawing.TileMode
 Egami.Drawing.TileMode.Decal = 3 -> Egami.Drawing.TileMode
 Egami.Drawing.TileMode.Mirror = 2 -> Egami.Drawing.TileMode
 Egami.Drawing.TileMode.Repeat = 1 -> Egami.Drawing.TileMode
+Egami.Drawing.VerticalAlign
+Egami.Drawing.VerticalAlign.Bottom = 2 -> Egami.Drawing.VerticalAlign
+Egami.Drawing.VerticalAlign.Middle = 1 -> Egami.Drawing.VerticalAlign
+Egami.Drawing.VerticalAlign.Top = 0 -> Egami.Drawing.VerticalAlign
 override abstract Egami.Drawing.CustomPaint.<Clone>$() -> Egami.Drawing.CustomPaint!
 override abstract Egami.Drawing.Gradient.<Clone>$() -> Egami.Drawing.Gradient!
 override Egami.Drawing.Annotation.Equals(object? obj) -> bool
@@ -807,6 +820,8 @@ static Egami.Drawing.FontExtensions.GetGlyphPath(this Egami.Fonts.Font font, ush
 static Egami.Drawing.FontExtensions.GetTextPath(this Egami.Fonts.Font font, string! text, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
 static Egami.Drawing.FontExtensions.ShapeOnPath(this Egami.Fonts.Font font, string! text, Egami.Drawing.Path! path, Egami.Drawing.TextOnPathOptions? options = null) -> Egami.Fonts.GlyphRun!
 static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.DecorationShape! shape, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
 static Egami.Drawing.FontExtensions.ToRectF(this Egami.Fonts.TextBounds bounds) -> Egami.Drawing.RectF
 static Egami.Drawing.GlyphCache.ByteLimit.get -> long
 static Egami.Drawing.GlyphCache.ByteLimit.set -> void
@@ -938,6 +953,7 @@ virtual Egami.Drawing.Paint.PrintMembers(System.Text.StringBuilder! builder) -> 
 virtual Egami.Drawing.PathEffect.EqualityContract.get -> System.Type!
 virtual Egami.Drawing.PathEffect.Equals(Egami.Drawing.PathEffect? other) -> bool
 virtual Egami.Drawing.PathEffect.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Egami.Drawing.PlaceholderPainter.Invoke(Egami.Drawing.Canvas! canvas, int index, Egami.Drawing.RectF box) -> void
 ~override Egami.Drawing.CornerRadii.Equals(object obj) -> bool
 ~override Egami.Drawing.CornerRadii.ToString() -> string
 ~override Egami.Drawing.GradientStop.Equals(object obj) -> bool
@@ -949,14 +965,3 @@ virtual Egami.Drawing.PathEffect.PrintMembers(System.Text.StringBuilder! builder
 ~override Egami.Drawing.RoundRect.Equals(object obj) -> bool
 ~override Egami.Drawing.SpriteTransform.Equals(object obj) -> bool
 ~override Egami.Drawing.SpriteTransform.ToString() -> string
-Egami.Drawing.Canvas.DrawText(Egami.Fonts.Layout.RichText! text, Egami.Drawing.RectF rect, Egami.Fonts.Layout.ParagraphStyle! style, Egami.Drawing.VerticalAlign verticalAlign = Egami.Drawing.VerticalAlign.Top) -> Egami.Fonts.Layout.TextLayout!
-Egami.Drawing.Canvas.DrawText(string! text, Egami.Drawing.RectF rect, Egami.Fonts.Layout.ParagraphStyle! style, Egami.Drawing.VerticalAlign verticalAlign = Egami.Drawing.VerticalAlign.Top) -> Egami.Fonts.Layout.TextLayout!
-Egami.Drawing.Canvas.DrawTextLayout(Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin, Egami.Drawing.RectF? visibleRect = null, Egami.Drawing.PlaceholderPainter? placeholderPainter = null) -> void
-Egami.Drawing.PlaceholderPainter
-Egami.Drawing.VerticalAlign
-Egami.Drawing.VerticalAlign.Bottom = 2 -> Egami.Drawing.VerticalAlign
-Egami.Drawing.VerticalAlign.Middle = 1 -> Egami.Drawing.VerticalAlign
-Egami.Drawing.VerticalAlign.Top = 0 -> Egami.Drawing.VerticalAlign
-static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.DecorationShape! shape, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
-static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
-virtual Egami.Drawing.PlaceholderPainter.Invoke(Egami.Drawing.Canvas! canvas, int index, Egami.Drawing.RectF box) -> void

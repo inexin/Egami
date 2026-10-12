@@ -360,4 +360,42 @@ public class Svg
         #endregion
         Assert.Contains("@font-face", System.Text.Encoding.UTF8.GetString(file.ToArray()), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void TextFlowedIntoAShape()
+    {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        Egami.Fonts.FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSans-Regular.ttf"));
+        SvgLoadOptions options = new() { Fonts = new SvgFontOptions { Collection = fonts, UseSystemFonts = false } };
+        #region wrapped-text
+        // SVG 2 text that wraps: inside a circle (as Inkscape writes flowed text), or in lines 160 units long.
+        SvgDocument card = SvgDocument.Parse("""
+            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" font-family="Noto Sans" font-size="14">
+              <circle id="area" cx="100" cy="100" r="90" fill="#eef"/>
+              <text style="shape-inside: url(#area); shape-padding: 6px; text-align: center">
+                Text flows into the circle line by line, each line as wide as the circle is at that height.
+              </text>
+              <text x="220" y="40" style="inline-size: 160px">Wrapped at 160 units, as a paragraph fills a column.</text>
+            </svg>
+            """, options);
+        using Raster<Rgba8> raster = card.Rasterize<Rgba8>();
+        #endregion
+        Assert.Empty(card.Warnings);
+    }
+
+    [Fact]
+    public void SvgGlyphsOnAnyCanvas()
+    {
+        Egami.Fonts.Font font = new(Egami.Fonts.Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf")), 24);
+        using Raster<Rgba8> raster = Raster.Create<Rgba8>(200, 50);
+        #region svg-glyphs
+        // Emoji and other glyphs from an OpenType SVG table draw in color on a canvas given the renderer.
+        using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas(new CanvasOptions { ColorGlyphs = SvgGlyphRenderer.Instance }))
+        {
+            canvas.DrawText("Hello", new System.Numerics.Vector2(10, 35), font, new SolidPaint(new RgbaF32(0, 0, 0, 1)));
+        }
+        #endregion
+        Assert.Equal(200, raster.Width);
+    }
 }

@@ -93,6 +93,15 @@ public sealed record class CanvasOptions
     }
 
     /// <summary>
+    /// Gets a renderer for color glyphs of formats Egami.Drawing does not draw itself (OpenType SVG with Egami.Svg's
+    /// <c>SvgGlyphRenderer.Instance</c>), or <see langword="null"/> (the default) to draw those glyphs as outlines.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="svg-glyphs"/>
+    /// </example>
+    public IColorGlyphRenderer? ColorGlyphs { get; init; }
+
+    /// <summary>
     /// Gets how far, in device pixels, a curve's straight-line approximation may stray from it. Defaults to 0.1; smaller values cost
     /// more lines.
     /// </summary>

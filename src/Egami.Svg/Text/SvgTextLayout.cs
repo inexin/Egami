@@ -280,13 +280,38 @@ internal static class SvgTextLayout
             features.Add(new FontFeature(new FontTag("kern"), 0));
         }
 
-        ShapedText shaped = TextShaper.Shape(text, span.Font.Font, new ShapingOptions
+        // Fallback only where the span's font lacks a glyph, as resvg falls back: a font with the glyph keeps it, emoji too.
+        ShapingOptions options = new()
         {
-            Fallback = fallback,
             Direction = TextDirection.LeftToRight,
             Features = features.Count > 0 ? features : null,
-        });
+        };
+        List<Cluster> clusters = Clusters(TextShaper.Shape(text, span.Font.Font, options), text);
+        if (!clusters.Any(c => c.Glyphs.Any(g => g.Glyph == 0)))
+        {
+            return clusters;
+        }
 
+        // Clusters the span's font has keep its glyphs; the others take the fallback's (when the counts line up, as resvg).
+        List<Cluster> fallen = Clusters(TextShaper.Shape(text, span.Font.Font, options with { Fallback = fallback }), text);
+        if (fallen.Count != clusters.Count)
+        {
+            return fallen;
+        }
+
+        for (int i = 0; i < clusters.Count; i++)
+        {
+            if (clusters[i].Glyphs.Any(g => g.Glyph == 0) && fallen[i].Index == clusters[i].Index)
+            {
+                clusters[i] = fallen[i];
+            }
+        }
+
+        return clusters;
+    }
+
+    private static List<Cluster> Clusters(ShapedText shaped, string text)
+    {
         List<Cluster> clusters = [];
         foreach (ShapedLine line in shaped.Lines)
         {
