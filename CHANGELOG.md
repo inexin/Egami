@@ -35,6 +35,38 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   ImageMagick's in every mode it reads alike and the written values everywhere; layers equal psd-tools', metadata exiftool's.
   12-megapixel files decode three to ten times faster than with Magick.NET.
 
+### Comparing and measuring
+
+- `Raster.Compare` returns MAE, MSE, RMSE, PSNR, peak error and the pixels that differ (ImageMagick's AE, with a fuzz) per
+  channel and overall in one pass, on the 0 to 1 scale, with SSIM and DSSIM on request (Wang et al. 2004, 11 × 11 Gaussian).
+  Colors are premultiplied by default, as ImageMagick 7's metrics are; `AlphaCompare.Straight` compares stored channels. Every
+  metric is within 1e-6 of ImageMagick 7.1, AE identical, SSIM within 1e-4, and results do not depend on the thread count.
+- `Raster.Difference` draws ImageMagick compare's highlight picture (identical at 8 bits) or |a − b| per channel.
+- `Raster.Statistics` (min, max, mean, sample standard deviation, skewness, kurtosis, entropy per channel and luma, within 1e-6
+  of identify -verbose), `Histogram` with `Percentile` and `Median`, `CountColors` (exact, as %k), `GetColors`, and `IsOpaque` and
+  `IsGray` with early exit.
+- `PerceptualHash.Dct` and `Difference`: 64-bit hashes within 4 bits of Python imagehash, with `Distance`; `Raster.Signature`, a
+  SHA-256 of the pixels as 16-bit RGBA, equal for any pixel type of the same picture.
+
+### Palettes and dithering
+
+- The palette machinery behind the GIF, palette PNG, BMP and TGA writers is public: `Palette` (`FromColors`, `Build`,
+  `FromRaster`, `Nearest`), `Palettes` (web-safe, black and white, grays, color cubes), `RasterOps.Quantize` and `Remap` keeping the
+  pixel type, and `Raster.ToIndexed` returning an `IndexedImage`.
+- `DitherMode` adds Atkinson, Burkes, Jarvis–Judice–Ninke, three Sierras, Stevenson–Arce, Stucki, Riemersma and Bayer 2, 4 and 16
+  and 3 × 3 patterns; `PaletteOptions` adds `FixedPalette` (honoured by every writer, which throws when it has too many colors),
+  `DitherStrength`, `Serpentine`, `RefineIterations` (k-means polish), `ExactMatching` and a custom `ErrorDiffusionKernel`.
+  `Posterize` takes every mode. Defaults are unchanged: every file 1.x wrote stays the same byte for byte.
+- `Raster.DominantColors`: the main colors with their shares, by k-means in Oklab seeded by Wu's palette, the same on every run.
+- Quantizing a 12-megapixel photo is 2.5 to 4 times faster than the reference library 3.1 with the same dither.
+
+### Animation tools
+
+- `MergeDuplicates`, `DropZeroDelay`, `Retime`, `ChangeSpeed`, `Reverse` and `DrawAnimation` work on whole animations in `Apply`,
+  `Derive` and `Transcode`. The first two equal ImageMagick's -layers RemoveDups and RemoveZero; `Retime` samples fixed ticks as
+  ffmpeg's fps filter and keeps the total duration; `DrawAnimation` lays one animation over another by time, with a repeat count
+  and start, or by index as -layers Composite (identical), checking `MaxFrames` before drawing.
+
 ### Tone and color
 
 - Tone steps with ImageMagick's formulas and values from 0 to 1: `Level` (`-level` and `+level` in one), `Gamma`,
