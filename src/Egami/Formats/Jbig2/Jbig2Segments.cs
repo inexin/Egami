@@ -122,12 +122,12 @@ internal sealed class Jbig2Stream
     /// <summary>The file header's ID string (D.4.1).</summary>
     internal static ReadOnlySpan<byte> Id => [0x97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A];
 
-    private Jbig2Stream(byte[] data, List<Jbig2Segment> segments, Jbig2Organisation organisation, uint? declaredPages, bool truncated)
+    private Jbig2Stream(byte[] data, List<Jbig2Segment> segments, Jbig2Organization organization, uint? declaredPages, bool truncated)
     {
         Truncated = truncated;
         Data = data;
         Segments = segments;
-        Organisation = organisation;
+        Organization = organization;
         DeclaredPages = declaredPages;
     }
 
@@ -135,7 +135,7 @@ internal sealed class Jbig2Stream
 
     internal List<Jbig2Segment> Segments { get; }
 
-    internal Jbig2Organisation Organisation { get; }
+    internal Jbig2Organization Organization { get; }
 
     internal uint? DeclaredPages { get; }
 
@@ -169,7 +169,7 @@ internal sealed class Jbig2Stream
             if (sequential)
             {
                 bool cut = ReadSequential(data, length, at, segments, maxSegments);
-                return new Jbig2Stream(data, segments, Jbig2Organisation.Sequential, pages, cut);
+                return new Jbig2Stream(data, segments, Jbig2Organization.Sequential, pages, cut);
             }
 
             bool truncated = false;
@@ -203,7 +203,7 @@ internal sealed class Jbig2Stream
                 at += segment.DataLength;
             }
 
-            return new Jbig2Stream(data, segments, Jbig2Organisation.RandomAccess, pages, truncated);
+            return new Jbig2Stream(data, segments, Jbig2Organization.RandomAccess, pages, truncated);
         }
 
         if (!embedded)
@@ -212,7 +212,7 @@ internal sealed class Jbig2Stream
         }
 
         bool embeddedCut = ReadSequential(data, length, 0, segments, maxSegments);
-        return new Jbig2Stream(data, segments, Jbig2Organisation.Embedded, null, embeddedCut);
+        return new Jbig2Stream(data, segments, Jbig2Organization.Embedded, null, embeddedCut);
     }
 
     private static void Limit(List<Jbig2Segment> segments, int maxSegments)

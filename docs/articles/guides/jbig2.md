@@ -36,7 +36,7 @@ A PDF image's /Decode array and its color space stay the PDF library's business:
 | Extensions | Comments into `Jbig2Details.Comments`; others skipped unless marked necessary, which throws `NotSupportedException` |
 | Colour palettes (T.88 Amendment 3) | Skipped with a warning; the page decodes as bilevel |
 
-`Jbig2Details` reports, per page, the stream's `Jbig2Organisation`, whether the page used the globals, its striping, default
+`Jbig2Details` reports, per page, the stream's `Jbig2Organization`, whether the page used the globals, its striping, default
 pixel and `Jbig2CombinationOperator`, the `Jbig2RegionKinds` it is made of and whether it is eventually lossless. The page
 information's resolution goes to `RasterMetadata.Resolution`.
 

@@ -48,11 +48,11 @@ public class Jbig2
         #region jbig2-details
         using Raster page = Raster.Load("book.jb2");
         var details = (Jbig2Details)page.Metadata.FormatDetails!;
-        Console.WriteLine($"Page {details.PageIndex}, {details.Organisation}, regions {details.Regions}");
+        Console.WriteLine($"Page {details.PageIndex}, {details.Organization}, regions {details.Regions}");
         Console.WriteLine($"Default pixel {details.DefaultPixel}, combined by {details.CombinationOperator}, lossless {details.Lossless}");
         #endregion
 
-        Assert.Equal(Jbig2Organisation.Sequential, details.Organisation);
+        Assert.Equal(Jbig2Organization.Sequential, details.Organization);
         Assert.True(details.Regions.HasFlag(Jbig2RegionKinds.Text));
     }
 }

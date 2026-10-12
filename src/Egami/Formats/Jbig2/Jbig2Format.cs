@@ -99,7 +99,7 @@ public sealed class Jbig2Globals
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jbig2.cs" region="jbig2-details"/>
 /// </example>
-public enum Jbig2Organisation
+public enum Jbig2Organization
 {
     /// <summary>A standalone file, each segment's header followed by its data (D.1).</summary>
     Sequential,
@@ -163,7 +163,7 @@ public sealed class Jbig2Details : FormatDetails
     public int PageIndex { get; set; }
 
     /// <summary>Gets or sets how the stream lays out its segments.</summary>
-    public Jbig2Organisation Organisation { get; set; }
+    public Jbig2Organization Organization { get; set; }
 
     /// <summary>Gets or sets whether the page refers to dictionaries in <see cref="Jbig2ReaderOptions.Globals"/>.</summary>
     public bool UsesGlobals { get; set; }
@@ -195,7 +195,7 @@ public sealed class Jbig2Details : FormatDetails
         Jbig2Details copy = new()
         {
             PageIndex = PageIndex,
-            Organisation = Organisation,
+            Organization = Organization,
             UsesGlobals = UsesGlobals,
             Striped = Striped,
             MaxStripeSize = MaxStripeSize,

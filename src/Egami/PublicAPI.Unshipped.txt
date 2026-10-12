@@ -368,8 +368,8 @@ Egami.Formats.Jbig2.Jbig2Details.Lossless.get -> bool
 Egami.Formats.Jbig2.Jbig2Details.Lossless.set -> void
 Egami.Formats.Jbig2.Jbig2Details.MaxStripeSize.get -> int
 Egami.Formats.Jbig2.Jbig2Details.MaxStripeSize.set -> void
-Egami.Formats.Jbig2.Jbig2Details.Organisation.get -> Egami.Formats.Jbig2.Jbig2Organisation
-Egami.Formats.Jbig2.Jbig2Details.Organisation.set -> void
+Egami.Formats.Jbig2.Jbig2Details.Organization.get -> Egami.Formats.Jbig2.Jbig2Organization
+Egami.Formats.Jbig2.Jbig2Details.Organization.set -> void
 Egami.Formats.Jbig2.Jbig2Details.PageIndex.get -> int
 Egami.Formats.Jbig2.Jbig2Details.PageIndex.set -> void
 Egami.Formats.Jbig2.Jbig2Details.Regions.get -> Egami.Formats.Jbig2.Jbig2RegionKinds
@@ -381,10 +381,10 @@ Egami.Formats.Jbig2.Jbig2Details.UsesGlobals.set -> void
 Egami.Formats.Jbig2.Jbig2Format
 Egami.Formats.Jbig2.Jbig2Globals
 Egami.Formats.Jbig2.Jbig2Globals.SegmentCount.get -> int
-Egami.Formats.Jbig2.Jbig2Organisation
-Egami.Formats.Jbig2.Jbig2Organisation.Embedded = 2 -> Egami.Formats.Jbig2.Jbig2Organisation
-Egami.Formats.Jbig2.Jbig2Organisation.RandomAccess = 1 -> Egami.Formats.Jbig2.Jbig2Organisation
-Egami.Formats.Jbig2.Jbig2Organisation.Sequential = 0 -> Egami.Formats.Jbig2.Jbig2Organisation
+Egami.Formats.Jbig2.Jbig2Organization
+Egami.Formats.Jbig2.Jbig2Organization.Embedded = 2 -> Egami.Formats.Jbig2.Jbig2Organization
+Egami.Formats.Jbig2.Jbig2Organization.RandomAccess = 1 -> Egami.Formats.Jbig2.Jbig2Organization
+Egami.Formats.Jbig2.Jbig2Organization.Sequential = 0 -> Egami.Formats.Jbig2.Jbig2Organization
 Egami.Formats.Jbig2.Jbig2ReaderOptions
 Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.Jbig2.Jbig2ReaderOptions? other) -> bool
 Egami.Formats.Jbig2.Jbig2ReaderOptions.Globals.get -> Egami.Formats.Jbig2.Jbig2Globals?

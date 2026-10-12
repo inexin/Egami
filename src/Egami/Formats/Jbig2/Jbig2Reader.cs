@@ -188,7 +188,7 @@ internal sealed partial class Jbig2Reader : IFormatReader, IMultiImageReader
         Jbig2Details details = new()
         {
             PageIndex = decoder.PageSegments().IndexOf(page),
-            Organisation = decoder.Stream.Organisation,
+            Organization = decoder.Stream.Organization,
             UsesGlobals = decoder.UsesGlobals(page),
             Striped = info.Striped,
             MaxStripeSize = info.Striped ? info.MaxStripeSize : 0,
