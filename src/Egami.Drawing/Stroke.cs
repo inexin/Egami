@@ -108,4 +108,55 @@ public sealed record class Stroke
 
     /// <summary>Gets a value indicating whether this is a hairline: width 0.</summary>
     public bool IsHairline => Width == 0;
+
+    /// <summary>
+    /// Returns the outline this pen draws around a path, as a path to fill with the nonzero rule: the effect and dashes applied,
+    /// then each piece offset by half the width with the joins and caps, as the raster backend fills it. Curves become straight
+    /// pieces within a tenth of a unit divided by <paramref name="scale"/>, so filling the outline at that scale gives exactly
+    /// the pixels stroking does. The raw outline overlaps itself where the path turns sharply or crosses itself; with
+    /// <paramref name="simplify"/> the overlaps are removed by <see cref="Path.Simplify"/>, for export or hit testing.
+    /// </summary>
+    /// <param name="path">The path to outline.</param>
+    /// <param name="scale">How much larger the outline will be drawn, which sets how finely curves are cut.</param>
+    /// <param name="simplify">Whether to remove overlaps.</param>
+    /// <returns>The outline; empty for a hairline, which has no width in path units.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="scale"/> is not positive and finite.</exception>
+    /// <exception cref="ArgumentException">The outline does not fit in float coordinates.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="dashes"/>
+    /// </example>
+    public Path ToPath(Path path, float scale = 1, bool simplify = false)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        if (!(scale > 0 && float.IsFinite(scale)))
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale), scale, "The scale must be positive and finite.");
+        }
+
+        if (Effect is not null)
+        {
+            path = path.Apply(Effect);
+        }
+
+        if (Dash is not null)
+        {
+            path = Dash.Apply(path);
+        }
+
+        if (IsHairline || path.Points.Length == 0)
+        {
+            return Path.Empty;
+        }
+
+        Path outline = Geometry.Stroker.Outline(path, this, CanvasOptions.DefaultTolerance / scale);
+        foreach (System.Numerics.Vector2 p in outline.Points)
+        {
+            if (!float.IsFinite(p.X) || !float.IsFinite(p.Y))
+            {
+                throw new ArgumentException("The outline does not fit in float coordinates.", nameof(path));
+            }
+        }
+
+        return simplify ? outline.Simplify(PathOps.DefaultTolerance / scale) : outline;
+    }
 }

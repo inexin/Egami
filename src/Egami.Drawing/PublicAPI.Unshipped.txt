@@ -138,6 +138,7 @@ Egami.Drawing.Path.FillRule.get -> Egami.Drawing.FillRule
 Egami.Drawing.Path.Intersect(Egami.Drawing.Path! other, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.IsConvex.get -> bool
 Egami.Drawing.Path.IsEmpty.get -> bool
+Egami.Drawing.Path.Offset(float distance, Egami.Drawing.LineJoin join = Egami.Drawing.LineJoin.Round, float miterLimit = 4) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Op(Egami.Drawing.Path! other, Egami.Drawing.PathOp op, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Points.get -> System.ReadOnlySpan<System.Numerics.Vector2>
 Egami.Drawing.Path.Reverse() -> Egami.Drawing.Path!
@@ -285,6 +286,7 @@ Egami.Drawing.Stroke.Join.init -> void
 Egami.Drawing.Stroke.MiterLimit.get -> float
 Egami.Drawing.Stroke.MiterLimit.init -> void
 Egami.Drawing.Stroke.Stroke(float width = 1) -> void
+Egami.Drawing.Stroke.ToPath(Egami.Drawing.Path! path, float scale = 1, bool simplify = false) -> Egami.Drawing.Path!
 Egami.Drawing.Stroke.Width.get -> float
 Egami.Drawing.Stroke.Width.init -> void
 Egami.Drawing.SvgPathException

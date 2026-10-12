@@ -38,7 +38,10 @@ public enum PointMode
 public sealed record class CanvasOptions
 {
     private readonly ColorSpace _colorSpace;
-    private readonly float _tolerance = 0.1f;
+    /// <summary>The default <see cref="Tolerance"/>, in device pixels.</summary>
+    internal const float DefaultTolerance = 0.1f;
+
+    private readonly float _tolerance = DefaultTolerance;
 
     /// <summary>Gets the options every canvas starts with.</summary>
     public static CanvasOptions Default { get; } = new();

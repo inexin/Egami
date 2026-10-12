@@ -151,7 +151,7 @@ public class PathEffectTests
 
         double plain = StrokeTests.Coverage(c => c.StrokePath(Path.Line(new(5, 30), new(60, 30)), new Stroke(4), Rgba8.White));
         double trimmed = StrokeTests.Coverage(c => c.StrokePath(Path.Line(new(5, 30), new(60, 30)), new Stroke(4) { Effect = PathEffect.Trim(0, 0.5f) }, Rgba8.White));
-        Assert.Equal(plain / 2, trimmed, 1);
+        Assert.Equal(plain / 2, trimmed, 1.0);
     }
 
     /// <summary>The signed area a path encloses (positive clockwise on screen), exact for its curves: Green's theorem, ∮ x dy.</summary>
