@@ -15,7 +15,7 @@ import os
 import subprocess
 import sys
 
-SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png", "jpeg": "tests/images/jpeg/*.jpg", "jpeg-depth": "tests/images/jpeg/depth/*.jpg", "jpeg-write": "tests/images/fuzz/jpeg-write-seeds/*", "exif": "tests/images/fuzz/exif-seeds/*.tiff", "icc": "tests/images/icc/*/*.icc",
+SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png", "jpeg": "tests/images/jpeg/*.jpg", "jpeg-depth": "tests/images/jpeg/depth/*.jpg", "jpeg-write": "tests/images/fuzz/jpeg-write-seeds/*", "jpeg-transform": "tests/images/jpeg/transform/*.jpg tests/images/jpeg/exif-orientation-6.jpg", "exif": "tests/images/fuzz/exif-seeds/*.tiff", "icc": "tests/images/icc/*/*.icc",
          "iptc": "tests/images/fuzz/iptc-seeds/*", "psd": "tests/images/fuzz/psd-seeds/*", "xmp": "tests/images/fuzz/xmp-seeds/*",
          "rawprofile": "tests/images/fuzz/rawprofile-seeds/*",
          "gif": "tests/images/gif/*.gif", "apng": "tests/images/apng/*.png", "lzw": "tests/images/fuzz/lzw-seeds/*.bin",

@@ -462,6 +462,21 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
 - TIFF's JPEG compression takes CMYK pages (see TIFF above).
 - Arithmetic and lossless JPEG are still read only.
 
+### Lossless JPEG transforms
+
+- `JpegTransform.Apply` rotates (90, 180, 270), flips, transposes and transverses JPEG files on their DCT coefficients, as
+  `jpegtran` does, so nothing is lost; `JpegTransformOperation.AutoOrient` turns a photo upright by its EXIF orientation and
+  resets the tag. `Crop` keeps an area (its corner moved to the MCU grid), `Grayscale` keeps luma alone, and `Edges` says what
+  happens to partial MCUs at a mirrored edge: `Trim` (the default, `-trim`), `Strict` (`-perfect`) or `Keep` (jpegtran's
+  default). Every mode the reader takes works except lossless JPEG; arithmetic sources are written with Huffman coding.
+- Results decode to the same pixels as jpegtran 3.0's on every chroma sampling, gray, CMYK, progressive, arithmetic and 12-bit
+  sources, with partial MCUs on both edges, for every operation, edge mode, crop and gray conversion.
+- Output is sequential with optimized Huffman tables by default, or progressive. EXIF, ICC, XMP, IPTC and comments are copied;
+  EXIF's pixel dimensions follow the result and its thumbnail is turned too (dropped after a crop). A file can be transformed in
+  place. The coefficients are held while it runs, within `SafetyLimits.MaxTotalBytes`.
+- A 12-megapixel photo turns faster than jpegtran: 170 against 305 ms with optimized tables, 130 against 246 ms with standard
+  ones, 260 against 458 ms written progressive.
+
 ### Pixel layouts
 
 - New enum values, for code that switches on them: `PixelChannelOrder.Argb`, `Abgr`, `Alpha` and `Cmyk`;

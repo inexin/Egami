@@ -32,7 +32,8 @@ resizing. Other formats ignore it.
 ## Orientation
 
 Cameras and phones store pixels as the sensor saw them and say in EXIF how to turn them. `Raster.Probe` reports the orientation,
-and `AutoOrient` applies it; see [resizing and geometry](resizing-and-geometry.md#orientation).
+and `AutoOrient` applies it; see [resizing and geometry](resizing-and-geometry.md#orientation). To turn the file itself upright
+without re-encoding it, use `JpegTransform` with `AutoOrient` (see [lossless rotation](#lossless-rotation-flips-and-crops)).
 
 ## Writing
 
@@ -77,12 +78,46 @@ samples to 12 bits; it is worth it for 16-bit and float pixels. The Huffman tabl
 at 12 bits, and quantization tables pass 255 at low quality, in 16-bit entries. libjpeg-turbo's djpeg reads them; browsers,
 Pillow and many ImageMagick builds do not.
 
+## Lossless rotation, flips and crops
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-transform)]
+
+`JpegTransform` turns, mirrors, crops and drops the color of a JPEG without decoding it to pixels, as `jpegtran` does: the
+quantized DCT coefficients move and change sign block by block, and are coded again, so the result has exactly the quality the
+file had. Quantization tables and chroma subsampling stay as they were. It takes every mode the reader takes except lossless
+JPEG: baseline, progressive, arithmetic (written back with Huffman coding), 12-bit, gray, CMYK and YCCK. The result decodes to
+the same pixels as the file `jpegtran` makes with the same switches, on every subsampling and edge case.
+
+| Option | Default | Does |
+| --- | --- | --- |
+| `Operation` | `None` | `FlipHorizontal`, `FlipVertical`, `Rotate90`, `Rotate180`, `Rotate270`, `Transpose`, `Transverse`, or `AutoOrient`: what the EXIF orientation needs, then the tag is reset to normal |
+| `Crop` | none | The area to keep, after the operation; its top-left corner moves to the MCU grid (8 or 16 pixels), as `jpegtran -crop` does |
+| `Grayscale` | `false` | Keeps only luma: a gray file with no loss. YCbCr files only |
+| `Edges` | `Trim` | What happens at a mirrored edge that is not a whole number of MCUs (below) |
+| `Progressive` | `false` | Writes progressive scans, as `JpegWriterOptions.Progressive` does |
+| `OptimizeHuffman` | `true` | Tables built for the result, a few percent smaller than the standard ones |
+| `CopyMetadata` | `true` | Copies EXIF, ICC, XMP, IPTC, comments and other segments |
+
+A block of 8 × 8 pixels moves as a whole, so an edge that is not a whole number of MCUs (8 pixels, or 16 with subsampled chroma)
+cannot be mirrored to the other side intact. `JpegTransformEdges.Trim` drops that partial MCU from each mirrored edge, so the image loses up to 15
+pixels there, as `jpegtran -trim` does; `Strict` throws instead, as `-perfect` does; `Keep` leaves it in place unmirrored, as
+`jpegtran` does by default. Edges that are not mirrored keep every pixel, and `Transpose` never loses any.
+
+EXIF's pixel dimensions follow the result, and its thumbnail gets the same rotation, flip and gray conversion; after a crop the
+thumbnail is dropped, since it would still show the whole picture. An MPF index (the extra images some cameras append) is
+dropped too. Other segments are copied byte for byte. The result's size and any warnings about a damaged source are in the
+returned `JpegTransformResult`.
+
+The whole image's coefficients are held while it runs, about 2 bytes per sample, counted against `SafetyLimits.MaxTotalBytes`.
+A 12-megapixel photo turns in 170 ms with optimized tables (jpegtran `-optimize`: 305 ms), 130 ms with the standard ones
+(jpegtran: 246 ms) and 260 ms written progressive (jpegtran: 458 ms).
+
 ## What the file says
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-details)]
 
 EXIF, XMP (including extended XMP) and ICC profiles are read and written back. A JPEG saved again is re-encoded: pixels lose a
-little each time, so keep a lossless master if you edit repeatedly.
+little each time, so keep a lossless master if you edit repeatedly, or use `JpegTransform` for rotations, flips and crops.
 
 ## Details
 

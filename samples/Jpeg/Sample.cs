@@ -3,7 +3,7 @@ using Egami.Formats.Jpeg;
 
 namespace Egami.Samples.Jpeg;
 
-/// <summary>Decodes a JPEG at reduced scale, makes an upright thumbnail, and writes the same image at several settings.</summary>
+/// <summary>Decodes a JPEG at reduced scale, writes the same image at several settings, and rotates one losslessly.</summary>
 public static class Sample
 {
     /// <summary>Runs the sample.</summary>
@@ -30,7 +30,14 @@ public static class Sample
             Console.WriteLine($"Quality {quality}: {new FileInfo(path).Length:N0} bytes, estimated {details.EstimatedQuality}");
         }
 
-        using FileStream sharp = File.Create(Path.Combine(output, "q85-444.jpg"));
-        photo.Save(sharp, JpegFormat.Info, new JpegWriterOptions { Quality = 85, Subsampling = ChromaSubsampling.Subsample444 });
+        using (FileStream sharp = File.Create(Path.Combine(output, "q85-444.jpg")))
+        {
+            photo.Save(sharp, JpegFormat.Info, new JpegWriterOptions { Quality = 85, Subsampling = ChromaSubsampling.Subsample444 });
+        }
+
+        // Turned on the DCT coefficients, so the rotated file keeps exactly the quality it had.
+        JpegTransformResult turned = JpegTransform.Apply(
+            SampleRunner.Image("duck.jpg"), Path.Combine(output, "duck-rotated.jpg"), new JpegTransformOptions { Operation = JpegTransformOperation.Rotate90 });
+        Console.WriteLine($"Rotated losslessly: {turned.Width} × {turned.Height}");
     }
 }

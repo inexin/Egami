@@ -188,6 +188,31 @@ public class AnimationAndMetadata
     }
 
     [Fact]
+    public void JpegTransformSample()
+    {
+        using SampleFiles files = new();
+
+        #region jpeg-transform
+        // Turns the photo upright by its EXIF orientation without re-encoding: no quality is lost, and the tag is reset.
+        JpegTransform.Apply("sideways.jpg", "upright.jpg", new JpegTransformOptions { Operation = JpegTransformOperation.AutoOrient });
+
+        // Rotates, crops and drops the color in one pass; a file can be transformed in place.
+        JpegTransformResult result = JpegTransform.Apply("upright.jpg", "upright.jpg", new JpegTransformOptions
+        {
+            Operation = JpegTransformOperation.Rotate90,
+            Crop = new Rect(0, 0, 200, 120),
+            Grayscale = true,
+        });
+        Console.WriteLine($"{result.Width} × {result.Height}");
+        #endregion
+
+        RasterInfo info = Raster.Probe("upright.jpg");
+        Assert.Equal((result.Width, result.Height), (info.Width, info.Height));
+        Assert.Equal(ImageOrientation.Normal, info.Orientation);
+        Assert.Equal(Gray8.Layout, info.Layout);
+    }
+
+    [Fact]
     public void JpegDetailsSample()
     {
         using SampleFiles files = new();

@@ -30,7 +30,9 @@ using DrawingPath = Egami.Drawing.Path;
 // codestreams every way (color and raw components, quality layers, rows, regions, reductions, YUV planes) and feed tier 1 raw
 // code-block bytes in every code-block style. The svgpath target (Phase 2.6.2) reads SVG path data strictly, with TryParseSvg and
 // leniently, which must agree; writes it back every way, which must read again to the same path; and runs small paths through
-// measuring, dashing, stroke outlines and the boolean engine.
+// measuring, dashing, stroke outlines and the boolean engine. The jpeg-transform target (Phase 2.4.4) runs lossless transforms
+// with options picked from the input's hash: a result must load at the size the transform reports, a flip done twice with its
+// edges kept must give back the source's pixels, and the result must not depend on the core count.
 // The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
 // best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
@@ -104,6 +106,7 @@ static Action<Stream> Target(string name) => name switch
     "jpeg" => LoadJpeg,
     "jpeg-depth" => LoadJpegDepth,
     "jpeg-write" => WriteJpeg,
+    "jpeg-transform" => TransformJpeg,
     "exif" => ParseExif,
     "icc" => ParseIcc,
     "gif" => LoadGif,
@@ -137,7 +140,7 @@ static Action<Stream> Target(string name) => name switch
     "icoentry" => LoadIcoEntry,
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry, psdfile, psddata."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry, psdfile, psddata."),
 };
 
 static EgamiContext Context()
@@ -984,6 +987,103 @@ static void DecodeWebpCodec(Stream stream)
     }
     catch (EgamiException)
     {
+    }
+}
+
+// Lossless transforms (Phase 2.4.4): the input is a JPEG, and its hash picks the operation, edges, crop, gray conversion, output
+// coding and metadata copying. Only EgamiExceptions and the documented argument errors may escape; a result must load at the size
+// reported, flipping twice with kept edges must restore the pixels of a plain copy, and four cores must write what one writes.
+static void TransformJpeg(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    uint hash = 2166136261;
+    foreach (byte value in data.AsSpan(0, Math.Min(data.Length, 4096)))
+    {
+        hash = (hash ^ value) * 16777619;
+    }
+
+    JpegTransformOperation[] operations = Enum.GetValues<JpegTransformOperation>();
+    JpegTransformOptions options = new()
+    {
+        Operation = operations[hash % (uint)operations.Length],
+        Edges = (JpegTransformEdges)((hash >> 4) % 3),
+        Grayscale = ((hash >> 6) & 7) == 0,
+        Progressive = ((hash >> 9) & 3) == 0,
+        OptimizeHuffman = ((hash >> 11) & 3) != 0,
+        CopyMetadata = ((hash >> 13) & 1) == 0,
+    };
+
+    if (((hash >> 14) & 3) == 0)
+    {
+        try
+        {
+            RasterInfo info = Raster.Probe(data, Context());
+            int w = info.Width, h = info.Height;
+            (w, h) = options.Operation is JpegTransformOperation.Rotate90 or JpegTransformOperation.Rotate270 or JpegTransformOperation.Transpose or JpegTransformOperation.Transverse ? (h, w) : (w, h);
+            int x = (int)((hash >> 16) % (uint)w), y = (int)((hash >> 20) % (uint)h);
+            options = new JpegTransformOptions
+            {
+                Operation = options.Operation,
+                Edges = options.Edges,
+                Grayscale = options.Grayscale,
+                Progressive = options.Progressive,
+                Crop = new Rect(x, y, Math.Max(1, (w - x) / 2), Math.Max(1, (h - y) / 2)),
+            };
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+
+    byte[]? result = TransformOnce(data, options, 1, out JpegTransformResult? reported);
+    if (result is null)
+    {
+        return;
+    }
+
+    if (!TransformOnce(data, options, 4, out _)!.AsSpan().SequenceEqual(result))
+    {
+        throw new InvalidOperationException("One core and four cores transform differently.");
+    }
+
+    using (Raster loaded = Raster.Load(result, Context()))
+    {
+        if (loaded.Width != reported!.Width || loaded.Height != reported.Height)
+        {
+            throw new InvalidOperationException($"The result is {loaded.Width}×{loaded.Height}, but the transform said {reported.Width}×{reported.Height}.");
+        }
+    }
+
+    JpegTransformOptions keepFlip = new() { Operation = JpegTransformOperation.FlipHorizontal, Edges = JpegTransformEdges.Keep, CopyMetadata = false };
+    byte[] copy = TransformOnce(data, new JpegTransformOptions { CopyMetadata = false }, 1, out _)!;
+    byte[] twice = TransformOnce(TransformOnce(data, keepFlip, 1, out _)!, keepFlip, 1, out _)!;
+    using Raster a = Raster.Load(copy, Context());
+    using Raster b = Raster.Load(twice, Context());
+    using Raster<Rgba16> pa = a.As<Rgba16>();
+    using Raster<Rgba16> pb = b.As<Rgba16>();
+    for (int row = 0; row < pa.Height; row++)
+    {
+        if (!pa.Row(row).SequenceEqual(pb.Row(row)))
+        {
+            throw new InvalidOperationException("Flipping twice with kept edges changed the pixels.");
+        }
+    }
+}
+
+// Transforms at a core count, or returns null when the file or options are refused as documented.
+static byte[]? TransformOnce(byte[] data, JpegTransformOptions options, int cores, out JpegTransformResult? result)
+{
+    try
+    {
+        using MemoryStream input = new(data);
+        using MemoryStream output = new();
+        result = JpegTransform.Apply(input, output, options, Context() with { MaxParallelism = cores });
+        return output.ToArray();
+    }
+    catch (Exception e) when (e is EgamiException or NotSupportedException or InvalidOperationException { Source: "Egami" } or ArgumentOutOfRangeException { ParamName: "options" })
+    {
+        result = null;
+        return null;
     }
 }
 

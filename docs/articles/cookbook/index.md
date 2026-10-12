@@ -83,6 +83,10 @@ Decoder frames in NV12 or P010 copy into the planes first; see [planar YUV](../g
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-progressive)]
 
+## Rotate a JPEG without losing quality
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-transform)]
+
 ## Make a favicon
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Ico.cs#ico-save)]
