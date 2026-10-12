@@ -16,7 +16,7 @@ public sealed class InteractionTests(ITestOutputHelper output)
         var data = new TheoryData<string>();
         foreach (LayoutReferences.Case c in LayoutReferences.AllCases())
         {
-            if (c.Name.StartsWith("interaction-", StringComparison.Ordinal) && !c.Style.TryGetProperty("writingMode", out _))
+            if (c.Name.StartsWith("interaction-", StringComparison.Ordinal))
             {
                 data.Add(c.Name);
             }
@@ -76,14 +76,17 @@ public sealed class InteractionTests(ITestOutputHelper output)
                     continue;
                 }
 
-                // Chromium's collapsed range sits on one line: at a wrap, the line its y is on picks the affinity.
-                int line = layout.GetLineAtY(caret.Y + (caret.Length / 2));
+                // Chromium's collapsed range sits on one line: at a wrap, the line it is on picks the affinity. In vertical
+                // layouts the position along the line is y and the line is found by x.
+                bool vertical = layout.Paragraph.Style.WritingMode != WritingMode.HorizontalTb;
+                (float along, float across) = vertical ? (caret.Y, caret.X + (caret.Length / 2)) : (caret.X, caret.Y + (caret.Length / 2));
+                int line = layout.GetLineAtY(across);
                 TextAffinity affinity = line >= 0 && layout.Lines[line].Start == caret.Index ? TextAffinity.Downstream : TextAffinity.Upstream;
                 Caret ours = layout.GetCaret(new TextPosition(caret.Index, affinity));
-                bool matches = Math.Abs(ours.Primary.X - caret.X) <= Tolerance || (ours.Secondary is CaretLine s && Math.Abs(s.X - caret.X) <= Tolerance);
+                bool matches = Math.Abs(ours.Primary.X - along) <= Tolerance || (ours.Secondary is CaretLine s && Math.Abs(s.X - along) <= Tolerance);
                 if (!matches)
                 {
-                    failures.Add($"{reference.Width} caret {caret.Index}: Chromium {caret.X}, Egami {ours.Primary.X}/{ours.Secondary?.X}");
+                    failures.Add($"{reference.Width} caret {caret.Index}: Chromium {along}, Egami {ours.Primary.X}/{ours.Secondary?.X}");
                 }
             }
         }
@@ -113,8 +116,13 @@ public sealed class InteractionTests(ITestOutputHelper output)
                     continue;
                 }
 
-                List<List<(float L, float R)>> expected = Coverage(selection.Rects.Select(r => new TextBounds(r[0], r[1], r[0] + r[2], r[1] + r[3])));
-                List<List<(float L, float R)>> actual = Coverage(layout.GetSelectionRects(selection.Start, selection.End, SelectionHeight.Tight));
+                // Vertical rectangles are compared turned: lines by x, covered ranges in y.
+                bool vertical = layout.Paragraph.Style.WritingMode != WritingMode.HorizontalTb;
+                static TextBounds Turn(TextBounds r) => new(r.Top, r.Left, r.Bottom, r.Right);
+                IEnumerable<TextBounds> theirs = selection.Rects.Select(r => new TextBounds(r[0], r[1], r[0] + r[2], r[1] + r[3]));
+                IEnumerable<TextBounds> ours = layout.GetSelectionRects(selection.Start, selection.End, SelectionHeight.Tight);
+                List<List<(float L, float R)>> expected = Coverage(vertical ? theirs.Select(Turn) : theirs);
+                List<List<(float L, float R)>> actual = Coverage(vertical ? ours.Select(Turn) : ours);
                 if (!Same(expected, actual))
                 {
                     failures.Add($"{reference.Width} [{selection.Start}, {selection.End}): Chromium {Show(expected)}; Egami {Show(actual)}");

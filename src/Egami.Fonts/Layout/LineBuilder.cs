@@ -33,7 +33,7 @@ internal sealed class AdvanceTable
                 for (int g = 0; g < glyphs.Count; g++)
                 {
                     int cluster = glyphs.Clusters[g];
-                    advance[cluster] += glyphs.Positions[g].XAdvance;
+                    advance[cluster] += run.Upright ? -glyphs.Positions[g].YAdvance : glyphs.Positions[g].XAdvance;
                     if ((glyphs.Flags[g] & GlyphFlags.UnsafeToBreak) != 0 && cluster > run.Start)
                     {
                         Unsafe[cluster] = true;
@@ -165,6 +165,9 @@ internal sealed class DraftRun
     public required Script Script { get; init; }
 
     public required string? Language { get; init; }
+
+    /// <summary>Whether the piece stands upright in a vertical line: its advances and offsets are vertical.</summary>
+    public bool Upright { get; init; }
 
     public float X { get; set; }
 }
@@ -749,11 +752,12 @@ internal sealed class LineBuilder
                     {
                         int g = order[o];
                         GlyphPosition p = buffer.Positions[g];
+                        float along = run.Upright ? -p.YAdvance : p.XAdvance;
                         glyphs.Add(buffer.GlyphIds[g]);
                         clusters.Add(buffer.Clusters[g]);
-                        advances.Add(p.XAdvance + extraOf[o]);
+                        advances.Add(along + extraOf[o]);
                         offsets.Add(new Vector2(p.XOffset, p.YOffset));
-                        advance += p.XAdvance + extraOf[o];
+                        advance += along + extraOf[o];
                     }
 
                     if (hyphen is not null && !rtl)
@@ -789,6 +793,7 @@ internal sealed class LineBuilder
             Placeholder = run.Placeholder,
             Script = run.Script,
             Language = style.Language,
+            Upright = run.Upright,
         };
     }
 
@@ -844,7 +849,7 @@ internal sealed class LineBuilder
             }
             else
             {
-                (t, b) = InlineBox(piece.Font, style.LineHeight);
+                (t, b) = Box(piece.Font, style.LineHeight);
             }
 
             t += style.BaselineShift;
@@ -876,7 +881,7 @@ internal sealed class LineBuilder
     private (float Top, float Bottom) RootBox()
     {
         ResolvedStyle root = _paragraph.Styles[0];
-        return root.Primary is Font f ? InlineBox(f, root.LineHeight) : (0, 0);
+        return root.Primary is Font f ? Box(f, root.LineHeight) : (0, 0);
     }
 
     private (float StrutTop, float StrutBottom)? StrutBox()
@@ -895,7 +900,33 @@ internal sealed class LineBuilder
 
         FontMatch match = families[0].Match(strut.FontStyle ?? root.FontStyle);
         Font font = new(match.Typeface, strut.Size ?? root.Size) { Synthesis = match.Synthesis };
-        return InlineBox(font, strut.LineHeight);
+        return Box(font, strut.LineHeight);
+    }
+
+    /// <summary>Whether lines run vertically.</summary>
+    private bool Vertical => _paragraph.Style.WritingMode != WritingMode.HorizontalTb;
+
+    /// <summary>Whether vertical lines align on the central baseline (CSS's for mixed and upright text) rather than the alphabetic.</summary>
+    private bool Central => Vertical && _paragraph.Style.TextOrientation != TextOrientation.Sideways;
+
+    /// <summary>An inline box on the line's baseline: <see cref="InlineBox"/>, or about the central baseline in vertical lines.</summary>
+    private (float Top, float Bottom) Box(Font font, LineHeight lineHeight) => Central ? CentralBox(font, lineHeight) : InlineBox(font, lineHeight);
+
+    /// <summary>An inline box about the central baseline: the font's rounded ascent and descent split evenly on each side (the
+    /// over half rounded down), then the leading as <see cref="InlineBox"/> splits it.</summary>
+    internal static (float Top, float Bottom) CentralBox(Font font, LineHeight lineHeight)
+    {
+        (float a, float d, float gap) = Rounded(font);
+        float over = MathF.Floor((a + d) / 2), under = a + d - over;
+        float height = lineHeight.Kind switch
+        {
+            LineHeightKind.Multiple => LayoutUnit(lineHeight.Value * font.Size),
+            LineHeightKind.Absolute => LayoutUnit(lineHeight.Value),
+            _ => a + d + gap,
+        };
+        float leading = height - (a + d);
+        float half = MathF.Floor(leading / 2);
+        return (-(over + half), under + (leading - half));
     }
 
     /// <summary>The top of a placeholder's box on a line with the given top, baseline (moved by the style's shift) and bottom.</summary>
@@ -989,7 +1020,7 @@ internal sealed class LineBuilder
 
     /// <summary>Places a draft: its content starts at the start edge (left, or right in right-to-left paragraphs), its top at
     /// <paramref name="top"/>.</summary>
-    public TextLine Finish(LineDraft draft, float width, float top, bool trimTop = false, bool trimBottom = false)
+    public TextLine Finish(LineDraft draft, float width, float top, bool trimTop = false, bool trimBottom = false, float blockSize = float.NaN)
     {
         // CSS text-box-trim: the first line's box starts at the root font's ascent, the last one's ends at its descent.
         float lineAscent = draft.Ascent, lineDescent = draft.Descent;
@@ -1058,7 +1089,7 @@ internal sealed class LineBuilder
 
             float shift = _paragraph.Styles[piece.Style].BaselineShift;
             GlyphRun? glyphs = null;
-            if (piece.Kind == RunKind.Text)
+            if (piece.Kind == RunKind.Text && !Vertical)
             {
                 Vector2[] points = new Vector2[piece.Glyphs.Length];
                 float pen = x;
@@ -1075,6 +1106,10 @@ internal sealed class LineBuilder
                     Language = piece.Language,
                 };
             }
+            else if (piece.Kind == RunKind.Text)
+            {
+                glyphs = VerticalGlyphs(piece, advances, x, ToPhysical(baseline + shift, top, lineAscent + lineDescent, blockSize));
+            }
 
             LayoutRunKind kind = piece.Kind switch
             {
@@ -1089,7 +1124,73 @@ internal sealed class LineBuilder
             });
         }
 
+        if (Vertical)
+        {
+            // In vertical lines the block axis is x: the line's over side is its right edge, its under side its left.
+            float over = ToPhysical(top, top, lineAscent + lineDescent, blockSize);
+            return new TextLine(draft.Start, draft.End - draft.Start, over - lineAscent - lineDescent, lineDescent, lineAscent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs);
+        }
+
         return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs);
+    }
+
+    /// <summary>
+    /// A block-axis position of a vertical line as an x: lines stack leftwards from the right edge in
+    /// <see cref="WritingMode.VerticalRl"/> and rightwards from the left in <see cref="WritingMode.VerticalLr"/>; inside a line,
+    /// the over side (the logical top) is on the right in both.
+    /// </summary>
+    private float ToPhysical(float position, float lineTop, float thickness, float blockSize)
+    {
+        float offset = position - lineTop;
+        float lineRight = _paragraph.Style.WritingMode == WritingMode.VerticalRl
+            ? (float.IsNaN(blockSize) ? thickness : blockSize) - lineTop
+            : lineTop + thickness;
+        return lineRight - offset;
+    }
+
+    /// <summary>
+    /// The glyphs of a vertical piece: upright ones on the central baseline with their vertical offsets, sideways ones turned a
+    /// quarter clockwise with their alphabetic baseline where the em box centres on the central baseline (or on the line's own
+    /// baseline with <see cref="TextOrientation.Sideways"/>).
+    /// </summary>
+    private GlyphRun VerticalGlyphs(DraftRun piece, float[] advances, float start, float baselineX)
+    {
+        int n = piece.Glyphs.Length;
+        float pen = start;
+        if (piece.Upright)
+        {
+            Vector2[] points = new Vector2[n];
+            for (int g = 0; g < n; g++)
+            {
+                points[g] = new Vector2(baselineX + piece.Offsets[g].X, pen - piece.Offsets[g].Y);
+                pen += advances[g];
+            }
+
+            return new GlyphRun(piece.Font, piece.Glyphs, points, _text, piece.Clusters, null, advances)
+            {
+                BidiLevel = piece.Level,
+                Script = piece.Script,
+                Language = piece.Language,
+            };
+        }
+
+        (float a, float d, _) = Rounded(piece.Font);
+        float alphabetic = Central ? baselineX - ((a - d) / 2) : baselineX;
+        GlyphTransform[] transforms = new GlyphTransform[n];
+        Vector2[] origins = new Vector2[n];
+        for (int g = 0; g < n; g++)
+        {
+            origins[g] = new Vector2(alphabetic + piece.Offsets[g].Y, pen + piece.Offsets[g].X);
+            transforms[g] = GlyphTransform.FromRotationScale(1, 90, origins[g]);
+            pen += advances[g];
+        }
+
+        return new GlyphRun(piece.Font, piece.Glyphs, origins, _text, piece.Clusters, transforms, advances)
+        {
+            BidiLevel = piece.Level,
+            Script = piece.Script,
+            Language = piece.Language,
+        };
     }
 
     /// <summary>

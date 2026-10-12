@@ -15,8 +15,8 @@ public sealed class LineBoxTests(ITestOutputHelper output)
         var data = new TheoryData<string>();
         foreach (LayoutReferences.Case c in LayoutReferences.AllCases())
         {
-            // Vertical lines (task 11) and line limits (task 8) have their own gates.
-            if (!c.Style.TryGetProperty("writingMode", out _) && !c.Style.TryGetProperty("maxLines", out _) && c.Name != "thai"
+            // Line limits have their own gate (LineLimitTests).
+            if (!c.Style.TryGetProperty("maxLines", out _) && c.Name != "thai"
                 && !LineFillTests.KnownPositionDifferences.Contains(c.Name))
             {
                 data.Add(c.Name);
@@ -95,10 +95,13 @@ public sealed class LineBoxTests(ITestOutputHelper output)
                     continue;
                 }
 
+                // Vertical lines' boxes are x ranges with the over side on the right.
                 TextLine line = layout.Lines[i];
-                if (Math.Abs(line.Top - box[0]) > Tolerance || Math.Abs(line.Baseline - box[1]) > Tolerance || Math.Abs(line.Bottom - box[2]) > Tolerance)
+                bool vertical = c.Style.TryGetProperty("writingMode", out _);
+                (float over, float under) = vertical ? (line.Bottom, line.Top) : (line.Top, line.Bottom);
+                if (Math.Abs(over - box[0]) > Tolerance || Math.Abs(line.Baseline - box[1]) > Tolerance || Math.Abs(under - box[2]) > Tolerance)
                 {
-                    failures.Add($"{reference.Width} line {i}: Chromium {box[0]}/{box[1]}/{box[2]}, Egami {line.Top}/{line.Baseline}/{line.Bottom}");
+                    failures.Add($"{reference.Width} line {i}: Chromium {box[0]}/{box[1]}/{box[2]}, Egami {over}/{line.Baseline}/{under}");
                 }
             }
 
@@ -113,6 +116,12 @@ public sealed class LineBoxTests(ITestOutputHelper output)
                 // Chromium reports rectangles floored to its layout unit, after snapping each item before this one up to it; a
                 // space or soft hyphen that ends a line is an item of its own there.
                 int items = ours.Items + (c.Text[g.Index] is ' ' or '\u00AD' ? 1 : 0);
+                // Vertical lines run down: the position along the line is y.
+                if (c.Style.TryGetProperty("writingMode", out _))
+                {
+                    rect = [rect[1]];
+                }
+
                 // Lines placed from the right (or centred, or justified) move the other way, by up to every item's snapping.
                 bool placed = (paragraph.Bidi.ParagraphLevelAt(g.Index) & 1) != 0 || paragraph.Style.Align != TextAlign.Start;
                 float low = rect[0] - ((placed ? 1 : items) * Unit) - Tolerance;

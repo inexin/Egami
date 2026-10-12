@@ -26,10 +26,10 @@ public enum TextAffinity
 /// </example>
 public readonly record struct TextPosition(int Index, TextAffinity Affinity = TextAffinity.Downstream);
 
-/// <summary>A vertical caret segment.</summary>
-/// <param name="X">The caret's x.</param>
-/// <param name="Top">The top of the segment.</param>
-/// <param name="Bottom">The bottom of the segment.</param>
+/// <summary>A caret segment across the line: vertical in horizontal layouts, horizontal in vertical ones.</summary>
+/// <param name="X">The caret's x; in vertical layouts, its y.</param>
+/// <param name="Top">The top of the segment; in vertical layouts, its left end.</param>
+/// <param name="Bottom">The bottom of the segment; in vertical layouts, its right end.</param>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="carets"/>
 /// </example>
@@ -118,6 +118,12 @@ public sealed partial class TextLayout
     /// </example>
     public TextPosition HitTest(Vector2 point)
     {
+        // Vertical lines run down the box: the position along a line is y, across the lines x.
+        if (Vertical)
+        {
+            point = new Vector2(point.Y, point.X);
+        }
+
         int lineIndex = GetLineAtY(point.Y);
         if (lineIndex < 0)
         {
@@ -291,7 +297,8 @@ public sealed partial class TextLayout
                     }
 
                     float x = float.IsNaN(preferredX) ? GetCaret(position).Primary.X : preferredX;
-                    return HitTest(new Vector2(x, (Lines[line].Top + Lines[line].Bottom) / 2));
+                    float across = (Lines[line].Top + Lines[line].Bottom) / 2;
+                    return HitTest(Vertical ? new Vector2(across, x) : new Vector2(x, across));
                 }
 
             default:
@@ -349,7 +356,8 @@ public sealed partial class TextLayout
             }
         }
 
-        return rects;
+        // Vertical rectangles were built along the line; turn them into x and y ranges.
+        return Vertical ? [.. rects.Select(r => new TextBounds(r.Top, r.Left, r.Bottom, r.Right))] : rects;
     }
 
     /// <summary>Gets the word (UAX #29 segment) holding an index: a word, or the spaces or punctuation between words.</summary>
@@ -439,7 +447,7 @@ public sealed partial class TextLayout
             }
 
             (float a, float d, _) = LineBuilder.Rounded(glyphs.Font);
-            float boxTop = line.Baseline - a, boxBottom = line.Baseline + d;
+            (float boxTop, float boxBottom) = Vertical ? (line.Top, line.Bottom) : (line.Baseline - a, line.Baseline + d);
             if (run.Length == 0)
             {
                 cells.Add(new Cell(run.Start, run.Start, run.X, run.X + run.Advance, boxTop, boxBottom, rtl, false, true, run.BidiLevel));

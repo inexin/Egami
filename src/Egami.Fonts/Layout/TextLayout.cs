@@ -6,6 +6,14 @@ namespace Egami.Fonts.Layout;
 /// A paragraph laid out at a width: its lines of glyph runs and the size of its layout box. Positions are in canvas units
 /// relative to the box's top-left corner, y down; nothing is rounded to pixels. Immutable and safe to share between threads.
 /// </summary>
+/// <remarks>
+/// In vertical layouts (<see cref="ParagraphStyle.WritingMode"/>) the width given is the lines' length, which runs down the box:
+/// <see cref="Height"/> is that length and <see cref="Width"/> the lines' thicknesses added up. Positions along a line (a line's
+/// <see cref="TextLine.Left"/> and <see cref="TextLine.Width"/>, a run's <see cref="LayoutRun.X"/>, a caret's
+/// <see cref="CaretLine.X"/>) are then y, and positions across the lines (a line's <see cref="TextLine.Top"/>,
+/// <see cref="TextLine.Baseline"/> and <see cref="TextLine.Bottom"/>) are x; glyph runs, ink, placeholder and selection
+/// rectangles stay in x and y.
+/// </remarks>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="layout"/>
 /// </example>
@@ -17,13 +25,26 @@ public sealed partial class TextLayout
         (MinIntrinsicWidth, MaxIntrinsicWidth) = paragraph.IntrinsicWidths;
         Paragraph = paragraph;
         Width = width;
+        Vertical = paragraph.Style.WritingMode != WritingMode.HorizontalTb;
         Lines = lines;
-        Height = lines.Count == 0 ? 0 : lines[^1].Bottom;
         LongestLine = lines.Count == 0 ? 0 : lines.Max(l => l.Width);
+        if (paragraph.Style.WritingMode != WritingMode.HorizontalTb)
+        {
+            // Vertical: the lines' lengths run down the box, their thicknesses across it.
+            Height = width;
+            Width = lines.Sum(l => l.Height);
+        }
+        else
+        {
+            Height = lines.Count == 0 ? 0 : lines[^1].Bottom;
+        }
     }
 
     /// <summary>Gets the paragraph that was laid out.</summary>
     public Paragraph Paragraph { get; }
+
+    /// <summary>Whether lines run vertically.</summary>
+    internal bool Vertical { get; }
 
     /// <summary>Gets the layout box's width: the width given, or <see cref="LongestLine"/> when it was unbounded.</summary>
     public float Width { get; }
@@ -89,20 +110,29 @@ public sealed partial class TextLayout
         return Lines.Count == 0 ? -1 : lo;
     }
 
-    /// <summary>Finds the line at a height; points above the first line or below the last take that line.</summary>
-    /// <param name="y">A y in layout coordinates.</param>
+    /// <summary>Finds the line at a position across the lines; points outside the lines take the nearest.</summary>
+    /// <param name="y">A y in layout coordinates, or in vertical layouts an x.</param>
     /// <returns>The line's index in <see cref="Lines"/>, or -1 when there are no lines.</returns>
     public int GetLineAtY(float y)
     {
+        int nearest = -1;
+        float distance = float.PositiveInfinity;
         for (int i = 0; i < Lines.Count; i++)
         {
-            if (y < Lines[i].Bottom)
+            TextLine line = Lines[i];
+            if (y >= line.Top && y < line.Bottom)
             {
                 return i;
             }
+
+            float d = y < line.Top ? line.Top - y : y - line.Bottom;
+            if (d < distance)
+            {
+                (nearest, distance) = (i, d);
+            }
         }
 
-        return Lines.Count - 1;
+        return nearest;
     }
 
     private TextBounds ComputeInk()
@@ -183,7 +213,7 @@ public sealed class TextLine
     /// <summary>Gets the index just past the line's last character.</summary>
     public int End => Start + Length;
 
-    /// <summary>Gets the top of the line box.</summary>
+    /// <summary>Gets the top of the line box; in vertical layouts, its left edge.</summary>
     public float Top { get; }
 
     /// <summary>Gets the distance from the line box's top to the baseline.</summary>

@@ -121,11 +121,12 @@ public sealed class Paragraph
         float boxWidth = float.IsFinite(width) ? width : drafts.Count == 0 ? 0 : drafts.Max(d => d.ContentWidth);
         List<TextLine> lines = new(drafts.Count);
         float top = 0;
+        float blockSize = drafts.Sum(d => d.Ascent + d.Descent);
         for (int i = 0; i < drafts.Count; i++)
         {
-            TextLine line = flow.Builder.Finish(drafts[i], boxWidth, top, Style.TrimEdges && i == 0, Style.TrimEdges && i == drafts.Count - 1);
+            TextLine line = flow.Builder.Finish(drafts[i], boxWidth, top, Style.TrimEdges && i == 0, Style.TrimEdges && i == drafts.Count - 1, blockSize);
             lines.Add(line);
-            top = line.Bottom;
+            top += line.Height;
         }
 
         return new TextLayout(this, boxWidth, lines, exceeded ? new TextSegment(hidden, Text.Length - hidden) : null);
@@ -264,6 +265,9 @@ internal sealed class ParagraphRun(int start, int length, RunKind kind, int leve
 
     /// <summary>What the run was shaped with, to shape a piece of it again.</summary>
     public RunProperties Properties { get; } = properties;
+
+    /// <summary>Whether the run stands upright in a vertical line, shaped top to bottom.</summary>
+    public bool Upright { get; init; }
 }
 
 /// <summary>Bidi levels and paragraphs copied out of a <see cref="BidiResult"/>, owned by the paragraph.</summary>
@@ -441,7 +445,19 @@ internal static class Itemizer
         new(new FontTag("liga"), 0), new(new FontTag("clig"), 0), new(new FontTag("dlig"), 0), new(new FontTag("hlig"), 0), new(new FontTag("calt"), 0),
     ];
 
-    private readonly record struct Pending(int Start, int Length, RunKind Kind, int Level, Script Script, int Style, int Group, Font Font, int Placeholder);
+    private readonly record struct Pending(int Start, int Length, RunKind Kind, int Level, Script Script, int Style, int Group, Font Font, int Placeholder, bool Upright = false);
+
+    /// <summary>
+    /// Whether a cluster stands upright in a vertical line: by its first character's Vertical_Orientation (UAX #50) with
+    /// <see cref="TextOrientation.Mixed"/> (U, Tu and Tr upright, as browsers set Tr with vertical alternates), always with
+    /// <see cref="TextOrientation.Upright"/>, never with <see cref="TextOrientation.Sideways"/> or in horizontal lines.
+    /// </summary>
+    private static bool IsUpright(ParagraphStyle paragraph, int cp) => paragraph.WritingMode != WritingMode.HorizontalTb && paragraph.TextOrientation switch
+    {
+        TextOrientation.Upright => true,
+        TextOrientation.Sideways => false,
+        _ => UnicodeData.GetVerticalOrientation(cp) != VerticalOrientation.Rotated,
+    };
 
     public static ParagraphRun[] Itemize(RichText rich, ParagraphStyle paragraph, ResolvedStyle[] styles, BidiData bidi, FontCache fonts)
     {
@@ -478,14 +494,15 @@ internal static class Itemizer
             }
 
             Font font = ChooseFont(clusterText, style, paragraph.Fallback, script, fonts);
+            bool upright = IsUpright(paragraph, cp);
             if (pending.Count > 0 && pending[^1] is { Kind: RunKind.Text } last && last.Level == level && last.Script == script
-                && last.Group == style.ShapingGroup && last.Font == font && last.Start + last.Length == cluster.Start)
+                && last.Group == style.ShapingGroup && last.Font == font && last.Upright == upright && last.Start + last.Length == cluster.Start)
             {
                 pending[^1] = last with { Length = last.Length + cluster.Length };
                 continue;
             }
 
-            pending.Add(new Pending(cluster.Start, cluster.Length, RunKind.Text, level, script, styleIndex, style.ShapingGroup, font, -1));
+            pending.Add(new Pending(cluster.Start, cluster.Length, RunKind.Text, level, script, styleIndex, style.ShapingGroup, font, -1, upright));
         }
 
         ParagraphRun[] runs = new ParagraphRun[pending.Count];
@@ -507,14 +524,14 @@ internal static class Itemizer
                 {
                     Script = p.Script.IsShared ? null : p.Script,
                     Language = style.Language,
-                    Direction = (p.Level & 1) != 0 ? TextDirection.RightToLeft : TextDirection.LeftToRight,
+                    Direction = p.Upright ? TextDirection.TopToBottom : (p.Level & 1) != 0 ? TextDirection.RightToLeft : TextDirection.LeftToRight,
                     Features = features,
                 };
                 glyphs = new GlyphBuffer();
                 TextShaper.ShapeRun(text, p.Start, p.Length, p.Font, properties, glyphs);
             }
 
-            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder, properties);
+            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder, properties) { Upright = p.Upright };
         }
 
         return runs;

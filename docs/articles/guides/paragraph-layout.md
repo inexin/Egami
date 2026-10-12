@@ -6,7 +6,7 @@ alignment and justification, line height, spacing, tabs, max lines and ellipsis,
 decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of `GlyphRun`s and
 decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.
 
-Phase 2.8.2 is landing: line breaking, rich text, line layout, metrics and hit testing are in; vertical lines, decorations
+Phase 2.8.2 is landing: line breaking, rich text, line layout, vertical lines, metrics and hit testing are in; decorations
 and drawing follow, and this guide grows with them.
 
 ## Line breaking
@@ -156,6 +156,17 @@ Editors and selectable text build on four queries, all read-only and safe from a
 Hit tests, carets and selection rectangles equal Chromium's (`caretPositionFromPoint`, collapsed ranges and
 `Range.getClientRects`) on Latin with ligatures, mixed bidi, Arabic, a right-to-left paragraph, emoji, hard breaks and a
 clamped paragraph.
+
+### Vertical lines
+
+`WritingMode.VerticalRl` stacks top-to-bottom lines from right to left, as Chinese and Japanese books, and `VerticalLr` from
+left to right. `TextOrientation.Mixed` (the default) stands each character as UAX #50's Vertical_Orientation says: Chinese,
+Japanese and Korean upright, shaped top to bottom with the font's vertical metrics and alternates, and Latin turned a quarter
+clockwise on the central baseline; `Upright` stands everything upright and `Sideways` turns whole lines. The width given to
+`Layout` is the lines' length; the layout's `Height` is that length and its `Width` the columns added up. Along a line,
+positions are y (a line's `Left` and `Width`, a run's `X`, a caret's `X`), across the lines x (a line's `Top`, `Baseline` and
+`Bottom`); glyph runs and rectangles stay in x and y. Line breaks, line boxes, positions, hit tests, carets and selections equal
+Chromium's `writing-mode` output on Japanese, Chinese and mixed Latin.
 
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
 images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.
