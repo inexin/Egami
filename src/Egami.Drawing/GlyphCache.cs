@@ -51,24 +51,22 @@ public static class GlyphCache
         }
     }
 
-    /// <summary>Returns the cached mask for <paramref name="key"/>, rendering and adding it on a miss.</summary>
-    internal static GlyphMask GetOrAdd(in GlyphKey key, Func<GlyphMask> render)
+    /// <summary>Gets the cached mask for <paramref name="key"/>; on a miss the caller renders it and calls <see cref="Add"/>.</summary>
+    /// <remarks>A pair of calls rather than a callback, so the drawing loop allocates no closure per glyph.</remarks>
+    internal static bool TryGet(in GlyphKey key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out GlyphMask? mask)
+    {
+        mask = null;
+        return ByteLimit != 0 && s_stripes[(key.GetHashCode() & int.MaxValue) % StripeCount].TryGet(key, out mask);
+    }
+
+    /// <summary>Adds a mask rendered after a miss, unless the cache is off.</summary>
+    internal static void Add(in GlyphKey key, GlyphMask mask)
     {
         long limit = ByteLimit;
-        if (limit == 0)
+        if (limit != 0)
         {
-            return render();
+            s_stripes[(key.GetHashCode() & int.MaxValue) % StripeCount].Add(key, mask, limit / StripeCount);
         }
-
-        Stripe stripe = s_stripes[(key.GetHashCode() & int.MaxValue) % StripeCount];
-        if (stripe.TryGet(key, out GlyphMask? mask))
-        {
-            return mask;
-        }
-
-        mask = render();
-        stripe.Add(key, mask, limit / StripeCount);
-        return mask;
     }
 
     private static Stripe[] CreateStripes()

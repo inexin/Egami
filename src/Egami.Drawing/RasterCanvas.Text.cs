@@ -110,7 +110,13 @@ public sealed partial class RasterCanvas<TPixel>
                 }
 
                 var colorStyle = new GlyphStyle(FontEdging.Antialias, false, font.AppliedSynthesis & FontSynthesis.Italic, PixelGeometry.Unknown) { Color = colorKey };
-                GlyphMask image = GlyphCache.GetOrAdd(new GlyphKey(face, glyph, emX, emY, colorStyle, phase), () => RenderColorMask(font, face, glyph, emX, emY, phase, colorKey.Foreground));
+                var colorKeyed = new GlyphKey(face, glyph, emX, emY, colorStyle, phase);
+                if (!GlyphCache.TryGet(colorKeyed, out GlyphMask? image))
+                {
+                    image = RenderColorMask(font, face, glyph, emX, emY, phase, colorKey.Foreground);
+                    GlyphCache.Add(colorKeyed, image);
+                }
+
                 if (image.Pixels is not null)
                 {
                     DrawColorMask(image, ox, oy, paint);
@@ -124,7 +130,13 @@ public sealed partial class RasterCanvas<TPixel>
                 continue;
             }
 
-            GlyphMask mask = GlyphCache.GetOrAdd(new GlyphKey(face, glyph, emX, emY, style, phase), () => RenderMask(face, glyph, sx, sy, phase, style, emY));
+            var key = new GlyphKey(face, glyph, emX, emY, style, phase);
+            if (!GlyphCache.TryGet(key, out GlyphMask? mask))
+            {
+                mask = RenderMask(face, glyph, sx, sy, phase, style, emY);
+                GlyphCache.Add(key, mask);
+            }
+
             if (mask.Coverage.Length == 0)
             {
                 continue;
@@ -140,31 +152,35 @@ public sealed partial class RasterCanvas<TPixel>
             if (lcd is not null)
             {
                 BlendLcd(mask, placed, visible, lcd);
-                continue;
             }
-
-            scratch ??= new byte[Math.Max(visible.Width, 64)];
-            if (scratch.Length < visible.Width)
+            else
             {
-                scratch = new byte[visible.Width];
-            }
-
-            for (int y = visible.Y; y < visible.Bottom; y++)
-            {
-                Span<byte> row = scratch.AsSpan(0, visible.Width);
-                mask.Coverage.AsSpan(((y - placed.Y) * placed.Width) + (visible.X - placed.X), visible.Width).CopyTo(row);
-                if (!row.ContainsAnyExcept((byte)0))
-                {
-                    continue;
-                }
-
-                sink!.Blend(y, visible.X, row);
+                BlendMask(mask, placed, visible, sink!, ref scratch);
             }
         }
 
         if (uncachedColor is not null)
         {
             base.OnDrawGlyphRun(Subrun(run, uncachedColor), origin, paint);
+        }
+    }
+
+    // A coverage mask blended through the sink row by row; rows with no coverage are skipped.
+    private static void BlendMask(GlyphMask mask, Rect placed, Rect visible, ISpanSink sink, ref byte[]? scratch)
+    {
+        if (scratch is null || scratch.Length < visible.Width)
+        {
+            scratch = new byte[Math.Max(visible.Width, 64)];
+        }
+
+        for (int y = visible.Y; y < visible.Bottom; y++)
+        {
+            Span<byte> row = scratch.AsSpan(0, visible.Width);
+            mask.Coverage.AsSpan(((y - placed.Y) * placed.Width) + (visible.X - placed.X), visible.Width).CopyTo(row);
+            if (row.ContainsAnyExcept((byte)0))
+            {
+                sink.Blend(y, visible.X, row);
+            }
         }
     }
 
