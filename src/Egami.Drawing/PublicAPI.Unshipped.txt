@@ -133,17 +133,23 @@ Egami.Drawing.Path.Apply(Egami.Drawing.PathEffect! effect) -> Egami.Drawing.Path
 Egami.Drawing.Path.Bounds.get -> Egami.Drawing.RectF
 Egami.Drawing.Path.Contains(System.Numerics.Vector2 point) -> bool
 Egami.Drawing.Path.Contours.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.Path!>!
+Egami.Drawing.Path.Difference(Egami.Drawing.Path! other, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.FillRule.get -> Egami.Drawing.FillRule
+Egami.Drawing.Path.Intersect(Egami.Drawing.Path! other, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.IsConvex.get -> bool
 Egami.Drawing.Path.IsEmpty.get -> bool
+Egami.Drawing.Path.Op(Egami.Drawing.Path! other, Egami.Drawing.PathOp op, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Points.get -> System.ReadOnlySpan<System.Numerics.Vector2>
 Egami.Drawing.Path.Reverse() -> Egami.Drawing.Path!
+Egami.Drawing.Path.Simplify(float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.TightBounds.get -> Egami.Drawing.RectF
 Egami.Drawing.Path.ToSvg(Egami.Drawing.SvgPathFormat? format = null) -> string!
 Egami.Drawing.Path.Transform(Egami.Operations.Homography homography) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Transform(System.Numerics.Matrix3x2 matrix) -> Egami.Drawing.Path!
+Egami.Drawing.Path.Union(Egami.Drawing.Path! other, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Verbs.get -> System.ReadOnlySpan<Egami.Drawing.PathVerb>
 Egami.Drawing.Path.WithFillRule(Egami.Drawing.FillRule fillRule) -> Egami.Drawing.Path!
+Egami.Drawing.Path.Xor(Egami.Drawing.Path! other, float tolerance = 0.05) -> Egami.Drawing.Path!
 Egami.Drawing.PathBuilder
 Egami.Drawing.PathBuilder.AddArc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees) -> Egami.Drawing.PathBuilder!
 Egami.Drawing.PathBuilder.AddCircle(System.Numerics.Vector2 center, float radius, Egami.Drawing.PathDirection direction = Egami.Drawing.PathDirection.Clockwise) -> Egami.Drawing.PathBuilder!
@@ -185,6 +191,13 @@ Egami.Drawing.PathMeasure
 Egami.Drawing.PathMeasure.Contours.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.ContourMeasure!>!
 Egami.Drawing.PathMeasure.PathMeasure(Egami.Drawing.Path! path, bool forceClosed = false) -> void
 Egami.Drawing.PathMeasure.TotalLength.get -> float
+Egami.Drawing.PathOp
+Egami.Drawing.PathOp.Difference = 0 -> Egami.Drawing.PathOp
+Egami.Drawing.PathOp.Intersect = 1 -> Egami.Drawing.PathOp
+Egami.Drawing.PathOp.ReverseDifference = 4 -> Egami.Drawing.PathOp
+Egami.Drawing.PathOp.Union = 2 -> Egami.Drawing.PathOp
+Egami.Drawing.PathOp.Xor = 3 -> Egami.Drawing.PathOp
+Egami.Drawing.PathOps
 Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Close = 4 -> Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Cubic = 3 -> Egami.Drawing.PathVerb
@@ -366,6 +379,7 @@ static Egami.Drawing.PathEffect.operator !=(Egami.Drawing.PathEffect? left, Egam
 static Egami.Drawing.PathEffect.operator ==(Egami.Drawing.PathEffect? left, Egami.Drawing.PathEffect? right) -> bool
 static Egami.Drawing.PathEffect.Stamp(Egami.Drawing.Path! shape, float advance, float phase = 0, Egami.Drawing.StampStyle style = Egami.Drawing.StampStyle.Translate) -> Egami.Drawing.PathEffect!
 static Egami.Drawing.PathEffect.Trim(float start, float end, bool inverted = false) -> Egami.Drawing.PathEffect!
+static Egami.Drawing.PathOps.Combine(System.Collections.Generic.IEnumerable<Egami.Drawing.Path!>! paths, Egami.Drawing.PathOp op, float tolerance = 0.05) -> Egami.Drawing.Path!
 static Egami.Drawing.RectF.Empty.get -> Egami.Drawing.RectF
 static Egami.Drawing.RectF.FromEdges(float left, float top, float right, float bottom) -> Egami.Drawing.RectF
 static Egami.Drawing.RectF.FromPoints(System.ReadOnlySpan<System.Numerics.Vector2> points) -> Egami.Drawing.RectF
