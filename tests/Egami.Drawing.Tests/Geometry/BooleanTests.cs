@@ -34,6 +34,12 @@ public class BooleanTests
         // Outer contours run clockwise on screen, holes counterclockwise.
         Assert.True(Area(ring.Contours[0]) * Area(ring.Contours[1]) < 0);
 
+        // A circle with itself: the curves run together all the way round.
+        Path circle = Path.Circle(new Vector2(64, 64), 40);
+        Assert.Equal(Area(circle), Area(circle.Union(circle)), 1e-6);
+        Assert.Equal(Area(circle), Area(circle.Intersect(circle)), 1e-6);
+        Assert.True(circle.Xor(circle).IsEmpty);
+
         // A lens: two circles crossing; the result's curves are pieces of the inputs' cubics.
         Path lens = Path.Circle(new Vector2(40, 50), 30).Intersect(Path.Circle(new Vector2(60, 50), 30));
         Assert.Single(lens.Contours);

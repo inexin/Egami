@@ -221,8 +221,9 @@ internal static class PathBoolean
         private readonly Dictionary<long, int> _vertexCells = [];
         private readonly List<int> _vertexNext = [];
 
-        // Whether merging moved an end by more than rounding.
+        // Whether merging moved an end by more than rounding, and whether any curves ran together.
         private bool _snapped;
+        private bool _together;
         private readonly List<(double A, double B)> _found = [];
         private int[] _order = [];
         private double[] _keys = [];
@@ -262,7 +263,7 @@ internal static class PathBoolean
             _vertexNext.Clear();
             _found.Clear();
             _live.Clear();
-            (_snapped, _piecesUsed, _edgesUsed) = (false, 0, 0);
+            (_snapped, _together, _piecesUsed, _edgesUsed) = (false, false, 0, 0);
         }
 
         private Piece NewPiece(Segment curve, int input, int source, double t0, double t1)
@@ -313,18 +314,21 @@ internal static class PathBoolean
             MergeVertices();
 
             // Points only move when merging joins ends that were apart: then edges may pass near points they do not end at, or
-            // cross where they did not. Ends that met already need neither pass.
-            for (int round = 0; round < 16 && _snapped; round++)
+            // cross where they did not. Curves that run together are split where the other's pieces end, which can leave points on
+            // edges too. Ends that met exactly, on curves that only cross, need neither pass.
+            if (_snapped || _together)
             {
-                SplitAtVertices();
-                MergeCoincidentEdges();
-                if (!Reintersect())
+                for (int round = 0; round < 16; round++)
                 {
-                    break;
+                    SplitAtVertices();
+                    MergeCoincidentEdges();
+                    if (!Reintersect())
+                    {
+                        break;
+                    }
                 }
             }
-
-            if (!_snapped)
+            else
             {
                 MergeCoincidentEdges();
             }
@@ -757,6 +761,7 @@ internal static class PathBoolean
 
                 if (Together(sa, sb))
                 {
+                    _together = true;
                     foreach (D2 p in (ReadOnlySpan<D2>)[sb.P0, sb.End])
                     {
                         (double t, double d) = Project(a, p);
