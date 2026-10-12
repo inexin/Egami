@@ -30,7 +30,7 @@
       href: guides/egdr-format.md
     - name: Fonts and text
       href: guides/text.md
-    - name: Unicode text
+    - name: Unicode text and shaping
       href: guides/unicode-text.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md

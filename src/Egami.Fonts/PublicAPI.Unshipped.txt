@@ -266,6 +266,71 @@ Egami.Fonts.NamedInstance.PostScriptName.init -> void
 Egami.Fonts.OpticalSizing
 Egami.Fonts.OpticalSizing.Auto = 0 -> Egami.Fonts.OpticalSizing
 Egami.Fonts.OpticalSizing.None = 1 -> Egami.Fonts.OpticalSizing
+Egami.Fonts.Shaping.ClusterLevel
+Egami.Fonts.Shaping.ClusterLevel.Characters = 2 -> Egami.Fonts.Shaping.ClusterLevel
+Egami.Fonts.Shaping.ClusterLevel.MonotoneCharacters = 1 -> Egami.Fonts.Shaping.ClusterLevel
+Egami.Fonts.Shaping.ClusterLevel.MonotoneGraphemes = 0 -> Egami.Fonts.Shaping.ClusterLevel
+Egami.Fonts.Shaping.FontFeature
+Egami.Fonts.Shaping.FontFeature.Deconstruct(out Egami.Fonts.FontTag Tag, out uint Value, out int Start, out int End) -> void
+Egami.Fonts.Shaping.FontFeature.End.get -> int
+Egami.Fonts.Shaping.FontFeature.End.init -> void
+Egami.Fonts.Shaping.FontFeature.Equals(Egami.Fonts.Shaping.FontFeature other) -> bool
+Egami.Fonts.Shaping.FontFeature.FontFeature() -> void
+Egami.Fonts.Shaping.FontFeature.FontFeature(Egami.Fonts.FontTag Tag, uint Value = 1, int Start = 0, int End = 2147483647) -> void
+Egami.Fonts.Shaping.FontFeature.IsGlobal.get -> bool
+Egami.Fonts.Shaping.FontFeature.Start.get -> int
+Egami.Fonts.Shaping.FontFeature.Start.init -> void
+Egami.Fonts.Shaping.FontFeature.Tag.get -> Egami.Fonts.FontTag
+Egami.Fonts.Shaping.FontFeature.Tag.init -> void
+Egami.Fonts.Shaping.FontFeature.Value.get -> uint
+Egami.Fonts.Shaping.FontFeature.Value.init -> void
+Egami.Fonts.Shaping.GlyphBuffer
+Egami.Fonts.Shaping.GlyphBuffer.Advance.get -> float
+Egami.Fonts.Shaping.GlyphBuffer.Clear() -> void
+Egami.Fonts.Shaping.GlyphBuffer.Clusters.get -> System.ReadOnlySpan<int>
+Egami.Fonts.Shaping.GlyphBuffer.Count.get -> int
+Egami.Fonts.Shaping.GlyphBuffer.Flags.get -> System.ReadOnlySpan<Egami.Fonts.Shaping.GlyphFlags>
+Egami.Fonts.Shaping.GlyphBuffer.GlyphBuffer() -> void
+Egami.Fonts.Shaping.GlyphBuffer.GlyphIds.get -> System.ReadOnlySpan<ushort>
+Egami.Fonts.Shaping.GlyphBuffer.Positions.get -> System.ReadOnlySpan<Egami.Fonts.Shaping.GlyphPosition>
+Egami.Fonts.Shaping.GlyphFlags
+Egami.Fonts.Shaping.GlyphFlags.None = 0 -> Egami.Fonts.Shaping.GlyphFlags
+Egami.Fonts.Shaping.GlyphFlags.UnsafeToBreak = 1 -> Egami.Fonts.Shaping.GlyphFlags
+Egami.Fonts.Shaping.GlyphFlags.UnsafeToConcat = 2 -> Egami.Fonts.Shaping.GlyphFlags
+Egami.Fonts.Shaping.GlyphPosition
+Egami.Fonts.Shaping.GlyphPosition.Deconstruct(out float XAdvance, out float YAdvance, out float XOffset, out float YOffset) -> void
+Egami.Fonts.Shaping.GlyphPosition.Equals(Egami.Fonts.Shaping.GlyphPosition other) -> bool
+Egami.Fonts.Shaping.GlyphPosition.GlyphPosition() -> void
+Egami.Fonts.Shaping.GlyphPosition.GlyphPosition(float XAdvance, float YAdvance, float XOffset, float YOffset) -> void
+Egami.Fonts.Shaping.GlyphPosition.XAdvance.get -> float
+Egami.Fonts.Shaping.GlyphPosition.XAdvance.init -> void
+Egami.Fonts.Shaping.GlyphPosition.XOffset.get -> float
+Egami.Fonts.Shaping.GlyphPosition.XOffset.init -> void
+Egami.Fonts.Shaping.GlyphPosition.YAdvance.get -> float
+Egami.Fonts.Shaping.GlyphPosition.YAdvance.init -> void
+Egami.Fonts.Shaping.GlyphPosition.YOffset.get -> float
+Egami.Fonts.Shaping.GlyphPosition.YOffset.init -> void
+Egami.Fonts.Shaping.OpenTypeLayout
+Egami.Fonts.Shaping.OpenTypeLayout.GetFeatures(Egami.Fonts.FontTag script, Egami.Fonts.FontTag? language = null) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
+Egami.Fonts.Shaping.OpenTypeLayout.GetLanguageSystems(Egami.Fonts.FontTag script) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
+Egami.Fonts.Shaping.OpenTypeLayout.HasGlyphClasses.get -> bool
+Egami.Fonts.Shaping.OpenTypeLayout.HasGpos.get -> bool
+Egami.Fonts.Shaping.OpenTypeLayout.HasGsub.get -> bool
+Egami.Fonts.Shaping.OpenTypeLayout.Scripts.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>!
+Egami.Fonts.Shaping.RunProperties
+Egami.Fonts.Shaping.RunProperties.ClusterLevel.get -> Egami.Fonts.Shaping.ClusterLevel
+Egami.Fonts.Shaping.RunProperties.ClusterLevel.init -> void
+Egami.Fonts.Shaping.RunProperties.Direction.get -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Shaping.RunProperties.Direction.init -> void
+Egami.Fonts.Shaping.RunProperties.Equals(Egami.Fonts.Shaping.RunProperties other) -> bool
+Egami.Fonts.Shaping.RunProperties.Features.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.FontFeature>?
+Egami.Fonts.Shaping.RunProperties.Features.init -> void
+Egami.Fonts.Shaping.RunProperties.Language.get -> string?
+Egami.Fonts.Shaping.RunProperties.Language.init -> void
+Egami.Fonts.Shaping.RunProperties.RunProperties() -> void
+Egami.Fonts.Shaping.RunProperties.Script.get -> Egami.Fonts.Unicode.Script?
+Egami.Fonts.Shaping.RunProperties.Script.init -> void
+Egami.Fonts.Shaping.TextShaper
 Egami.Fonts.SubsetFormat
 Egami.Fonts.SubsetFormat.Auto = 0 -> Egami.Fonts.SubsetFormat
 Egami.Fonts.SubsetFormat.BareCff = 3 -> Egami.Fonts.SubsetFormat
@@ -346,6 +411,7 @@ Egami.Fonts.Typeface.HasKerning.get -> bool
 Egami.Fonts.Typeface.HheaMetrics.get -> Egami.Fonts.VerticalMetrics
 Egami.Fonts.Typeface.IsFixedPitch.get -> bool
 Egami.Fonts.Typeface.IsVariable.get -> bool
+Egami.Fonts.Typeface.Layout.get -> Egami.Fonts.Shaping.OpenTypeLayout!
 Egami.Fonts.Typeface.MapCodePoints(System.ReadOnlySpan<char> text, System.Span<ushort> glyphs) -> int
 Egami.Fonts.Typeface.NamedInstances.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.NamedInstance!>!
 Egami.Fonts.Typeface.Outlines.get -> Egami.Fonts.FontOutlines
@@ -673,6 +739,10 @@ override Egami.Fonts.GlyphTransform.GetHashCode() -> int
 override Egami.Fonts.NamedInstance.Equals(object? obj) -> bool
 override Egami.Fonts.NamedInstance.GetHashCode() -> int
 override Egami.Fonts.NamedInstance.ToString() -> string!
+override Egami.Fonts.Shaping.FontFeature.GetHashCode() -> int
+override Egami.Fonts.Shaping.FontFeature.ToString() -> string!
+override Egami.Fonts.Shaping.GlyphPosition.GetHashCode() -> int
+override Egami.Fonts.Shaping.RunProperties.GetHashCode() -> int
 override Egami.Fonts.SubsetOptions.Equals(object? obj) -> bool
 override Egami.Fonts.SubsetOptions.GetHashCode() -> int
 override Egami.Fonts.SubsetOptions.ToString() -> string!
@@ -739,6 +809,20 @@ static Egami.Fonts.GlyphTransform.operator !=(Egami.Fonts.GlyphTransform left, E
 static Egami.Fonts.GlyphTransform.operator ==(Egami.Fonts.GlyphTransform left, Egami.Fonts.GlyphTransform right) -> bool
 static Egami.Fonts.NamedInstance.operator !=(Egami.Fonts.NamedInstance? left, Egami.Fonts.NamedInstance? right) -> bool
 static Egami.Fonts.NamedInstance.operator ==(Egami.Fonts.NamedInstance? left, Egami.Fonts.NamedInstance? right) -> bool
+static Egami.Fonts.Shaping.FontFeature.Ligatures(bool enabled) -> Egami.Fonts.Shaping.FontFeature
+static Egami.Fonts.Shaping.FontFeature.NoKerning.get -> Egami.Fonts.Shaping.FontFeature
+static Egami.Fonts.Shaping.FontFeature.operator !=(Egami.Fonts.Shaping.FontFeature left, Egami.Fonts.Shaping.FontFeature right) -> bool
+static Egami.Fonts.Shaping.FontFeature.operator ==(Egami.Fonts.Shaping.FontFeature left, Egami.Fonts.Shaping.FontFeature right) -> bool
+static Egami.Fonts.Shaping.FontFeature.Parse(string! text) -> Egami.Fonts.Shaping.FontFeature
+static Egami.Fonts.Shaping.FontFeature.SmallCaps.get -> Egami.Fonts.Shaping.FontFeature
+static Egami.Fonts.Shaping.FontFeature.StylisticSet(int number) -> Egami.Fonts.Shaping.FontFeature
+static Egami.Fonts.Shaping.FontFeature.TabularFigures.get -> Egami.Fonts.Shaping.FontFeature
+static Egami.Fonts.Shaping.FontFeature.TryParse(string? text, out Egami.Fonts.Shaping.FontFeature feature) -> bool
+static Egami.Fonts.Shaping.GlyphPosition.operator !=(Egami.Fonts.Shaping.GlyphPosition left, Egami.Fonts.Shaping.GlyphPosition right) -> bool
+static Egami.Fonts.Shaping.GlyphPosition.operator ==(Egami.Fonts.Shaping.GlyphPosition left, Egami.Fonts.Shaping.GlyphPosition right) -> bool
+static Egami.Fonts.Shaping.RunProperties.operator !=(Egami.Fonts.Shaping.RunProperties left, Egami.Fonts.Shaping.RunProperties right) -> bool
+static Egami.Fonts.Shaping.RunProperties.operator ==(Egami.Fonts.Shaping.RunProperties left, Egami.Fonts.Shaping.RunProperties right) -> bool
+static Egami.Fonts.Shaping.TextShaper.ShapeRun(System.ReadOnlySpan<char> text, int start, int length, Egami.Fonts.Font font, Egami.Fonts.Shaping.RunProperties properties, Egami.Fonts.Shaping.GlyphBuffer! buffer) -> void
 static Egami.Fonts.SubsetOptions.Default.get -> Egami.Fonts.SubsetOptions!
 static Egami.Fonts.SubsetOptions.operator !=(Egami.Fonts.SubsetOptions? left, Egami.Fonts.SubsetOptions? right) -> bool
 static Egami.Fonts.SubsetOptions.operator ==(Egami.Fonts.SubsetOptions? left, Egami.Fonts.SubsetOptions? right) -> bool
@@ -983,6 +1067,11 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.GlyphExtents.ToString() -> string
 ~override Egami.Fonts.GlyphTransform.Equals(object obj) -> bool
 ~override Egami.Fonts.GlyphTransform.ToString() -> string
+~override Egami.Fonts.Shaping.FontFeature.Equals(object obj) -> bool
+~override Egami.Fonts.Shaping.GlyphPosition.Equals(object obj) -> bool
+~override Egami.Fonts.Shaping.GlyphPosition.ToString() -> string
+~override Egami.Fonts.Shaping.RunProperties.Equals(object obj) -> bool
+~override Egami.Fonts.Shaping.RunProperties.ToString() -> string
 ~override Egami.Fonts.TextBounds.Equals(object obj) -> bool
 ~override Egami.Fonts.TextBounds.ToString() -> string
 ~override Egami.Fonts.TextMeasure.Equals(object obj) -> bool

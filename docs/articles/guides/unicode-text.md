@@ -1,8 +1,10 @@
-# Unicode text
+# Unicode text and shaping
 
 Egami.Fonts carries its own Unicode 17.0 data and the Unicode algorithms text shaping builds on: character properties, the
-bidirectional algorithm and text boundaries. They live in the `Egami.Fonts.Unicode` namespace. OpenType shaping itself (GSUB and
-GPOS, the script shapers, feature switches and font fallback) arrives later in phase 2.8.1 and will be described here as it lands.
+bidirectional algorithm and text boundaries, in the `Egami.Fonts.Unicode` namespace. On top of them, `Egami.Fonts.Shaping`
+shapes text with a font's OpenType tables, as HarfBuzz does. Phase 2.8.1 is still landing: the layout engine and the default
+shaper (Latin, Greek, Cyrillic and every script without its own rules) are here; the Arabic, Indic, Southeast Asian and Hangul
+shapers, itemization, font fallback and canvas drawing follow.
 
 The tables are generated from the Unicode Character Database by `tools/make-unicode-tables.py` and never come from the .NET runtime,
 so the same text gives the same answer on every runtime and machine. `UnicodeData.UnicodeVersion` says which version they follow.
@@ -47,3 +49,35 @@ boundaries with Unicode's default rules. Both return a `TextSegment` per segment
 - Words use no dictionary, so Thai, Lao, Khmer and CJK text without spaces is not split into words.
 - Line breaking (UAX #14) arrives with paragraph layout in 2.8.2.
 - Unicode's GraphemeBreakTest.txt and WordBreakTest.txt pass in full.
+
+## Shaping a run
+
+`TextShaper.ShapeRun` shapes one run of text in one font, as HarfBuzz's hb_shape: the font's GSUB substitutions (ligatures,
+contextual and alternate forms) and GPOS positioning (kerning, marks, cursive attachment) with the default features,
+normalization against the font's character map, and the fallbacks HarfBuzz uses for fonts that lack them. `RunProperties`
+gives the script (taken from the text when null), a BCP 47 language (none by default: the font's default forms, never the
+machine's culture), the direction, feature settings and the `ClusterLevel`. The result lands in a reusable `GlyphBuffer`:
+glyph ids, the UTF-16 index each glyph's cluster starts at, `GlyphFlags` and a `GlyphPosition` per glyph, in visual order and in
+the font's units.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#run)]
+
+- `GlyphFlags.UnsafeToBreak` marks where breaking the text needs shaping again; line layout uses it to re-shape only there.
+- A run is one script in one direction; splitting text into runs (bidi, script, font fallback) comes with `TextShaper.Shape`.
+- The engine gives exactly hb-shape's glyphs, clusters, positions and flags on HarfBuzz's own tests and on Egami's corpus.
+
+## Features
+
+A `FontFeature` sets one OpenType feature for the whole run or a range of it: 0 turns a default feature off, 1 turns a feature
+on, higher values pick an alternate. `FontFeature.Parse` reads HarfBuzz's syntax (`liga=0`, `+smcp`, `ss01`, `aalt=2`,
+`kern[3:5]=0`); the presets cover common cases.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#features)]
+
+## Layout tables
+
+`Typeface.Layout` returns an `OpenTypeLayout`, which lists the scripts, language systems and features the font's GSUB and GPOS
+offer. A table whose structure is damaged is ignored whole, with a `Font.BadTable` diagnostic, as HarfBuzz ignores it; a font
+that drives shaping past its limits stops with `Font.ShapingLimit`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#layout)]

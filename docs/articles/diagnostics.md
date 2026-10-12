@@ -97,6 +97,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Font.BadTable` | Warning | A font table is damaged; its documented default is used (Egami.Fonts) |
 | `Font.FileSkipped` | Warning | A file in a font folder cannot be indexed; it is left out of the collection (Egami.Fonts) |
 | `Font.MissingTable` | Warning | A font lacks a table; its documented default is used (Egami.Fonts) |
+| `Font.ShapingLimit` | Warning | A font's layout tables drove shaping past its operation or length limits, as a hostile font can; the text is shaped as far as the limits allow (Egami.Fonts) |
 | `Gif.BlockTruncated` | Warning | The file ends inside a block |
 | `Gif.ColorTableMissing` | Warning | A frame has no color table; it is drawn transparent |
 | `Gif.ControlExtensionShort` | Warning | A graphic control extension is shorter than 4 bytes |
