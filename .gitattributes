@@ -5,3 +5,5 @@
 *.icc binary
 *.f32 binary
 *.cube binary
+# SVG test files keep their exact bytes (line endings matter in text and xml:space tests).
+tests/svg/** -text

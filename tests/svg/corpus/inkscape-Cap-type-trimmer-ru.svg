@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:cc="http://creativecommons.org/ns#"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 220 170.8471"
+  version="1.1"
+  height="170.8mm"
+  width="220mm">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work
+     rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type
+      rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g
+   transform="translate(-2.284 -33.48)">
+  <rect fill="#fff" height="170.8" width="220" y="33.48" x="2.284"/>
+  <rect stroke-width=".543" stroke="#000" fill="#808080" height="7.129" width="38.01" y="79.67" x="94.95"/>
+  <path stroke-width="2.715" stroke="#000" fill="none"
+    d="m128.2-70.19a25.14 3.26 0 0 1 9.777 3.657 25.14 3.26 0 0 1 -24.05 2.291 25.14 3.26 0 0 1 -23.98 -2.304 25.14 3.26 0 0 1 9.899 -3.651"
+    transform="scale(1,-1)" />
+  <g stroke="#000">
+   <path stroke-width=".6" fill="#a0a0ff"
+     d="m31.42 171.6h20.19v4.242h-20.19zm20.09 4.144v-62.69h4.073v55.85h22.54v-55.85h4.073v55.85h63.8v-55.85h4.072v55.85h22.26v-55.85h4.073v62.69z"/>
+   <path stroke-width=".6" fill="#f93"
+     d="m51.51 175.7h43.44v-16.21h38.01v16.21h43.44m0 0v12.81h-124.9v-12.81"/>
+   <path stroke-width=".6" fill="#ffa0a0"
+     d="m107.2 44.04h13.58l2.715 5.894v130.5h-19.01v-130.5zm-6.204 136.3v4.602h98.24v-4.602zm22.49-93.6h39.39v55.29h-4.073v-50.09h-21.72v50.09h-4.072v-50.09h-9.52m-19.32 0h-9.167v50.09h-4.073v-50.09h-21.72v50.09h-4.073v-55.29h39.1"/>
+  </g>
+  <g stroke="#000" fill="none">
+   <path stroke-width=".4" d="m133.9 82.68 16.55-4.1" />
+   <rect stroke-width=".5" stroke-dasharray="1.5, 1.5" height="118.9" width="13.59" y="49.92" x="107.2"/>
+   <path stroke-width=".6" d="m104.5 49.93h19.01" />
+   <path stroke-width="1.4" stroke-dasharray="4, 1.5" d="m114 95.82v59.17"/>
+  </g>
+  <path
+    d="m133.1 82.68 2.02-1.999 .6827 2.703zm-22.75 70.03 6.744 .1017-3.447 5.648zm0.181-54.88 6.744-.1016-3.447-5.648zm19.58-24.35-.5882-6.719-5.384 3.846zm-32.58-.2715 .5882-6.719 5.384 3.846z" />
+  <g stroke-width=".6" stroke-dasharray=".5, .5" fill="none">
+   <path stroke="#f00"
+     d="m134.5 142.6a20.95 2.716 0 0 1 -20.63 2.191 20.95 2.716 0 0 1 -20.5 -2.212m66.88-.1798a46.64 6.048 0 0 1 -47.12 5.722 46.64 6.048 0 0 1 -46.06 -5.865m28.59-1.506a20.95 2.716 0 0 1 8.357 -1.068m20.14-3.502a46.64 6.048 0 0 1 8.417 .3639m4.889 .3268a46.64 6.048 0 0 1 8.3 .8129m-63.2-.114a46.64 6.048 0 0 1 7.957 -.745m-20.85 3.252a46.64 6.048 0 0 1 8.054 -1.853m73.92 .3357a46.64 6.048 0 0 1 7.154 1.979m-63.18-4.04a46.64 6.048 0 0 1 8.529 -.3446m20.04 3.549a20.95 2.716 0 0 1 8.148 1.066" />
+   <path stroke="#00f"
+     d="m137.7 109.9a33.79 4.382 0 0 1 8.12 4.767 33.79 4.382 0 0 1 -30.93 2.783 33.79 4.382 0 0 1 -31.59 -2.655 33.79 4.382 0 0 1 6.954 -4.798m33.84-4.609a60.02 7.783 0 0 1 8.323 .2575m4.972 .2352a60.02 7.783 0 0 1 20.96 1.893m5.06 .8098a60.02 7.783 0 0 1 -8.539 10.23 60.02 7.783 0 0 1 -79.31 .1962 60.02 7.783 0 0 1 -11.54 -10.18m5.633-.9545a60.02 7.783 0 0 1 20.77 -1.944m5.203 3.491a33.79 4.382 0 0 1 8.093 -.5121m20.39-.037a33.79 4.382 0 0 1 8.303 .4917m-36.99-3.682a60.02 7.783 0 0 1 8.555 -.2802" />
+  </g>
+  <g font-size="12px" style="font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, '">
+   <text>
+   <tspan fill="#000" y="164.4" x="179.2">Вывод</tspan>
+   <tspan y="173" x="180">ротора</tspan>
+   <tspan text-anchor="end" y="158.6" x="49">Вывод</tspan>
+   <tspan text-anchor="end" y="167" x="49">статора</tspan>
+   <tspan text-anchor="middle" fill="#ff6600" y="199.7" x="116.6">Изолятор</tspan>
+   <tspan text-anchor="end" fill="#00f" y="135" x="49">Статор</tspan>
+   <tspan text-anchor="middle" fill="#f00" y="98.6" x="182">Ротор</tspan>
+   <tspan fill="#000" y="81.7" x="152.8">Гайка</tspan>
+   <tspan y="43.6" x="129.7">Шток с</tspan>
+   <tspan y="53" x="129.7">резьбой</tspan></text>
+  </g>
+ </g>
+</svg>

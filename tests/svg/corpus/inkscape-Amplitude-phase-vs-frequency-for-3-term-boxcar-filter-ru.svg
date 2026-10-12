@@ -1,0 +1,9 @@
+<svg width="204mm" height="193mm" version="1.1" viewBox="0 0 204 193" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <rect width="204" height="193" fill="#fff"/><path d="m26 106h172m-172 12h172m-172 13h172m-172 13h172m-172 13h172m-29 14v-79m-57 79v-79m-58 79v-79m-28-84h172m-172 13h172m-172 14h172m-172 14h172m-172 13h172m-172 14h172m-29 9v-81m-57 81v-81m-58 81v-81" stroke="#bbb" stroke-width=".5"/>
+ <g fill="none">
+ <g stroke="#000" stroke-width=".3"><path d="m26 92v79h172v-79zm0-88v81h172v-81z" stroke-width=".5"/><path id="b" d="m198 85v2m-29-2v2m-57-2v2m-58-2v2m-28-2v2"/><path d="m24 171h2m-2-14h2m-2-13h2m-2-13h2m-2-13h2m-2-12h2m-2-14h2m-2-84h2m-2 13h2m-2 14h2m-2 14h2m-2 27h2m-2 9h2m-2-23h2"/><use transform="translate(0 86)" xlink:href="#b"/></g>
+ <g stroke="#00f"><path d="m26 92 172 79"/><path id="a" d="m112 8c31 0 54 68 86 73"/><use transform="matrix(-1 0 0 1 224 0)" xlink:href="#a"/></g></g>
+ <g style="font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman'" font-size="6px">
+ <g text-anchor="end"><text x="23" y="109">2</text><text x="23" y="77">-0,25</text><text x="23" y="63">0,00</text><text x="23" y="50">0,25</text><text x="23" y="36">0,50</text><text x="23" y="22">0,75</text><text x="23" y="9">1,00</text><text x="23" y="160">-2</text><text x="23" y="147">-1</text><text x="23" y="134">0</text><text x="23" y="121">1</text><text x="23" y="93">π</text><text x="22" y="172">-π</text></g>
+ <g text-anchor="middle"><text x="54" y="178">-2π/3</text><text x="169" y="178">2π/3</text><text x="26" y="178">-π</text><text x="198" y="178">π</text><text x="112" y="178">0</text>
+ <g font-size="8px"><text x="112" y="187">⟵ Частота (ω), рад/выборка ⟶</text><text transform="rotate(-90)" x="-132" y="14">Фаза, рад</text><text transform="rotate(-90)" x="-50" y="8">Амплитуда</text></g></g></g></svg>

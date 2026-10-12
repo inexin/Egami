@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="137.58333mm"
+   height="128.57318mm"
+   viewBox="0 0 137.58333 128.57318"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 5da689c313, 2019-01-14"
+   sodipodi:docname="drawing.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="213.34855"
+     inkscape:cy="263.92856"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1200"
+     inkscape:window-height="1565"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-29.482145,-90.091258)">
+    <g
+       id="g79"
+       transform="matrix(0.26458333,0,0,0.26458333,28.159228,156.48735)"
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1">
+      <polygon
+         id="polygon62"
+         points="265,235 5,235 135,100 "
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1" />
+      <polygon
+         id="polygon64"
+         points="395,235 135,235 265,10 "
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1" />
+      <polygon
+         id="polygon66"
+         points="525,235 265,235 395,120 "
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:1" />
+    </g>
+    <path
+       d="m 89.196634,112.54762 h 3.425701 l 17.128485,10.91406 23.97989,1.81901 c 17.12848,1.81901 34.25697,12.73307 6.85139,12.73307 h -10.27709 v 3.63802 h -13.70279 v -3.63802 L 89.196634,127.0997 99.473727,125.28069"
+       id="airport"
+       inkscape:connector-curvature="0"
+       style="fill:#000000;stroke-width:3.53026319" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="136.26042"
+       y="97.806549"
+       id="text1025"><tspan
+         sodipodi:role="line"
+         x="136.26042"
+         y="97.806549"
+         style="stroke-width:0.26458332"
+         id="tspan1027">1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="73.647408"
+       y="166.6761"
+       id="text1025-3"><tspan
+         sodipodi:role="line"
+         x="73.647408"
+         y="166.6761"
+         style="stroke-width:0.26458332"
+         id="tspan1027-6">0</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 129.45684,126.72173 v -26.08036 h 18.70983"
+       id="path1049"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 67.246276,195.38543 v -26.08037 h 18.70983"
+       id="path1049-7"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

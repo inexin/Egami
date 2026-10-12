@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<svg
+version="1.1"
+xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+width="400"
+height="320">
+<defs>
+<path id="arrow"
+style="stroke:#000;stroke-width:2.5px;fill:#000;stroke-miterlimit:10"
+d="M 10 0 v 5 l -10 -5 l 10 -5 v 5 h 28" />
+
+<symbol id="a">
+<circle cx="0" cy="0" r="32" fill="#FFF700" />
+<use xlink:href="#arrow" transform="rotate(45) translate(8 0)" />
+<use xlink:href="#arrow" transform="rotate(135) translate(8 0)" />
+<use xlink:href="#arrow" transform="rotate(225) translate(8 0)" />
+<use xlink:href="#arrow" transform="rotate(315) translate(8 0)" />
+</symbol>
+</defs>
+
+<rect height="320" width="400" fill="#84C521" />
+<g style="fill:#0094DE">
+	<rect x="0" y="80" width="80" height="80" />
+	<rect x="160" y="80" width="80" height="80" />
+	<rect x="320" y="80" width="80" height="80" />
+	<rect x="0" y="240" width="80" height="80" />
+	<rect x="160" y="240" width="80" height="80" />
+	<rect x="320" y="240" width="80" height="80" />	
+</g>
+<g style="fill:#DE3119">
+	<rect x="80" y="0" width="80" height="80" />
+	<rect x="240" y="0" width="80" height="80" />
+	<rect x="80" y="160" width="80" height="80" />
+	<rect x="240" y="160" width="80" height="80" />
+</g>
+<g id="arow">
+<use xlink:href="#a" transform="translate(80 80)" />
+<use xlink:href="#a" transform="translate(160 80)" />
+<use xlink:href="#a" transform="translate(240 80)" />
+<use xlink:href="#a" transform="translate(320 80)" />
+</g>
+<use xlink:href="#arow" transform="translate(0 80)" />
+<use xlink:href="#arow" transform="translate(0 160)" />
+</svg>
