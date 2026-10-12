@@ -89,6 +89,13 @@ Egami.Drawing.CornerRadii.TopLeft.get -> System.Numerics.Vector2
 Egami.Drawing.CornerRadii.TopLeft.init -> void
 Egami.Drawing.CornerRadii.TopRight.get -> System.Numerics.Vector2
 Egami.Drawing.CornerRadii.TopRight.init -> void
+Egami.Drawing.DashPattern
+Egami.Drawing.DashPattern.<Clone>$() -> Egami.Drawing.DashPattern!
+Egami.Drawing.DashPattern.DashPattern(System.ReadOnlySpan<float> intervals, float phase = 0) -> void
+Egami.Drawing.DashPattern.Equals(Egami.Drawing.DashPattern? other) -> bool
+Egami.Drawing.DashPattern.Intervals.get -> System.Collections.Generic.IReadOnlyList<float>!
+Egami.Drawing.DashPattern.Phase.get -> float
+Egami.Drawing.DashPattern.Scaled(float factor) -> Egami.Drawing.DashPattern!
 Egami.Drawing.DrawingExtensions
 Egami.Drawing.FallbackImage
 Egami.Drawing.FallbackImage.<Clone>$() -> Egami.Drawing.FallbackImage!
@@ -244,6 +251,8 @@ Egami.Drawing.Stroke
 Egami.Drawing.Stroke.<Clone>$() -> Egami.Drawing.Stroke!
 Egami.Drawing.Stroke.Cap.get -> Egami.Drawing.LineCap
 Egami.Drawing.Stroke.Cap.init -> void
+Egami.Drawing.Stroke.Dash.get -> Egami.Drawing.DashPattern?
+Egami.Drawing.Stroke.Dash.init -> void
 Egami.Drawing.Stroke.Equals(Egami.Drawing.Stroke? other) -> bool
 Egami.Drawing.Stroke.IsHairline.get -> bool
 Egami.Drawing.Stroke.Join.get -> Egami.Drawing.LineJoin
@@ -271,6 +280,9 @@ override Egami.Drawing.CanvasOptions.Equals(object? obj) -> bool
 override Egami.Drawing.CanvasOptions.GetHashCode() -> int
 override Egami.Drawing.CanvasOptions.ToString() -> string!
 override Egami.Drawing.CornerRadii.GetHashCode() -> int
+override Egami.Drawing.DashPattern.Equals(object? obj) -> bool
+override Egami.Drawing.DashPattern.GetHashCode() -> int
+override Egami.Drawing.DashPattern.ToString() -> string!
 override Egami.Drawing.FallbackImage.Equals(object? obj) -> bool
 override Egami.Drawing.FallbackImage.GetHashCode() -> int
 override Egami.Drawing.FallbackImage.ToString() -> string!
@@ -298,6 +310,8 @@ static Egami.Drawing.CanvasOptions.operator ==(Egami.Drawing.CanvasOptions? left
 static Egami.Drawing.CornerRadii.operator !=(Egami.Drawing.CornerRadii left, Egami.Drawing.CornerRadii right) -> bool
 static Egami.Drawing.CornerRadii.operator ==(Egami.Drawing.CornerRadii left, Egami.Drawing.CornerRadii right) -> bool
 static Egami.Drawing.CornerRadii.Zero.get -> Egami.Drawing.CornerRadii
+static Egami.Drawing.DashPattern.operator !=(Egami.Drawing.DashPattern? left, Egami.Drawing.DashPattern? right) -> bool
+static Egami.Drawing.DashPattern.operator ==(Egami.Drawing.DashPattern? left, Egami.Drawing.DashPattern? right) -> bool
 static Egami.Drawing.DrawingExtensions.CreateCanvas<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Drawing.CanvasOptions? options = null) -> Egami.Drawing.RasterCanvas<TPixel>!
 static Egami.Drawing.DrawingExtensions.Draw(this Egami.Operations.RasterOps! operations, System.Action<Egami.Drawing.Canvas!, int>! draw, Egami.Drawing.CanvasOptions? options = null) -> Egami.Operations.RasterOps!
 static Egami.Drawing.DrawingExtensions.Draw(this Egami.Operations.RasterOps! operations, System.Action<Egami.Drawing.Canvas!>! draw, Egami.Drawing.CanvasOptions? options = null) -> Egami.Operations.RasterOps!

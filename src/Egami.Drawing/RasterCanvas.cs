@@ -184,6 +184,11 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         }
         else
         {
+            if (stroke.Dash is not null)
+            {
+                path = stroke.Dash.Apply(path);
+            }
+
             float deviceWidth = stroke.Width * MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
             rule = FillRule.NonZero;
             if (stroke.IsHairline || deviceWidth < 1)

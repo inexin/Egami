@@ -93,6 +93,13 @@ public sealed record class Stroke
         init => _miterLimit = value >= 1 && float.IsFinite(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The miter limit must be finite and at least 1.");
     }
 
+    /// <summary>
+    /// Gets the dashes, or <see langword="null"/> for a solid line. The pattern travels with the drawing call as data, so a vector
+    /// backend writes it as it is (PDF's <c>d</c>, SVG's <c>stroke-dasharray</c>); the raster backend cuts the path into dashes
+    /// before outlining it. Lengths are in local units, like the width. Defaults to <see langword="null"/>.
+    /// </summary>
+    public DashPattern? Dash { get; init; }
+
     /// <summary>Gets a value indicating whether this is a hairline: width 0.</summary>
     public bool IsHairline => Width == 0;
 }
