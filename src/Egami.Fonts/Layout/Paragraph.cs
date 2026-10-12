@@ -21,8 +21,9 @@ public sealed class Paragraph
     /// <summary>Egami's default font size, as CSS's.</summary>
     internal const float DefaultSize = 16;
 
-    private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi)
+    private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi, (Font, GlyphBuffer)[]? ellipses)
     {
+        Ellipses = ellipses;
         Measures = new AdvanceTable(text, styles, runs);
         RichText = text;
         Style = style;
@@ -56,6 +57,9 @@ public sealed class Paragraph
     /// <summary>The advance and spacing of every character, for measuring lines.</summary>
     internal AdvanceTable Measures { get; }
 
+    /// <summary>The ellipsis shaped in each style, when a line limit and an ellipsis are set.</summary>
+    internal (Font Font, GlyphBuffer Glyphs)[]? Ellipses { get; }
+
     /// <summary>Lays the paragraph out at a width.</summary>
     /// <param name="width">The layout box's width in canvas units; <see cref="float.PositiveInfinity"/> for no wrapping, in
     /// which case the box is as wide as the longest line.</param>
@@ -85,10 +89,28 @@ public sealed class Paragraph
         }
         else
         {
-            while (flow.NextDraft(width) is LineDraft draft)
+            // Lines stop at MaxLines, or before the line whose bottom would pass MaxHeight.
+            float height = 0;
+            while ((Style.MaxLines is not int max || drafts.Count < max) && flow.NextDraft(width) is LineDraft draft)
             {
+                height += draft.Ascent + draft.Descent;
+                if (Style.MaxHeight is float limit && height > limit + 1e-4f)
+                {
+                    flow.Rewind(draft.Start);
+                    break;
+                }
+
                 drafts.Add(draft);
             }
+        }
+
+        // Text past the limit is hidden; the last kept line makes room for the ellipsis.
+        int keptEnd = drafts.Count == 0 ? 0 : drafts[^1].End;
+        bool exceeded = (Style.MaxLines is not null || Style.MaxHeight is not null) && keptEnd < Text.Length;
+        int hidden = keptEnd;
+        if (exceeded && Ellipses is not null && drafts.Count > 0)
+        {
+            drafts[^1] = flow.Builder.Ellipsize(drafts[^1], width, out hidden);
         }
 
         float boxWidth = float.IsFinite(width) ? width : drafts.Count == 0 ? 0 : drafts.Max(d => d.ContentWidth);
@@ -101,7 +123,7 @@ public sealed class Paragraph
             top = line.Bottom;
         }
 
-        return new TextLayout(this, boxWidth, lines);
+        return new TextLayout(this, boxWidth, lines, exceeded ? new TextSegment(hidden, Text.Length - hidden) : null);
     }
 
     /// <summary>Starts laying the paragraph out one line at a time, each at its own width.</summary>
@@ -160,7 +182,10 @@ public sealed class Paragraph
         LineBreak[] breaks = [.. Collect(LineBreaks.Enumerate(s, LineBreakOptionsFor(style, styles[0])))];
         BidiData bidi = BidiData.Resolve(s, style.WritingMode == WritingMode.HorizontalTb ? style.Direction : TextDirection.LeftToRight);
         ParagraphRun[] runs = Itemizer.Itemize(text, style, styles, bidi, fonts);
-        return new Paragraph(text, style, styles, runs, breaks, bidi);
+        (Font, GlyphBuffer)[]? ellipses = !string.IsNullOrEmpty(style.Ellipsis) && (style.MaxLines is not null || style.MaxHeight is not null) && styles.All(st => st.Primary is not null)
+            ? [.. styles.Select(st => Itemizer.ShapeAlone(style.Ellipsis, st, style.Fallback, fonts))]
+            : null;
+        return new Paragraph(text, style, styles, runs, breaks, bidi, ellipses);
     }
 
     private static bool CoversOutsideSpans(RichText text)
@@ -491,6 +516,16 @@ internal static class Itemizer
     }
 
     private static bool IsHardBreak(int cp) => cp is 0x0A or 0x0B or 0x0C or 0x0D or 0x85 or 0x2028 or 0x2029;
+
+    /// <summary>Shapes a short string (an ellipsis) on its own in a style, in the font CSS matching picks for its first cluster.</summary>
+    public static (Font, GlyphBuffer) ShapeAlone(string text, ResolvedStyle style, FontFallback fallback, FontCache fonts)
+    {
+        int first = TextSegmenter.NextGraphemeBoundary(text, 0);
+        Font font = ChooseFont(text.AsSpan(0, first), style, fallback, Script.Common, fonts);
+        GlyphBuffer glyphs = new();
+        TextShaper.ShapeRun(text, 0, text.Length, font, new RunProperties { Language = style.Language, Features = style.Features }, glyphs);
+        return (font, glyphs);
+    }
 
     /// <summary>
     /// The font for one grapheme cluster, as CSS matches fonts: the style's families in order, then the paragraph's fallback

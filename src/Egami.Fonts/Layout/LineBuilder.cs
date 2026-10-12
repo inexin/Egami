@@ -130,6 +130,9 @@ internal sealed class LineDraft
 
     /// <summary>The end of the line's content: hanging spaces and the hard break left out.</summary>
     public required int ContentEnd { get; init; }
+
+    /// <summary>Whether the line ends with an ellipsis.</summary>
+    public bool Ellipsized { get; init; }
 }
 
 /// <summary>A run of a draft line: glyphs (with spacing in their advances) or a glyphless box, at an x from the line's start.</summary>
@@ -1036,7 +1039,87 @@ internal sealed class LineBuilder
             runs.Add(new LayoutRun(kind, piece.Start, piece.Length, piece.Level, piece.Style, x, pieceAdvance, glyphs, piece.Kind == RunKind.Placeholder ? piece.Placeholder : -1));
         }
 
-        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, false, runs);
+        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs);
+    }
+
+    /// <summary>
+    /// The last kept line made room for the ellipsis: whole grapheme clusters dropped from its logical end until the content and
+    /// the ellipsis (shaped in the style of the last kept character) fit the width, trailing spaces dropped, and the ellipsis
+    /// placed at the line's end in the paragraph's direction. <paramref name="hidden"/> is where the hidden text starts.
+    /// </summary>
+    public LineDraft Ellipsize(LineDraft line, float width, out int hidden)
+    {
+        int cut = line.ContentEnd;
+        int styleIndex = _paragraph.RichText.SpanAt(Math.Max(line.Start, cut - 1)) + 1;
+        (Font font, GlyphBuffer glyphs) = _paragraph.Ellipses![styleIndex];
+        float room = glyphs.Advance;
+        while (cut > line.Start && float.IsFinite(width) && Measure(line.Start, ContentEnd(line.Start, cut)) + room > width + Epsilon)
+        {
+            cut = PreviousGrapheme(cut, line.Start);
+        }
+
+        int content = ContentEnd(line.Start, cut);
+        hidden = content;
+        LineDraft kept = Build(line.Start, content, false, false);
+        bool rtl = (kept.ParagraphLevel & 1) != 0;
+        List<ushort> ids = [];
+        List<int> clusters = [];
+        List<float> advances = [];
+        List<Vector2> offsets = [];
+        float advance = 0;
+        AddGlyphs(glyphs, content, ids, clusters, advances, offsets, ref advance);
+        DraftRun ellipsis = new()
+        {
+            Kind = RunKind.Text,
+            Start = content,
+            Length = 0,
+            Level = kept.ParagraphLevel,
+            Style = styleIndex,
+            Font = font,
+            Glyphs = [.. ids],
+            Clusters = [.. clusters],
+            Advances = [.. advances],
+            Offsets = [.. offsets],
+            Advance = advance,
+            Placeholder = -1,
+            Script = Script.Common,
+            Language = _paragraph.Styles[styleIndex].Language,
+        };
+        List<DraftRun> runs = [.. kept.Runs];
+        runs.Insert(rtl ? 0 : runs.Count, ellipsis);
+        float x = 0;
+        foreach (DraftRun run in runs)
+        {
+            run.X = x;
+            x += run.Advance;
+        }
+
+        (float ascent, float descent) = LineMetrics(runs, line.Start);
+        return new LineDraft
+        {
+            Start = line.Start,
+            End = line.End,
+            HardBreak = false,
+            Runs = runs,
+            ContentWidth = kept.ContentWidth + advance,
+            HangWidth = 0,
+            Ascent = Math.Max(ascent, line.Ascent),
+            Descent = Math.Max(descent, line.Descent),
+            ParagraphLevel = kept.ParagraphLevel,
+            ContentEnd = content,
+            Ellipsized = true,
+        };
+    }
+
+    private int PreviousGrapheme(int index, int floor)
+    {
+        int previous = floor;
+        for (int g = floor; g < index; g = TextSegmenter.NextGraphemeBoundary(_text, g))
+        {
+            previous = g;
+        }
+
+        return previous;
     }
 
     /// <summary>A line's alignment: <see cref="ParagraphStyle.Align"/>, or for the last line and lines before a hard break

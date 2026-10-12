@@ -86,11 +86,11 @@ public sealed class LineFillTests(ITestOutputHelper output)
 
     public static TheoryData<string> FeatureCases()
     {
-        // Vertical cases come with vertical lines (task 11).
         var data = new TheoryData<string>();
         foreach (LayoutReferences.Case c in LayoutReferences.Load("features").Cases)
         {
-            if (!c.Style.TryGetProperty("writingMode", out _))
+            // Line limits (LineLimitTests) and vertical lines (task 11) have their own gates.
+            if (!c.Style.TryGetProperty("writingMode", out _) && !c.Style.TryGetProperty("maxLines", out _))
             {
                 data.Add(c.Name);
             }

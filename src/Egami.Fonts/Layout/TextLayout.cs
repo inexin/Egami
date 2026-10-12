@@ -11,8 +11,9 @@ namespace Egami.Fonts.Layout;
 /// </example>
 public sealed class TextLayout
 {
-    internal TextLayout(Paragraph paragraph, float width, IReadOnlyList<TextLine> lines)
+    internal TextLayout(Paragraph paragraph, float width, IReadOnlyList<TextLine> lines, TextSegment? hidden = null)
     {
+        HiddenRange = hidden;
         Paragraph = paragraph;
         Width = width;
         Lines = lines;
@@ -34,6 +35,12 @@ public sealed class TextLayout
 
     /// <summary>Gets the lines, top to bottom.</summary>
     public IReadOnlyList<TextLine> Lines { get; }
+
+    /// <summary>Gets whether <see cref="ParagraphStyle.MaxLines"/> or <see cref="ParagraphStyle.MaxHeight"/> cut text off.</summary>
+    public bool DidExceed => HiddenRange is not null;
+
+    /// <summary>Gets the text a line limit hid, the ellipsis's room included, or null when nothing was cut.</summary>
+    public TextSegment? HiddenRange { get; }
 }
 
 /// <summary>
@@ -218,6 +225,9 @@ public sealed class LineFlow
     {
         _next = 0;
     }
+
+    /// <summary>Takes back the lines from <paramref name="position"/> on.</summary>
+    internal void Rewind(int position) => _next = position;
 
     internal LineDraft? NextDraft(float width)
     {

@@ -1967,3 +1967,5 @@ Egami.Fonts.Layout.TextLine.Runs.get -> System.Collections.Generic.IReadOnlyList
 Egami.Fonts.Layout.TextLine.Start.get -> int
 Egami.Fonts.Layout.TextLine.Top.get -> float
 Egami.Fonts.Layout.TextLine.Width.get -> float
+Egami.Fonts.Layout.TextLayout.DidExceed.get -> bool
+Egami.Fonts.Layout.TextLayout.HiddenRange.get -> Egami.Fonts.Unicode.TextSegment?

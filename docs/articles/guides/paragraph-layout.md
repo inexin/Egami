@@ -117,6 +117,13 @@ clusters except inside cursive scripts such as Arabic, and `Auto` (the default) 
 Japanese and Korean characters, as browsers justify. `None` leaves justified lines at the start. Arabic is justified at its
 word spaces; kashida stretching waits for real demand.
 
+### Line limits and the ellipsis
+
+`MaxLines` and `MaxHeight` stop the lines: at the limit, or before the line whose bottom would pass the height. When text is
+cut, `TextLayout.DidExceed` is true and `HiddenRange` says what was hidden; the last kept line drops whole grapheme clusters
+from its end until its text and the `Ellipsis` (U+2026 by default, shaped in the style of the last kept character) fit, and
+the ellipsis ends the line in the paragraph's direction, flagged `Ellipsized`. A null `Ellipsis` cuts at the line's end.
+
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
 images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.
 
