@@ -22,6 +22,11 @@ Targets:
 | `font` | TrueType, OpenType and collection data (Egami.Fonts): probed, every face loaded leniently and strictly, names, metrics, the first glyphs' outlines, bounds and kerning read, text shaped and measured | `tests/images/fuzz/font-seeds/*` |
 | `cff` | Bare CFF streams as PDF embeds them: loaded, then read as `font` does | `tests/images/fuzz/cff-seeds/*` |
 | `subset` | What `font` or `cff` loads is subsetted (numbering, cmap and prefix picked by the last byte), re-loaded, and every kept glyph's outline must be unchanged | `tests/images/fuzz/font-seeds/*` |
+| `woff2` | WOFF and WOFF2 files (the glyf, loca and hmtx transforms, Brotli and zlib streams): read as `font` does | `tests/images/fuzz/woff2-seeds/*` |
+| `gvar` | Variable TrueType fonts: every face at its default, its first named instances and three positions the bytes pick, read as `font` does there (gvar, avar 1 and 2, HVAR, MVAR, GDEF deltas) | `tests/images/fuzz/gvar-seeds/*` |
+| `cff2` | Variable CFF2 fonts, as `gvar` (blend and vsindex in the charstrings) | `tests/images/fuzz/cff2-seeds/*` |
+| `colr` | Color fonts: palettes, every glyph's COLR, sbix, CBDT and SVG data read, and the first color glyphs drawn upright and turned, at two positions | `tests/images/fuzz/colr-seeds/*` |
+| `instance` | Variable fonts subsetted at positions the bytes pick: the static instance must re-load as a static font and read as `font` does | `tests/images/fuzz/instance-seeds/*` |
 
 ## Running locally (Linux or WSL)
 

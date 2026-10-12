@@ -137,13 +137,18 @@ static Action<Stream> Target(string name) => name switch
     "font" => LoadFont,
     "cff" => LoadCff,
     "subset" => SubsetFont,
+    "woff2" => LoadFont,
+    "gvar" => LoadVariable,
+    "cff2" => LoadVariable,
+    "colr" => LoadColor,
+    "instance" => InstanceFont,
     "svgpath" => ParseSvgPath,
     "ico" => LoadIco,
     "icoentry" => LoadIcoEntry,
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
     "egdr" => LoadDrawing,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry, psdfile, psddata, egdr."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr."),
 };
 
 static EgamiContext Context()
@@ -1862,6 +1867,134 @@ static void SubsetFont(Stream stream)
         {
             throw new InvalidOperationException($"Glyph {old} changed in the subset.");
         }
+    }
+}
+
+// Variable fonts (Phase 2.7.2): every face at its default, at each named instance and at positions the data picks, every
+// outline, advance, extent and kerning pair read there.
+static void LoadVariable(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    IReadOnlyList<Egami.Fonts.Typeface> faces;
+    try
+    {
+        faces = Egami.Fonts.FontLoader.LoadAll(data, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    foreach (Egami.Fonts.Typeface face in faces)
+    {
+        foreach (Egami.Fonts.Typeface at in Positions(face, data))
+        {
+            ExerciseFace(at);
+        }
+    }
+}
+
+static IEnumerable<Egami.Fonts.Typeface> Positions(Egami.Fonts.Typeface face, byte[] data)
+{
+    yield return face;
+    IReadOnlyList<Egami.Fonts.VariationAxis> axes = face.VariationAxes;
+    for (int i = 0; i < Math.Min(face.NamedInstances.Count, 3); i++)
+    {
+        yield return face.WithNamedInstance(i);
+    }
+
+    for (int k = 0; k < 3 && axes.Count > 0; k++)
+    {
+        var values = new Egami.Fonts.FontVariation[axes.Count];
+        for (int a = 0; a < axes.Count; a++)
+        {
+            int b = data.Length == 0 ? 0 : data[((k * 31) + (a * 7)) % data.Length];
+            float t = (b / 255f * 1.4f) - 0.2f;
+            values[a] = new Egami.Fonts.FontVariation(axes[a].Tag, axes[a].Min + ((axes[a].Max - axes[a].Min) * t));
+        }
+
+        yield return face.WithVariations(values);
+    }
+}
+
+// Color fonts (Phase 2.7.2): palettes, every glyph's color data and SVG document read, and the first color glyphs drawn on a
+// small canvas, at default and other positions.
+static void LoadColor(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    IReadOnlyList<Egami.Fonts.Typeface> faces;
+    try
+    {
+        faces = Egami.Fonts.FontLoader.LoadAll(data, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    foreach (Egami.Fonts.Typeface face in faces)
+    {
+        _ = face.ColorFormats;
+        _ = face.Palettes.Count;
+        foreach (Egami.Fonts.Typeface at in Positions(face, data).Take(2))
+        {
+            int drawn = 0;
+            for (int g = 0; g < Math.Min(at.GlyphCount, 300); g++)
+            {
+                _ = at.TryGetSvgDocument((ushort)g, out _, out _, out _);
+                if (!at.TryGetColorGlyph((ushort)g, data.Length % 2 == 0 ? null : Egami.Fonts.FontPalette.Dark, out _, 20))
+                {
+                    continue;
+                }
+
+                if (drawn++ < 6)
+                {
+                    using Raster<Rgba8> target = Raster.Create<Rgba8>(24, 24, Context());
+                    using Egami.Drawing.RasterCanvas<Rgba8> canvas = new(target);
+                    var font = new Egami.Fonts.Font(at, 18);
+                    canvas.DrawGlyphRun(Egami.Fonts.GlyphRun.Create(font, [(ushort)g], [new System.Numerics.Vector2(2, 20)]), default, Rgba8.Black);
+                    canvas.Rotate(10);
+                    canvas.DrawGlyphRun(Egami.Fonts.GlyphRun.Create(font, [(ushort)g], [new System.Numerics.Vector2(2, 20)]), default, new Rgba8(0, 0, 0, 100));
+                }
+            }
+        }
+    }
+}
+
+// Static instances (Phase 2.7.2): a variable face subset at positions the data picks, re-loaded and drawn.
+static void InstanceFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    Egami.Fonts.Typeface face;
+    try
+    {
+        face = Egami.Fonts.Typeface.FromMemory(data, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    foreach (Egami.Fonts.Typeface at in Positions(face, data).Skip(1).Take(2))
+    {
+        ushort[] glyphs = [.. Enumerable.Range(0, Math.Min(at.GlyphCount, 24)).Select(g => (ushort)g)];
+        Egami.Fonts.FontSubset subset;
+        try
+        {
+            subset = Egami.Fonts.FontSubsetter.Subset(at, glyphs, new Egami.Fonts.SubsetOptions { RetainGlyphIds = data.Length % 2 == 0 });
+        }
+        catch (EgamiException)
+        {
+            continue;
+        }
+
+        Egami.Fonts.Typeface again = subset.ToTypeface();
+        if (again.IsVariable)
+        {
+            throw new InvalidOperationException("An instance is still variable.");
+        }
+
+        ExerciseFace(again);
     }
 }
 

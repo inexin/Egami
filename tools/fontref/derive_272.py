@@ -23,6 +23,8 @@ And from the 2.7.1 test fonts, the web fonts:
   SourceSans3-Regular.woff2      a CFF font in WOFF2
   RobotoFlex-subset.woff2        a variable font in WOFF2
   NotoSansSerif.woff2            the 2.7.1 collection, compressed by Google's woff2_compress
+
+And small seeds for the woff2, gvar, cff2, colr and instance fuzz targets in tests/images/fuzz.
 """
 import gzip
 import io
@@ -230,6 +232,51 @@ def web():
     shutil.copy("/tmp/NotoSansSerif.woff2", os.path.join(OUT, "NotoSansSerif.woff2"))
 
 
+def fuzz_seeds():
+    """Small seeds for the 2.7.2 fuzz targets, cut to a few glyphs so AFL++ mutates their structure, not their bulk."""
+    seeds = os.path.join(ROOT, "tests/images/fuzz")
+    for target in ("woff2", "gvar", "cff2", "colr", "instance"):
+        os.makedirs(os.path.join(seeds, target + "-seeds"), exist_ok=True)
+
+    def small(source, text, target, flavor=None, transforms=None):
+        options = subset.Options()
+        options.layout_features = ["kern"]
+        options.name_IDs = [1, 2, 6]
+        options.notdef_outline = True
+        options.glyph_names = False
+        font = TTFont(source)
+        sub = subset.Subsetter(options)
+        sub.populate(text=text)
+        sub.subset(font)
+        if flavor:
+            font.flavor = flavor
+        if transforms is not None:
+            font.flavorData = WOFF2FlavorData(transformedTables=transforms)
+        font.save(target)
+
+    small(os.path.join(FONTS, "NotoSans-Regular.ttf"), "AVo", os.path.join(seeds, "woff2-seeds/noto.woff2"), "woff2")
+    small(os.path.join(FONTS, "Roboto-Regular.ttf"), "Ag%", os.path.join(seeds, "woff2-seeds/roboto-hmtx.woff2"), "woff2", {"glyf", "loca", "hmtx"})
+    small(os.path.join(FONTS, "SourceSans3-Regular.otf"), "AVo", os.path.join(seeds, "woff2-seeds/source.woff2"), "woff2")
+    small(os.path.join(FONTS, "NotoSans-Regular.ttf"), "AVo", os.path.join(seeds, "woff2-seeds/noto.woff"), "woff")
+    small(os.path.join(OUT, "NotoSans-VF-subset.ttf"), "AVo", os.path.join(seeds, "gvar-seeds/noto-vf.ttf"))
+    small(os.path.join(OUT, "RobotoFlex-subset.ttf"), "Ag", os.path.join(seeds, "gvar-seeds/flex.ttf"))
+    small(os.path.join(OUT, "NotoSans-avar2.ttf"), "Ao", os.path.join(seeds, "gvar-seeds/avar2.ttf"))
+    small(os.path.join(OUT, "SourceSerif4-VF-subset.otf"), "AVo", os.path.join(seeds, "cff2-seeds/serif-vf.otf"))
+    small(os.path.join(OUT, "SourceSans3-VF-subset.otf"), "Ag", os.path.join(seeds, "cff2-seeds/sans-vf.otf"))
+    shutil.copy(os.path.join(FONTS, "test_glyphs-glyf_colr_1.ttf"), os.path.join(seeds, "colr-seeds/test-glyphs.ttf"))
+    shutil.copy(os.path.join(OUT, "Twemoji-COLRv0-subset.ttf"), os.path.join(seeds, "colr-seeds/twemoji-v0.ttf"))
+    shutil.copy(os.path.join(OUT, "Twemoji-sbix.ttf"), os.path.join(seeds, "colr-seeds/sbix.ttf"))
+    options = subset.Options()
+    options.layout_features = []
+    font = TTFont(os.path.join(OUT, "NotoColorEmoji-CBDT-subset.ttf"))
+    sub = subset.Subsetter(options)
+    sub.populate(text="\U0001F600")
+    sub.subset(font)
+    font.save(os.path.join(seeds, "colr-seeds/noto-cbdt.ttf"))
+    shutil.copy(os.path.join(seeds, "gvar-seeds/noto-vf.ttf"), os.path.join(seeds, "instance-seeds/noto-vf.ttf"))
+    shutil.copy(os.path.join(seeds, "cff2-seeds/sans-vf.otf"), os.path.join(seeds, "instance-seeds/sans-vf.otf"))
+
+
 def main():
     cut(os.path.join(CACHE, "RobotoFlex-VF.ttf"), LATIN1, os.path.join(OUT, "RobotoFlex-subset.ttf"))
     cut(os.path.join(CACHE, "NotoSans-VF.ttf"), LATIN1, os.path.join(OUT, "NotoSans-VF-subset.ttf"))
@@ -243,6 +290,7 @@ def main():
     sbix(os.path.join(OUT, "Twemoji-sbix.ttf"))
     svg(os.path.join(OUT, "Svg-test.ttf"))
     web()
+    fuzz_seeds()
     print("2.7.2 derived fonts written to", OUT)
 
 

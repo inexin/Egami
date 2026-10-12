@@ -39,7 +39,7 @@ internal sealed class ItemVariationStore
     public static ItemVariationStore Read(ReadOnlyMemory<byte> table, int offset, long fileOffset)
     {
         ReadOnlySpan<byte> data = table.Span;
-        var r = new FontReader(data[offset..], fileOffset + offset);
+        var r = new FontReader(BigEndian.Slice(data, offset, data.Length - (long)offset), fileOffset + offset);
         int format = r.ReadUInt16();
         if (format != 1)
         {
