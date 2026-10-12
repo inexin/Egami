@@ -8,7 +8,7 @@ public sealed partial class RasterOps
     /// <summary>
     /// Reduces each frame to at most <see cref="PaletteOptions.MaxColors"/> colors, as a palette format would, but keeps the
     /// pixel type: an Rgba16 image stays Rgba16 with at most that many distinct values. Each frame gets its own palette (its
-    /// own colors when they fit, Wu's quantizer otherwise) unless <see cref="PaletteOptions.Palette"/> fixes one, and is
+    /// own colors when they fit, Wu's quantizer otherwise) unless <see cref="PaletteOptions.FixedPalette"/> fixes one, and is
     /// dithered as the options say. Use <see cref="Raster.ToIndexed"/> for the indices themselves.
     /// </summary>
     /// <param name="options">The color limit, dithering, refinement and matching, or <see langword="null"/> for <see cref="PaletteOptions.Default"/>.</param>
@@ -37,6 +37,6 @@ public sealed partial class RasterOps
     public RasterOps Remap(Palette palette, DitherMode dither = DitherMode.FloydSteinberg, float strength = 1)
     {
         ArgumentNullException.ThrowIfNull(palette);
-        return Add(new QuantizeOperation(new PaletteOptions { Palette = palette, Dither = dither, DitherStrength = strength }));
+        return Add(new QuantizeOperation(new PaletteOptions { FixedPalette = palette, Dither = dither, DitherStrength = strength }));
     }
 }

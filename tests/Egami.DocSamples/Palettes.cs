@@ -51,7 +51,7 @@ public class Palettes
         // Build one palette from an image, polished by k-means, and use it for other images and for every GIF frame.
         Palette shared = Palette.Build(first, new PaletteOptions { MaxColors = 64, RefineIterations = 6 });
         second.Apply(ops => ops.Remap(shared), Ct);
-        second.Save("egret.gif", new GifWriterOptions { Palette = new PaletteOptions { Palette = shared, Dither = DitherMode.Bayer4x4 } });
+        second.Save("egret.gif", new GifWriterOptions { Palette = new PaletteOptions { FixedPalette = shared, Dither = DitherMode.Bayer4x4 } });
         #endregion
 
         Assert.True(shared.Count <= 64);

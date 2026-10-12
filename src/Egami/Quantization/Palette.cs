@@ -441,7 +441,7 @@ internal static class PaletteBuilder
     /// <param name="reserve">Entries a quantized palette leaves free (an exact one uses every entry it needs).</param>
     internal static BuiltPalette Build(int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, PaletteOptions options, bool binaryAlpha, int reserve = 0)
     {
-        if (options.Palette is Palette given)
+        if (options.FixedPalette is Palette given)
         {
             return Fixed(given, rowCount, rows, options, binaryAlpha);
         }

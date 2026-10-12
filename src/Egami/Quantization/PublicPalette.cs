@@ -6,7 +6,7 @@ namespace Egami.Quantization;
 
 /// <summary>
 /// An ordered list of up to 256 colors to map images onto: a brand palette, a display's inks, or one built from an image with
-/// Wu's quantizer. Use it as <see cref="PaletteOptions.Palette"/> for the GIF, PNG, BMP and TGA writers, with
+/// Wu's quantizer. Use it as <see cref="PaletteOptions.FixedPalette"/> for the GIF, PNG, BMP and TGA writers, with
 /// <see cref="Operations.RasterOps.Remap"/>, or to find the nearest color yourself.
 /// </summary>
 /// <example>
@@ -79,7 +79,7 @@ public sealed class Palette
     {
         ArgumentNullException.ThrowIfNull(image);
         options ??= PaletteOptions.Default;
-        if (options.Palette is Palette given)
+        if (options.FixedPalette is Palette given)
         {
             return given;
         }

@@ -8,7 +8,7 @@ public abstract partial class Raster
 {
     /// <summary>
     /// Returns one frame as palette indices and the palette they refer to, as a palette PNG would store it: the frame's own
-    /// colors when they fit, Wu's quantizer otherwise, or the fixed <see cref="PaletteOptions.Palette"/>, dithered as the options say.
+    /// colors when they fit, Wu's quantizer otherwise, or the fixed <see cref="PaletteOptions.FixedPalette"/>, dithered as the options say.
     /// </summary>
     /// <param name="options">The color limit, dithering and palette, or <see langword="null"/> for <see cref="PaletteOptions.Default"/>.</param>
     /// <param name="frame">The frame, 0 (the default) for the first.</param>

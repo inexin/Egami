@@ -88,7 +88,7 @@ internal sealed class IndexedFrame : IDisposable
                 source(y, buffer.AsSpan(0, width));
                 return buffer.AsMemory(0, width);
             }, options, binaryAlpha: false);
-            bool withAlpha = options.Palette?.WithAlpha ?? palette.Colors.Any(c => c.A != 255);
+            bool withAlpha = options.FixedPalette?.WithAlpha ?? palette.Colors.Any(c => c.A != 255);
             using PaletteMapper mapper = new(palette.Colors, palette.TransparentIndex, withAlpha, 1);
             FrameMapper.Map(width, height, source, palette, mapper, options, indices.AsSpan(0, width * height));
             return new IndexedFrame(palette.Colors, palette.TransparentIndex, withAlpha, indices, width);

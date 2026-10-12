@@ -249,7 +249,7 @@ public class AnalysisReferenceTests
         {
             double de = Math.Sqrt(Math.Pow(mine[i].L - theirs[i].L, 2) + Math.Pow(mine[i].A - theirs[i].A, 2) + Math.Pow(mine[i].B - theirs[i].B, 2));
             // The design's gate was 0.05; ImageMagick clusters in RGB and Egami in Oklab, which moves the edge of the duck's
-            // orange cluster by ΔE 0.062 (every other color is within 0.05). Lars to confirm 0.07 at the stage B review.
+            // orange cluster by ΔE 0.062 (every other color is within 0.05). Lars accepted 0.07 at the API review (2026-10-12).
             Assert.True(de <= 0.07, $"{name} color {i}: {mine[i]} vs ImageMagick {theirs[i]}, ΔE {de:F3}");
         }
     }

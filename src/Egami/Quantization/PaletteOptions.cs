@@ -108,7 +108,7 @@ public sealed record PaletteOptions
     /// Gets a fixed palette to map to instead of building one, or <see langword="null"/> (the default) to build one from the
     /// image. Every writer that takes these options honours it, and throws when the palette has more colors than its format allows.
     /// </summary>
-    public Palette? Palette { get; init; }
+    public Palette? FixedPalette { get; init; }
 
     /// <summary>
     /// Gets how strongly the dither works, from 0 (none: the nearest color) to 1 (the default, full strength): the share of the
@@ -150,5 +150,5 @@ public sealed record PaletteOptions
     public ErrorDiffusionKernel? Kernel { get; init; }
 
     /// <summary>Gets whether the options ask for exactly what 1.x did, so the original mapping code runs.</summary>
-    internal bool IsClassic => Palette is null && _strength == 1 && !Serpentine && _refine == 0 && !ExactMatching && Kernel is null;
+    internal bool IsClassic => FixedPalette is null && _strength == 1 && !Serpentine && _refine == 0 && !ExactMatching && Kernel is null;
 }

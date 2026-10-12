@@ -1762,10 +1762,10 @@ Egami.Quantization.PaletteOptions.DitherStrength.get -> float
 Egami.Quantization.PaletteOptions.DitherStrength.init -> void
 Egami.Quantization.PaletteOptions.ExactMatching.get -> bool
 Egami.Quantization.PaletteOptions.ExactMatching.init -> void
+Egami.Quantization.PaletteOptions.FixedPalette.get -> Egami.Quantization.Palette?
+Egami.Quantization.PaletteOptions.FixedPalette.init -> void
 Egami.Quantization.PaletteOptions.Kernel.get -> Egami.Quantization.ErrorDiffusionKernel?
 Egami.Quantization.PaletteOptions.Kernel.init -> void
-Egami.Quantization.PaletteOptions.Palette.get -> Egami.Quantization.Palette?
-Egami.Quantization.PaletteOptions.Palette.init -> void
 Egami.Quantization.PaletteOptions.RefineIterations.get -> int
 Egami.Quantization.PaletteOptions.RefineIterations.init -> void
 Egami.Quantization.PaletteOptions.Serpentine.get -> bool

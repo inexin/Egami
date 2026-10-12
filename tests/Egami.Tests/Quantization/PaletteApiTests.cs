@@ -123,7 +123,7 @@ public class PaletteApiTests
     {
         using Raster duck = Duck();
         Palette eink = Palette.FromColors([Rgba8.Black, Rgba8.White, new(255, 0, 0, 255), new(255, 255, 0, 255), new(0, 0, 255, 255), new(0, 255, 0, 255)]);
-        PaletteOptions fixedOptions = new() { Palette = eink };
+        PaletteOptions fixedOptions = new() { FixedPalette = eink };
         HashSet<Rgba8> allowed = [.. eink.Colors];
         foreach ((string format, Egami.Formats.WriterOptions options) in new (string, Egami.Formats.WriterOptions)[]
         {
@@ -150,7 +150,7 @@ public class PaletteApiTests
         Palette big = Palette.FromColors([.. Enumerable.Range(0, 20).Select(i => new Rgba8((byte)(i * 12), 0, 0, 255))]);
         using MemoryStream file = new();
         ArgumentException e = Assert.Throws<ArgumentException>(() =>
-            duck.Save(file, "bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4, Palette = new PaletteOptions { Palette = big } }));
+            duck.Save(file, "bmp", new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4, Palette = new PaletteOptions { FixedPalette = big } }));
         Assert.Contains("20", e.Message);
         Assert.Contains("16", e.Message);
     }

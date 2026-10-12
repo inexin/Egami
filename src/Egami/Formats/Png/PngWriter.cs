@@ -430,7 +430,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
     {
         int depth = options.BitDepth ?? 8;
         Validate(PngColorType.Palette, depth);
-        if (options.Palette.Palette is not null)
+        if (options.Palette.FixedPalette is not null)
         {
             // A fixed palette maps every image, even one whose own colors would fit.
             return true;

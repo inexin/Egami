@@ -12,7 +12,7 @@ its palette color, keeping the pixel type: an `Rgba16` image stays `Rgba16` with
 `PaletteOptions` that the writers take drive it:
 
 - `MaxColors`, `Dither` and `AlphaThreshold`, as in 1.0.
-- `Palette`: a fixed palette instead of building one. Every writer that takes `PaletteOptions` honours it, and throws, naming both
+- `FixedPalette`: a fixed palette instead of building one. Every writer that takes `PaletteOptions` honours it, and throws, naming both
   numbers, when it has more colors than the format allows.
 - `DitherStrength`, 0 to 1: how much of the error is diffused, or how tall the ordered pattern is.
 - `Serpentine`: error diffusion alternates direction from row to row.
