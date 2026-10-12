@@ -430,6 +430,12 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
     {
         int depth = options.BitDepth ?? 8;
         Validate(PngColorType.Palette, depth);
+        if (options.Palette.Palette is not null)
+        {
+            // A fixed palette maps every image, even one whose own colors would fit.
+            return true;
+        }
+
         Scan scan = Scan.Of(raster, animated);
         return scan.Colors is null || scan.Colors.Count > Math.Min(1 << depth, options.Palette.MaxColors);
     }
@@ -459,7 +465,7 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
             for (int f = 0; f < frames; f++)
             {
                 Frame<TPixel> source = raster.Frames[f];
-                Quantization.FrameMapper.Map(width, height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(source.Row(y), row), palette, mapper, options.Palette.Dither, indices.AsSpan(0, width * height));
+                Quantization.FrameMapper.Map(width, height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(source.Row(y), row), palette, mapper, paletteOptions, indices.AsSpan(0, width * height));
                 PixelPlane<Rgba8> plane = PixelPlane.Allocate<Rgba8>(width, height, raster.Context.Memory);
                 for (int y = 0; y < height; y++)
                 {

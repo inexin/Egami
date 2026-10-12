@@ -270,7 +270,7 @@ internal sealed class BmpWriter : IFormatWriter, IRowFormatWriter
                 return row.AsMemory(0, width);
             }, limited, binaryAlpha: false);
             using PaletteMapper mapper = new(palette.Colors, -1, withAlpha: false, 0);
-            FrameMapper.Map(width, height, Opaque, palette, mapper, limited.Dither, indices.AsSpan(0, width * height));
+            FrameMapper.Map(width, height, Opaque, palette, mapper, limited, indices.AsSpan(0, width * height));
             return (palette, indices);
         }
         catch

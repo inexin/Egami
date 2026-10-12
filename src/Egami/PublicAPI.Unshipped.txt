@@ -93,6 +93,18 @@ Egami.Analysis.DifferenceOptions.LowlightOpacity.init -> void
 Egami.Analysis.DifferenceStyle
 Egami.Analysis.DifferenceStyle.Absolute = 1 -> Egami.Analysis.DifferenceStyle
 Egami.Analysis.DifferenceStyle.Highlight = 0 -> Egami.Analysis.DifferenceStyle
+Egami.Analysis.DominantColorOptions
+Egami.Analysis.DominantColorOptions.<Clone>$() -> Egami.Analysis.DominantColorOptions!
+Egami.Analysis.DominantColorOptions.AlphaThreshold.get -> byte
+Egami.Analysis.DominantColorOptions.AlphaThreshold.init -> void
+Egami.Analysis.DominantColorOptions.DominantColorOptions() -> void
+Egami.Analysis.DominantColorOptions.Equals(Egami.Analysis.DominantColorOptions? other) -> bool
+Egami.Analysis.DominantColorOptions.Iterations.get -> int
+Egami.Analysis.DominantColorOptions.Iterations.init -> void
+Egami.Analysis.DominantColorOptions.MaxSamples.get -> int
+Egami.Analysis.DominantColorOptions.MaxSamples.init -> void
+Egami.Analysis.DominantColorOptions.MergeDistance.get -> float
+Egami.Analysis.DominantColorOptions.MergeDistance.init -> void
 Egami.Analysis.Histogram
 Egami.Analysis.Histogram.Bins.get -> int
 Egami.Analysis.Histogram.Counts.get -> System.Collections.Generic.IReadOnlyList<long>!
@@ -107,6 +119,15 @@ Egami.Analysis.RasterStatistics.Green.get -> Egami.Analysis.ChannelStatistics
 Egami.Analysis.RasterStatistics.Luma.get -> Egami.Analysis.ChannelStatistics
 Egami.Analysis.RasterStatistics.PixelCount.get -> long
 Egami.Analysis.RasterStatistics.Red.get -> Egami.Analysis.ChannelStatistics
+Egami.Analysis.WeightedColor
+Egami.Analysis.WeightedColor.Color.get -> Egami.Pixels.Rgba8
+Egami.Analysis.WeightedColor.Color.init -> void
+Egami.Analysis.WeightedColor.Deconstruct(out Egami.Pixels.Rgba8 Color, out double Weight) -> void
+Egami.Analysis.WeightedColor.Equals(Egami.Analysis.WeightedColor other) -> bool
+Egami.Analysis.WeightedColor.Weight.get -> double
+Egami.Analysis.WeightedColor.Weight.init -> void
+Egami.Analysis.WeightedColor.WeightedColor() -> void
+Egami.Analysis.WeightedColor.WeightedColor(Egami.Pixels.Rgba8 Color, double Weight) -> void
 Egami.Axis
 Egami.Axis.Horizontal = 0 -> Egami.Axis
 Egami.Axis.Vertical = 1 -> Egami.Axis
@@ -1095,6 +1116,23 @@ Egami.MipChain.Dispose() -> void
 Egami.MipChain.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, bool enlarge = true) -> Egami.Raster!
 Egami.MipChain.Levels.get -> System.Collections.Generic.IReadOnlyList<Egami.Raster!>!
 Egami.MipChain.Resize(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic) -> Egami.Raster!
+Egami.Operations.AnimationOverlayOptions
+Egami.Operations.AnimationOverlayOptions.<Clone>$() -> Egami.Operations.AnimationOverlayOptions!
+Egami.Operations.AnimationOverlayOptions.AnimationOverlayOptions() -> void
+Egami.Operations.AnimationOverlayOptions.Blend.get -> Egami.Operations.BlendMode
+Egami.Operations.AnimationOverlayOptions.Blend.init -> void
+Egami.Operations.AnimationOverlayOptions.Equals(Egami.Operations.AnimationOverlayOptions? other) -> bool
+Egami.Operations.AnimationOverlayOptions.Opacity.get -> float
+Egami.Operations.AnimationOverlayOptions.Opacity.init -> void
+Egami.Operations.AnimationOverlayOptions.Repeat.get -> int
+Egami.Operations.AnimationOverlayOptions.Repeat.init -> void
+Egami.Operations.AnimationOverlayOptions.Start.get -> System.TimeSpan
+Egami.Operations.AnimationOverlayOptions.Start.init -> void
+Egami.Operations.AnimationOverlayOptions.Timing.get -> Egami.Operations.AnimationTiming
+Egami.Operations.AnimationOverlayOptions.Timing.init -> void
+Egami.Operations.AnimationTiming
+Egami.Operations.AnimationTiming.ByIndex = 1 -> Egami.Operations.AnimationTiming
+Egami.Operations.AnimationTiming.ByTime = 0 -> Egami.Operations.AnimationTiming
 Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Add = 25 -> Egami.Operations.BlendMode
 Egami.Operations.BlendMode.Clear = 1 -> Egami.Operations.BlendMode
@@ -1346,6 +1384,7 @@ Egami.Operations.RasterOps.BlendColor(Egami.Pixels.Rgba8 color, Egami.Operations
 Egami.Operations.RasterOps.Bloom(float threshold = 0.8, float sigma = 10, float intensity = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Blur(float sigma, Egami.Operations.ColorSpace colorSpace, Egami.Operations.BlurMethod method) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.CannyEdges(float sigma = 1, float low = 0.1, float high = 0.3) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.ChangeSpeed(double factor) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Clahe(int tilesX = 8, int tilesY = 8, float clipLimit = 2, int bins = 256) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Colorize(Egami.Pixels.Rgba8 color, float amount) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ContrastStretch(float black, float white, bool linked = true, bool perFrame = false) -> Egami.Operations.RasterOps!
@@ -1356,10 +1395,12 @@ Egami.Operations.RasterOps.Despeckle() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Dilate(int radius) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Dilate(int radiusX, int radiusY) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Displace(Egami.Raster! map, float scaleX, float scaleY, Egami.Operations.ColorChannel xChannel = Egami.Operations.ColorChannel.Red, Egami.Operations.ColorChannel yChannel = Egami.Operations.ColorChannel.Green, Egami.Operations.SamplingOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DrawAnimation(Egami.Raster! overlay, Egami.Point position, Egami.Operations.AnimationOverlayOptions? options = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawArithmetic(Egami.Raster! image, Egami.Point position, float k1, float k2, float k3, float k4, bool clamp = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DrawImage(Egami.Raster! image, Egami.Rect sourceArea, Egami.Point position, Egami.Operations.BlendMode mode, float opacity = 1, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.DropShadow(float dx, float dy, float sigma, Egami.Pixels.Rgba8 color, Egami.Operations.DropShadowOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.DropZeroDelay() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Duotone(Egami.Pixels.Rgba8 shadows, Egami.Pixels.Rgba8 highlights, Egami.Operations.LumaWeights weights = Egami.Operations.LumaWeights.Rec709) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Edges(Egami.Operations.EdgeOperator op = Egami.Operations.EdgeOperator.Sobel, bool grayscale = true) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Emboss(float angle = 135, float depth = 1, float sigma = 1, bool grayscale = true) -> Egami.Operations.RasterOps!
@@ -1381,6 +1422,7 @@ Egami.Operations.RasterOps.LocalContrast(float radius = 0.1, float strength = 0.
 Egami.Operations.RasterOps.LuminanceToAlpha() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MakeTransparent(Egami.Pixels.Rgba8 color, float tolerance = 0, float softness = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Median(int radius, bool includeAlpha = false) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.MergeDuplicates(float tolerance = 0) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Morphology(Egami.Operations.MorphologyOp op, Egami.Operations.StructuringElement shape, int iterations = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.MotionBlur(float radius, float sigma, float angle, bool centered = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Normalize(bool linked = true, bool perFrame = false) -> Egami.Operations.RasterOps!
@@ -1390,7 +1432,11 @@ Egami.Operations.RasterOps.OnChannels(Egami.Operations.ColorChannels channels, S
 Egami.Operations.RasterOps.Pixelate(int cellSize, Egami.Point origin = default(Egami.Point)) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Posterize(int levels, Egami.Quantization.DitherMode dither = Egami.Quantization.DitherMode.None) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.QuadDistort(System.Numerics.Vector2 topLeft, System.Numerics.Vector2 topRight, System.Numerics.Vector2 bottomRight, System.Numerics.Vector2 bottomLeft, Egami.Operations.TransformOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Quantize(Egami.Quantization.PaletteOptions? options = null) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Remap(Egami.Quantization.Palette! palette, Egami.Quantization.DitherMode dither = Egami.Quantization.DitherMode.FloydSteinberg, float strength = 1) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ReplaceColor(Egami.Pixels.Rgba8 from, Egami.Pixels.Rgba8 to, float tolerance = 0) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Retime(double framesPerSecond) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Reverse() -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.RotationalBlur(float degrees, System.Numerics.Vector2? center = null) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Shade(float azimuth = 30, float elevation = 30, bool colored = false) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.ShuffleChannels(Egami.Operations.ChannelSource red, Egami.Operations.ChannelSource green, Egami.Operations.ChannelSource blue, Egami.Operations.ChannelSource alpha) -> Egami.Operations.RasterOps!
@@ -1681,11 +1727,56 @@ Egami.Pixels.YuvPackedFormat.Yuyv = 4 -> Egami.Pixels.YuvPackedFormat
 Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
+Egami.Quantization.DitherMode.Atkinson = 3 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Bayer16x16 = 14 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Bayer2x2 = 12 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Bayer4x4 = 13 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Burkes = 4 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.JarvisJudiceNinke = 5 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Ordered3x3 = 15 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Riemersma = 11 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Sierra2 = 7 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Sierra3 = 6 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.SierraLite = 8 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.StevensonArce = 9 -> Egami.Quantization.DitherMode
+Egami.Quantization.DitherMode.Stucki = 10 -> Egami.Quantization.DitherMode
+Egami.Quantization.ErrorDiffusionKernel
+Egami.Quantization.ErrorDiffusionKernel.Divisor.get -> int
+Egami.Quantization.ErrorDiffusionKernel.ErrorDiffusionKernel(int[,]! weights, int divisor, int origin) -> void
+Egami.Quantization.ErrorDiffusionKernel.Origin.get -> int
+Egami.Quantization.ErrorDiffusionKernel.Weights.get -> int[,]!
+Egami.Quantization.IndexedImage
+Egami.Quantization.IndexedImage.Dispose() -> void
+Egami.Quantization.IndexedImage.Height.get -> int
+Egami.Quantization.IndexedImage.Indices.get -> System.ReadOnlySpan<byte>
+Egami.Quantization.IndexedImage.Palette.get -> Egami.Quantization.Palette!
+Egami.Quantization.IndexedImage.Row(int y) -> System.ReadOnlySpan<byte>
+Egami.Quantization.IndexedImage.Width.get -> int
+Egami.Quantization.Palette
+Egami.Quantization.Palette.Colors.get -> System.Collections.Generic.IReadOnlyList<Egami.Pixels.Rgba8>!
+Egami.Quantization.Palette.Count.get -> int
+Egami.Quantization.Palette.Nearest(Egami.Pixels.Rgba8 color) -> Egami.Pixels.Rgba8
+Egami.Quantization.Palette.NearestIndex(Egami.Pixels.Rgba8 color) -> int
+Egami.Quantization.Palette.TransparentIndex.get -> int?
+Egami.Quantization.PaletteOptions.DitherStrength.get -> float
+Egami.Quantization.PaletteOptions.DitherStrength.init -> void
+Egami.Quantization.PaletteOptions.ExactMatching.get -> bool
+Egami.Quantization.PaletteOptions.ExactMatching.init -> void
+Egami.Quantization.PaletteOptions.Kernel.get -> Egami.Quantization.ErrorDiffusionKernel?
+Egami.Quantization.PaletteOptions.Kernel.init -> void
+Egami.Quantization.PaletteOptions.Palette.get -> Egami.Quantization.Palette?
+Egami.Quantization.PaletteOptions.Palette.init -> void
+Egami.Quantization.PaletteOptions.RefineIterations.get -> int
+Egami.Quantization.PaletteOptions.RefineIterations.init -> void
+Egami.Quantization.PaletteOptions.Serpentine.get -> bool
+Egami.Quantization.PaletteOptions.Serpentine.init -> void
+Egami.Quantization.Palettes
 Egami.Raster.ColorMask(Egami.Pixels.Rgba8 color, float tolerance = 0) -> Egami.Raster<Egami.Pixels.Gray8>!
 Egami.Raster.Context.get -> Egami.EgamiContext!
 Egami.Raster.ConvertColor<TTo>(Egami.Colors.ColorProfile! target, Egami.Colors.ColorTransformOptions? options = null) -> Egami.Raster<TTo>!
 Egami.Raster.CountColors(int frame = 0) -> long
 Egami.Raster.DetectSkew(float maxAngle = 15) -> float
+Egami.Raster.DominantColors(int count = 5, Egami.Analysis.DominantColorOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Analysis.WeightedColor>!
 Egami.Raster.EntropyBounds(float threshold = 0.5) -> Egami.Rect
 Egami.Raster.ExtractChannel(Egami.Operations.ColorChannel channel) -> Egami.Raster!
 Egami.Raster.ExtractChannel<TPixel>(Egami.Operations.ColorChannel channel) -> Egami.Raster<TPixel>!
@@ -1702,6 +1793,7 @@ Egami.Raster.MeasureEqualize(Egami.Operations.EqualizeMode mode = Egami.Operatio
 Egami.Raster.MeasureWhiteBalance(Egami.Operations.WhiteBalanceMethod method = Egami.Operations.WhiteBalanceMethod.GrayWorld) -> Egami.Operations.ColorFilter!
 Egami.Raster.Signature() -> string!
 Egami.Raster.Statistics(int frame = 0) -> Egami.Analysis.RasterStatistics!
+Egami.Raster.ToIndexed(Egami.Quantization.PaletteOptions? options = null, int frame = 0) -> Egami.Quantization.IndexedImage!
 Egami.Raster.TrimBounds(float tolerance = 0, Egami.Pixels.Rgba8? color = null) -> Egami.Rect
 Egami.RasterDecoder
 Egami.RasterDecoder.Append(System.ReadOnlySpan<byte> data) -> void
@@ -1825,6 +1917,10 @@ override Egami.Analysis.CompareOptions.ToString() -> string!
 override Egami.Analysis.DifferenceOptions.Equals(object? obj) -> bool
 override Egami.Analysis.DifferenceOptions.GetHashCode() -> int
 override Egami.Analysis.DifferenceOptions.ToString() -> string!
+override Egami.Analysis.DominantColorOptions.Equals(object? obj) -> bool
+override Egami.Analysis.DominantColorOptions.GetHashCode() -> int
+override Egami.Analysis.DominantColorOptions.ToString() -> string!
+override Egami.Analysis.WeightedColor.GetHashCode() -> int
 override Egami.Colors.Chromaticity.GetHashCode() -> int
 override Egami.Colors.CmykColor.GetHashCode() -> int
 override Egami.Colors.ColorCodePoints.GetHashCode() -> int
@@ -1901,6 +1997,9 @@ override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!
 override Egami.Metadata.XmpName.GetHashCode() -> int
 override Egami.Metadata.XmpName.ToString() -> string!
+override Egami.Operations.AnimationOverlayOptions.Equals(object? obj) -> bool
+override Egami.Operations.AnimationOverlayOptions.GetHashCode() -> int
+override Egami.Operations.AnimationOverlayOptions.ToString() -> string!
 override Egami.Operations.DistantLight.<Clone>$() -> Egami.Operations.DistantLight!
 override Egami.Operations.DistantLight.Equals(object? obj) -> bool
 override Egami.Operations.DistantLight.GetHashCode() -> int
@@ -2016,9 +2115,14 @@ static Egami.Analysis.CompareOptions.operator ==(Egami.Analysis.CompareOptions? 
 static Egami.Analysis.DifferenceOptions.Default.get -> Egami.Analysis.DifferenceOptions!
 static Egami.Analysis.DifferenceOptions.operator !=(Egami.Analysis.DifferenceOptions? left, Egami.Analysis.DifferenceOptions? right) -> bool
 static Egami.Analysis.DifferenceOptions.operator ==(Egami.Analysis.DifferenceOptions? left, Egami.Analysis.DifferenceOptions? right) -> bool
+static Egami.Analysis.DominantColorOptions.Default.get -> Egami.Analysis.DominantColorOptions!
+static Egami.Analysis.DominantColorOptions.operator !=(Egami.Analysis.DominantColorOptions? left, Egami.Analysis.DominantColorOptions? right) -> bool
+static Egami.Analysis.DominantColorOptions.operator ==(Egami.Analysis.DominantColorOptions? left, Egami.Analysis.DominantColorOptions? right) -> bool
 static Egami.Analysis.PerceptualHash.Dct(Egami.Raster! image) -> ulong
 static Egami.Analysis.PerceptualHash.Difference(Egami.Raster! image) -> ulong
 static Egami.Analysis.PerceptualHash.Distance(ulong a, ulong b) -> int
+static Egami.Analysis.WeightedColor.operator !=(Egami.Analysis.WeightedColor left, Egami.Analysis.WeightedColor right) -> bool
+static Egami.Analysis.WeightedColor.operator ==(Egami.Analysis.WeightedColor left, Egami.Analysis.WeightedColor right) -> bool
 static Egami.Colors.Chromaticity.D50.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.D65.get -> Egami.Colors.Chromaticity
 static Egami.Colors.Chromaticity.operator !=(Egami.Colors.Chromaticity left, Egami.Colors.Chromaticity right) -> bool
@@ -2170,6 +2274,9 @@ static Egami.Metadata.XmpData.Parse(System.ReadOnlySpan<byte> packet, Egami.Safe
 static Egami.Metadata.XmpName.operator !=(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
 static Egami.Metadata.XmpName.operator ==(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
 static Egami.MipChain.Build(Egami.Raster! source, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.MipChain!
+static Egami.Operations.AnimationOverlayOptions.Default.get -> Egami.Operations.AnimationOverlayOptions!
+static Egami.Operations.AnimationOverlayOptions.operator !=(Egami.Operations.AnimationOverlayOptions? left, Egami.Operations.AnimationOverlayOptions? right) -> bool
+static Egami.Operations.AnimationOverlayOptions.operator ==(Egami.Operations.AnimationOverlayOptions? left, Egami.Operations.AnimationOverlayOptions? right) -> bool
 static Egami.Operations.ColorFilter.Brightness(float amount) -> Egami.Operations.ColorFilter!
 static Egami.Operations.ColorFilter.Colorize(Egami.Pixels.Rgba8 color, float amount) -> Egami.Operations.ColorFilter!
 static Egami.Operations.ColorFilter.Contrast(float amount) -> Egami.Operations.ColorFilter!
@@ -2366,6 +2473,13 @@ static Egami.Pixels.YuvColor.Jpeg.get -> Egami.Pixels.YuvColor
 static Egami.Pixels.YuvColor.operator !=(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.operator ==(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.TryFromH273(int matrixCoefficients, bool fullRange, Egami.Pixels.ChromaSiting siting, out Egami.Pixels.YuvColor color) -> bool
+static Egami.Quantization.Palette.Build(Egami.Raster! image, Egami.Quantization.PaletteOptions? options = null) -> Egami.Quantization.Palette!
+static Egami.Quantization.Palette.FromColors(System.ReadOnlySpan<Egami.Pixels.Rgba8> colors, int? transparentIndex = null) -> Egami.Quantization.Palette!
+static Egami.Quantization.Palette.FromRaster(Egami.Raster! image, int maxColors = 256) -> Egami.Quantization.Palette!
+static Egami.Quantization.Palettes.BlackAndWhite.get -> Egami.Quantization.Palette!
+static Egami.Quantization.Palettes.Grayscale(int levels) -> Egami.Quantization.Palette!
+static Egami.Quantization.Palettes.Uniform(int red, int green, int blue) -> Egami.Quantization.Palette!
+static Egami.Quantization.Palettes.WebSafe.get -> Egami.Quantization.Palette!
 static Egami.Raster.Append(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! images, Egami.Axis axis = Egami.Axis.Horizontal, int spacing = 0, Egami.Pixels.Rgba8 background = default(Egami.Pixels.Rgba8), Egami.Alignment alignment = Egami.Alignment.Start) -> Egami.Raster!
 static Egami.Raster.CombineChannels<TPixel>(Egami.Raster! red, Egami.Raster! green, Egami.Raster! blue, Egami.Raster? alpha = null) -> Egami.Raster<TPixel>!
 static Egami.Raster.Compare(Egami.Raster! a, Egami.Raster! b, Egami.Analysis.CompareOptions? options = null) -> Egami.Analysis.CompareResult!
@@ -2485,6 +2599,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Analysis.ChannelDifference.ToString() -> string
 ~override Egami.Analysis.ChannelStatistics.Equals(object obj) -> bool
 ~override Egami.Analysis.ChannelStatistics.ToString() -> string
+~override Egami.Analysis.WeightedColor.Equals(object obj) -> bool
+~override Egami.Analysis.WeightedColor.ToString() -> string
 ~override Egami.Colors.Chromaticity.Equals(object obj) -> bool
 ~override Egami.Colors.Chromaticity.ToString() -> string
 ~override Egami.Colors.CmykColor.Equals(object obj) -> bool

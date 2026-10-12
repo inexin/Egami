@@ -461,3 +461,31 @@ Keep the 64-bit hashes in a database column; a lookup within a few bits finds re
 ## Check an image is grayscale
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Analysis.cs#grayscale-check)]
+
+## A 16-color poster
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Palettes.cs#quantize)]
+
+## Prepare a photo for a six-color e-ink display
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Palettes.cs#remap)]
+
+## Brand colors from a logo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Palettes.cs#dominant)]
+
+## An indexed image for a PDF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Palettes.cs#indexed)]
+
+## Shrink a screen-recording GIF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#shrink)]
+
+## Speed up an animation 2x
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#speed)]
+
+## A looping sticker on an animated background
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#sticker)]

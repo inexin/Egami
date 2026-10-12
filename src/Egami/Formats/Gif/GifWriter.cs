@@ -251,7 +251,7 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             // A frame that keeps unchanged pixels needs a transparent slot, so quantized palettes leave one free. A streamed
             // animation cannot look at every frame first, so its frames get their own palettes.
             _reserve = _optimize ? 1 : 0;
-            bool global = _options.PaletteScope switch
+            bool global = palette.Palette is not null || _options.PaletteScope switch
             {
                 GifPaletteScope.Global => true,
                 GifPaletteScope.PerFrame => !animated,
@@ -404,7 +404,7 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
         // Reports, once per encode, that a palette had to approximate colors; frames may build palettes on several threads.
         private BuiltPalette Noted(BuiltPalette palette)
         {
-            if (!palette.Exact && Interlocked.Exchange(ref _quantized, 1) == 0)
+            if (!palette.Exact && _options.Palette.Palette is null && Interlocked.Exchange(ref _quantized, 1) == 0)
             {
                 SaveLosses.Report(_context, "Save.ColorsQuantized", "The image has more colors than a GIF palette's 256; it was reduced to a palette per frame or for the file.");
             }
@@ -438,7 +438,7 @@ internal sealed class GifWriter : IFormatWriter, IRowFormatWriter
             PaletteMapper mapper = _globalMapper ?? new(palette.Colors, palette.TransparentIndex, withAlpha: false, _options.Palette.AlphaThreshold);
             try
             {
-                FrameMapper.Map(region.Width, region.Height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(source.Row(region.Y + y).Slice(region.X, region.Width), row), palette, mapper, _options.Palette.Dither, mapped.AsSpan(0, region.Width * region.Height));
+                FrameMapper.Map(region.Width, region.Height, (y, row) => PixelConvert.Convert<TPixel, Rgba8>(source.Row(region.Y + y).Slice(region.X, region.Width), row), palette, mapper, _options.Palette, mapped.AsSpan(0, region.Width * region.Height));
                 for (int y = 0; y < region.Height; y++)
                 {
                     mapped.AsSpan(y * region.Width, region.Width).CopyTo(indices.AsSpan(((region.Y + y) * _width) + region.X));

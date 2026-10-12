@@ -192,6 +192,58 @@ internal static class OperationPipeline
         }
     }
 
+    /// <summary>
+    /// Runs a plan that holds frame steps: the per-frame steps up to each frame step (or measured step) run on every frame, then
+    /// the frame step replaces the list of frames, and so on. <paramref name="frames"/> says which planes the chain owns.
+    /// </summary>
+    /// <returns>The frames after the chain; planes it made are owned, planes it left as they were are not, for Derive to copy.</returns>
+    internal static List<Animation.FrameSlot<TPixel>> RunTimeline<TPixel>(
+        Plan plan, List<Animation.FrameSlot<TPixel>> frames, RasterMetadata metadata, EgamiContext context, BudgetedMemorySource memory, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        int from = 0;
+        while (true)
+        {
+            int to = from;
+            while (to < plan.Steps.Count && to < plan.Pending && plan.Steps[to] is not Animation.IFrameStep)
+            {
+                to++;
+            }
+
+            for (int i = 0; i < frames.Count; i++)
+            {
+                Animation.FrameSlot<TPixel> slot = frames[i];
+                PixelPlane<TPixel> result = RunFrame(plan, from, to, slot.Plane, slot.Owned, context, memory, i, cancellationToken);
+                if (!ReferenceEquals(result, slot.Plane))
+                {
+                    if (slot.Owned)
+                    {
+                        slot.Plane.Dispose();
+                    }
+
+                    slot.Plane = result;
+                    slot.Owned = true;
+                }
+            }
+
+            if (to == plan.Steps.Count)
+            {
+                return frames;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            if (to == plan.Pending)
+            {
+                plan.Resolve([.. frames.Select(f => f.Plane)], context, memory, cancellationToken);
+                from = to;
+                continue;
+            }
+
+            frames = ((Animation.IFrameStep)plan.Steps[to]).Apply(frames, metadata, context, memory, cancellationToken);
+            from = to + 1;
+        }
+    }
+
     /// <summary>The planned steps and the frame size after each.</summary>
     internal sealed record Plan(IReadOnlyList<IRasterOperation> Steps, Size[] Sizes) : IDisposable
     {
@@ -209,6 +261,9 @@ internal static class OperationPipeline
 
         /// <summary>Gets whether the chain holds a measured step, whose size only the pixels can tell.</summary>
         internal bool HasMeasuredSteps => Steps.Any(step => step is IMeasuredStep);
+
+        /// <summary>Gets whether the chain holds a step on the whole animation, which drops, merges or makes frames.</summary>
+        internal bool HasFrameSteps => Steps.Any(step => step is Animation.IFrameStep);
 
         /// <summary>Computes the sizes from step <paramref name="from"/> on, up to the next measured step.</summary>
         internal void ComputeSizes(int from)

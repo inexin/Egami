@@ -68,6 +68,7 @@ internal static class ScopeRunner
                     or (IMeasuredStep and not Tone.IScopedMeasuredStep) or DropShadowOperation { Expands: true }
                     => "changes the image's size",
                 Color.ConvertColorOperation or Color.ToneMapOperation => "changes the color encoding, which part of an image cannot have alone",
+                Animation.IFrameStep => "works on the frames of the whole animation, and a scope is an area of every frame",
                 _ => null,
             };
             if (reason is not null)

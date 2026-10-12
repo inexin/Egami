@@ -215,17 +215,7 @@ public class GifEncodeTests(ITestOutputHelper output)
     {
         using Raster<Rgb8> x = a.As<Rgb8>();
         using Raster<Rgb8> y = b.As<Rgb8>();
-        double sum = 0;
-        for (int r = 0; r < x.Height; r++)
-        {
-            Span<Rgb8> p = x.Row(r);
-            Span<Rgb8> q = y.Row(r);
-            for (int c = 0; c < p.Length; c++)
-            {
-                sum += ((p[c].R - q[c].R) * (p[c].R - q[c].R)) + ((p[c].G - q[c].G) * (p[c].G - q[c].G)) + ((p[c].B - q[c].B) * (p[c].B - q[c].B));
-            }
-        }
-
-        return sum == 0 ? 99 : 10 * Math.Log10(255.0 * 255 / (sum / (x.Width * x.Height * 3)));
+        double psnr = Raster.Compare(x, y).Overall.Psnr;
+        return double.IsPositiveInfinity(psnr) ? 99 : psnr;
     }
 }

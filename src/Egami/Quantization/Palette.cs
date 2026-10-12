@@ -441,6 +441,11 @@ internal static class PaletteBuilder
     /// <param name="reserve">Entries a quantized palette leaves free (an exact one uses every entry it needs).</param>
     internal static BuiltPalette Build(int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, PaletteOptions options, bool binaryAlpha, int reserve = 0)
     {
+        if (options.Palette is Palette given)
+        {
+            return Fixed(given, rowCount, rows, options, binaryAlpha);
+        }
+
         ExactColors exact = new(options.MaxColors, binaryAlpha, options.AlphaThreshold);
         for (int y = 0; y < rowCount && !exact.Overflowed; y++)
         {
@@ -489,6 +494,11 @@ internal static class PaletteBuilder
         }
 
         Rgba8[] built = wu.Build(Math.Max(2, options.MaxColors - reserve - (anyTransparent ? 1 : 0)));
+        if (options.RefineIterations > 0)
+        {
+            built = Refine(built, rowCount, rows, binaryAlpha, options.AlphaThreshold, options.RefineIterations);
+        }
+
         if (anyTransparent)
         {
             built = [.. built, default];
@@ -496,4 +506,104 @@ internal static class PaletteBuilder
 
         return new BuiltPalette(built, anyTransparent ? built.Length - 1 : -1, false, null);
     }
+
+    /// <summary>
+    /// Uses a fixed palette. With on-or-off transparency (GIF), transparent pixels take the palette's transparent entry, or one
+    /// added at the end when it has none and there is room.
+    /// </summary>
+    /// <exception cref="ArgumentException">The palette, with any transparent entry it needs, has more colors than allowed.</exception>
+    private static BuiltPalette Fixed(Palette palette, int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, PaletteOptions options, bool binaryAlpha)
+    {
+        Rgba8[] colors = [.. palette.Colors];
+        int transparent = palette.TransparentIndex ?? -1;
+        if (binaryAlpha && transparent < 0 && AnyTransparent(rowCount, rows, options.AlphaThreshold))
+        {
+            colors = [.. colors, default];
+            transparent = colors.Length - 1;
+        }
+
+        if (colors.Length > options.MaxColors)
+        {
+            string note = colors.Length > palette.Count ? $" (with a transparent entry it needs, {colors.Length})" : string.Empty;
+            throw new ArgumentException($"The fixed palette has {palette.Count} colors{note}; this format allows at most {options.MaxColors}.", nameof(options));
+        }
+
+        return new BuiltPalette(colors, transparent, false, null);
+    }
+
+    private static bool AnyTransparent(int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, byte threshold)
+    {
+        for (int y = 0; y < rowCount; y++)
+        {
+            foreach (Rgba8 p in rows(y).Span)
+            {
+                if (p.A < threshold)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Lloyd's k-means (1982) on every fourth pixel, seeded with <paramref name="seed"/>: each pass moves every color to the mean
+    /// of the sampled pixels nearest it; a color no pixel is nearest to stays where it is.
+    /// </summary>
+    internal static Rgba8[] Refine(Rgba8[] seed, int rowCount, Func<int, ReadOnlyMemory<Rgba8>> rows, bool binaryAlpha, byte threshold, int iterations)
+    {
+        List<Rgba8> samples = [];
+        long position = 0;
+        for (int y = 0; y < rowCount; y++)
+        {
+            foreach (Rgba8 p in rows(y).Span)
+            {
+                if ((position++ & 3) == 0 && !(binaryAlpha && p.A < threshold))
+                {
+                    samples.Add(binaryAlpha ? new Rgba8(p.R, p.G, p.B, 255) : p);
+                }
+            }
+        }
+
+        Rgba8[] centers = [.. seed];
+        long[] sums = new long[centers.Length * 5];
+        for (int pass = 0; pass < iterations; pass++)
+        {
+            using PaletteMapper mapper = new(centers, -1, withAlpha: !binaryAlpha, 0);
+            Array.Clear(sums);
+            foreach (Rgba8 p in samples)
+            {
+                int i = mapper.Nearest(p) * 5;
+                sums[i] += p.R;
+                sums[i + 1] += p.G;
+                sums[i + 2] += p.B;
+                sums[i + 3] += p.A;
+                sums[i + 4]++;
+            }
+
+            bool moved = false;
+            for (int k = 0; k < centers.Length; k++)
+            {
+                long n = sums[(k * 5) + 4];
+                if (n == 0)
+                {
+                    continue;
+                }
+
+                Rgba8 mean = new(Mean(sums[k * 5], n), Mean(sums[(k * 5) + 1], n), Mean(sums[(k * 5) + 2], n), binaryAlpha ? (byte)255 : Mean(sums[(k * 5) + 3], n));
+                moved |= mean != centers[k];
+                centers[k] = mean;
+            }
+
+            if (!moved)
+            {
+                break;
+            }
+        }
+
+        return centers;
+    }
+
+    private static byte Mean(long sum, long count) => (byte)((sum + (count / 2)) / count);
 }

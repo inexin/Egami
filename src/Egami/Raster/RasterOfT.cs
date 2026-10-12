@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 
 using Egami.Metadata;
 using Egami.Operations;
+using Egami.Operations.Animation;
 using Egami.Pixels;
 
 namespace Egami;
@@ -111,7 +112,19 @@ public sealed class Raster<TPixel> : Raster
         }
 
         BudgetedMemorySource memory = new(Context.Memory, Context.Limits.MaxTotalBytes);
-        if (plan.HasMeasuredSteps)
+        if (plan.HasFrameSteps)
+        {
+            List<FrameSlot<TPixel>> slots = [.. _frames.Select(frame => new FrameSlot<TPixel>(frame.Plane, frame.Metadata, owned: true))];
+            List<FrameSlot<TPixel>> result = OperationPipeline.RunTimeline(plan, slots, Metadata, Context, memory, cancellationToken);
+            _frames.Clear();
+            foreach (FrameSlot<TPixel> slot in result)
+            {
+                _frames.Add(new Frame<TPixel>(slot.Plane, slot.Metadata));
+            }
+
+            ClearStoredLayout(_frames);
+        }
+        else if (plan.HasMeasuredSteps)
         {
             // Measured steps need every frame run up to them before the rest of the chain can be sized.
             PixelPlane<TPixel>[] planes = [.. _frames.Select(frame => frame.Plane)];
@@ -182,7 +195,48 @@ public sealed class Raster<TPixel> : Raster
 
         BudgetedMemorySource memory = new(Context.Memory, Context.Limits.MaxTotalBytes);
         List<Frame<TPixel>> frames = new(_frames.Count);
-        if (plan.HasMeasuredSteps)
+        RasterMetadata derived = Metadata.Copy();
+        if (plan.HasFrameSteps)
+        {
+            List<FrameSlot<TPixel>> slots = [.. _frames.Select(frame => new FrameSlot<TPixel>(frame.Plane, frame.Metadata.Copy(), owned: false))];
+            List<FrameSlot<TPixel>> result = [];
+            try
+            {
+                result = OperationPipeline.RunTimeline(plan, slots, derived, Context, memory, cancellationToken);
+                foreach (FrameSlot<TPixel> slot in result)
+                {
+                    // A frame the chain left as it was still gets its own pixels.
+                    if (!slot.Owned)
+                    {
+                        PixelPlane<TPixel> copy = PixelPlane.Allocate<TPixel>(slot.Plane.Width, slot.Plane.Height, memory);
+                        for (int y = 0; y < copy.Height; y++)
+                        {
+                            slot.Plane.Row(y).CopyTo(copy.Row(y));
+                        }
+
+                        slot.Plane = copy;
+                        slot.Owned = true;
+                    }
+
+                    frames.Add(new Frame<TPixel>(slot.Plane, slot.Metadata));
+                }
+            }
+            catch
+            {
+                foreach (FrameSlot<TPixel> slot in result.Count > 0 ? result : slots)
+                {
+                    if (slot.Owned)
+                    {
+                        slot.Plane.Dispose();
+                    }
+                }
+
+                throw;
+            }
+
+            ClearStoredLayout(frames);
+        }
+        else if (plan.HasMeasuredSteps)
         {
             PixelPlane<TPixel>[] planes = [.. _frames.Select(frame => frame.Plane)];
             bool[] owned = new bool[planes.Length];
@@ -241,7 +295,7 @@ public sealed class Raster<TPixel> : Raster
             }
         }
 
-        RasterMetadata metadata = Metadata.Copy();
+        RasterMetadata metadata = derived;
         plan.UpdateMetadata(metadata, new Size(Width, Height));
         if (plan.ChangesGeometry(new Size(Width, Height)))
         {

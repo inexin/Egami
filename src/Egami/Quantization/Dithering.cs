@@ -27,6 +27,24 @@ internal static class FrameMapper
         63, 31, 55, 23, 61, 29, 53, 21,
     ];
 
+    /// <summary>
+    /// Maps a <paramref name="width"/> × <paramref name="height"/> frame into <paramref name="indices"/> with every option:
+    /// what 1.x did when the options ask for nothing new, the general mapper otherwise.
+    /// </summary>
+    internal static void Map(int width, int height, RowSource source, BuiltPalette palette, PaletteMapper mapper, PaletteOptions options, Span<byte> indices)
+    {
+        DitherMode mode = options.Dither;
+        bool classic = options.DitherStrength == 1 && !options.Serpentine && options.Kernel is null && !options.ExactMatching
+            && mode is DitherMode.FloydSteinberg or DitherMode.Ordered or DitherMode.None;
+        if (palette.Exact || classic)
+        {
+            Map(width, height, source, palette, mapper, mode, indices);
+            return;
+        }
+
+        GeneralMapper.Map(width, height, source, mapper, options, indices);
+    }
+
     /// <summary>Maps a <paramref name="width"/> × <paramref name="height"/> frame into <paramref name="indices"/>, row by row.</summary>
     internal static void Map(int width, int height, RowSource source, BuiltPalette palette, PaletteMapper mapper, DitherMode mode, Span<byte> indices)
     {
@@ -212,7 +230,7 @@ internal static class FrameMapper
     /// Returns the typical per-channel step between neighboring palette colors: the mean distance from each color to its nearest
     /// neighbor, divided by √3 since the pattern moves all three channels together.
     /// </summary>
-    private static double Spacing(PaletteMapper mapper)
+    internal static double Spacing(PaletteMapper mapper)
     {
         Rgba8[] palette = mapper.Palette;
         double total = 0;

@@ -217,14 +217,7 @@ public class AutoOrientTests(ITestOutputHelper output)
         }
     }
 
-    private static double Psnr(Raster<Rgb8> a, Raster<Rgb8> b)
-    {
-        byte[] x = new byte[a.Width * a.Height * 3];
-        byte[] y = new byte[x.Length];
-        a.CopyPixelsTo(x.AsSpan());
-        b.CopyPixelsTo(y.AsSpan());
-        return Psnr(x, y);
-    }
+    private static double Psnr(Raster<Rgb8> a, Raster<Rgb8> b) => Raster.Compare(a, b).Overall.Psnr;
 
     private static double Psnr(byte[] x, byte[] y)
     {

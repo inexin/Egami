@@ -409,20 +409,8 @@ public class TiffWriterExtrasTests
 
     private static double Psnr(Raster<Rgb8> a, Raster<Rgb8> b)
     {
-        double sum = 0;
-        long n = 0;
-        for (int y = 0; y < a.Height; y++)
-        {
-            for (int x = 0; x < a.Width; x++)
-            {
-                Rgb8 p = a.Row(y)[x];
-                Rgb8 q = b.Row(y)[x];
-                sum += ((p.R - q.R) * (p.R - q.R)) + ((p.G - q.G) * (p.G - q.G)) + ((p.B - q.B) * (p.B - q.B));
-                n += 3;
-            }
-        }
-
-        return sum == 0 ? 99 : 10 * Math.Log10(255.0 * 255 / (sum / n));
+        double psnr = Raster.Compare(a, b).Overall.Psnr;
+        return double.IsPositiveInfinity(psnr) ? 99 : psnr;
     }
 
     [Fact]

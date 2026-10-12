@@ -13,13 +13,18 @@ Corpus (licenses in tests/images/LICENSES), made here from the 1.2 public-domain
   gray8.png                 96 x 64 8-bit gray
   almost-gray.png           96 x 64 RGB whose channels differ by at most 3 levels
   mosaic.png                64 x 64 RGB of 37 flat colors
+  dups.gif, zero.gif, allzero.gif  48 x 32 animations with repeated frames and zero delays, for RemoveDups and RemoveZero
+  base.gif, over.gif        a 4-frame 48 x 32 base and a 4-frame 20 x 16 overlay with transparency, for -layers Composite
   shapes.png, zone.png      copies of the 1.2 test pictures
 
 References (tests/reference/analysis):
   analysis.json   per compare pair and metric, ImageMagick's per-channel and overall values (raw and normalized); per image,
-                  identify -verbose channel statistics, %k, opaque and type; per image, imagehash phash and dhash as hex
+                  identify -verbose channel statistics, %k, opaque and type; per image, imagehash phash and dhash as hex;
+                  the PSNR of ImageMagick's -colors 16 and 64 with each -dither against the photo; -kmeans 5 colors and counts
   <a>~<b>.mask.rgba.gz   ImageMagick compare's difference image for the pair with opaque #F1001E and white, raw RGBA 8-bit
   <a>~<b>.diff.rgba.gz   the same with ImageMagick's default colors (80% opaque), so the first image shows through
+  <gif>.<method>.rgba.gz  the frames after -layers RemoveDups, RemoveZero or Composite (over.gif at +5+3), raw RGBA 8-bit;
+                          their delays in ms are in analysis.json under "frames"
 
 Usage, from the repo root with Docker running:
   python tools/make-analysis-references.py
@@ -137,7 +142,8 @@ def generate():
 
 
 def magick(*args):
-    return subprocess.run(["magick", *args], check=True, capture_output=True, text=True)
+    # No date or time chunks, so regenerating gives the same files.
+    return subprocess.run(["magick", *args[:-1], "-define", "png:exclude-chunks=date,time", args[-1]], check=True, capture_output=True, text=True)
 
 
 def run(*args):
@@ -216,6 +222,23 @@ def inside():
         stats["opaque"] = run(path, "-format", "%[opaque]", "info:").strip()
         out["statistics"][name] = stats
 
+    # Stage B: ImageMagick's own quantize with Riemersma and Floyd-Steinberg (its PSNR against the original is the gate), and
+    # -kmeans colors with their pixel counts.
+    out["quantize"] = {}
+    out["kmeans"] = {}
+    for name in ("duck.png", "egret.png"):
+        path = f"{IMAGES}/{name}"
+        for dither in ("Riemersma", "FloydSteinberg", "None"):
+            for colors in (16, 64):
+                magick(path, "-alpha", "off", "-dither", dither, "-colors", str(colors), "PNG24:/tmp/q.png")
+                psnr = parse_compare(run("compare", "-precision", "17", "-metric", "PSNR", "-verbose", path, "/tmp/q.png", "null:"))
+                out["quantize"][f"{name}:{dither}:{colors}"] = psnr["all"]["raw"]
+        text = run(path, "-alpha", "off", "-kmeans", "5", "-format", "%c", "histogram:info:")
+        out["kmeans"][name] = [{"count": int(m.group(1)), "color": m.group(2)}
+                               for m in re.finditer(r"^\s*(\d+):\s*\([^)]*\)\s*(#[0-9A-Fa-f]{6})", text, re.M)]
+
+    frames(out)
+
     import imagehash
     from PIL import Image
     out["imagehash"] = imagehash.__version__
@@ -232,13 +255,58 @@ def inside():
     print(f"{len(out['compare'])} pairs, {len(out['statistics'])} statistics, {len(out['hashes'])} hashes")
 
 
+def animation(name, frames, delays, size=(48, 32)):
+    """Writes an unoptimized GIF of flat frames with the given delays in hundredths, through PNGs and ImageMagick."""
+    args = []
+    for i, (color, box) in enumerate(frames):
+        w, h = size
+        data = bytearray()
+        for y in range(h):
+            for x in range(w):
+                inside = box is not None and box[0] <= x < box[2] and box[1] <= y < box[3]
+                data += bytes((255 - color[0], 255 - color[1], 255 - color[2], 255) if inside else (*color, 255 if len(color) == 3 else color[3]))
+        png(f"/tmp/f{i}.png", w, h, bytes(data), 6)
+        args += ["-delay", str(delays[i]), f"/tmp/f{i}.png"]
+    magick(*args, f"{IMAGES}/{name}")
+
+
+def frames(out):
+    """Stage C: -layers RemoveDups, RemoveZero and Composite (by index) on synthetic GIFs: delays in ms and every frame as RGBA."""
+    red, blue, green = (200, 40, 40), (40, 60, 200), (40, 170, 70)
+    animation("dups.gif", [(red, None), (red, None), (blue, None), (blue, (4, 4, 20, 20)), (blue, (4, 4, 20, 20)),
+                           (blue, (4, 4, 20, 20)), (green, None), (red, None)], [10, 20, 10, 30, 0, 20, 10, 10])
+    animation("zero.gif", [(red, None), (blue, None), (green, None), (red, (0, 0, 10, 10)), (blue, (5, 5, 30, 30)), (green, (1, 1, 2, 2))],
+              [0, 10, 0, 0, 20, 0])
+    animation("allzero.gif", [(red, None), (blue, None), (green, None)], [0, 0, 0])
+    animation("base.gif", [(red, (0, 0, 24, 16)), (blue, (24, 0, 48, 16)), (green, (0, 16, 24, 32)), (red, (24, 16, 48, 32))],
+              [10, 20, 30, 40])
+    animation("over.gif", [((255, 255, 0, 0), (2, 2, 10, 10)), ((255, 255, 0, 0), (6, 2, 14, 10)), ((255, 255, 0, 0), (10, 2, 18, 10)),
+                           ((255, 255, 0, 0), (2, 6, 10, 14))], [5, 5, 5, 5], size=(20, 16))
+    out["frames"] = {}
+    cases = {
+        "dups.gif:RemoveDups": [f"{IMAGES}/dups.gif", "-layers", "RemoveDups"],
+        "zero.gif:RemoveZero": [f"{IMAGES}/zero.gif", "-layers", "RemoveZero"],
+        "allzero.gif:RemoveZero": [f"{IMAGES}/allzero.gif", "-layers", "RemoveZero"],
+        "base.gif:Composite": [f"{IMAGES}/base.gif", "-coalesce", "null:", "(", f"{IMAGES}/over.gif", "-coalesce", ")",
+                               "-geometry", "+5+3", "-layers", "Composite"],
+    }
+    for key, args in cases.items():
+        # ImageMagick warns on stderr when every delay is zero, and then removes nothing.
+        delays = magick(*args, "-format", "%T,", "info:").stdout.strip().rstrip(",")
+        magick(*args, "-depth", "8", "rgba:/tmp/frames.rgba")
+        with open("/tmp/frames.rgba", "rb") as raw, open(f"{TARGET}/{key.replace(':', '.')}.rgba.gz", "wb") as f,                 gzip.GzipFile(fileobj=f, mode="wb", mtime=0) as z:
+            z.write(raw.read())
+        out["frames"][key] = [int(d) * 10 for d in delays.split(",")]
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--inside":
         inside()
         return
 
     repo = os.getcwd()
-    subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "sh", "-c",
+    # One ImageMagick thread, so its sums add up in the same order and the file is the same on every run.
+    subprocess.run(["docker", "run", "--rm", "-e", "MAGICK_THREAD_LIMIT=1", "-v", f"{repo}:/work", "-w", "/work", IMAGE, "sh", "-c",
                     f"apk add --no-cache {PACKAGES} > /dev/null && pip install -q --break-system-packages imagehash==4.3.1 "
                     f"> /dev/null && python3 tools/make-analysis-references.py --inside"], check=True)
 

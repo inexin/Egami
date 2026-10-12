@@ -348,7 +348,7 @@ internal sealed class TgaWriter : IFormatWriter, IRowFormatWriter
                 return row.AsMemory(0, width);
             }, limited, binaryAlpha: false);
             using PaletteMapper mapper = new(palette.Colors, palette.TransparentIndex, withAlpha: true, 0);
-            FrameMapper.Map(width, height, (y, target) => PixelConvert.Convert<TPixel, Rgba8>(raster.Row(y), target), palette, mapper, limited.Dither, indices.AsSpan(0, width * height));
+            FrameMapper.Map(width, height, (y, target) => PixelConvert.Convert<TPixel, Rgba8>(raster.Row(y), target), palette, mapper, limited, indices.AsSpan(0, width * height));
             return (palette, indices);
         }
         catch

@@ -49,26 +49,7 @@ internal static class FilterAssert
     internal static double Psnr(Raster<Rgba8> expected, Raster<Rgba8> actual)
     {
         Assert.Equal((expected.Width, expected.Height), (actual.Width, actual.Height));
-        double squares = 0;
-        for (int y = 0; y < expected.Height; y++)
-        {
-            ReadOnlySpan<Rgba8> e = expected.Row(y), a = actual.Row(y);
-            for (int x = 0; x < e.Length; x++)
-            {
-                squares += Square(e[x].R * e[x].A, a[x].R * a[x].A) + Square(e[x].G * e[x].A, a[x].G * a[x].A) + Square(e[x].B * e[x].A, a[x].B * a[x].A);
-                double da = e[x].A - a[x].A;
-                squares += da * da;
-            }
-        }
-
-        double mse = squares / (4.0 * expected.Width * expected.Height);
-        return mse == 0 ? double.PositiveInfinity : 10 * Math.Log10(255.0 * 255.0 / mse);
-
-        static double Square(int e, int a)
-        {
-            double d = (e - a) / 255.0;
-            return d * d;
-        }
+        return Raster.Compare(expected, actual).Overall.Psnr;
     }
 
     /// <summary>The largest difference of any channel, in levels.</summary>

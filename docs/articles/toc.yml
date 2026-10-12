@@ -34,6 +34,8 @@
       href: guides/keying-and-arithmetic.md
     - name: Comparing and measuring
       href: guides/analysis.md
+    - name: Palettes and dithering
+      href: guides/palettes.md
     - name: Animation
       href: guides/animation.md
     - name: Metadata

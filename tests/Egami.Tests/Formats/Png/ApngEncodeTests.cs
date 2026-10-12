@@ -131,19 +131,5 @@ public class ApngEncodeTests(ITestOutputHelper output)
         return stream.ToArray();
     }
 
-    private static double Psnr(Raster<Rgb8> a, Raster<Rgb8> b)
-    {
-        double sum = 0;
-        for (int y = 0; y < a.Height; y++)
-        {
-            Span<Rgb8> p = a.Row(y);
-            Span<Rgb8> q = b.Row(y);
-            for (int x = 0; x < p.Length; x++)
-            {
-                sum += ((p[x].R - q[x].R) * (p[x].R - q[x].R)) + ((p[x].G - q[x].G) * (p[x].G - q[x].G)) + ((p[x].B - q[x].B) * (p[x].B - q[x].B));
-            }
-        }
-
-        return 10 * Math.Log10(255.0 * 255 / (sum / (a.Width * a.Height * 3)));
-    }
+    private static double Psnr(Raster<Rgb8> a, Raster<Rgb8> b) => Raster.Compare(a, b).Overall.Psnr;
 }

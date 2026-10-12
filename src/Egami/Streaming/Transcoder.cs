@@ -81,7 +81,8 @@ internal sealed record TranscodePlan(ReaderOptions Options, IReadOnlyList<IRaste
         Size size = new(info.Width, info.Height);
         // Linear-light steps and ConvertColor need the encoding the rows arrive in: the file's, or ConvertColorTo's.
         OperationPipeline.Plan plan = OperationPipeline.Build(build, size, info.Orientation, colorProfile is null ? null : () => colorProfile, hdr);
-        if (plan.HasMeasuredSteps)
+        // Measured steps need every frame first, and so, for now, do the animation steps.
+        if (plan.HasMeasuredSteps || plan.HasFrameSteps)
         {
             return new TranscodePlan(options, []) { WholeImage = build };
         }

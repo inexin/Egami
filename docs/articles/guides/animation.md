@@ -48,6 +48,37 @@ GIF files keep their palettes, version and application extensions in `GifDetails
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#gif-details)]
 
+## Animation tools
+
+Six steps work on the whole animation rather than on each frame. They run in `Apply`, `Derive` and `Transcode` (which then decodes
+the whole animation first) and mix with per-frame steps, but not inside `Within`, since a scope is an area of every frame. Frames in
+memory are already full pictures of what is on screen, so Egami needs no Coalesce, and the writers find each frame's changed area
+themselves, so it needs no Optimize.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#shrink)]
+
+- `MergeDuplicates(tolerance)` removes each frame equal to the one before it and adds its delay to the frame that stays, as
+  ImageMagick's -layers RemoveDups; what is on screen at every moment is unchanged.
+- `DropZeroDelay()` removes frames with no delay, which viewers never show, as -layers RemoveZero (nothing, when every delay is zero).
+- `Retime(fps)` samples fixed ticks, each showing the frame visible when it starts, as ffmpeg's fps filter, then merges neighbours
+  showing the same frame. It never adds frames and keeps the total duration; a rate at or above the animation's own changes
+  nothing. Browsers show GIF delays under 20 ms as 100 ms, so 50 fps is the useful ceiling for GIF.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#speed)]
+
+`ChangeSpeed(factor)` divides every delay, rounded to whole milliseconds; `Reverse()` plays the frames backwards with their delays.
+
+### One animation on another
+
+[!code-csharp[](../../../tests/Egami.DocSamples/AnimationTools.cs#sticker)]
+
+`DrawAnimation` cuts both timelines at every frame boundary of either (boundaries closer than 10 ms snap together, since GIF counts
+in hundredths), and each piece shows the base frame and the overlay frame of that moment, drawn as `DrawImage` draws with
+`AnimationOverlayOptions.Blend` and `Opacity`, so an overlay at another speed keeps its speed. `Repeat` plays the overlay that many
+times (0 loops it for the base's whole length) from `Start`. A still base lasts as long as the overlay plays and takes its loop
+count. `AnimationTiming.ByIndex` pairs base frame i with overlay frame i instead, as ImageMagick's -layers Composite does. The
+number of frames the result will have is checked against `MaxFrames` and `MaxTotalBytes` before anything is drawn.
+
 ## Run it
 
 [`samples/Animation`](https://github.com/inexin/Egami/tree/main/samples/Animation) is a console app that does what this guide shows on the bundled
