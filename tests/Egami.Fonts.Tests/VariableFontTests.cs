@@ -175,4 +175,67 @@ public class VariableFontTests
         Assert.Equal(face.FullName, at.FullName);
         Assert.Equal(650, at.Style.Weight);
     }
+
+    [Fact]
+    public void MatchingPlacesVariableFacesOnTheirAxes()
+    {
+        var fonts = new FontCollection();
+        fonts.Add(TestFonts.Load("derived/NotoSans-VF-subset.ttf"));
+        Assert.True(fonts.TryGetFamily("Noto Sans", out FontFamily family));
+        Assert.Contains(new FontStyle(900, 5, FontSlant.Upright), family.Styles);
+
+        FontMatch m = family.Match(new FontStyle(450));
+        Assert.Equal([FontVariation.Weight(450)], m.Typeface.Variations);
+        Assert.Equal(FontSynthesis.None, m.Synthesis);
+        Assert.Equal(450, m.Typeface.Style.Weight);
+
+        m = family.Match(new FontStyle(700, 3));
+        Assert.Equal([FontVariation.Weight(700), FontVariation.Width(75)], m.Typeface.Variations);
+        Assert.Equal(FontSynthesis.None, m.Synthesis);
+
+        // Narrower than the axis reaches: its narrowest end, and nothing synthesized for width.
+        m = family.Match(new FontStyle(400, 1));
+        Assert.Equal([FontVariation.Width(62.5f)], m.Typeface.Variations);
+
+        // No italic axis: the upright design, slanted by synthesis.
+        m = family.Match(FontStyle.BoldItalic);
+        Assert.Equal(FontSynthesis.Italic, m.Synthesis);
+        Assert.Equal(700, m.Typeface.Style.Weight);
+
+        // A named instance is a face of its own, found by its full name.
+        Assert.True(fonts.TryGetFamily("Noto Sans ExtraBold", out FontFamily extraBold));
+        Assert.Equal("Noto Sans", extraBold.Name);
+    }
+
+    [Fact]
+    public void RobotoFlexSlantsForOblique()
+    {
+        var fonts = new FontCollection();
+        fonts.Add(TestFonts.Load("derived/RobotoFlex-subset.ttf"));
+        FontMatch m = fonts.Match("Roboto Flex", new FontStyle(400, 5, FontSlant.Oblique))!.Value;
+        Assert.Contains(FontVariation.Slant(-10), m.Typeface.Variations);
+        Assert.Equal(FontSlant.Oblique, m.Typeface.Style.Slant);
+        Assert.Equal(FontSynthesis.None, m.Synthesis);
+
+        // Italic falls back to the oblique design, as CSS asks.
+        m = fonts.Match("Roboto Flex", FontStyle.Italic)!.Value;
+        Assert.Equal(FontSlant.Oblique, m.Typeface.Style.Slant);
+        Assert.Equal(FontSynthesis.None, m.Synthesis);
+    }
+
+    [Fact]
+    public void OpticalSizeFollowsTheFontSize()
+    {
+        Typeface face = TestFonts.Load("derived/SourceSerif4-VF-subset.otf");
+        VariationAxis opsz = face.VariationAxes.Single(a => a.Tag == FontVariation.OpticalSizeAxis);
+        Assert.Equal([FontVariation.OpticalSize(12)], new Font(face, 12).EffectiveTypeface.Variations);
+        Assert.Equal([FontVariation.OpticalSize(opsz.Max)], new Font(face, 500).EffectiveTypeface.Variations);
+        Assert.Same(face, new Font(face, 12) { OpticalSizing = OpticalSizing.None }.EffectiveTypeface);
+        Typeface fixedSize = face.WithVariations(FontVariation.OpticalSize(30));
+        Assert.Same(fixedSize, new Font(fixedSize, 12).EffectiveTypeface);
+        Assert.NotEqual(new Font(face, 12) { OpticalSizing = OpticalSizing.None }.GetAdvance(face.GetGlyph('a')), new Font(face, 12).GetAdvance(face.GetGlyph('a')));
+
+        Typeface noto = TestFonts.Load("NotoSans-Regular.ttf");
+        Assert.Same(noto, new Font(noto, 12).EffectiveTypeface);
+    }
 }

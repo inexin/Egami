@@ -1,5 +1,6 @@
 using Egami.Fonts.Parsing;
 using Egami.Fonts.Tables;
+using Egami.Fonts.Variations;
 
 using Microsoft.Win32.SafeHandles;
 
@@ -26,6 +27,57 @@ internal sealed class FaceEntry
         _source = new FontFileSource(path);
     }
 
+    private FaceEntry(FaceEntry face, FontStyle style, NameSet names, VariableRange? range, int instance)
+    {
+        _source = face._source;
+        _face = face._face;
+        Index = face.Index;
+        Family = face.Family;
+        Style = style;
+        Names = names;
+        Range = range;
+        Instance = instance;
+    }
+
+    /// <summary>Gets the axis ranges of a variable face's range entry, which matching can place anywhere on its axes.</summary>
+    public VariableRange? Range { get; }
+
+    /// <summary>Gets the named instance this entry stands for, or -1.</summary>
+    public int Instance { get; } = -1;
+
+    /// <summary>
+    /// Returns the entries a face indexes as: itself, or for a variable face one range entry (first) and one per named instance, as
+    /// CSS Fonts 4 lists them.
+    /// </summary>
+    public static List<FaceEntry> Expand(FaceEntry entry, VariationSpace? space, NameTable name, FontStyle defaultStyle)
+    {
+        if (space is null)
+        {
+            return [entry];
+        }
+
+        var range = VariableRange.Of(space, defaultStyle);
+        var list = new List<FaceEntry> { new(entry, defaultStyle, entry.Names, range, -1) };
+        for (int i = 0; i < space.Instances.Length; i++)
+        {
+            FvarInstance instance = space.Instances[i];
+            string subfamily = VariationSpace.NameOf(name, instance.SubfamilyNameId, "Instance");
+            string full = subfamily == "Regular" ? entry.Family : $"{entry.Family} {subfamily}";
+            string? postScript = instance.PostScriptNameId is > 0 and < 0xFFFF ? name.GetEnglish(instance.PostScriptNameId) : null;
+            FontStyle style = VariableRange.StyleAt(space, instance.Coordinates, defaultStyle);
+            list.Add(new FaceEntry(entry, style, entry.Names.With(full, postScript), null, i));
+        }
+
+        return list;
+    }
+
+    /// <summary>Returns the entries of a loaded face: itself, or its range and named instances when it is variable.</summary>
+    public static List<FaceEntry> Of(Typeface face, string? path = null)
+    {
+        FaceEntry entry = path is null ? new FaceEntry(face) : new FaceEntry(face, path);
+        Typeface root = face.Root;
+        return root == face ? Expand(entry, face.VariationData?.Space, face.Name, face.Style) : [entry];
+    }
     public FaceEntry(FontFileSource source, int index, string family, FontStyle style, NameSet names)
     {
         _source = source;
@@ -50,13 +102,13 @@ internal sealed class FaceEntry
     public Typeface GetTypeface(FontLoadOptions options)
     {
         Typeface? face = Volatile.Read(ref _face);
-        if (face is not null)
+        if (face is null)
         {
-            return face;
+            face = Typeface.FromMemory(_source!.GetBytes(options), Index, options);
+            face = Interlocked.CompareExchange(ref _face, face, null) ?? face;
         }
 
-        face = Typeface.FromMemory(_source!.GetBytes(options), Index, options);
-        return Interlocked.CompareExchange(ref _face, face, null) ?? face;
+        return Instance >= 0 ? face.WithNamedInstance(Instance) : face;
     }
 }
 
@@ -138,6 +190,10 @@ internal sealed class NameSet
         return new NameSet([.. typographic], [.. legacy], [.. full], [.. ps]);
     }
 
+    /// <summary>Returns the names with a named instance's full and PostScript names added.</summary>
+    public NameSet With(string full, string? postScript)
+        => new(Typographic, Legacy, [.. Full, full], postScript is null ? PostScript : [.. PostScript, postScript]);
+
     public static bool Contains(string[] names, string name)
     {
         foreach (string n in names)
@@ -174,7 +230,7 @@ internal static class FaceIndexer
             // Web fonts are compressed: their names are only reachable by decoding, so the faces load now.
             foreach (Typeface face in FontLoader.LoadAll(path, options))
             {
-                into.Add(new FaceEntry(face, path));
+                into.AddRange(FaceEntry.Of(face, path));
             }
 
             return;
@@ -210,6 +266,7 @@ internal static class FaceIndexer
         Os2Table? os2 = null;
         int macStyle = 0;
         bool hasGlyphs = false;
+        byte[]? fvar = null;
         for (int t = 0; t < tables; t++)
         {
             var tag = new FontTag(BigEndian.UInt32(directory, t * 16));
@@ -226,21 +283,40 @@ internal static class FaceIndexer
             {
                 macStyle = BigEndian.UInt16(Read(handle, at + 44, 2, length), 0);
             }
-            else if (tag == Tags.Glyf || tag == Tags.Cff)
+            else if (tag == Tags.Glyf || tag == Tags.Cff || tag == Tags.Cff2)
             {
                 hasGlyphs = true;
+            }
+            else if (tag == Tags.Fvar && size <= MaxNameTable)
+            {
+                fvar = Read(handle, at, (int)size, length);
             }
         }
 
         if (!hasGlyphs)
         {
-            // Bitmap-only and CFF2 faces are not drawable in 2.7.1.
+            // Faces without outlines are left out.
             return;
         }
 
         string family = name.GetEnglish(16) ?? name.GetEnglish(1) ?? "Unknown";
         string postScript = name.GetEnglish(6) ?? family.Replace(" ", string.Empty, StringComparison.Ordinal);
-        into.Add(new FaceEntry(source, index, family, StyleOf(os2, macStyle), NameSet.From(name, family, postScript)));
+        FontStyle style = StyleOf(os2, macStyle);
+        var entry = new FaceEntry(source, index, family, style, NameSet.From(name, family, postScript));
+        VariationSpace? space = null;
+        if (fvar is not null)
+        {
+            try
+            {
+                space = VariationSpace.Read(fvar, 0, default, 0, (_, _, _) => { });
+            }
+            catch (CorruptDataException)
+            {
+                // A damaged fvar indexes the face as static; loading reports it.
+            }
+        }
+
+        into.AddRange(FaceEntry.Expand(entry, space, name, style));
     }
 
     internal static FontStyle StyleOf(Os2Table? os2, int macStyle)

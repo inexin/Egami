@@ -10,6 +10,7 @@ Egami.Fonts.CffOptions.UnitsPerEm.init -> void
 Egami.Fonts.CffOptions.Widths.get -> System.Collections.Generic.IReadOnlyList<float>?
 Egami.Fonts.CffOptions.Widths.init -> void
 Egami.Fonts.Font
+Egami.Fonts.Font.EffectiveTypeface.get -> Egami.Fonts.Typeface!
 Egami.Fonts.Font.Equals(Egami.Fonts.Font other) -> bool
 Egami.Fonts.Font.Extents.get -> Egami.Fonts.FontExtents
 Egami.Fonts.Font.Font() -> void
@@ -20,6 +21,8 @@ Egami.Fonts.Font.Kerning.get -> bool
 Egami.Fonts.Font.Kerning.init -> void
 Egami.Fonts.Font.LineHeight.get -> float
 Egami.Fonts.Font.MeasureText(string! text) -> Egami.Fonts.TextMeasure
+Egami.Fonts.Font.OpticalSizing.get -> Egami.Fonts.OpticalSizing
+Egami.Fonts.Font.OpticalSizing.init -> void
 Egami.Fonts.Font.Scale.get -> float
 Egami.Fonts.Font.Shape(string! text) -> Egami.Fonts.GlyphRun!
 Egami.Fonts.Font.Size.get -> float

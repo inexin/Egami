@@ -158,6 +158,18 @@ public sealed partial class Typeface
         return Root.AtPosition(data, user);
     }
 
+    /// <summary>Returns the face at opsz = <paramref name="size"/> when it has an opsz axis it leaves at the default, else itself.</summary>
+    internal Typeface AtOpticalSize(float size)
+    {
+        if (VariationData is not VariationData data || data.Space.AxisIndex(FontVariation.OpticalSizeAxis) is not (int axis and >= 0))
+        {
+            return this;
+        }
+
+        float current = _instance?.User[axis] ?? data.Space.Axes[axis].Default;
+        return current != data.Space.Axes[axis].Default ? this : WithVariations(FontVariation.OpticalSize(size));
+    }
+
     internal int TableOffset(FontTag tag)
     {
         GetTableSpan(tag, out int offset);
@@ -382,34 +394,7 @@ public sealed partial class Typeface
         return (int)MathF.Floor(delta + 0.5f);
     }
 
-    private FontStyle VariedStyle(FontStyle style)
-    {
-        VariationInstance instance = _instance!;
-        VariationSpace space = instance.Data.Space;
-        int weight = style.Weight, width = style.Width;
-        FontSlant slant = style.Slant;
-        if (space.AxisIndex(FontVariation.WeightAxis) is int w and >= 0)
-        {
-            weight = Math.Clamp((int)MathF.Round(instance.User[w]), 1, 1000);
-        }
-
-        if (space.AxisIndex(FontVariation.WidthAxis) is int d and >= 0)
-        {
-            width = Matching.StyleMatcher.WidthClassOf(instance.User[d]);
-        }
-
-        if (space.AxisIndex(FontVariation.ItalicAxis) is int i and >= 0)
-        {
-            slant = instance.User[i] >= 0.5f ? FontSlant.Italic : style.Slant == FontSlant.Italic ? FontSlant.Upright : style.Slant;
-        }
-
-        if (slant != FontSlant.Italic && space.AxisIndex(FontVariation.SlantAxis) is int s and >= 0)
-        {
-            slant = instance.User[s] != 0 ? FontSlant.Oblique : slant == FontSlant.Oblique ? FontSlant.Upright : slant;
-        }
-
-        return new FontStyle(weight, width, slant);
-    }
+    private FontStyle VariedStyle(FontStyle style) => Matching.VariableRange.StyleAt(_instance!.Data.Space, _instance.User, style);
 
     // Adobe Technical Note #5902: the instance's own PostScript name, else the prefix (name ID 25, else the family without
     // spaces and punctuation) and, per axis away from its default, "_" + value + tag; a name over 63 characters is hashed.

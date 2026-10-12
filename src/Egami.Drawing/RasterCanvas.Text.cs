@@ -41,7 +41,7 @@ public sealed partial class RasterCanvas<TPixel>
             return;
         }
 
-        Typeface face = font.Typeface;
+        Typeface face = font.EffectiveTypeface;
         bool antialias = paint.Antialias;
         float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm;
         Rect clip = _clip.Bounds;

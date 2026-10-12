@@ -33,6 +33,7 @@ public enum FontSynthesis
 public readonly record struct Font
 {
     private readonly bool _noKerning;
+    private readonly bool _noOpticalSizing;
 
     /// <summary>Initializes a font.</summary>
     /// <param name="typeface">The face.</param>
@@ -63,6 +64,30 @@ public readonly record struct Font
     /// <summary>Gets the styling the face lacks and matching asked for; recorded in 2.7.1, drawn from 2.7.2 on.</summary>
     public FontSynthesis Synthesis { get; init; }
 
+    /// <summary>
+    /// Gets whether a variable face's optical size axis follows <see cref="Size"/>: <see cref="Fonts.OpticalSizing.Auto"/> (the
+    /// default) sets opsz to the size in canvas units, clamped to the axis, unless the typeface sets opsz itself.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public OpticalSizing OpticalSizing
+    {
+        get => _noOpticalSizing ? OpticalSizing.None : OpticalSizing.Auto;
+        init => _noOpticalSizing = Enum.IsDefined(value) ? value == OpticalSizing.None : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>
+    /// Gets the face glyphs are drawn and measured from: <see cref="Typeface"/>, or with <see cref="OpticalSizing"/> on a face with
+    /// an opsz axis it does not set, the face at opsz = <see cref="Size"/>. A PDF writer embeds this face.
+    /// </summary>
+    public Typeface EffectiveTypeface
+    {
+        get
+        {
+            Typeface face = Typeface ?? throw new InvalidOperationException("The font has no typeface; use a constructor, not default.");
+            return _noOpticalSizing ? face : face.AtOpticalSize(Size);
+        }
+    }
+
     /// <summary>Gets the factor from font units to canvas units: <see cref="Size"/> over units per em.</summary>
     public float Scale => Typeface is null ? 0 : Size / Typeface.UnitsPerEm;
 
@@ -72,7 +97,7 @@ public readonly record struct Font
     /// <summary>Gets the distance from one baseline to the next at this size.</summary>
     public float LineHeight => Face.Extents.LineHeight * Scale;
 
-    private Typeface Face => Typeface ?? throw new InvalidOperationException("The font has no typeface; use a constructor, not default.");
+    private Typeface Face => EffectiveTypeface;
 
     /// <summary>Creates a font sized in points at a resolution: <c>points * dpi / 72</c> canvas units per em.</summary>
     /// <param name="typeface">The face.</param>

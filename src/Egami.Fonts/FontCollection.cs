@@ -141,7 +141,7 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     public void Add(Typeface typeface)
     {
         ArgumentNullException.ThrowIfNull(typeface);
-        Append([new FaceEntry(typeface)]);
+        Append(FaceEntry.Of(typeface));
     }
 
     /// <summary>Adds every face of a font file, indexed from its names and loaded when matched.</summary>

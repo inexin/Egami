@@ -16,7 +16,7 @@ public static class FontExtensions
     /// <returns>The outline; empty for a glyph without ink.</returns>
     public static Path GetGlyphPath(this Font font, ushort glyph)
     {
-        Typeface face = font.Typeface ?? throw new ArgumentException("The font has no typeface.", nameof(font));
+        Typeface face = font.Typeface is null ? throw new ArgumentException("The font has no typeface.", nameof(font)) : font.EffectiveTypeface;
         var builder = new PathBuilder();
         var sink = new PathSink(builder, font.Scale, 0, 0);
         face.GetGlyphOutline(glyph, sink);
@@ -48,12 +48,13 @@ public static class FontExtensions
         ArgumentNullException.ThrowIfNull(run);
         var builder = new PathBuilder();
         Font font = run.Font;
+        Typeface face = font.EffectiveTypeface;
         ReadOnlySpan<ushort> glyphs = run.Glyphs;
         ReadOnlySpan<Vector2> positions = run.Positions;
         for (int i = 0; i < glyphs.Length; i++)
         {
             Vector2 at = origin + positions[i];
-            font.Typeface.GetGlyphOutline(glyphs[i], new PathSink(builder, font.Scale, at.X, at.Y));
+            face.GetGlyphOutline(glyphs[i], new PathSink(builder, font.Scale, at.X, at.Y));
         }
 
         return builder.ToPath();
