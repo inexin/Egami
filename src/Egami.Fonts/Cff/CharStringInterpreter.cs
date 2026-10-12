@@ -20,7 +20,29 @@ internal sealed class SubrUsage
 
     /// <summary>Gets the glyphs seac accents pull in.</summary>
     public HashSet<int> SeacGlyphs { get; } = [];
+
+    /// <summary>Gets the glyphs whose charstrings end in seac.</summary>
+    public HashSet<int> SeacUsers { get; } = [];
+
+    /// <summary>Gets each charstring's subroutine call sites: where the literal operand of a callsubr or callgsubr lies.</summary>
+    public Dictionary<CharStringId, SortedDictionary<int, CallSite>> Sites { get; } = [];
+
+    /// <summary>Gets or sets whether some call takes its operand from arithmetic, so subroutines cannot be renumbered.</summary>
+    public bool Unrewritable { get; set; }
 }
+
+/// <summary>Names a charstring: a glyph's, a local subroutine of a font dict, or a global subroutine.</summary>
+internal readonly record struct CharStringId(CharStringKind Kind, int FontDict, int Index);
+
+internal enum CharStringKind
+{
+    Glyph,
+    Local,
+    Global,
+}
+
+/// <summary>A subroutine call: the literal operand's bytes [Start, End) and the subroutine it reaches.</summary>
+internal readonly record struct CallSite(int Start, int End, bool Global, int Index);
 
 /// <summary>
 /// A Type 2 charstring interpreter (Adobe Technical Note #5177): every path, hint, subroutine, arithmetic and storage operator.
@@ -54,6 +76,7 @@ internal sealed class CharStringInterpreter
     private int _seacDepth;
     private bool _widthOnly;
     private int _fontDict;
+    private int _glyph;
     private readonly Random _random = new(0);
 
     public CharStringInterpreter(CffFont font)
@@ -101,6 +124,7 @@ internal sealed class CharStringInterpreter
             throw new ArgumentOutOfRangeException(nameof(glyph));
         }
 
+        _glyph = glyph;
         _fontDict = _font.FontDictOf(glyph);
         PrivateData priv = _font.Privates[_fontDict];
         _sp = 0;
@@ -110,10 +134,10 @@ internal sealed class CharStringInterpreter
         _width = priv.DefaultWidthX;
         _x = _y = 0;
         _ended = false;
-        Execute(_font.CharStrings[glyph], 0);
+        Execute(_font.CharStrings[glyph], 0, new CharStringId(CharStringKind.Glyph, _fontDict, glyph));
     }
 
-    private void Execute(ReadOnlySpan<byte> code, int depth)
+    private void Execute(ReadOnlySpan<byte> code, int depth, CharStringId id)
     {
         if (depth > MaxSubrDepth)
         {
@@ -121,11 +145,15 @@ internal sealed class CharStringInterpreter
         }
 
         int i = 0;
+        int numberStart = -1;
+        bool lastWasNumber = false;
         while (i < code.Length && !_ended)
         {
             int b0 = code[i];
             if (b0 >= 32 || b0 == 28)
             {
+                numberStart = i;
+                lastWasNumber = true;
                 double value;
                 if (b0 == 28)
                 {
@@ -161,6 +189,9 @@ internal sealed class CharStringInterpreter
                 continue;
             }
 
+            bool operandIsLiteral = lastWasNumber;
+            int operatorStart = i;
+            lastWasNumber = false;
             if (++_operators > MaxOperators)
             {
                 throw Error("A charstring runs more operators than allowed.");
@@ -366,9 +397,23 @@ internal sealed class CharStringInterpreter
                         if (_usage is not null)
                         {
                             (global ? _usage.Global : _usage.Local[_fontDict]).Add(index);
+                            if (operandIsLiteral)
+                            {
+                                if (!_usage.Sites.TryGetValue(id, out SortedDictionary<int, CallSite>? sites))
+                                {
+                                    _usage.Sites[id] = sites = [];
+                                }
+
+                                sites[numberStart] = new CallSite(numberStart, operatorStart, global, index);
+                            }
+                            else
+                            {
+                                _usage.Unrewritable = true;
+                            }
                         }
 
-                        Execute(subrs.Value[index], depth + 1);
+                        var callee = new CharStringId(global ? CharStringKind.Global : CharStringKind.Local, global ? 0 : _fontDict, index);
+                        Execute(subrs.Value[index], depth + 1, callee);
                         break;
                     }
 
@@ -378,6 +423,7 @@ internal sealed class CharStringInterpreter
                     TakeWidth(_sp is 1 or 5);
                     if (_sp >= 4)
                     {
+                        _usage?.SeacUsers.Add(_glyph);
                         Seac(_stack[_sp - 4], _stack[_sp - 3], (int)_stack[_sp - 2], (int)_stack[_sp - 1]);
                     }
 
@@ -647,7 +693,7 @@ internal sealed class CharStringInterpreter
         _offsetY = dy;
         _ended = false;
         _fontDict = _font.FontDictOf(glyph);
-        Execute(_font.CharStrings[glyph], 0);
+        Execute(_font.CharStrings[glyph], 0, new CharStringId(CharStringKind.Glyph, _fontDict, glyph));
         _offsetX = _offsetY = 0;
         _ended = true;
     }
