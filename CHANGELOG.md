@@ -221,6 +221,71 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
+### Egami.Fonts 1.0.0-preview.2
+
+Web, variable and color fonts, in the same preview package. See [Variable fonts](docs/articles/guides/text.md#variable-fonts),
+[Color fonts](docs/articles/guides/text.md#color-fonts) and [Faces](docs/articles/guides/text.md#faces).
+
+- WOFF and WOFF2 load wherever TrueType and OpenType do (`Typeface.FromFile`, `FromMemory`, `FontLoader`, `FontCollection`
+  directory scans): WOFF with the BCL's zlib, WOFF2 with its Brotli decoder and the glyf, loca and hmtx transforms, WOFF2
+  collections too. `Typeface.Container` says which container a face came in; `GetWoffMetadata` and `GetWoffPrivateData` return the
+  extra blocks. Every decoded table equals fontTools' and the reference woff2 decoder's. Four WOFF2 files load in 15 to 21 ms
+  against the reference font library 2.1.3's 31 to 69.
+- Variable fonts: `Typeface.VariationAxes` (`VariationAxis`), `NamedInstances` (`NamedInstance`), `IsVariable`, `Variations`, and
+  `WithVariations` and `WithNamedInstance`, which return a face at a position sharing the font's memory (positions are cached).
+  `FontVariation` with `Weight`, `Width`, `Slant`, `Italic` and `OpticalSize`; avar 1 and 2; gvar with shared and private points,
+  intermediate regions, IUP, composites and phantom points; CFF2 with blend and vsindex; HVAR, MVAR and GDEF variation deltas, so
+  outlines, advances, extents, kerning and font metrics all vary. Each equals fontTools at 25 positions of five variable fonts.
+  Names and PostScript names follow the position.
+- `FontCollection` matching picks a position inside a variable family's weight, width and slant ranges by CSS Fonts 4 rules, as
+  well as its named instances. `Font.OpticalSizing` (Auto by default) sets the opsz axis to the font size;
+  `Font.EffectiveTypeface` is the face drawn.
+- Static instances: `SubsetOptions.Variations`, or subsetting a face at a position, writes a static TrueType or CFF font with the
+  outlines, advances and metrics at that position and no variation tables, equal to fontTools' instancer; glyphs keep their
+  overlaps and are marked OVERLAP_SIMPLE or OVERLAP_COMPOUND as fontTools marks them. They open in fontTools and FreeType. An
+  instance subset to 200 glyphs takes under 1 ms.
+- Color fonts: `Typeface.ColorFormats`, `Palettes` (`FontPaletteInfo`, from CPAL), `HasColorGlyph`, `TryGetColorGlyph` and
+  `TryGetSvgDocument`. COLR v0 layers and the full COLR v1 paint graph (solid, linear, radial and sweep gradients with their color
+  lines, glyph and color-glyph references, transforms, composites, clip boxes, variable paints) come as `ColorGlyph` trees with a
+  visitor; sbix and CBDT images as `BitmapColorGlyph` with the strike nearest the size. `FontPalette` (Default, Light, Dark, an
+  index and color overrides) and `Font.Palette`; `Font.ColorGlyphs` turns color off. Paint trees, colors, clips and images equal
+  fontTools'; cycles and graphs deeper than 64 paints are cut with the `Font.BadColorGlyph` warning.
+- Rendering settings for canvases: `Font.Hinting` (`FontHinting.Light`: vertical-only snapping to blue zones from CFF or measured
+  from TrueType outlines, up to 48 pixels per em; no x value or advance moves), `Font.Subpixel` (quarter-pixel glyph origins, on
+  by default), `Font.Edging` (`FontEdging.Antialias`, `Alias`, `Lcd`), `Font.AllowSynthesis` with synthetic bold (an outset by
+  the size) and italic (a 14-degree slant), in outlines and bounds too.
+- `GlyphRun.CreateTransformed` and `GlyphRun.Transforms` (`GlyphTransform`, Skia's RSXform): a run whose glyphs each have their
+  own turn and scale, kept as text.
+- `FontOutlines.None` for bitmap-only faces. New warnings `Font.BadContainer` and `Font.BadColorGlyph`.
+- Fuzz targets `woff2`, `gvar`, `cff2`, `colr` and `instance`; their first 10-minute runs found five crashes, all fixed and kept as
+  regressions, and the reruns were clean.
+
+### Egami.Drawing 1.0.0-preview.5
+
+Text quality, text on a path and color glyphs. See [Rendering quality](docs/articles/guides/text.md#rendering-quality),
+[Text on a path](docs/articles/guides/text.md#text-on-a-path) and [Color fonts](docs/articles/guides/text.md#color-fonts).
+
+- The raster canvas draws `Font.Hinting`, `Subpixel` and `Edging`: each subpixel phase, edging and hinting gets its own cached
+  mask; LCD edging renders at three times the resolution along `CanvasOptions.PixelGeometry` with a 5-tap filter, and falls back to
+  grayscale with the `Text.LcdFallback` warning where it cannot be drawn (no geometry, a layer, a paint other than solid
+  source-over). Synthetic bold and italic draw on every backend. Glyphs whose contours overlap (variable fonts, and instances
+  marked so) are merged before rasterizing, so overlaps do not darken their edges.
+- `DrawTextOnPath` and `Font.ShapeOnPath` with `TextOnPathOptions` (start offset or fraction, anchor, baseline shift, side,
+  wrapping on closed paths), by SVG's textPath rules; the result is a transformed glyph run, so a PDF backend keeps it as text.
+  Transformed runs draw on the raster canvas through paths for turned glyphs and masks for the rest.
+- Color glyphs draw in color through ordinary canvas calls (clips by glyph outlines, solid and gradient fills, transforms and
+  layers with blend modes; images for sbix and CBDT), so every backend gets them; on a raster they are cached as premultiplied
+  images per palette and color. The glyph is one group under the paint's alpha; the paint's color fills foreground entries.
+  `DrawingRecorder` and .egdr files keep color glyphs as the calls they draw with.
+- Gates against SkiaSharp 4.153: variable text at 12 to 48 pixels in five fonts and subpixel-positioned text at 9 to 24 pixels in
+  four within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area; COLR v0 and v1 glyphs within
+  a mean level of SkiaSharp's own drawing at 24 to 96 pixels, sbix and CBDT within 2. Aliased, LCD, light-hinted and synthetic text
+  are recorded against SkiaSharp's nearest settings.
+- Speed (ms, 1 thread): a 2,000-word page in Roboto Flex at 16 pixels draws in 20 at its default and at weight 700, width 75 alike;
+  a page of 500 COLR v0 emoji in 2.7 cold and 1.6 warm against the reference drawing library 2.1.7's 60, and of COLR v1 emoji in 15 cold and
+  2.1 warm; plain text is within 10% of 2.7.1 (11.0 against 10.7 at 12 pixels).
+- Fixed: a curve under a transform so large that rounding split it again and again overflowed the stack.
+
 ### Egami.Drawing 1.0.0-preview.4
 
 Advanced drawing, in the same preview package. See [Nine-patches and lattices](docs/articles/guides/drawing.md#nine-patches-and-lattices),

@@ -328,6 +328,26 @@ Canny's white-on-black map works directly as a `Mask`; thicken it with `Dilate` 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Lighting.cs#emboss)]
 
+## A variable weight slider
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#weight-slider)]
+
+## Emoji in a caption
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#emoji-caption)]
+
+Color glyphs draw in color on every canvas; on a raster they are cached as images, like other glyphs.
+
+## A label along a curve
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#label-curve)]
+
+## A variable font in a PDF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#variable-pdf)]
+
+The subset of a variable face is always a static instance; `SubsetOptions.Variations` gives the position without making a face.
+
 ## A drop shadow for a logo
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#logo-shadow)]

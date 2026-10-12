@@ -354,4 +354,133 @@ public class Text
         {
         }
     }
+
+    [Fact]
+    public void WeightSlider()
+    {
+        Typeface flex = Typeface.FromFile(VariableFile);
+
+        #region weight-slider
+        // A weight slider: each move draws the sample at the new weight. Faces at a position share the font's memory and are
+        // cached, and glyph masks are cached per position, so dragging back and forth is cheap.
+        Raster<Rgba8> Preview(float weight)
+        {
+            VariationAxis axis = flex.VariationAxes.First(a => a.Tag == new FontTag("wght"));
+            Typeface face = flex.WithVariations(FontVariation.Weight(Math.Clamp(weight, axis.Min, axis.Max)));
+            var font = new Font(face, 28);
+            TextMeasure size = font.MeasureText("Weight");
+            Raster<Rgba8> preview = Raster.Create((int)MathF.Ceiling(size.Advance) + 16, (int)MathF.Ceiling(size.Height) + 8, Rgba8.White);
+            using RasterCanvas<Rgba8> canvas = preview.CreateCanvas();
+            canvas.DrawText("Weight", new Vector2(8, 4 + size.Ascent), font, Rgba8.Black);
+            return preview;
+        }
+        #endregion
+
+        using Raster<Rgba8> light = Preview(200);
+        using Raster<Rgba8> heavy = Preview(1000);
+        Assert.True(heavy.Width > light.Width);
+    }
+
+    [Fact]
+    public void EmojiInACaption()
+    {
+        Typeface text = Typeface.FromFile(FontFile);
+        Typeface emoji = Typeface.FromFile(EmojiFile);
+        using Raster<Rgba8> image = Raster.Create(360, 50, Rgba8.White);
+
+        #region emoji-caption
+        // A caption mixing words and emoji: each run of characters goes to the first face that has them, and the runs are drawn one
+        // after another. (Shaping across faces, with emoji sequences and fallback lists, comes with 2.8's text layout.)
+        string caption = "Launch day \U0001F680 thanks, team \U0001F389";
+        var fonts = new[] { new Font(text, 20), new Font(emoji, 20) };
+        float x = 8;
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            int start = 0;
+            while (start < caption.Length)
+            {
+                Font font = fonts[Pick(caption, start)];
+                int end = start;
+                while (end < caption.Length && Pick(caption, end) == Pick(caption, start))
+                {
+                    end += char.IsSurrogatePair(caption, end) ? 2 : 1;
+                }
+
+                string piece = caption[start..end];
+                canvas.DrawText(piece, new Vector2(x, 32), font, Rgba8.Black);
+                x += font.MeasureText(piece).Advance;
+                start = end;
+            }
+        }
+
+        // The index of the first font with a glyph for the character at i, or the first font.
+        int Pick(string s, int i)
+        {
+            int c = char.ConvertToUtf32(s, i);
+            return Math.Max(0, Array.FindIndex(fonts, f => f.Typeface.GetGlyph(c) != 0));
+        }
+        #endregion
+
+        Assert.True(x > 200);
+    }
+
+    [Fact]
+    public void LabelAlongACurve()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgba8> image = Raster.Create(200, 200, Rgba8.White);
+
+        #region label-curve
+        // A round badge: one label along the top of a circle and one along the bottom, both reading left to right and centred.
+        // Each glyph sits on the curve at its midpoint, turned to the curve's direction, as SVG's textPath.
+        var badge = new Font(face, 16);
+        Path ring = new PathBuilder().AddOval(new RectF(20, 20, 160, 160)).ToPath();
+        Path top = new PathBuilder().MoveTo(40, 100).ArcTo(new Vector2(60, 60), 0, false, true, new Vector2(160, 100)).ToPath();
+        Path bottom = new PathBuilder().MoveTo(40, 100).ArcTo(new Vector2(60, 60), 0, false, false, new Vector2(160, 100)).ToPath();
+        var centred = new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Middle };
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            canvas.StrokePath(ring, new Stroke(2), new SolidPaint(Rgba8.Black));
+            canvas.DrawTextOnPath("EGAMI QUALITY", top, badge, Rgba8.Black, centred);
+
+            // Below, the glyphs hang under the curve: shift the baseline down by the cap height.
+            canvas.DrawTextOnPath("since 2026", bottom, badge, Rgba8.Black, centred with { BaselineShift = -12 });
+        }
+        #endregion
+
+        int inked = 0;
+        for (int x = 0; x < image.Width; x++)
+        {
+            inked += image.GetPixel(x, 45) != Rgba8.White ? 1 : 0;
+        }
+
+        Assert.True(inked > 5);
+    }
+
+    [Fact]
+    public void VariableFontInAPdf()
+    {
+        Typeface flex = Typeface.FromFile(VariableFile);
+
+        #region variable-pdf
+        // PDF has no variable fonts: embed a static instance at the position the page uses. The subset is an ordinary TrueType
+        // font (glyf and hmtx at that position, no variation tables); its whole-unit advances are the ones to write in /W.
+        Typeface heading = flex.WithVariations(FontVariation.Weight(720), FontVariation.Width(85));
+        GlyphRun run = new Font(heading, 24).Shape("Annual report");
+        FontSubset subset = FontSubsetter.Subset(heading, run.Glyphs.ToArray(), new SubsetOptions { FontNamePrefix = "EGAMIA+" });
+        Typeface embedded = subset.ToTypeface();
+        var widths = new SortedDictionary<ushort, int>();
+        foreach (ushort glyph in run.Glyphs)
+        {
+            ushort id = subset.GlyphMap[glyph];
+            widths[id] = (int)MathF.Round(embedded.GetAdvance(id) * 1000 / embedded.UnitsPerEm);
+        }
+
+        byte[] fontFile2 = subset.Data.ToArray();
+        #endregion
+
+        Assert.False(embedded.IsVariable);
+        Assert.Equal(MathF.Round(heading.GetAdvance(run.Glyphs[0])), embedded.GetAdvance(subset.GlyphMap[run.Glyphs[0]]));
+        Assert.True(fontFile2.Length > 0);
+    }
 }
