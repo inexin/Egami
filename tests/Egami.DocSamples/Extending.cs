@@ -208,6 +208,25 @@ public static class StreamingRaw8Format
 public class Extending
 {
     [Fact]
+    public void Reach()
+    {
+        #region reach
+        // How far a chain reads around each pixel: run it on a part of a picture padded by this much, and the part comes out as it
+        // would in the whole picture.
+        OperationReach? reach = RasterOps.Reach(ops => ops.Blur(3).Glow(4, Rgba8.White));
+        if (reach is OperationReach r)
+        {
+            Console.WriteLine($"pad by {r.X} × {r.Y}");
+        }
+
+        // A resize reads the whole image: its reach is unknown.
+        Assert.Null(RasterOps.Reach(ops => ops.Resize(100, 100)));
+        #endregion
+
+        Assert.NotNull(reach);
+    }
+
+    [Fact]
     public void UseCustomOperation()
     {
         using SampleFiles files = new();

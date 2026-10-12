@@ -5,7 +5,7 @@ using Egami.Pixels;
 
 namespace Egami.Operations;
 
-/// <summary>The effects of Phase 2.5.4: vignette, glow, bloom, pixelate, oil paint, Kuwahara, spread and drop shadow.</summary>
+/// <summary>The effects of Phase 2.5.4 (vignette, glow, bloom, pixelate, oil paint, Kuwahara, spread and drop shadow) and 2.6.3's inner shadow.</summary>
 public sealed partial class RasterOps
 {
     /// <summary>
@@ -101,6 +101,55 @@ public sealed partial class RasterOps
         return inner
             ? Add(new LayerEffectOperation(layer.Steps, LayerPlacement.Over, BlendMode.SourceAtop, linear: false))
             : Add(new LayerEffectOperation(layer.Steps, LayerPlacement.Behind, BlendMode.SourceOver, linear: false));
+    }
+
+    /// <summary>
+    /// Adds a shadow inside the image's alpha shape, as an editor's inner shadow layer style: everything outside the shape, moved
+    /// by (<paramref name="dx"/>, <paramref name="dy"/>) rounded to whole pixels, blurred with <see cref="BlurMethod.Fast"/> and
+    /// filled with <paramref name="color"/>, drawn on the image inside the shape only. Past the image's edges counts as outside, so
+    /// a shape that touches an edge is shadowed from there too. It is exactly the chain written by hand: a layer made with a
+    /// <see cref="ColorMatrix(Operations.ColorMatrix)"/> (the color, and 1 − alpha), <see cref="Offset"/> with the uncovered strips
+    /// filled with the opaque color, <see cref="Blur(float, ColorSpace, BlurMethod)"/> and <see cref="Opacity"/> for the color's
+    /// alpha, then drawn over the image with <see cref="BlendMode.SourceAtop"/>.
+    /// </summary>
+    /// <param name="dx">How far the shadow moves right, in pixels (negative moves it left), at most 10000 either way.</param>
+    /// <param name="dy">How far the shadow moves down, in pixels, at most 10000 either way.</param>
+    /// <param name="sigma">The shadow's blur in pixels, from 0 (a hard shadow) to 1000.</param>
+    /// <param name="color">The shadow's color, with its alpha as the shadow's opacity.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An offset is not finite or beyond 10000 either way, or <paramref name="sigma"/> is outside 0..1000.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FilterEffects.cs" region="inner-shadow"/>
+    /// </example>
+    public RasterOps InnerShadow(float dx, float dy, float sigma, Rgba8 color)
+    {
+        if (!(Math.Abs(dx) <= 10000))
+        {
+            throw new ArgumentOutOfRangeException(nameof(dx), dx, "The offset must be from -10000 to 10000.");
+        }
+
+        if (!(Math.Abs(dy) <= 10000))
+        {
+            throw new ArgumentOutOfRangeException(nameof(dy), dy, "The offset must be from -10000 to 10000.");
+        }
+
+        CheckSigma(sigma);
+        if (color.A == 0)
+        {
+            return this;
+        }
+
+        RasterOps layer = new();
+        float r = color.R / 255f, g = color.G / 255f, b = color.B / 255f;
+        layer.ColorMatrix(new ColorMatrix([0, 0, 0, 0, r, 0, 0, 0, 0, g, 0, 0, 0, 0, b, 0, 0, 0, -1, 1]));
+        layer.Offset((int)MathF.Round(dx), (int)MathF.Round(dy), EdgeMode.Transparent, new Rgba8(color.R, color.G, color.B, 255));
+        layer.Blur(sigma, ColorSpace.Encoded, BlurMethod.Fast);
+        if (color.A < 255)
+        {
+            layer.Opacity(color.A / 255f);
+        }
+
+        return Add(new LayerEffectOperation(layer.Steps, LayerPlacement.Over, BlendMode.SourceAtop, linear: false));
     }
 
     /// <summary>

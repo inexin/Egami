@@ -21,24 +21,29 @@ public sealed partial class RasterCanvas<TPixel>
     /// </remarks>
     protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)
     {
-        if (_clip.Bounds.IsEmpty || paint is not SolidPaint solid)
+        if (_clip.Bounds.IsEmpty)
         {
             return;
         }
 
+        // Blurred text fills as paths, which the blur needs whole.
         Matrix3x2 m = Matrix;
         Font font = run.Font;
         float emX = font.Size * m.M11, emY = font.Size * m.M22;
-        if (m.M12 != 0 || m.M21 != 0 || emX == 0 || emY == 0 || MathF.Abs(emX) > MaxCachedEm || MathF.Abs(emY) > MaxCachedEm)
+        if (m.M12 != 0 || m.M21 != 0 || emX == 0 || emY == 0 || MathF.Abs(emX) > MaxCachedEm || MathF.Abs(emY) > MaxCachedEm || paint.Blur is { Sigma: > 0 })
         {
             base.OnDrawGlyphRun(run, origin, paint);
+            return;
+        }
+
+        if (_target.CreateSink(paint, m, Options.ColorSpace, _clip.Mask, 255) is not ISpanSink sink)
+        {
             return;
         }
 
         Typeface face = font.Typeface;
         bool antialias = paint.Antialias;
         float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm;
-        SolidSink<TPixel> sink = new(_plane, solid, Options.ColorSpace, _clip.Mask, 255);
         Rect clip = _clip.Bounds;
         byte[]? scratch = null;
         ReadOnlySpan<ushort> glyphs = run.Glyphs;

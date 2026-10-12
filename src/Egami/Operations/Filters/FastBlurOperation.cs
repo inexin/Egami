@@ -47,6 +47,9 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
     /// <summary>Gets <see langword="null"/>: running sums round by where they start, so a scope runs the blur on the whole image.</summary>
     public (int X, int Y)? Reach => null;
 
+    /// <summary>Gets how far the box passes read past a pixel, for <see cref="RasterOps.Reach"/>.</summary>
+    internal (int X, int Y) ReadReach => (_x.Reach, _y.Reach);
+
     public IRasterOperation WithCurve(Colors.LinearCurve curve) => new FastBlurOperation(_x, _y, _linear, _strip, curve);
 
     public bool NeedsNewPlane(Size input) => true;

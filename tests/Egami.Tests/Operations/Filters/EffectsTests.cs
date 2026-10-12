@@ -54,6 +54,41 @@ public class EffectsTests
         FilterAssert.Same(expected, effect);
     }
 
+    [Fact]
+    public void InnerShadowIsTheLayerChainOverTheImage()
+    {
+        using Raster<Rgba8> source = FilterAssert.Load("shapes");
+        using Raster<Rgba8> effect = source.Derive(o => o.InnerShadow(3.4f, -2, 2.5f, new Rgba8(10, 0, 60, 160)), Ct);
+
+        // By hand: the color with 1 − the image's alpha, moved with the strips it uncovers opaque, blurred fast, faded, drawn source-atop.
+        using Raster<Rgba8> layer = source.Derive(
+            o => o.ColorMatrix(new ColorMatrix([0, 0, 0, 0, 10 / 255f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60 / 255f, 0, 0, 0, -1, 1]))
+                .Offset(3, -2, EdgeMode.Transparent, new Rgba8(10, 0, 60, 255))
+                .Blur(2.5f, ColorSpace.Encoded, BlurMethod.Fast)
+                .Opacity(160 / 255f),
+            Ct);
+        using Raster<Rgba8> expected = source.Derive(o => o.DrawImage(layer, new Point(0, 0), BlendMode.SourceAtop), Ct);
+        FilterAssert.Same(expected, effect);
+
+        // Nothing falls outside the shape: a fully transparent pixel stays so.
+        Assert.Equal(0, effect.GetPixel(0, 0).A);
+    }
+
+    [Fact]
+    public void ReachSumsWhatEachStepReads()
+    {
+        Assert.Equal(new OperationReach(0, 0), RasterOps.Reach(o => o.ColorMatrix(ColorMatrix.Sepia()).Opacity(0.5f).Arithmetic(PixelMath.Add, 0.1f)));
+        OperationReach blur = RasterOps.Reach(o => o.Blur(4)) ?? throw new InvalidOperationException("A blur's reach is known.");
+        Assert.InRange(blur.X, 11, 14);
+        Assert.Equal(blur.X, blur.Y);
+        OperationReach chain = RasterOps.Reach(o => o.Blur(4).Glow(2, Rgba8.White).InnerShadow(5, 0, 1, Rgba8.Black)) ?? throw new InvalidOperationException("The chain's reach is known.");
+        Assert.True(chain.X > blur.X + 5);
+        Assert.True(chain.X > chain.Y);
+        Assert.Null(RasterOps.Reach(o => o.Resize(10, 10)));
+        Assert.Null(RasterOps.Reach(o => o.Blur(1).Rotate(10)));
+        Assert.Throws<ArgumentNullException>(() => RasterOps.Reach(null!));
+    }
+
     [Theory]
     [InlineData(0.8f, 10f, 1f)]
     [InlineData(0.5f, 3f, 2.5f)]

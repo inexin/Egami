@@ -29,13 +29,35 @@ internal sealed class TraceCanvas(float width, float height) : Drawing.Canvas(wi
 
     protected override void OnDrawPaint(Paint paint) => Calls.Add($"DrawPaint {P(paint)}");
 
-    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint) => Calls.Add($"DrawRect {R(rect)} {S(stroke)} {P(paint)}");
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+    {
+        if (!Fallback(paint, c => c.FillRect(rect, paint)))
+        {
+            Calls.Add($"DrawRect {R(rect)} {S(stroke)} {P(paint)}");
+        }
+    }
 
     protected override void OnDrawRoundRect(RoundRect roundRect, Stroke? stroke, Paint paint) => Calls.Add($"DrawRoundRect {R(roundRect.Bounds)} {S(stroke)} {P(paint)}");
 
-    protected override void OnDrawOval(RectF oval, Stroke? stroke, Paint paint) => Calls.Add($"DrawOval {R(oval)} {S(stroke)} {P(paint)}");
+    protected override void OnDrawOval(RectF oval, Stroke? stroke, Paint paint)
+    {
+        if (!Fallback(paint, c => c.FillOval(oval, paint)))
+        {
+            Calls.Add($"DrawOval {R(oval)} {S(stroke)} {P(paint)}");
+        }
+    }
 
-    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint) => Calls.Add(F($"DrawPath {path.Verbs.Length} {path.FillRule} {S(stroke)} {P(paint)}"));
+    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+    {
+        if (!Fallback(paint, c => c.FillPath(path, paint)))
+        {
+            Calls.Add(F($"DrawPath {path.Verbs.Length} {path.FillRule} {S(stroke)} {P(paint)}"));
+        }
+    }
+
+    protected override void OnSaveLayer(LayerOptions options) => Calls.Add(F($"SaveLayer {options.Opacity} {options.BlendMode} {options.Isolated}"));
+
+    protected override void OnRestoreLayer() => Calls.Add("RestoreLayer");
 
     protected override void OnDrawPoints(PointMode mode, ReadOnlySpan<Vector2> points, Stroke stroke, Paint paint) => Calls.Add(F($"DrawPoints {mode} {points.Length} {S(stroke)} {P(paint)}"));
 
@@ -52,6 +74,20 @@ internal sealed class TraceCanvas(float width, float height) : Drawing.Canvas(wi
     }
 
     internal FallbackImage? Fallback(Action<Drawing.Canvas> draw, float scale) => RasterizeFallback(draw, scale);
+
+    /// <summary>A custom paint runs C#, which a vector page cannot hold: it goes through the raster fallback, as a PDF backend would.</summary>
+    private bool Fallback(Paint paint, Action<Drawing.Canvas> draw)
+    {
+        if (paint is not CustomPaint)
+        {
+            return false;
+        }
+
+        FallbackImage? image = RasterizeFallback(draw);
+        Calls.Add(image is null ? "Fallback empty" : F($"Fallback {image.Image.Width}x{image.Image.Height} {R(image.DeviceBounds)}"));
+        image?.Image.Dispose();
+        return true;
+    }
 
     private static string F(FormattableString s) => s.ToString(CultureInfo.InvariantCulture);
 

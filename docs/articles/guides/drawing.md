@@ -1,7 +1,7 @@
 # Drawing
 
 Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a `Canvas`. It is a
-preview (1.0.0-preview.2): its API may still change before 1.0. Text is drawn with Egami.Fonts; see
+preview (1.0.0-preview.3): its API may still change before 1.0. Text is drawn with Egami.Fonts; see
 [Fonts and text](text.md).
 
 ## A canvas
@@ -57,6 +57,77 @@ A color converts to a `SolidPaint` wherever a `Paint` is expected. The paint als
 `Antialias`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#paints)]
+
+### Gradients
+
+`LinearGradient`, `RadialGradient`, `ConicalGradient` (between two circles, as the HTML canvas, Skia and PDF define it) and
+`SweepGradient` take `GradientStop`s from 0 to 1. `Tile` says what lies past the ends (`Clamp`, `Repeat`, `Mirror`, `Decal`), and
+with `Clamp`, `ExtendStart` and `ExtendEnd` can leave one side empty, as a PDF shading's Extend does. Stops mix in encoded sRGB by
+default, or in linear light, Oklab or Oklch with a `HueMethod` (`GradientInterpolation`, whose `InterpolationSpace` names the
+space), as CSS Color 4 defines them, and premultiplied so a fade to a transparent color never darkens. Every paint has a
+`LocalMatrix`, which turns a radial gradient into an ellipse. On 8-bit targets a gradient reads 1024 colors made once per paint;
+`Dither` adds a 4×4 ordered pattern that hides banding on large soft ramps.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#gradients)]
+
+### Images, noise and your own paints
+
+`ImagePaint` fills with an image under its local matrix, tiled per axis, sampled by Egami's filters and from a `MipChain` level
+when shrunk. `NoisePaint.Fractal` and `NoisePaint.Turbulence` (its `NoiseType`) are SVG's feTurbulence (matching SkiaSharp's noise
+shaders), and `NoisePaint.Simplex` is smoother and tiles exactly. `BlendPaint` combines two paints with a blend mode,
+`WithColorMatrix` runs a color matrix on a paint (a `ColorMatrixPaint`), and a `CustomPaint` record fills rows of premultiplied
+colors from C#.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#image-paint)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#noise)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#composed-paints)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#custom-paint)]
+
+## Layers
+
+`SaveLayer` sends later drawing into a layer that the matching `Restore` merges with an opacity, a blend mode, a filter (any chain
+of Egami's operations that keeps the size) and a soft mask: what PDF calls a transparency group. Two overlapping shapes in a
+half-opacity layer fade as one. The layer covers only its bounds inside the clip, grown by the filter's reach (`RasterOps.Reach`,
+an `OperationReach`), so a blur near the clip's edge still sees what was drawn just outside it. `Backdrop` runs a chain on what
+lies behind the layer first, for frosted glass, and `Isolated = false` starts the layer from the backdrop.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#layers)]
+
+A `SoftMask` is drawn on its own canvas; its luminosity over a backdrop color, or its alpha, through an optional transfer curve,
+multiplies the layer, as a PDF soft mask does.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#soft-mask)]
+
+### Coming from the reference drawing library's layer effects
+
+the reference drawing library 3 names its layer effects; in Egami each is a `LayerOptions.Filter` or `Backdrop` chain, so any Egami
+operation works on a layer.
+
+| the reference drawing library | Egami |
+| --- | --- |
+| Gaussian or box blur effect | `Filter = o => o.Blur(sigma)` or `o.BoxBlur(radius)` |
+| Drop shadow | `Filter = o => o.DropShadow(dx, dy, sigma, color, new DropShadowOptions { Expand = false })` |
+| Outer glow | `Filter = o => o.Glow(sigma, color, spread)` |
+| Inner glow | `Filter = o => o.Glow(sigma, color, spread, inner: true)` |
+| Inner shadow | `Filter = o => o.InnerShadow(dx, dy, sigma, color)` |
+| Color matrix, brightness, contrast, saturation, grayscale, sepia, hue | `Filter = o => o.ColorMatrix(...)` and the tone steps |
+| Opacity | `LayerOptions.Opacity` |
+| Blend mode | `LayerOptions.BlendMode` |
+| Backdrop blur and other backdrop effects | `Backdrop = o => o.Blur(sigma)` and any other chain |
+
+## Blurs and shadows
+
+`Paint.Blur` takes a `MaskBlur`: the shape's coverage blurred by a sigma in device pixels before the paint is applied, keeping
+the inside and outside as its `BlurStyle` says, as Skia's blur mask filter. Axis-aligned rectangles and round rectangles with the
+normal style are blurred exactly, from the error function. `DrawShadow` casts a Material-style shadow from a shape's elevation and
+a light, after Skia's shadow utilities; a group's drop shadow is a layer filter.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#blur)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#shadows)]
 
 ## Clips
 
@@ -141,7 +212,9 @@ or relative, compact or spaced, to a precision (`SvgPathFormat`).
 `Canvas` is abstract. Each public call is checked, tracked (transform, clip bounds, save stack) and then ends in one protected
 hook, so a backend sees shapes and pens as data: a PDF page can write a rectangle as `re` and a pen as `w`, `J`, `j` and `M`.
 Hooks a backend leaves alone have defaults: rectangles, round rectangles and ovals become paths. A backend that cannot express a
-call (a blend mode its format lacks) can draw it into pixels with `RasterizeFallback`, which returns a `FallbackImage`.
+call (a blend mode its format lacks, a `CustomPaint`, a filtered layer) can draw it into pixels with `RasterizeFallback`, which
+returns a `FallbackImage`. Layers reach a backend through `OnSaveLayer` and `OnRestoreLayer`; a PDF page would write a
+transparency group with its opacity, blend mode and soft mask.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#backend)]
 

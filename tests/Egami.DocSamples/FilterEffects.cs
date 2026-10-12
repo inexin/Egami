@@ -53,6 +53,20 @@ public class FilterEffects
     }
 
     [Fact]
+    public void InnerShadow()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgba8> logo = Logo();
+
+        #region inner-shadow
+        // A shadow inside the badge, cast from up and left, as a pressed button looks.
+        using Raster pressed = logo.Derive(ops => ops.InnerShadow(2, 3, 3, new Rgba8(0, 0, 0, 140)), Ct);
+        #endregion
+
+        Assert.Equal(logo.Width, pressed.Width);
+    }
+
+    [Fact]
     public void Bloom()
     {
         using SampleFiles files = new();

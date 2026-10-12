@@ -18,6 +18,12 @@ An operation implements `IRasterOperation`: it says what size it makes and fills
 - `TPixel.Layout` tells you the pixel type, so you can take a fast path for the types you know and fall back to `ToScaled` and
   `FromScaled` for the rest. Check `Layout.Alpha` before you assume straight alpha.
 
+To run a chain on part of a larger picture, such as a tile or a canvas layer, pad the part by how far the chain reads:
+`RasterOps.Reach` returns that as an `OperationReach`, or `null` when a step reads the whole image (a resize, a turn, a custom
+operation).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Extending.cs#reach)]
+
 ## Formats
 
 A format is a `FormatInfo`: a name, extensions, a signature check, a reader and a writer.

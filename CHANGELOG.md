@@ -181,6 +181,42 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   sums now start at fixed rows and columns, so the pixels are the same at any thread count. `Blur` above σ 100 runs its three
   boxes in one pass, without rounding between them: about three times faster on many cores, and a third faster on one.
 
+### Paints and layers in core
+
+- `RasterOps.Reach` and `OperationReach`: how far a chain reads past each pixel (blurs, convolutions, morphology, glows, drop and
+  inner shadows; zero for pixel-by-pixel steps; `null` when a step reads the whole image), so a chain can run on a padded part of
+  a picture. Egami.Drawing's layers use it to grow before a filter.
+- `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
+  style; exactly the chain written by hand.
+
+### Egami.Drawing 1.0.0-preview.3
+
+Paints and layers, in the same preview package. See [Gradients](docs/articles/guides/drawing.md#gradients),
+[Layers](docs/articles/guides/drawing.md#layers) and [Blurs and shadows](docs/articles/guides/drawing.md#blurs-and-shadows).
+
+- Gradients: `LinearGradient`, `RadialGradient`, `ConicalGradient` (two circles, as the HTML canvas, Skia and PDF) and
+  `SweepGradient`, with `GradientStop`s, `TileMode` (`Clamp`, `Repeat`, `Mirror`, `Decal`), PDF's one-sided extend
+  (`ExtendStart`, `ExtendEnd`), mixing in encoded sRGB, linear sRGB, Oklab or Oklch with CSS Color 4's hue methods
+  (`GradientInterpolation`), premultiplied by default, and ordered `Dither` (off by default). Every paint has a `LocalMatrix`.
+  Within a mean level of SkiaSharp's gradients on every kind and tile mode, and of the reference drawing library's linear and radial brushes.
+- `ImagePaint`: an image as a paint, tiled per axis, sampled with Egami's filters and from a `MipChain` level when shrunk; a
+  whole-pixel shift copies rows. Within a mean level of SkiaSharp's image shaders and the reference drawing library's image brush.
+- `NoisePaint`: SVG feTurbulence's `Fractal` and `Turbulence` (within a mean level of SkiaSharp's noise shaders unstitched) and
+  `Simplex`, smoother and exactly tileable.
+- `BlendPaint` (two paints with any blend mode), `Paint.WithColorMatrix` (`ColorMatrixPaint`) and `CustomPaint` (rows from C#,
+  the same at any core count; vector backends use the raster fallback).
+- Layers: `SaveLayer` with `LayerOptions` (`Bounds`, `Opacity`, `BlendMode`, `Filter` as any chain of Egami operations,
+  `Backdrop`, `Mask`, `Isolated`) and `SaveLayer(opacity)`; backends get `OnSaveLayer` and `OnRestoreLayer`. Layers are
+  premultiplied in the canvas's class and cover only their bounds in the clip, grown by the filter's reach. `SoftMask` with
+  `SoftMaskKind.Alpha` or `Luminosity`, a backdrop color and a transfer curve, as PDF soft masks. Within a mean level of SkiaSharp's
+  saveLayer with alpha and blend modes.
+- `Paint.Blur` with `MaskBlur` and `BlurStyle` (`Normal`, `Solid`, `Outer`, `Inner`), on Egami's fast blur, as Skia's blur mask
+  filter (within a mean level of SkiaSharp's in every style); axis-aligned rectangles and round rectangles are blurred exactly from
+  the error function. `DrawShadow` with `ShadowOptions`: ambient and spot shadows after Skia's shadow model.
+- Speed (ms, 2048 × 2048, 1 thread and 24 cores): a full-frame linear gradient 26 and 3.8 against the reference drawing library 2.1.7's 378
+  and 33; radial 22 and 2.9 against 254 and 30; a tiled image brush 5.6 and 0.8 against 41 and 4.3. A full-frame half-opacity
+  layer costs 1.38 times the drawing inside it at 1 thread and 1.14 at 24.
+
 ### Egami.Drawing 1.0.0-preview.2
 
 Path geometry, in the same preview package. See [Path geometry](docs/articles/guides/drawing.md#path-geometry).

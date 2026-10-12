@@ -13,6 +13,11 @@ namespace Egami.Drawing;
 /// Compositor in the pixel type's own precision. A clip that is a pixel-aligned rectangle stays a rectangle; any other clip
 /// becomes a coverage mask over the clip's bounds. A call whose area exceeds 256 KiB of destination rows spreads its rows over
 /// up to <see cref="EgamiContext.MaxParallelism"/> cores, with the same pixels at any core count.
+/// <para>
+/// A layer from <see cref="Canvas.SaveLayer(LayerOptions?)"/> is premultiplied in the raster's class (PremulRgba8 for 8-bit
+/// rasters, PremulRgbaF32 for deeper ones) and covers only its bounds inside the clip, grown by its filter's reach; its memory
+/// comes from the raster's <see cref="EgamiContext"/> and is released at <see cref="Canvas.Restore"/>.
+/// </para>
 /// </summary>
 /// <typeparam name="TPixel">The raster's pixel type.</typeparam>
 /// <example>
@@ -21,11 +26,13 @@ namespace Egami.Drawing;
 public sealed partial class RasterCanvas<TPixel> : Canvas
     where TPixel : unmanaged, IPixelType<TPixel>
 {
-    private readonly PixelPlane<TPixel> _plane;
     private readonly EgamiContext _context;
     private readonly CoverageRasterizer _rasterizer;
     private readonly EdgeList _edges = new();
+    private readonly DrawTools _tools;
     private readonly Stack<ClipState> _clips = new();
+    private readonly Stack<Layer> _layers = new();
+    private RasterTarget _target;
     private ClipState _clip;
 
     /// <summary>Initializes a new instance of the <see cref="RasterCanvas{TPixel}"/> class over a raster's first frame.</summary>
@@ -42,10 +49,11 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     internal RasterCanvas(PixelPlane<TPixel> plane, EgamiContext context, CanvasOptions? options)
         : base(plane.Width, plane.Height)
     {
-        _plane = plane;
         _context = context;
         Options = options ?? CanvasOptions.Default;
         _rasterizer = new CoverageRasterizer(context.Memory, context.MaxParallelism);
+        _tools = new DrawTools(_rasterizer, _edges, Options, context);
+        _target = new RasterTarget<TPixel>(plane);
         _clip = new ClipState(new Rect(0, 0, plane.Width, plane.Height), null);
     }
 
@@ -58,6 +66,9 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         get => _rasterizer.ForcedBands;
         set => _rasterizer.ForcedBands = value;
     }
+
+    /// <summary>Gets the device rectangle the current layer covers, for tests; the whole raster outside layers.</summary>
+    internal Rect TargetArea => _target.Area;
 
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
@@ -72,17 +83,107 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     protected override void OnSave() => _clips.Push(_clip);
 
     /// <inheritdoc/>
-    protected override void OnRestore()
-    {
-        ClipState restored = _clips.Pop();
+    protected override void OnRestore() => PopClip();
 
-        // A mask made since the matching Save is referenced by nothing else.
-        if (_clip.Mask is not null && !ReferenceEquals(_clip.Mask, restored.Mask))
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Allocates the layer over the options' bounds inside the clip, grown by the filter's reach (the whole bounds, or the raster,
+    /// when the reach is unknown), and starts it transparent, as a copy of the backdrop, or as the filtered backdrop. Inside the
+    /// layer the clip is the layer's rectangle: the clip of this call applies once, when the layer is merged.
+    /// </remarks>
+    protected override void OnSaveLayer(LayerOptions options)
+    {
+        _clips.Push(_clip);
+        RasterTarget parent = _target;
+        Rect? bounds = options.Bounds is RectF b ? DeviceRect(b) : null;
+        Rect merge = _clip.Bounds.Intersect(parent.Area);
+        if (bounds is Rect limit)
         {
-            _clip.Mask.Dispose();
+            merge = merge.Intersect(limit);
         }
 
-        _clip = restored;
+        if (merge.IsEmpty)
+        {
+            _layers.Push(new Layer(parent, null, options, merge));
+            _clip = new ClipState(default, null);
+            return;
+        }
+
+        // Grown by the filter's reach so a blur near the clip's edge sees what is drawn just outside it.
+        Rect area = merge;
+        if (options.Filter is not null)
+        {
+            area = RasterOps.Reach(options.Filter) is OperationReach reach ? Grow(merge, reach) : (bounds ?? parent.Area);
+            if (bounds is Rect limited)
+            {
+                area = area.Intersect(limited);
+            }
+
+            area = Union(area, merge);
+        }
+
+        RasterTarget layer = parent.CreateLayer(area, _context);
+        try
+        {
+            if (options.Backdrop is not null)
+            {
+                StartFromBackdrop(parent, layer, area, options.Backdrop);
+            }
+            else if (!options.Isolated)
+            {
+                Rect shared = area.Intersect(parent.Area);
+                if (!shared.IsEmpty)
+                {
+                    layer.CopyFrom(parent, shared);
+                }
+            }
+        }
+        catch
+        {
+            layer.Dispose();
+            throw;
+        }
+
+        _layers.Push(new Layer(parent, layer, options, merge));
+        _target = layer;
+        _clip = new ClipState(area, null);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>Filters the layer, multiplies it by its soft mask, and merges it with its opacity and blend mode through the restored clip.</remarks>
+    protected override void OnRestoreLayer()
+    {
+        Layer layer = _layers.Pop();
+        PopClip();
+        _target = layer.Parent;
+        if (layer.Target is not RasterTarget pixels)
+        {
+            return;
+        }
+
+        try
+        {
+            LayerOptions options = layer.Options;
+            if (options.Filter is not null)
+            {
+                pixels.Filter(options.Filter);
+            }
+
+            if (options.Mask is not null)
+            {
+                ApplyMask(pixels, options.Mask, layer.Merge);
+            }
+
+            Rect merge = layer.Merge.Intersect(_clip.Bounds);
+            if (!merge.IsEmpty)
+            {
+                _target.Merge(pixels, merge, _clip.Mask, options.BlendMode, options.Opacity, Options.ColorSpace);
+            }
+        }
+        finally
+        {
+            pixels.Dispose();
+        }
     }
 
     /// <inheritdoc/>
@@ -153,7 +254,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     /// <remarks>Fills the clip's whole pixels directly, through its mask when it has one.</remarks>
     protected override void OnDrawPaint(Paint paint)
     {
-        if (_clip.Bounds.IsEmpty || paint is not SolidPaint solid)
+        if (_clip.Bounds.IsEmpty)
         {
             return;
         }
@@ -162,14 +263,42 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         _edges.Clear();
         _edges.Add(new Vector2(b.Right, b.Top), new Vector2(b.Right, b.Bottom));
         _edges.Add(new Vector2(b.Left, b.Bottom), new Vector2(b.Left, b.Top));
-        SolidSink<TPixel> sink = new(_plane, solid, Options.ColorSpace, _clip.Mask, 255);
-        _rasterizer.Fill(_edges, _clip.Bounds, FillRule.NonZero, antialias: true, sink, System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+        FillEdges(FillRule.NonZero, antialias: true, paint with { Blur = null }, 255);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>An axis-aligned rectangle with a normal <see cref="Paint.Blur"/> is blurred exactly, from the error function.</remarks>
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+    {
+        if (stroke is null && TryAnalyticBlur(paint, out MaskBlur blur, out Matrix3x2 m))
+        {
+            Vector2 a = Vector2.Transform(rect.Position, m), c = Vector2.Transform(new Vector2(rect.Right, rect.Bottom), m);
+            RectF device = RectF.FromEdges(MathF.Min(a.X, c.X), MathF.Min(a.Y, c.Y), MathF.Max(a.X, c.X), MathF.Max(a.Y, c.Y));
+            DrawAnalytic(paint, sink => MaskBlurs.FillRect(device, blur.Sigma, _clip.Bounds, sink));
+            return;
+        }
+
+        base.OnDrawRect(rect, stroke, paint);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>An axis-aligned round rectangle with a normal <see cref="Paint.Blur"/> is blurred from the error function.</remarks>
+    protected override void OnDrawRoundRect(RoundRect roundRect, Stroke? stroke, Paint paint)
+    {
+        if (stroke is null && TryAnalyticBlur(paint, out MaskBlur blur, out Matrix3x2 m) && m.M11 > 0 && m.M22 > 0)
+        {
+            RoundRect device = DeviceRoundRect(roundRect, m);
+            DrawAnalytic(paint, sink => MaskBlurs.FillRoundRect(device, blur.Sigma, _clip.Bounds, sink, _context.MaxParallelism));
+            return;
+        }
+
+        base.OnDrawRoundRect(roundRect, stroke, paint);
     }
 
     /// <inheritdoc/>
     protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
     {
-        if (_clip.Bounds.IsEmpty || paint is not SolidPaint solid)
+        if (_clip.Bounds.IsEmpty)
         {
             return;
         }
@@ -211,79 +340,15 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             }
         }
 
-        SolidSink<TPixel> sink = new(_plane, solid, Options.ColorSpace, _clip.Mask, scale);
-        _rasterizer.Fill(_edges, _clip.Bounds, rule, paint.Antialias, sink, System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+        FillEdges(rule, paint.Antialias, paint, scale);
     }
 
     /// <inheritdoc/>
     protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
     {
-        Rect clip = _clip.Bounds;
-        if (clip.IsEmpty)
+        if (!_clip.Bounds.IsEmpty)
         {
-            return;
-        }
-
-        BlendMode mode = paint?.BlendMode ?? BlendMode.SourceOver;
-        float opacity = paint?.Opacity ?? 1;
-        bool antialias = paint?.Antialias ?? true;
-        ColorSpace colorSpace = Options.ColorSpace;
-
-        // Image pixel (u, v) → device: scale and move the source rectangle onto the destination, then the canvas transform.
-        float sx = destination.Width / source.Width, sy = destination.Height / source.Height;
-        Matrix3x2 toDevice = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(sx, sy)
-            * Matrix3x2.CreateTranslation(destination.X, destination.Y) * Matrix;
-
-        Raster<TPixel>? converted = image as Raster<TPixel>;
-        bool owned = converted is null;
-        converted ??= image.As<TPixel>();
-        try
-        {
-            if (IsIntegerPlacement(toDevice, source, out Point offset))
-            {
-                DrawPlaced(converted, source.RoundOut(), offset, clip, mode, opacity, colorSpace);
-                return;
-            }
-
-            // The destination's device outline gives the edge coverage; the transform runs over the part of it inside the clip.
-            Path area = Path.Rect(destination).Transform(Matrix);
-            _edges.Clear();
-            Flattener.Flatten(area, Matrix3x2.Identity, Options.Tolerance, _edges);
-            Rect viewport = clip.Intersect(_edges.Bounds.RoundOut());
-            if (viewport.IsEmpty)
-            {
-                return;
-            }
-
-            // The source is cut to the whole pixels it uses, so samples near its edges read only pixels inside it.
-            Rect crop = source.RoundOut();
-            Matrix3x2 cropToDevice = Matrix3x2.CreateTranslation(crop.X, crop.Y) * toDevice;
-            TransformOptions options = new()
-            {
-                Filter = sampling.Filter,
-                Edges = sampling.Edges == EdgeMode.Transparent ? EdgeMode.Clamp : sampling.Edges,
-                Background = sampling.Background,
-                ColorSpace = sampling.ColorSpace,
-                Viewport = viewport,
-            };
-            using Raster<TPixel> placed = converted.Derive(ops =>
-            {
-                if (crop != new Rect(0, 0, converted.Width, converted.Height))
-                {
-                    ops.Crop(crop);
-                }
-
-                ops.Transform(cropToDevice, options);
-            });
-            ImageSink<TPixel> sink = new(_plane, placed, viewport.Position, mode, opacity, colorSpace, _clip.Mask);
-            _rasterizer.Fill(_edges, viewport, FillRule.NonZero, antialias, sink, System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
-        }
-        finally
-        {
-            if (owned)
-            {
-                converted.Dispose();
-            }
+            _target.DrawImage(_tools, image, source, destination, Matrix, sampling, paint, _clip.Bounds, _clip.Mask);
         }
     }
 
@@ -293,60 +358,23 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         return raster.Frames[0].Plane;
     }
 
-    /// <summary>Whether the image maps onto whole device pixels one to one: no scale, no turn, a whole-pixel shift.</summary>
-    private static bool IsIntegerPlacement(Matrix3x2 m, RectF source, out Point offset)
+    private static Rect Union(Rect a, Rect b)
     {
-        offset = default;
-        if (m.M11 != 1 || m.M22 != 1 || m.M12 != 0 || m.M21 != 0 || m.M31 != MathF.Round(m.M31) || m.M32 != MathF.Round(m.M32))
-        {
-            return false;
-        }
-
-        if (source.X != MathF.Round(source.X) || source.Y != MathF.Round(source.Y) || source.Width != MathF.Round(source.Width) || source.Height != MathF.Round(source.Height))
-        {
-            return false;
-        }
-
-        offset = new Point((int)m.M31, (int)m.M32);
-        return true;
+        int left = Math.Min(a.X, b.X), top = Math.Min(a.Y, b.Y);
+        return new Rect(left, top, Math.Max(a.Right, b.Right) - left, Math.Max(a.Bottom, b.Bottom) - top);
     }
 
-    /// <summary>Blends source rows straight onto the destination, as 2.5.1's DrawImage does, through the clip mask when there is one.</summary>
-    private void DrawPlaced(Raster<TPixel> image, Rect source, Point offset, Rect clip, BlendMode mode, float opacity, ColorSpace colorSpace)
-    {
-        // The source rectangle lands at its own position plus the offset.
-        Rect target = new Rect(source.X + offset.X, source.Y + offset.Y, source.Width, source.Height).Intersect(clip);
-        if (target.IsEmpty)
-        {
-            return;
-        }
+    private static Rect Grow(Rect r, OperationReach reach)
+        => new(r.X - reach.X, r.Y - reach.Y, r.Width + (2 * reach.X), r.Height + (2 * reach.Y));
 
-        byte[]? scratch = _clip.Mask is null ? null : ArrayPool<byte>.Shared.Rent(target.Width);
-        try
-        {
-            for (int y = target.Y; y < target.Bottom; y++)
-            {
-                ReadOnlySpan<TPixel> from = image.Row(y - offset.Y).Slice(target.X - offset.X, target.Width);
-                Span<TPixel> to = _plane.Row(y).Slice(target.X, target.Width);
-                if (_clip.Mask is ClipMask mask)
-                {
-                    Span<byte> coverage = scratch.AsSpan(0, target.Width);
-                    mask.Row(y).Slice(target.X - mask.Bounds.X, target.Width).CopyTo(coverage);
-                    Compositor.Blend(mode, from, to, coverage, opacity, colorSpace);
-                }
-                else
-                {
-                    Compositor.Blend(mode, from, to, opacity, colorSpace);
-                }
-            }
-        }
-        finally
-        {
-            if (scratch is not null)
-            {
-                ArrayPool<byte>.Shared.Return(scratch);
-            }
-        }
+    /// <summary>A round rectangle under a positive scale and translation, in device pixels.</summary>
+    private static RoundRect DeviceRoundRect(RoundRect roundRect, Matrix3x2 m)
+    {
+        RectF r = roundRect.Bounds;
+        RectF device = new((r.X * m.M11) + m.M31, (r.Y * m.M22) + m.M32, r.Width * m.M11, r.Height * m.M22);
+        CornerRadii radii = roundRect.Radii;
+        Vector2 s = new(m.M11, m.M22);
+        return new RoundRect(device, new CornerRadii(radii.TopLeft * s, radii.TopRight * s, radii.BottomRight * s, radii.BottomLeft * s));
     }
 
     /// <summary>
@@ -379,6 +407,129 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         return true;
     }
 
+    /// <summary>Fills the edge list with a paint through the clip, blurred when the paint asks.</summary>
+    private void FillEdges(FillRule rule, bool antialias, Paint paint, byte scale)
+    {
+        ISpanSink? sink = _target.CreateSink(paint, Matrix, Options.ColorSpace, _clip.Mask, scale);
+        if (sink is null)
+        {
+            return;
+        }
+
+        if (paint.Blur is { Sigma: > 0 } blur)
+        {
+            MaskBlurs.Fill(_tools, _edges, rule, antialias, blur, _clip.Bounds, sink);
+        }
+        else
+        {
+            _rasterizer.Fill(_edges, _clip.Bounds, rule, antialias, sink, _target.BytesPerPixel);
+        }
+    }
+
+    /// <summary>Whether a fill can take the exact blur: a normal blur, antialiased, under a scale and translation.</summary>
+    private bool TryAnalyticBlur(Paint paint, out MaskBlur blur, out Matrix3x2 m)
+    {
+        m = Matrix;
+        blur = paint.Blur ?? default;
+        return paint.Blur is { Sigma: > 0, Style: BlurStyle.Normal } && paint.Antialias && m.M12 == 0 && m.M21 == 0 && !_clip.Bounds.IsEmpty;
+    }
+
+    private void DrawAnalytic(Paint paint, Action<ISpanSink> fill)
+    {
+        if (_target.CreateSink(paint, Matrix, Options.ColorSpace, _clip.Mask, 255) is ISpanSink sink)
+        {
+            fill(sink);
+        }
+    }
+
+    /// <summary>A local rectangle's device bounds, rounded out to whole pixels.</summary>
+    private Rect DeviceRect(RectF local)
+    {
+        if (local.IsEmpty)
+        {
+            return default;
+        }
+
+        Matrix3x2 m = Matrix;
+        RectF device = RectF.FromPoints(
+        [
+            Vector2.Transform(new Vector2(local.Left, local.Top), m),
+            Vector2.Transform(new Vector2(local.Right, local.Top), m),
+            Vector2.Transform(new Vector2(local.Right, local.Bottom), m),
+            Vector2.Transform(new Vector2(local.Left, local.Bottom), m),
+        ]);
+        return device.IsFinite ? device.Intersect(new RectF(-1e8f, -1e8f, 2e8f, 2e8f)).RoundOut() : default;
+    }
+
+    /// <summary>Starts a layer as the backdrop run through a chain, reading as far around the layer as the chain reaches.</summary>
+    private void StartFromBackdrop(RasterTarget parent, RasterTarget layer, Rect area, Action<RasterOps> backdrop)
+    {
+        Rect read = (RasterOps.Reach(backdrop) is OperationReach reach ? Grow(area, reach) : parent.Area).Intersect(parent.Area);
+        if (read.IsEmpty)
+        {
+            return;
+        }
+
+        using RasterTarget copy = parent.CreateLayer(read, _context);
+        copy.CopyFrom(parent, read);
+        copy.Filter(backdrop);
+        Rect shared = area.Intersect(read);
+        if (!shared.IsEmpty)
+        {
+            layer.CopyFrom(copy, shared);
+        }
+    }
+
+    /// <summary>Draws a soft mask over the merge area and multiplies the layer by it.</summary>
+    private void ApplyMask(RasterTarget layer, SoftMask mask, Rect area)
+    {
+        if (area.IsEmpty)
+        {
+            return;
+        }
+
+        using Raster<RgbaF32> drawn = Raster.Create<RgbaF32>(area.Width, area.Height, _context);
+        using (RasterCanvas<RgbaF32> canvas = new(drawn, Options))
+        {
+            if (mask.Kind == SoftMaskKind.Luminosity)
+            {
+                canvas.Clear(mask.Backdrop);
+            }
+
+            canvas.SetMatrix(Matrix * Matrix3x2.CreateTranslation(-area.X, -area.Y));
+            mask.Draw(canvas);
+        }
+
+        float[] values = new float[area.Width];
+        Func<float, float>? transfer = mask.Transfer;
+        for (int y = 0; y < area.Height; y++)
+        {
+            ReadOnlySpan<RgbaF32> row = drawn.Row(y);
+            for (int x = 0; x < values.Length; x++)
+            {
+                RgbaF32 c = row[x];
+                float v = mask.Kind == SoftMaskKind.Alpha ? c.A : (0.2126f * c.R) + (0.7152f * c.G) + (0.0722f * c.B);
+                v = Math.Clamp(v, 0, 1);
+                values[x] = transfer is null ? v : Math.Clamp(transfer(v), 0, 1);
+            }
+
+            layer.Multiply(area.Y + y, area.X, values);
+        }
+    }
+
+    private void PopClip()
+    {
+        ClipState restored = _clips.Pop();
+
+        // A mask made since the matching Save is referenced by nothing else.
+        if (_clip.Mask is not null && !ReferenceEquals(_clip.Mask, restored.Mask))
+        {
+            _clip.Mask.Dispose();
+        }
+
+        _clip = restored;
+    }
+
     private void SetClip(ClipState next)
     {
         // The current mask is dropped unless a saved state still holds it.
@@ -391,4 +542,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     }
 
     private readonly record struct ClipState(Rect Bounds, ClipMask? Mask);
+
+    /// <summary>A layer in progress: what it draws over, its pixels (none when the clip was empty), its options and where it merges.</summary>
+    private readonly record struct Layer(RasterTarget Parent, RasterTarget? Target, LayerOptions Options, Rect Merge);
 }

@@ -88,11 +88,15 @@ public abstract partial class Canvas : IDisposable
         CheckLive();
         int count = SaveCount;
         _saved.Push(_state);
+        _state = _state with { IsLayer = false };
         OnSave();
         return count;
     }
 
-    /// <summary>Brings back the transform and clip of the matching <see cref="Save"/>.</summary>
+    /// <summary>
+    /// Brings back the transform and clip of the matching <see cref="Save"/>, or ends the layer of the matching
+    /// <see cref="SaveLayer(LayerOptions?)"/> by merging it into what lies below.
+    /// </summary>
     /// <exception cref="InvalidOperationException">There is no saved state.</exception>
     public void Restore()
     {
@@ -102,8 +106,16 @@ public abstract partial class Canvas : IDisposable
             throw new InvalidOperationException("Restore was called without a matching Save.");
         }
 
+        bool layer = _state.IsLayer;
         _state = _saved.Pop();
-        OnRestore();
+        if (layer)
+        {
+            OnRestoreLayer();
+        }
+        else
+        {
+            OnRestore();
+        }
     }
 
     /// <summary>Restores until <see cref="SaveCount"/> is <paramref name="count"/>; nothing when it already is or is lower.</summary>
@@ -867,7 +879,7 @@ public abstract partial class Canvas : IDisposable
         return m;
     }
 
-    private readonly record struct State(Matrix3x2 Matrix, RectF ClipBounds);
+    private readonly record struct State(Matrix3x2 Matrix, RectF ClipBounds, bool IsLayer = false);
 }
 
 /// <summary>A drawing call rendered into pixels by <c>Canvas.RasterizeFallback</c>, for a backend to place as an image.</summary>

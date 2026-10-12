@@ -1,6 +1,6 @@
 # Effects
 
-The editor's effects menu: a vignette, glows and bloom, pixelate, oil paint, Kuwahara, spread and drop shadows. Every effect
+The editor's effects menu: a vignette, glows and bloom, pixelate, oil paint, Kuwahara, spread, drop and inner shadows. Every effect
 keeps the image's size, except `DropShadow`, which by default grows the canvas to hold the shadow.
 
 | Operation | Does |
@@ -13,6 +13,7 @@ keeps the image's size, except `DropShadow`, which by default grows the canvas t
 | `Kuwahara(radius, sigma)` | Each pixel takes its value from the least varied of four squares: ImageMagick's -kuwahara |
 | `Spread(radius, seed)` | Each pixel takes a random neighbour's value within the radius: ImageMagick's -spread |
 | `DropShadow(dx, dy, sigma, color, options)` | Skia's DropShadow: the alpha moved, blurred and colored, with the image on top |
+| `InnerShadow(dx, dy, sigma, color)` | A shadow inside the alpha shape, cast by everything outside it, as an editor's layer style |
 
 ## Vignette, glow and bloom
 
@@ -75,6 +76,14 @@ gives the same pixels on any machine, at any thread count and inside a scope.
   size stays and it can.
 - `Method` is `BlurMethod.Fast` by default, whose cost does not grow with sigma; `BlurMethod.Exact` uses the Gaussian kernel and is
   within a level of the same chain built from Pad, Offset, ColorMatrix, Convolve and DrawImage.
+
+## Inner shadows
+
+[!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#inner-shadow)]
+
+`InnerShadow` is the chain written by hand: the color with 1 − alpha, moved by the offset rounded to whole pixels with the
+uncovered strips counted as outside, blurred fast, faded by the color's alpha and drawn source-atop. With glows and drop shadows it
+covers an editor's layer styles, and on a canvas layer it is a `LayerOptions.Filter`.
 
 ## Cookbook
 

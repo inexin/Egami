@@ -180,6 +180,27 @@ Boolean operations keep curves, so the frame exports to PDF or SVG exactly. See 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#svg)]
 
+## Paint a dusk sky
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#sky-gradient)]
+
+Mixing in Oklch keeps the hues from turning gray between stops, and `Dither` hides the bands of a wide soft ramp. See
+[Gradients](../guides/drawing.md#gradients).
+
+## Draw a card with a shadow
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#card-shadow)]
+
+## Fade a photo's edges
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#faded-edge)]
+
+## Fade a group as one
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#group-opacity)]
+
+See [Layers](../guides/drawing.md#layers).
+
 ## Watermark with Multiply
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#watermark-multiply)]

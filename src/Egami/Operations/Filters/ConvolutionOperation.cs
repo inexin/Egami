@@ -62,6 +62,9 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
     /// <summary>Gets the kernel's reach, or <see langword="null"/> for wrapping edges and box means: wrapping reads the far edge, and running sums round by where they restart, so both need the whole image.</summary>
     public (int X, int Y)? Reach => _edge == EdgeMode.Wrap || _box ? null : (_rx, _ry);
 
+    /// <summary>Gets how far the kernel reads past a pixel, for <see cref="RasterOps.Reach"/>; a wrapping edge reads the far side.</summary>
+    internal (int X, int Y)? ReadReach => _edge == EdgeMode.Wrap ? null : (_rx, _ry);
+
     public IRasterOperation WithCurve(Colors.LinearCurve curve) =>
         new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve);
 

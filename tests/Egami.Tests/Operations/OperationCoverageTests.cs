@@ -98,6 +98,7 @@ public sealed class OperationCoverageTests : IDisposable
         ["Vignette"] = (_, _) => ops => ops.Vignette(0.6f, 0.5f, new Rgba8(20, 40, 160, 200)),
         ["Glow"] = (_, _) => ops => ops.Glow(3, new Rgba8(255, 200, 0, 220), 0.3f),
         ["Glow-Inner"] = (_, _) => ops => ops.Glow(2.5f, Rgba8.White, inner: true),
+        ["InnerShadow"] = (_, _) => ops => ops.InnerShadow(2, -1.6f, 2, new Rgba8(0, 0, 40, 180)),
         ["Bloom"] = (_, _) => ops => ops.Bloom(0.6f, 4, 1.5f),
         ["Pixelate"] = (_, _) => ops => ops.Pixelate(5, new Point(2, -1)),
         ["OilPaint"] = (_, _) => ops => ops.OilPaint(2),

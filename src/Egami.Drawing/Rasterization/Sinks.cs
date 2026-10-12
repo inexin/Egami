@@ -1,5 +1,7 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 
+using Egami.Drawing.Shading;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -102,7 +104,7 @@ internal abstract class RasterSink(ClipMask? mask, byte scale) : ISpanSink
 internal sealed class SolidSink<TPixel> : RasterSink
     where TPixel : unmanaged, IPixelType<TPixel>
 {
-    private readonly PixelPlane<TPixel> _plane;
+    private readonly RasterTarget<TPixel> _target;
     private readonly BlendMode _mode;
     private readonly RgbaF32 _color;
     private readonly float _opacity;
@@ -110,10 +112,10 @@ internal sealed class SolidSink<TPixel> : RasterSink
     private readonly bool _canFill;
     private readonly TPixel _solid;
 
-    internal SolidSink(PixelPlane<TPixel> plane, SolidPaint paint, ColorSpace colorSpace, ClipMask? mask, byte scale)
+    internal SolidSink(RasterTarget<TPixel> target, SolidPaint paint, ColorSpace colorSpace, ClipMask? mask, byte scale)
         : base(mask, scale)
     {
-        _plane = plane;
+        _target = target;
         _mode = paint.BlendMode;
         _color = paint.Color;
         _opacity = paint.Opacity;
@@ -145,7 +147,7 @@ internal sealed class SolidSink<TPixel> : RasterSink
     public override bool FillsDirectly => _canFill && Plain;
 
     protected override void Write(int y, int x, ReadOnlySpan<byte> coverage)
-        => Compositor.Blend(_mode, _color, _plane.Row(y).Slice(x, coverage.Length), coverage, _opacity, _colorSpace);
+        => Compositor.Blend(_mode, _color, _target.Row(y, x, coverage.Length), coverage, _opacity, _colorSpace);
 
     protected override bool TryFill(int y, int x, int length)
     {
@@ -154,14 +156,97 @@ internal sealed class SolidSink<TPixel> : RasterSink
             return false;
         }
 
-        _plane.Row(y).Slice(x, length).Fill(_solid);
+        _target.Row(y, x, length).Fill(_solid);
         return true;
+    }
+}
+
+/// <summary>
+/// Blends a shaded paint through coverage: the shader fills a run of <typeparamref name="TSource"/> pixels, which Compositor blends
+/// onto the target. <typeparamref name="TSource"/> is the target's own type when it has alpha; for a target without alpha it is
+/// Rgba8 or RgbaF32, and the target's pixels are blended in that type and converted back, so transparent parts of the paint stay
+/// transparent. A covered run of an opaque paint drawn source-over is shaded straight into the target.
+/// </summary>
+internal sealed class ShaderSink<TPixel, TSource> : RasterSink
+    where TPixel : unmanaged, IPixelType<TPixel>
+    where TSource : unmanaged, IPixelType<TSource>
+{
+    private readonly RasterTarget<TPixel> _target;
+    private readonly PixelShader<TSource> _shader;
+    private readonly BlendMode _mode;
+    private readonly float _opacity;
+    private readonly ColorSpace _colorSpace;
+    private readonly bool _direct;
+
+    internal ShaderSink(RasterTarget<TPixel> target, PixelShader<TSource> shader, Paint paint, ColorSpace colorSpace, ClipMask? mask, byte scale)
+        : base(mask, scale)
+    {
+        _target = target;
+        _shader = shader;
+        _mode = paint.BlendMode;
+        _opacity = paint.Opacity;
+        _colorSpace = colorSpace;
+        _direct = paint.Opacity == 1 && (paint.BlendMode == BlendMode.Source || (paint.BlendMode == BlendMode.SourceOver && shader.IsOpaque));
+    }
+
+    private static bool Same => typeof(TPixel) == typeof(TSource);
+
+    public override bool FillsDirectly => Plain;
+
+    protected override void Write(int y, int x, ReadOnlySpan<byte> coverage) => Run(y, x, coverage.Length, coverage);
+
+    protected override bool TryFill(int y, int x, int length)
+    {
+        if (_direct && Same)
+        {
+            _shader.Shade(y, x, MemoryMarshal.Cast<TPixel, TSource>(_target.Row(y, x, length)));
+            return true;
+        }
+
+        Run(y, x, length, default);
+        return true;
+    }
+
+    private void Run(int y, int x, int length, ReadOnlySpan<byte> coverage)
+    {
+        Span<TSource> source = stackalloc TSource[Shader.Chunk];
+        Span<TSource> under = Same ? default : stackalloc TSource[Shader.Chunk];
+        Span<TPixel> row = _target.Row(y, x, length);
+        for (int i = 0; i < length; i += Shader.Chunk)
+        {
+            int n = Math.Min(Shader.Chunk, length - i);
+            Span<TSource> part = source[..n];
+            _shader.Shade(y, x + i, part);
+            ReadOnlySpan<byte> c = coverage.IsEmpty ? default : coverage.Slice(i, n);
+            if (Same)
+            {
+                Blend(part, MemoryMarshal.Cast<TPixel, TSource>(row.Slice(i, n)), c);
+                continue;
+            }
+
+            Span<TSource> dst = under[..n];
+            PixelConvert.Convert<TPixel, TSource>(row.Slice(i, n), dst);
+            Blend(part, dst, c);
+            PixelConvert.Convert<TSource, TPixel>(dst, row.Slice(i, n));
+        }
+    }
+
+    private void Blend(ReadOnlySpan<TSource> source, Span<TSource> destination, ReadOnlySpan<byte> coverage)
+    {
+        if (coverage.IsEmpty)
+        {
+            Compositor.Blend(_mode, source, destination, _opacity, _colorSpace);
+        }
+        else
+        {
+            Compositor.Blend(_mode, source, destination, coverage, _opacity, _colorSpace);
+        }
     }
 }
 
 /// <summary>Blends rows of an image already placed in device space (pixel (x, y) at <c>Origin</c> + (x, y)) through coverage.</summary>
 internal sealed class ImageSink<TPixel>(
-    PixelPlane<TPixel> plane, Raster<TPixel> placed, Point origin, BlendMode mode, float opacity, ColorSpace colorSpace, ClipMask? mask)
+    RasterTarget<TPixel> target, Raster<TPixel> placed, Point origin, BlendMode mode, float opacity, ColorSpace colorSpace, ClipMask? mask)
     : RasterSink(mask, 255)
     where TPixel : unmanaged, IPixelType<TPixel>
 {
@@ -170,13 +255,13 @@ internal sealed class ImageSink<TPixel>(
     protected override void Write(int y, int x, ReadOnlySpan<byte> coverage)
     {
         ReadOnlySpan<TPixel> source = placed.Row(y - origin.Y).Slice(x - origin.X, coverage.Length);
-        Compositor.Blend(mode, source, plane.Row(y).Slice(x, coverage.Length), coverage, opacity, colorSpace);
+        Compositor.Blend(mode, source, target.Row(y, x, coverage.Length), coverage, opacity, colorSpace);
     }
 
     protected override bool TryFill(int y, int x, int length)
     {
         ReadOnlySpan<TPixel> source = placed.Row(y - origin.Y).Slice(x - origin.X, length);
-        Compositor.Blend(mode, source, plane.Row(y).Slice(x, length), opacity, colorSpace);
+        Compositor.Blend(mode, source, target.Row(y, x, length), opacity, colorSpace);
         return true;
     }
 }

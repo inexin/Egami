@@ -178,6 +178,9 @@ internal sealed class DisplaceWarp(Raster map, float scaleX, float scaleY, Color
 /// <summary>Moves pixels by whole pixels with no resampling; what leaves one side comes in by the edge mode.</summary>
 internal sealed class OffsetOperation(int dx, int dy, EdgeMode edges, Rgba8 background) : IRasterOperation, INeedsNewPlane, IUpdatesMetadata
 {
+    /// <summary>Gets how far pixels move, across and down.</summary>
+    internal (int X, int Y) Shift => (dx, dy);
+
     public Size OutputSize(Size input) => input;
 
     public bool NeedsNewPlane(Size input) => true;

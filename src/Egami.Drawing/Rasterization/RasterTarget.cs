@@ -1,0 +1,363 @@
+using System.Numerics;
+
+using Egami.Drawing.Shading;
+using Egami.Operations;
+using Egami.Pixels;
+
+namespace Egami.Drawing.Rasterization;
+
+/// <summary>
+/// Pixels a raster canvas draws into, over a device rectangle: the canvas's own raster, or a layer. A layer is premultiplied in the
+/// canvas's class, PremulRgba8 for 8-bit canvases and PremulRgbaF32 for deeper ones, and covers only the device area it needs, so
+/// its pixel (0, 0) is device pixel <see cref="Area"/>.Position. Everything that depends on the pixel type is here.
+/// </summary>
+internal abstract class RasterTarget(Rect area) : IDisposable
+{
+    /// <summary>Gets the device rectangle the pixels cover.</summary>
+    internal Rect Area { get; } = area;
+
+    /// <summary>Gets the size of one pixel, which decides when a fill bands across cores.</summary>
+    internal abstract int BytesPerPixel { get; }
+
+    /// <summary>Returns the sink that blends a paint into these pixels, or <see langword="null"/> when the paint draws nothing.</summary>
+    internal abstract ISpanSink? CreateSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale);
+
+    /// <summary>Returns an empty layer over <paramref name="area"/> in this canvas's layer pixel type.</summary>
+    internal abstract RasterTarget CreateLayer(Rect area, EgamiContext context);
+
+    /// <summary>Copies the pixels of <paramref name="area"/> (device coordinates, inside both) from <paramref name="source"/>.</summary>
+    internal abstract void CopyFrom(RasterTarget source, Rect area);
+
+    /// <summary>Reads a run of device pixels converted to <typeparamref name="T"/>.</summary>
+    internal abstract void ReadRow<T>(int y, int x, Span<T> destination)
+        where T : unmanaged, IPixelType<T>;
+
+    /// <summary>Writes a run of device pixels converted from <typeparamref name="T"/>.</summary>
+    internal abstract void WriteRow<T>(int y, int x, ReadOnlySpan<T> source)
+        where T : unmanaged, IPixelType<T>;
+
+    /// <summary>Blends a layer's pixels over <paramref name="area"/> into these, through the clip's coverage.</summary>
+    internal abstract void Merge(RasterTarget layer, Rect area, ClipMask? mask, BlendMode mode, float opacity, ColorSpace colorSpace);
+
+    /// <summary>Runs an operation chain on a layer's pixels; the chain must keep the size.</summary>
+    internal abstract void Filter(Action<RasterOps> filter);
+
+    /// <summary>Multiplies a layer's premultiplied pixels from device (<paramref name="x"/>, <paramref name="y"/>) by mask values from 0 to 1.</summary>
+    internal abstract void Multiply(int y, int x, ReadOnlySpan<float> mask);
+
+    /// <summary>Draws an image under a transform through the clip.</summary>
+    internal abstract void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask);
+
+    public abstract void Dispose();
+}
+
+/// <summary>The rasterizer, edge list, settings and context a raster canvas draws with.</summary>
+internal sealed class DrawTools(CoverageRasterizer rasterizer, EdgeList edges, CanvasOptions options, EgamiContext context)
+{
+    internal CoverageRasterizer Rasterizer { get; } = rasterizer;
+
+    internal EdgeList Edges { get; } = edges;
+
+    internal CanvasOptions Options { get; } = options;
+
+    internal EgamiContext Context { get; } = context;
+}
+
+/// <summary>A <see cref="RasterTarget"/> of one pixel type.</summary>
+/// <typeparam name="TPixel">The pixel type.</typeparam>
+internal sealed class RasterTarget<TPixel> : RasterTarget
+    where TPixel : unmanaged, IPixelType<TPixel>
+{
+    private readonly Raster<TPixel>? _owned;
+    private PixelPlane<TPixel> _plane;
+
+    /// <summary>Initializes a new instance of the <see cref="RasterTarget{TPixel}"/> class over a canvas's plane, which it does not own.</summary>
+    internal RasterTarget(PixelPlane<TPixel> plane)
+        : base(new Rect(0, 0, plane.Width, plane.Height))
+    {
+        _plane = plane;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="RasterTarget{TPixel}"/> class as a layer that owns its raster.</summary>
+    private RasterTarget(Raster<TPixel> owned, Rect area)
+        : base(area)
+    {
+        _owned = owned;
+        _plane = owned.Frames[0].Plane;
+    }
+
+    internal override int BytesPerPixel => System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
+
+    private static bool EightBit => TPixel.Layout.ChannelType == PixelChannelType.Unorm8;
+
+    /// <summary>Returns the run of <paramref name="length"/> pixels from device (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    internal Span<TPixel> Row(int y, int x, int length) => _plane.Row(y - Area.Y).Slice(x - Area.X, length);
+
+    internal override ISpanSink? CreateSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
+    {
+        if (paint is SolidPaint solid)
+        {
+            return new SolidSink<TPixel>(this, solid, colorSpace, mask, scale);
+        }
+
+        // A target without alpha blends shaded paints in a type with alpha, so their transparent parts stay transparent.
+        if (TPixel.Layout.HasAlpha)
+        {
+            return Shaded<TPixel>(paint, matrix, colorSpace, mask, scale);
+        }
+
+        return EightBit ? Shaded<Rgba8>(paint, matrix, colorSpace, mask, scale) : Shaded<RgbaF32>(paint, matrix, colorSpace, mask, scale);
+    }
+
+    internal override RasterTarget CreateLayer(Rect area, EgamiContext context)
+        => EightBit ? RasterTarget<PremulRgba8>.Layer(area, context) : RasterTarget<PremulRgbaF32>.Layer(area, context);
+
+    internal override void CopyFrom(RasterTarget source, Rect area)
+    {
+        for (int y = area.Y; y < area.Bottom; y++)
+        {
+            source.ReadRow(y, area.X, Row(y, area.X, area.Width));
+        }
+    }
+
+    internal override void ReadRow<T>(int y, int x, Span<T> destination)
+    {
+        Span<TPixel> row = Row(y, x, destination.Length);
+        if (typeof(T) == typeof(TPixel))
+        {
+            row.CopyTo(System.Runtime.InteropServices.MemoryMarshal.Cast<T, TPixel>(destination));
+        }
+        else
+        {
+            PixelConvert.Convert<TPixel, T>(row, destination);
+        }
+    }
+
+    internal override void WriteRow<T>(int y, int x, ReadOnlySpan<T> source)
+    {
+        Span<TPixel> row = Row(y, x, source.Length);
+        if (typeof(T) == typeof(TPixel))
+        {
+            System.Runtime.InteropServices.MemoryMarshal.Cast<T, TPixel>(source).CopyTo(row);
+        }
+        else
+        {
+            PixelConvert.Convert<T, TPixel>(source, row);
+        }
+    }
+
+    internal override void Merge(RasterTarget layer, Rect area, ClipMask? mask, BlendMode mode, float opacity, ColorSpace colorSpace)
+    {
+        if (TPixel.Layout.HasAlpha)
+        {
+            MergeAs<TPixel>(layer, area, mask, mode, opacity, colorSpace);
+        }
+        else if (EightBit)
+        {
+            MergeAs<Rgba8>(layer, area, mask, mode, opacity, colorSpace);
+        }
+        else
+        {
+            MergeAs<RgbaF32>(layer, area, mask, mode, opacity, colorSpace);
+        }
+    }
+
+    internal override void Filter(Action<RasterOps> filter)
+    {
+        Raster<TPixel> raster = _owned ?? throw new InvalidOperationException("Only a layer can be filtered.");
+        raster.Apply(filter);
+        if (raster.Width != Area.Width || raster.Height != Area.Height)
+        {
+            throw new InvalidOperationException(
+                $"A layer filter must keep the size, but it made the {Area.Width}×{Area.Height} layer {raster.Width}×{raster.Height}; for a drop shadow, set DropShadowOptions.Expand to false.");
+        }
+
+        _plane = raster.Frames[0].Plane;
+    }
+
+    internal override void Multiply(int y, int x, ReadOnlySpan<float> mask)
+    {
+        Span<TPixel> row = Row(y, x, mask.Length);
+        if (typeof(TPixel) == typeof(PremulRgbaF32))
+        {
+            Span<PremulRgbaF32> p = System.Runtime.InteropServices.MemoryMarshal.Cast<TPixel, PremulRgbaF32>(row);
+            for (int i = 0; i < p.Length; i++)
+            {
+                float m = mask[i];
+                p[i] = new PremulRgbaF32(p[i].R * m, p[i].G * m, p[i].B * m, p[i].A * m);
+            }
+        }
+        else if (typeof(TPixel) == typeof(PremulRgba8))
+        {
+            Span<PremulRgba8> p = System.Runtime.InteropServices.MemoryMarshal.Cast<TPixel, PremulRgba8>(row);
+            for (int i = 0; i < p.Length; i++)
+            {
+                int m = (int)MathF.Round(mask[i] * 255);
+                p[i] = new PremulRgba8(Mul(p[i].R, m), Mul(p[i].G, m), Mul(p[i].B, m), Mul(p[i].A, m));
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException("Only a layer can be masked.");
+        }
+    }
+
+    internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    {
+        BlendMode mode = paint?.BlendMode ?? BlendMode.SourceOver;
+        float opacity = paint?.Opacity ?? 1;
+        bool antialias = paint?.Antialias ?? true;
+        ColorSpace colorSpace = tools.Options.ColorSpace;
+
+        // Image pixel (u, v) → device: scale and move the source rectangle onto the destination, then the canvas transform.
+        float sx = destination.Width / source.Width, sy = destination.Height / source.Height;
+        Matrix3x2 toDevice = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(sx, sy)
+            * Matrix3x2.CreateTranslation(destination.X, destination.Y) * matrix;
+
+        Raster<TPixel>? converted = image as Raster<TPixel>;
+        bool owned = converted is null;
+        converted ??= image.As<TPixel>();
+        try
+        {
+            if (IsIntegerPlacement(toDevice, source, out Point offset))
+            {
+                DrawPlaced(converted, source.RoundOut(), offset, clip, mask, mode, opacity, colorSpace);
+                return;
+            }
+
+            // The destination's device outline gives the edge coverage; the transform runs over the part of it inside the clip.
+            EdgeList edges = tools.Edges;
+            Path area = Path.Rect(destination).Transform(matrix);
+            edges.Clear();
+            Flattener.Flatten(area, Matrix3x2.Identity, tools.Options.Tolerance, edges);
+            Rect viewport = clip.Intersect(edges.Bounds.RoundOut());
+            if (viewport.IsEmpty)
+            {
+                return;
+            }
+
+            // The source is cut to the whole pixels it uses, so samples near its edges read only pixels inside it.
+            Rect crop = source.RoundOut();
+            Matrix3x2 cropToDevice = Matrix3x2.CreateTranslation(crop.X, crop.Y) * toDevice;
+            TransformOptions options = new()
+            {
+                Filter = sampling.Filter,
+                Edges = sampling.Edges == EdgeMode.Transparent ? EdgeMode.Clamp : sampling.Edges,
+                Background = sampling.Background,
+                ColorSpace = sampling.ColorSpace,
+                Viewport = viewport,
+            };
+            using Raster<TPixel> placed = converted.Derive(ops =>
+            {
+                if (crop != new Rect(0, 0, converted.Width, converted.Height))
+                {
+                    ops.Crop(crop);
+                }
+
+                ops.Transform(cropToDevice, options);
+            });
+            ImageSink<TPixel> sink = new(this, placed, viewport.Position, mode, opacity, colorSpace, mask);
+            tools.Rasterizer.Fill(edges, viewport, FillRule.NonZero, antialias, sink, BytesPerPixel);
+        }
+        finally
+        {
+            if (owned)
+            {
+                converted.Dispose();
+            }
+        }
+    }
+
+    public override void Dispose() => _owned?.Dispose();
+
+    private static RasterTarget<TPixel> Layer(Rect area, EgamiContext context) => new(Raster.Create<TPixel>(area.Width, area.Height, context), area);
+
+    private static byte Mul(byte value, int factor)
+    {
+        int p = (value * factor) + 128;
+        return (byte)((p + (p >> 8)) >> 8);
+    }
+
+    /// <summary>Whether the image maps onto whole device pixels one to one: no scale, no turn, a whole-pixel shift.</summary>
+    private static bool IsIntegerPlacement(Matrix3x2 m, RectF source, out Point offset)
+    {
+        offset = default;
+        if (m.M11 != 1 || m.M22 != 1 || m.M12 != 0 || m.M21 != 0 || m.M31 != MathF.Round(m.M31) || m.M32 != MathF.Round(m.M32))
+        {
+            return false;
+        }
+
+        if (source.X != MathF.Round(source.X) || source.Y != MathF.Round(source.Y) || source.Width != MathF.Round(source.Width) || source.Height != MathF.Round(source.Height))
+        {
+            return false;
+        }
+
+        offset = new Point((int)m.M31, (int)m.M32);
+        return true;
+    }
+
+    private ShaderSink<TPixel, TSource>? Shaded<TSource>(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
+        where TSource : unmanaged, IPixelType<TSource>
+    {
+        PixelShader<TSource>? shader = paint.CreatePixelShader<TSource>(matrix, colorSpace);
+        return shader is null ? null : new ShaderSink<TPixel, TSource>(this, shader, paint, colorSpace, mask, scale);
+    }
+
+    private void MergeAs<TWork>(RasterTarget layer, Rect area, ClipMask? mask, BlendMode mode, float opacity, ColorSpace colorSpace)
+        where TWork : unmanaged, IPixelType<TWork>
+    {
+        bool same = typeof(TWork) == typeof(TPixel);
+        TWork[] source = new TWork[area.Width];
+        TWork[]? under = same ? null : new TWork[area.Width];
+        for (int y = area.Y; y < area.Bottom; y++)
+        {
+            layer.ReadRow<TWork>(y, area.X, source);
+            Span<TPixel> row = Row(y, area.X, area.Width);
+            Span<TWork> destination = same ? System.Runtime.InteropServices.MemoryMarshal.Cast<TPixel, TWork>(row) : under;
+            if (!same)
+            {
+                PixelConvert.Convert<TPixel, TWork>(row, destination);
+            }
+
+            if (mask is not null)
+            {
+                ReadOnlySpan<byte> coverage = mask.Row(y).Slice(area.X - mask.Bounds.X, area.Width);
+                Compositor.Blend(mode, source, destination, coverage, opacity, colorSpace);
+            }
+            else
+            {
+                Compositor.Blend(mode, source, destination, opacity, colorSpace);
+            }
+
+            if (!same)
+            {
+                PixelConvert.Convert<TWork, TPixel>(destination, row);
+            }
+        }
+    }
+
+    /// <summary>Blends source rows straight onto the destination, as 2.5.1's DrawImage does, through the clip mask when there is one.</summary>
+    private void DrawPlaced(Raster<TPixel> image, Rect source, Point offset, Rect clip, ClipMask? mask, BlendMode mode, float opacity, ColorSpace colorSpace)
+    {
+        // The source rectangle lands at its own position plus the offset.
+        Rect target = new Rect(source.X + offset.X, source.Y + offset.Y, source.Width, source.Height).Intersect(clip);
+        if (target.IsEmpty)
+        {
+            return;
+        }
+
+        for (int y = target.Y; y < target.Bottom; y++)
+        {
+            ReadOnlySpan<TPixel> from = image.Row(y - offset.Y).Slice(target.X - offset.X, target.Width);
+            Span<TPixel> to = Row(y, target.X, target.Width);
+            if (mask is not null)
+            {
+                Compositor.Blend(mode, from, to, mask.Row(y).Slice(target.X - mask.Bounds.X, target.Width), opacity, colorSpace);
+            }
+            else
+            {
+                Compositor.Blend(mode, from, to, opacity, colorSpace);
+            }
+        }
+    }
+}
