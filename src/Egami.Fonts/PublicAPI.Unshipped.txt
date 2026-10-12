@@ -1969,3 +1969,11 @@ Egami.Fonts.Layout.TextLine.Top.get -> float
 Egami.Fonts.Layout.TextLine.Width.get -> float
 Egami.Fonts.Layout.TextLayout.DidExceed.get -> bool
 Egami.Fonts.Layout.TextLayout.HiddenRange.get -> Egami.Fonts.Unicode.TextSegment?
+Egami.Fonts.Layout.TextLayout.FirstBaseline.get -> float
+Egami.Fonts.Layout.TextLayout.GetLineAt(int index) -> int
+Egami.Fonts.Layout.TextLayout.GetLineAtY(float y) -> int
+Egami.Fonts.Layout.TextLayout.InkBounds.get -> Egami.Fonts.TextBounds
+Egami.Fonts.Layout.TextLayout.LastBaseline.get -> float
+Egami.Fonts.Layout.TextLayout.MaxIntrinsicWidth.get -> float
+Egami.Fonts.Layout.TextLayout.MinIntrinsicWidth.get -> float
+Egami.Fonts.Layout.TextLayout.PlaceholderRects.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.TextBounds>!

@@ -57,6 +57,11 @@ public sealed class Paragraph
     /// <summary>The advance and spacing of every character, for measuring lines.</summary>
     internal AdvanceTable Measures { get; }
 
+    /// <summary>CSS's min-content and max-content widths, found once.</summary>
+    internal (float Min, float Max) IntrinsicWidths => (_intrinsic ??= new Lazy<(float, float)>(() => new LineBuilder(this).IntrinsicWidths())).Value;
+
+    private Lazy<(float, float)>? _intrinsic;
+
     /// <summary>The ellipsis shaped in each style, when a line limit and an ellipsis are set.</summary>
     internal (Font Font, GlyphBuffer Glyphs)[]? Ellipses { get; }
 

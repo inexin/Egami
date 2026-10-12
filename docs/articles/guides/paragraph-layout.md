@@ -124,6 +124,15 @@ cut, `TextLayout.DidExceed` is true and `HiddenRange` says what was hidden; the 
 from its end until its text and the `Ellipsis` (U+2026 by default, shaped in the style of the last kept character) fit, and
 the ellipsis ends the line in the paragraph's direction, flagged `Ellipsized`. A null `Ellipsis` cuts at the line's end.
 
+### Metrics
+
+A `TextLayout` also answers how big its text is: `MinIntrinsicWidth` (CSS min-content, the widest piece that cannot break;
+`OverflowWrap.Anywhere` lowers it to the widest grapheme cluster) and `MaxIntrinsicWidth` (max-content, the widest line
+without wrapping), equal to Chromium's; `FirstBaseline` and `LastBaseline` for aligning boxes on text; `InkBounds`, the union
+of the glyphs' ink and placeholder boxes, which can reach past the layout box; `PlaceholderRects`, one `TextBounds` per
+placeholder in order, where the caller draws them; and `GetLineAt` and `GetLineAtY` to find the line holding a character or
+a height.
+
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
 images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.
 

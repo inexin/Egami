@@ -898,6 +898,53 @@ internal sealed class LineBuilder
         return InlineBox(font, strut.LineHeight);
     }
 
+    /// <summary>The top of a placeholder's box on a line with the given top, baseline (moved by the style's shift) and bottom.</summary>
+    private float PlaceholderTop(Placeholder box, float top, float baseline, float bottom) => box.Alignment switch
+    {
+        PlaceholderAlignment.Top => top,
+        PlaceholderAlignment.Bottom => bottom - box.Height,
+        _ => baseline + PlaceholderBox(box).Top,
+    };
+
+    /// <summary>The widths CSS calls min-content and max-content: the widest piece between break opportunities (with its
+    /// hyphen; grapheme clusters with <see cref="OverflowWrap.Anywhere"/>), and the widest line between hard breaks.</summary>
+    public (float Min, float Max) IntrinsicWidths()
+    {
+        float min = 0, max = 0;
+        int start = 0;
+        int lineStart = 0;
+        bool anywhere = _paragraph.Style.LineBreaking.OverflowWrap == OverflowWrap.Anywhere;
+        foreach (LineBreak b in _paragraph.Breaks)
+        {
+            if (anywhere)
+            {
+                for (int g = start; g < b.Index; g = TextSegmenter.NextGraphemeBoundary(_text, g))
+                {
+                    int next = TextSegmenter.NextGraphemeBoundary(_text, g);
+                    min = Math.Max(min, Measure(g, ContentEnd(g, next)));
+                }
+            }
+            else
+            {
+                min = Math.Max(min, Measure(start, ContentEnd(start, b.Index)) + (b.IsSoftHyphen && !b.IsMandatory ? HyphenWidth(b.Index) : 0));
+            }
+
+            start = b.Index;
+            if (b.IsMandatory)
+            {
+                max = Math.Max(max, Measure(lineStart, ContentEnd(lineStart, b.Index)));
+                lineStart = b.Index;
+            }
+        }
+
+        if (lineStart < _text.Length)
+        {
+            max = Math.Max(max, Measure(lineStart, ContentEnd(lineStart, _text.Length)));
+        }
+
+        return (min, max);
+    }
+
     /// <summary>A placeholder's box relative to the baseline, for the alignments that hang off the baseline.</summary>
     private (float Top, float Bottom) PlaceholderBox(Placeholder box) => box.Alignment switch
     {
@@ -1036,7 +1083,10 @@ internal sealed class LineBuilder
                 RunKind.Tab => LayoutRunKind.Tab,
                 _ => LayoutRunKind.Control,
             };
-            runs.Add(new LayoutRun(kind, piece.Start, piece.Length, piece.Level, piece.Style, x, pieceAdvance, glyphs, piece.Kind == RunKind.Placeholder ? piece.Placeholder : -1));
+            runs.Add(new LayoutRun(kind, piece.Start, piece.Length, piece.Level, piece.Style, x, pieceAdvance, glyphs, piece.Kind == RunKind.Placeholder ? piece.Placeholder : -1)
+            {
+                BoxTop = piece.Kind == RunKind.Placeholder ? PlaceholderTop(_paragraph.RichText.Placeholders[piece.Placeholder], top, baseline + shift, top + lineAscent + lineDescent) : 0,
+            });
         }
 
         return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs);

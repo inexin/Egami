@@ -14,6 +14,7 @@ public sealed class TextLayout
     internal TextLayout(Paragraph paragraph, float width, IReadOnlyList<TextLine> lines, TextSegment? hidden = null)
     {
         HiddenRange = hidden;
+        (MinIntrinsicWidth, MaxIntrinsicWidth) = paragraph.IntrinsicWidths;
         Paragraph = paragraph;
         Width = width;
         Lines = lines;
@@ -35,6 +36,113 @@ public sealed class TextLayout
 
     /// <summary>Gets the lines, top to bottom.</summary>
     public IReadOnlyList<TextLine> Lines { get; }
+
+    /// <summary>Gets the width of the widest piece that cannot break (CSS min-content): the narrowest box the text fits without
+    /// overflowing. <see cref="OverflowWrap.Anywhere"/> lowers it to the widest grapheme cluster.</summary>
+    public float MinIntrinsicWidth { get; }
+
+    /// <summary>Gets the width of the widest line laid out without wrapping (CSS max-content).</summary>
+    public float MaxIntrinsicWidth { get; }
+
+    /// <summary>Gets the first line's baseline, for aligning the box on it; 0 when there are no lines.</summary>
+    public float FirstBaseline => Lines.Count == 0 ? 0 : Lines[0].Baseline;
+
+    /// <summary>Gets the last line's baseline; 0 when there are no lines.</summary>
+    public float LastBaseline => Lines.Count == 0 ? 0 : Lines[^1].Baseline;
+
+    /// <summary>Gets the union of the glyphs' ink and the placeholders' boxes, which may reach past the layout box.</summary>
+    public TextBounds InkBounds => _ink ??= ComputeInk();
+
+    /// <summary>Gets one box per placeholder of the rich text, in order; an empty box for one hidden by a line limit.</summary>
+    public IReadOnlyList<TextBounds> PlaceholderRects => _placeholders ??= ComputePlaceholders();
+
+    private TextBounds? _ink;
+    private TextBounds[]? _placeholders;
+
+    /// <summary>Finds the line holding a UTF-16 index.</summary>
+    /// <param name="index">An index from 0 to the text's length; the end of the text belongs to the last line.</param>
+    /// <returns>The line's index in <see cref="Lines"/>, or -1 when the index is hidden by a line limit or there are no lines.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative or past the end of the text.</exception>
+    public int GetLineAt(int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, Paragraph.Text.Length);
+        if (HiddenRange is TextSegment hidden && index >= hidden.Start && index > (Lines.Count == 0 ? 0 : Lines[^1].Start))
+        {
+            return Lines.Count == 0 || index > Lines[^1].End ? -1 : Lines.Count - 1;
+        }
+
+        int lo = 0, hi = Lines.Count - 1;
+        while (lo < hi)
+        {
+            int mid = (lo + hi + 1) >>> 1;
+            if (Lines[mid].Start <= index)
+            {
+                lo = mid;
+            }
+            else
+            {
+                hi = mid - 1;
+            }
+        }
+
+        return Lines.Count == 0 ? -1 : lo;
+    }
+
+    /// <summary>Finds the line at a height; points above the first line or below the last take that line.</summary>
+    /// <param name="y">A y in layout coordinates.</param>
+    /// <returns>The line's index in <see cref="Lines"/>, or -1 when there are no lines.</returns>
+    public int GetLineAtY(float y)
+    {
+        for (int i = 0; i < Lines.Count; i++)
+        {
+            if (y < Lines[i].Bottom)
+            {
+                return i;
+            }
+        }
+
+        return Lines.Count - 1;
+    }
+
+    private TextBounds ComputeInk()
+    {
+        TextBounds ink = TextBounds.Empty;
+        foreach (TextLine line in Lines)
+        {
+            foreach (LayoutRun run in line.Runs)
+            {
+                if (run.Glyphs is GlyphRun glyphs)
+                {
+                    ink = ink.Union(glyphs.Bounds);
+                }
+            }
+        }
+
+        foreach (TextBounds box in PlaceholderRects)
+        {
+            ink = ink.Union(box);
+        }
+
+        return ink;
+    }
+
+    private TextBounds[] ComputePlaceholders()
+    {
+        TextBounds[] boxes = new TextBounds[Paragraph.RichText.Placeholders.Count];
+        foreach (TextLine line in Lines)
+        {
+            foreach (LayoutRun run in line.Runs)
+            {
+                if (run.Kind == LayoutRunKind.Placeholder)
+                {
+                    boxes[run.Placeholder] = new TextBounds(run.X, run.BoxTop, run.X + run.Advance, run.BoxTop + Paragraph.RichText.Placeholders[run.Placeholder].Height);
+                }
+            }
+        }
+
+        return boxes;
+    }
 
     /// <summary>Gets whether <see cref="ParagraphStyle.MaxLines"/> or <see cref="ParagraphStyle.MaxHeight"/> cut text off.</summary>
     public bool DidExceed => HiddenRange is not null;
@@ -175,6 +283,9 @@ public sealed class LayoutRun
 
     /// <summary>Gets the index of the rich text's placeholder, for <see cref="LayoutRunKind.Placeholder"/> runs; otherwise -1.</summary>
     public int Placeholder { get; }
+
+    /// <summary>The top of a placeholder's box, in layout coordinates.</summary>
+    internal float BoxTop { get; init; }
 }
 
 /// <summary>
