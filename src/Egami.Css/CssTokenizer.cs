@@ -4,12 +4,18 @@ using System.Text;
 namespace Egami.Css;
 
 /// <summary>The CSS Syntax 3 tokenizer (section 4), with its input preprocessing.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public static class CssTokenizer
 {
     /// <summary>Splits CSS text into tokens. Never throws: malformed input gives bad-string, bad-url or delim tokens and errors.</summary>
     /// <param name="css">The CSS text.</param>
     /// <param name="options">Options whose <see cref="CssParseOptions.Errors"/> receives the tokenizer's parse errors.</param>
     /// <returns>The tokens, without a final <see cref="CssTokenKind.EndOfFile"/> token.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+    /// </example>
     public static IReadOnlyList<CssToken> Tokenize(string css, CssParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(css);

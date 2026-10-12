@@ -1,6 +1,9 @@
 namespace Egami.Css;
 
 /// <summary>A rule of a style sheet.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public abstract class CssRule
 {
     private protected CssRule()
@@ -16,6 +19,9 @@ public abstract class CssRule
 
 /// <summary>A style rule: a selector list and declarations, such as <c>rect.a { fill: red }</c>.</summary>
 /// <remarks>Rules nested inside a style rule (CSS Nesting) are not supported: they are dropped and reported.</remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssStyleRule : CssRule
 {
     internal CssStyleRule(CssSelectorList selectors, IReadOnlyList<CssDeclaration> declarations)
@@ -35,6 +41,9 @@ public sealed class CssStyleRule : CssRule
 }
 
 /// <summary>An <c>@media</c> rule: rules that apply when the media query list matches.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssMediaRule : CssRule
 {
     internal CssMediaRule(CssMediaQueryList media, IReadOnlyList<CssRule> rules)
@@ -51,6 +60,9 @@ public sealed class CssMediaRule : CssRule
 }
 
 /// <summary>An <c>@supports</c> rule: rules that apply when the condition holds.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssSupportsRule : CssRule
 {
     private readonly SupportsNode? _condition;
@@ -86,6 +98,9 @@ public sealed class CssSupportsRule : CssRule
 }
 
 /// <summary>An <c>@font-face</c> rule.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssFontFaceRule : CssRule
 {
     private CssFontFace? _fontFace;
@@ -103,6 +118,9 @@ public sealed class CssFontFaceRule : CssRule
 }
 
 /// <summary>An <c>@import</c> rule. Egami.Css does not fetch it: the consumer may load the sheet and pass it to the cascade.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssImportRule : CssRule
 {
     internal CssImportRule(string url, CssMediaQueryList media, string? layer, string? supportsText)
@@ -127,6 +145,9 @@ public sealed class CssImportRule : CssRule
 }
 
 /// <summary>An <c>@namespace</c> rule: a prefix (or the default namespace) for selectors.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssNamespaceRule : CssRule
 {
     internal CssNamespaceRule(string? prefix, string uri)
@@ -146,6 +167,9 @@ public sealed class CssNamespaceRule : CssRule
 /// An <c>@layer</c> rule: a statement naming layers, or a block of rules. Cascade layers are not implemented: the cascade treats
 /// the rules inside a layer block as ordinary rules in their place.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssLayerRule : CssRule
 {
     internal CssLayerRule(IReadOnlyList<string> names, IReadOnlyList<CssRule>? rules)
@@ -162,6 +186,9 @@ public sealed class CssLayerRule : CssRule
 }
 
 /// <summary>An at-rule Egami.Css does not interpret, such as <c>@keyframes</c> or <c>@page</c>, kept as component values.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssUnknownAtRule : CssRule
 {
     internal CssUnknownAtRule(string name, IReadOnlyList<CssComponentValue> prelude, CssSimpleBlock? block)

@@ -8,6 +8,9 @@ namespace Egami.Css;
 /// consumer can handle every <c>&lt;length-percentage&gt;</c> the same way. <see cref="Resolve(Func{CssUnit, double})"/>
 /// turns it into pixels once the consumer knows what each unit is worth.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="lengths"/>
+/// </example>
 public sealed class CssCalc
 {
     private readonly Node _root;

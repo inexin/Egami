@@ -4,9 +4,15 @@ namespace Egami.Css;
 /// <param name="Line">The 1-based line, or 0 when unknown.</param>
 /// <param name="Column">The 1-based column in UTF-16 code units, or 0 when unknown.</param>
 /// <param name="Message">What was wrong and what the parser did about it.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed record CssParseError(int Line, int Column, string Message);
 
 /// <summary>Options for parsing CSS.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed record class CssParseOptions
 {
     /// <summary>Gets the default options: errors are not reported.</summary>

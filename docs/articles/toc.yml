@@ -38,6 +38,8 @@
       href: guides/paragraph-layout.md
     - name: SVG
       href: guides/svg.md
+    - name: CSS
+      href: guides/css.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic

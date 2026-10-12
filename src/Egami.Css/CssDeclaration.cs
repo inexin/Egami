@@ -1,6 +1,9 @@
 namespace Egami.Css;
 
 /// <summary>A CSS declaration: a property name, its value as component values, and whether it is <c>!important</c>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="declarations"/>
+/// </example>
 public sealed class CssDeclaration
 {
     private string? _valueText;
@@ -62,6 +65,9 @@ public sealed class CssDeclaration
     /// <param name="styleAttribute">The declarations, such as <c>color: red; font-size: 12px</c>.</param>
     /// <param name="options">Options for error reporting.</param>
     /// <returns>The declarations, in order.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="declarations"/>
+    /// </example>
     public static IReadOnlyList<CssDeclaration> ParseList(string styleAttribute, CssParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(styleAttribute);

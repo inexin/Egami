@@ -1,6 +1,9 @@
 namespace Egami.Css;
 
 /// <summary>The environment media queries are evaluated against: the media type, the viewport and the user's preferences.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="media"/>
+/// </example>
 public sealed record class CssMediaContext
 {
     /// <summary>Gets the default context: a 1024 × 768 screen at 1 dppx, light color scheme, 8 bits per color channel.</summary>
@@ -43,6 +46,9 @@ public sealed record class CssMediaContext
 /// A query that does not parse becomes <c>not all</c> without affecting the others; a feature the context does not know, or
 /// any syntax Media Queries 4 reserves for the future, evaluates as unknown, which counts as false. An empty list matches.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="media"/>
+/// </example>
 public sealed class CssMediaQueryList
 {
     private readonly MediaQuery[] _queries;

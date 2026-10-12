@@ -7,6 +7,9 @@ namespace Egami.Css;
 /// <summary>One entry of a font family list: a family name or a generic family keyword.</summary>
 /// <param name="Name">The family name, or the generic keyword in lowercase (such as <c>sans-serif</c>).</param>
 /// <param name="IsGeneric">Whether this is a generic family (an unquoted keyword such as <c>serif</c> or <c>system-ui</c>).</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public readonly record struct CssFontFamily(string Name, bool IsGeneric)
 {
     /// <summary>Formats the family as CSS text: a generic keyword, or a quoted name.</summary>
@@ -15,6 +18,9 @@ public readonly record struct CssFontFamily(string Name, bool IsGeneric)
 }
 
 /// <summary>A <c>font-family</c> value: family names (quoted, or unquoted identifier sequences) and generic families.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public sealed class CssFontFamilyList
 {
     private static readonly HashSet<string> s_generic = new(StringComparer.Ordinal)
@@ -121,6 +127,9 @@ public sealed class CssFontFamilyList
 }
 
 /// <summary>How a <see cref="CssFontWeight"/> was given.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public enum CssFontWeightKind
 {
     /// <summary>A number from 1 to 1000, or <c>normal</c> (400) or <c>bold</c> (700).</summary>
@@ -136,6 +145,9 @@ public enum CssFontWeightKind
 /// <summary>A <c>font-weight</c> value.</summary>
 /// <param name="Value">The weight from 1 to 1000 for <see cref="CssFontWeightKind.Absolute"/>; 0 otherwise.</param>
 /// <param name="Kind">Whether the weight is absolute or relative.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public readonly record struct CssFontWeight(double Value, CssFontWeightKind Kind = CssFontWeightKind.Absolute)
 {
     /// <summary>Gets <c>normal</c>: 400.</summary>
@@ -256,6 +268,9 @@ public readonly record struct CssFontWeight(double Value, CssFontWeightKind Kind
 }
 
 /// <summary>The <c>font</c> shorthand (CSS Fonts 4), parsed.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public sealed class CssFont
 {
     private static readonly HashSet<string> s_systemFonts = new(StringComparer.Ordinal) { "caption", "icon", "menu", "message-box", "small-caption", "status-bar" };

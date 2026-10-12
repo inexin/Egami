@@ -4,6 +4,9 @@ namespace Egami.Css;
 /// <param name="NamespaceUri">The attribute's namespace URI, or <see langword="null"/> for none.</param>
 /// <param name="LocalName">The attribute's local name.</param>
 /// <param name="Value">The attribute's value.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="element"/>
+/// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711", Justification = "A DOM attribute, not a .NET attribute.")]
 public readonly record struct CssAttribute(string? NamespaceUri, string LocalName, string Value);
 
@@ -14,6 +17,9 @@ public readonly record struct CssAttribute(string? NamespaceUri, string LocalNam
 /// Matching compares elements by reference (for <c>:scope</c> and <c>:has()</c>), so a tree must return the same object for the
 /// same element every time. The members are called often while matching; they should not allocate.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="element"/>
+/// </example>
 public interface ICssElement
 {
     /// <summary>The XML namespace, used for <c>xml:lang</c>.</summary>

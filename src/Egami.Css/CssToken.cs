@@ -4,6 +4,9 @@ using System.Text;
 namespace Egami.Css;
 
 /// <summary>The kinds of token the CSS Syntax 3 tokenizer produces.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public enum CssTokenKind
 {
     /// <summary>An identifier, such as <c>red</c> or <c>--x</c>.</summary>
@@ -87,6 +90,9 @@ public enum CssTokenKind
 /// <remarks>
 /// Two tokens are equal when they have the same kind, value, number, unit and flags; their positions are not compared.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public readonly struct CssToken : IEquatable<CssToken>
 {
     private readonly string? _value;

@@ -1,6 +1,9 @@
 namespace Egami.Css;
 
 /// <summary>One complex selector of a selector list, such as <c>svg|g &gt; rect.highlight:first-child</c>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="selectors"/>
+/// </example>
 public sealed class CssSelector
 {
     internal CssSelector(ComplexSelector selector, string text)
@@ -49,6 +52,9 @@ public sealed class CssSelector
 }
 
 /// <summary>A selector list (Selectors 4), such as a style rule's prelude or the argument of <c>querySelectorAll</c>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="selectors"/>
+/// </example>
 public sealed class CssSelectorList
 {
     internal CssSelectorList(IReadOnlyList<CssSelector> selectors, string text)

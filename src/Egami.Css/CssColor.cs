@@ -10,6 +10,9 @@ namespace Egami.Css;
 /// <see cref="Level"/> says which CSS Color level's syntax the text used, so a consumer that follows an older specification
 /// (such as SVG 1.1, which knows only CSS Color 3) can refuse the newer forms.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="colors"/>
+/// </example>
 public readonly struct CssColor : IEquatable<CssColor>
 {
     private readonly byte _flags;

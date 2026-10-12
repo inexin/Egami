@@ -3,6 +3,9 @@ using System.Globalization;
 namespace Egami.Css;
 
 /// <summary>CSS length units (CSS Values 4), plus <see cref="None"/> for a unitless number and <see cref="Percent"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="lengths"/>
+/// </example>
 public enum CssUnit
 {
     /// <summary>A unitless number, such as SVG's user units or a line-height multiplier.</summary>
@@ -109,6 +112,9 @@ public enum CssUnit
 /// <summary>A length (or percentage, or unitless number) with its unit, such as <c>12px</c> or <c>50%</c>.</summary>
 /// <param name="Value">The number.</param>
 /// <param name="Unit">The unit.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="lengths"/>
+/// </example>
 public readonly record struct CssLength(double Value, CssUnit Unit)
 {
     /// <summary>Gets a zero length in pixels.</summary>
@@ -275,6 +281,9 @@ public readonly record struct CssLength(double Value, CssUnit Unit)
 
 /// <summary>An angle, converted to degrees from deg, grad, rad or turn.</summary>
 /// <param name="Degrees">The angle in degrees.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="lengths"/>
+/// </example>
 public readonly record struct CssAngle(double Degrees)
 {
     /// <summary>Gets the angle in radians.</summary>
@@ -337,6 +346,9 @@ public readonly record struct CssAngle(double Degrees)
 
 /// <summary>A URL from <c>url(...)</c> (quoted or not) or <c>src(...)</c>.</summary>
 /// <param name="Url">The URL text, unresolved.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="lengths"/>
+/// </example>
 public readonly record struct CssUrl(string Url)
 {
     /// <summary>Parses <c>url(...)</c> or <c>src(...)</c> text.</summary>

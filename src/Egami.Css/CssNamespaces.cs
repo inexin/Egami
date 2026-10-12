@@ -4,6 +4,9 @@ namespace Egami.Css;
 /// The namespace prefixes selectors may use (<c>svg|rect</c>, <c>[xlink|href]</c>) and the default namespace for type selectors,
 /// as <c>@namespace</c> rules declare them. Prefixes are case-sensitive.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="selectors"/>
+/// </example>
 public sealed class CssNamespaces
 {
     private readonly Dictionary<string, string> _prefixes = new(StringComparer.Ordinal);
@@ -45,6 +48,9 @@ public sealed class CssNamespaces
 /// <param name="A">The number of ID selectors.</param>
 /// <param name="B">The number of class, attribute and pseudo-class selectors.</param>
 /// <param name="C">The number of type and pseudo-element selectors.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="selectors"/>
+/// </example>
 public readonly record struct CssSpecificity(int A, int B, int C) : IComparable<CssSpecificity>
 {
     /// <summary>Gets the specificity of no selector: (0, 0, 0).</summary>

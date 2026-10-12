@@ -6,11 +6,17 @@ namespace Egami.Css;
 /// <summary>A range of numbers, such as a weight range <c>100 900</c>; a single value has equal ends.</summary>
 /// <param name="Min">The lower end.</param>
 /// <param name="Max">The upper end.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public readonly record struct CssRange(double Min, double Max);
 
 /// <summary>A range of code points from <c>unicode-range</c>, such as <c>U+0000-00FF</c>.</summary>
 /// <param name="Start">The first code point.</param>
 /// <param name="End">The last code point (inclusive).</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public readonly record struct CssUnicodeRange(int Start, int End)
 {
     /// <summary>Gets whether the range contains a code point.</summary>
@@ -30,9 +36,15 @@ public readonly record struct CssUnicodeRange(int Start, int End)
 /// <param name="LocalName">The full font name of <c>local()</c>, or <see langword="null"/> for a URL.</param>
 /// <param name="Format">The <c>format()</c> hint in lowercase, such as <c>woff2</c>, or <see langword="null"/>.</param>
 /// <param name="Techs">The <c>tech()</c> keywords in lowercase, such as <c>variations</c>; empty when not given.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public sealed record class CssFontSource(string? Url, string? LocalName, string? Format, IReadOnlyList<string> Techs);
 
 /// <summary>The descriptors of an <c>@font-face</c> rule (CSS Fonts 4), parsed. Invalid descriptors keep their defaults.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
+/// </example>
 public sealed class CssFontFace
 {
     private CssFontFace()

@@ -4,6 +4,9 @@ using System.Numerics;
 namespace Egami.Css;
 
 /// <summary>One transform function of a <see cref="CssTransformList"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public abstract record class CssTransformFunction
 {
     private protected CssTransformFunction()
@@ -23,6 +26,9 @@ public abstract record class CssTransformFunction
 /// <param name="D">The y scale.</param>
 /// <param name="E">The x translation.</param>
 /// <param name="F">The y translation.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed record class CssMatrixTransform(double A, double B, double C, double D, double E, double F) : CssTransformFunction
 {
     /// <inheritdoc/>
@@ -32,6 +38,9 @@ public sealed record class CssMatrixTransform(double A, double B, double C, doub
 /// <summary><c>translate()</c>, <c>translateX()</c> or <c>translateY()</c>.</summary>
 /// <param name="X">The x translation.</param>
 /// <param name="Y">The y translation.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed record class CssTranslateTransform(CssLength X, CssLength Y) : CssTransformFunction
 {
     /// <inheritdoc/>
@@ -45,6 +54,9 @@ public sealed record class CssTranslateTransform(CssLength X, CssLength Y) : Css
 /// <summary><c>scale()</c>, <c>scaleX()</c> or <c>scaleY()</c> (percentages are converted to factors).</summary>
 /// <param name="X">The x factor.</param>
 /// <param name="Y">The y factor.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed record class CssScaleTransform(double X, double Y) : CssTransformFunction
 {
     /// <inheritdoc/>
@@ -55,6 +67,9 @@ public sealed record class CssScaleTransform(double X, double Y) : CssTransformF
 /// <param name="Degrees">The angle in degrees, clockwise in a y-down coordinate system.</param>
 /// <param name="CenterX">The x of the center (SVG), or <see langword="null"/> for the origin.</param>
 /// <param name="CenterY">The y of the center (SVG), or <see langword="null"/> for the origin.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed record class CssRotateTransform(double Degrees, double? CenterX = null, double? CenterY = null) : CssTransformFunction
 {
     /// <inheritdoc/>
@@ -68,6 +83,9 @@ public sealed record class CssRotateTransform(double Degrees, double? CenterX = 
 /// <summary><c>skew()</c>, <c>skewX()</c> or <c>skewY()</c>.</summary>
 /// <param name="XDegrees">The x skew angle in degrees.</param>
 /// <param name="YDegrees">The y skew angle in degrees.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed record class CssSkewTransform(double XDegrees, double YDegrees) : CssTransformFunction
 {
     /// <inheritdoc/>
@@ -80,6 +98,9 @@ public sealed record class CssSkewTransform(double XDegrees, double YDegrees) : 
 /// <summary>A 3D transform function (such as <c>rotateX()</c> or <c>matrix3d()</c>) that parsed but a 2D renderer cannot apply.</summary>
 /// <param name="Name">The function name in lowercase.</param>
 /// <param name="Arguments">The arguments as written.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed record class CssUnsupportedTransform(string Name, IReadOnlyList<CssComponentValue> Arguments) : CssTransformFunction
 {
     /// <inheritdoc/>
@@ -90,6 +111,9 @@ public sealed record class CssUnsupportedTransform(string Name, IReadOnlyList<Cs
 /// A CSS <c>transform</c> value (CSS Transforms 1), or SVG's <c>transform</c> attribute: a list of transform functions applied
 /// left to right, as nested coordinate systems.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public sealed class CssTransformList
 {
     private static readonly HashSet<string> s_3d = new(StringComparer.Ordinal)
@@ -469,6 +493,9 @@ public sealed class CssTransformList
 /// <param name="X">The x position: a length or a percentage of the reference box width.</param>
 /// <param name="Y">The y position: a length or a percentage of the reference box height.</param>
 /// <param name="Z">The z offset, a length.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="transforms"/>
+/// </example>
 public readonly record struct CssTransformOrigin(CssLength X, CssLength Y, CssLength Z)
 {
     /// <summary>Gets the initial value: <c>50% 50% 0</c>.</summary>

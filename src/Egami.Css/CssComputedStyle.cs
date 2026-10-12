@@ -12,6 +12,9 @@ namespace Egami.Css;
 /// up through the parent chain, and the others fall back to their initial value from the registry. Enumerating a computed
 /// style lists the properties with a value that the element or an ancestor set (not initial values).
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed class CssComputedStyle : IEnumerable<KeyValuePair<string, IReadOnlyList<CssComponentValue>>>
 {
     // The values this element sets; null means "no value" (a custom property that is invalid at computed-value time).

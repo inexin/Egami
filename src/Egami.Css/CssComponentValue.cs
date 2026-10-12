@@ -10,6 +10,9 @@ namespace Egami.Css;
 /// Component values compare by content: two functions are equal when their names and arguments are; source positions are not
 /// compared.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public abstract record class CssComponentValue
 {
     private protected CssComponentValue()
@@ -46,6 +49,9 @@ public abstract record class CssComponentValue
     /// <param name="css">The CSS text.</param>
     /// <param name="options">Options for error reporting.</param>
     /// <returns>The component values, including whitespace.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+    /// </example>
     public static IReadOnlyList<CssComponentValue> ParseList(string css, CssParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(css);
@@ -63,6 +69,9 @@ public abstract record class CssComponentValue
 
 /// <summary>A token kept as a component value: any token other than a function or an opening bracket.</summary>
 /// <param name="Token">The token.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public sealed record class CssTokenValue(CssToken Token) : CssComponentValue
 {
     /// <inheritdoc/>
@@ -87,6 +96,9 @@ public sealed record class CssTokenValue(CssToken Token) : CssComponentValue
 /// <summary>A function: its name and its arguments up to the closing parenthesis.</summary>
 /// <param name="Name">The function name, as written (with escapes resolved).</param>
 /// <param name="Arguments">The arguments, including whitespace and commas.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public sealed record class CssFunction(string Name, IReadOnlyList<CssComponentValue> Arguments) : CssComponentValue
 {
     /// <inheritdoc/>
@@ -114,6 +126,9 @@ public sealed record class CssFunction(string Name, IReadOnlyList<CssComponentVa
 /// <summary>A simple block: content between matching <c>()</c>, <c>[]</c> or <c>{}</c>.</summary>
 /// <param name="OpenToken">The opening character: <c>(</c>, <c>[</c> or <c>{</c>.</param>
 /// <param name="Content">The content, including whitespace.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="tokens"/>
+/// </example>
 public sealed record class CssSimpleBlock(char OpenToken, IReadOnlyList<CssComponentValue> Content) : CssComponentValue
 {
     /// <inheritdoc/>

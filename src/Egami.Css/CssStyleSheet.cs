@@ -6,6 +6,9 @@ namespace Egami.Css;
 /// <see cref="CssParseOptions.Errors"/>. Style rules whose selector does not parse are dropped; <c>@import</c> and
 /// <c>@namespace</c> rules after other rules are dropped; rules nested in style rules (CSS Nesting) are dropped.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+/// </example>
 public sealed class CssStyleSheet
 {
     private CssStyleSheet(IReadOnlyList<CssRule> rules, CssNamespaces namespaces)
@@ -24,6 +27,9 @@ public sealed class CssStyleSheet
     /// <param name="css">The CSS text.</param>
     /// <param name="options">Options for error reporting.</param>
     /// <returns>The style sheet.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
+    /// </example>
     public static CssStyleSheet Parse(string css, CssParseOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(css);

@@ -4,6 +4,9 @@ namespace Egami.Css;
 /// <param name="Name">The property name in lowercase.</param>
 /// <param name="Inherited">Whether the property inherits by default.</param>
 /// <param name="InitialValue">The initial value as CSS text, or <see langword="null"/> for none.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed record class CssPropertyDefinition(string Name, bool Inherited, string? InitialValue)
 {
     private IReadOnlyList<CssComponentValue>? _initial;
@@ -25,6 +28,9 @@ public sealed record class CssPropertyDefinition(string Name, bool Inherited, st
 /// Expands a value (without var() or CSS-wide keywords) into longhand declarations, or returns <see langword="null"/> when the
 /// value is invalid. A longhand it leaves out is set to <c>initial</c>.
 /// </param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed record class CssShorthandDefinition(string Name, IReadOnlyList<string> Longhands, Func<IReadOnlyList<CssComponentValue>, IReadOnlyList<CssDeclaration>?> Expand);
 
 /// <summary>
@@ -32,6 +38,9 @@ public sealed record class CssShorthandDefinition(string Name, IReadOnlyList<str
 /// own, such as Egami.Svg's <c>fill</c> and <c>stroke</c>. Unregistered properties cascade too, as non-inherited properties
 /// without an initial value. Do not change a registry while a cascade built from it is in use.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed class CssPropertyRegistry
 {
     private readonly Dictionary<string, CssPropertyDefinition> _properties = new(StringComparer.Ordinal);

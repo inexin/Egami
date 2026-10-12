@@ -1,6 +1,9 @@
 namespace Egami.Css;
 
 /// <summary>The origin of a style sheet in the cascade.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public enum CssOrigin
 {
     /// <summary>The user agent's default style sheet.</summary>
@@ -14,6 +17,9 @@ public enum CssOrigin
 }
 
 /// <summary>Options for building a <see cref="CssCascade"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed record class CssCascadeOptions
 {
     /// <summary>Gets the default options: <see cref="CssMediaContext.Default"/> and <see cref="CssPropertyRegistry.CreateDefault"/>.</summary>
@@ -44,6 +50,9 @@ public sealed record class CssCascadeOptions
 /// longhands while the cascade is built, so a shorthand and a longhand compete per longhand. A cascade can be used from
 /// several threads at once.
 /// </remarks>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed class CssCascade
 {
     private static readonly IReadOnlyList<string> s_allExcluded = ["direction", "unicode-bidi"];
@@ -58,6 +67,9 @@ public sealed class CssCascade
     /// <summary>Builds a cascade from style sheets in order of appearance.</summary>
     /// <param name="sheets">The style sheets and their origins, in document order.</param>
     /// <param name="options">The media context, the <c>@supports</c> callback and the property registry.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+    /// </example>
     public CssCascade(IEnumerable<(CssStyleSheet Sheet, CssOrigin Origin)> sheets, CssCascadeOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(sheets);
@@ -423,6 +435,9 @@ public sealed class CssCascade
 }
 
 /// <summary>The cascaded style of an element: the winning declaration of each property, with its origin.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
+/// </example>
 public sealed class CssCascadedStyle
 {
     private readonly Dictionary<string, Slots> _properties = new(StringComparer.Ordinal);
