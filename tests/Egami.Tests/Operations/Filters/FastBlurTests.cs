@@ -87,6 +87,34 @@ public class FastBlurTests
         SameOnOneThread("egret", o => o.Blur(9, ColorSpace.Linear, BlurMethod.Fast));
     }
 
+    [Theory]
+    [InlineData(4)]
+    [InlineData(20)]
+    public void BoxBlurIsSameOnOneThreadAndAll(int radius)
+    {
+        SameOnOneThread("egret", o => o.BoxBlur(radius));
+    }
+
+    [Fact]
+    public void LargeBlurIsSameOnOneThreadAndAll()
+    {
+        SameOnOneThread("egret", o => o.Blur(150, ColorSpace.Linear));
+    }
+
+    [Theory]
+    [InlineData("blur-120")]
+    [InlineData("box-3")]
+    [InlineData("box-12")]
+    public void BoxesInsideARectangleMatchTheWholeImage(string chain)
+    {
+        SameInsideArea("duck", new Rect(100, 80, 200, 150), o => _ = chain switch
+        {
+            "blur-120" => o.Blur(120),
+            "box-3" => o.BoxBlur(3),
+            _ => o.BoxBlur(12),
+        });
+    }
+
     [Fact]
     public void InsideARectangleMatchesTheWholeImage()
     {
@@ -101,10 +129,11 @@ public class FastBlurTests
     [InlineData("shapes", "blur-0.7")]
     [InlineData("shapes", "sharpen")]
     [InlineData("zone", "box-4")]
+    [InlineData("zone", "box-20")]
     public void OldBlursKeepTheirPixels(string image, string chain)
     {
-        // One thread: the 1.x box blurs above σ 100 restart their running sums at each band, so their last bits depend on the thread count.
-        using Raster<Rgba8> source = Load(image, EgamiContext.Default with { MaxParallelism = 1 });
+        // All cores: box blurs give the same pixels at any thread count.
+        using Raster<Rgba8> source = Load(image, EgamiContext.Default);
         using Raster<Rgba8> result = source.Derive(
             o =>
             {
@@ -115,6 +144,7 @@ public class FastBlurTests
                     "blur-150" => o.Blur(150),
                     "blur-0.7" => o.Blur(0.7f),
                     "sharpen" => o.Sharpen(1.5f, 2),
+                    "box-20" => o.BoxBlur(20),
                     _ => o.BoxBlur(4),
                 };
             },
@@ -126,10 +156,11 @@ public class FastBlurTests
     {
         ["duck.blur-2"] = "98C0AD2C5C8B4F80",
         ["duck.blur-25-linear"] = "64A910FA4FB6B1CF",
-        ["egret.blur-150"] = "CC03E845719D52DD",
+        ["egret.blur-150"] = "BFDF06E852B67209",
         ["shapes.blur-0.7"] = "C8D5B5E234895E20",
         ["shapes.sharpen"] = "17539490832DCE75",
         ["zone.box-4"] = "6B8B1D44FC840016",
+        ["zone.box-20"] = "80D1865279C5813B",
     };
 
     private static string Hash(Raster<Rgba8> raster)

@@ -30,7 +30,9 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
     private readonly float _sharpen;
     private readonly bool _linear;
     private readonly Colors.LinearCurve? _curve;
-    private int _group;
+
+    /// <summary>The rows between restarts of a box's vertical running sums; bands start only there.</summary>
+    internal const int BoxRestart = 64;
 
     private ConvolutionOperation(
         float[]? row, float[]? column, float[]? full, int rx, int ry, bool box, EdgeMode edge, bool preserveAlpha, float offset, float sharpen, bool linear, Colors.LinearCurve? curve = null)
@@ -57,21 +59,11 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
     /// <summary>Gets the vertical radius of the kernel.</summary>
     internal int RadiusY => _ry;
 
-    /// <summary>Gets the call this pass belongs to when one call adds several (a large blur's boxes), or 0.</summary>
-    internal int Group => _group;
-
-    /// <summary>Gets the kernel's reach, or <see langword="null"/> for wrapping edges and box means: wrapping reads the far edge, and running sums round by where they start, so both need the whole image.</summary>
+    /// <summary>Gets the kernel's reach, or <see langword="null"/> for wrapping edges and box means: wrapping reads the far edge, and running sums round by where they restart, so both need the whole image.</summary>
     public (int X, int Y)? Reach => _edge == EdgeMode.Wrap || _box ? null : (_rx, _ry);
 
     public IRasterOperation WithCurve(Colors.LinearCurve curve) =>
-        new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve) { _group = _group };
-
-    /// <summary>Marks this pass as part of a call that adds several, before it is added to a chain.</summary>
-    internal ConvolutionOperation InGroup(int group)
-    {
-        _group = group;
-        return this;
-    }
+        new ConvolutionOperation(_row, _column, _full, _rx, _ry, _box, _edge, _preserveAlpha, _offset, _sharpen, _linear, curve);
 
     /// <summary>A Gaussian blur: radius ceil(3σ), weights normalized to sum to 1.</summary>
     internal static ConvolutionOperation Gaussian(float sigma, bool linear, float sharpen = 0)
@@ -81,10 +73,10 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
         return new ConvolutionOperation(weights, weights, null, r, r, box: false, EdgeMode.Clamp, preserveAlpha: false, offset: 0, sharpen, linear);
     }
 
-    /// <summary>The mean over a (2r + 1) square, as running sums.</summary>
-    internal static ConvolutionOperation Box(int radius, bool linear)
+    /// <summary>The mean over a (2r + 1) square, as running sums: for small radii, where whole rows read faster than strips.</summary>
+    internal static ConvolutionOperation Box(int radius)
     {
-        return new ConvolutionOperation(null, null, null, radius, radius, box: true, EdgeMode.Clamp, preserveAlpha: false, offset: 0, sharpen: 0, linear);
+        return new ConvolutionOperation(null, null, null, radius, radius, box: true, EdgeMode.Clamp, preserveAlpha: false, offset: 0, sharpen: 0, linear: false);
     }
 
     /// <summary>A caller's kernel, with the divisor folded into the weights.</summary>
@@ -158,15 +150,28 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int height = input.Source.Height;
+        long rowBytes = (long)input.Source.Width * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
+
+        // One band object for the call: it holds only settings, and each band's buffers are rented inside Run, so threads share it.
+        Band<TPixel> band = new(this, input);
+        if (_box)
+        {
+            // The vertical running sums restart every BoxRestart rows, and bands are whole runs of those, so the sums, and the
+            // result, are the same at any thread count.
+            int blocks = (height + BoxRestart - 1) / BoxRestart;
+            Chunks.Run(blocks, rowBytes * height, input.Context.MaxParallelism, (start, end) =>
+            {
+                input.CancellationToken.ThrowIfCancellationRequested();
+                band.Run(start * BoxRestart, Math.Min(end * BoxRestart, height));
+            }, input.CancellationToken);
+            return;
+        }
 
         // Each band re-reads 2ry rows above and below it, so bands should be tall; but every thread needs one. Bands are whole
         // groups of rows, at least 16 groups each (RowRunner's minimum): groups of up to ry rows, small enough that there is a band
         // per thread.
         int threads = Math.Max(1, input.Context.MaxParallelism);
         int group = Math.Clamp((height + (16 * threads) - 1) / (16 * threads), 1, Math.Max(1, _ry));
-        long rowBytes = (long)input.Source.Width * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>();
-        // One band object for the call: it holds only settings, and each band's buffers are rented inside Run, so threads share it.
-        Band<TPixel> band = new(this, input);
         RowRunner.Run((height + group - 1) / group, rowBytes * group, input.Context.MaxParallelism, (start, end) =>
         {
             band.Run(start * group, Math.Min(end * group, height));
@@ -263,7 +268,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
 
                         if (_op._box)
                         {
-                            BoxColumn(ring, sums, y, y == start, output);
+                            BoxColumn(ring, sums, y, y % BoxRestart == 0, output);
                         }
                         else if (_op._full is not null)
                         {
@@ -335,7 +340,7 @@ internal sealed class ConvolutionOperation : IRasterOperation, INeedsNewPlane, I
             }
         }
 
-        /// <summary>Sums the box column for row <paramref name="y"/>: from scratch on the band's first row, then by sliding.</summary>
+        /// <summary>Sums the box column for row <paramref name="y"/>: from scratch every <see cref="BoxRestart"/> rows, then by sliding.</summary>
         private void BoxColumn(Span<float> ring, Span<float> sums, int y, bool first, Span<float> output)
         {
             int r = _op._ry;

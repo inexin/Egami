@@ -147,6 +147,12 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - Fixed: a one-pixel straight `Rgba8` or `Bgra8` source row blended as if premultiplied (Multiply of a half-transparent gray gave
   178 where 139 is right).
 
+### Filters
+
+- Fixed: `BoxBlur`, and `Blur` above σ 100, could differ by a level in a few pixels between one thread and many. Their running
+  sums now start at fixed rows and columns, so the pixels are the same at any thread count. `Blur` above σ 100 runs its three
+  boxes in one pass, without rounding between them: about three times faster on many cores, and a third faster on one.
+
 ### Egami.Drawing 1.0.0-preview.1
 
 A new package, over Egami's public API only, that draws antialiased paths, shapes, strokes, clips and images on a canvas. A

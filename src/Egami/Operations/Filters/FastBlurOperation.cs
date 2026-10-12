@@ -8,8 +8,9 @@ using Egami.Pixels;
 namespace Egami.Operations.Filters;
 
 /// <summary>
-/// <see cref="BlurMethod.Fast"/>: three extended box passes per axis on premultiplied float rows, with edges repeating the edge
-/// pixel. The image is loaded into a float plane, blurred there by <see cref="FastBlur"/>, and stored back, so it can run in place.
+/// Box passes per axis on premultiplied float rows, with edges repeating the edge pixel: <see cref="BlurMethod.Fast"/>'s three
+/// extended boxes, and the plain boxes of BoxBlur and of Blur above σ 100. Each strip of columns runs from the top of the image to
+/// the bottom, so the result is the same at any thread count.
 /// </summary>
 internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILinearLight, Scopes.INeighbourhoodStep
 {
@@ -17,27 +18,36 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
     private readonly BoxCascade _y;
     private readonly bool _linear;
     private readonly Colors.LinearCurve? _curve;
+    private readonly int _strip;
 
-    internal FastBlurOperation(float sigmaX, float sigmaY, bool linear, Colors.LinearCurve? curve = null)
+    internal FastBlurOperation(float sigmaX, float sigmaY, bool linear)
+        : this(BoxCascade.For(sigmaX), BoxCascade.For(sigmaY), linear, FastBlur.Strip)
     {
-        SigmaX = sigmaX;
-        SigmaY = sigmaY;
-        _x = BoxCascade.For(sigmaX);
-        _y = BoxCascade.For(sigmaY);
+    }
+
+    /// <summary>Runs <paramref name="x"/> across and <paramref name="y"/> down, in strips of <paramref name="strip"/> columns.</summary>
+    internal FastBlurOperation(BoxCascade x, BoxCascade y, bool linear, int strip, Colors.LinearCurve? curve = null)
+    {
+        _x = x;
+        _y = y;
         _linear = linear;
+        _strip = strip;
         _curve = curve;
     }
 
-    internal float SigmaX { get; }
-
-    internal float SigmaY { get; }
+    /// <summary>Plain box passes of <paramref name="radii"/> on both axes, for BoxBlur and the large Blur.</summary>
+    internal static FastBlurOperation Boxes(int[] radii, bool linear)
+    {
+        BoxCascade boxes = BoxCascade.Boxes(radii);
+        return new FastBlurOperation(boxes, boxes, linear, FastBlur.BoxStrip);
+    }
 
     public bool UsesLinearLight => _linear;
 
-    /// <summary>Gets <see langword="null"/>: running sums round by where they start, so a scope runs the blur on the whole image, as a box blur does.</summary>
+    /// <summary>Gets <see langword="null"/>: running sums round by where they start, so a scope runs the blur on the whole image.</summary>
     public (int X, int Y)? Reach => null;
 
-    public IRasterOperation WithCurve(Colors.LinearCurve curve) => new FastBlurOperation(SigmaX, SigmaY, _linear, curve);
+    public IRasterOperation WithCurve(Colors.LinearCurve curve) => new FastBlurOperation(_x, _y, _linear, _strip, curve);
 
     public bool NeedsNewPlane(Size input) => true;
 
@@ -51,14 +61,15 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
         // a fixed width and every running sum starts at the same place, so the result does not depend on the thread count.
         RowConverter<TPixel> converter = new(_linear ? _curve ?? Colors.LinearCurve.Srgb : null);
         int width = input.Source.Width;
-        int strips = (width + FastBlur.Strip - 1) / FastBlur.Strip;
+        int stripWidth = _strip;
+        int strips = (width + stripWidth - 1) / stripWidth;
         Chunks.Run(strips, (long)width * input.Source.Height * 16, input.Context.MaxParallelism, (start, end) =>
         {
-            using Strips<TPixel> strip = new(input.Source, input.Destination, converter, _x, _y);
+            using Strips<TPixel> strip = new(input.Source, input.Destination, converter, _x, _y, stripWidth);
             for (int s = start; s < end; s++)
             {
                 input.CancellationToken.ThrowIfCancellationRequested();
-                strip.Blur(s * FastBlur.Strip, Math.Min(FastBlur.Strip, width - (s * FastBlur.Strip)));
+                strip.Blur(s * stripWidth, Math.Min(stripWidth, width - (s * stripWidth)));
             }
         }, input.CancellationToken);
     }
@@ -79,15 +90,15 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
         private int _cached;
         private int _lastTranslucent;
 
-        internal Strips(PixelPlane<TPixel> source, PixelPlane<TPixel> destination, RowConverter<TPixel> converter, BoxCascade x, BoxCascade y)
-            : base(y, FastBlur.Strip * 4)
+        internal Strips(PixelPlane<TPixel> source, PixelPlane<TPixel> destination, RowConverter<TPixel> converter, BoxCascade x, BoxCascade y, int stripWidth)
+            : base(y, stripWidth * 4)
         {
             _source = source;
             _destination = destination;
             _converter = converter;
             _x = x;
             _reachY = y.Reach;
-            _lineLength = (FastBlur.Strip + (2 * x.Reach)) * 4;
+            _lineLength = (stripWidth + (2 * x.Reach)) * 4;
             _lines = ArrayPool<float>.Shared.Rent(2 * _lineLength);
         }
 
@@ -165,6 +176,12 @@ internal static class FastBlur
 {
     /// <summary>The pixels in a strip of the vertical pass.</summary>
     internal const int Strip = 128;
+
+    /// <summary>
+    /// The pixels in a strip of plain box passes. Their radii start at 9 (BoxBlur) and run past 100 (Blur above σ 100), so each
+    /// row of a strip loads twice the reach on top of the strip; wider strips spend less of the time on that.
+    /// </summary>
+    internal const int BoxStrip = 512;
 
     /// <summary>Copies a row of <paramref name="width"/> pixels into the middle of <paramref name="padded"/> and repeats its end pixels into the <paramref name="pad"/> on each side.</summary>
     internal static void LoadPadded(ReadOnlySpan<float> row, Span<float> padded, int width, int channels, int pad)

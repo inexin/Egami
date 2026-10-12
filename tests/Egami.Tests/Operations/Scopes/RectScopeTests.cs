@@ -160,7 +160,7 @@ public sealed class RectScopeTests : IDisposable
     [Fact]
     public void ScratchPlanesCountAgainstTheBudget()
     {
-        EgamiContext tight = EgamiContext.Default with { Limits = EgamiContext.Default.Limits with { MaxTotalBytes = 12_000_000 } };
+        EgamiContext tight = EgamiContext.Default with { Limits = EgamiContext.Default.Limits with { MaxTotalBytes = 6_000_000 } };
         using Raster<Rgba8> source = Raster.Create<Rgba8>(2000, 1000, tight);
         Assert.Throws<LimitExceededException>(() => source.Apply(ops => ops.Within(new Rect(0, 0, 2000, 1000), o => o.Blur(150)), Ct));
     }

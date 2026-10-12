@@ -7,13 +7,13 @@ using System.Runtime.Intrinsics;
 namespace Egami.Operations.Filters;
 
 /// <summary>
-/// The fast Gaussian blur: three extended box passes (Gwosdek, Grewenig, Bruhn and Weickert, 2011) per axis. A box of radius r
-/// gets a fractional weight α on the two taps just outside it, and r and α are chosen so the three passes' variance is exactly σ²;
-/// each pass is a running sum, so the cost per pixel does not grow with σ.
+/// Box passes per axis as running sums, so the cost per pixel does not grow with the radius. The fast Gaussian blur runs three
+/// extended boxes (Gwosdek, Grewenig, Bruhn and Weickert, 2011): a box of radius r gets a fractional weight α on the two taps just
+/// outside it, and r and α are chosen so the three passes' variance is exactly σ². Box blurs run plain boxes, with α = 0.
 /// </summary>
 internal sealed class BoxCascade
 {
-    /// <summary>The passes per axis.</summary>
+    /// <summary>The passes per axis of the fast Gaussian.</summary>
     internal const int Passes = 3;
 
     private readonly int[] _radii;
@@ -58,11 +58,18 @@ internal sealed class BoxCascade
         return new BoxCascade(radii, alphas, norms);
     }
 
+    /// <summary>Returns plain box passes of <paramref name="radii"/>: each the mean over 2r + 1 pixels.</summary>
+    internal static BoxCascade Boxes(params int[] radii)
+    {
+        float[] norms = [.. radii.Select(r => 1f / ((2 * r) + 1))];
+        return new BoxCascade([.. radii], new float[radii.Length], norms);
+    }
+
     /// <summary>The variance of the passes together, from the radii and weights as stored.</summary>
     internal double Variance()
     {
         double total = 0;
-        for (int i = 0; i < Passes; i++)
+        for (int i = 0; i < _radii.Length; i++)
         {
             double r = _radii[i], a = _alphas[i];
             total += ((r * (r + 1) * ((2 * r) + 1) / 3) + (2 * a * (r + 1) * (r + 1))) / ((2 * r) + 1 + (2 * a));
@@ -78,7 +85,7 @@ internal sealed class BoxCascade
     internal void Horizontal(Span<float> row, int width, int channels)
     {
         int length = width + (2 * Reach);
-        for (int p = 0; p < Passes; p++)
+        for (int p = 0; p < _radii.Length; p++)
         {
             int r = _radii[p];
             length -= 2 * (r + 1);
@@ -100,7 +107,7 @@ internal sealed class BoxCascade
     internal void Horizontal(Span<float> a, Span<float> b, int width)
     {
         int length = width + (2 * Reach);
-        for (int p = 0; p < Passes; p++)
+        for (int p = 0; p < _radii.Length; p++)
         {
             int r = _radii[p];
             length -= 2 * (r + 1);
@@ -125,6 +132,24 @@ internal sealed class BoxCascade
 
         ref Vector4 ra = ref MemoryMarshal.GetReference(a);
         ref Vector4 rb = ref MemoryMarshal.GetReference(b);
+        if (alpha == 0)
+        {
+            // A plain box: the outer taps have no weight, so they are not read.
+            for (int i = 0; i < count; i++)
+            {
+                ref Vector4 pa = ref Unsafe.Add(ref ra, i);
+                ref Vector4 pb = ref Unsafe.Add(ref rb, i);
+                Vector4 farA = Unsafe.Add(ref pa, last), farB = Unsafe.Add(ref pb, last);
+                Vector4 nextA = Unsafe.Add(ref pa, 1), nextB = Unsafe.Add(ref pb, 1);
+                pa = innerA * norm;
+                pb = innerB * norm;
+                innerA += farA - nextA;
+                innerB += farB - nextB;
+            }
+
+            return;
+        }
+
         for (int i = 0; i < count; i++)
         {
             ref Vector4 pa = ref Unsafe.Add(ref ra, i);
@@ -190,7 +215,7 @@ internal sealed class BoxCascade
         private readonly int[] _next;
         private readonly float[][] _sums;
         private readonly float[] _output;
-        private readonly int[] _made = new int[Passes];
+        private readonly int[] _made;
         private readonly float[] _zeros;
         private int _length;
 
@@ -201,11 +226,13 @@ internal sealed class BoxCascade
         {
             _cascade = cascade;
             _capacity = capacity;
-            _rings = new float[Passes][];
-            _ringRows = new int[Passes];
-            _next = new int[Passes];
-            _sums = new float[Passes][];
-            for (int p = 0; p < Passes; p++)
+            int passes = cascade._radii.Length;
+            _rings = new float[passes][];
+            _ringRows = new int[passes];
+            _next = new int[passes];
+            _made = new int[passes];
+            _sums = new float[passes][];
+            for (int p = 0; p < passes; p++)
             {
                 // A power of two, so a row's slot is a mask; pass p reads 2r + 3 rows at a time.
                 _ringRows[p] = (int)BitOperations.RoundUpToPowerOf2((uint)((2 * cascade._radii[p]) + 3));
@@ -227,14 +254,15 @@ internal sealed class BoxCascade
 
             // Level p holds the rows pass p reads; it must start r + 1 rows above the first row pass p makes.
             int first = start;
-            for (int p = Passes - 1; p >= 0; p--)
+            int passes = _cascade._radii.Length;
+            for (int p = passes - 1; p >= 0; p--)
             {
                 first -= _cascade._radii[p] + 1;
                 _next[p] = first;
             }
 
             // The first row each pass makes, where its running sum starts.
-            for (int p = 0; p < Passes; p++)
+            for (int p = 0; p < passes; p++)
             {
                 _made[p] = _next[p] + _cascade._radii[p] + 1;
             }
@@ -242,7 +270,7 @@ internal sealed class BoxCascade
             Span<float> output = _output.AsSpan(0, length);
             for (int y = start; y < end; y++)
             {
-                Make(Passes - 1, y, output);
+                Make(passes - 1, y, output);
                 Store(y, output);
             }
         }
@@ -307,7 +335,7 @@ internal sealed class BoxCascade
         /// <summary>Returns the rented rows.</summary>
         protected virtual void Dispose(bool disposing)
         {
-            for (int p = 0; p < Passes; p++)
+            for (int p = 0; p < _rings.Length; p++)
             {
                 ArrayPool<float>.Shared.Return(_rings[p]);
                 ArrayPool<float>.Shared.Return(_sums[p]);
@@ -353,6 +381,31 @@ internal sealed class BoxCascade
             ref float b = ref MemoryMarshal.GetReference(below);
             ref float t = ref MemoryMarshal.GetReference(target);
             int i = 0;
+            if (alpha == 0)
+            {
+                // A plain box: the outer rows have no weight, so they are not read.
+                if (Vector256.IsHardwareAccelerated)
+                {
+                    Vector256<float> vn = Vector256.Create(norm);
+                    for (; i <= length - Vector256<float>.Count; i += Vector256<float>.Count)
+                    {
+                        nuint at = (nuint)i;
+                        Vector256<float> next = Vector256.LoadUnsafe(ref s, at) + (Vector256.LoadUnsafe(ref a, at) - Vector256.LoadUnsafe(ref d, at));
+                        next.StoreUnsafe(ref s, at);
+                        (next * vn).StoreUnsafe(ref t, at);
+                    }
+                }
+
+                for (; i < length; i++)
+                {
+                    float next = sum[i] + (added[i] - removed[i]);
+                    sum[i] = next;
+                    target[i] = next * norm;
+                }
+
+                return;
+            }
+
             if (Vector256.IsHardwareAccelerated)
             {
                 Vector256<float> va = Vector256.Create(alpha), vn = Vector256.Create(norm);

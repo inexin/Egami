@@ -19,8 +19,6 @@ namespace Egami.Operations;
 /// </example>
 public sealed partial class RasterOps
 {
-    private static int _groups;
-
     private readonly List<IRasterOperation> _operations = [];
 
     internal RasterOps()
@@ -383,13 +381,7 @@ public sealed partial class RasterOps
             return Add(ConvolutionOperation.Gaussian(sigma, linear));
         }
 
-        int group = Interlocked.Increment(ref _groups);
-        foreach (int radius in BoxRadii(sigma, 3))
-        {
-            Add(ConvolutionOperation.Box(radius, linear).InGroup(group));
-        }
-
-        return this;
+        return Add(FastBlurOperation.Boxes(BoxRadii(sigma, 3), linear));
     }
 
     /// <summary>Replaces each pixel with the mean of the (2r + 1) square around it. Edges repeat the edge pixel.</summary>
@@ -400,7 +392,13 @@ public sealed partial class RasterOps
     {
         ArgumentOutOfRangeException.ThrowIfNegative(radius);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(radius, 1000);
-        return radius == 0 ? this : Add(ConvolutionOperation.Box(radius, linear: false));
+        if (radius == 0)
+        {
+            return this;
+        }
+
+        // Small boxes run over whole rows; larger ones down strips of columns, so threads do not each re-read 2r rows.
+        return Add(radius <= SmallBox ? ConvolutionOperation.Box(radius) : FastBlurOperation.Boxes([radius], linear: false));
     }
 
     /// <summary>
@@ -926,6 +924,9 @@ public sealed partial class RasterOps
 
         return Add(new Color.ArithmeticOperation(op, value, channels));
     }
+
+    /// <summary>Box blurs up to this radius run as running sums over whole rows; larger ones in strips of columns.</summary>
+    internal const int SmallBox = 8;
 
     /// <summary>Blurs with σ above this run as three box blurs.</summary>
     internal const float LargeSigma = 100;

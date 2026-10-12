@@ -143,14 +143,7 @@ internal static class ScopeRunner
             IRasterOperation step = steps[i];
             if (step is INeighbourhoodStep)
             {
-                int last = i;
-                while (step is ConvolutionOperation { Group: not 0 } convolution && last + 1 < steps.Count && steps[last + 1] is ConvolutionOperation next && next.Group == convolution.Group)
-                {
-                    last++;
-                }
-
-                Neighbourhood(steps, i, last, input, area);
-                i = last;
+                Neighbourhood(step, input, area);
             }
             else if (step is IAreaStep areaStep)
             {
@@ -229,53 +222,31 @@ internal static class ScopeRunner
     }
 
     /// <summary>
-    /// Neighbourhood filters (convolutions, and the 2.5.4 filters) on the band around the area that they reach (the whole image for
-    /// wrapping edges, box means and filters that read everything), so every pixel in the area gets the value a whole-image run
+    /// A neighbourhood filter (a convolution, or a 2.5.4 filter) on the band around the area that it reaches (the whole image for
+    /// wrapping edges, running sums and filters that read everything), so every pixel in the area gets the value a whole-image run
     /// would give; only the area is copied back.
     /// </summary>
-    private static void Neighbourhood<TPixel>(IReadOnlyList<IRasterOperation> steps, int first, int last, OperationInput<TPixel> input, Rect area)
+    private static void Neighbourhood<TPixel>(IRasterOperation step, OperationInput<TPixel> input, Rect area)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        int rx = 0, ry = 0;
-        bool wraps = false;
-        for (int i = first; i <= last; i++)
-        {
-            if (((INeighbourhoodStep)steps[i]).Reach is (int x, int y))
-            {
-                rx += x;
-                ry += y;
-            }
-            else
-            {
-                wraps = true;
-            }
-        }
-
         Rect full = new(0, 0, input.Destination.Width, input.Destination.Height);
-        Rect band = wraps ? full : new Rect(area.X - rx, area.Y - ry, area.Width + (2 * rx), area.Height + (2 * ry)).Intersect(full);
+        Rect band = ((INeighbourhoodStep)step).Reach is (int rx, int ry)
+            ? new Rect(area.X - rx, area.Y - ry, area.Width + (2 * rx), area.Height + (2 * ry)).Intersect(full)
+            : full;
 
-        // The first pass reads a view of the band in place; its output, and each later pass's, goes to scratch planes.
+        // The step reads a view of the band in place and writes a scratch plane.
         PixelPlane<TPixel> read = new(input.Destination, band);
-        PixelPlane<TPixel> a = Scratch(input, band.Width, band.Height);
-        PixelPlane<TPixel>? b = last > first ? Scratch(input, band.Width, band.Height) : null;
+        PixelPlane<TPixel> target = Scratch(input, band.Width, band.Height);
         try
         {
-            PixelPlane<TPixel> source = read, target = a;
-            for (int i = first; i <= last; i++)
-            {
-                // A step in the raster's coordinates (a point light) moves with the band.
-                IRasterOperation step = steps[i] is IAreaTranslatable translatable && translatable.InArea(band) is IRasterOperation moved ? moved : steps[i];
-                step.Run(new OperationInput<TPixel>(source, target, input.Context, input.FrameIndex, input.CancellationToken) { Memory = input.Memory });
-                source = target;
-                target = ReferenceEquals(target, a) ? b! : a;
-            }
-
-            Copy(source, new Rect(area.X - band.X, area.Y - band.Y, area.Width, area.Height), input.Destination, new Point(area.X, area.Y));
+            // A step in the raster's coordinates (a point light) moves with the band.
+            IRasterOperation moved = step is IAreaTranslatable translatable && translatable.InArea(band) is IRasterOperation inBand ? inBand : step;
+            moved.Run(new OperationInput<TPixel>(read, target, input.Context, input.FrameIndex, input.CancellationToken) { Memory = input.Memory });
+            Copy(target, new Rect(area.X - band.X, area.Y - band.Y, area.Width, area.Height), input.Destination, new Point(area.X, area.Y));
         }
         finally
         {
-            a.Dispose();
-            b?.Dispose();
+            target.Dispose();
         }
     }
 }
