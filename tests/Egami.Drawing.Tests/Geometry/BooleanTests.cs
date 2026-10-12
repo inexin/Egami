@@ -112,6 +112,21 @@ public class BooleanTests
         Assert.Throws<ArgumentOutOfRangeException>(() => A.Union(B, float.NaN));
     }
 
+    /// <summary>Inputs the 2.6.2 fuzz run found slow: huge cubic loops running along each other. Their cutting has a budget.</summary>
+    [Theory]
+    [InlineData("M45 45 L80 80 C80 80 45 4545 80 80 C115 -4385 45 45 0 0")]
+    [InlineData("M81 80 S 45 45, 0, 0,3 1 1 045 0 13 210 L20 20M.58 0.5 3 1910 145 80 S 45 45, 0, 0,3 1 1 0  ,0 Z")]
+    [InlineData("M80 80 S 45 45, 0,0 S 45 45, 0, 0,3 1 1 0 45 45 1, 0,3 1 1 0 45 45 1,0 Z")]
+    public void PathologicalLoopsFinish(string data)
+    {
+        Path path = Path.ParseSvg(data, lenient: true);
+        System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
+        path.Simplify();
+        path.WithFillRule(FillRule.EvenOdd).Simplify();
+        new Stroke(2) { Join = LineJoin.Round }.ToPath(path, simplify: true);
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(20), watch.Elapsed.ToString());
+    }
+
     [Fact]
     public void CombineSweepsManyPathsAtOnce()
     {

@@ -139,6 +139,32 @@ internal readonly record struct Segment
         }
     }
 
+    /// <summary>Returns the two halves, split at t = ½ by de Casteljau's construction.</summary>
+    public (Segment Left, Segment Right) Halves()
+    {
+        switch (Kind)
+        {
+            case PathVerb.Line:
+                {
+                    D2 m = 0.5 * (P0 + P1);
+                    return (Line(P0, m), Line(m, P1));
+                }
+
+            case PathVerb.Quad:
+                {
+                    D2 a = 0.5 * (P0 + P1), b = 0.5 * (P1 + P2), m = 0.5 * (a + b);
+                    return (Quad(P0, a, m), Quad(m, b, P2));
+                }
+
+            default:
+                {
+                    D2 ab = 0.5 * (P0 + P1), bc = 0.5 * (P1 + P2), cd = 0.5 * (P2 + P3);
+                    D2 abc = 0.5 * (ab + bc), bcd = 0.5 * (bc + cd), m = 0.5 * (abc + bcd);
+                    return (Cubic(P0, ab, abc, m), Cubic(m, bcd, cd, P3));
+                }
+        }
+    }
+
     /// <summary>Returns the same curve run backwards.</summary>
     public Segment Reversed() => Kind switch
     {
