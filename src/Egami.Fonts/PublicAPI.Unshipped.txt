@@ -1083,3 +1083,85 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.Unicode.TextSegment.ToString() -> string
 ~override Egami.Fonts.VerticalMetrics.Equals(object obj) -> bool
 ~override Egami.Fonts.VerticalMetrics.ToString() -> string
+Egami.Fonts.Shaping.FontFallback
+Egami.Fonts.Shaping.FontFallback.Families.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontFamily!>!
+Egami.Fonts.Shaping.FontFallback.FontFallback(System.Collections.Generic.IEnumerable<Egami.Fonts.FontFamily!>! families, Egami.Fonts.Shaping.IFontFallbackResolver? resolver = null) -> void
+Egami.Fonts.Shaping.FontFallback.Resolver.get -> Egami.Fonts.Shaping.IFontFallbackResolver?
+Egami.Fonts.Shaping.IFontFallbackResolver
+Egami.Fonts.Shaping.IFontFallbackResolver.TryResolve(System.ReadOnlySpan<char> cluster, Egami.Fonts.Unicode.Script script, string? language, Egami.Fonts.FontStyle style, out Egami.Fonts.Typeface? typeface) -> bool
+Egami.Fonts.Shaping.ShapedLine
+Egami.Fonts.Shaping.ShapedLine.Advance.get -> float
+Egami.Fonts.Shaping.ShapedLine.Ascent.get -> float
+Egami.Fonts.Shaping.ShapedLine.Descent.get -> float
+Egami.Fonts.Shaping.ShapedLine.Length.get -> int
+Egami.Fonts.Shaping.ShapedLine.LineHeight.get -> float
+Egami.Fonts.Shaping.ShapedLine.ParagraphLevel.get -> int
+Egami.Fonts.Shaping.ShapedLine.Runs.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.ShapedRun!>!
+Egami.Fonts.Shaping.ShapedLine.Start.get -> int
+Egami.Fonts.Shaping.ShapedRun
+Egami.Fonts.Shaping.ShapedRun.Advance.get -> float
+Egami.Fonts.Shaping.ShapedRun.BidiLevel.get -> int
+Egami.Fonts.Shaping.ShapedRun.Font.get -> Egami.Fonts.Font
+Egami.Fonts.Shaping.ShapedRun.Glyphs.get -> Egami.Fonts.Shaping.GlyphBuffer!
+Egami.Fonts.Shaping.ShapedRun.IsVertical.get -> bool
+Egami.Fonts.Shaping.ShapedRun.Language.get -> string?
+Egami.Fonts.Shaping.ShapedRun.Length.get -> int
+Egami.Fonts.Shaping.ShapedRun.Script.get -> Egami.Fonts.Unicode.Script
+Egami.Fonts.Shaping.ShapedRun.Start.get -> int
+Egami.Fonts.Shaping.ShapedRun.ToGlyphRun(System.Numerics.Vector2 origin, string? text = null) -> Egami.Fonts.GlyphRun!
+Egami.Fonts.Shaping.ShapedText
+Egami.Fonts.Shaping.ShapedText.Advance.get -> float
+Egami.Fonts.Shaping.ShapedText.Lines.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.ShapedLine!>!
+Egami.Fonts.Shaping.ShapedText.ParagraphLevel.get -> int
+Egami.Fonts.Shaping.ShapedText.Text.get -> string!
+Egami.Fonts.Shaping.ShapingOptions
+Egami.Fonts.Shaping.ShapingOptions.<Clone>$() -> Egami.Fonts.Shaping.ShapingOptions!
+Egami.Fonts.Shaping.ShapingOptions.ClusterLevel.get -> Egami.Fonts.Shaping.ClusterLevel
+Egami.Fonts.Shaping.ShapingOptions.ClusterLevel.init -> void
+Egami.Fonts.Shaping.ShapingOptions.Direction.get -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Shaping.ShapingOptions.Direction.init -> void
+Egami.Fonts.Shaping.ShapingOptions.Equals(Egami.Fonts.Shaping.ShapingOptions? other) -> bool
+Egami.Fonts.Shaping.ShapingOptions.Fallback.get -> Egami.Fonts.Shaping.FontFallback!
+Egami.Fonts.Shaping.ShapingOptions.Fallback.init -> void
+Egami.Fonts.Shaping.ShapingOptions.Features.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.FontFeature>?
+Egami.Fonts.Shaping.ShapingOptions.Features.init -> void
+Egami.Fonts.Shaping.ShapingOptions.Language.get -> string?
+Egami.Fonts.Shaping.ShapingOptions.Language.init -> void
+Egami.Fonts.Shaping.ShapingOptions.Script.get -> Egami.Fonts.Unicode.Script?
+Egami.Fonts.Shaping.ShapingOptions.Script.init -> void
+Egami.Fonts.Shaping.ShapingOptions.ShapingOptions() -> void
+Egami.Fonts.Shaping.ShapingOptions.Spans.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.TextSpan>?
+Egami.Fonts.Shaping.ShapingOptions.Spans.init -> void
+Egami.Fonts.Shaping.SystemFontFallback
+Egami.Fonts.Shaping.SystemFontFallback.SystemFontFallback(Egami.Fonts.FontCollection! collection) -> void
+Egami.Fonts.Shaping.SystemFontFallback.TryResolve(System.ReadOnlySpan<char> cluster, Egami.Fonts.Unicode.Script script, string? language, Egami.Fonts.FontStyle style, out Egami.Fonts.Typeface? typeface) -> bool
+Egami.Fonts.Shaping.TextSpan
+Egami.Fonts.Shaping.TextSpan.Deconstruct(out int Start, out int Length) -> void
+Egami.Fonts.Shaping.TextSpan.Equals(Egami.Fonts.Shaping.TextSpan other) -> bool
+Egami.Fonts.Shaping.TextSpan.Features.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Shaping.FontFeature>?
+Egami.Fonts.Shaping.TextSpan.Features.init -> void
+Egami.Fonts.Shaping.TextSpan.Font.get -> Egami.Fonts.Font?
+Egami.Fonts.Shaping.TextSpan.Font.init -> void
+Egami.Fonts.Shaping.TextSpan.Language.get -> string?
+Egami.Fonts.Shaping.TextSpan.Language.init -> void
+Egami.Fonts.Shaping.TextSpan.Length.get -> int
+Egami.Fonts.Shaping.TextSpan.Length.init -> void
+Egami.Fonts.Shaping.TextSpan.Start.get -> int
+Egami.Fonts.Shaping.TextSpan.Start.init -> void
+Egami.Fonts.Shaping.TextSpan.TextSpan() -> void
+Egami.Fonts.Shaping.TextSpan.TextSpan(int Start, int Length) -> void
+override Egami.Fonts.Shaping.ShapingOptions.Equals(object? obj) -> bool
+override Egami.Fonts.Shaping.ShapingOptions.GetHashCode() -> int
+override Egami.Fonts.Shaping.ShapingOptions.ToString() -> string!
+override Egami.Fonts.Shaping.TextSpan.GetHashCode() -> int
+static Egami.Fonts.Shaping.FontFallback.None.get -> Egami.Fonts.Shaping.FontFallback!
+static Egami.Fonts.Shaping.FontFallback.System.get -> Egami.Fonts.Shaping.FontFallback!
+static Egami.Fonts.Shaping.ShapingOptions.Default.get -> Egami.Fonts.Shaping.ShapingOptions!
+static Egami.Fonts.Shaping.ShapingOptions.operator !=(Egami.Fonts.Shaping.ShapingOptions? left, Egami.Fonts.Shaping.ShapingOptions? right) -> bool
+static Egami.Fonts.Shaping.ShapingOptions.operator ==(Egami.Fonts.Shaping.ShapingOptions? left, Egami.Fonts.Shaping.ShapingOptions? right) -> bool
+static Egami.Fonts.Shaping.SystemFontFallback.Instance.get -> Egami.Fonts.Shaping.SystemFontFallback!
+static Egami.Fonts.Shaping.TextShaper.Shape(string! text, Egami.Fonts.Font font, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.Shaping.ShapedText!
+static Egami.Fonts.Shaping.TextSpan.operator !=(Egami.Fonts.Shaping.TextSpan left, Egami.Fonts.Shaping.TextSpan right) -> bool
+static Egami.Fonts.Shaping.TextSpan.operator ==(Egami.Fonts.Shaping.TextSpan left, Egami.Fonts.Shaping.TextSpan right) -> bool
+~override Egami.Fonts.Shaping.TextSpan.Equals(object obj) -> bool
+~override Egami.Fonts.Shaping.TextSpan.ToString() -> string

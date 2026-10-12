@@ -64,8 +64,43 @@ the font's units.
 [!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#run)]
 
 - `GlyphFlags.UnsafeToBreak` marks where breaking the text needs shaping again; line layout uses it to re-shape only there.
-- A run is one script in one direction; splitting text into runs (bidi, script, font fallback) comes with `TextShaper.Shape`.
+- A run is one script in one direction; `TextShaper.Shape` splits real text into runs.
 - The engine gives exactly hb-shape's glyphs, clusters, positions and flags on HarfBuzz's own tests and on Egami's corpus.
+
+## Shaping text
+
+`TextShaper.Shape` shapes a whole string: it splits it into lines at hard breaks (`
+`, `
+`, `
+`, U+0085, U+2028,
+U+2029), resolves each line's bidi levels, splits the line into runs of one level, one script, one span and one font, shapes each
+run as `ShapeRun` does and returns the runs in display order. Nothing wraps; that is line layout's job.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#shape)]
+
+- `ShapedText.Lines` holds a `ShapedLine` per line, with its `ParagraphLevel`, its `Runs` from left to right, its `Advance` and the
+  highest ascent and lowest descent of its fonts. Each `ShapedRun` has its `Font`, `BidiLevel`, `Script`, `Language`, text range
+  and `GlyphBuffer`; `ToGlyphRun` turns it into the `GlyphRun` a canvas draws.
+- `ShapingOptions.Direction` is `Auto` by default: each paragraph takes the direction of its first strong character.
+- `ShapingOptions.Spans` give ranges their own font, language or features; spans must not overlap.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#spans)]
+
+## Font fallback
+
+A font that does not map a character draws .notdef, unless `ShapingOptions.Fallback` names fonts to try. Fallback works on whole
+grapheme clusters, so a letter and its accents, or an emoji sequence, stay in one font: the first font that maps every character
+of the cluster takes it. The span's font comes first, then the `FontFallback.Families` (matched to the font's style), then the
+`FontFallback.Resolver`. Spaces and punctuation stay in the font before them when it has them, so fallback does not split words.
+Emoji presentation (a default-emoji character or VS16) prefers a color face (COLR, sbix or CBDT); VS15 prefers an outline face.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#fallback)]
+
+- `FontFallback.None`, the default, keeps output independent of the machine: only the fonts passed are used.
+- `FontFallback.System` resolves from the installed fonts through `SystemFontFallback`: fixed families per script on Windows, macOS and Linux (Segoe UI Emoji,
+  Apple Color Emoji or Noto Color Emoji for emoji; the language picks Japanese, Chinese or Korean faces for Han), then any
+  installed face that maps the cluster. Output then depends on the fonts installed.
+- An `IFontFallbackResolver` of your own receives the cluster's text, script, language and the font's style.
 
 ## Features
 

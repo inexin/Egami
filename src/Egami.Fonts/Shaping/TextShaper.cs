@@ -58,8 +58,31 @@ public static class TextShaper
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, text.Length - start);
 
         LayoutBuffer layout = t_buffer ??= new LayoutBuffer();
-        Shape(text, start, length, font.Typeface, properties, font.Kerning, layout);
-        buffer.Load(layout, font.Size / font.Typeface.UnitsPerEm);
+        Typeface face = font.EffectiveTypeface;
+        Shape(text, start, length, face, properties, font.Kerning, layout);
+        buffer.Load(layout, font.Size / face.UnitsPerEm);
+    }
+
+    /// <summary>
+    /// Shapes text: splits it into lines at hard breaks, resolves each line's bidi levels, splits it into runs of one level, script,
+    /// span and font (falling back per grapheme cluster as <see cref="ShapingOptions.Fallback"/> says), shapes each run as
+    /// <see cref="ShapeRun"/> does and orders the runs for display. Nothing wraps.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <param name="font">The font and size.</param>
+    /// <param name="options">The direction, language, script, features, fallback, cluster level and spans; null for
+    /// <see cref="ShapingOptions.Default"/>.</param>
+    /// <returns>The shaped lines; an empty text gives one empty line.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is null, or <paramref name="font"/> has no typeface.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A span is not inside the text, or two spans overlap.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Shaping.cs" region="shape"/>
+    /// </example>
+    public static ShapedText Shape(string text, Font font, ShapingOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(font.Typeface, nameof(font));
+        return TextItemizer.Shape(text, font, options ?? ShapingOptions.Default);
     }
 
     /// <summary>Shapes a run into the engine's buffer, in font units.</summary>
