@@ -29,5 +29,7 @@ font = TTFont(SOURCE)
 subsetter = subset.Subsetter(options)
 subsetter.populate(text="".join(sorted(text)))
 subsetter.subset(font)
+# The source's timestamps stay, so the subset's bytes are the same on every run.
+font.recalcTimestamp = False
 font.save(TARGET)
 print(f"{TARGET}: {len(font.getGlyphOrder())} glyphs")

@@ -228,9 +228,12 @@ SCRIPT = r"""
     return range;
   }
 
+  // A grapheme's rectangle; when Chromium gives several (the hyphen of a taken soft hyphen comes with the next character),
+  // the last, which is the character's own.
   function rectOf(map, a, b) {
-    const rects = rangeOf(map, a, b).getClientRects();
+    let rects = rangeOf(map, a, b).getClientRects();
     if (rects.length === 0) return null;
+    if (b === graphemes.find(g => g[0] === a)?.[1] && rects.length > 1) rects = [rects[rects.length - 1]];
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const q of rects) { x0 = Math.min(x0, q.left); y0 = Math.min(y0, q.top); x1 = Math.max(x1, q.right); y1 = Math.max(y1, q.bottom); }
     return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };

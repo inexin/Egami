@@ -1578,3 +1578,58 @@ Egami.Fonts.Unicode.LineBreakClass.WordJoiner = 46 -> Egami.Fonts.Unicode.LineBr
 Egami.Fonts.Unicode.LineBreakClass.ZWJ = 48 -> Egami.Fonts.Unicode.LineBreakClass
 Egami.Fonts.Unicode.LineBreakClass.ZWSpace = 47 -> Egami.Fonts.Unicode.LineBreakClass
 static Egami.Fonts.Unicode.UnicodeData.GetLineBreakClass(int codePoint) -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Layout.LineBreak
+Egami.Fonts.Layout.LineBreak.Deconstruct(out int Index, out bool IsMandatory, out bool IsSoftHyphen) -> void
+Egami.Fonts.Layout.LineBreak.Equals(Egami.Fonts.Layout.LineBreak other) -> bool
+Egami.Fonts.Layout.LineBreak.Index.get -> int
+Egami.Fonts.Layout.LineBreak.Index.init -> void
+Egami.Fonts.Layout.LineBreak.IsMandatory.get -> bool
+Egami.Fonts.Layout.LineBreak.IsMandatory.init -> void
+Egami.Fonts.Layout.LineBreak.IsSoftHyphen.get -> bool
+Egami.Fonts.Layout.LineBreak.IsSoftHyphen.init -> void
+Egami.Fonts.Layout.LineBreak.LineBreak() -> void
+Egami.Fonts.Layout.LineBreak.LineBreak(int Index, bool IsMandatory, bool IsSoftHyphen) -> void
+Egami.Fonts.Layout.LineBreakEnumerator
+Egami.Fonts.Layout.LineBreakEnumerator.Current.get -> Egami.Fonts.Layout.LineBreak
+Egami.Fonts.Layout.LineBreakEnumerator.GetEnumerator() -> Egami.Fonts.Layout.LineBreakEnumerator
+Egami.Fonts.Layout.LineBreakEnumerator.LineBreakEnumerator() -> void
+Egami.Fonts.Layout.LineBreakEnumerator.MoveNext() -> bool
+Egami.Fonts.Layout.LineBreakOptions
+Egami.Fonts.Layout.LineBreakOptions.Deconstruct(out Egami.Fonts.Layout.WordBreak WordBreak, out Egami.Fonts.Layout.OverflowWrap OverflowWrap, out Egami.Fonts.Layout.LineBreakStrictness Strictness, out string? Language) -> void
+Egami.Fonts.Layout.LineBreakOptions.Equals(Egami.Fonts.Layout.LineBreakOptions other) -> bool
+Egami.Fonts.Layout.LineBreakOptions.Language.get -> string?
+Egami.Fonts.Layout.LineBreakOptions.Language.init -> void
+Egami.Fonts.Layout.LineBreakOptions.LineBreakOptions() -> void
+Egami.Fonts.Layout.LineBreakOptions.LineBreakOptions(Egami.Fonts.Layout.WordBreak WordBreak = Egami.Fonts.Layout.WordBreak.Normal, Egami.Fonts.Layout.OverflowWrap OverflowWrap = Egami.Fonts.Layout.OverflowWrap.Normal, Egami.Fonts.Layout.LineBreakStrictness Strictness = Egami.Fonts.Layout.LineBreakStrictness.Auto, string? Language = null) -> void
+Egami.Fonts.Layout.LineBreakOptions.OverflowWrap.get -> Egami.Fonts.Layout.OverflowWrap
+Egami.Fonts.Layout.LineBreakOptions.OverflowWrap.init -> void
+Egami.Fonts.Layout.LineBreakOptions.Strictness.get -> Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.LineBreakOptions.Strictness.init -> void
+Egami.Fonts.Layout.LineBreakOptions.WordBreak.get -> Egami.Fonts.Layout.WordBreak
+Egami.Fonts.Layout.LineBreakOptions.WordBreak.init -> void
+Egami.Fonts.Layout.LineBreaks
+Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.LineBreakStrictness.Anywhere = 4 -> Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.LineBreakStrictness.Auto = 0 -> Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.LineBreakStrictness.Loose = 1 -> Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.LineBreakStrictness.Normal = 2 -> Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.LineBreakStrictness.Strict = 3 -> Egami.Fonts.Layout.LineBreakStrictness
+Egami.Fonts.Layout.OverflowWrap
+Egami.Fonts.Layout.OverflowWrap.Anywhere = 1 -> Egami.Fonts.Layout.OverflowWrap
+Egami.Fonts.Layout.OverflowWrap.BreakWord = 2 -> Egami.Fonts.Layout.OverflowWrap
+Egami.Fonts.Layout.OverflowWrap.Normal = 0 -> Egami.Fonts.Layout.OverflowWrap
+Egami.Fonts.Layout.WordBreak
+Egami.Fonts.Layout.WordBreak.BreakAll = 1 -> Egami.Fonts.Layout.WordBreak
+Egami.Fonts.Layout.WordBreak.KeepAll = 2 -> Egami.Fonts.Layout.WordBreak
+Egami.Fonts.Layout.WordBreak.Normal = 0 -> Egami.Fonts.Layout.WordBreak
+override Egami.Fonts.Layout.LineBreak.GetHashCode() -> int
+override Egami.Fonts.Layout.LineBreakOptions.GetHashCode() -> int
+static Egami.Fonts.Layout.LineBreak.operator !=(Egami.Fonts.Layout.LineBreak left, Egami.Fonts.Layout.LineBreak right) -> bool
+static Egami.Fonts.Layout.LineBreak.operator ==(Egami.Fonts.Layout.LineBreak left, Egami.Fonts.Layout.LineBreak right) -> bool
+static Egami.Fonts.Layout.LineBreakOptions.operator !=(Egami.Fonts.Layout.LineBreakOptions left, Egami.Fonts.Layout.LineBreakOptions right) -> bool
+static Egami.Fonts.Layout.LineBreakOptions.operator ==(Egami.Fonts.Layout.LineBreakOptions left, Egami.Fonts.Layout.LineBreakOptions right) -> bool
+static Egami.Fonts.Layout.LineBreaks.Enumerate(System.ReadOnlySpan<char> text, Egami.Fonts.Layout.LineBreakOptions options = default(Egami.Fonts.Layout.LineBreakOptions)) -> Egami.Fonts.Layout.LineBreakEnumerator
+~override Egami.Fonts.Layout.LineBreak.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.LineBreak.ToString() -> string
+~override Egami.Fonts.Layout.LineBreakOptions.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.LineBreakOptions.ToString() -> string
