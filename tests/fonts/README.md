@@ -18,6 +18,7 @@ package. fontTools' reading of each is in tests/reference/fonts, written by `pyt
 | derived/NotoSansSerif.ttc | Noto Sans and Noto Serif as one collection | SIL OFL 1.1 |
 | derived/SourceSans3.cff | Source Sans 3's CFF table, bare | SIL OFL 1.1 |
 | derived/NotoSansCJK-subset.otf, .cff | Noto Sans CJK SC cut to ASCII and 200 hanzi, CID-keyed | SIL OFL 1.1 (LICENSES/NotoCJK-OFL.txt) |
+| derived/NotoSansCJK-layout-subset.otf | Noto Sans CJK SC (notofonts/noto-cjk Sans2.004) cut to ASCII and the characters of the 2.8.2 layout corpus, with every layout feature (vert, vrt2, halt, palt) and vertical metrics, CID-keyed | SIL OFL 1.1 (LICENSES/NotoCJK-OFL.txt) |
 | derived/NotoSans-symbol.ttf, -mac.ttf, -format12.ttf, -kern.ttf | Noto Sans cut down, with a symbol, Mac Roman or format 12 cmap, or a kern table | SIL OFL 1.1 |
 | test_glyphs-glyf_colr_1.ttf, test_glyphs-glyf_colr_1_variable.ttf | googlefonts/color-fonts, fonts/ (the COLR v1 test glyphs, unmodified) | Apache 2.0 (LICENSES/color-fonts-Apache-2.0.txt) |
 | derived/RobotoFlex-subset.ttf | Roboto Flex variable (google/fonts ofl/robotoflex) cut to Latin-1, 13 axes | SIL OFL 1.1 (LICENSES/RobotoFlex-OFL.txt) |
@@ -39,3 +40,7 @@ The shaping fonts, HarfBuzz's tests and hb-shape's references in tests/reference
 `python tools/make-shaping-references.py`, which pins every download by SHA-256 and runs HarfBuzz 14.5.1 in Docker.
 The GSUB closure references in tests/reference/shaping/closure come from `python tools/make-closure-references.py`, which
 runs hb-subset's closure in the same image.
+
+The 2.8.2 layout subset and the Chromium layout references in tests/reference/layout come from
+`python tools/make-layout-references.py`, which runs tools/layoutref/derive.py in the egami-fontref image and a pinned headless
+Chromium (Playwright 1.47.0's Chromium 129) in Docker.
