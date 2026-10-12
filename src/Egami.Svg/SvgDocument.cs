@@ -1,7 +1,10 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.Pixels;
 using Egami.Svg.Reading;
+using Egami.Svg.Rendering;
+using Egami.Svg.Resolving;
 using Egami.Svg.Values;
 
 namespace Egami.Svg;
@@ -20,11 +23,21 @@ namespace Egami.Svg;
 /// </example>
 public sealed class SvgDocument
 {
+    /// <summary>
+    /// The canvas options Rasterize uses by default: curves flattened to 0.02 pixel instead of the canvas's 0.1, so the edges of
+    /// large round shapes keep their exact coverage, as resvg's and browsers' do.
+    /// </summary>
+    private static readonly CanvasOptions s_canvasOptions = new() { Tolerance = 0.02f };
+
     private readonly SvgXmlContent? _source;
     private Dictionary<string, SvgElement>? _ids;
     private int _idsVersion = -1;
     private (Vector2 Size, RectF? ViewBox) _size;
     private int _sizeVersion = -1;
+    private readonly Lock _treeLock = new();
+    private SvgGroup? _tree;
+    private int _treeVersion = -1;
+    private IReadOnlyList<string> _treeLanguages = ["en"];
 
     /// <summary>Initializes a new instance of the <see cref="SvgDocument"/> class around a root element made in code.</summary>
     /// <param name="root">The root, an <c>svg</c> element without a parent or another document.</param>
@@ -78,6 +91,9 @@ public sealed class SvgDocument
     /// <summary>Gets the text of the root's first <c>desc</c> child, or <see langword="null"/>.</summary>
     public string? Description => Root.Elements("desc").FirstOrDefault()?.Text.Trim();
 
+    /// <summary>Gets a value indicating whether the root svg element has no namespace, so elements in none are read as SVG.</summary>
+    internal bool NoNamespace => Root.Namespace is null;
+
     /// <summary>Gets a number that changes whenever the tree is edited.</summary>
     internal int Version { get; private set; }
 
@@ -123,6 +139,10 @@ public sealed class SvgDocument
         CheckRoot(content.Root, report);
         (Vector2 Size, RectF? ViewBox) size = SvgRootSize.Resolve(content.Root, options.Dpi, report);
         SvgDocument document = new(content, options, report.Warnings) { _size = size, _sizeVersion = 0 };
+
+        // Styles are applied and references resolved at load, so what cannot be drawn is reported (or thrown, in strict mode) here.
+        document._tree = new SvgResolver(document, report).Resolve();
+        document._treeVersion = document.Version;
         report.Deliver(context);
         return document;
     }
@@ -140,6 +160,164 @@ public sealed class SvgDocument
         ArgumentNullException.ThrowIfNull(text);
         using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(text));
         return Load(stream, options);
+    }
+
+    /// <summary>
+    /// Gets the render tree: the elements resolved for drawing (styles applied, units in pixels, use expanded, shapes as paths),
+    /// in the document's pixels (<see cref="Size"/>). It is built at load and again on first use after an edit; what an edit
+    /// leaves undrawable is reported to the context's diagnostics then. It is immutable and safe to read from many threads.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="render-tree"/>
+    /// </example>
+    public SvgGroup RenderTree => Tree(null);
+
+    /// <summary>
+    /// Draws the document on a canvas: at its own size from the canvas's origin, or fitted into <paramref name="box"/> by the
+    /// root's preserveAspectRatio. Drawing calls only the public canvas API, so a raster canvas, a PDF page, SvgCanvas or a
+    /// PictureRecorder receive the same calls. It never throws on content.
+    /// </summary>
+    /// <param name="canvas">The canvas.</param>
+    /// <param name="box">The rectangle to fit the document into, in the canvas's coordinates, or <see langword="null"/>.</param>
+    /// <param name="options">Languages, text as paths and filter scale, or <see langword="null"/> for the defaults.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="draw"/>
+    /// </example>
+    public void Draw(Canvas canvas, RectF? box = null, SvgRenderOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        options ??= SvgRenderOptions.Default;
+        SvgGroup tree = Tree(options.Languages);
+        int count = canvas.Save();
+        if (box is RectF target)
+        {
+            Vector2 size = Size;
+            if (!(size.X > 0 && size.Y > 0 && target.Width > 0 && target.Height > 0))
+            {
+                canvas.RestoreToCount(count);
+                return;
+            }
+
+            canvas.Concat(RootAspect().Transform(new RectF(0, 0, size.X, size.Y), target));
+        }
+
+        SvgRenderer.Draw(canvas, tree, options);
+        canvas.RestoreToCount(count);
+    }
+
+    /// <summary>
+    /// Draws one element and what it holds, such as a <c>symbol</c> or <c>g</c> of a sprite sheet: fitted into
+    /// <paramref name="box"/> (a symbol's viewBox, else the element's bounding box, centered and scaled to fit), or, without a
+    /// box, in the coordinates of its parent.
+    /// </summary>
+    /// <param name="canvas">The canvas.</param>
+    /// <param name="id">The element's id.</param>
+    /// <param name="box">The rectangle to fit the element into, or <see langword="null"/>.</param>
+    /// <param name="options">Languages, text as paths and filter scale, or <see langword="null"/> for the defaults.</param>
+    /// <exception cref="ArgumentException">No element has the id.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="draw"/>
+    /// </example>
+    public void Draw(Canvas canvas, string id, RectF? box = null, SvgRenderOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        ArgumentNullException.ThrowIfNull(id);
+        options ??= SvgRenderOptions.Default;
+        SvgElement element = FindById(id) ?? throw new ArgumentException("No element has the id " + id + ".", nameof(id));
+        SvgReport report = new(strict: false);
+        SvgNode? node = new SvgResolver(this, report, options.Languages).ResolveElement(element);
+        report.Deliver(Options.EffectiveContext);
+        if (node is null)
+        {
+            return;
+        }
+
+        int count = canvas.Save();
+        if (box is RectF target)
+        {
+            RectF source = element.Name == "symbol" && element.Attributes["viewBox"] is string vb && SvgViewBox.TryParse(vb, out RectF viewBox) && viewBox.Width > 0 && viewBox.Height > 0
+                ? viewBox
+                : SvgResolver.Transformed(node);
+            if (!(source.Width > 0 && source.Height > 0 && target.Width > 0 && target.Height > 0))
+            {
+                canvas.RestoreToCount(count);
+                return;
+            }
+
+            canvas.Concat(SvgAspectRatio.Default.Transform(source, target));
+        }
+
+        SvgRenderer.Draw(canvas, node, options);
+        canvas.RestoreToCount(count);
+    }
+
+    /// <summary>
+    /// Draws the document into a new raster: at its own size times <see cref="SvgRenderOptions.Scale"/>, or at a target width
+    /// and/or height (the other side keeps the aspect ratio), over <see cref="SvgRenderOptions.Background"/>.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type of the raster.</typeparam>
+    /// <param name="options">The size, background and canvas options, or <see langword="null"/> for the defaults.</param>
+    /// <returns>The raster.</returns>
+    /// <exception cref="LimitExceededException">The raster would break the context's size limits.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="rasterize"/>
+    /// </example>
+    public Raster<TPixel> Rasterize<TPixel>(SvgRenderOptions? options = null)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        options ??= SvgRenderOptions.Default;
+        Vector2 size = Size;
+        double w, h;
+        if (options.Width is int width && options.Height is int height)
+        {
+            (w, h) = (width, height);
+        }
+        else if (options.Width is int onlyWidth)
+        {
+            (w, h) = (onlyWidth, Math.Ceiling(onlyWidth * (double)size.Y / size.X));
+        }
+        else if (options.Height is int onlyHeight)
+        {
+            (w, h) = (Math.Ceiling(onlyHeight * (double)size.X / size.Y), onlyHeight);
+        }
+        else
+        {
+            (w, h) = (Math.Ceiling(size.X * (double)options.Scale), Math.Ceiling(size.Y * (double)options.Scale));
+        }
+
+        w = Math.Max(1, w);
+        h = Math.Max(1, h);
+        EgamiContext context = options.Context ?? Options.EffectiveContext;
+        SafetyLimits limits = context.Limits;
+        if (w > limits.MaxWidth)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxWidth), limits.MaxWidth, (long)w);
+        }
+
+        if (h > limits.MaxHeight)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxHeight), limits.MaxHeight, (long)h);
+        }
+
+        if (w * h > limits.MaxPixels)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels, (long)(w * h));
+        }
+
+        Raster<TPixel> raster = Raster.Create<TPixel>((int)w, (int)h, context);
+        using RasterCanvas<TPixel> canvas = raster.CreateCanvas(options.CanvasOptions ?? s_canvasOptions);
+        if (options.Background.A > 0)
+        {
+            canvas.Clear(options.Background);
+        }
+
+        if (size.X > 0 && size.Y > 0)
+        {
+            canvas.Scale((float)(w / size.X), (float)(h / size.Y));
+            SvgRenderer.Draw(canvas, Tree(options.Languages), options);
+        }
+
+        return raster;
     }
 
     /// <summary>
@@ -199,6 +377,28 @@ public sealed class SvgDocument
 
         return _ids.GetValueOrDefault(id);
     }
+
+    /// <summary>The render tree for a set of reader languages, rebuilt after an edit or for other languages.</summary>
+    private SvgGroup Tree(IReadOnlyList<string>? languages)
+    {
+        lock (_treeLock)
+        {
+            languages ??= _treeLanguages;
+            if (_tree is null || _treeVersion != Version || !languages.SequenceEqual(_treeLanguages))
+            {
+                SvgReport report = new(strict: false);
+                _tree = new SvgResolver(this, report, languages).Resolve();
+                _treeVersion = Version;
+                _treeLanguages = languages;
+                report.Deliver(Options.EffectiveContext);
+            }
+
+            return _tree;
+        }
+    }
+
+    private SvgAspectRatio RootAspect() =>
+        Root.Attributes["preserveAspectRatio"] is string text && SvgAspectRatio.TryParse(text, out SvgAspectRatio aspect) ? aspect : SvgAspectRatio.Default;
 
     private (Vector2 Size, RectF? ViewBox) Measure()
     {

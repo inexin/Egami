@@ -1,5 +1,6 @@
 #nullable enable
 abstract Egami.Svg.SvgContent.Clone() -> Egami.Svg.SvgContent!
+abstract Egami.Svg.SvgNode.<Clone>$() -> Egami.Svg.SvgNode!
 const Egami.Svg.SvgNamespaces.Svg = "http://www.w3.org/2000/svg" -> string!
 const Egami.Svg.SvgNamespaces.XLink = "http://www.w3.org/1999/xlink" -> string!
 const Egami.Svg.SvgNamespaces.Xml = "http://www.w3.org/XML/1998/namespace" -> string!
@@ -22,6 +23,14 @@ Egami.Svg.SvgAttributeCollection.SetPath(string! name, Egami.Drawing.Path! path)
 Egami.Svg.SvgAttributeCollection.this[int index].get -> Egami.Svg.SvgAttribute!
 Egami.Svg.SvgAttributeCollection.this[string! name].get -> string?
 Egami.Svg.SvgAttributeCollection.this[string! name].set -> void
+Egami.Svg.SvgClip
+Egami.Svg.SvgClip.<Clone>$() -> Egami.Svg.SvgClip!
+Egami.Svg.SvgClip.Content.get -> Egami.Svg.SvgGroup?
+Egami.Svg.SvgClip.Content.init -> void
+Egami.Svg.SvgClip.Equals(Egami.Svg.SvgClip? other) -> bool
+Egami.Svg.SvgClip.Path.get -> Egami.Drawing.Path!
+Egami.Svg.SvgClip.Path.init -> void
+Egami.Svg.SvgClip.SvgClip(Egami.Drawing.Path! path) -> void
 Egami.Svg.SvgComment
 Egami.Svg.SvgComment.SvgComment(string! value) -> void
 Egami.Svg.SvgComment.Value.get -> string!
@@ -34,8 +43,12 @@ Egami.Svg.SvgContent.Remove() -> void
 Egami.Svg.SvgContentList
 Egami.Svg.SvgDocument
 Egami.Svg.SvgDocument.Description.get -> string?
+Egami.Svg.SvgDocument.Draw(Egami.Drawing.Canvas! canvas, Egami.Drawing.RectF? box = null, Egami.Svg.SvgRenderOptions? options = null) -> void
+Egami.Svg.SvgDocument.Draw(Egami.Drawing.Canvas! canvas, string! id, Egami.Drawing.RectF? box = null, Egami.Svg.SvgRenderOptions? options = null) -> void
 Egami.Svg.SvgDocument.FindById(string! id) -> Egami.Svg.SvgElement?
 Egami.Svg.SvgDocument.Options.get -> Egami.Svg.SvgLoadOptions!
+Egami.Svg.SvgDocument.Rasterize<TPixel>(Egami.Svg.SvgRenderOptions? options = null) -> Egami.Raster<TPixel>!
+Egami.Svg.SvgDocument.RenderTree.get -> Egami.Svg.SvgGroup!
 Egami.Svg.SvgDocument.Root.get -> Egami.Svg.SvgElement!
 Egami.Svg.SvgDocument.Save(string! path, Egami.Svg.SvgSaveOptions? options = null) -> void
 Egami.Svg.SvgDocument.Save(System.IO.Stream! stream, Egami.Svg.SvgSaveOptions? options = null) -> void
@@ -65,6 +78,34 @@ Egami.Svg.SvgException.Column.get -> int
 Egami.Svg.SvgException.Line.get -> int
 Egami.Svg.SvgException.Problem.get -> string!
 Egami.Svg.SvgException.SvgException(int line, int column, string! problem, System.Exception? innerException = null) -> void
+Egami.Svg.SvgFilter
+Egami.Svg.SvgFilter.<Clone>$() -> Egami.Svg.SvgFilter!
+Egami.Svg.SvgFilter.Equals(Egami.Svg.SvgFilter? other) -> bool
+Egami.Svg.SvgFilter.Region.get -> Egami.Drawing.RectF
+Egami.Svg.SvgFilter.Region.init -> void
+Egami.Svg.SvgFilter.SvgFilter() -> void
+Egami.Svg.SvgGroup
+Egami.Svg.SvgGroup.Children.get -> System.Collections.Generic.IReadOnlyList<Egami.Svg.SvgNode!>!
+Egami.Svg.SvgGroup.Children.init -> void
+Egami.Svg.SvgGroup.ClipRect.get -> Egami.Drawing.RectF?
+Egami.Svg.SvgGroup.ClipRect.init -> void
+Egami.Svg.SvgGroup.Equals(Egami.Svg.SvgGroup? other) -> bool
+Egami.Svg.SvgGroup.SvgGroup() -> void
+Egami.Svg.SvgImage
+Egami.Svg.SvgImage.ClipRect.get -> Egami.Drawing.RectF?
+Egami.Svg.SvgImage.ClipRect.init -> void
+Egami.Svg.SvgImage.Destination.get -> Egami.Drawing.RectF
+Egami.Svg.SvgImage.Destination.init -> void
+Egami.Svg.SvgImage.Document.get -> Egami.Svg.SvgDocument?
+Egami.Svg.SvgImage.Document.init -> void
+Egami.Svg.SvgImage.Equals(Egami.Svg.SvgImage? other) -> bool
+Egami.Svg.SvgImage.Raster.get -> Egami.Drawing.EncodedImage?
+Egami.Svg.SvgImage.Raster.init -> void
+Egami.Svg.SvgImage.Sampling.get -> Egami.Operations.SamplingOptions?
+Egami.Svg.SvgImage.Sampling.init -> void
+Egami.Svg.SvgImage.Source.get -> Egami.Drawing.RectF
+Egami.Svg.SvgImage.Source.init -> void
+Egami.Svg.SvgImage.SvgImage() -> void
 Egami.Svg.SvgLoadOptions
 Egami.Svg.SvgLoadOptions.<Clone>$() -> Egami.Svg.SvgLoadOptions!
 Egami.Svg.SvgLoadOptions.BaseUri.get -> System.Uri?
@@ -79,11 +120,95 @@ Egami.Svg.SvgLoadOptions.Resolver.init -> void
 Egami.Svg.SvgLoadOptions.Strict.get -> bool
 Egami.Svg.SvgLoadOptions.Strict.init -> void
 Egami.Svg.SvgLoadOptions.SvgLoadOptions() -> void
+Egami.Svg.SvgMask
+Egami.Svg.SvgMask.<Clone>$() -> Egami.Svg.SvgMask!
+Egami.Svg.SvgMask.Content.get -> Egami.Svg.SvgGroup!
+Egami.Svg.SvgMask.Content.init -> void
+Egami.Svg.SvgMask.Equals(Egami.Svg.SvgMask? other) -> bool
+Egami.Svg.SvgMask.Kind.get -> Egami.Drawing.SoftMaskKind
+Egami.Svg.SvgMask.Kind.init -> void
+Egami.Svg.SvgMask.Mask.get -> Egami.Svg.SvgMask?
+Egami.Svg.SvgMask.Mask.init -> void
+Egami.Svg.SvgMask.Region.get -> Egami.Drawing.RectF
+Egami.Svg.SvgMask.Region.init -> void
+Egami.Svg.SvgMask.SvgMask(Egami.Svg.SvgGroup! content) -> void
 Egami.Svg.SvgNamespaces
+Egami.Svg.SvgNode
+Egami.Svg.SvgNode.BlendMode.get -> Egami.Operations.BlendMode
+Egami.Svg.SvgNode.BlendMode.init -> void
+Egami.Svg.SvgNode.Bounds.get -> Egami.Drawing.RectF
+Egami.Svg.SvgNode.Bounds.init -> void
+Egami.Svg.SvgNode.Classes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Svg.SvgNode.Classes.init -> void
+Egami.Svg.SvgNode.Clip.get -> Egami.Svg.SvgClip?
+Egami.Svg.SvgNode.Clip.init -> void
+Egami.Svg.SvgNode.Element.get -> Egami.Svg.SvgElement?
+Egami.Svg.SvgNode.Element.init -> void
+Egami.Svg.SvgNode.Filter.get -> Egami.Svg.SvgFilter?
+Egami.Svg.SvgNode.Filter.init -> void
+Egami.Svg.SvgNode.Id.get -> string?
+Egami.Svg.SvgNode.Id.init -> void
+Egami.Svg.SvgNode.Isolated.get -> bool
+Egami.Svg.SvgNode.Isolated.init -> void
+Egami.Svg.SvgNode.Mask.get -> Egami.Svg.SvgMask?
+Egami.Svg.SvgNode.Mask.init -> void
+Egami.Svg.SvgNode.Opacity.get -> float
+Egami.Svg.SvgNode.Opacity.init -> void
+Egami.Svg.SvgNode.SvgNode(Egami.Svg.SvgNode! original) -> void
+Egami.Svg.SvgNode.Transform.get -> System.Numerics.Matrix3x2
+Egami.Svg.SvgNode.Transform.init -> void
+Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPaintOrder.FillMarkersStroke = 1 -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPaintOrder.FillStrokeMarkers = 0 -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPaintOrder.MarkersFillStroke = 4 -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPaintOrder.MarkersStrokeFill = 5 -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPaintOrder.StrokeFillMarkers = 2 -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPaintOrder.StrokeMarkersFill = 3 -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPath
+Egami.Svg.SvgPath.Antialias.get -> bool
+Egami.Svg.SvgPath.Antialias.init -> void
+Egami.Svg.SvgPath.Equals(Egami.Svg.SvgPath? other) -> bool
+Egami.Svg.SvgPath.Fill.get -> Egami.Drawing.Paint?
+Egami.Svg.SvgPath.Fill.init -> void
+Egami.Svg.SvgPath.Markers.get -> Egami.Svg.SvgGroup?
+Egami.Svg.SvgPath.Markers.init -> void
+Egami.Svg.SvgPath.NonScalingStroke.get -> bool
+Egami.Svg.SvgPath.NonScalingStroke.init -> void
+Egami.Svg.SvgPath.PaintOrder.get -> Egami.Svg.SvgPaintOrder
+Egami.Svg.SvgPath.PaintOrder.init -> void
+Egami.Svg.SvgPath.Path.get -> Egami.Drawing.Path!
+Egami.Svg.SvgPath.Path.init -> void
+Egami.Svg.SvgPath.Stroke.get -> Egami.Drawing.Stroke?
+Egami.Svg.SvgPath.Stroke.init -> void
+Egami.Svg.SvgPath.StrokePaint.get -> Egami.Drawing.Paint?
+Egami.Svg.SvgPath.StrokePaint.init -> void
+Egami.Svg.SvgPath.SvgPath(Egami.Drawing.Path! path) -> void
 Egami.Svg.SvgProcessingInstruction
 Egami.Svg.SvgProcessingInstruction.Data.get -> string!
 Egami.Svg.SvgProcessingInstruction.SvgProcessingInstruction(string! target, string! data) -> void
 Egami.Svg.SvgProcessingInstruction.Target.get -> string!
+Egami.Svg.SvgRenderOptions
+Egami.Svg.SvgRenderOptions.<Clone>$() -> Egami.Svg.SvgRenderOptions!
+Egami.Svg.SvgRenderOptions.Background.get -> Egami.Pixels.RgbaF32
+Egami.Svg.SvgRenderOptions.Background.init -> void
+Egami.Svg.SvgRenderOptions.CanvasOptions.get -> Egami.Drawing.CanvasOptions?
+Egami.Svg.SvgRenderOptions.CanvasOptions.init -> void
+Egami.Svg.SvgRenderOptions.Context.get -> Egami.EgamiContext?
+Egami.Svg.SvgRenderOptions.Context.init -> void
+Egami.Svg.SvgRenderOptions.Equals(Egami.Svg.SvgRenderOptions? other) -> bool
+Egami.Svg.SvgRenderOptions.FilterScale.get -> float
+Egami.Svg.SvgRenderOptions.FilterScale.init -> void
+Egami.Svg.SvgRenderOptions.Height.get -> int?
+Egami.Svg.SvgRenderOptions.Height.init -> void
+Egami.Svg.SvgRenderOptions.Languages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Svg.SvgRenderOptions.Languages.init -> void
+Egami.Svg.SvgRenderOptions.Scale.get -> float
+Egami.Svg.SvgRenderOptions.Scale.init -> void
+Egami.Svg.SvgRenderOptions.SvgRenderOptions() -> void
+Egami.Svg.SvgRenderOptions.TextAsPaths.get -> bool
+Egami.Svg.SvgRenderOptions.TextAsPaths.init -> void
+Egami.Svg.SvgRenderOptions.Width.get -> int?
+Egami.Svg.SvgRenderOptions.Width.init -> void
 Egami.Svg.SvgResolvers
 Egami.Svg.SvgSaveOptions
 Egami.Svg.SvgSaveOptions.<Clone>$() -> Egami.Svg.SvgSaveOptions!
@@ -101,27 +226,77 @@ Egami.Svg.SvgTextContent.SvgTextContent(string! value, bool isCData = false) -> 
 Egami.Svg.SvgTextContent.Value.get -> string!
 Egami.Svg.SvgTextContent.Value.set -> void
 override Egami.Svg.SvgAttribute.ToString() -> string!
+override Egami.Svg.SvgClip.Equals(object? obj) -> bool
+override Egami.Svg.SvgClip.GetHashCode() -> int
+override Egami.Svg.SvgClip.ToString() -> string!
 override Egami.Svg.SvgComment.Clone() -> Egami.Svg.SvgContent!
 override Egami.Svg.SvgComment.ToString() -> string!
 override Egami.Svg.SvgElement.Clone() -> Egami.Svg.SvgContent!
 override Egami.Svg.SvgElement.ToString() -> string!
+override Egami.Svg.SvgFilter.Equals(object? obj) -> bool
+override Egami.Svg.SvgFilter.GetHashCode() -> int
+override Egami.Svg.SvgFilter.ToString() -> string!
+override Egami.Svg.SvgGroup.<Clone>$() -> Egami.Svg.SvgGroup!
+override Egami.Svg.SvgGroup.Equals(object? obj) -> bool
+override Egami.Svg.SvgGroup.GetHashCode() -> int
+override Egami.Svg.SvgGroup.ToString() -> string!
+override Egami.Svg.SvgImage.<Clone>$() -> Egami.Svg.SvgImage!
+override Egami.Svg.SvgImage.Equals(object? obj) -> bool
+override Egami.Svg.SvgImage.GetHashCode() -> int
+override Egami.Svg.SvgImage.ToString() -> string!
 override Egami.Svg.SvgLoadOptions.Equals(object? obj) -> bool
 override Egami.Svg.SvgLoadOptions.GetHashCode() -> int
 override Egami.Svg.SvgLoadOptions.ToString() -> string!
+override Egami.Svg.SvgMask.Equals(object? obj) -> bool
+override Egami.Svg.SvgMask.GetHashCode() -> int
+override Egami.Svg.SvgMask.ToString() -> string!
+override Egami.Svg.SvgNode.Equals(object? obj) -> bool
+override Egami.Svg.SvgNode.GetHashCode() -> int
+override Egami.Svg.SvgNode.ToString() -> string!
+override Egami.Svg.SvgPath.<Clone>$() -> Egami.Svg.SvgPath!
+override Egami.Svg.SvgPath.Equals(object? obj) -> bool
+override Egami.Svg.SvgPath.GetHashCode() -> int
+override Egami.Svg.SvgPath.ToString() -> string!
 override Egami.Svg.SvgProcessingInstruction.Clone() -> Egami.Svg.SvgContent!
 override Egami.Svg.SvgProcessingInstruction.ToString() -> string!
+override Egami.Svg.SvgRenderOptions.Equals(object? obj) -> bool
+override Egami.Svg.SvgRenderOptions.GetHashCode() -> int
+override Egami.Svg.SvgRenderOptions.ToString() -> string!
 override Egami.Svg.SvgSaveOptions.Equals(object? obj) -> bool
 override Egami.Svg.SvgSaveOptions.GetHashCode() -> int
 override Egami.Svg.SvgSaveOptions.ToString() -> string!
 override Egami.Svg.SvgTextContent.Clone() -> Egami.Svg.SvgContent!
 override Egami.Svg.SvgTextContent.ToString() -> string!
+override sealed Egami.Svg.SvgGroup.Equals(Egami.Svg.SvgNode? other) -> bool
+override sealed Egami.Svg.SvgImage.Equals(Egami.Svg.SvgNode? other) -> bool
+override sealed Egami.Svg.SvgPath.Equals(Egami.Svg.SvgNode? other) -> bool
+static Egami.Svg.SvgClip.operator !=(Egami.Svg.SvgClip? left, Egami.Svg.SvgClip? right) -> bool
+static Egami.Svg.SvgClip.operator ==(Egami.Svg.SvgClip? left, Egami.Svg.SvgClip? right) -> bool
 static Egami.Svg.SvgDocument.Load(string! path, Egami.Svg.SvgLoadOptions? options = null) -> Egami.Svg.SvgDocument!
 static Egami.Svg.SvgDocument.Load(System.IO.Stream! stream, Egami.Svg.SvgLoadOptions? options = null) -> Egami.Svg.SvgDocument!
 static Egami.Svg.SvgDocument.Parse(string! text, Egami.Svg.SvgLoadOptions? options = null) -> Egami.Svg.SvgDocument!
+static Egami.Svg.SvgFilter.operator !=(Egami.Svg.SvgFilter? left, Egami.Svg.SvgFilter? right) -> bool
+static Egami.Svg.SvgFilter.operator ==(Egami.Svg.SvgFilter? left, Egami.Svg.SvgFilter? right) -> bool
+static Egami.Svg.SvgGroup.operator !=(Egami.Svg.SvgGroup? left, Egami.Svg.SvgGroup? right) -> bool
+static Egami.Svg.SvgGroup.operator ==(Egami.Svg.SvgGroup? left, Egami.Svg.SvgGroup? right) -> bool
+static Egami.Svg.SvgImage.operator !=(Egami.Svg.SvgImage? left, Egami.Svg.SvgImage? right) -> bool
+static Egami.Svg.SvgImage.operator ==(Egami.Svg.SvgImage? left, Egami.Svg.SvgImage? right) -> bool
 static Egami.Svg.SvgLoadOptions.Default.get -> Egami.Svg.SvgLoadOptions!
 static Egami.Svg.SvgLoadOptions.operator !=(Egami.Svg.SvgLoadOptions? left, Egami.Svg.SvgLoadOptions? right) -> bool
 static Egami.Svg.SvgLoadOptions.operator ==(Egami.Svg.SvgLoadOptions? left, Egami.Svg.SvgLoadOptions? right) -> bool
+static Egami.Svg.SvgMask.operator !=(Egami.Svg.SvgMask? left, Egami.Svg.SvgMask? right) -> bool
+static Egami.Svg.SvgMask.operator ==(Egami.Svg.SvgMask? left, Egami.Svg.SvgMask? right) -> bool
+static Egami.Svg.SvgNode.operator !=(Egami.Svg.SvgNode? left, Egami.Svg.SvgNode? right) -> bool
+static Egami.Svg.SvgNode.operator ==(Egami.Svg.SvgNode? left, Egami.Svg.SvgNode? right) -> bool
+static Egami.Svg.SvgPath.operator !=(Egami.Svg.SvgPath? left, Egami.Svg.SvgPath? right) -> bool
+static Egami.Svg.SvgPath.operator ==(Egami.Svg.SvgPath? left, Egami.Svg.SvgPath? right) -> bool
+static Egami.Svg.SvgRenderOptions.Default.get -> Egami.Svg.SvgRenderOptions!
+static Egami.Svg.SvgRenderOptions.operator !=(Egami.Svg.SvgRenderOptions? left, Egami.Svg.SvgRenderOptions? right) -> bool
+static Egami.Svg.SvgRenderOptions.operator ==(Egami.Svg.SvgRenderOptions? left, Egami.Svg.SvgRenderOptions? right) -> bool
 static Egami.Svg.SvgResolvers.SameDirectory(string! folder) -> System.Func<System.Uri!, System.IO.Stream?>!
 static Egami.Svg.SvgSaveOptions.Default.get -> Egami.Svg.SvgSaveOptions!
 static Egami.Svg.SvgSaveOptions.operator !=(Egami.Svg.SvgSaveOptions? left, Egami.Svg.SvgSaveOptions? right) -> bool
 static Egami.Svg.SvgSaveOptions.operator ==(Egami.Svg.SvgSaveOptions? left, Egami.Svg.SvgSaveOptions? right) -> bool
+virtual Egami.Svg.SvgNode.EqualityContract.get -> System.Type!
+virtual Egami.Svg.SvgNode.Equals(Egami.Svg.SvgNode? other) -> bool
+virtual Egami.Svg.SvgNode.PrintMembers(System.Text.StringBuilder! builder) -> bool

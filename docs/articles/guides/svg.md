@@ -4,8 +4,8 @@ Egami.Svg reads SVG 1.1 and SVG 2 files into an editable element tree, saves the
 canvas, so the same document renders to a raster, to a PDF page or back out as SVG. It is fully managed and opens nothing
 outside the file unless you allow it.
 
-Phase 2.10 is landing: reading, saving and the element tree are in; styles, units, the render tree, drawing, text, filters and SVG
-output follow, and this guide grows with them.
+Phase 2.10 is landing: reading, saving, styles and drawing are in; text, filters and SVG output follow, and this guide grows
+with them.
 
 ## Loading
 
@@ -38,6 +38,36 @@ the decimals of numbers and paths set in code, and gzip for .svgz.
 
 Every edit marks the document for re-resolving on its next draw. The tree is not safe for writes from several threads at once,
 like XDocument.
+
+## Drawing
+
+`Rasterize` draws the document into a new raster at its own size (`SvgDocument.Size`: the root's width and height, a
+percentage or missing side taken of the viewBox, or 100 by 100 when there is none, as resvg sizes documents), scaled, or at a
+target width or height; `SvgRenderOptions` also sets the background and the canvas options.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#rasterize)]
+
+`Draw` draws on any Egami.Drawing canvas: a raster canvas, a PDF page, a `PictureRecorder`. It calls only the public canvas
+API, so every backend receives the same calls; a box fits the document in by the root's preserveAspectRatio, and an id draws
+one element, such as a `symbol` of a sprite sheet. Drawing never throws on content: what cannot be drawn was reported when
+the document was read.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#draw)]
+
+Rendering follows resvg, the closest static SVG renderer, where SVG leaves a choice open, and is checked against resvg's
+test suite. Styles come from Egami.Css: style sheets in `style` elements (with media queries), the `style` attribute and
+presentation attributes, with selectors up to Selectors level 4.
+
+## The render tree
+
+Drawing works from the render tree, `SvgDocument.RenderTree`: the elements with their styles applied, units in pixels, `use`
+copies expanded, paint servers, clip paths, masks and markers linked, and shapes turned into Egami.Drawing paths. It is built
+when the document is read and again after an edit, and it is immutable, so a document can be drawn on many threads at once.
+Its nodes are `SvgNode`s: `SvgGroup` for containers, `SvgPath` for shapes (fill, stroke and markers, in `SvgPaintOrder`),
+`SvgImage` for images, each with its transform, opacity, blend mode, `SvgClip`, `SvgMask` and `SvgFilter`, and a link back to
+its `SvgElement`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#render-tree)]
 
 ## Untrusted files
 

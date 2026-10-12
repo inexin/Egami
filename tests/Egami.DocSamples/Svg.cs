@@ -1,3 +1,5 @@
+using Egami.Drawing;
+using Egami.Pixels;
 using Egami.Svg;
 
 namespace Egami.DocSamples;
@@ -104,6 +106,65 @@ public class Svg
         {
             File.Delete(path);
         }
+    }
+
+    [Fact]
+    public void Rasterize()
+    {
+        SvgDocument document = SvgDocument.Parse(Icon);
+        #region rasterize
+        // At the document's own size, scaled, or at a target width (the height keeps the aspect ratio).
+        using Raster<Rgba8> icon = document.Rasterize<Rgba8>();
+        using Raster<Rgba8> large = document.Rasterize<Rgba8>(new SvgRenderOptions { Width = 512 });
+        using Raster<Rgba8> onWhite = document.Rasterize<Rgba8>(new SvgRenderOptions { Scale = 2, Background = new RgbaF32(1, 1, 1, 1) });
+        #endregion
+        Assert.Equal((24, 24), (icon.Width, icon.Height));
+        Assert.Equal(512, large.Height);
+        Assert.Equal(48, onWhite.Width);
+    }
+
+    [Fact]
+    public void DrawOnACanvas()
+    {
+        SvgDocument document = SvgDocument.Parse(Icon);
+        using Raster<Rgba8> page = Raster.Create<Rgba8>(300, 200);
+        using RasterCanvas<Rgba8> canvas = page.CreateCanvas();
+        #region draw
+        // Fitted into a box by the root's preserveAspectRatio; a PDF page or SvgCanvas receives the same calls.
+        document.Draw(canvas, new RectF(10, 10, 180, 180));
+
+        // One element of a sprite sheet, fitted into its own box.
+        document.Draw(canvas, "body", new RectF(200, 10, 48, 48));
+        #endregion
+    }
+
+    [Fact]
+    public void WalkTheRenderTree()
+    {
+        SvgDocument document = SvgDocument.Parse(Icon);
+        #region render-tree
+        // The resolved tree: groups, paths with their paints and strokes, images; styles applied and units in pixels.
+        static void Walk(SvgNode node, int depth)
+        {
+            string what = node switch
+            {
+                SvgPath path => $"path {path.Path.Bounds} fill {path.Fill}",
+                SvgGroup group => $"group of {group.Children.Count}",
+                SvgImage image => $"image {image.Destination}",
+                _ => node.GetType().Name,
+            };
+            Console.WriteLine($"{new string(' ', depth * 2)}{node.Id} {what} opacity {node.Opacity}");
+            if (node is SvgGroup g)
+            {
+                foreach (SvgNode child in g.Children)
+                {
+                    Walk(child, depth + 1);
+                }
+            }
+        }
+
+        Walk(document.RenderTree, 0);
+        #endregion
     }
 
     [Fact]

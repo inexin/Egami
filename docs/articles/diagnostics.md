@@ -210,8 +210,15 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
 | `Svg.BadAttribute` | Warning | An attribute's value cannot be read (a length, number, list, viewBox or keyword); it is ignored, as browsers ignore it (Egami.Svg) |
+| `Svg.BadPathData` | Warning | Path data breaks the grammar; the path is drawn up to the error, as SVG says (Egami.Svg) |
+| `Svg.BadReference` | Warning | A reference (href, url(#id) in fill, stroke, clip-path, mask, marker) names no element of the right kind, or forms a cycle; what refers to it draws as SVG says for a missing reference (Egami.Svg) |
+| `Svg.BadStyle` | Warning | A property's value cannot be used where it is applied; the inherited or initial value is used (Egami.Svg) |
+| `Svg.BadStyleSheet` | Warning | A style sheet or style attribute has a CSS syntax error; the declaration or rule is dropped and the rest applies, as CSS says (Egami.Svg) |
 | `Svg.DefaultSize` | Warning | The root has no width, height or viewBox to size it; it is drawn at 100 by 100 pixels, as resvg does (Egami.Svg) |
+| `Svg.ImageNotLoaded` | Warning | An image was not loaded: no resolver allows its URI, the resolver refused it, or it cannot be decoded; it draws nothing (Egami.Svg) |
 | `Svg.NoNamespace` | Warning | The root svg element has no namespace; its elements are read as SVG anyway (Egami.Svg) |
+| `Svg.Unsupported` | Warning | An element Egami.Svg does not draw (foreignObject, and text until stage C); it is skipped (Egami.Svg) |
+| `Svg.UnsupportedColor` | Warning | A color uses CSS Color 4 syntax, which SVG here does not read (question 5); the initial value is used (Egami.Svg) |
 | `Text.LcdFallback` | Warning | LCD text edging could not be drawn (no pixel geometry, a canvas without 8-bit RGB, a layer, or a paint other than solid source-over); the text was drawn with grayscale antialiasing, reported once per canvas (Egami.Drawing) |
 | `Tga.IndexOutOfRange` | Warning | Pixels use indices outside the color map; they are drawn black |
 | `Tga.RowsMissing` | Warning | The pixel data ends or is damaged; the rows not decoded are black |

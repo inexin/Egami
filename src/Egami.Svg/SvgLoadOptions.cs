@@ -44,5 +44,11 @@ public sealed record class SvgLoadOptions
     /// </summary>
     public EgamiContext? Context { get; init; }
 
+    /// <summary>Gets how deep in SVG images this document is (0 for one loaded by the caller).</summary>
+    internal int ImageDepth { get; init; }
+
+    /// <summary>Gets the URIs of the documents that hold this one as an image, so an image of itself is not drawn again.</summary>
+    internal IReadOnlyList<Uri> ImageChain { get; init; } = [];
+
     internal EgamiContext EffectiveContext => Context ?? EgamiContext.Default;
 }

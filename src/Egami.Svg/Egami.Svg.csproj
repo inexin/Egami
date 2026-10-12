@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Egami\Egami.csproj" />
     <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\Egami.Css\Egami.Css.csproj" />
   </ItemGroup>
 
   <ItemGroup>

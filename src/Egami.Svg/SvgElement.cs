@@ -13,7 +13,7 @@ namespace Egami.Svg;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="edit"/>
 /// </example>
-public sealed class SvgElement : SvgContent
+public sealed partial class SvgElement : SvgContent
 {
     /// <summary>Initializes a new instance of the <see cref="SvgElement"/> class in the SVG namespace.</summary>
     /// <param name="name">The local name, such as <c>rect</c>.</param>
@@ -83,6 +83,9 @@ public sealed class SvgElement : SvgContent
 
     /// <summary>Gets a value indicating whether this is an element in the SVG namespace.</summary>
     public bool IsSvg => string.Equals(Namespace, SvgNamespaces.Svg, StringComparison.Ordinal);
+
+    /// <summary>Gets whether this is an SVG element, counting elements in no namespace in a document whose root has none.</summary>
+    internal bool IsSvgOrBare(SvgDocument? document) => IsSvg || (Namespace is null && document?.NoNamespace == true);
 
     /// <summary>Gets the document this element is the root of, when it is one.</summary>
     internal SvgDocument? OwnerDocument { get; set; }
