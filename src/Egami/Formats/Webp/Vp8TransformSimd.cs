@@ -81,8 +81,9 @@ internal static class Vp8TransformSimd
     private static Vector128<int> Mul2(Vector128<int> a) => (a * 35468) >> 16;
 
     /// <summary>The inverse DCT of <see cref="Vp8Dsp.InverseTransformAdd"/>, added to the block with clamping.</summary>
-    internal static void InverseTransformAdd(ReadOnlySpan<short> input, Span<byte> buffer, int at)
+    internal static void InverseTransformAdd(ReadOnlySpan<short> input, Span<byte> buffer, int at, int stride = S)
     {
+        _ = buffer.Slice(at + (3 * stride), 4);
         ref short ri = ref MemoryMarshal.GetReference(input);
         Vector128<int> i0 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref ri))).AsInt16());
         Vector128<int> i1 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 4)))).AsInt16());
@@ -107,9 +108,9 @@ internal static class Vp8TransformSimd
         Transpose(ref r0, ref r1, ref r2, ref r3);
         ref byte row = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), at);
         AddRow(ref row, r0);
-        AddRow(ref Unsafe.Add(ref row, S), r1);
-        AddRow(ref Unsafe.Add(ref row, 2 * S), r2);
-        AddRow(ref Unsafe.Add(ref row, 3 * S), r3);
+        AddRow(ref Unsafe.Add(ref row, stride), r1);
+        AddRow(ref Unsafe.Add(ref row, 2 * stride), r2);
+        AddRow(ref Unsafe.Add(ref row, 3 * stride), r3);
 
         static void AddRow(ref byte at, Vector128<int> residual)
         {

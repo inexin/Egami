@@ -1,5 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Webp;
 
@@ -52,19 +54,19 @@ internal static class Vp8Dsp
     private static int Mul2(int a) => (a * 35468) >> 16;
 
     /// <summary>Adds the inverse DCT of a block's 16 coefficients to the 4 × 4 pixels at <paramref name="at"/>.</summary>
-    internal static void InverseTransformAdd(ReadOnlySpan<short> input, Span<byte> buffer, int at)
+    internal static void InverseTransformAdd(ReadOnlySpan<short> input, Span<byte> buffer, int at, int stride = Stride)
     {
         if (Vp8TransformSimd.IsSupported)
         {
-            Vp8TransformSimd.InverseTransformAdd(input, buffer, at);
+            Vp8TransformSimd.InverseTransformAdd(input, buffer, at, stride);
             return;
         }
 
-        InverseTransformAddScalar(input, buffer, at);
+        InverseTransformAddScalar(input, buffer, at, stride);
     }
 
     /// <summary>The scalar path of <see cref="InverseTransformAdd"/>; the SIMD kernel must match it exactly.</summary>
-    internal static void InverseTransformAddScalar(ReadOnlySpan<short> input, Span<byte> buffer, int at)
+    internal static void InverseTransformAddScalar(ReadOnlySpan<short> input, Span<byte> buffer, int at, int stride = Stride)
     {
         Span<int> tmp = stackalloc int[16];
         for (int i = 0; i < 4; i++)
@@ -86,7 +88,7 @@ internal static class Vp8Dsp
             int b = dc - tmp[8 + i];
             int c = Mul2(tmp[4 + i]) - Mul1(tmp[12 + i]);
             int d = Mul1(tmp[4 + i]) + Mul2(tmp[12 + i]);
-            int row = at + (i * Stride);
+            int row = at + (i * stride);
             buffer[row] = Clip8(buffer[row] + ((a + d) >> 3));
             buffer[row + 1] = Clip8(buffer[row + 1] + ((b + c) >> 3));
             buffer[row + 2] = Clip8(buffer[row + 2] + ((b - c) >> 3));
@@ -95,12 +97,30 @@ internal static class Vp8Dsp
     }
 
     /// <summary>Adds the inverse DCT of a block whose only non-zero coefficient is its DC.</summary>
-    internal static void InverseTransformDcAdd(short dc, Span<byte> buffer, int at)
+    internal static void InverseTransformDcAdd(short dc, Span<byte> buffer, int at, int stride = Stride)
     {
         int add = (dc + 4) >> 3;
+        if (Sse2.IsSupported)
+        {
+            // Saturating byte adds clamp to 0 to 255 exactly as Clip8 does.
+            _ = buffer.Slice(at + (3 * stride), 4);
+            ref byte p = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), at);
+            Vector128<byte> rows = Vector128.Create(
+                Unsafe.ReadUnaligned<uint>(ref p), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, stride)),
+                Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, 2 * stride)), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, 3 * stride))).AsByte();
+            Vector128<byte> amount = Vector128.Create((byte)Math.Min(Math.Abs(add), 255));
+            rows = add >= 0 ? Sse2.AddSaturate(rows, amount) : Sse2.SubtractSaturate(rows, amount);
+            Vector128<uint> words = rows.AsUInt32();
+            Unsafe.WriteUnaligned(ref p, words.ToScalar());
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, stride), words.GetElement(1));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, 2 * stride), words.GetElement(2));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, 3 * stride), words.GetElement(3));
+            return;
+        }
+
         for (int y = 0; y < 4; y++)
         {
-            int row = at + (y * Stride);
+            int row = at + (y * stride);
             for (int x = 0; x < 4; x++)
             {
                 buffer[row + x] = Clip8(buffer[row + x] + add);

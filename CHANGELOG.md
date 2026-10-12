@@ -7,6 +7,19 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### VP8 video frames
+
+- `Vp8StreamDecoder` decodes VP8 video (RFC 6386) a frame at a time: inter frames with the last, golden and alternate references,
+  motion vectors and split macroblocks, six-tap, bilinear and whole-pixel prediction, hidden frames and probability carry-over.
+  Headers, modes, vectors and every frame equal libvpx 1.14.1's on its 59 test vectors and on clips made with its encoder in all
+  four versions. `Decode` returns a `Vp8FrameInfo`; `CopyFrameTo` copies a shown frame into a 4:2:0 `YuvRaster` of the caller's.
+- `ConcealErrors` fills the macroblocks of a frame whose data runs out from the previous frame and repeats the previous frame for
+  one that cannot be read, instead of throwing `CorruptDataException`; `Vp8FrameInfo.IsConcealed` says which frames were.
+- Four frame buffers from the context's memory source, macroblock rows in a wavefront on up to `MaxParallelism` threads; decoding
+  takes at most 1.5 times libvpx's time at 720p and 1080p on one thread and on all cores.
+- Lossy WebP decodes about 30% faster: the VP8 token loop keeps its decoder state in registers and the loop filter works in
+  saturating 8-bit lanes, with the same pixels as before.
+
 ### ICO and CUR
 
 - `IcoFormat` and `CurFormat` read and write Windows icons and cursors. Entries are PNG files, decoded by Egami's PNG reader, or

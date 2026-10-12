@@ -97,7 +97,8 @@ internal struct Vp8BoolDecoder
     {
         if (bits < 0)
         {
-            decoder.Refill(ref value, ref bits);
+            // By value, not by reference: the hot loop's locals then stay in registers.
+            (value, bits) = decoder.Refilled(value, bits);
         }
 
         uint split = (range * (uint)probability) >> 8;
@@ -121,13 +122,12 @@ internal struct Vp8BoolDecoder
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void Refill(ref ulong value, ref int bits)
+    private (ulong Value, int Bits) Refilled(ulong value, int bits)
     {
         _value = value;
         _bits = bits;
         Load();
-        value = _value;
-        bits = _bits;
+        return (_value, _bits);
     }
 
     /// <summary>Decodes an unsigned <paramref name="bits"/>-bit number, most significant bit first, each bit at probability 1/2.</summary>

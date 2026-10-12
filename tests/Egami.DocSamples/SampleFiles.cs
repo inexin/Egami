@@ -14,7 +14,7 @@ public sealed class SampleFiles : IDisposable
         }
     }
 
-    /// <summary>Gets the folder with duck.png, egret.png, duck.jpg, sideways.jpg, pan.gif and scan.tif (three pages).</summary>
+    /// <summary>Gets the folder with duck.png, egret.png, duck.jpg, sideways.jpg, pan.gif, scan.tif (three pages) and clip.ivf (VP8).</summary>
     public static string Images { get; } = Path.Combine(AppContext.BaseDirectory, "images");
 
     /// <summary>Returns a small PNG whose text chunk has a bad checksum: it loads, with one Png.ChecksumMismatch warning.</summary>

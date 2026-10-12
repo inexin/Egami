@@ -15,6 +15,13 @@ if (args is ["--time-filters", .. string[] names])
     return;
 }
 
+// Time VP8 decoding (Phase 2.3.5 speed gate) at one thread and all cores: -- --time-vp8 <file.ivf>...
+if (args is ["--time-vp8", .. string[] ivfs])
+{
+    Vp8Timing.Run(ivfs);
+    return;
+}
+
 // Write the benchmark photo as PNG, for tools/make-jpeg-bench-files.py: -- --write-photo <path>
 if (args is ["--write-photo", string path])
 {

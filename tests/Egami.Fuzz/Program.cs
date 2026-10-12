@@ -41,6 +41,8 @@ using DrawingPath = Egami.Drawing.Path;
 // PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly. The egdr target
 // (Phase 2.6.4) loads recorded pictures: a picture that loads must save and load again to the same bytes, and replays on a
 // small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested pictures.
+// The vp8video target (Phase 2.3.5) feeds the VP8 stream decoder a stream of frames (inter frames, hidden frames, every version)
+// on one thread or four, with and without concealment: each frame must decode, conceal or fail with an EgamiException.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -129,6 +131,7 @@ static Action<Stream> Target(string name) => name switch
     "tiffcodec" => DecodeTiffCodec,
     "webp" => LoadWebp,
     "webpcodec" => DecodeWebpCodec,
+    "vp8video" => DecodeVp8Video,
     "jbig2" => LoadJbig2,
     "jbig2codec" => DecodeJbig2Codec,
     "cube" => LoadCube,
@@ -148,7 +151,7 @@ static Action<Stream> Target(string name) => name switch
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
     "egdr" => LoadDrawing,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr."),
 };
 
 static EgamiContext Context()
@@ -902,6 +905,54 @@ static void LoadWebp(Stream stream)
 }
 
 // The first byte picks the codec: a raw VP8 frame, a raw VP8L stream, or the encoders on the rest as pixels.
+// A VP8 video stream (Phase 2.3.5): a flags byte (bit 0 conceals errors, bit 1 decodes on four threads), then frames, each a
+// 16-bit little-endian length and its bytes. Every frame must decode, conceal or throw an EgamiException; shown frames are copied out.
+static void DecodeVp8Video(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 1)
+    {
+        return;
+    }
+
+    EgamiContext context = Context() with { MaxParallelism = (data[0] & 2) != 0 ? 4 : 1 };
+    using Egami.Formats.Webp.Vp8StreamDecoder decoder = new(context) { ConcealErrors = (data[0] & 1) != 0 };
+    YuvRaster<byte>? frame = null;
+    try
+    {
+        for (int at = 1; at + 2 <= data.Length;)
+        {
+            int length = Math.Min(data[at] | (data[at + 1] << 8), data.Length - at - 2);
+            ReadOnlySpan<byte> packet = data.AsSpan(at + 2, length);
+            at += 2 + length;
+            Egami.Formats.Webp.Vp8FrameInfo info;
+            try
+            {
+                info = decoder.Decode(packet);
+            }
+            catch (EgamiException)
+            {
+                continue;
+            }
+
+            if (info.IsShown)
+            {
+                if (frame is null || frame.Width != info.Width || frame.Height != info.Height)
+                {
+                    frame?.Dispose();
+                    frame = YuvRaster.Create(info.Width, info.Height, ChromaFormat.Yuv420, YuvColor.Bt601Limited, context: context);
+                }
+
+                decoder.CopyFrameTo(frame);
+            }
+        }
+    }
+    finally
+    {
+        frame?.Dispose();
+    }
+}
+
 static void DecodeWebpCodec(Stream stream)
 {
     byte[] data = ReadAll(stream);

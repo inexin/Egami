@@ -1,16 +1,19 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Webp;
 
 /// <summary>
-/// Decodes one VP8 key frame (RFC 6386), the payload of a WebP VP8 chunk, into 4:2:0 planes a macroblock row at a time: the frame
-/// header, segments, intra modes, coefficient tokens over 1 to 8 partitions, the inverse transforms and the loop filter. A row is
-/// final once the row below it has been filtered, so the decoder holds about two macroblock rows of planes. The state a stream of
-/// frames needs (probabilities, segment map, filter deltas, reference slots) lives in <see cref="Vp8StreamState"/>; this decoder
-/// only reads key frames, and an inter frame throws <see cref="NotSupportedException"/>.
+/// Decodes one VP8 frame (RFC 6386): the frame header, segments, intra modes, coefficient tokens over 1 to 8 partitions, the
+/// inverse transforms and the loop filter. For a WebP still (a key frame, the payload of a VP8 chunk) it works a macroblock row at
+/// a time into 4:2:0 planes: a row is final once the row below it has been filtered, so it holds about two macroblock rows. For a
+/// video frame (<see cref="Vp8VideoDecoder"/>) it decodes into a whole bordered frame buffer and adds inter frames: motion vectors,
+/// prediction from the last, golden and alternate frames, and the per-reference filter levels; there it follows libvpx where the
+/// two references differ (segment levels clamped before the deltas, inner edges kept by the token count), and a still follows
+/// libwebp. The state a stream of frames needs lives in <see cref="Vp8StreamState"/>.
 /// </summary>
-internal sealed class Vp8Decoder : IDisposable
+internal sealed partial class Vp8Decoder : IDisposable
 {
     /// <summary>The rows above a macroblock row that its loop filter may change: kept back until that row is filtered.</summary>
     private const int Tail = 8;
@@ -40,52 +43,75 @@ internal sealed class Vp8Decoder : IDisposable
     private readonly int _skipProbability;
     private readonly int _filterType;
     private readonly short[] _quant = new short[4 * 6];
-    private readonly FilterInfo[] _filterInfo = new FilterInfo[8];
+    private readonly FilterInfo[] _filterInfo;
 
     // Contexts: per column of the row above and per row of the macroblock to the left.
     private readonly byte[] _modesAbove;
     private readonly byte[] _modesLeft = new byte[4];
     private readonly byte[] _nzAbove;
-    private readonly byte[] _nzLeft = new byte[9];
 
-    // Reconstruction: the work buffers with their borders, and the unfiltered bottom rows of the macroblock row above.
-    private readonly byte[] _workY = new byte[Vp8Dsp.Stride * 17];
-    private readonly byte[] _workU = new byte[Vp8Dsp.Stride * 9];
-    private readonly byte[] _workV = new byte[Vp8Dsp.Stride * 9];
+    // Reconstruction: the unfiltered bottom rows of the macroblock row above, and the 4 × 4 modes of the macroblock being read.
     private readonly byte[] _topY;
     private readonly byte[] _topU;
     private readonly byte[] _topV;
-    private readonly short[] _coefficients = new short[384];
-    private readonly byte[] _codes = new byte[24];
     private readonly byte[] _subModes = new byte[16];
 
-    // The planes of the rows in progress: the tail of the row above, then the current macroblock row.
-    private readonly byte[] _rowsY;
-    private readonly byte[] _rowsU;
-    private readonly byte[] _rowsV;
-    private readonly MacroblockFilter[] _rowFilter;
+    // What a macroblock row being decoded works in: the main one, and for a video frame decoded on several threads one per thread.
+    private readonly Row _main;
+
+    // A video frame's macroblock modes, read before its rows.
+    private Macroblock[]? _macroblocks;
+
+    /// <summary>Gets, for a video frame, the macroblocks whose modes or tokens ran past the end of the data.</summary>
+    internal bool[]? Damaged { get; private set; }
+
+    // The planes being written: for a still the tail of the row above then the current macroblock row; for a video frame the whole
+    // frame buffer.
+    private readonly byte[]? _rentY;
+    private readonly byte[]? _rentU;
+    private readonly byte[]? _rentV;
+    private readonly GCHandle[]? _pins;
+
+    // The planes being written, pinned: the rented rows of a still or the target frame buffer's planes.
+    private readonly unsafe byte* _planeY;
+    private readonly unsafe byte* _planeU;
+    private readonly unsafe byte* _planeV;
+    private readonly int _lengthY;
+    private readonly int _lengthC;
+    private readonly int _strideY;
+    private readonly int _strideC;
     private Snapshot? _snapshot;
     private bool _disposed;
 
-    private Vp8Decoder(byte[] data, int offset, int length, Vp8StreamState state, Vp8FrameHeader header)
+    private Vp8Decoder(byte[] data, int offset, int length, Vp8StreamState state, Vp8FrameHeader header, Vp8VideoDecoder? video)
     {
         _data = data;
         _state = state;
+        _video = video;
+        Header = header;
         Width = header.Width;
         Height = header.Height;
         MbWidth = (Width + 15) >> 4;
         MbHeight = (Height + 15) >> 4;
 
-        int firstStart = offset + 10;
-        _modes = new Vp8BoolDecoder(data, firstStart, header.FirstPartitionSize);
+        int firstStart = offset + (header.KeyFrame ? 10 : 3);
+        int end = offset + length;
+
+        // libvpx reads the first partition up to the end of the frame; libwebp stops at its stated size.
+        _modes = new Vp8BoolDecoder(data, firstStart, video is null ? header.FirstPartitionSize : end - firstStart);
         ref Vp8BoolDecoder br = ref _modes;
-        br.GetValue(1); // color space
-        br.GetValue(1); // clamping type: Egami always clamps
+        if (header.KeyFrame)
+        {
+            br.GetValue(1); // color space
+            state.ClampingType = br.GetValue(1); // Egami clamps either way
+        }
+
         _segmentation = br.GetValue(1) != 0;
         if (_segmentation)
         {
             _updateMap = br.GetValue(1) != 0;
-            if (br.GetValue(1) != 0)
+            UpdateSegmentData = br.GetValue(1) != 0;
+            if (UpdateSegmentData)
             {
                 state.AbsoluteSegmentValues = br.GetValue(1) != 0;
                 for (int s = 0; s < 4; s++)
@@ -112,8 +138,13 @@ internal sealed class Vp8Decoder : IDisposable
         int level = br.GetValue(6);
         int sharpness = br.GetValue(3);
         bool useDeltas = br.GetValue(1) != 0;
+        FilterSimple = simple;
+        FilterLevel = level;
+        Sharpness = sharpness;
+        FilterDeltas = useDeltas;
         if (useDeltas && br.GetValue(1) != 0)
         {
+            UpdateFilterDeltas = true;
             for (int i = 0; i < 4; i++)
             {
                 if (br.GetValue(1) != 0)
@@ -131,24 +162,28 @@ internal sealed class Vp8Decoder : IDisposable
             }
         }
 
-        // libwebp, the reference for what a WebP looks like, turns the filter off when the frame level is 0.
+        // libwebp and libvpx both turn the filter off when the frame level is 0.
         _filterType = level == 0 ? 0 : simple ? 1 : 2;
 
         int partitions = 1 << br.GetValue(2);
         _partitionMask = partitions - 1;
         _partitions = new Vp8BoolDecoder[partitions];
         int tokensStart = firstStart + header.FirstPartitionSize;
-        int end = offset + length;
         int sizes = tokensStart;
         int partStart = tokensStart + (3 * (partitions - 1));
         if (partStart > end)
         {
-            throw new CorruptDataException(WebpFormat.Info.Name, -1, "The VP8 partition sizes run past the end of the frame.");
+            throw new CorruptDataException(FormatName, -1, "The VP8 partition sizes run past the end of the frame.");
         }
 
         for (int p = 0; p < partitions - 1; p++)
         {
             int size = data[sizes] | (data[sizes + 1] << 8) | (data[sizes + 2] << 16);
+            if (video is not null && size > end - partStart)
+            {
+                throw new CorruptDataException(FormatName, -1, $"VP8 token partition {p} runs past the end of the frame.");
+            }
+
             size = Math.Min(size, end - partStart);
             _partitions[p] = new Vp8BoolDecoder(data, partStart, size);
             partStart += size;
@@ -158,13 +193,37 @@ internal sealed class Vp8Decoder : IDisposable
         _partitions[partitions - 1] = new Vp8BoolDecoder(data, partStart, end - partStart);
 
         ParseQuantizers(ref br);
-        br.GetValue(1); // refresh entropy probabilities: a still has one frame
+        if (!header.KeyFrame)
+        {
+            ParseReferenceUpdates(ref br);
+        }
+
+        RefreshEntropy = br.GetValue(1) != 0;
+        if (video is not null && !RefreshEntropy)
+        {
+            state.SaveEntropy();
+        }
+
+        RefreshLast = header.KeyFrame || br.GetValue(1) != 0;
         ParseProbabilities(ref br);
         _useSkip = br.GetValue(1) != 0;
         _skipProbability = _useSkip ? br.GetValue(8) : 0;
+        if (!header.KeyFrame)
+        {
+            ParseInterProbabilities(ref br);
+        }
+
+        _filterInfo = new FilterInfo[video is null ? 8 : 4 * 4 * 4];
         if (_filterType > 0)
         {
-            ComputeFilterStrengths(level, sharpness, useDeltas);
+            if (video is null)
+            {
+                ComputeFilterStrengths(level, sharpness, useDeltas);
+            }
+            else
+            {
+                ComputeVideoFilterStrengths(level, sharpness, useDeltas);
+            }
         }
 
         _modesAbove = new byte[MbWidth * 4];
@@ -172,10 +231,46 @@ internal sealed class Vp8Decoder : IDisposable
         _topY = new byte[MbWidth * 16];
         _topU = new byte[MbWidth * 8];
         _topV = new byte[MbWidth * 8];
-        _rowsY = ArrayPool<byte>.Shared.Rent(StrideY * (Tail + 16));
-        _rowsU = ArrayPool<byte>.Shared.Rent(StrideC * (ChromaTail + 8));
-        _rowsV = ArrayPool<byte>.Shared.Rent(StrideC * (ChromaTail + 8));
-        _rowFilter = new MacroblockFilter[MbWidth];
+        _main = new Row(MbWidth);
+        if (video is null)
+        {
+            _strideY = MbWidth * 16;
+            _strideC = MbWidth * 8;
+            _rentY = ArrayPool<byte>.Shared.Rent(_strideY * (Tail + 16));
+            _rentU = ArrayPool<byte>.Shared.Rent(_strideC * (ChromaTail + 8));
+            _rentV = ArrayPool<byte>.Shared.Rent(_strideC * (ChromaTail + 8));
+            _pins = [GCHandle.Alloc(_rentY, GCHandleType.Pinned), GCHandle.Alloc(_rentU, GCHandleType.Pinned), GCHandle.Alloc(_rentV, GCHandleType.Pinned)];
+            unsafe
+            {
+                _planeY = (byte*)_pins[0].AddrOfPinnedObject();
+                _planeU = (byte*)_pins[1].AddrOfPinnedObject();
+                _planeV = (byte*)_pins[2].AddrOfPinnedObject();
+            }
+
+            _lengthY = _rentY.Length;
+            _lengthC = Math.Min(_rentU.Length, _rentV.Length);
+            _main.RowY = Tail * _strideY;
+            _main.RowC = ChromaTail * _strideC;
+        }
+        else
+        {
+            Vp8FrameBuffer target = video.Target!;
+            _strideY = target.StrideY;
+            _strideC = target.StrideC;
+            unsafe
+            {
+                fixed (byte* y = target.Y, u = target.U, v = target.V)
+                {
+                    // The frame buffer's planes are pinned for its life.
+                    _planeY = y;
+                    _planeU = u;
+                    _planeV = v;
+                }
+            }
+
+            _lengthY = target.Y.Length;
+            _lengthC = target.U.Length;
+        }
     }
 
     /// <summary>Gets the frame width.</summary>
@@ -237,9 +332,16 @@ internal sealed class Vp8Decoder : IDisposable
         return ((long)mbw * 16 * (Tail + 16)) + (2L * mbw * 8 * (ChromaTail + 8)) + ((long)mbw * 64);
     }
 
-    private int StrideY => MbWidth * 16;
+    private int StrideY => _strideY;
 
-    private int StrideC => MbWidth * 8;
+    /// <summary>Gets the luma plane being written: the row buffer of a still, the frame buffer of a video frame.</summary>
+    private unsafe Span<byte> RowsY => new(_planeY, _lengthY);
+
+    private unsafe Span<byte> RowsU => new(_planeU, _lengthC);
+
+    private unsafe Span<byte> RowsV => new(_planeV, _lengthC);
+
+    private int StrideC => _strideC;
 
     /// <summary>Reads a VP8 frame header (RFC 6386 section 9.1) from the first 10 bytes of the payload.</summary>
     internal static Vp8FrameHeader ReadHeader(ReadOnlySpan<byte> payload)
@@ -282,12 +384,125 @@ internal sealed class Vp8Decoder : IDisposable
         return new Vp8FrameHeader(width, height, firstPartition);
     }
 
+    /// <summary>
+    /// Reads the frame tag of a video frame and, for a key frame, its start code, size and scaling; an inter frame keeps those of
+    /// <paramref name="lastKey"/>, the last key frame. Versions 4 to 7 decode as version 0, as libvpx decodes them.
+    /// </summary>
+    internal static Vp8FrameHeader ReadVideoHeader(ReadOnlySpan<byte> payload, Vp8FrameHeader lastKey)
+    {
+        int width = lastKey.Width, height = lastKey.Height;
+        if (payload.Length < 3)
+        {
+            throw new CorruptDataException(Vp8VideoDecoder.FormatName, 0, "The VP8 frame is cut short.");
+        }
+
+        int tag = payload[0] | (payload[1] << 8) | (payload[2] << 16);
+        bool key = (tag & 1) == 0;
+        int version = (tag >> 1) & 7;
+        bool show = ((tag >> 4) & 1) != 0;
+        int firstPartition = tag >> 5;
+        int horizontal = lastKey.HorizontalScale, vertical = lastKey.VerticalScale;
+        if (key)
+        {
+            if (payload.Length < 10)
+            {
+                throw new CorruptDataException(Vp8VideoDecoder.FormatName, 3, "The VP8 key frame header is cut short.");
+            }
+
+            if (payload[3] != 0x9D || payload[4] != 0x01 || payload[5] != 0x2A)
+            {
+                throw new CorruptDataException(Vp8VideoDecoder.FormatName, 3, "The VP8 start code is wrong.");
+            }
+
+            width = (payload[6] | (payload[7] << 8)) & 0x3FFF;
+            horizontal = payload[7] >> 6;
+            height = (payload[8] | (payload[9] << 8)) & 0x3FFF;
+            vertical = payload[9] >> 6;
+            if (width == 0 || height == 0)
+            {
+                throw new CorruptDataException(Vp8VideoDecoder.FormatName, 6, $"The VP8 frame size {width}×{height} is invalid.");
+            }
+        }
+
+        if (firstPartition > payload.Length - (key ? 10 : 3))
+        {
+            throw new CorruptDataException(Vp8VideoDecoder.FormatName, 0, "The first VP8 partition runs past the end of the frame.");
+        }
+
+        return new Vp8FrameHeader(width, height, firstPartition, key, version > 3 ? 0 : version, show, horizontal, vertical);
+    }
+
     /// <summary>Starts decoding the frame in <paramref name="data"/>[<paramref name="offset"/>..+<paramref name="length"/>].</summary>
     internal static Vp8Decoder Create(byte[] data, int offset, int length, Vp8StreamState? state = null)
     {
         Vp8FrameHeader header = ReadHeader(data.AsSpan(offset, length));
-        return new Vp8Decoder(data, offset, length, state ?? new Vp8StreamState(), header);
+        return new Vp8Decoder(data, offset, length, state ?? new Vp8StreamState(), header, null);
     }
+
+    /// <summary>Starts decoding a video frame into <paramref name="video"/>'s target buffer, predicting from its references.</summary>
+    internal static Vp8Decoder CreateVideo(byte[] data, int offset, int length, Vp8FrameHeader header, Vp8VideoDecoder video) =>
+        new(data, offset, length, video.State, header, video);
+
+    /// <summary>
+    /// Decodes a video frame into the target buffer: every macroblock's modes first (they share one partition), then the rows,
+    /// on as many threads as the token partitions and <see cref="Vp8VideoDecoder.Threads"/> allow, in a wavefront.
+    /// </summary>
+    internal void DecodeFrame()
+    {
+        Vp8VideoDecoder video = _video!;
+        _macroblocks = new Macroblock[MbWidth * MbHeight];
+        Damaged = new bool[MbWidth * MbHeight];
+        for (int mby = 0; mby < MbHeight; mby++)
+        {
+            Array.Clear(_modesLeft);
+            for (int mbx = 0; mbx < MbWidth; mbx++)
+            {
+                _macroblocks[(mby * MbWidth) + mbx] = ParseModes(mbx, mby);
+
+                // Modes read past the end of the frame: this macroblock's and every later one's are made up.
+                Damaged[(mby * MbWidth) + mbx] = _modes.PastEnd;
+            }
+        }
+
+        // Rows that share a partition must go in order, so each thread takes every n-th row, n a power of two no more than the
+        // partitions.
+        int workers = 1;
+        while (workers * 2 <= Math.Min(Math.Min(video.Threads, Partitions), MbHeight))
+        {
+            workers *= 2;
+        }
+
+        if (workers == 1)
+        {
+            for (int mby = 0; mby < MbHeight; mby++)
+            {
+                DecodeVideoRow(mby, _main, null);
+            }
+        }
+        else
+        {
+            int[] progress = new int[MbHeight];
+            Row[] rows = new Row[workers];
+            rows[0] = _main;
+            for (int w = 1; w < workers; w++)
+            {
+                rows[w] = new Row(MbWidth);
+            }
+
+            video.RunWorkers(workers, w =>
+            {
+                for (int mby = w; mby < MbHeight; mby += workers)
+                {
+                    DecodeVideoRow(mby, rows[w], progress);
+                }
+            });
+        }
+
+        NextMbRow = MbHeight;
+        RowsDone = Height;
+    }
+
+    private string FormatName => _video is null ? WebpFormat.Info.Name : Vp8VideoDecoder.FormatName;
 
     /// <summary>
     /// Decodes the next macroblock row and filters it, then calls <paramref name="emit"/> for the rows that became final: luma rows
@@ -310,7 +525,7 @@ internal sealed class Vp8Decoder : IDisposable
                 _snapshot.Save(this, mby);
             }
 
-            DecodeMacroblockRow(mby);
+            DecodeMacroblockRow(mby, _main);
             if (incremental && (_modes.Position > Arrived || _partitions[mby & _partitionMask].Position > Arrived))
             {
                 // The row read bytes that have not arrived: undo it and wait.
@@ -332,9 +547,9 @@ internal sealed class Vp8Decoder : IDisposable
         if (!last)
         {
             // The current row's last rows become the tail.
-            Array.Copy(_rowsY, StrideY * 16, _rowsY, 0, StrideY * Tail);
-            Array.Copy(_rowsU, StrideC * 8, _rowsU, 0, StrideC * ChromaTail);
-            Array.Copy(_rowsV, StrideC * 8, _rowsV, 0, StrideC * ChromaTail);
+            Array.Copy(_rentY!, StrideY * 16, _rentY!, 0, StrideY * Tail);
+            Array.Copy(_rentU!, StrideC * 8, _rentU!, 0, StrideC * ChromaTail);
+            Array.Copy(_rentV!, StrideC * 8, _rentV!, 0, StrideC * ChromaTail);
         }
         else
         {
@@ -345,13 +560,13 @@ internal sealed class Vp8Decoder : IDisposable
     }
 
     /// <summary>Gets luma row <paramref name="y"/>, one of the rows the current call to <see cref="RowSink"/> hands out.</summary>
-    internal ReadOnlySpan<byte> RowY(int y) => _rowsY.AsSpan(RowIndex(y, 16, Tail) * StrideY, Width);
+    internal ReadOnlySpan<byte> RowY(int y) => RowsY.Slice(RowIndex(y, 16, Tail) * StrideY, Width);
 
     /// <summary>Gets chroma row <paramref name="y"/> of U.</summary>
-    internal ReadOnlySpan<byte> RowU(int y) => _rowsU.AsSpan(RowIndex(y, 8, ChromaTail) * StrideC, (Width + 1) >> 1);
+    internal ReadOnlySpan<byte> RowU(int y) => RowsU.Slice(RowIndex(y, 8, ChromaTail) * StrideC, (Width + 1) >> 1);
 
     /// <summary>Gets chroma row <paramref name="y"/> of V.</summary>
-    internal ReadOnlySpan<byte> RowV(int y) => _rowsV.AsSpan(RowIndex(y, 8, ChromaTail) * StrideC, (Width + 1) >> 1);
+    internal ReadOnlySpan<byte> RowV(int y) => RowsV.Slice(RowIndex(y, 8, ChromaTail) * StrideC, (Width + 1) >> 1);
 
     /// <summary>Returns where row <paramref name="y"/> sits in the row buffer: the tail of the row above, then the current macroblock row.</summary>
     private int RowIndex(int y, int mbSize, int tail)
@@ -362,12 +577,17 @@ internal sealed class Vp8Decoder : IDisposable
 
     public void Dispose()
     {
-        if (!_disposed)
+        if (!_disposed && _video is null)
         {
             _disposed = true;
-            ArrayPool<byte>.Shared.Return(_rowsY);
-            ArrayPool<byte>.Shared.Return(_rowsU);
-            ArrayPool<byte>.Shared.Return(_rowsV);
+            foreach (GCHandle pin in _pins!)
+            {
+                pin.Free();
+            }
+
+            ArrayPool<byte>.Shared.Return(_rentY!);
+            ArrayPool<byte>.Shared.Return(_rentU!);
+            ArrayPool<byte>.Shared.Return(_rentV!);
         }
     }
 
@@ -379,12 +599,18 @@ internal sealed class Vp8Decoder : IDisposable
         int dqy2Ac = br.GetOptionalSigned(4);
         int dquvDc = br.GetOptionalSigned(4);
         int dquvAc = br.GetOptionalSigned(4);
+        Quantizers = [baseQ, dqy1Dc, dqy2Dc, dqy2Ac, dquvDc, dquvAc];
         for (int s = 0; s < 4; s++)
         {
             int q = baseQ;
             if (_segmentation)
             {
                 q = _state.SegmentQuantizer[s] + (_state.AbsoluteSegmentValues ? 0 : baseQ);
+                if (_video is not null)
+                {
+                    // libvpx clamps the segment's index before adding the deltas; libwebp clamps only the sum.
+                    q = Math.Clamp(q, 0, 127);
+                }
             }
 
             Span<short> m = _quant.AsSpan(s * 6, 6);
@@ -455,16 +681,65 @@ internal sealed class Vp8Decoder : IDisposable
         }
     }
 
-    private void DecodeMacroblockRow(int mby)
+    private void DecodeMacroblockRow(int mby, Row c)
     {
         ref Vp8BoolDecoder tokens = ref _partitions[mby & _partitionMask];
         Array.Clear(_modesLeft);
-        Array.Clear(_nzLeft);
+        StartRow(mby, c);
+        for (int mbx = 0; mbx < MbWidth; mbx++)
+        {
+            DecodeMacroblock(mbx, mby, ParseModes(mbx, mby), c, ref tokens);
+        }
 
-        // The left edge of the row: 129 down the left, and the corner 129 below the first row or 127 in it.
-        Span<byte> wy = _workY;
-        Span<byte> wu = _workU;
-        Span<byte> wv = _workV;
+        if (_filterType > 0)
+        {
+            for (int mbx = 0; mbx < MbWidth; mbx++)
+            {
+                FilterMacroblock(mbx, mby, c);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Decodes and filters one macroblock row of a video frame whose modes are read, a macroblock at a time. With
+    /// <paramref name="progress"/>, other threads decode the rows around it: each macroblock waits until the row above has
+    /// finished the macroblock above-right of it (its intra prediction and the loop filter's top edge need that), and says how
+    /// far this row has come.
+    /// </summary>
+    private void DecodeVideoRow(int mby, Row c, int[]? progress)
+    {
+        ref Vp8BoolDecoder tokens = ref _partitions[mby & _partitionMask];
+        c.RowY = _video!.Target!.OriginY + (mby * 16 * _strideY);
+        c.RowC = _video.Target.OriginC + (mby * 8 * _strideC);
+        StartRow(mby, c);
+        int first = mby * MbWidth;
+        for (int mbx = 0; mbx < MbWidth; mbx++)
+        {
+            if (progress is not null && mby > 0)
+            {
+                _video.WaitFor(progress, mby - 1, Math.Min(mbx + 2, MbWidth));
+            }
+
+            DecodeMacroblock(mbx, mby, _macroblocks![first + mbx], c, ref tokens);
+            if (_filterType > 0)
+            {
+                FilterMacroblock(mbx, mby, c);
+            }
+
+            if (progress is not null)
+            {
+                Volatile.Write(ref progress[mby], mbx + 1);
+            }
+        }
+    }
+
+    /// <summary>Sets up a row's left contexts and the left and top edges of its work buffers: 129 down the left, 127 above the first row.</summary>
+    private static void StartRow(int mby, Row c)
+    {
+        Array.Clear(c.NzLeft);
+        Span<byte> wy = c.WorkY;
+        Span<byte> wu = c.WorkU;
+        Span<byte> wv = c.WorkV;
         const int Y0 = Vp8Dsp.Stride + 8;
         const int C0 = Vp8Dsp.Stride + 8;
         for (int j = 0; j < 16; j++)
@@ -488,46 +763,58 @@ internal sealed class Vp8Decoder : IDisposable
             wu.Slice(C0 - Vp8Dsp.Stride - 1, 8 + 1).Fill(127);
             wv.Slice(C0 - Vp8Dsp.Stride - 1, 8 + 1).Fill(127);
         }
-
-        for (int mbx = 0; mbx < MbWidth; mbx++)
-        {
-            Macroblock mb = ParseModes(mbx);
-            bool anyNonZero = false;
-            if (!mb.Skip)
-            {
-                anyNonZero = ParseResiduals(ref tokens, mbx, mb);
-            }
-            else
-            {
-                Array.Clear(_codes);
-                _nzLeft.AsSpan(0, 8).Clear();
-                _nzAbove.AsSpan(mbx * 9, 8).Clear();
-                if (!mb.Intra4x4)
-                {
-                    _nzLeft[8] = 0;
-                    _nzAbove[(mbx * 9) + 8] = 0;
-                }
-            }
-
-            if (_filterType > 0)
-            {
-                FilterInfo info = _filterInfo[(mb.Segment * 2) + (mb.Intra4x4 ? 1 : 0)];
-                _rowFilter[mbx] = new MacroblockFilter(info, mb.Intra4x4 || anyNonZero);
-            }
-
-            Reconstruct(mbx, mby, mb);
-        }
-
-        if (_filterType > 0)
-        {
-            for (int mbx = 0; mbx < MbWidth; mbx++)
-            {
-                FilterMacroblock(mbx, mby);
-            }
-        }
     }
 
-    private Macroblock ParseModes(int mbx)
+    /// <summary>Reads a macroblock's coefficients, notes how the loop filter treats it, and reconstructs it.</summary>
+    private void DecodeMacroblock(int mbx, int mby, Macroblock mb, Row c, ref Vp8BoolDecoder tokens)
+    {
+        bool anyNonZero = false;
+        bool anyTokens = false;
+        if (!mb.Skip)
+        {
+            anyNonZero = ParseResiduals(ref tokens, mbx, mb, c, out anyTokens);
+            if (tokens.PastEnd && Damaged is not null)
+            {
+                Damaged[(mby * MbWidth) + mbx] = true;
+            }
+        }
+        else
+        {
+            Array.Clear(c.Codes);
+            c.NzLeft.AsSpan(0, 8).Clear();
+            _nzAbove.AsSpan(mbx * 9, 8).Clear();
+            if (mb.HasY2)
+            {
+                c.NzLeft[8] = 0;
+                _nzAbove[(mbx * 9) + 8] = 0;
+            }
+        }
+
+        c.AnyCoefficients = anyNonZero;
+
+        if (_video is not null)
+        {
+            // libvpx marks a macroblock whose blocks are all empty as skipped; its loop filter then leaves the inner edges of
+            // 16 × 16 macroblocks alone.
+            bool skipped = mb.Skip || !anyTokens;
+            _video.Modes.Skip[_video.Modes.Index(mbx, mby)] = (byte)(skipped ? 1 : 0);
+            if (_filterType > 0)
+            {
+                int modeIndex = mb.Reference == 0 ? (mb.Intra4x4 ? 0 : 1) : mb.Mode == Vp8ModeInfo.Zero ? 1 : mb.Mode == Vp8ModeInfo.Split ? 3 : 2;
+                FilterInfo info = _filterInfo[(((mb.Segment * 4) + mb.Reference) * 4) + modeIndex];
+                c.Filter[mbx] = new MacroblockFilter(info, !mb.HasY2 || !skipped);
+            }
+        }
+        else if (_filterType > 0)
+        {
+            FilterInfo info = _filterInfo[(mb.Segment * 2) + (mb.Intra4x4 ? 1 : 0)];
+            c.Filter[mbx] = new MacroblockFilter(info, mb.Intra4x4 || anyNonZero);
+        }
+
+        Reconstruct(mbx, mby, mb, c);
+    }
+
+    private Macroblock ParseModes(int mbx, int mby)
     {
         ref Vp8BoolDecoder br = ref _modes;
         int segment = 0;
@@ -537,7 +824,26 @@ internal sealed class Vp8Decoder : IDisposable
             segment = br.GetBit(p[0]) == 0 ? br.GetBit(p[1]) : 2 + br.GetBit(p[2]);
         }
 
+        if (_state.SegmentMap is byte[] map)
+        {
+            // The map lasts from frame to frame while frames do not update it; a key frame without an update resets it.
+            int at = (mby * MbWidth) + mbx;
+            if (_updateMap || Header.KeyFrame)
+            {
+                map[at] = (byte)segment;
+            }
+            else
+            {
+                segment = map[at];
+            }
+        }
+
         bool skip = _useSkip && br.GetBit(_skipProbability) != 0;
+        if (!Header.KeyFrame)
+        {
+            return ParseInterModes(ref br, mbx, mby, segment, skip);
+        }
+
         Span<byte> above = _modesAbove.AsSpan(mbx * 4, 4);
         bool intra4x4 = br.GetBit(145) == 0;
         int ymode;
@@ -576,27 +882,38 @@ internal sealed class Vp8Decoder : IDisposable
         }
 
         int uvmode = br.GetBit(142) == 0 ? 0 : br.GetBit(114) == 0 ? 1 : br.GetBit(183) != 0 ? 3 : 2;
-        return new Macroblock(segment, skip, intra4x4, ymode, uvmode);
+        Macroblock mb = new(segment, skip, intra4x4 ? Vp8ModeInfo.BPred : ymode, uvmode);
+        if (_video is not null)
+        {
+            RecordIntra(mbx, mby, mb);
+        }
+
+        return mb;
     }
 
-    /// <summary>Reads a macroblock's coefficients; returns whether any is non-zero, as the loop filter sees it.</summary>
-    private bool ParseResiduals(ref Vp8BoolDecoder br, int mbx, Macroblock mb)
+    /// <summary>
+    /// Reads a macroblock's coefficients; returns whether any block is transformed (libwebp's test for the loop filter), and in
+    /// <paramref name="anyTokens"/> whether any block has a token before its end of block (libvpx's).
+    /// </summary>
+    private bool ParseResiduals(ref Vp8BoolDecoder br, int mbx, Macroblock mb, Row row, out bool anyTokens)
     {
-        Span<short> coefficients = _coefficients;
+        Span<short> coefficients = row.Coefficients;
         coefficients.Clear();
         Span<byte> nzTop = _nzAbove.AsSpan(mbx * 9, 9);
-        Span<byte> nzLeft = _nzLeft;
+        Span<byte> nzLeft = row.NzLeft;
         ReadOnlySpan<short> q = _quant.AsSpan(mb.Segment * 6, 6);
         bool any = false;
+        int tokens = 0;
         int first;
         int type;
-        if (!mb.Intra4x4)
+        if (mb.HasY2)
         {
             Span<short> dc = stackalloc short[16];
             dc.Clear();
             int ctx = nzTop[8] + nzLeft[8];
             int nz = GetCoefficients(ref br, 1, ctx, q[2], q[3], 0, dc);
             nzTop[8] = nzLeft[8] = (byte)(nz > 0 ? 1 : 0);
+            tokens = nz;
             if (nz > 1)
             {
                 Vp8Dsp.InverseWalshHadamard(dc, coefficients);
@@ -629,8 +946,9 @@ internal sealed class Vp8Decoder : IDisposable
                 int nz = GetCoefficients(ref br, type, l + nzTop[x], q[0], q[1], first, c);
                 l = nz > first ? 1 : 0;
                 nzTop[x] = (byte)l;
-                _codes[block] = Code(nz, c[0]);
-                any |= _codes[block] != 0;
+                tokens |= l;
+                row.Codes[block] = Code(nz, c[0]);
+                any |= row.Codes[block] != 0;
             }
 
             nzLeft[y] = (byte)l;
@@ -650,14 +968,16 @@ internal sealed class Vp8Decoder : IDisposable
                     int nz = GetCoefficients(ref br, 2, l + nzTop[topAt + x], q[4], q[5], 0, c);
                     l = nz > 0 ? 1 : 0;
                     nzTop[topAt + x] = (byte)l;
-                    _codes[block] = Code(nz, c[0]);
-                    any |= _codes[block] != 0;
+                    tokens |= l;
+                    row.Codes[block] = Code(nz, c[0]);
+                    any |= row.Codes[block] != 0;
                 }
 
                 nzLeft[leftAt + y] = (byte)l;
             }
         }
 
+        anyTokens = tokens != 0;
         return any;
     }
 
@@ -674,6 +994,9 @@ internal sealed class Vp8Decoder : IDisposable
         br.Take(out ulong value, out int bits, out uint range);
         ref byte probs = ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(_state.CoefficientProbabilities);
         ref byte bands = ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(Bands);
+        ref byte zigzag = ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(Zigzag);
+        _ = output[15];
+        ref short outputs = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(output);
         int typeAt = type * 8 * 3 * 11;
         int p = typeAt + (((Unsafe.Add(ref bands, n) * 3) + ctx) * 11);
         int result = 16;
@@ -720,13 +1043,14 @@ internal sealed class Vp8Decoder : IDisposable
             int coefficient = (sign != 0 ? -v : v) * (n > 0 ? acQuant : dcQuant);
 
             // Stored as 16 bits, as libwebp stores it, so even absurd values come out the same.
-            output[Zigzag[n]] = (short)coefficient;
+            Unsafe.Add(ref outputs, Unsafe.Add(ref zigzag, n)) = (short)coefficient;
         }
 
         br.Put(value, bits, range);
         return result;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int LargeValue(ref Vp8BoolDecoder br, ref ulong value, ref int bits, ref uint range, ref byte p)
     {
         if (Vp8BoolDecoder.Bit(ref br, ref value, ref bits, ref range, Unsafe.Add(ref p, 3)) == 0)
@@ -760,27 +1084,37 @@ internal sealed class Vp8Decoder : IDisposable
     }
 
     /// <summary>Predicts the macroblock, adds its residuals in the work buffers and copies it, unfiltered, into the current row.</summary>
-    private void Reconstruct(int mbx, int mby, Macroblock mb)
+    private void Reconstruct(int mbx, int mby, Macroblock mb, Row c)
     {
-        Span<byte> wy = _workY;
-        Span<byte> wu = _workU;
-        Span<byte> wv = _workV;
+        if (mb.Reference != 0)
+        {
+            ReconstructInter(mbx, mby, mb, c);
+            return;
+        }
+
+        Span<byte> wy = c.WorkY;
+        Span<byte> wu = c.WorkU;
+        Span<byte> wv = c.WorkV;
         const int S = Vp8Dsp.Stride;
         const int Y0 = S + 8;
         const int C0 = S + 8;
+
+        ref byte y0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkY), Y0);
+        ref byte u0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkU), C0);
+        ref byte v0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkV), C0);
 
         // The left samples (and the corner) from the macroblock just reconstructed.
         if (mbx > 0)
         {
             for (int j = -1; j < 16; j++)
             {
-                wy.Slice(Y0 + (j * S) + 12, 4).CopyTo(wy.Slice(Y0 + (j * S) - 4, 4));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, (j * S) - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref y0, (j * S) + 12)));
             }
 
             for (int j = -1; j < 8; j++)
             {
-                wu.Slice(C0 + (j * S) + 4, 4).CopyTo(wu.Slice(C0 + (j * S) - 4, 4));
-                wv.Slice(C0 + (j * S) + 4, 4).CopyTo(wv.Slice(C0 + (j * S) - 4, 4));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, (j * S) - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref u0, (j * S) + 4)));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, (j * S) - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref v0, (j * S) + 4)));
             }
         }
 
@@ -791,7 +1125,7 @@ internal sealed class Vp8Decoder : IDisposable
             _topV.AsSpan(mbx * 8, 8).CopyTo(wv.Slice(C0 - S, 8));
         }
 
-        ReadOnlySpan<short> coefficients = _coefficients;
+        ReadOnlySpan<short> coefficients = c.Coefficients;
         if (mb.Intra4x4)
         {
             // The four pixels above and right of the macroblock, repeated down the right edge for the blocks below the first row.
@@ -813,11 +1147,12 @@ internal sealed class Vp8Decoder : IDisposable
                 topRight.CopyTo(wy.Slice(Y0 + (((k * 4) - 1) * S) + 16, 4));
             }
 
+            ReadOnlySpan<byte> subModes = _video is null ? _subModes : _video.Modes.SubModes.AsSpan(_video.Modes.Index(mbx, mby) * 16, 16);
             for (int n = 0; n < 16; n++)
             {
                 int at = Y0 + ((n >> 2) * 4 * S) + ((n & 3) * 4);
-                Vp8Dsp.PredictSubblock(_subModes[n], wy, at);
-                AddResidual(_codes[n], coefficients.Slice(n * 16, 16), wy, at);
+                Vp8Dsp.PredictSubblock(subModes[n], wy, at);
+                AddResidual(c.Codes[n], coefficients.Slice(n * 16, 16), wy, at);
             }
         }
         else
@@ -825,18 +1160,19 @@ internal sealed class Vp8Decoder : IDisposable
             Vp8Dsp.PredictBlock(EdgeMode(mb.YMode, mbx, mby), wy, Y0, 16);
             for (int n = 0; n < 16; n++)
             {
-                AddResidual(_codes[n], coefficients.Slice(n * 16, 16), wy, Y0 + ((n >> 2) * 4 * S) + ((n & 3) * 4));
+                AddResidual(c.Codes[n], coefficients.Slice(n * 16, 16), wy, Y0 + ((n >> 2) * 4 * S) + ((n & 3) * 4));
             }
         }
 
         Vp8Dsp.BlockMode chroma = EdgeMode(mb.UvMode, mbx, mby);
         Vp8Dsp.PredictBlock(chroma, wu, C0, 8);
         Vp8Dsp.PredictBlock(chroma, wv, C0, 8);
+
         for (int n = 0; n < 4; n++)
         {
             int at = C0 + ((n >> 1) * 4 * S) + ((n & 1) * 4);
-            AddResidual(_codes[16 + n], coefficients.Slice((16 + n) * 16, 16), wu, at);
-            AddResidual(_codes[20 + n], coefficients.Slice((20 + n) * 16, 16), wv, at);
+            AddResidual(c.Codes[16 + n], coefficients.Slice((16 + n) * 16, 16), wu, at);
+            AddResidual(c.Codes[20 + n], coefficients.Slice((20 + n) * 16, 16), wv, at);
         }
 
         // Unfiltered bottom rows for the macroblock row below, and the pixels into the current row.
@@ -847,27 +1183,98 @@ internal sealed class Vp8Decoder : IDisposable
             wv.Slice(C0 + (7 * S), 8).CopyTo(_topV.AsSpan(mbx * 8, 8));
         }
 
+        // The rows the macroblock covers lie inside the planes: the row buffer or frame buffer was sized for every macroblock.
+        _ = RowsY.Slice(c.RowY + (15 * StrideY) + (mbx * 16), 16);
+        _ = RowsU.Slice(c.RowC + (7 * StrideC) + (mbx * 8), 8);
+        _ = RowsV.Slice(c.RowC + (7 * StrideC) + (mbx * 8), 8);
+        ref byte dy = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsY), c.RowY + (mbx * 16));
+        ref byte du = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsU), c.RowC + (mbx * 8));
+        ref byte dv = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsV), c.RowC + (mbx * 8));
         for (int j = 0; j < 16; j++)
         {
-            wy.Slice(Y0 + (j * S), 16).CopyTo(_rowsY.AsSpan(((Tail + j) * StrideY) + (mbx * 16), 16));
+            Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref dy, j * StrideY), ref Unsafe.Add(ref y0, j * S), 16);
         }
 
         for (int j = 0; j < 8; j++)
         {
-            wu.Slice(C0 + (j * S), 8).CopyTo(_rowsU.AsSpan(((ChromaTail + j) * StrideC) + (mbx * 8), 8));
-            wv.Slice(C0 + (j * S), 8).CopyTo(_rowsV.AsSpan(((ChromaTail + j) * StrideC) + (mbx * 8), 8));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref du, j * StrideC), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref u0, j * S)));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref dv, j * StrideC), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref v0, j * S)));
         }
     }
 
-    private static void AddResidual(byte code, ReadOnlySpan<short> coefficients, Span<byte> buffer, int at)
+    private static void AddResidual(byte code, ReadOnlySpan<short> coefficients, Span<byte> buffer, int at, int stride = Vp8Dsp.Stride)
     {
         if (code == 1)
         {
-            Vp8Dsp.InverseTransformDcAdd(coefficients[0], buffer, at);
+            Vp8Dsp.InverseTransformDcAdd(coefficients[0], buffer, at, stride);
         }
         else if (code > 1)
         {
-            Vp8Dsp.InverseTransformAdd(coefficients, buffer, at);
+            Vp8Dsp.InverseTransformAdd(coefficients, buffer, at, stride);
+        }
+    }
+
+    /// <summary>
+    /// Reconstructs an inter macroblock straight in the frame buffer: its prediction, then its residuals. The work buffers get
+    /// its right columns and the row above's corner, unfiltered, for an intra macroblock to its right.
+    /// </summary>
+    private void ReconstructInter(int mbx, int mby, Macroblock mb, Row c)
+    {
+        const int S = Vp8Dsp.Stride;
+        const int Y0 = S + 8;
+        const int C0 = S + 8;
+        int dy = c.RowY + (mbx * 16);
+        int dc = c.RowC + (mbx * 8);
+        PredictInter(mbx, mby, c, dy, dc);
+        if (c.AnyCoefficients)
+        {
+            ReadOnlySpan<short> coefficients = c.Coefficients;
+            for (int n = 0; n < 16; n++)
+            {
+                AddResidual(c.Codes[n], coefficients.Slice(n * 16, 16), RowsY, dy + ((n >> 2) * 4 * StrideY) + ((n & 3) * 4), StrideY);
+            }
+
+            for (int n = 0; n < 4; n++)
+            {
+                int at = dc + ((n >> 1) * 4 * StrideC) + ((n & 1) * 4);
+                AddResidual(c.Codes[16 + n], coefficients.Slice((16 + n) * 16, 16), RowsU, at, StrideC);
+                AddResidual(c.Codes[20 + n], coefficients.Slice((20 + n) * 16, 16), RowsV, at, StrideC);
+            }
+        }
+
+        _ = RowsY.Slice(dy + (15 * StrideY), 16);
+        _ = RowsU.Slice(dc + (7 * StrideC), 8);
+        _ = RowsV.Slice(dc + (7 * StrideC), 8);
+        ref byte fy = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsY), dy);
+        ref byte fu = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsU), dc);
+        ref byte fv = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsV), dc);
+        ref byte y0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkY), Y0);
+        ref byte u0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkU), C0);
+        ref byte v0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkV), C0);
+        for (int j = 0; j < 16; j++)
+        {
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, (j * S) + 12), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fy, (j * StrideY) + 12)));
+        }
+
+        for (int j = 0; j < 8; j++)
+        {
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, (j * S) + 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fu, (j * StrideC) + 4)));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, (j * S) + 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fv, (j * StrideC) + 4)));
+        }
+
+        if (mby > 0)
+        {
+            // The corner the next macroblock sees: the row above, before this macroblock's bottom row replaces it.
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, -S + 12), Unsafe.ReadUnaligned<uint>(ref _topY[(mbx * 16) + 12]));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, -S + 4), Unsafe.ReadUnaligned<uint>(ref _topU[(mbx * 8) + 4]));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, -S + 4), Unsafe.ReadUnaligned<uint>(ref _topV[(mbx * 8) + 4]));
+        }
+
+        if (mby < MbHeight - 1)
+        {
+            RowsY.Slice(dy + (15 * StrideY), 16).CopyTo(_topY.AsSpan(mbx * 16, 16));
+            RowsU.Slice(dc + (7 * StrideC), 8).CopyTo(_topU.AsSpan(mbx * 8, 8));
+            RowsV.Slice(dc + (7 * StrideC), 8).CopyTo(_topV.AsSpan(mbx * 8, 8));
         }
     }
 
@@ -883,9 +1290,9 @@ internal sealed class Vp8Decoder : IDisposable
     }
 
     /// <summary>Filters one macroblock in the row buffer (RFC 6386 section 15): its left edge, inner vertical edges, top edge, inner horizontal edges.</summary>
-    private void FilterMacroblock(int mbx, int mby)
+    private void FilterMacroblock(int mbx, int mby, Row c)
     {
-        MacroblockFilter f = _rowFilter[mbx];
+        MacroblockFilter f = c.Filter[mbx];
         int limit = f.Info.Limit;
         if (limit == 0)
         {
@@ -893,14 +1300,14 @@ internal sealed class Vp8Decoder : IDisposable
         }
 
         int sy = StrideY;
-        int at = (Tail * sy) + (mbx * 16);
+        int at = c.RowY + (mbx * 16);
         int interior = f.Info.Interior;
         int hev = f.Info.HevThreshold;
         Vp8FilterSimd.Kind edge = _filterType == 1 ? Vp8FilterSimd.Kind.Simple : Vp8FilterSimd.Kind.MacroblockEdge;
         Vp8FilterSimd.Kind inner = _filterType == 1 ? Vp8FilterSimd.Kind.Simple : Vp8FilterSimd.Kind.Inner;
         bool chroma = _filterType == 2;
         int sc = StrideC;
-        int ac = (ChromaTail * sc) + (mbx * 8);
+        int ac = c.RowC + (mbx * 8);
         if (mbx > 0)
         {
             LumaEdge(vertical: true, at, edge, limit + 4, interior, hev);
@@ -912,9 +1319,16 @@ internal sealed class Vp8Decoder : IDisposable
 
         if (f.Inner)
         {
-            for (int k = 4; k < 16; k += 4)
+            if (Vp8FilterSimd.Columns)
             {
-                LumaEdge(vertical: true, at + k, inner, limit, interior, hev);
+                Vp8FilterSimd.InnerVerticalEdges16(RowsY, at, sy, inner, limit, interior, hev);
+            }
+            else
+            {
+                for (int k = 4; k < 16; k += 4)
+                {
+                    LumaEdge(vertical: true, at + k, inner, limit, interior, hev);
+                }
             }
 
             if (chroma)
@@ -949,7 +1363,7 @@ internal sealed class Vp8Decoder : IDisposable
     /// <summary>Filters one luma edge 16 pixels long: a vertical edge (between columns) or a horizontal one (between rows).</summary>
     private void LumaEdge(bool vertical, int at, Vp8FilterSimd.Kind kind, int threshold, int interior, int hev)
     {
-        Span<byte> y = _rowsY;
+        Span<byte> y = RowsY;
         int stride = StrideY;
         if (vertical ? Vp8FilterSimd.Columns : Vp8FilterSimd.Rows)
         {
@@ -984,8 +1398,8 @@ internal sealed class Vp8Decoder : IDisposable
     /// <summary>Filters one edge of U and of V, 8 pixels long each.</summary>
     private void ChromaEdge(bool vertical, int at, Vp8FilterSimd.Kind kind, int threshold, int interior, int hev)
     {
-        Span<byte> u = _rowsU;
-        Span<byte> v = _rowsV;
+        Span<byte> u = RowsU;
+        Span<byte> v = RowsV;
         int stride = StrideC;
         if (vertical ? Vp8FilterSimd.Columns : Vp8FilterSimd.Rows)
         {
@@ -1036,9 +1450,9 @@ internal sealed class Vp8Decoder : IDisposable
             d._topY.CopyTo(_topY, 0);
             d._topU.CopyTo(_topU, 0);
             d._topV.CopyTo(_topV, 0);
-            Array.Copy(d._rowsY, _tailY, _tailY.Length);
-            Array.Copy(d._rowsU, _tailU, _tailU.Length);
-            Array.Copy(d._rowsV, _tailV, _tailV.Length);
+            Array.Copy(d._rentY!, _tailY, _tailY.Length);
+            Array.Copy(d._rentU!, _tailU, _tailU.Length);
+            Array.Copy(d._rentV!, _tailV, _tailV.Length);
             _modes = d._modes;
             _tokens = d._partitions[mby & d._partitionMask];
         }
@@ -1050,18 +1464,47 @@ internal sealed class Vp8Decoder : IDisposable
             _topY.CopyTo(d._topY, 0);
             _topU.CopyTo(d._topU, 0);
             _topV.CopyTo(d._topV, 0);
-            Array.Copy(_tailY, d._rowsY, _tailY.Length);
-            Array.Copy(_tailU, d._rowsU, _tailU.Length);
-            Array.Copy(_tailV, d._rowsV, _tailV.Length);
+            Array.Copy(_tailY, d._rentY!, _tailY.Length);
+            Array.Copy(_tailU, d._rentU!, _tailU.Length);
+            Array.Copy(_tailV, d._rentV!, _tailV.Length);
             d._modes = _modes;
             d._partitions[mby & d._partitionMask] = _tokens;
         }
     }
 
+    /// <summary>The state one macroblock row works in: the work buffers with their borders, the left contexts, the coefficients.</summary>
+    private sealed class Row(int mbWidth)
+    {
+        internal readonly byte[] WorkY = new byte[Vp8Dsp.Stride * 17];
+        internal readonly byte[] WorkU = new byte[Vp8Dsp.Stride * 9];
+        internal readonly byte[] WorkV = new byte[Vp8Dsp.Stride * 9];
+        internal readonly byte[] NzLeft = new byte[9];
+        internal readonly short[] Coefficients = new short[384];
+        internal readonly byte[] Codes = new byte[24];
+        internal readonly MacroblockFilter[] Filter = new MacroblockFilter[mbWidth];
+
+        /// <summary>Where the row's first luma and chroma pixels go in the planes being written.</summary>
+        internal int RowY;
+        internal int RowC;
+
+        /// <summary>Whether any block of the macroblock being reconstructed has a residual.</summary>
+        internal bool AnyCoefficients;
+    }
+
     /// <summary>Receives the rows a call to <see cref="DecodeRow"/> made final: luma rows [from, to) and chroma rows [chromaFrom, chromaTo).</summary>
     internal delegate void RowSink(Vp8Decoder decoder, int from, int to, int chromaFrom, int chromaTo);
 
-    private readonly record struct Macroblock(int Segment, bool Skip, bool Intra4x4, int YMode, int UvMode);
+    /// <summary>A macroblock's modes: <paramref name="Mode"/> numbered as <see cref="Vp8ModeInfo"/> numbers them, the reference 0 for intra.</summary>
+    private readonly record struct Macroblock(int Segment, bool Skip, int Mode, int UvMode, int Reference = 0)
+    {
+        internal bool Intra4x4 => Mode == Vp8ModeInfo.BPred;
+
+        /// <summary>Gets the 16 × 16 intra mode, DC, V, H or TM.</summary>
+        internal int YMode => Mode;
+
+        /// <summary>Gets whether the luma DCs go through the second-order block: all but B_PRED and split macroblocks.</summary>
+        internal bool HasY2 => Mode != Vp8ModeInfo.BPred && Mode != Vp8ModeInfo.Split;
+    }
 
     /// <summary>A filter strength: the edge limit, the interior limit and the high-variance threshold; a limit of 0 means no filtering.</summary>
     private readonly record struct FilterInfo(int Limit, int Interior, int HevThreshold);
@@ -1069,35 +1512,5 @@ internal sealed class Vp8Decoder : IDisposable
     private readonly record struct MacroblockFilter(FilterInfo Info, bool Inner);
 }
 
-/// <summary>The size and first partition of a VP8 frame, from its header.</summary>
-internal readonly record struct Vp8FrameHeader(int Width, int Height, int FirstPartitionSize);
-
-/// <summary>
-/// The decoder state that lasts from frame to frame in a VP8 stream: coefficient probabilities, segment values and probabilities,
-/// filter deltas, and slots for the last, golden and alternate reference frames. A WebP still uses one frame of it; Egami.Video
-/// will carry it across a WebM stream's frames.
-/// </summary>
-internal sealed class Vp8StreamState
-{
-    internal Vp8StreamState()
-    {
-        Vp8Tables.DefaultCoeffProbs.CopyTo(CoefficientProbabilities);
-    }
-
-    internal byte[] CoefficientProbabilities { get; } = new byte[4 * 8 * 3 * 11];
-
-    internal bool AbsoluteSegmentValues { get; set; }
-
-    internal int[] SegmentQuantizer { get; } = new int[4];
-
-    internal int[] SegmentFilterLevel { get; } = new int[4];
-
-    internal byte[] SegmentProbabilities { get; } = [255, 255, 255];
-
-    internal int[] ReferenceFilterDeltas { get; } = new int[4];
-
-    internal int[] ModeFilterDeltas { get; } = new int[4];
-
-    /// <summary>Gets or sets the last, golden and alternate reference frames; unused by key frames.</summary>
-    internal YuvRaster<byte>?[] References { get; } = new YuvRaster<byte>?[3];
-}
+/// <summary>The frame tag of a VP8 frame (RFC 6386 section 9.1), and for a key frame its size.</summary>
+internal readonly record struct Vp8FrameHeader(int Width, int Height, int FirstPartitionSize, bool KeyFrame = true, int Version = 0, bool Show = true, int HorizontalScale = 0, int VerticalScale = 0);

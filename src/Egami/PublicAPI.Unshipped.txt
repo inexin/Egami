@@ -915,6 +915,31 @@ Egami.Formats.Tiff.TiffWriterOptions.Reduce.init -> void
 Egami.Formats.Tiff.TiffWriterOptions.TiffWriterOptions() -> void
 Egami.Formats.Tiff.TiffWriterOptions.TileSize.get -> int?
 Egami.Formats.Tiff.TiffWriterOptions.TileSize.init -> void
+Egami.Formats.Webp.Vp8FrameInfo
+Egami.Formats.Webp.Vp8FrameInfo.Deconstruct(out bool IsKeyFrame, out bool IsShown, out int Width, out int Height, out int Version, out bool IsConcealed) -> void
+Egami.Formats.Webp.Vp8FrameInfo.Equals(Egami.Formats.Webp.Vp8FrameInfo other) -> bool
+Egami.Formats.Webp.Vp8FrameInfo.Height.get -> int
+Egami.Formats.Webp.Vp8FrameInfo.Height.init -> void
+Egami.Formats.Webp.Vp8FrameInfo.IsConcealed.get -> bool
+Egami.Formats.Webp.Vp8FrameInfo.IsConcealed.init -> void
+Egami.Formats.Webp.Vp8FrameInfo.IsKeyFrame.get -> bool
+Egami.Formats.Webp.Vp8FrameInfo.IsKeyFrame.init -> void
+Egami.Formats.Webp.Vp8FrameInfo.IsShown.get -> bool
+Egami.Formats.Webp.Vp8FrameInfo.IsShown.init -> void
+Egami.Formats.Webp.Vp8FrameInfo.Version.get -> int
+Egami.Formats.Webp.Vp8FrameInfo.Version.init -> void
+Egami.Formats.Webp.Vp8FrameInfo.Vp8FrameInfo() -> void
+Egami.Formats.Webp.Vp8FrameInfo.Vp8FrameInfo(bool IsKeyFrame, bool IsShown, int Width, int Height, int Version, bool IsConcealed) -> void
+Egami.Formats.Webp.Vp8FrameInfo.Width.get -> int
+Egami.Formats.Webp.Vp8FrameInfo.Width.init -> void
+Egami.Formats.Webp.Vp8StreamDecoder
+Egami.Formats.Webp.Vp8StreamDecoder.ConcealErrors.get -> bool
+Egami.Formats.Webp.Vp8StreamDecoder.ConcealErrors.set -> void
+Egami.Formats.Webp.Vp8StreamDecoder.CopyFrameTo(Egami.YuvRaster<byte>! destination) -> void
+Egami.Formats.Webp.Vp8StreamDecoder.Decode(System.ReadOnlySpan<byte> frame) -> Egami.Formats.Webp.Vp8FrameInfo
+Egami.Formats.Webp.Vp8StreamDecoder.Dispose() -> void
+Egami.Formats.Webp.Vp8StreamDecoder.Reset() -> void
+Egami.Formats.Webp.Vp8StreamDecoder.Vp8StreamDecoder(Egami.EgamiContext? context = null) -> void
 Egami.Formats.Webp.WebpChunk
 Egami.Formats.Webp.WebpChunk.<Clone>$() -> Egami.Formats.Webp.WebpChunk!
 Egami.Formats.Webp.WebpChunk.Data.get -> System.ReadOnlyMemory<byte>
@@ -1983,6 +2008,7 @@ override Egami.Formats.Tiff.TiffReaderOptions.ToString() -> string!
 override Egami.Formats.Tiff.TiffTag.Equals(object? obj) -> bool
 override Egami.Formats.Tiff.TiffTag.GetHashCode() -> int
 override Egami.Formats.Tiff.TiffTag.ToString() -> string!
+override Egami.Formats.Webp.Vp8FrameInfo.GetHashCode() -> int
 override Egami.Formats.Webp.WebpChunk.Equals(object? obj) -> bool
 override Egami.Formats.Webp.WebpChunk.GetHashCode() -> int
 override Egami.Formats.Webp.WebpChunk.ToString() -> string!
@@ -2259,6 +2285,8 @@ static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffR
 static Egami.Formats.Tiff.TiffTag.operator !=(Egami.Formats.Tiff.TiffTag? left, Egami.Formats.Tiff.TiffTag? right) -> bool
 static Egami.Formats.Tiff.TiffTag.operator ==(Egami.Formats.Tiff.TiffTag? left, Egami.Formats.Tiff.TiffTag? right) -> bool
 static Egami.Formats.Tiff.TiffWriterOptions.Default.get -> Egami.Formats.Tiff.TiffWriterOptions!
+static Egami.Formats.Webp.Vp8FrameInfo.operator !=(Egami.Formats.Webp.Vp8FrameInfo left, Egami.Formats.Webp.Vp8FrameInfo right) -> bool
+static Egami.Formats.Webp.Vp8FrameInfo.operator ==(Egami.Formats.Webp.Vp8FrameInfo left, Egami.Formats.Webp.Vp8FrameInfo right) -> bool
 static Egami.Formats.Webp.WebpChunk.operator !=(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
 static Egami.Formats.Webp.WebpChunk.operator ==(Egami.Formats.Webp.WebpChunk? left, Egami.Formats.Webp.WebpChunk? right) -> bool
 static Egami.Formats.Webp.WebpFormat.Info.get -> Egami.Formats.FormatInfo!
@@ -2629,6 +2657,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Formats.Jpeg2000.Jpeg2000Channel.ToString() -> string
 ~override Egami.Formats.Jpeg2000.Jpeg2000Component.Equals(object obj) -> bool
 ~override Egami.Formats.Jpeg2000.Jpeg2000Component.ToString() -> string
+~override Egami.Formats.Webp.Vp8FrameInfo.Equals(object obj) -> bool
+~override Egami.Formats.Webp.Vp8FrameInfo.ToString() -> string
 ~override Egami.Metadata.IptcKey.Equals(object obj) -> bool
 ~override Egami.Metadata.XmpName.Equals(object obj) -> bool
 ~override Egami.Operations.LightingModel.Equals(object obj) -> bool

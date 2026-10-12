@@ -36,7 +36,7 @@ Lossless files decode to exactly libwebp's pixels. Lossy files decode to libwebp
 one level of libwebp's: chroma is brought to full resolution exactly as libwebp's default upsampler does, then converted with the
 BT.601 kernel of the planar YUV guide. `YuvRaster.Load` returns a lossy file's planes untouched (4:2:0, BT.601, limited range, chroma
 in the centre), with the alpha as a fourth plane. Every kind streams through `RasterDecoder`, with regions, reductions and
-incremental decode.
+incremental decode. The same VP8 decoder reads video frames too, inter frames included: see [VP8 video frames](vp8.md).
 `WebpReaderOptions` adds two choices on top of the general reader options:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Webp.cs#webp-read)]

@@ -48,6 +48,8 @@
       href: guides/jpeg.md
     - name: WebP
       href: guides/webp.md
+    - name: VP8 video frames
+      href: guides/vp8.md
     - name: TIFF
       href: guides/tiff.md
     - name: JBIG2
