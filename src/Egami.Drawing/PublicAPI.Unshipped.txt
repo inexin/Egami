@@ -64,6 +64,14 @@ Egami.Drawing.CanvasOptions.Tolerance.init -> void
 Egami.Drawing.ClipOp
 Egami.Drawing.ClipOp.Difference = 1 -> Egami.Drawing.ClipOp
 Egami.Drawing.ClipOp.Intersect = 0 -> Egami.Drawing.ClipOp
+Egami.Drawing.ContourMeasure
+Egami.Drawing.ContourMeasure.AddSegment(Egami.Drawing.PathBuilder! builder, float start, float end, bool startWithMove = true) -> void
+Egami.Drawing.ContourMeasure.GetMatrix(float distance) -> System.Numerics.Matrix3x2
+Egami.Drawing.ContourMeasure.GetPosition(float distance) -> System.Numerics.Vector2
+Egami.Drawing.ContourMeasure.GetSegment(float start, float end) -> Egami.Drawing.Path!
+Egami.Drawing.ContourMeasure.GetTangent(float distance) -> System.Numerics.Vector2
+Egami.Drawing.ContourMeasure.IsClosed.get -> bool
+Egami.Drawing.ContourMeasure.Length.get -> float
 Egami.Drawing.CornerRadii
 Egami.Drawing.CornerRadii.BottomLeft.get -> System.Numerics.Vector2
 Egami.Drawing.CornerRadii.BottomLeft.init -> void
@@ -160,6 +168,10 @@ Egami.Drawing.PathBuilder.ToPath(Egami.Drawing.FillRule fillRule = Egami.Drawing
 Egami.Drawing.PathDirection
 Egami.Drawing.PathDirection.Clockwise = 0 -> Egami.Drawing.PathDirection
 Egami.Drawing.PathDirection.CounterClockwise = 1 -> Egami.Drawing.PathDirection
+Egami.Drawing.PathMeasure
+Egami.Drawing.PathMeasure.Contours.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.ContourMeasure!>!
+Egami.Drawing.PathMeasure.PathMeasure(Egami.Drawing.Path! path, bool forceClosed = false) -> void
+Egami.Drawing.PathMeasure.TotalLength.get -> float
 Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Close = 4 -> Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Cubic = 3 -> Egami.Drawing.PathVerb
