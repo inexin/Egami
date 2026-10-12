@@ -150,6 +150,57 @@ public sealed class ShapedTextTests
     }
 
     [Fact]
+    public void PlainLatinShapesAs271()
+    {
+        // Text the font has no ligature or mark rules for: the character map and pair kerning, as 2.7.1's one-glyph step placed it.
+        Font font = new(Noto, 17);
+        foreach (string text in new[] { "Hello, World!", "AVATAR Toyota 1234", "Tj Wa ye" })
+        {
+            GlyphRun run = font.Shape(text);
+            float x = 0;
+            int previous = -1;
+            for (int i = 0; i < text.Length; i++)
+            {
+                ushort glyph = Noto.GetGlyph(text[i]);
+                if (previous >= 0)
+                {
+                    x += Noto.GetKerning((ushort)previous, glyph) * font.Scale;
+                }
+
+                Assert.Equal(glyph, run.Glyphs[i]);
+                Assert.Equal(x, run.Positions[i].X, 0.01f);
+                Assert.Equal(0, run.Positions[i].Y);
+                x += font.GetAdvance(glyph);
+                previous = glyph;
+            }
+
+            Assert.Equal(x, run.Advance, 0.01f);
+        }
+    }
+
+    [Fact]
+    public void FontShapeKeepsOneFont()
+    {
+        Font font = new(Noto, 10);
+        GlyphRun run = font.Shape("\u05E9\u05DC\u05D5\u05DD abc", new ShapingOptions { Language = "he" });
+        Assert.Equal(1, run.BidiLevel);
+        Assert.Equal(Script.Common, run.Script);
+        Assert.Equal("he", run.Language);
+        Assert.Throws<ArgumentException>(() => font.Shape("a", new ShapingOptions { Fallback = new FontFallback([Family(Hebrew)]) }));
+        Assert.Throws<ArgumentException>(() => font.Shape("abc", new ShapingOptions { Spans = [new TextSpan(0, 1) { Font = new Font(Hebrew, 10) }] }));
+        Assert.Empty(font.Shape("\t\u0007").Glyphs.ToArray());
+    }
+
+    [Fact]
+    public void VerticalTextGoesDown()
+    {
+        Font font = new(Noto, 10);
+        GlyphRun run = font.Shape("ab\ncd", new ShapingOptions { Direction = TextDirection.TopToBottom });
+        Assert.True(run.Positions[1].Y > run.Positions[0].Y);
+        Assert.True(run.Positions[2].X < run.Positions[0].X);
+    }
+
+    [Fact]
     public void NullsAreRejected()
     {
         Assert.Throws<ArgumentNullException>(() => TextShaper.Shape(null!, new Font(Noto, 10)));

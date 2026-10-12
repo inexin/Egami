@@ -125,7 +125,8 @@ public sealed class ShapedRun
     /// <summary>Builds the glyph run that draws this run with its pen at <paramref name="origin"/>.</summary>
     /// <param name="origin">The pen position of the run's first glyph, on the baseline, y down.</param>
     /// <param name="text">The text the run was shaped from, for the run's clusters, or null.</param>
-    /// <returns>The glyph run, with clusters when <paramref name="text"/> is given.</returns>
+    /// <returns>The glyph run, with clusters when <paramref name="text"/> is given, and the run's level, script and language.</returns>
+    /// <exception cref="ArgumentException">A cluster points outside <paramref name="text"/>.</exception>
     public GlyphRun ToGlyphRun(Vector2 origin, string? text = null)
     {
         ReadOnlySpan<GlyphPosition> positions = Glyphs.Positions;
@@ -139,8 +140,23 @@ public sealed class ShapedRun
             y -= p.YAdvance;
         }
 
-        return text is null
-            ? GlyphRun.Create(Font, Glyphs.GlyphIds, points)
-            : GlyphRun.Create(Font, Glyphs.GlyphIds, points, text, Glyphs.Clusters);
+        if (text is not null)
+        {
+            foreach (int cluster in Glyphs.Clusters)
+            {
+                if ((uint)cluster > (uint)text.Length)
+                {
+                    throw new ArgumentException("A cluster points outside the text.", nameof(text));
+                }
+            }
+        }
+
+        float[] advances = [.. positions.ToArray().Select(p => p.XAdvance)];
+        return new GlyphRun(Font, Glyphs.GlyphIds.ToArray(), points, text, text is null ? null : Glyphs.Clusters.ToArray(), null, advances)
+        {
+            BidiLevel = BidiLevel,
+            Script = Script,
+            Language = Language,
+        };
     }
 }

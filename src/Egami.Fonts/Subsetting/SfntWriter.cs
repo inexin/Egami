@@ -78,6 +78,8 @@ internal sealed class ByteWriter
 /// <summary>Writes an sfnt from tables: a sorted directory, 4-byte aligned tables, checksums and head's checksum adjustment.</summary>
 internal static class SfntWriter
 {
+    private static readonly FontTag[] LayoutTables = [Tags.Gsub, Tags.Gpos, Tags.Gdef];
+
     public static byte[] Write(uint version, SortedDictionary<uint, byte[]> tables)
     {
         int count = tables.Count;
@@ -469,10 +471,11 @@ internal static class SfntWriter
         return w.ToArray();
     }
 
-    /// <summary>Copies the tables the options keep, except the variation tables a variable face's subset drops.</summary>
+    /// <summary>Copies the tables the options keep, and the layout tables for a layout closure, except the variation tables a variable face's subset drops.</summary>
     public static void KeepTables(Typeface face, SubsetOptions options, SortedDictionary<uint, byte[]> tables)
     {
-        foreach (FontTag tag in options.KeepTables)
+        IEnumerable<FontTag> keep = options.LayoutClosure ? options.KeepTables.Concat(LayoutTables) : options.KeepTables;
+        foreach (FontTag tag in keep)
         {
             if (!tables.ContainsKey(tag.Value) && !(face.IsVariable && Instancer.VariationTables.Contains(tag)))
             {

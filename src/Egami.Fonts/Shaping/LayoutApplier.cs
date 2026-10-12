@@ -235,7 +235,7 @@ internal sealed partial class LayoutApplier
     public bool ApplyLookupSubtables(LayoutLookup lookup)
     {
         uint glyph = Buffer.Cur().Codepoint;
-        if (lookup.Coverage is { } coverage && !coverage.Contains((int)glyph))
+        if (!lookup.Covers(glyph))
         {
             return false;
         }
@@ -258,6 +258,12 @@ internal sealed partial class LayoutApplier
     {
         LayoutBuffer buffer = Buffer;
         if (buffer.Len == 0 || LookupMask == 0)
+        {
+            return false;
+        }
+
+        // As HarfBuzz's digest check: a lookup no glyph in the buffer can start is skipped whole, without copying the buffer.
+        if (!MayApply(lookup))
         {
             return false;
         }
@@ -287,10 +293,24 @@ internal sealed partial class LayoutApplier
         }
     }
 
+    private bool MayApply(LayoutLookup lookup)
+    {
+        LayoutBuffer buffer = Buffer;
+        GlyphInfo[] info = buffer.Info;
+        for (int i = 0; i < buffer.Len; i++)
+        {
+            if ((info[i].Mask & LookupMask) != 0 && lookup.Covers(info[i].Codepoint))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool ApplyForward(LayoutLookup lookup)
     {
         LayoutBuffer buffer = Buffer;
-        HashSet<int>? coverage = lookup.Coverage;
         bool ret = false;
         while (buffer.Successful)
         {
@@ -298,7 +318,7 @@ internal sealed partial class LayoutApplier
             while (j < buffer.Len)
             {
                 ref GlyphInfo info = ref buffer.Info[j];
-                if ((coverage is null || coverage.Contains((int)info.Codepoint)) && (info.Mask & LookupMask) != 0 && CheckGlyphProperty(info, LookupProps))
+                if (lookup.Covers(info.Codepoint) && (info.Mask & LookupMask) != 0 && CheckGlyphProperty(info, LookupProps))
                 {
                     break;
                 }
@@ -336,7 +356,7 @@ internal sealed partial class LayoutApplier
         do
         {
             ref GlyphInfo cur = ref buffer.Cur();
-            if ((lookup.Coverage is null || lookup.Coverage.Contains((int)cur.Codepoint)) && (cur.Mask & LookupMask) != 0 && CheckGlyphProperty(cur, LookupProps))
+            if (lookup.Covers(cur.Codepoint) && (cur.Mask & LookupMask) != 0 && CheckGlyphProperty(cur, LookupProps))
             {
                 ret |= ApplyLookupSubtables(lookup);
             }

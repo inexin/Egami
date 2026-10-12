@@ -68,8 +68,8 @@ Everything a face returns is in font units with y up. `GetGlyph` maps a code poi
 - `Extents` is a `FontExtents` with ascent, descent, line gap, cap and x heights, decoration lines and the italic angle, by the
   browsers' rule: OS/2 typo metrics when the face sets USE_TYPO_METRICS, else hhea. `HheaMetrics`, `TypoMetrics` and
   `WinMetrics` give each stored `VerticalMetrics` set.
-- Kerning is GPOS pair positioning under the kern feature (the DFLT and latn scripts), else the kern table. Ligatures, marks and
-  other OpenType features arrive with shaping in 2.8.
+- `Typeface.GetKerning` is GPOS pair positioning under the kern feature (the DFLT and latn scripts), else the kern table. Text
+  drawn on a canvas is shaped with all of the font's OpenType features (see [Unicode text and shaping](unicode-text.md)).
 
 ## Text on a canvas
 
@@ -78,8 +78,15 @@ points at a resolution. `Canvas.DrawText` puts the left end of the first line's 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#caption)]
 
-- `Font.Shape` turns text into a `GlyphRun`: one glyph per code point, pair kerning, left to right, with `\n`, `\r\n` and `\r`
-  starting a new line. There is no wrapping, alignment, bidi or font fallback until 2.8; a missing character draws .notdef.
+- `Font.Shape` turns text into a `GlyphRun` with the full shaper: ligatures, kerning, marks, the script rules, bidi order, and a new
+  line at each hard break (`\n`, `\r\n`, `\r`, U+0085, U+2028, U+2029). `ShapingOptions` set the direction, language, features
+  and spans. A run has one font, so text that falls back to other fonts is shaped by `TextShaper.Shape` and drawn with
+  `Canvas.DrawShapedText`; `Canvas.DrawText` does that by itself when the options ask for fallback. Nothing wraps; without
+  fallback a missing character draws .notdef.
+- A `ShapedText` drawn with `Canvas.DrawShapedText` is shaped once, so it can be measured, kept and drawn again.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#shaped)]
+
 - A run carries the source text and a cluster per glyph, so a PDF backend keeps text searchable. `Canvas.DrawGlyphRun` draws a
   run built elsewhere with `GlyphRun.Create`.
 - Small glyphs are drawn from the `GlyphCache` of coverage masks, at whole device pixels, by the same rasterizer as paths, so caching
@@ -175,3 +182,10 @@ sets the format, dense or kept glyph ids, the character map, extra tables and th
 the glyph map.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset)]
+
+A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
+`SubsetOptions.LayoutClosure`: the kept glyphs gain every glyph GSUB can substitute for them (`OpenTypeLayout.GetClosure` with the
+default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tables use the old glyph ids, so it needs
+`RetainGlyphIds`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]

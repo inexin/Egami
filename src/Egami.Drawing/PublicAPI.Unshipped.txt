@@ -62,7 +62,8 @@ Egami.Drawing.Canvas.DrawPatch(Egami.Drawing.Patch! patch, Egami.Drawing.Paint? 
 Egami.Drawing.Canvas.DrawPicture(Egami.Drawing.Picture! picture, System.Numerics.Matrix3x2? matrix = null, Egami.Drawing.Paint? paint = null, bool cacheAsImage = false) -> void
 Egami.Drawing.Canvas.DrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawShadow(Egami.Drawing.Path! path, Egami.Drawing.ShadowOptions? options = null) -> void
-Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint) -> void
+Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint, Egami.Fonts.Shaping.ShapingOptions? options = null) -> void
+Egami.Drawing.Canvas.DrawShapedText(Egami.Fonts.Shaping.ShapedText! text, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawTextOnPath(string! text, Egami.Drawing.Path! path, Egami.Fonts.Font font, Egami.Drawing.Paint! paint, Egami.Drawing.TextOnPathOptions? options = null) -> void
 Egami.Drawing.Canvas.EndMarkedContent() -> void
 Egami.Drawing.Canvas.FillArc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees, Egami.Drawing.Paint! paint) -> void

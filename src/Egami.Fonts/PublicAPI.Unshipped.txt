@@ -175,13 +175,13 @@ Egami.Fonts.Font.Hinting.init -> void
 Egami.Fonts.Font.Kerning.get -> bool
 Egami.Fonts.Font.Kerning.init -> void
 Egami.Fonts.Font.LineHeight.get -> float
-Egami.Fonts.Font.MeasureText(string! text) -> Egami.Fonts.TextMeasure
+Egami.Fonts.Font.MeasureText(string! text, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.TextMeasure
 Egami.Fonts.Font.OpticalSizing.get -> Egami.Fonts.OpticalSizing
 Egami.Fonts.Font.OpticalSizing.init -> void
 Egami.Fonts.Font.Palette.get -> Egami.Fonts.FontPalette!
 Egami.Fonts.Font.Palette.init -> void
 Egami.Fonts.Font.Scale.get -> float
-Egami.Fonts.Font.Shape(string! text) -> Egami.Fonts.GlyphRun!
+Egami.Fonts.Font.Shape(string! text, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.GlyphRun!
 Egami.Fonts.Font.Size.get -> float
 Egami.Fonts.Font.Subpixel.get -> bool
 Egami.Fonts.Font.Subpixel.init -> void
@@ -1522,3 +1522,8 @@ static Egami.Fonts.Shaping.TextSpan.operator !=(Egami.Fonts.Shaping.TextSpan lef
 static Egami.Fonts.Shaping.TextSpan.operator ==(Egami.Fonts.Shaping.TextSpan left, Egami.Fonts.Shaping.TextSpan right) -> bool
 ~override Egami.Fonts.Shaping.TextSpan.Equals(object obj) -> bool
 ~override Egami.Fonts.Shaping.TextSpan.ToString() -> string
+Egami.Fonts.GlyphRun.BidiLevel.get -> int
+Egami.Fonts.GlyphRun.Script.get -> Egami.Fonts.Unicode.Script
+Egami.Fonts.GlyphRun.Language.get -> string?
+Egami.Fonts.SubsetOptions.LayoutClosure.get -> bool
+Egami.Fonts.SubsetOptions.LayoutClosure.init -> void

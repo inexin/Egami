@@ -37,6 +37,9 @@ internal sealed class RunRequest
 /// <summary>Shapes one run of code points in one font: the engine's entry point below the public API.</summary>
 internal static class RunShaper
 {
+    // The font functions at the face's own scale, made once per face.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Typeface, ShapeFont> s_fonts = new();
+
     /// <summary>Shapes <paramref name="codePoints"/>, each with its cluster, into <paramref name="buffer"/>.</summary>
     public static void Shape(Typeface face, ReadOnlySpan<int> codePoints, ReadOnlySpan<int> clusters, RunRequest request, LayoutBuffer buffer)
     {
@@ -77,14 +80,13 @@ internal static class RunShaper
         buffer.PreContext = request.PreContext;
         buffer.PostContext = request.PostContext;
 
-        ShapeFont font = new(face, request.Scale);
+        ShapeFont font = request.Scale == 0 ? s_fonts.GetValue(face, static f => new ShapeFont(f)) : new ShapeFont(face, request.Scale);
         int[] coords = font.NormalizedCoordinates;
         int[] variations = [font.Layout.Gsub.FindFeatureVariations(coords), font.Layout.Gpos.FindFeatureVariations(coords)];
-        string languages = string.Join(",", request.LanguageTags);
-        string features = string.Join(",", request.Features.Select(f => $"{f.Tag}:{f.Value}:{f.Start}:{f.End}"));
+        string languages = request.LanguageTags.Length == 0 ? "" : string.Join(",", request.LanguageTags);
+        string features = request.Features.Length == 0 ? "" : string.Join(",", request.Features.Select(f => $"{f.Tag}:{f.Value}:{f.Start}:{f.End}"));
         ShapePlanKey key = new(script, direction, languages, features, variations[0], variations[1]);
-        uint[] scriptTags = OtShaper.ScriptTags(script);
-        ShapePlan plan = font.Layout.GetPlan(key, _ => ShapePlan.Create(font, script, direction, scriptTags, request.LanguageTags, request.Features, variations));
+        ShapePlan plan = font.Layout.GetPlan(key, _ => ShapePlan.Create(font, script, direction, OtShaper.ScriptTags(script), request.LanguageTags, request.Features, variations));
         OtShaper.Shape(plan, font, buffer);
     }
 

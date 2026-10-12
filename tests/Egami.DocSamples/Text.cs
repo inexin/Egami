@@ -217,6 +217,25 @@ public class Text
     }
 
     [Fact]
+    public void ShapedOnce()
+    {
+        var font = new Font(Typeface.FromFile(FontFile), 28);
+
+        #region shaped
+        // Shape once, measure the result, draw it centred: no second shaping pass.
+        using Raster<Rgba8> banner = Raster.Create(640, 120, Rgba8.White);
+        Egami.Fonts.Shaping.ShapedText title = Egami.Fonts.Shaping.TextShaper.Shape("Office hours: 9 to 17", font);
+        var origin = new Vector2((banner.Width - title.Advance) / 2, 70);
+        using (RasterCanvas<Rgba8> canvas = banner.CreateCanvas())
+        {
+            canvas.DrawShapedText(title, origin, Rgba8.Black);
+        }
+        #endregion
+
+        Assert.True(title.Advance > 0);
+    }
+
+    [Fact]
     public void LabelMeasuredToFit()
     {
         Typeface face = Typeface.FromFile(FontFile);
@@ -269,6 +288,22 @@ public class Text
         Assert.True(fontFile2.Length < 20_000);
         Assert.True(first > 0);
         Assert.False(restricted);
+    }
+
+    [Fact]
+    public void SubsetToShapeAgain()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-layout
+        // Keep what the text's characters can become (ligatures, contextual forms) and the layout tables, so the subset shapes
+        // the text as the full face does; the copied tables use the old glyph ids, so the ids are kept.
+        ushort[] glyphs = [.. "office".Select(c => face.GetGlyph(c))];
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+        GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape("office");
+        #endregion
+
+        Assert.Equal(new Font(face, 12).Shape("office").Glyphs.ToArray(), shaped.Glyphs.ToArray());
     }
 
     [Fact]

@@ -43,6 +43,8 @@ using DrawingPath = Egami.Drawing.Path;
 // small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested pictures.
 // The vp8video target (Phase 2.3.5) feeds the VP8 stream decoder a stream of frames (inter frames, hidden frames, every version)
 // on one thread or four, with and without concealment: each frame must decode, conceal or fail with an EgamiException.
+// The shaping target (Phase 2.8.1) shapes texts in many scripts with a font that loads, with features and directions its bytes pick,
+// and takes its GSUB closure; the bidi target reads its bytes as UTF-16 text and resolves, reorders, segments and shapes it.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -151,7 +153,9 @@ static Action<Stream> Target(string name) => name switch
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
     "egdr" => LoadDrawing,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr."),
+    "shaping" => ShapeFont,
+    "bidi" => ResolveBidi,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi."),
 };
 
 static EgamiContext Context()
@@ -2077,6 +2081,250 @@ static void ExerciseFace(Egami.Fonts.Typeface face)
     _ = font.MeasureText("To Wa");
 }
 
+// Shaping (Phase 2.8.1): a font that loads shapes a fixed set of texts in many scripts, run by run with features and directions
+// the bytes pick and through TextShaper.Shape in every direction, and its GSUB closure is taken for each text's glyphs. Nothing
+// may throw once the font has loaded, and every glyph's cluster must be inside its run.
+static void ShapeFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    Egami.Fonts.Typeface face;
+    try
+    {
+        face = Egami.Fonts.Typeface.FromMemory(data, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    int hash = data.Length > 0 ? data[^1] : 0;
+    var font = new Egami.Fonts.Font(face, 16);
+    Egami.Fonts.Shaping.FontFeature[][] featureSets =
+    [
+        [],
+        [Egami.Fonts.Shaping.FontFeature.Ligatures(false), Egami.Fonts.Shaping.FontFeature.NoKerning],
+        [Egami.Fonts.Shaping.FontFeature.SmallCaps, Egami.Fonts.Shaping.FontFeature.StylisticSet(1), new(new Egami.Fonts.FontTag("dlig"), 1, 2, 5), new(new Egami.Fonts.FontTag("aalt"), 3)],
+        [new(new Egami.Fonts.FontTag("liga"), 0, 1, 3), Egami.Fonts.Shaping.FontFeature.TabularFigures, new(new Egami.Fonts.FontTag("vert"))],
+    ];
+    Egami.Fonts.Unicode.TextDirection[] directions =
+    [
+        Egami.Fonts.Unicode.TextDirection.Auto, Egami.Fonts.Unicode.TextDirection.LeftToRight,
+        Egami.Fonts.Unicode.TextDirection.RightToLeft, Egami.Fonts.Unicode.TextDirection.TopToBottom,
+    ];
+    var buffer = new Egami.Fonts.Shaping.GlyphBuffer();
+    Egami.Fonts.Shaping.OpenTypeLayout layout = face.Layout;
+    IReadOnlyList<Egami.Fonts.FontTag> allFeatures = layout.Features;
+    for (int i = 0; i < ShapingSamples.Texts.Length; i++)
+    {
+        (string text, Egami.Fonts.Unicode.Script? script, Egami.Fonts.Unicode.TextDirection natural) = ShapingSamples.Texts[i];
+        int pick = hash + i;
+        Egami.Fonts.Shaping.FontFeature[] features = featureSets[pick % featureSets.Length];
+        Egami.Fonts.Unicode.TextDirection direction = (pick / 4 % 3) switch
+        {
+            0 => natural,
+            1 => directions[1 + (pick % 3)],
+            _ => Egami.Fonts.Unicode.TextDirection.TopToBottom,
+        };
+        var properties = new Egami.Fonts.Shaping.RunProperties
+        {
+            Script = script,
+            Direction = direction,
+            Features = features,
+            ClusterLevel = (Egami.Fonts.Shaping.ClusterLevel)(pick % 3),
+            Language = (pick & 8) != 0 ? "ur" : null,
+        };
+        Egami.Fonts.Shaping.TextShaper.ShapeRun(text, 0, text.Length, font, properties, buffer);
+        CheckClusters(buffer, 0, text.Length);
+
+        // A run in the middle of the text, with the characters around it as context.
+        int start = Math.Min(text.Length, 1 + (pick % 3));
+        Egami.Fonts.Shaping.TextShaper.ShapeRun(text, start, text.Length - start, font, properties, buffer);
+        CheckClusters(buffer, start, text.Length);
+
+        Egami.Fonts.Shaping.ShapedText shaped = Egami.Fonts.Shaping.TextShaper.Shape(text, font, new Egami.Fonts.Shaping.ShapingOptions
+        {
+            Direction = directions[pick % directions.Length],
+            Features = features,
+            ClusterLevel = properties.ClusterLevel,
+        });
+        CheckShaped(shaped, text.Length);
+
+        ushort[] glyphs = [.. text.EnumerateRunes().Select(r => face.GetGlyph(r.Value))];
+        _ = layout.GetClosure(glyphs).Count;
+        _ = layout.GetClosure(glyphs, allFeatures).Count;
+    }
+}
+
+static void CheckClusters(Egami.Fonts.Shaping.GlyphBuffer buffer, int start, int end)
+{
+    foreach (int cluster in buffer.Clusters)
+    {
+        if (cluster < start || cluster >= end)
+        {
+            throw new InvalidOperationException($"Cluster {cluster} is outside the run [{start}, {end}).");
+        }
+    }
+}
+
+static void CheckShaped(Egami.Fonts.Shaping.ShapedText shaped, int length)
+{
+    foreach (Egami.Fonts.Shaping.ShapedLine line in shaped.Lines)
+    {
+        if (line.Start < 0 || line.Start + line.Length > length)
+        {
+            throw new InvalidOperationException($"Line [{line.Start}, +{line.Length}) is outside the text of {length}.");
+        }
+
+        foreach (Egami.Fonts.Shaping.ShapedRun run in line.Runs)
+        {
+            if (run.Start < line.Start || run.Start + run.Length > line.Start + line.Length)
+            {
+                throw new InvalidOperationException($"Run [{run.Start}, +{run.Length}) is outside its line.");
+            }
+
+            CheckClusters(run.Glyphs, run.Start, run.Start + run.Length);
+        }
+    }
+}
+
+// Bidi and segmentation (Phase 2.8.1): the bytes as UTF-16 text (any units, unpaired surrogates included), resolved in every
+// direction; the runs must cover the text, and lines the bytes cut must reorder to runs covering the line. Graphemes and words
+// must tile the text, and shaping it with one font must keep every cluster inside its run. Nothing may throw.
+static void ResolveBidi(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    string text = new(System.Runtime.InteropServices.MemoryMarshal.Cast<byte, char>(data.AsSpan(0, Math.Min(data.Length, 8192) & ~1)));
+    int seed = 17;
+    foreach (byte b in data)
+    {
+        seed = (seed * 31) + b;
+    }
+
+    var random = new Random(seed);
+    Egami.Fonts.Unicode.TextDirection[] directions =
+    [
+        Egami.Fonts.Unicode.TextDirection.Auto, Egami.Fonts.Unicode.TextDirection.LeftToRight,
+        Egami.Fonts.Unicode.TextDirection.RightToLeft, Egami.Fonts.Unicode.TextDirection.TopToBottom,
+    ];
+    foreach (Egami.Fonts.Unicode.TextDirection direction in directions)
+    {
+        using Egami.Fonts.Unicode.BidiResult result = Egami.Fonts.Unicode.Bidi.Resolve(text, direction);
+        if (result.Length != text.Length || result.Levels.Length != text.Length)
+        {
+            throw new InvalidOperationException($"Bidi resolved {result.Length} units of {text.Length}.");
+        }
+
+        int next = 0;
+        foreach (Egami.Fonts.Unicode.BidiRun run in result.Runs)
+        {
+            if (run.Start != next || run.Length <= 0 || run.Level > 126)
+            {
+                throw new InvalidOperationException($"Bidi run {run} does not follow {next}.");
+            }
+
+            next = run.Start + run.Length;
+        }
+
+        if (next != text.Length)
+        {
+            throw new InvalidOperationException($"Bidi runs end at {next} of {text.Length}.");
+        }
+
+        CheckReorder(result, 0, text.Length);
+        for (int start = 0; start < text.Length;)
+        {
+            int length = 1 + random.Next(Math.Min(text.Length - start, 80));
+            CheckReorder(result, start, length);
+            start += length;
+        }
+
+        CheckReorder(result, random.Next(text.Length + 1), 0);
+    }
+
+    CheckTiling(text, true, Graphemes(text));
+    CheckTiling(text, false, Words(text));
+
+    using Stream fontData = typeof(RecordingSink).Assembly.GetManifestResourceStream("NotoSansArabic-subset.ttf")!;
+    var font = new Egami.Fonts.Font(Egami.Fonts.Typeface.FromMemory(ReadAll(fontData)), 16);
+    CheckShaped(Egami.Fonts.Shaping.TextShaper.Shape(text, font, new Egami.Fonts.Shaping.ShapingOptions { Direction = directions[seed & 3] }), text.Length);
+}
+
+static void CheckReorder(Egami.Fonts.Unicode.BidiResult result, int start, int length)
+{
+    Egami.Fonts.Unicode.BidiRun[] runs = result.Reorder(start, length);
+    var covered = new bool[length];
+    foreach (Egami.Fonts.Unicode.BidiRun run in runs)
+    {
+        if (run.Length <= 0 || run.Start < start || run.Start + run.Length > start + length)
+        {
+            throw new InvalidOperationException($"Reordered run {run} is outside the line [{start}, +{length}).");
+        }
+
+        for (int i = run.Start; i < run.Start + run.Length; i++)
+        {
+            if (covered[i - start])
+            {
+                throw new InvalidOperationException($"Reordered runs of [{start}, +{length}) overlap at {i}.");
+            }
+
+            covered[i - start] = true;
+        }
+    }
+
+    int gap = Array.IndexOf(covered, false);
+    if (gap >= 0)
+    {
+        throw new InvalidOperationException($"Reordered runs of [{start}, +{length}) miss {start + gap}.");
+    }
+}
+
+static List<Egami.Fonts.Unicode.TextSegment> Graphemes(string text)
+{
+    List<Egami.Fonts.Unicode.TextSegment> segments = [];
+    foreach (Egami.Fonts.Unicode.TextSegment segment in Egami.Fonts.Unicode.TextSegmenter.Graphemes(text))
+    {
+        segments.Add(segment);
+    }
+
+    return segments;
+}
+
+static List<Egami.Fonts.Unicode.TextSegment> Words(string text)
+{
+    List<Egami.Fonts.Unicode.TextSegment> segments = [];
+    foreach (Egami.Fonts.Unicode.TextSegment segment in Egami.Fonts.Unicode.TextSegmenter.Words(text))
+    {
+        segments.Add(segment);
+    }
+
+    return segments;
+}
+
+static void CheckTiling(string text, bool graphemes, List<Egami.Fonts.Unicode.TextSegment> segments)
+{
+    string kind = graphemes ? "Grapheme" : "Word";
+    int next = 0;
+    foreach (Egami.Fonts.Unicode.TextSegment segment in segments)
+    {
+        if (segment.Start != next || segment.Length <= 0)
+        {
+            throw new InvalidOperationException($"{kind} {segment} does not follow {next}.");
+        }
+
+        if (graphemes && !Egami.Fonts.Unicode.TextSegmenter.IsGraphemeBoundary(text, segment.Start))
+        {
+            throw new InvalidOperationException($"{kind} {segment} starts off a grapheme boundary.");
+        }
+
+        next = segment.End;
+    }
+
+    if (next != text.Length)
+    {
+        throw new InvalidOperationException($"{kind}s end at {next} of {text.Length}.");
+    }
+}
+
 /// <summary>A simple mutation fuzzer: random edits of seed files, run in process, with a watchdog for hangs.</summary>
 internal static class Mutator
 {
@@ -2236,4 +2484,22 @@ internal sealed class RecordingSink : Egami.Fonts.IGlyphOutlineSink
 
         return true;
     }
+}
+
+/// <summary>The texts the shaping fuzz target shapes: one per script, with ligatures, marks, joiners and clusters to exercise.</summary>
+internal static class ShapingSamples
+{
+    public static readonly (string Text, Egami.Fonts.Unicode.Script? Script, Egami.Fonts.Unicode.TextDirection Direction)[] Texts =
+    [
+        ("office affluent fjord Ta AV x\u0301 e\u0308\u0323 \uFB01 1/2 \u00C5", Egami.Fonts.Unicode.Script.Latin, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\u0628\u0650\u0633\u0652\u0645\u0650 \u0627\u0644\u0644\u0651\u0647\u0650 \u0644\u0627 \u0640\u0643\u062A\u0627\u0628\u200D \u0661\u0662 \u06CC\u0670", Egami.Fonts.Unicode.Script.Arabic, Egami.Fonts.Unicode.TextDirection.RightToLeft),
+        ("\u0915\u094D\u0937\u093F \u0930\u094D\u0915\u0947 \u0939\u093F\u0928\u094D\u0926\u0940 \u0926\u094D\u0930\u200D\u094D \u0915\u093C\u0902", Egami.Fonts.Unicode.Script.Devanagari, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\u1780\u1793\u17D2\u178F\u17D2\u179A\u17B6 \u1781\u17D2\u1798\u17C2\u179A \u17C9\u17D2 \u1784\u17D2\u1782\u17C4", Egami.Fonts.Unicode.Script.Khmer, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\u1019\u103C\u1014\u103A\u1019\u102C \u1000\u103B\u1031\u102C\u103A \u1004\u103A\u1039\u1000\u102D\u102F", Egami.Fonts.Unicode.Script.Myanmar, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22 \u0E19\u0E49\u0E33 \u0E01\u0E33 \u0E1B\u0E39\u0E48", Egami.Fonts.Unicode.Script.Thai, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\u0F56\u0F7C\u0F51\u0F0B\u0F66\u0F90\u0F51\u0F0B \u0F40\u0FB2\u0F74 \u0F00 \u0F66\u0F92\u0FB2\u0F7C", Egami.Fonts.Unicode.Script.Tibetan, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\uD55C\uAD6D\uC5B4 \u1100\u1161\u11A8 \u1112\u1173 \uAC00\u302E", Egami.Fonts.Unicode.Script.Hangul, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("\uD83D\uDC69\u200D\uD83D\uDCBB \uD83C\uDDF3\uD83C\uDDF4 \u263A\uFE0F \uD83D\uDC4D\uD83C\uDFFD 1\uFE0F\u20E3", Egami.Fonts.Unicode.Script.Common, Egami.Fonts.Unicode.TextDirection.LeftToRight),
+        ("abc \u05E9\u05DC\u05D5\u05DD 123 \u0627\u0644\u0639\u0631\u0628\u064A\u0629! (\u202B\u05D0 b\u202C)", null, Egami.Fonts.Unicode.TextDirection.Auto),
+    ];
 }

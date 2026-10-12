@@ -1,5 +1,8 @@
 using System.Numerics;
 
+using Egami.Fonts.Shaping;
+using Egami.Fonts.Unicode;
+
 namespace Egami.Fonts;
 
 /// <summary>Styling a face lacks, which a matched <see cref="Font"/> asks the renderer to synthesize (drawn from 2.7.2 on).</summary>
@@ -190,105 +193,98 @@ public readonly record struct Font
     }
 
     /// <summary>
-    /// Turns text into a glyph run, the 2.7.1 way: one glyph per code point through the character map (variation selectors and
-    /// surrogate pairs handled), pair kerning between neighbours, left to right. <c>\n</c>, <c>\r\n</c> and <c>\r</c> start a new
-    /// line one <see cref="LineHeight"/> lower at x = 0; other control characters give no glyph; missing characters give .notdef.
+    /// Turns text into a glyph run with the full shaper (<see cref="TextShaper.Shape(string, Font, ShapingOptions?)"/>): ligatures,
+    /// kerning, marks and the script rules of the font's GSUB and GPOS, bidi order, one glyph run for every line. <c>\n</c>,
+    /// <c>\r\n</c>, <c>\r</c>, U+0085, U+2028 and U+2029 start a new line one <see cref="LineHeight"/> lower at x = 0 (a vertical
+    /// line one <see cref="LineHeight"/> to the left); other control characters give no glyph; characters the face lacks give .notdef.
     /// </summary>
     /// <param name="text">The text.</param>
+    /// <param name="options">The direction, language, script, features and spans, or <see langword="null"/> for
+    /// <see cref="ShapingOptions.Default"/>. One run has one font, so the options may not ask for fallback or span fonts; draw such
+    /// text from <see cref="TextShaper.Shape(string, Font, ShapingOptions?)"/>.</param>
     /// <returns>The run, with the text and a cluster per glyph; positions are relative to the first baseline's left end, y down.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="text"/> is null.</exception>
-    public GlyphRun Shape(string text)
+    /// <exception cref="ArgumentException"><paramref name="options"/> asks for fallback or a span in another font.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="caption"/>
+    /// </example>
+    public GlyphRun Shape(string text, ShapingOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(text);
-        Typeface face = Face;
-        float scale = Scale, lineHeight = LineHeight;
-        bool kern = Kerning && face.HasKerning;
-        var glyphs = new ushort[text.Length];
-        var positions = new Vector2[text.Length];
-        var clusters = new int[text.Length];
-        int count = 0, previous = -1, previousCodePoint = -1;
-        float x = 0, y = 0, lastAdvance = 0;
-        for (int i = 0; i < text.Length; i++)
+        ShapingOptions o = options ?? ShapingOptions.Default;
+        if (o.Fallback.Families.Count > 0 || o.Fallback.Resolver is not null)
         {
-            int start = i;
-            int cp = Typeface.ReadCodePoint(text, ref i);
-            if (cp is '\n' or '\r')
-            {
-                if (cp == '\r' && i + 1 < text.Length && text[i + 1] == '\n')
-                {
-                    i++;
-                }
-
-                x = 0;
-                y += lineHeight;
-                previous = -1;
-                previousCodePoint = -1;
-                continue;
-            }
-
-            if (cp < 0x20 || cp is >= 0x7F and <= 0x9F)
-            {
-                previous = -1;
-                previousCodePoint = -1;
-                continue;
-            }
-
-            if (Typeface.IsVariationSelector(cp) && previousCodePoint >= 0)
-            {
-                ushort varied = face.GetGlyph(previousCodePoint, cp);
-                x -= lastAdvance;
-                lastAdvance = face.GetAdvance(varied) * scale;
-                x += lastAdvance;
-                glyphs[count - 1] = varied;
-                previous = varied;
-                previousCodePoint = -1;
-                continue;
-            }
-
-            ushort glyph = face.GetGlyph(cp);
-            if (kern && previous >= 0)
-            {
-                x += face.GetKerning((ushort)previous, glyph) * scale;
-            }
-
-            glyphs[count] = glyph;
-            positions[count] = new Vector2(x, y);
-            clusters[count] = start;
-            count++;
-            lastAdvance = face.GetAdvance(glyph) * scale;
-            x += lastAdvance;
-            previous = glyph;
-            previousCodePoint = cp;
+            throw new ArgumentException("A glyph run has one font; shape text with fallback through TextShaper.Shape.", nameof(options));
         }
 
-        return new GlyphRun(this, glyphs.AsSpan(0, count).ToArray(), positions.AsSpan(0, count).ToArray(), text, clusters.AsSpan(0, count).ToArray());
+        Font self = this;
+        if (o.Spans is { } spans && spans.Any(s => s.Font is Font f && f != self))
+        {
+            throw new ArgumentException("A glyph run has one font; shape spans in other fonts through TextShaper.Shape.", nameof(options));
+        }
+
+        ShapedText shaped = TextShaper.Shape(text, this, o);
+        bool vertical = o.Direction == TextDirection.TopToBottom;
+        float lineHeight = LineHeight;
+        List<ushort> glyphs = new(text.Length);
+        List<Vector2> positions = new(text.Length);
+        List<int> clusters = new(text.Length);
+        List<float> advances = new(text.Length);
+        Script? script = null;
+        bool oneScript = true;
+        for (int l = 0; l < shaped.Lines.Count; l++)
+        {
+            float x = vertical ? -l * lineHeight : 0, y = vertical ? 0 : l * lineHeight;
+            foreach (ShapedRun run in shaped.Lines[l].Runs)
+            {
+                oneScript &= script is null || script == run.Script;
+                script ??= run.Script;
+                ReadOnlySpan<GlyphPosition> p = run.Glyphs.Positions;
+                for (int i = 0; i < p.Length; i++)
+                {
+                    glyphs.Add(run.Glyphs.GlyphIds[i]);
+                    positions.Add(new Vector2(x + p[i].XOffset, y - p[i].YOffset));
+                    clusters.Add(run.Glyphs.Clusters[i]);
+                    advances.Add(p[i].XAdvance);
+                    x += p[i].XAdvance;
+                    y -= p[i].YAdvance;
+                }
+            }
+        }
+
+        return new GlyphRun(this, [.. glyphs], [.. positions], text, [.. clusters], null, [.. advances])
+        {
+            BidiLevel = shaped.ParagraphLevel,
+            Script = oneScript && script is Script s ? s : Script.Common,
+            Language = o.Language,
+        };
     }
 
     /// <summary>
-    /// Measures text as <see cref="Shape(string)"/> lays it out, so a measured width always equals the drawn advance.
+    /// Measures text as <see cref="Shape(string, ShapingOptions?)"/> lays it out, so a measured width always equals the drawn advance.
     /// </summary>
     /// <param name="text">The text.</param>
+    /// <param name="options">The shaping options, as for <see cref="Shape(string, ShapingOptions?)"/>.</param>
     /// <returns>The widest line's advance, the exact ink bounds, the line count and the vertical metrics.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="text"/> is null.</exception>
-    public TextMeasure MeasureText(string text)
+    /// <exception cref="ArgumentException"><paramref name="options"/> asks for fallback or a span in another font.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="measure"/>
+    /// </example>
+    public TextMeasure MeasureText(string text, ShapingOptions? options = null)
     {
-        GlyphRun run = Shape(text);
+        GlyphRun run = Shape(text, options);
         FontExtents extents = Extents;
         int lines = 1;
-        foreach (char c in text)
-        {
-            if (c == '\n')
-            {
-                lines++;
-            }
-        }
-
-        // \r alone ends a line too; \r\n counted once by its \n.
         for (int i = 0; i < text.Length; i++)
         {
-            if (text[i] == '\r' && (i + 1 >= text.Length || text[i + 1] != '\n'))
+            switch (text[i])
             {
-                lines++;
+                case '\r' when i + 1 < text.Length && text[i + 1] == '\n':
+                    break;
+                case '\r' or '\n' or '\u0085' or '\u2028' or '\u2029':
+                    lines++;
+                    break;
             }
         }
 

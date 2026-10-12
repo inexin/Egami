@@ -16,4 +16,9 @@
     <PackageReference Include="SharpFuzz" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The bidi target's one font: Noto Sans Arabic (OFL) cut to its Latin and Arabic glyphs with their layout closure. -->
+    <EmbeddedResource Include="NotoSansArabic-subset.ttf" LogicalName="NotoSansArabic-subset.ttf" />
+  </ItemGroup>
+
 </Project>

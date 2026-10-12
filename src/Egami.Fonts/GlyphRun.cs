@@ -16,9 +16,10 @@ public sealed class GlyphRun
     private readonly Vector2[] _positions;
     private readonly GlyphTransform[]? _transforms;
     private readonly int[]? _clusters;
+    private readonly float[]? _advances;
     private TextBounds? _bounds;
 
-    internal GlyphRun(Font font, ushort[] glyphs, Vector2[] positions, string? text, int[]? clusters, GlyphTransform[]? transforms = null)
+    internal GlyphRun(Font font, ushort[] glyphs, Vector2[] positions, string? text, int[]? clusters, GlyphTransform[]? transforms = null, float[]? advances = null)
     {
         Font = font;
         _glyphs = glyphs;
@@ -26,7 +27,17 @@ public sealed class GlyphRun
         Text = text;
         _clusters = clusters;
         _transforms = transforms;
+        _advances = advances;
     }
+
+    /// <summary>Gets the bidi embedding level the run was shaped at: odd for right to left, 0 for a run not built by the shaper.</summary>
+    public int BidiLevel { get; internal init; }
+
+    /// <summary>Gets the script the run was shaped as, or <see cref="Unicode.Script.Common"/> when it is not one script.</summary>
+    public Unicode.Script Script { get; internal init; } = Unicode.Script.Common;
+
+    /// <summary>Gets the BCP 47 language tag the run was shaped with, or <see langword="null"/>.</summary>
+    public string? Language { get; internal init; }
 
     /// <summary>Gets the font every glyph is drawn in.</summary>
     public Font Font { get; }
@@ -63,7 +74,9 @@ public sealed class GlyphRun
             float widest = 0;
             for (int i = 0; i < _glyphs.Length; i++)
             {
-                widest = MathF.Max(widest, _positions[i].X + Font.GetAdvance(_glyphs[i]));
+                // A shaped glyph carries its own advance (kerning, marks of zero width); a glyph alone the font's.
+                float advance = _advances is null ? Font.GetAdvance(_glyphs[i]) : _advances[i];
+                widest = MathF.Max(widest, _positions[i].X + advance);
             }
 
             return widest;
@@ -265,7 +278,7 @@ public readonly record struct TextBounds(float Left, float Top, float Right, flo
     public TextBounds Offset(Vector2 offset) => new(Left + offset.X, Top + offset.Y, Right + offset.X, Bottom + offset.Y);
 }
 
-/// <summary>The size of text as <see cref="Font.MeasureText(string)"/> lays it out, in canvas units.</summary>
+/// <summary>The size of text as <see cref="Font.MeasureText(string, Shaping.ShapingOptions?)"/> lays it out, in canvas units.</summary>
 /// <param name="Advance">The widest line's advance: where the pen ends on that line.</param>
 /// <param name="InkBounds">The exact box around the ink, relative to the first baseline's left end, y down.</param>
 /// <param name="LineCount">The number of lines.</param>

@@ -30,7 +30,7 @@ public static partial class FontExtensions
         return Synthesize(builder.ToPath(), font);
     }
 
-    /// <summary>Gets the outline of a line of text as <see cref="Canvas.DrawText(string, Vector2, Font, Paint)"/> lays it out.</summary>
+    /// <summary>Gets the outline of a line of text as <see cref="Canvas.DrawText(string, Vector2, Font, Paint, Fonts.Shaping.ShapingOptions?)"/> lays it out.</summary>
     /// <param name="font">The font.</param>
     /// <param name="text">The text.</param>
     /// <param name="origin">The left end of the first baseline.</param>

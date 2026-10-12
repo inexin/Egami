@@ -29,7 +29,7 @@ internal sealed class ShapeFont
     private readonly float _yMultF;
     private VerticalTables? _vertical;
     private float[]? _vvarScalars;
-    private (int Ascender, int Descender)? _hExtents;
+    private Tuple<int, int>? _hExtents; // A reference, so a face shared between threads never sees half a pair.
 
     public ShapeFont(Typeface face, int scale = 0)
     {
@@ -233,9 +233,9 @@ internal sealed class ShapeFont
     /// </summary>
     public (int Ascender, int Descender) GetHExtents()
     {
-        if (_hExtents is { } known)
+        if (Volatile.Read(ref _hExtents) is { } known)
         {
-            return known;
+            return (known.Item1, known.Item2);
         }
 
         VariationInstance? instance = _face.Instance;
@@ -267,7 +267,7 @@ internal sealed class ShapeFont
             result = (fallback, fallback - YScale);
         }
 
-        _hExtents = result;
+        Volatile.Write(ref _hExtents, Tuple.Create(result.Item1, result.Item2));
         return result;
     }
 

@@ -12,6 +12,30 @@ internal sealed class LayoutLookup
         SubtableTypes = subtableTypes;
         Subtables = subtables;
         Coverage = coverage;
+        if (coverage is not null)
+        {
+            int max = coverage.Count == 0 ? 0 : coverage.Max();
+            _bits = new ulong[(max >> 6) + 1];
+            foreach (int glyph in coverage)
+            {
+                _bits[glyph >> 6] |= 1UL << glyph;
+            }
+        }
+    }
+
+    private readonly ulong[]? _bits;
+
+    /// <summary>Whether a glyph is in <see cref="Coverage"/> (any glyph when the lookup may start anywhere), from a bit set.</summary>
+    public bool Covers(uint glyph)
+    {
+        ulong[]? bits = _bits;
+        if (bits is null)
+        {
+            return true;
+        }
+
+        uint word = glyph >> 6;
+        return word < (uint)bits.Length && (bits[word] & (1UL << (int)glyph)) != 0;
     }
 
     /// <summary>Gets the lookup type, or the type its extension subtables wrap.</summary>

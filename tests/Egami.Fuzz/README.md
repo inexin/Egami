@@ -27,6 +27,8 @@ Targets:
 | `cff2` | Variable CFF2 fonts, as `gvar` (blend and vsindex in the charstrings) | `tests/images/fuzz/cff2-seeds/*` |
 | `colr` | Color fonts: palettes, every glyph's COLR, sbix, CBDT and SVG data read, and the first color glyphs drawn upright and turned, at two positions | `tests/images/fuzz/colr-seeds/*` |
 | `instance` | Variable fonts subsetted at positions the bytes pick: the static instance must re-load as a static font and read as `font` does | `tests/images/fuzz/instance-seeds/*` |
+| `shaping` | Fonts that load shape texts in ten scripts (Latin ligatures and marks, Arabic, Devanagari, Khmer, Myanmar, Thai, Tibetan, Hangul, emoji, mixed bidi) run by run and through `TextShaper.Shape`, with features, directions and cluster levels the bytes pick, and the GSUB closure of each text's glyphs is taken; nothing may throw and every cluster must stay in its run | `tests/images/fuzz/shaping-seeds/*` |
+| `bidi` | The bytes as UTF-16 text: resolved in every direction, reordered over line cuts the bytes pick (runs must cover each line exactly), split into graphemes and words (which must tile the text) and shaped with an embedded Arabic font | `tests/images/fuzz/bidi-seeds/*` |
 
 ## Running locally (Linux or WSL)
 

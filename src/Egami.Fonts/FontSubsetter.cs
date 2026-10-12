@@ -1,3 +1,4 @@
+using Egami.Fonts.Shaping;
 using Egami.Fonts.Subsetting;
 
 namespace Egami.Fonts;
@@ -55,6 +56,22 @@ public sealed record SubsetOptions
     /// variation tables left out, so PDF viewers draw the position rather than the default instance.
     /// </summary>
     public IReadOnlyList<FontVariation>? Variations { get; init; }
+
+    /// <summary>
+    /// Gets whether the subset can be shaped again as the full face would be: the kept glyphs gain every glyph GSUB can substitute
+    /// for them (<see cref="OpenTypeLayout.GetClosure"/> with <see cref="OpenTypeLayout.DefaultClosureFeatures"/>), and GSUB, GPOS
+    /// and GDEF are copied unchanged. Copied layout tables hold the old glyph ids, so this needs <see cref="RetainGlyphIds"/> and
+    /// sfnt output. Defaults to false, as a PDF needs only the glyphs drawn. To follow other features, pass the glyphs of
+    /// <see cref="OpenTypeLayout.GetClosure"/> with them, and keep the three tables with <see cref="KeepTables"/>.
+    /// </summary>
+    /// <remarks>
+    /// The tables of a variable face are copied with their variation data, so in the static subset GPOS positions and feature
+    /// variations are those of the default instance, whatever <see cref="Variations"/> says.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-layout"/>
+    /// </example>
+    public bool LayoutClosure { get; init; }
 }
 
 /// <summary>A font holding only some glyphs of another, from <see cref="FontSubsetter"/>.</summary>
@@ -110,7 +127,10 @@ public static class FontSubsetter
     /// <param name="options">How to write it, or <see langword="null"/> for <see cref="SubsetOptions.Default"/>.</param>
     /// <returns>The subset with its glyph map.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A glyph id is past the face's glyph count.</exception>
-    /// <exception cref="ArgumentException">The format needs outlines of the other kind, such as CFF output from a TrueType face.</exception>
+    /// <exception cref="ArgumentException">
+    /// The format needs outlines of the other kind, such as CFF output from a TrueType face; or <see cref="SubsetOptions.LayoutClosure"/>
+    /// is set without <see cref="SubsetOptions.RetainGlyphIds"/> or with bare CFF output.
+    /// </exception>
     /// <exception cref="CorruptDataException">A kept glyph's data cannot be read.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
@@ -146,6 +166,16 @@ public static class FontSubsetter
             throw new ArgumentException("A bare CFF face has no sfnt tables to write OpenType output from; use BareCff.", nameof(options));
         }
 
+        if (options.LayoutClosure && !options.RetainGlyphIds)
+        {
+            throw new ArgumentException("LayoutClosure copies the layout tables unchanged, so it needs RetainGlyphIds.", nameof(options));
+        }
+
+        if (options.LayoutClosure && format == SubsetFormat.BareCff)
+        {
+            throw new ArgumentException("LayoutClosure needs sfnt output to hold the layout tables; bare CFF has none.", nameof(options));
+        }
+
         var wanted = new SortedSet<ushort> { 0 };
         foreach (ushort glyph in glyphs)
         {
@@ -155,6 +185,11 @@ public static class FontSubsetter
             }
 
             wanted.Add(glyph);
+        }
+
+        if (options.LayoutClosure)
+        {
+            wanted.UnionWith(face.Layout.GetClosure(wanted));
         }
 
         return format == SubsetFormat.TrueType

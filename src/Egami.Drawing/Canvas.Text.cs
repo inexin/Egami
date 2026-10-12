@@ -1,25 +1,31 @@
 using System.Numerics;
 
 using Egami.Fonts;
+using Egami.Fonts.Shaping;
 
 namespace Egami.Drawing;
 
 public abstract partial class Canvas
 {
     /// <summary>
-    /// Draws a line of text: <see cref="Font.Shape(string)"/> turns it into glyphs (character map, pair kerning, newlines), then
-    /// <see cref="DrawGlyphRun(GlyphRun, Vector2, Paint)"/> draws them. There is no wrapping, alignment or font fallback; a
-    /// character the face lacks draws as its .notdef glyph.
+    /// Draws text: <see cref="Font.Shape(string, ShapingOptions?)"/> shapes it (ligatures, kerning, marks, the script rules, bidi
+    /// order, one line per hard break), then <see cref="DrawGlyphRun(GlyphRun, Vector2, Paint)"/> draws the run. With fallback or
+    /// span fonts in <paramref name="options"/>, the text is shaped by <see cref="TextShaper.Shape(string, Font, ShapingOptions?)"/>
+    /// and drawn as <see cref="DrawShapedText(ShapedText, Vector2, Paint)"/> draws it. Nothing wraps; without fallback a character
+    /// the face lacks draws as its .notdef glyph.
     /// </summary>
     /// <param name="text">The text; empty text draws nothing.</param>
-    /// <param name="origin">The left end of the first line's alphabetic baseline, in local coordinates.</param>
+    /// <param name="origin">The left end of the first line's alphabetic baseline, in local coordinates (for a vertical line, the
+    /// first glyph's vertical origin).</param>
     /// <param name="font">The face and size, the size in local units per em.</param>
     /// <param name="paint">The paint.</param>
+    /// <param name="options">The direction, language, script, features, fallback and spans, or <see langword="null"/> for
+    /// <see cref="ShapingOptions.Default"/>.</param>
     /// <exception cref="ArgumentException"><paramref name="font"/> has no typeface, or <paramref name="origin"/> is not finite.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="caption"/>
     /// </example>
-    public void DrawText(string text, Vector2 origin, Font font, Paint paint)
+    public void DrawText(string text, Vector2 origin, Font font, Paint paint, ShapingOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(text);
         CheckFont(font);
@@ -30,10 +36,59 @@ public abstract partial class Canvas
             return;
         }
 
-        GlyphRun run = font.Shape(text);
+        ShapingOptions o = options ?? ShapingOptions.Default;
+        if (o.Fallback.Families.Count > 0 || o.Fallback.Resolver is not null || (o.Spans?.Any(s => s.Font is not null) ?? false))
+        {
+            DrawShaped(TextShaper.Shape(text, font, o), origin, paint);
+            return;
+        }
+
+        GlyphRun run = font.Shape(text, o);
         if (run.Count > 0)
         {
             OnDrawGlyphRun(run, origin, paint);
+        }
+    }
+
+    /// <summary>
+    /// Draws text shaped once by <see cref="TextShaper.Shape(string, Font, ShapingOptions?)"/>, so it can be measured, kept and drawn
+    /// again without shaping it twice: each line one line height below the one before (a vertical line one line height to the
+    /// left), its runs from left to right, each run a <see cref="GlyphRun"/> in its own font.
+    /// </summary>
+    /// <param name="text">The shaped text.</param>
+    /// <param name="origin">The left end of the first line's alphabetic baseline, in local coordinates.</param>
+    /// <param name="paint">The paint.</param>
+    /// <exception cref="ArgumentException"><paramref name="origin"/> is not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="shaped"/>
+    /// </example>
+    public void DrawShapedText(ShapedText text, Vector2 origin, Paint paint)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        Check(paint);
+        FinitePoint(origin, nameof(origin));
+        DrawShaped(text, origin, paint);
+    }
+
+    private void DrawShaped(ShapedText text, Vector2 origin, Paint paint)
+    {
+        Vector2 line = origin;
+        foreach (ShapedLine shapedLine in text.Lines)
+        {
+            Vector2 pen = line;
+            foreach (ShapedRun run in shapedLine.Runs)
+            {
+                GlyphRun glyphs = run.ToGlyphRun(Vector2.Zero, text.Text);
+                if (glyphs.Count > 0)
+                {
+                    OnDrawGlyphRun(glyphs, pen, paint);
+                }
+
+                pen += run.IsVertical ? new Vector2(0, run.Advance) : new Vector2(run.Advance, 0);
+            }
+
+            bool vertical = shapedLine.Runs.Count > 0 && shapedLine.Runs[0].IsVertical;
+            line += vertical ? new Vector2(-shapedLine.LineHeight, 0) : new Vector2(0, shapedLine.LineHeight);
         }
     }
 
@@ -69,7 +124,7 @@ public abstract partial class Canvas
         }
     }
 
-    /// <summary>Draws positioned glyphs, such as a run from <see cref="Font.Shape(string)"/> or a layout engine.</summary>
+    /// <summary>Draws positioned glyphs, such as a run from <see cref="Font.Shape(string, ShapingOptions?)"/> or a layout engine.</summary>
     /// <param name="run">The glyphs.</param>
     /// <param name="origin">Where the run's origin goes, in local coordinates.</param>
     /// <param name="paint">The paint.</param>

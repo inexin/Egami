@@ -66,7 +66,8 @@ public static class TextShaper
     /// <summary>
     /// Shapes text: splits it into lines at hard breaks, resolves each line's bidi levels, splits it into runs of one level, script,
     /// span and font (falling back per grapheme cluster as <see cref="ShapingOptions.Fallback"/> says), shapes each run as
-    /// <see cref="ShapeRun"/> does and orders the runs for display. Nothing wraps.
+    /// <see cref="ShapeRun"/> does and orders the runs for display. Control characters other than the breaks (a tab, for one) give
+    /// no glyph. Nothing wraps.
     /// </summary>
     /// <param name="text">The text.</param>
     /// <param name="font">The font and size.</param>

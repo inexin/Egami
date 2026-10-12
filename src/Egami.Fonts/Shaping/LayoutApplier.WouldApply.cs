@@ -20,7 +20,7 @@ internal sealed partial class LayoutApplier
         }
 
         // The lookup's coverage stands in for HarfBuzz's accelerator digest.
-        if (lookup.Coverage is { } coverage && !coverage.Contains((int)glyphs[0]))
+        if (!lookup.Covers(glyphs[0]))
         {
             return false;
         }
