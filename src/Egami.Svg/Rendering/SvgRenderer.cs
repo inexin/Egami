@@ -92,6 +92,50 @@ internal static class SvgRenderer
             case SvgImage image:
                 DrawImage(canvas, image, options, depth);
                 break;
+            case SvgTextRun text:
+                DrawText(canvas, text, options);
+                break;
+        }
+    }
+
+    /// <summary>A glyph run: filled with DrawGlyphRun (or as outlines for TextAsPaths), stroked as outlines, in paint order.</summary>
+    private static void DrawText(Canvas canvas, SvgTextRun node, SvgRenderOptions options)
+    {
+        Path? outlines = null;
+        Path Outlines() => outlines ??= node.Run.ToPath(Vector2.Zero);
+        void FillRun()
+        {
+            if (node.Fill is Paint fill)
+            {
+                Paint paint = node.Antialias ? fill : fill with { Antialias = false };
+                if (options.TextAsPaths)
+                {
+                    canvas.FillPath(Outlines(), paint);
+                }
+                else
+                {
+                    canvas.DrawGlyphRun(node.Run, Vector2.Zero, paint);
+                }
+            }
+        }
+
+        void StrokeRun()
+        {
+            if (node.StrokePaint is Paint paint && node.Stroke is Stroke stroke)
+            {
+                canvas.StrokePath(Outlines(), stroke, node.Antialias ? paint : paint with { Antialias = false });
+            }
+        }
+
+        if (node.PaintOrder is SvgPaintOrder.StrokeFillMarkers or SvgPaintOrder.StrokeMarkersFill or SvgPaintOrder.MarkersStrokeFill)
+        {
+            StrokeRun();
+            FillRun();
+        }
+        else
+        {
+            FillRun();
+            StrokeRun();
         }
     }
 

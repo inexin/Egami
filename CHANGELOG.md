@@ -272,14 +272,18 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
 - Drawing follows resvg where SVG leaves a choice: shapes, fills, strokes, paint-order, markers, nested svg, use and symbol,
   linear and radial gradients, patterns, Inkscape's mesh gradients, clip paths, masks, opacity, blend modes, raster and SVG
   images and switch. `Rasterize` draws into a new raster at the document's size, a scale or a target size; `Draw` draws on any
-  Egami.Drawing canvas, the whole document or one element by id; `RenderTree` exposes the resolved `SvgNode` tree. Text is not
-  drawn yet.
+  Egami.Drawing canvas, the whole document or one element by id; `RenderTree` exposes the resolved `SvgNode` tree.
+- Text: x, y, dx, dy and rotate lists, tspan, tref and textPath, text-anchor, the baseline properties, letter-spacing,
+  word-spacing, textLength and lengthAdjust, decorations, vertical writing and font variations, laid out as resvg lays text
+  out and drawn as `SvgTextRun` glyph runs (`SvgRenderOptions.TextAsPaths` draws outlines). `SvgLoadOptions.Fonts`
+  (`SvgFontOptions`) gives the fonts: the caller's collection, then the machine's unless turned off.
 - Filters: every SVG 1.1 primitive, feDropShadow and the CSS filter functions, in linearRGB or sRGB, run in a raster lined up
   with the device pixels (`SvgRenderOptions.FilterScale` sets its resolution on vector canvases). feGaussianBlur is SVG's three
   box blurs on premultiplied colors; feConvolveMatrix and the lighting primitives follow the specification's kernels.
 - Gates: on resvg's own test suite, 94 to 100% of the shapes, painting, structure, paint-server and masking tests match resvg's
   reference renders (at most 0.5% of pixels differ, allowing a one-pixel shift; deviations are listed with reasons in
-  egami-compare), and 99% of the filter tests; 196 of the 200 corpus files
+  egami-compare), 99% of the filter tests and 98.7% of the text tests (78% of the text tests are also close to
+  Chromium's renders); 196 of the 200 corpus files
   match resvg's CLI. Seven of eight mesh samples match Inkscape's export.
 - Speed, one thread, on 200 real files: loading and drawing them takes 0.87 s, against 2.1 s for Svg.Skia, 3.1 s for the resvg
   CLI (which also writes PNG; Egami does that in 1.4 s) and 0.69 s for resvg's library.

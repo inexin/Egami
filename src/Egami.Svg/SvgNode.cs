@@ -141,6 +141,42 @@ public sealed record class SvgPath : SvgNode
     public bool Antialias { get; init; } = true;
 }
 
+/// <summary>
+/// Text: one run of positioned glyphs in one font with one fill and stroke, drawn with <see cref="Canvas.DrawGlyphRun"/> so a
+/// PDF or SVG canvas keeps real text. A text element becomes a group of these and of the paths of its decorations.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="render-tree"/>
+/// </example>
+public sealed record class SvgTextRun : SvgNode
+{
+    /// <summary>Initializes a new instance of the <see cref="SvgTextRun"/> class.</summary>
+    /// <param name="run">The glyphs, positioned in this node's coordinates.</param>
+    public SvgTextRun(Fonts.GlyphRun run)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+        Run = run;
+    }
+
+    /// <summary>Gets the glyphs, positioned (and turned, for rotate or textPath) in this node's coordinates.</summary>
+    public Fonts.GlyphRun Run { get; init; }
+
+    /// <summary>Gets the fill, with fill-opacity applied, or <see langword="null"/> for none.</summary>
+    public Paint? Fill { get; init; }
+
+    /// <summary>Gets the stroke paint, with stroke-opacity applied, or <see langword="null"/> for none.</summary>
+    public Paint? StrokePaint { get; init; }
+
+    /// <summary>Gets the stroke geometry, or <see langword="null"/> when there is no stroke.</summary>
+    public Stroke? Stroke { get; init; }
+
+    /// <summary>Gets the order the fill and stroke are painted in.</summary>
+    public SvgPaintOrder PaintOrder { get; init; }
+
+    /// <summary>Gets a value indicating whether glyph edges are antialiased (<c>text-rendering</c> other than optimizeSpeed).</summary>
+    public bool Antialias { get; init; } = true;
+}
+
 /// <summary>An image: a raster drawn into a rectangle, or another SVG document drawn as a group.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="render-tree"/>

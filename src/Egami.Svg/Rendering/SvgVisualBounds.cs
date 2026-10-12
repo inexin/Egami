@@ -76,6 +76,23 @@ internal static class SvgVisualBounds
                 return group.ClipRect is RectF clip ? Intersect(bounds, clip) : bounds;
             }
 
+            case SvgTextRun text:
+            {
+                RectF bounds = text.Bounds;
+                if (text.Stroke is Stroke stroke && text.StrokePaint is not null)
+                {
+                    if (!(stroke.Width > 0))
+                    {
+                        return null;
+                    }
+
+                    float reach = stroke.Width / 2 * Math.Max(stroke.Join == LineJoin.Miter ? Math.Max(stroke.MiterLimit, 1) : 1, MathF.Sqrt(2));
+                    bounds = bounds.Inflate(reach, reach);
+                }
+
+                return bounds;
+            }
+
             case SvgImage image:
                 return image.ClipRect is RectF c ? Intersect(image.Destination, c) : image.Destination;
             default:

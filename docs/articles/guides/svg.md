@@ -63,6 +63,20 @@ draft): each patch is a Coons patch with a color at each corner, blended bilinea
 across patches. Outside its patches a mesh paints nothing. A mesh that names another with `href` takes its rows and keeps
 its own x and y, as Inkscape reads it.
 
+## Text
+
+Text is laid out when the document is read: characters are placed by the x, y, dx, dy and rotate lists, shaped in their
+fonts (bidi, ligatures, kerning, fallback for characters a font lacks), spaced by letter-spacing, word-spacing and
+textLength, anchored, put on a textPath or set vertically, and shifted to their baselines, as resvg lays text out. Each run
+of glyphs becomes an `SvgTextRun` drawn with `DrawGlyphRun`, so a PDF page or an SVG canvas keeps real text;
+`SvgRenderOptions.TextAsPaths` draws the outlines instead, for a plotter or a cutter.
+
+Fonts come from `SvgFontOptions`: the caller's collection first, then the fonts installed on the machine unless
+`UseSystemFonts` is off, then the serif family. A server that renders files it did not write should pass its own fonts and
+turn system fonts off, so the output does not depend on the machine.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#fonts)]
+
 ## The render tree
 
 Drawing works from the render tree, `SvgDocument.RenderTree`: the elements with their styles applied, units in pixels, `use`

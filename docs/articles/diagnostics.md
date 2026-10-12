@@ -215,6 +215,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Svg.BadStyle` | Warning | A property's value cannot be used where it is applied; the inherited or initial value is used (Egami.Svg) |
 | `Svg.BadStyleSheet` | Warning | A style sheet or style attribute has a CSS syntax error; the declaration or rule is dropped and the rest applies, as CSS says (Egami.Svg) |
 | `Svg.DefaultSize` | Warning | The root has no width, height or viewBox to size it; it is drawn at 100 by 100 pixels, as resvg does (Egami.Svg) |
+| `Svg.FontNotFound` | Warning | A font-family names a family no font has, or no font is available at all; the next family, the serif family or no text is drawn (Egami.Svg) |
 | `Svg.ImageNotLoaded` | Warning | An image was not loaded: no resolver allows its URI, the resolver refused it, or it cannot be decoded; it draws nothing (Egami.Svg) |
 | `Svg.NoNamespace` | Warning | The root svg element has no namespace; its elements are read as SVG anyway (Egami.Svg) |
 | `Svg.Unsupported` | Warning | An element Egami.Svg does not draw (foreignObject, and text until stage C); it is skipped (Egami.Svg) |

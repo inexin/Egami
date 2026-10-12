@@ -150,7 +150,7 @@ internal static class SvgProperties
         "paint-order", "pointer-events", "shape-rendering", "stop-color", "stop-opacity", "stroke", "stroke-dasharray",
         "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke-width", "text-anchor",
         "text-decoration", "text-overflow", "text-rendering", "transform-origin", "unicode-bidi", "vector-effect", "visibility",
-        "white-space", "word-spacing", "writing-mode", "clip", "enable-background", "font-kerning", "font-feature-settings",
+        "white-space", "word-spacing", "writing-mode", "clip", "enable-background",
         "inline-size", "shape-inside", "shape-subtract", "shape-padding", "shape-margin", "text-orientation",
     };
 

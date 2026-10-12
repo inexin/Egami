@@ -44,6 +44,9 @@ public sealed record class SvgLoadOptions
     /// </summary>
     public EgamiContext? Context { get; init; }
 
+    /// <summary>Gets where text finds its fonts; <see cref="SvgFontOptions.Default"/> uses the installed fonts.</summary>
+    public SvgFontOptions Fonts { get; init; } = SvgFontOptions.Default;
+
     /// <summary>Gets how deep in SVG images this document is (0 for one loaded by the caller).</summary>
     internal int ImageDepth { get; init; }
 

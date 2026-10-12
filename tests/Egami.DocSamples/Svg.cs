@@ -270,4 +270,24 @@ public class Svg
         #endregion
         Assert.Equal(96, strip.Width);
     }
+
+    [Fact]
+    public void TextWithItsOwnFonts()
+    {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        #region fonts
+        // A server passes its own fonts and turns the machine's off, so text renders the same everywhere.
+        Egami.Fonts.FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSans-Regular.ttf"));
+        SvgLoadOptions options = new()
+        {
+            Fonts = new SvgFontOptions { Collection = fonts, UseSystemFonts = false, DefaultFamily = "Noto Sans" },
+        };
+        SvgDocument label = SvgDocument.Parse(
+            "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'><text x='60' y='26' text-anchor='middle'>Label</text></svg>",
+            options);
+        using Raster<Rgba8> raster = label.Rasterize<Rgba8>(new SvgRenderOptions { TextAsPaths = false });
+        #endregion
+        Assert.Empty(label.Warnings);
+    }
 }

@@ -277,7 +277,9 @@ libultrahdr is distributed under the Apache License, Version 2.0 (https://www.ap
 Egami.Svg is written from the SVG 1.1 and SVG 2 specifications, with resvg (linebender/resvg 0.48.1) as its model, as
 Phase 2.10's question 22 allows: where SVG leaves a rule open, Egami.Svg follows resvg's usvg crate, and some of its code is
 translated from it closely: marker vertices and their angles (`src/Egami.Svg/Resolving/SvgMarkerVertices.cs`, from
-`usvg/src/parser/marker.rs`). resvg is distributed under the Apache License 2.0 or the MIT license, at the user's option;
+`usvg/src/parser/marker.rs`), and text layout: white space processing, character positions, chunks, clusters, spacing,
+anchors, baselines, decorations and text on a path (`src/Egami.Svg/Text`, from `usvg/src/parser/svgtree/text.rs`,
+`usvg/src/parser/text.rs` and `usvg/src/text/layout.rs`). resvg is distributed under the Apache License 2.0 or the MIT license, at the user's option;
 Egami uses it under the MIT license:
 
     Copyright 2017 the Resvg Authors
