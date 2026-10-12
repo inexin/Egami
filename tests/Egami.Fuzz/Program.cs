@@ -33,7 +33,10 @@ using DrawingPath = Egami.Drawing.Path;
 // measuring, dashing, stroke outlines and the boolean engine.
 // The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
 // best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
-// as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly.
+// as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
+// (Phase 2.3.3) loads PSD and PSB files every way (whole, as other pixel types, from a stream that cannot seek, rows, regions,
+// reductions), which must agree; psddata puts its input behind a small header its first bytes choose (mode, depth, compression,
+// PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -132,7 +135,9 @@ static Action<Stream> Target(string name) => name switch
     "svgpath" => ParseSvgPath,
     "ico" => LoadIco,
     "icoentry" => LoadIcoEntry,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry."),
+    "psdfile" => LoadPsd,
+    "psddata" => LoadPsdData,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry, psdfile, psddata."),
 };
 
 static EgamiContext Context()
@@ -1251,6 +1256,93 @@ static void LoadIcoEntry(Stream stream)
     System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(18), 22);
     entry.CopyTo(data, 22);
     IcoEvery(data);
+}
+
+// Phase 2.3.3: PSD and PSB loaded every way; a seekable and a forward-only load must give the same pixels.
+static void LoadPsd(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery, Format = null };
+        try
+        {
+            RasterInfo info = Raster.Probe(data, Egami.Formats.Psd.PsdFormat.Info, context, options);
+            using Raster raster = Raster.Load(data, Egami.Formats.Psd.PsdFormat.Info, context, options);
+            using Raster<Rgba16> wide = Raster.Load<Rgba16>(data, Egami.Formats.Psd.PsdFormat.Info, context, options);
+            using Raster<Rgba16> forward = Raster.Load<Rgba16>(new ForwardOnlyStream(data), Egami.Formats.Psd.PsdFormat.Info, context, options);
+            if (info.Width != raster.Width || info.Height != raster.Height || info.Layout != raster.Layout)
+            {
+                throw new InvalidOperationException("Probe and Load disagree.");
+            }
+
+            for (int y = 0; y < wide.Height; y++)
+            {
+                if (!wide.Row(y).SequenceEqual(forward.Row(y)))
+                {
+                    throw new InvalidOperationException($"Row {y} differs between a seekable and a forward-only load.");
+                }
+            }
+
+            Rect region = new(info.Width / 3, info.Height / 4, Math.Max(1, info.Width / 2), Math.Max(1, info.Height / 2));
+            using Raster<Rgba8> cropped = Raster.Load<Rgba8>(data, Egami.Formats.Psd.PsdFormat.Info, context, options with { Region = region, MinimumSize = new Size(Math.Max(1, info.Width / 7), 1) });
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+// Phase 2.3.3: the input as a PSD's flattened image data behind a header its first four bytes choose.
+static void LoadPsdData(Stream stream)
+{
+    byte[] input = ReadAll(stream);
+    if (input.Length < 4)
+    {
+        return;
+    }
+
+    (int mode, int depth, int colors) = (input[0] % 6) switch
+    {
+        0 => (1, 8, 1),
+        1 => (1, 16, 1),
+        2 => (3, 8, 3),
+        3 => (3, 16, 3),
+        4 => (3, 32, 3),
+        _ => (4, 8, 4),
+    };
+    int channels = colors + (input[1] & 1);
+    int version = 1 + ((input[1] >> 1) & 1);
+    int width = 1 + (input[2] % 40);
+    int height = 1 + (input[3] % 40);
+    using MemoryStream file = new();
+    file.Write("8BPS"u8);
+    Span<byte> b = stackalloc byte[22];
+    b.Clear();
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16BigEndian(b, (ushort)version);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16BigEndian(b[8..], (ushort)channels);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(b[10..], (uint)height);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(b[14..], (uint)width);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16BigEndian(b[18..], (ushort)depth);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16BigEndian(b[20..], (ushort)mode);
+    file.Write(b);
+    file.Write(new byte[8]);
+    if (channels > colors)
+    {
+        // A layer section with a count of -1 and no records: its sign makes the extra channel the transparency.
+        byte[] section = version == 1
+            ? [0, 0, 0, 10, 0, 0, 0, 2, 0xFF, 0xFF, 0, 0, 0, 0]
+            : [0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 2, 0xFF, 0xFF, 0, 0, 0, 0];
+        file.Write(section);
+    }
+    else
+    {
+        file.Write(new byte[version == 1 ? 4 : 8]);
+    }
+
+    file.Write(input.AsSpan(4));
+    LoadPsd(new MemoryStream(file.ToArray()));
 }
 
 // Phase 2.3.4: JPEG 2000's tier 1 fed directly. The first eight bytes pick the code-block's size, its band's orientation, its

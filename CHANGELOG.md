@@ -7,6 +7,34 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### ICO and CUR
+
+- `IcoFormat` and `CurFormat` read and write Windows icons and cursors. Entries are PNG files, decoded by Egami's PNG reader, or
+  BMPs at 1 to 32 bits with palettes, bit fields and the AND mask, decoded by its BMP reader; a 32-bit entry whose alpha is 0
+  everywhere falls back to the mask, as Windows does. Every entry of the corpus equals ImageMagick's and Pillow's decode.
+- `Raster.Load` returns the best entry (the largest, then the deepest, as SkiaSharp picks but preferring depth among equal
+  sizes); `MinimumSize` picks the smallest entry at least that big before reducing; `IcoReaderOptions.Entry` picks one by index;
+  `Raster.LoadAll` returns every entry and `Raster.Probe` lists them (`ImageCount`, `IcoDetails.Entries`) without decoding.
+- `IcoWriterOptions`: `Sizes` with `FaviconSizes` and `WindowsSizes`, resized from the largest raster with `Filter` and centred on
+  transparency when not square, or taken as drawn; `Encoding` (`Auto`: PNG at 256, 32-bit BMP with an AND mask below; or all PNG
+  or all BMP); `Hotspot` for cursors, scaled to each entry. Rasters over 256 are fitted with the `Save.IcoFitted` warning. Files
+  open in ImageMagick, Pillow, SkiaSharp and Windows' WIC with the same pixels; decoding is 1.1 to 2.2 times SkiaSharp's speed
+  and writing Windows' six sizes twice Magick.NET's.
+
+### PSD and PSB
+
+- `PsdFormat` reads the flattened image of Photoshop documents and large documents in every color mode (bitmap, gray, indexed,
+  RGB, CMYK, Lab, duotone, multichannel) at 1, 8, 16 and 32 bits, raw, PackBits and Deflate with and without prediction.
+  Transparency is divided back out of the white Photoshop flattens onto; CMYK loads as inks, Lab converts to sRGB, 32-bit files
+  are linear. A file without a real composite loads its placeholder with the `Psd.NoComposite` warning; Egami does not
+  composite layers.
+- `PsdDetails`: version, `PsdColorMode`, depth, channels, `PsdCompression`, `HasRealComposite`, extra channel names, the layer
+  records as `PsdLayer` (name, bounds, opacity, blend mode, visibility, clipping, `PsdLayerKind` and nesting; no pixels), and
+  every image resource Egami does not map as `PsdResource`. ICC, resolution, EXIF, XMP and IPTC map to `RasterMetadata`.
+- Rows stream from the channel planes, reading only what a region needs; layers are skipped without being read. Pixels equal
+  ImageMagick's in every mode it reads alike and the written values everywhere; layers equal psd-tools', metadata exiftool's.
+  12-megapixel files decode three to ten times faster than with Magick.NET.
+
 ### Tone and color
 
 - Tone steps with ImageMagick's formulas and values from 0 to 1: `Level` (`-level` and `+level` in one), `Gamma`,

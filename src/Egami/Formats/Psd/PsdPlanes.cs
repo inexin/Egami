@@ -351,8 +351,9 @@ internal sealed class PsdPlanes : IDisposable
             Span<byte> rest = stackalloc byte[1];
             _ = zlib.Read(rest) + 0;
         }
-        catch (InvalidDataException)
+        catch (Exception e) when (e is InvalidDataException or IOException)
         {
+            // Damaged data ends the stream; what was inflated before it stands, and the caller sees the shortfall.
         }
 
         return total;

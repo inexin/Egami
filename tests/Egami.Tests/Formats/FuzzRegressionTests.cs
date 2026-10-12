@@ -22,6 +22,26 @@ public class FuzzRegressionTests
 
     public static TheoryData<string> ExifFiles() => [.. Directory.GetFiles(Path.Combine(Fuzz, "exif")).Select(p => Path.GetFileName(p)).Order(StringComparer.Ordinal)];
 
+    public static TheoryData<string> PsdFiles() => [.. Directory.GetFiles(Path.Combine(Fuzz, "psdfile")).Select(p => Path.GetFileName(p)).Order(StringComparer.Ordinal)];
+
+    /// <summary>Phase 2.3.3: Deflate data the runtime's zlib rejects mid-stream threw its own exception instead of a short image.</summary>
+    [Theory]
+    [MemberData(nameof(PsdFiles))]
+    public void PsdInputsLoadOrFailCleanly(string file)
+    {
+        byte[] data = File.ReadAllBytes(Path.Combine(Fuzz, "psdfile", file));
+        foreach (RecoveryMode recovery in (RecoveryMode[])[RecoveryMode.Lenient, RecoveryMode.Strict])
+        {
+            try
+            {
+                using Raster raster = Raster.Load(data, options: new ReaderOptions { Recovery = recovery });
+            }
+            catch (EgamiException)
+            {
+            }
+        }
+    }
+
     [Theory]
     [MemberData(nameof(JpegFiles))]
     public void JpegInputsLoadOrFailCleanly(string file)

@@ -46,6 +46,10 @@
       href: guides/jbig2.md
     - name: JPEG 2000
       href: guides/jpeg2000.md
+    - name: ICO and CUR
+      href: guides/ico.md
+    - name: PSD and PSB
+      href: guides/psd.md
     - name: Planar YUV
       href: guides/planar-yuv.md
     - name: Custom operations and formats

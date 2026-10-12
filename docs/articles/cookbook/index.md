@@ -83,6 +83,31 @@ Decoder frames in NV12 or P010 copy into the planes first; see [planar YUV](../g
 
 [!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#jpeg-progressive)]
 
+## Make a favicon
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Ico.cs#ico-save)]
+
+`FaviconSizes` writes 16, 32 and 48; every browser and Windows read the file. See the [ICO guide](../guides/ico.md).
+
+## Pick an icon size
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Ico.cs#ico-load)]
+
+## List an icon's sizes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Ico.cs#ico-sizes)]
+
+## Flatten a PSD to PNG and read its profile
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-load)]
+
+A file saved without Maximize Compatibility holds only a placeholder; `PsdDetails.HasRealComposite` says so. See the
+[PSD guide](../guides/psd.md).
+
+## List a PSD's layers
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-layers)]
+
 ## Load any upload as sRGB
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-on-load)]
