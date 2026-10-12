@@ -15,9 +15,9 @@ public sealed class LineBoxTests(ITestOutputHelper output)
         var data = new TheoryData<string>();
         foreach (LayoutReferences.Case c in LayoutReferences.AllCases())
         {
-            // Vertical lines (task 11), line limits (task 8) and alignment other than the start (task 7) have their own gates.
-            if (!c.Style.TryGetProperty("writingMode", out _) && !c.Style.TryGetProperty("maxLines", out _) && !c.Style.TryGetProperty("align", out _)
-                && c.Name != "thai")
+            // Vertical lines (task 11) and line limits (task 8) have their own gates.
+            if (!c.Style.TryGetProperty("writingMode", out _) && !c.Style.TryGetProperty("maxLines", out _) && c.Name != "thai"
+                && !LineFillTests.KnownPositionDifferences.Contains(c.Name))
             {
                 data.Add(c.Name);
             }
@@ -37,8 +37,9 @@ public sealed class LineBoxTests(ITestOutputHelper output)
         RichText text = layout.Paragraph.RichText;
         foreach (TextLine line in layout.Lines)
         {
-            // A right-to-left line is placed from the right edge by its snapped width, so every item on it counts.
-            bool rtl = (layout.Paragraph.Bidi.ParagraphLevelAt(line.Start) & 1) != 0;
+            // A line placed from the right edge, centred or justified moves by its snapped width or spacing, so every item on
+            // it counts.
+            bool rtl = (layout.Paragraph.Bidi.ParagraphLevelAt(line.Start) & 1) != 0 || layout.Paragraph.Style.Align != TextAlign.Start;
             int items = rtl ? line.Runs.Count + (2 * text.Spans.Count(s => s.Start > line.Start && s.Start < line.End)) + 1 : 0;
             foreach (LayoutRun run in line.Runs)
             {
@@ -112,13 +113,10 @@ public sealed class LineBoxTests(ITestOutputHelper output)
                 // Chromium reports rectangles floored to its layout unit, after snapping each item before this one up to it; a
                 // space or soft hyphen that ends a line is an item of its own there.
                 int items = ours.Items + (c.Text[g.Index] is ' ' or '\u00AD' ? 1 : 0);
-                // Right-to-left lines are placed from the right, so the snapping moves positions the other way.
-                float low = rect[0] - (items * Unit) - Tolerance;
-                float high = rect[0] + ((paragraph.Bidi.ParagraphLevelAt(g.Index) & 1) != 0 ? items + 1 : 1) * Unit + Tolerance;
-                if ((paragraph.Bidi.ParagraphLevelAt(g.Index) & 1) != 0)
-                {
-                    low = rect[0] - Unit - Tolerance;
-                }
+                // Lines placed from the right (or centred, or justified) move the other way, by up to every item's snapping.
+                bool placed = (paragraph.Bidi.ParagraphLevelAt(g.Index) & 1) != 0 || paragraph.Style.Align != TextAlign.Start;
+                float low = rect[0] - ((placed ? 1 : items) * Unit) - Tolerance;
+                float high = rect[0] + ((placed ? items : 0) + 1) * Unit + Tolerance;
                 if (ours.Left < low || ours.Left > high)
                 {
                     failures.Add($"{reference.Width} grapheme {g.Index} U+{(int)c.Text[g.Index]:X4}: Chromium x {rect[0]}, Egami {ours.Left}");
@@ -209,5 +207,39 @@ public sealed class LineBoxTests(ITestOutputHelper output)
         Assert.Equal(latin + 6, Paragraph.Create(words, style).Layout(float.PositiveInfinity).LongestLine, 3);
         RichText letters = new("a b c", [new StyleSpan(0, 5, new TextStyle { LetterSpacing = 1 })]);
         Assert.Equal(latin + 5, Paragraph.Create(letters, style).Layout(float.PositiveInfinity).LongestLine, 3);
+    }
+    [Fact]
+    public void AlignmentAndJustification()
+    {
+        string text = "Justified lines fill the whole width except the last one.";
+        foreach (TextAlign align in Enum.GetValues<TextAlign>())
+        {
+            TextLayout layout = Paragraph.Create(text, Sans with { Align = align }).Layout(150);
+            TextLine first = layout.Lines[0];
+            float expectedLeft = align switch
+            {
+                TextAlign.End or TextAlign.Right => 150 - first.Width,
+                TextAlign.Center => (150 - first.Width) / 2,
+                _ => 0,
+            };
+            Assert.Equal(expectedLeft, first.Left, 3);
+            if (align == TextAlign.Justify)
+            {
+                Assert.Equal(150, first.Width, 3);
+                Assert.True(layout.Lines[^1].Width < 150);
+            }
+        }
+
+        // The last line justifies too with AlignLast Justify; Justify None leaves lines at the start.
+        TextLayout all = Paragraph.Create(text, Sans with { Align = TextAlign.Justify, AlignLast = TextAlignLast.Justify }).Layout(150);
+        Assert.All(all.Lines.Where(l => l.Runs.Any(r => r.Kind == LayoutRunKind.Text && r.Start < l.End - 1 && r.Length > 1)), l => Assert.Equal(150, l.Width, 3));
+        TextLayout none = Paragraph.Create(text, Sans with { Align = TextAlign.Justify, Justify = TextJustify.None }).Layout(150);
+        Assert.True(none.Lines[0].Width < 150);
+
+        // Inter-character justification spreads the space between letters, not only at spaces.
+        TextLayout letters = Paragraph.Create(text, Sans with { Align = TextAlign.Justify, Justify = TextJustify.InterCharacter }).Layout(150);
+        Dictionary<int, (float Left, float Right, int Items)> clusters = Clusters(letters);
+        Dictionary<int, (float Left, float Right, int Items)> plain = Clusters(Paragraph.Create(text, Sans).Layout(150));
+        Assert.True(clusters[1].Left > plain[1].Left + 0.1f);
     }
 }

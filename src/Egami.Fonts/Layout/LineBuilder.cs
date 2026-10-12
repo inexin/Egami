@@ -127,6 +127,9 @@ internal sealed class LineDraft
     public required float Descent { get; init; }
 
     public required int ParagraphLevel { get; init; }
+
+    /// <summary>The end of the line's content: hanging spaces and the hard break left out.</summary>
+    public required int ContentEnd { get; init; }
 }
 
 /// <summary>A run of a draft line: glyphs (with spacing in their advances) or a glyphless box, at an x from the line's start.</summary>
@@ -691,6 +694,7 @@ internal sealed class LineBuilder
             Ascent = ascent,
             Descent = descent,
             ParagraphLevel = paragraphLevel,
+            ContentEnd = contentEnd,
         };
     }
 
@@ -948,15 +952,60 @@ internal sealed class LineBuilder
 
         bool rtl = (draft.ParagraphLevel & 1) != 0;
         float boxWidth = float.IsFinite(width) ? width : draft.ContentWidth;
-        float left = rtl ? boxWidth - draft.ContentWidth : 0;
+
+        // Alignment: the last line and lines before a hard break use AlignLast; justified lines stretch from the start edge.
+        TextAlignLast alignment = Alignment(draft.HardBreak || draft.End >= _text.Length);
+        Dictionary<(DraftRun, int), float>? expansion = null;
+        float contentWidth = draft.ContentWidth;
+        float free = boxWidth - draft.ContentWidth;
+        if (alignment == TextAlignLast.Justify && free > 0 && float.IsFinite(width))
+        {
+            expansion = Justify(draft, free);
+            if (expansion is not null)
+            {
+                contentWidth = boxWidth;
+            }
+        }
+
+        bool leftEdge = alignment switch
+        {
+            TextAlignLast.Left => true,
+            TextAlignLast.Right => false,
+            TextAlignLast.End => rtl,
+            _ => !rtl,
+        };
+        float left = alignment == TextAlignLast.Center ? (boxWidth - contentWidth) / 2 : leftEdge ? 0 : boxWidth - contentWidth;
 
         // Hanging spaces sit past the content's end: right of it in left-to-right paragraphs, left of it in right-to-left ones.
         float origin = rtl ? left - draft.HangWidth : left;
         float baseline = top + lineAscent;
         List<LayoutRun> runs = new(draft.Runs.Count);
+        float stretch = 0;
         foreach (DraftRun piece in draft.Runs)
         {
-            float x = origin + piece.X;
+            float x = origin + piece.X + stretch;
+            float[] advances = piece.Advances;
+            float pieceAdvance = piece.Advance;
+            if (expansion is not null)
+            {
+                advances = (float[])piece.Advances.Clone();
+                for (int g = 0; g < advances.Length; g++)
+                {
+                    if (expansion.TryGetValue((piece, g), out float extra))
+                    {
+                        advances[g] += extra;
+                        pieceAdvance += extra;
+                        stretch += extra;
+                    }
+                }
+
+                if (piece.Kind == RunKind.Placeholder && expansion.TryGetValue((piece, -1), out float boxExtra))
+                {
+                    pieceAdvance += boxExtra;
+                    stretch += boxExtra;
+                }
+            }
+
             float shift = _paragraph.Styles[piece.Style].BaselineShift;
             GlyphRun? glyphs = null;
             if (piece.Kind == RunKind.Text)
@@ -966,10 +1015,10 @@ internal sealed class LineBuilder
                 for (int g = 0; g < points.Length; g++)
                 {
                     points[g] = new Vector2(pen + piece.Offsets[g].X, baseline + shift - piece.Offsets[g].Y);
-                    pen += piece.Advances[g];
+                    pen += advances[g];
                 }
 
-                glyphs = new GlyphRun(piece.Font, piece.Glyphs, points, _text, piece.Clusters, null, piece.Advances)
+                glyphs = new GlyphRun(piece.Font, piece.Glyphs, points, _text, piece.Clusters, null, advances)
                 {
                     BidiLevel = piece.Level,
                     Script = piece.Script,
@@ -984,9 +1033,115 @@ internal sealed class LineBuilder
                 RunKind.Tab => LayoutRunKind.Tab,
                 _ => LayoutRunKind.Control,
             };
-            runs.Add(new LayoutRun(kind, piece.Start, piece.Length, piece.Level, piece.Style, x, piece.Advance, glyphs, piece.Kind == RunKind.Placeholder ? piece.Placeholder : -1));
+            runs.Add(new LayoutRun(kind, piece.Start, piece.Length, piece.Level, piece.Style, x, pieceAdvance, glyphs, piece.Kind == RunKind.Placeholder ? piece.Placeholder : -1));
         }
 
-        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, draft.ContentWidth, draft.HardBreak, false, runs);
+        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, false, runs);
     }
+
+    /// <summary>A line's alignment: <see cref="ParagraphStyle.Align"/>, or for the last line and lines before a hard break
+    /// <see cref="ParagraphStyle.AlignLast"/>, whose Auto is the start for justified paragraphs.</summary>
+    private TextAlignLast Alignment(bool last)
+    {
+        ParagraphStyle style = _paragraph.Style;
+        TextAlignLast align = style.Align switch
+        {
+            TextAlign.End => TextAlignLast.End,
+            TextAlign.Left => TextAlignLast.Left,
+            TextAlign.Right => TextAlignLast.Right,
+            TextAlign.Center => TextAlignLast.Center,
+            TextAlign.Justify => TextAlignLast.Justify,
+            _ => TextAlignLast.Start,
+        };
+        if (!last)
+        {
+            return align;
+        }
+
+        return style.AlignLast == TextAlignLast.Auto ? (align == TextAlignLast.Justify ? TextAlignLast.Start : align) : style.AlignLast;
+    }
+
+    /// <summary>
+    /// The extra advance each justification opportunity gets, keyed by piece and glyph (-1 for a placeholder's box), or null
+    /// when the line has none. Opportunities sit between grapheme clusters of the content: after word separators
+    /// (<see cref="TextJustify.InterWord"/>), between any two clusters outside cursive scripts
+    /// (<see cref="TextJustify.InterCharacter"/>), or, for <see cref="TextJustify.Auto"/>, after word separators and on both sides
+    /// of Chinese, Japanese and Korean characters, as browsers justify; never after the content's last cluster.
+    /// </summary>
+    private Dictionary<(DraftRun, int), float>? Justify(LineDraft draft, float free)
+    {
+        TextJustify mode = _paragraph.Style.Justify;
+        if (mode == TextJustify.None)
+        {
+            return null;
+        }
+
+        // Each content cluster's logically last glyph (or a placeholder's box), in logical order.
+        List<(int Cluster, DraftRun Piece, int Glyph)> clusters = [];
+        foreach (DraftRun piece in draft.Runs)
+        {
+            if (piece.Kind == RunKind.Placeholder && piece.Start < draft.ContentEnd)
+            {
+                clusters.Add((piece.Start, piece, -1));
+                continue;
+            }
+
+            bool rtl = (piece.Level & 1) != 0;
+            for (int g = 0; g < piece.Glyphs.Length; g++)
+            {
+                int c = piece.Clusters[g];
+                if (c >= draft.ContentEnd)
+                {
+                    continue;
+                }
+
+                // The logically last glyph of a cluster: the visually last in left-to-right pieces, the first in right-to-left.
+                bool lastOfCluster = rtl ? g == 0 || piece.Clusters[g - 1] != c : g == piece.Glyphs.Length - 1 || piece.Clusters[g + 1] != c;
+                if (lastOfCluster)
+                {
+                    clusters.Add((c, piece, g));
+                }
+            }
+        }
+
+        clusters.Sort((a, b) => a.Cluster.CompareTo(b.Cluster));
+        List<(DraftRun Piece, int Glyph)> opportunities = [];
+        for (int i = 0; i + 1 < clusters.Count; i++)
+        {
+            int cp = TextSegmenter.CodePointAt(_text, clusters[i].Cluster, out _);
+            int next = TextSegmenter.CodePointAt(_text, clusters[i + 1].Cluster, out _);
+            bool separator = AdvanceTable.IsWordSeparator(cp);
+            bool opportunity = mode switch
+            {
+                TextJustify.InterWord => separator,
+                TextJustify.InterCharacter => separator || (!AdvanceTable.IsCursive(clusters[i].Piece.Script) && !AdvanceTable.IsCursive(clusters[i + 1].Piece.Script)),
+                _ => separator || IsCjk(cp) || IsCjk(next),
+            };
+            if (opportunity)
+            {
+                opportunities.Add((clusters[i].Piece, clusters[i].Glyph));
+            }
+        }
+
+        if (opportunities.Count == 0)
+        {
+            return null;
+        }
+
+        float each = free / opportunities.Count;
+        Dictionary<(DraftRun, int), float> result = [];
+        foreach ((DraftRun piece, int glyph) in opportunities)
+        {
+            result[(piece, glyph)] = result.GetValueOrDefault((piece, glyph)) + each;
+        }
+
+        return result;
+    }
+
+    /// <summary>Chinese, Japanese and Korean characters, which justify between each other: ideographs, kana, Hangul, Bopomofo
+    /// and their fullwidth punctuation and symbols.</summary>
+    private static bool IsCjk(int cp) =>
+        cp is (>= 0x1100 and <= 0x11FF) or (>= 0x2E80 and <= 0x2FDF) or (>= 0x3000 and <= 0x9FFF) or (>= 0xA960 and <= 0xA97F)
+            or (>= 0xAC00 and <= 0xD7FF) or (>= 0xF900 and <= 0xFAFF) or (>= 0xFE30 and <= 0xFE4F) or (>= 0xFF00 and <= 0xFFEF)
+            or (>= 0x20000 and <= 0x3FFFF);
 }

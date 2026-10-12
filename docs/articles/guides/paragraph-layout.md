@@ -6,8 +6,8 @@ alignment and justification, line height, spacing, tabs, max lines and ellipsis,
 decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of `GlyphRun`s and
 decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.
 
-Phase 2.8.2 is landing: line breaking, rich text, line filling and line boxes are in; alignment, hit testing and drawing
-follow, and this guide grows with them.
+Phase 2.8.2 is landing: line breaking, rich text, line filling, line boxes and alignment are in; line limits, hit testing
+and drawing follow, and this guide grows with them.
 
 ## Line breaking
 
@@ -105,6 +105,17 @@ Line boxes follow CSS Inline Layout 3, with the numbers browsers use:
 
 Line boxes equal Chromium's within 0.01 unit on every line-height, strut, spacing, tab, placeholder and mixed-font case, and
 glyph positions equal its within 0.01 once its 1/64 layout unit is allowed for.
+
+### Alignment and justification
+
+`TextAlign` places each line: `Start` and `End` follow the paragraph's direction, `Left`, `Right` and `Center` do not, and
+`Justify` stretches lines to the full width. The last line, and lines before a hard break, use `TextAlignLast`, whose `Auto`
+is the start for justified paragraphs. Trailing spaces hang past the line's end and never count for alignment.
+
+`TextJustify` says where justified lines stretch: `InterWord` at word separators, `InterCharacter` between any two grapheme
+clusters except inside cursive scripts such as Arabic, and `Auto` (the default) at word separators and around Chinese,
+Japanese and Korean characters, as browsers justify. `None` leaves justified lines at the start. Arabic is justified at its
+word spaces; kashida stretching waits for real demand.
 
 `LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
 images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.

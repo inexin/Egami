@@ -44,6 +44,13 @@ public sealed class LineFillTests(ITestOutputHelper output)
         ("soft-hyphens-custom", 60),
     ];
 
+    /// <summary>
+    /// Cases whose positions differ from Chromium's for a reason outside layout, though their line breaks agree: Chromium 129
+    /// does not support text-justify (inter-character justifies like auto), and it puts one justification opportunity fewer
+    /// next to a line-initial quotation mark in Chinese (half a unit at two characters).
+    /// </summary>
+    internal static readonly HashSet<string> KnownPositionDifferences = ["justify-inter-character", "justify-chinese"];
+
     internal static int[] Starts(TextLayout layout) => [.. layout.Lines.Select(l => l.Start)];
 
     [Theory]
