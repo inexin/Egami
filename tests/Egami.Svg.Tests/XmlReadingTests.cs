@@ -201,7 +201,7 @@ public class XmlReadingTests
     {
         List<EgamiDiagnostic> seen = [];
         EgamiContext context = new() { Diagnostics = seen.Add };
-        SvgDocument document = SvgDocument.Parse("<svg><rect/></svg>", new SvgLoadOptions { Context = context });
+        SvgDocument document = SvgDocument.Parse("<svg width='1' height='1'><rect/></svg>", new SvgLoadOptions { Context = context });
         Assert.Equal("Svg.NoNamespace", Assert.Single(document.Warnings).Id);
         Assert.Equal("Svg.NoNamespace", Assert.Single(seen).Id);
         Assert.Equal("Svg", seen[0].Source);

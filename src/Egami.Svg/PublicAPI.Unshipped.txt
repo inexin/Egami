@@ -35,8 +35,10 @@ Egami.Svg.SvgDocument.Description.get -> string?
 Egami.Svg.SvgDocument.FindById(string! id) -> Egami.Svg.SvgElement?
 Egami.Svg.SvgDocument.Options.get -> Egami.Svg.SvgLoadOptions!
 Egami.Svg.SvgDocument.Root.get -> Egami.Svg.SvgElement!
+Egami.Svg.SvgDocument.Size.get -> System.Numerics.Vector2
 Egami.Svg.SvgDocument.SvgDocument(Egami.Svg.SvgElement! root, Egami.Svg.SvgLoadOptions? options = null) -> void
 Egami.Svg.SvgDocument.Title.get -> string?
+Egami.Svg.SvgDocument.ViewBox.get -> Egami.Drawing.RectF?
 Egami.Svg.SvgDocument.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
 Egami.Svg.SvgElement
 Egami.Svg.SvgElement.Attributes.get -> Egami.Svg.SvgAttributeCollection!

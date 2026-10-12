@@ -1,4 +1,8 @@
+using System.Numerics;
+
+using Egami.Drawing;
 using Egami.Svg.Reading;
+using Egami.Svg.Values;
 
 namespace Egami.Svg;
 
@@ -19,6 +23,8 @@ public sealed class SvgDocument
     private readonly SvgXmlContent? _source;
     private Dictionary<string, SvgElement>? _ids;
     private int _idsVersion = -1;
+    private (Vector2 Size, RectF? ViewBox) _size;
+    private int _sizeVersion = -1;
 
     /// <summary>Initializes a new instance of the <see cref="SvgDocument"/> class around a root element made in code.</summary>
     /// <param name="root">The root, an <c>svg</c> element without a parent or another document.</param>
@@ -57,6 +63,15 @@ public sealed class SvgDocument
     /// <summary>Gets what the load skipped, as also sent to the context's diagnostics; empty for a document made in code.</summary>
     public IReadOnlyList<EgamiDiagnostic> Warnings { get; }
 
+    /// <summary>
+    /// Gets the document's size in pixels: the root's width and height, a percentage (or a missing side) taken of the viewBox,
+    /// or of 100 by 100 when there is no viewBox, as resvg sizes documents. Physical units use <see cref="SvgLoadOptions.Dpi"/>.
+    /// </summary>
+    public Vector2 Size => Measure().Size;
+
+    /// <summary>Gets the root's viewBox, or <see langword="null"/> when it has none (or an invalid one).</summary>
+    public RectF? ViewBox => Measure().ViewBox;
+
     /// <summary>Gets the text of the root's first <c>title</c> child, or <see langword="null"/>.</summary>
     public string? Title => Root.Elements("title").FirstOrDefault()?.Text.Trim();
 
@@ -81,7 +96,7 @@ public sealed class SvgDocument
         options ??= SvgLoadOptions.Default;
         if (options.BaseUri is null)
         {
-            options = options with { BaseUri = new Uri(Path.GetFullPath(path)) };
+            options = options with { BaseUri = new Uri(System.IO.Path.GetFullPath(path)) };
         }
 
         using FileStream stream = File.OpenRead(path);
@@ -106,7 +121,8 @@ public sealed class SvgDocument
         SvgReport report = new(options.Strict);
         SvgXmlContent content = SvgXmlReader.Read(stream, limits, report);
         CheckRoot(content.Root, report);
-        SvgDocument document = new(content, options, report.Warnings);
+        (Vector2 Size, RectF? ViewBox) size = SvgRootSize.Resolve(content.Root, options.Dpi, report);
+        SvgDocument document = new(content, options, report.Warnings) { _size = size, _sizeVersion = 0 };
         report.Deliver(context);
         return document;
     }
@@ -153,6 +169,17 @@ public sealed class SvgDocument
         }
 
         return _ids.GetValueOrDefault(id);
+    }
+
+    private (Vector2 Size, RectF? ViewBox) Measure()
+    {
+        if (_sizeVersion != Version)
+        {
+            _size = SvgRootSize.Resolve(Root, Options.Dpi, null);
+            _sizeVersion = Version;
+        }
+
+        return _size;
     }
 
     /// <summary>Marks the render tree stale after an edit.</summary>
