@@ -2,6 +2,9 @@ using Egami.Fonts.Parsing;
 
 namespace Egami.Fonts.Layout;
 
+/// <summary>Reads the delta a GPOS device table at <c>offset</c> of the GPOS data adds, for a variable font at a position.</summary>
+internal delegate int DeviceDeltaReader(ReadOnlySpan<byte> gpos, int offset);
+
 /// <summary>
 /// Pair kerning: GPOS lookup type 2 (formats 1 and 2, extension lookups included) under the kern feature of the DFLT and latn
 /// scripts' default language systems, else the kern table's format 0 subtables. Only the first glyph's x advance is adjusted.
@@ -40,9 +43,9 @@ internal sealed class Kerning
         return _kern?.Get(left, right) ?? 0;
     }
 
-    public static Kerning Read(ReadOnlySpan<byte> gpos, long gposOffset, ReadOnlySpan<byte> kern, long kernOffset)
+    public static Kerning Read(ReadOnlySpan<byte> gpos, long gposOffset, ReadOnlySpan<byte> kern, long kernOffset, DeviceDeltaReader? deltas = null)
     {
-        PairLookup[] lookups = gpos.IsEmpty ? [] : ReadGpos(gpos, gposOffset);
+        PairLookup[] lookups = gpos.IsEmpty ? [] : ReadGpos(gpos, gposOffset, deltas);
         if (lookups.Length > 0)
         {
             return new Kerning(lookups, null);
@@ -52,7 +55,7 @@ internal sealed class Kerning
         return pairs is null ? None : new Kerning([], pairs);
     }
 
-    private static PairLookup[] ReadGpos(ReadOnlySpan<byte> gpos, long offset)
+    private static PairLookup[] ReadGpos(ReadOnlySpan<byte> gpos, long offset, DeviceDeltaReader? deltas)
     {
         var r = new FontReader(gpos, offset);
         int major = r.ReadUInt16();
@@ -146,7 +149,7 @@ internal sealed class Kerning
                     subtable += (int)BigEndian.UInt32(gpos, subtable + 4);
                 }
 
-                if (subtableType == 2 && PairSubtable.Read(gpos, subtable) is PairSubtable pair)
+                if (subtableType == 2 && PairSubtable.Read(gpos, subtable, deltas) is PairSubtable pair)
                 {
                     subtables.Add(pair);
                 }
@@ -255,7 +258,7 @@ internal sealed class PairSubtable
         return true;
     }
 
-    public static PairSubtable? Read(ReadOnlySpan<byte> data, int offset)
+    public static PairSubtable? Read(ReadOnlySpan<byte> data, int offset, DeviceDeltaReader? deltas = null)
     {
         int format = BigEndian.UInt16(data, offset);
         var coverage = Coverage.Read(data, offset + BigEndian.UInt16(data, offset + 2));
@@ -263,6 +266,9 @@ internal sealed class PairSubtable
         int format2 = BigEndian.UInt16(data, offset + 6);
         int size1 = ValueSize(format1), size2 = ValueSize(format2);
         int advanceAt = AdvanceOffset(format1);
+
+        // A variable font varies the advance through the XAdvDevice table, which follows the four value fields.
+        int deviceAt = deltas is not null && (format1 & 0x40) != 0 ? 2 * System.Numerics.BitOperations.PopCount((uint)(format1 & 0x3F)) : -1;
         if (format == 1)
         {
             int setCount = BigEndian.UInt16(data, offset + 8);
@@ -279,7 +285,7 @@ internal sealed class PairSubtable
                 {
                     int rec = set + 2 + (p * recordSize);
                     seconds[s][p] = BigEndian.UInt16(data, rec);
-                    values[s][p] = advanceAt < 0 ? (short)0 : BigEndian.Int16(data, rec + 2 + advanceAt);
+                    values[s][p] = (short)((advanceAt < 0 ? 0 : BigEndian.Int16(data, rec + 2 + advanceAt)) + Delta(data, set, rec + 2 + deviceAt, deviceAt, deltas));
                 }
 
                 if (!IsSorted(seconds[s]))
@@ -308,13 +314,26 @@ internal sealed class PairSubtable
             for (long i = 0; i < cells; i++)
             {
                 int rec = offset + 16 + (int)(i * recordSize);
-                matrix[i] = advanceAt < 0 ? (short)0 : BigEndian.Int16(data, rec + advanceAt);
+                matrix[i] = (short)((advanceAt < 0 ? 0 : BigEndian.Int16(data, rec + advanceAt)) + Delta(data, offset, rec + deviceAt, deviceAt, deltas));
             }
 
             return new PairSubtable(coverage, classes1, classes2, matrix, class2Count);
         }
 
         return null;
+    }
+
+    // The device delta of a value record's XAdvDevice offset, 0 without one. Format 1 offsets are from the PairSet, format 2's from
+    // the subtable, as HarfBuzz and fontTools read them.
+    private static int Delta(ReadOnlySpan<byte> data, int subtable, int at, int deviceAt, DeviceDeltaReader? deltas)
+    {
+        if (deviceAt < 0)
+        {
+            return 0;
+        }
+
+        int device = BigEndian.UInt16(data, at);
+        return device == 0 ? 0 : deltas!(data, subtable + device);
     }
 
     private static bool IsSorted(ushort[] values)

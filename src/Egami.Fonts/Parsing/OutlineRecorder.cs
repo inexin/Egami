@@ -114,6 +114,22 @@ internal sealed class OutlineRecorder : IGlyphOutlineSink
         }
     }
 
+    /// <summary>Appends a recorded outline, such as a varied glyph's.</summary>
+    public void Append(ReadOnlySpan<OutlineVerb> verbs, ReadOnlySpan<float> coordinates)
+    {
+        if (_verbCount + verbs.Length > _verbs.Length)
+        {
+            Array.Resize(ref _verbs, Math.Max(_verbs.Length * 2, _verbCount + verbs.Length));
+        }
+
+        EnsureCoordinates(coordinates.Length);
+        verbs.CopyTo(_verbs.AsSpan(_verbCount));
+        coordinates.CopyTo(_coordinates.AsSpan(_coordinateCount));
+        _verbCount += verbs.Length;
+        _coordinateCount += coordinates.Length;
+        _open = false;
+    }
+
     public void ReplayTo(IGlyphOutlineSink sink)
     {
         int c = 0;

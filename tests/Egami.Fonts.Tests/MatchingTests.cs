@@ -78,7 +78,7 @@ public class MatchingTests
     public void ACollectionFindsFamiliesByEveryName()
     {
         var fonts = new FontCollection();
-        Assert.Equal(9, fonts.AddDirectory(Path.Combine(TestFonts.Root, "tests", "fonts"), recursive: false));
+        Assert.Equal(11, fonts.AddDirectory(Path.Combine(TestFonts.Root, "tests", "fonts"), recursive: false));
         Assert.Contains(fonts.Families, f => f.Name == "Noto Sans");
         Assert.Equal(fonts.Families.Count, fonts.Count);
 

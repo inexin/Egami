@@ -1,4 +1,5 @@
 using Egami.Fonts.Parsing;
+using Egami.Fonts.Variations;
 
 namespace Egami.Fonts.Cff;
 
@@ -23,10 +24,12 @@ internal sealed class CffFont
     public const int OpFdArray = 1236;
     public const int OpFdSelect = 1237;
     public const int OpFontName = 1238;
+    public const int OpVsIndex = 22;
+    public const int OpVariationStore = 24;
 
     private readonly ReadOnlyMemory<byte> _data;
     private readonly ushort[] _charset;
-    private readonly byte[]? _fdSelect;
+    private readonly ushort[]? _fdSelect;
     private Dictionary<int, int>? _sidToGlyph;
 
     private CffFont(
@@ -39,7 +42,7 @@ internal sealed class CffFont
         CffIndex charStrings,
         ushort[] charset,
         PrivateData[] privates,
-        byte[]? fdSelect,
+        ushort[]? fdSelect,
         int nameIndexStart,
         int topIndexStart,
         int stringIndexStart,
@@ -86,6 +89,12 @@ internal sealed class CffFont
 
     public int GlobalSubrStart { get; }
 
+    /// <summary>Gets whether this is a CFF2 font (OpenType's variable CFF): no widths, charset or strings, and blends.</summary>
+    public bool IsCff2 { get; private init; }
+
+    /// <summary>Gets a CFF2 font's ItemVariationStore, which blend operators index.</summary>
+    public ItemVariationStore? VariationStore { get; private init; }
+
     public bool IsCidKeyed => Top.Contains(OpRos);
 
     public int GlyphCount => CharStrings.Count;
@@ -115,7 +124,6 @@ internal sealed class CffFont
     /// <summary>Gets the font dict index of a glyph: 0 for a name-keyed font.</summary>
     public int FontDictOf(int glyph) => _fdSelect is null || (uint)glyph >= (uint)_fdSelect.Length ? 0 : _fdSelect[glyph];
 
-    public ReadOnlySpan<byte> FdSelect => _fdSelect;
 
     /// <summary>Gets the glyph whose charset SID is <paramref name="sid"/> (name-keyed fonts), or -1.</summary>
     public int GlyphOfSid(int sid)
@@ -145,9 +153,14 @@ internal sealed class CffFont
         }
 
         int major = span[0], headerSize = span[2];
+        if (major == 2)
+        {
+            return ReadCff2(data, fileOffset);
+        }
+
         if (major != 1)
         {
-            throw new UnsupportedFormatException(major == 2 ? "CFF2 outlines are read from Egami.Fonts 2.7.2 on." : $"CFF version {major} is not supported.");
+            throw new UnsupportedFormatException($"CFF version {major} is not supported.");
         }
 
         if (headerSize < 4 || headerSize > span.Length)
@@ -190,7 +203,7 @@ internal sealed class CffFont
         ushort[] charset = ReadCharset(span, top.GetInt(OpCharset, 0), glyphCount, fileOffset);
 
         PrivateData[] privates;
-        byte[]? fdSelect = null;
+        ushort[]? fdSelect = null;
         if (top.Contains(OpRos))
         {
             int fdArrayOffset = top.GetInt(OpFdArray, -1);
@@ -220,6 +233,88 @@ internal sealed class CffFont
         }
 
         return new CffFont(data, headerSize, name, top, strings, globals, charStrings, charset, privates, fdSelect, nameStart, topStart, stringStart, globalStart);
+    }
+
+    // CFF2 (OpenType 1.9.1): the header, a Top DICT that is not an INDEX, 32-bit INDEX counts, an FDArray of Font DICTs with
+    // their Private DICTs (blends kept at their defaults), FDSelect formats 0, 3 and 4, and the VariationStore.
+    private static CffFont ReadCff2(ReadOnlyMemory<byte> data, long fileOffset)
+    {
+        ReadOnlySpan<byte> span = data.Span;
+        if (span.Length < 5)
+        {
+            throw FontErrors.Truncated(fileOffset);
+        }
+
+        int headerSize = span[2];
+        int topLength = BigEndian.UInt16(span, 3);
+        if (headerSize < 5 || (long)headerSize + topLength > span.Length)
+        {
+            throw FontErrors.Corrupt(fileOffset, "The CFF2 header or Top DICT runs past the end of the data.");
+        }
+
+        CffDict top = CffDict.Read(span.Slice(headerSize, topLength), fileOffset + headerSize, _ => 0);
+        int globalStart = headerSize + topLength;
+        CffIndex globals = CffIndex.Read(data, globalStart, cff2: true);
+
+        ItemVariationStore? store = null;
+        int storeOffset = top.GetInt(OpVariationStore, 0);
+        if (storeOffset > 0)
+        {
+            if (storeOffset + 2 > span.Length)
+            {
+                throw FontErrors.Corrupt(fileOffset, "The CFF2 VariationStore lies outside the data.");
+            }
+
+            // The store follows a 16-bit length; its offsets are from its own start.
+            store = ItemVariationStore.Read(data[(storeOffset + 2)..], 0, fileOffset + storeOffset + 2);
+        }
+
+        int charStringsOffset = top.GetInt(OpCharStrings, -1);
+        if (charStringsOffset <= 0 || charStringsOffset >= span.Length)
+        {
+            throw FontErrors.Corrupt(fileOffset, "The CFF2 Top DICT has no CharStrings.");
+        }
+
+        CffIndex charStrings = CffIndex.Read(data, charStringsOffset, cff2: true);
+        int glyphCount = charStrings.Count;
+        if (glyphCount == 0)
+        {
+            throw FontErrors.Corrupt(fileOffset + charStringsOffset, "The CFF2 data has no charstrings.");
+        }
+
+        int fdArrayOffset = top.GetInt(OpFdArray, -1);
+        if (fdArrayOffset <= 0 || fdArrayOffset >= span.Length)
+        {
+            throw FontErrors.Corrupt(fileOffset, "The CFF2 Top DICT has no FDArray.");
+        }
+
+        CffIndex fdArray = CffIndex.Read(data, fdArrayOffset, cff2: true);
+        if (fdArray.Count == 0)
+        {
+            throw FontErrors.Corrupt(fileOffset, "The CFF2 FDArray is empty.");
+        }
+
+        Func<int, int> regions = vsindex => store?.RegionCountOf(vsindex) ?? 0;
+        var privates = new PrivateData[fdArray.Count];
+        for (int i = 0; i < fdArray.Count; i++)
+        {
+            CffDict fd = CffDict.Read(fdArray[i], fileOffset + fdArrayOffset, regions);
+            privates[i] = PrivateData.Read(data, fd, fileOffset, fdArrayOffset, i, cff2: true, regions);
+        }
+
+        int fdSelectOffset = top.GetInt(OpFdSelect, -1);
+        ushort[]? fdSelect = fdArray.Count > 1 || fdSelectOffset > 0 ? ReadFdSelect(span, fdSelectOffset, glyphCount, privates.Length, fileOffset) : null;
+        var charset = new ushort[glyphCount];
+        for (int i = 0; i < glyphCount; i++)
+        {
+            charset[i] = (ushort)Math.Min(i, 0xFFFF);
+        }
+
+        return new CffFont(data, headerSize, string.Empty, top, default, globals, charStrings, charset, privates, fdSelect, -1, -1, -1, globalStart)
+        {
+            IsCff2 = true,
+            VariationStore = store,
+        };
     }
 
     /// <summary>Gets the subroutine bias for an INDEX of <paramref name="count"/> subroutines.</summary>
@@ -276,14 +371,14 @@ internal sealed class CffFont
         return charset;
     }
 
-    private static byte[] ReadFdSelect(ReadOnlySpan<byte> data, int offset, int glyphCount, int fdCount, long fileOffset)
+    private static ushort[] ReadFdSelect(ReadOnlySpan<byte> data, int offset, int glyphCount, int fdCount, long fileOffset)
     {
         if (offset <= 0 || offset >= data.Length)
         {
             throw FontErrors.Corrupt(fileOffset, "The CID-keyed CFF font has no FDSelect.");
         }
 
-        var select = new byte[glyphCount];
+        var select = new ushort[glyphCount];
         var r = new FontReader(data[offset..], fileOffset + offset);
         int format = r.ReadByte();
         if (format == 0)
@@ -303,7 +398,24 @@ internal sealed class CffFont
                 int next = r.ReadUInt16();
                 for (int g = first; g < next && g < glyphCount; g++)
                 {
-                    select[g] = (byte)fd;
+                    select[g] = (ushort)fd;
+                }
+
+                first = next;
+            }
+        }
+        else if (format == 4)
+        {
+            // CFF2: 32-bit ranges and 16-bit font dict indices.
+            uint ranges = r.ReadUInt32();
+            uint first = r.ReadUInt32();
+            for (uint k = 0; k < ranges; k++)
+            {
+                int fd = r.ReadUInt16();
+                uint next = r.ReadUInt32();
+                for (uint g = first; g < next && g < glyphCount; g++)
+                {
+                    select[g] = (ushort)fd;
                 }
 
                 first = next;
@@ -358,7 +470,10 @@ internal sealed class PrivateData
 
     public double NominalWidthX { get; init; }
 
-    public static PrivateData Read(ReadOnlyMemory<byte> data, CffDict owner, long fileOffset, int fdArrayOffset, int index)
+    /// <summary>Gets the CFF2 vsindex the Private DICT sets for its glyphs, 0 by default.</summary>
+    public int VsIndex { get; init; }
+
+    public static PrivateData Read(ReadOnlyMemory<byte> data, CffDict owner, long fileOffset, int fdArrayOffset, int index, bool cff2 = false, Func<int, int>? regions = null)
     {
         double[]? entry = owner.Get(CffFont.OpPrivate);
         if (entry is not { Length: 2 })
@@ -372,12 +487,12 @@ internal sealed class PrivateData
             throw FontErrors.Corrupt(fileOffset, $"The CFF Private DICT of font dict {index} is outside the data.");
         }
 
-        CffDict dict = CffDict.Read(data.Span.Slice(offset, size), fileOffset + offset);
+        CffDict dict = CffDict.Read(data.Span.Slice(offset, size), fileOffset + offset, cff2 ? regions : null);
         int subrs = dict.GetInt(CffFont.OpSubrs, 0);
         CffIndex? local = null;
         if (subrs > 0)
         {
-            local = CffIndex.Read(data, offset + subrs);
+            local = CffIndex.Read(data, offset + subrs, cff2);
         }
 
         return new PrivateData
@@ -390,6 +505,7 @@ internal sealed class PrivateData
             LocalSubrsOffset = subrs > 0 ? offset + subrs : -1,
             DefaultWidthX = dict.GetNumber(CffFont.OpDefaultWidthX, 0),
             NominalWidthX = dict.GetNumber(CffFont.OpNominalWidthX, 0),
+            VsIndex = cff2 ? dict.GetInt(CffFont.OpVsIndex, 0) : 0,
         };
     }
 }

@@ -128,15 +128,24 @@ def dump_var():
                       "coordinates": {k: r4(v) for k, v in i.coordinates.items()}} for i in font["fvar"].instances]
         data = {"axes": axes, "instances": instances, "glyphCount": len(order), "kerningSample": sample, "locations": []}
         for loc in locations(font):
-            normalized = font.normalizeLocation(loc)
-            glyph_set = font.getGlyphSet(location=loc)
+            # Normalized coordinates are F2Dot14, as OpenType says; fontTools keeps avar 1's float result, so round it here.
+            normalized = {k: round(v * 16384) / 16384 for k, v in font.normalizeLocation(loc).items()}
+            glyph_set = font.getGlyphSet(location=normalized, normalized=True)
             glyphs = []
             for gid, gname in enumerate(order):
                 pen = DecomposingRecordingPen(glyph_set)
                 glyph_set[gname].draw(pen)
                 glyphs.append({"advance": r4(glyph_set[gname].width), "outline": normalize(pen.value)})
-            static = instancer.instantiateVariableFont(TTFont(path), loc, inplace=False)
+            # Only the metrics and kerning are taken from the instancer; it fails on some subset CFF2 private dicts, so drop CFF2.
+            source = TTFont(path)
+            if "CFF2" in source:
+                del source["CFF2"]
             entry = {"user": {k: r4(v) for k, v in loc.items()}, "normalized": {k: r4(v) for k, v in normalized.items()}, "glyphs": glyphs}
+            if "avar" in source and getattr(source["avar"], "majorVersion", 1) >= 2:
+                # The instancer reads no avar 2; outlines and advances are the check here.
+                data["locations"].append(entry)
+                continue
+            static = instancer.instantiateVariableFont(source, loc, inplace=False)
             os2, hhea, post = static["OS/2"], static["hhea"], static["post"]
             entry["metrics"] = {
                 "hheaAscent": hhea.ascent, "hheaDescent": hhea.descent, "hheaLineGap": hhea.lineGap,

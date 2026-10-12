@@ -89,6 +89,27 @@ internal static class StyleMatcher
         return ra != rb ? ra < rb : Math.Abs(a - wanted) < Math.Abs(b - wanted);
     }
 
+    // CSS font-stretch percentages of the width classes 1 to 9.
+    private static readonly float[] s_widthPercent = [50, 62.5f, 75, 87.5f, 100, 112.5f, 125, 150, 200];
+
+    /// <summary>Gets the CSS width percentage of a width class 1 to 9.</summary>
+    public static float WidthPercentOf(int widthClass) => s_widthPercent[Math.Clamp(widthClass, 1, 9) - 1];
+
+    /// <summary>Gets the width class nearest a wdth percentage.</summary>
+    public static int WidthClassOf(float percent)
+    {
+        int best = 5;
+        for (int c = 1; c <= 9; c++)
+        {
+            if (MathF.Abs(s_widthPercent[c - 1] - percent) < MathF.Abs(s_widthPercent[best - 1] - percent))
+            {
+                best = c;
+            }
+        }
+
+        return best;
+    }
+
     /// <summary>Says which synthesis a matched style needs to look like the wanted one.</summary>
     public static FontSynthesis SynthesisFor(FontStyle wanted, FontStyle matched)
     {

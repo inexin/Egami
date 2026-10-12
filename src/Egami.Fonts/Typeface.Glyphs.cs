@@ -2,6 +2,7 @@ using Egami.Fonts.Cff;
 using Egami.Fonts.Layout;
 using Egami.Fonts.Parsing;
 using Egami.Fonts.Tables;
+using Egami.Fonts.Variations;
 
 namespace Egami.Fonts;
 
@@ -36,9 +37,9 @@ public sealed partial class Typeface
     /// <summary>Gets whether the face maps characters to glyphs; false for a bare CFF font or a font without a usable cmap.</summary>
     public bool HasCharacterMap => !Cmap.IsEmpty;
 
-    internal CmapTable Cmap => Volatile.Read(ref _cmap) ?? Publish(ref _cmap, LoadTable(Tags.Cmap, CmapTable.Read, CmapTable.Empty, "glyphs can be reached by id only"));
+    internal CmapTable Cmap => _base?.Cmap ?? Volatile.Read(ref _cmap) ?? Publish(ref _cmap, LoadTable(Tags.Cmap, CmapTable.Read, CmapTable.Empty, "glyphs can be reached by id only"));
 
-    internal Kerning Kerning => Volatile.Read(ref _kerning) ?? Publish(ref _kerning, LoadKerning());
+    internal Kerning Kerning => Volatile.Read(ref _kerning) ?? Publish(ref _kerning, _instance is null ? LoadKerning() : LoadVariedKerning());
 
     internal GlyfTable? Glyf => _glyf;
 
@@ -46,7 +47,7 @@ public sealed partial class Typeface
 
     internal MaxpTable? Maxp => _maxp;
 
-    internal HmtxTable? Hmtx => (Volatile.Read(ref _hmtx) ?? Publish(ref _hmtx, new Box<HmtxTable?>(LoadHmtx()))).Value;
+    internal HmtxTable? Hmtx => _base is not null ? _base.Hmtx : (Volatile.Read(ref _hmtx) ?? Publish(ref _hmtx, new Box<HmtxTable?>(LoadHmtx()))).Value;
 
     /// <summary>Maps a Unicode code point to a glyph id through the character map.</summary>
     /// <param name="codePoint">The code point, 0 to 0x10FFFF.</param>
@@ -146,6 +147,11 @@ public sealed partial class Typeface
             return 0;
         }
 
+        if (_instance is not null)
+        {
+            return VariedAdvance(glyph);
+        }
+
         if (Hmtx is HmtxTable hmtx)
         {
             return hmtx.GetAdvance(glyph);
@@ -169,6 +175,11 @@ public sealed partial class Typeface
             return 0;
         }
 
+        if (_instance is not null)
+        {
+            return VariedLeftSideBearing(glyph);
+        }
+
         return Hmtx is HmtxTable hmtx ? hmtx.GetLeftSideBearing(glyph) : GetGlyphExtents(glyph).XMin;
     }
 
@@ -182,6 +193,11 @@ public sealed partial class Typeface
         if (glyph >= GlyphCount)
         {
             return GlyphExtents.Empty;
+        }
+
+        if (_instance is not null)
+        {
+            return Varied(glyph).Bounds;
         }
 
         if (_glyf is not null)
@@ -214,6 +230,13 @@ public sealed partial class Typeface
         if ((uint)glyph >= (uint)GlyphCount)
         {
             return false;
+        }
+
+        if (_instance is not null)
+        {
+            VariedGlyph varied = Varied(glyph);
+            recorder.Append(varied.Verbs, varied.Coordinates);
+            return !ReferenceEquals(varied, VariedGlyph.Empty);
         }
 
         try
@@ -360,22 +383,26 @@ public sealed partial class Typeface
         Os2Table os2 = Os2;
         HheaTable? hhea = Hhea;
         bool haveOs2 = !Os2Missing;
+
+        // A position on a variable font varies the OS/2 and post values through MVAR, rounded as an instancer writes them.
+        int typoAscender = WithMvar(os2.TypoAscender, "hasc"), typoDescender = WithMvar(os2.TypoDescender, "hdsc"), typoLineGap = WithMvar(os2.TypoLineGap, "hlgp");
+        int winAscent = WithMvar(os2.WinAscent, "hcla"), winDescent = WithMvar(os2.WinDescent, "hcld");
         int ascent, descent, lineGap;
-        if (haveOs2 && os2.UseTypoMetrics && (os2.TypoAscender != 0 || os2.TypoDescender != 0))
+        if (haveOs2 && os2.UseTypoMetrics && (typoAscender != 0 || typoDescender != 0))
         {
-            (ascent, descent, lineGap) = (os2.TypoAscender, os2.TypoDescender, os2.TypoLineGap);
+            (ascent, descent, lineGap) = (typoAscender, typoDescender, typoLineGap);
         }
         else if (hhea is not null && (hhea.Ascender != 0 || hhea.Descender != 0))
         {
             (ascent, descent, lineGap) = (hhea.Ascender, hhea.Descender, hhea.LineGap);
         }
-        else if (haveOs2 && (os2.TypoAscender != 0 || os2.TypoDescender != 0))
+        else if (haveOs2 && (typoAscender != 0 || typoDescender != 0))
         {
-            (ascent, descent, lineGap) = (os2.TypoAscender, os2.TypoDescender, os2.TypoLineGap);
+            (ascent, descent, lineGap) = (typoAscender, typoDescender, typoLineGap);
         }
-        else if (haveOs2 && (os2.WinAscent != 0 || os2.WinDescent != 0))
+        else if (haveOs2 && (winAscent != 0 || winDescent != 0))
         {
-            (ascent, descent, lineGap) = (os2.WinAscent, -os2.WinDescent, 0);
+            (ascent, descent, lineGap) = (winAscent, -winDescent, 0);
         }
         else
         {
@@ -386,16 +413,21 @@ public sealed partial class Typeface
             }
         }
 
-        float capHeight = haveOs2 && os2.Version >= 2 && os2.CapHeight > 0 ? os2.CapHeight : InkTop('H', ascent * 0.7f);
-        float xHeight = haveOs2 && os2.Version >= 2 && os2.XHeight > 0 ? os2.XHeight : InkTop('x', ascent * 0.5f);
+        int os2CapHeight = WithMvar(os2.CapHeight, "cpht"), os2XHeight = WithMvar(os2.XHeight, "xhgt");
+        float capHeight = haveOs2 && os2.Version >= 2 && os2CapHeight > 0 ? os2CapHeight : InkTop('H', ascent * 0.7f);
+        float xHeight = haveOs2 && os2.Version >= 2 && os2XHeight > 0 ? os2XHeight : InkTop('x', ascent * 0.5f);
         PostTable post = Post;
-        float underlineThickness = post.UnderlineThickness > 0 ? post.UnderlineThickness : UnitsPerEm / 14f;
-        float underlinePosition = post.UnderlinePosition != 0 ? post.UnderlinePosition : -UnitsPerEm / 10f;
-        float strikeoutSize = haveOs2 && os2.StrikeoutSize > 0 ? os2.StrikeoutSize : underlineThickness;
-        float strikeoutPosition = haveOs2 && os2.StrikeoutPosition != 0 ? os2.StrikeoutPosition : (xHeight / 2) + (strikeoutSize / 2);
+        int postThickness = WithMvar(post.UnderlineThickness, "unds"), postPosition = WithMvar(post.UnderlinePosition, "undo");
+        int os2StrikeoutSize = WithMvar(os2.StrikeoutSize, "strs"), os2StrikeoutPosition = WithMvar(os2.StrikeoutPosition, "stro");
+        float underlineThickness = postThickness > 0 ? postThickness : UnitsPerEm / 14f;
+        float underlinePosition = postPosition != 0 ? postPosition : -UnitsPerEm / 10f;
+        float strikeoutSize = haveOs2 && os2StrikeoutSize > 0 ? os2StrikeoutSize : underlineThickness;
+        float strikeoutPosition = haveOs2 && os2StrikeoutPosition != 0 ? os2StrikeoutPosition : (xHeight / 2) + (strikeoutSize / 2);
         float italicAngle = IsBareCff ? (float)(_cff?.Top.GetNumber(1202, 0) ?? 0) : post.ItalicAngle;
         var box = new GlyphExtents(_head.XMin, _head.YMin, _head.XMax, _head.YMax);
         return new FontExtents(ascent, descent, lineGap, capHeight, xHeight, underlinePosition, underlineThickness, strikeoutPosition, strikeoutSize, italicAngle, box);
+
+        int WithMvar(int value, string tag) => _instance is null ? value : (int)MathF.Floor(value + _instance.Mvar(tag) + 0.5f);
 
         float InkTop(char c, float fallback)
         {

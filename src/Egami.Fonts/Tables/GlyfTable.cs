@@ -24,9 +24,6 @@ internal sealed class GlyfTable
     private const int MoreComponents = 0x0020;
     private const int HaveXYScale = 0x0040;
     private const int HaveTwoByTwo = 0x0080;
-    private const int HaveInstructions = 0x0100;
-    private const int ScaledOffset = 0x0800;
-    private const int UnscaledOffset = 0x1000;
 
     private readonly ReadOnlyMemory<byte> _glyf;
     private readonly uint[] _loca;
@@ -272,6 +269,18 @@ internal sealed class GlyfTable
 
     private void AddComposite(ref FontReader r, GlyphPoints points, int depth)
     {
+        foreach (GlyphComponent component in ReadComponents(ref r))
+        {
+            int start = points.Count;
+            AddPoints(component.Glyph, points, depth + 1);
+            component.Place(points, start, component.Arg1, component.Arg2);
+        }
+    }
+
+    /// <summary>Reads a composite glyph's component records, its header already skipped.</summary>
+    internal static List<GlyphComponent> ReadComponents(ref FontReader r)
+    {
+        var list = new List<GlyphComponent>();
         int flags;
         do
         {
@@ -307,50 +316,61 @@ internal sealed class GlyfTable
                 d = r.ReadF2Dot14();
             }
 
-            int start = points.Count;
-            int contourStart = points.ContourCount;
-            AddPoints(component, points, depth + 1);
-            bool transformed = a != 1 || b != 0 || c != 0 || d != 1;
-            if (transformed)
-            {
-                points.Transform(start, a, b, c, d);
-            }
-
-            float dx, dy;
-            if ((flags & ArgsAreXY) != 0)
-            {
-                dx = arg1;
-                dy = arg2;
-                if (transformed && (flags & ScaledOffset) != 0 && (flags & UnscaledOffset) == 0)
-                {
-                    (dx, dy) = ((a * arg1) + (c * arg2), (b * arg1) + (d * arg2));
-                }
-            }
-            else
-            {
-                // Point matching: the component's point arg2 lands on the parent's point arg1.
-                int parent = arg1, child = start + arg2;
-                if (parent >= start || child >= points.Count)
-                {
-                    throw FontErrors.Corrupt(-1, "A composite glyph matches a point it does not have.");
-                }
-
-                dx = points.X(parent) - points.X(child);
-                dy = points.Y(parent) - points.Y(child);
-            }
-
-            if (dx != 0 || dy != 0)
-            {
-                points.Translate(start, dx, dy);
-            }
-
-            _ = contourStart;
+            list.Add(new GlyphComponent(flags, component, arg1, arg2, a, b, c, d));
         }
         while ((flags & MoreComponents) != 0);
 
-        if ((flags & HaveInstructions) != 0)
+        return list;
+    }
+
+    /// <summary>Decodes the points of a simple glyph whose header (contour count and bounds) has been read.</summary>
+    internal static void ReadSimple(ref FontReader r, int contours, GlyphPoints points) => AddSimple(ref r, contours, points);
+}
+
+/// <summary>One component of a composite glyph: its flags, glyph, offset or point-matching arguments and 2x2 transform.</summary>
+internal readonly record struct GlyphComponent(int Flags, int Glyph, int Arg1, int Arg2, float A, float B, float C, float D)
+{
+    public bool ArgsAreXY => (Flags & 0x0002) != 0;
+
+    public bool IsTransformed => A != 1 || B != 0 || C != 0 || D != 1;
+
+    /// <summary>
+    /// Transforms the component's points (from <paramref name="start"/> on) and moves them into place: by the offset
+    /// (<paramref name="arg1"/>, <paramref name="arg2"/>), scaled when SCALED_COMPONENT_OFFSET asks, or so that the component's point
+    /// <paramref name="arg2"/> lands on the parent's point <paramref name="arg1"/>.
+    /// </summary>
+    public void Place(GlyphPoints points, int start, float arg1, float arg2)
+    {
+        if (IsTransformed)
         {
-            // Instructions follow the last component; nothing reads them.
+            points.Transform(start, A, B, C, D);
+        }
+
+        float dx, dy;
+        if (ArgsAreXY)
+        {
+            dx = arg1;
+            dy = arg2;
+            if (IsTransformed && (Flags & 0x0800) != 0 && (Flags & 0x1000) == 0)
+            {
+                (dx, dy) = ((A * arg1) + (C * arg2), (B * arg1) + (D * arg2));
+            }
+        }
+        else
+        {
+            int parent = Arg1, child = start + Arg2;
+            if (parent >= start || child >= points.Count)
+            {
+                throw FontErrors.Corrupt(-1, "A composite glyph matches a point it does not have.");
+            }
+
+            dx = points.X(parent) - points.X(child);
+            dy = points.Y(parent) - points.Y(child);
+        }
+
+        if (dx != 0 || dy != 0)
+        {
+            points.Translate(start, dx, dy);
         }
     }
 }
@@ -388,6 +408,12 @@ internal sealed class GlyphPoints
     }
 
     public void SetX(int i, float x) => _x[i] = x;
+
+    public void SetPoint(int i, float x, float y)
+    {
+        _x[i] = x;
+        _y[i] = y;
+    }
 
     public void SetY(int i, float y, bool onCurve)
     {

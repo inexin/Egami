@@ -1,4 +1,5 @@
 using Egami.Fonts.Parsing;
+using Egami.Fonts.Variations;
 
 namespace Egami.Fonts.Cff;
 
@@ -52,6 +53,7 @@ internal readonly record struct CallSite(int Start, int End, bool Global, int In
 internal sealed class CharStringInterpreter
 {
     public const int MaxStack = 48;
+    public const int MaxStackCff2 = 513;
     public const int MaxSubrDepth = 10;
     public const int MaxOperators = 200_000;
 
@@ -59,7 +61,9 @@ internal sealed class CharStringInterpreter
     private static CharStringInterpreter? t_shared;
 
     private CffFont _font;
-    private readonly double[] _stack = new double[MaxStack];
+    private readonly double[] _stack = new double[MaxStackCff2];
+    private float[]? _scalars;
+    private int _vsindex;
     private readonly double[] _transient = new double[32];
     private OutlineRecorder? _sink;
     private SubrUsage? _usage;
@@ -92,11 +96,15 @@ internal sealed class CharStringInterpreter
         return interpreter;
     }
 
-    /// <summary>Draws a glyph into <paramref name="sink"/> and returns its advance width from the charstring.</summary>
-    public double Draw(int glyph, OutlineRecorder? sink, SubrUsage? usage = null)
+    /// <summary>
+    /// Draws a glyph into <paramref name="sink"/> and returns its advance width from the charstring (0 for CFF2). For CFF2,
+    /// <paramref name="scalars"/> are the VariationStore's region scalars at the position, or <see langword="null"/> for the default.
+    /// </summary>
+    public double Draw(int glyph, OutlineRecorder? sink, SubrUsage? usage = null, float[]? scalars = null)
     {
         _sink = sink;
         _usage = usage;
+        _scalars = scalars;
         _widthOnly = false;
         _seacDepth = 0;
         _offsetX = _offsetY = 0;
@@ -110,6 +118,7 @@ internal sealed class CharStringInterpreter
     {
         _sink = null;
         _usage = null;
+        _scalars = null;
         _widthOnly = true;
         _seacDepth = 0;
         _offsetX = _offsetY = 0;
@@ -134,6 +143,7 @@ internal sealed class CharStringInterpreter
         _width = priv.DefaultWidthX;
         _x = _y = 0;
         _ended = false;
+        _vsindex = priv.VsIndex;
         Execute(_font.CharStrings[glyph], 0, new CharStringId(CharStringKind.Glyph, _fontDict, glyph));
     }
 
@@ -419,6 +429,17 @@ internal sealed class CharStringInterpreter
 
                 case 11: // return
                     return;
+                case 15 when _font.IsCff2: // vsindex
+                    Check(1);
+                    _vsindex = (int)_stack[--_sp];
+                    break;
+                case 16 when _font.IsCff2: // blend
+                    Blend();
+                    break;
+                case 14 when _font.IsCff2:
+                    // endchar is reserved in CFF2: a charstring ends with its data.
+                    _sp = 0;
+                    break;
                 case 14: // endchar
                     TakeWidth(_sp is 1 or 5);
                     if (_sp >= 4)
@@ -626,10 +647,54 @@ internal sealed class CharStringInterpreter
         }
     }
 
+    // blend: n default values, n * k deltas and n; the n values become the defaults plus each region's delta times its scalar.
+    private void Blend()
+    {
+        Check(1);
+        int n = (int)_stack[--_sp];
+        ItemVariationStore? store = _font.VariationStore;
+        int k = store?.RegionCountOf(_vsindex) ?? 0;
+        long need = (long)n * (k + 1);
+        if (n < 0 || need > _sp)
+        {
+            throw Error("A CFF2 blend has too few operands.");
+        }
+
+        int start = _sp - (int)need;
+        if (_scalars is not null && k > 0)
+        {
+            ReadOnlySpan<ushort> regions = store!.RegionIndicesOf(_vsindex);
+            for (int i = 0; i < n; i++)
+            {
+                double value = _stack[start + i];
+                int deltas = start + n + (i * k);
+                for (int j = 0; j < k; j++)
+                {
+                    float scalar = _scalars[regions[j]];
+                    if (scalar != 0)
+                    {
+                        value += _stack[deltas + j] * scalar;
+                    }
+                }
+
+                _stack[start + i] = value;
+            }
+        }
+
+        _sp = start + n;
+    }
+
     private void TakeWidth(bool hasWidth)
     {
         if (_haveWidth)
         {
+            return;
+        }
+
+        if (_font.IsCff2)
+        {
+            // CFF2 charstrings carry no width.
+            _haveWidth = true;
             return;
         }
 
@@ -741,7 +806,7 @@ internal sealed class CharStringInterpreter
 
     private void Push(double value)
     {
-        if (_sp >= MaxStack)
+        if (_sp >= (_font.IsCff2 ? MaxStackCff2 : MaxStack))
         {
             throw Error("A charstring overflows the operand stack.");
         }

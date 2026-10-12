@@ -28,28 +28,32 @@ internal readonly struct CffIndex
     /// <summary>Gets the INDEX's whole bytes, header included.</summary>
     public ReadOnlyMemory<byte> Raw(int start) => _cff[start..End];
 
-    /// <summary>Reads the INDEX at <paramref name="offset"/>; an empty INDEX is two zero bytes.</summary>
-    public static CffIndex Read(ReadOnlyMemory<byte> cff, int offset)
+    /// <summary>
+    /// Reads the INDEX at <paramref name="offset"/>; an empty INDEX is two zero bytes (four in CFF2, whose INDEX counts are 32-bit).
+    /// </summary>
+    public static CffIndex Read(ReadOnlyMemory<byte> cff, int offset, bool cff2 = false)
     {
         ReadOnlySpan<byte> data = cff.Span;
-        int count = BigEndian.UInt16(data, offset);
-        if (count == 0)
+        int countSize = cff2 ? 4 : 2;
+        uint rawCount = cff2 ? BigEndian.UInt32(data, offset) : BigEndian.UInt16(data, offset);
+        if (rawCount == 0)
         {
-            return new CffIndex(cff, 0, 1, offset + 2, offset + 2, offset + 2);
+            return new CffIndex(cff, 0, 1, offset + countSize, offset + countSize, offset + countSize);
         }
 
-        if (offset + 3 > data.Length)
+        if (offset + countSize + 1 > data.Length || rawCount > (uint)(data.Length / 2))
         {
             throw FontErrors.Truncated(offset);
         }
 
-        int offSize = data[offset + 2];
+        int count = (int)rawCount;
+        int offSize = data[offset + countSize];
         if (offSize is < 1 or > 4)
         {
             throw FontErrors.Corrupt(offset, $"A CFF INDEX has offset size {offSize}.");
         }
 
-        int offsetsStart = offset + 3;
+        int offsetsStart = offset + countSize + 1;
         long offsetsEnd = offsetsStart + ((long)(count + 1) * offSize);
         if (offsetsEnd > data.Length)
         {
@@ -118,15 +122,20 @@ internal sealed class CffDict
 
     public IEnumerable<KeyValuePair<int, double[]>> Entries => _entries;
 
-    public static CffDict Read(ReadOnlySpan<byte> data, long offset)
+    /// <summary>
+    /// Reads a DICT. In CFF2 (<paramref name="regionCount"/> given) the operators vsindex (22), blend (23) and vstore (24) exist; a
+    /// blend keeps its default values, and <paramref name="regionCount"/> says how many deltas each value has for a vsindex.
+    /// </summary>
+    public static CffDict Read(ReadOnlySpan<byte> data, long offset, Func<int, int>? regionCount = null)
     {
         var dict = new CffDict();
         var operands = new List<double>();
+        int vsindex = 0;
         int i = 0;
         while (i < data.Length)
         {
             int b0 = data[i];
-            if (b0 <= 21)
+            if (b0 <= 21 || (regionCount is not null && b0 is 22 or 23 or 24))
             {
                 int op = b0;
                 i++;
@@ -138,6 +147,27 @@ internal sealed class CffDict
                     }
 
                     op = 1200 + data[i++];
+                }
+
+                if (op == 23)
+                {
+                    // blend: n defaults, n * k deltas, n; the defaults stay as operands.
+                    int n = operands.Count > 0 ? (int)operands[^1] : -1;
+                    int k = regionCount!(vsindex);
+                    long used = 1 + ((long)n * (k + 1));
+                    if (n < 0 || used > operands.Count)
+                    {
+                        throw FontErrors.Corrupt(offset + i, "A CFF2 DICT blend has too few operands.");
+                    }
+
+                    int start = operands.Count - (int)used;
+                    operands.RemoveRange(start + n, (int)used - n);
+                    continue;
+                }
+
+                if (op == 22 && operands.Count > 0)
+                {
+                    vsindex = (int)operands[^1];
                 }
 
                 dict._entries[op] = [.. operands];

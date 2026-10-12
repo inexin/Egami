@@ -170,6 +170,16 @@ Egami.Fonts.FontTag.FontTag(string! tag) -> void
 Egami.Fonts.FontTag.FontTag(uint Value) -> void
 Egami.Fonts.FontTag.Value.get -> uint
 Egami.Fonts.FontTag.Value.init -> void
+Egami.Fonts.FontVariation
+Egami.Fonts.FontVariation.Axis.get -> Egami.Fonts.FontTag
+Egami.Fonts.FontVariation.Axis.init -> void
+Egami.Fonts.FontVariation.Deconstruct(out Egami.Fonts.FontTag Axis, out float Value) -> void
+Egami.Fonts.FontVariation.Equals(Egami.Fonts.FontVariation other) -> bool
+Egami.Fonts.FontVariation.FontVariation() -> void
+Egami.Fonts.FontVariation.FontVariation(Egami.Fonts.FontTag Axis, float Value) -> void
+Egami.Fonts.FontVariation.FontVariation(string! axis, float value) -> void
+Egami.Fonts.FontVariation.Value.get -> float
+Egami.Fonts.FontVariation.Value.init -> void
 Egami.Fonts.GenericFamily
 Egami.Fonts.GenericFamily.Cursive = 3 -> Egami.Fonts.GenericFamily
 Egami.Fonts.GenericFamily.Fantasy = 4 -> Egami.Fonts.GenericFamily
@@ -208,6 +218,20 @@ Egami.Fonts.IGlyphOutlineSink.CubicTo(float c1x, float c1y, float c2x, float c2y
 Egami.Fonts.IGlyphOutlineSink.LineTo(float x, float y) -> void
 Egami.Fonts.IGlyphOutlineSink.MoveTo(float x, float y) -> void
 Egami.Fonts.IGlyphOutlineSink.QuadTo(float cx, float cy, float x, float y) -> void
+Egami.Fonts.NamedInstance
+Egami.Fonts.NamedInstance.<Clone>$() -> Egami.Fonts.NamedInstance!
+Egami.Fonts.NamedInstance.Coordinates.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontVariation>!
+Egami.Fonts.NamedInstance.Coordinates.init -> void
+Egami.Fonts.NamedInstance.Deconstruct(out string! Name, out string? PostScriptName, out System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontVariation>! Coordinates) -> void
+Egami.Fonts.NamedInstance.Equals(Egami.Fonts.NamedInstance? other) -> bool
+Egami.Fonts.NamedInstance.Name.get -> string!
+Egami.Fonts.NamedInstance.Name.init -> void
+Egami.Fonts.NamedInstance.NamedInstance(string! Name, string? PostScriptName, System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontVariation>! Coordinates) -> void
+Egami.Fonts.NamedInstance.PostScriptName.get -> string?
+Egami.Fonts.NamedInstance.PostScriptName.init -> void
+Egami.Fonts.OpticalSizing
+Egami.Fonts.OpticalSizing.Auto = 0 -> Egami.Fonts.OpticalSizing
+Egami.Fonts.OpticalSizing.None = 1 -> Egami.Fonts.OpticalSizing
 Egami.Fonts.SubsetFormat
 Egami.Fonts.SubsetFormat.Auto = 0 -> Egami.Fonts.SubsetFormat
 Egami.Fonts.SubsetFormat.BareCff = 3 -> Egami.Fonts.SubsetFormat
@@ -285,7 +309,9 @@ Egami.Fonts.Typeface.HasCharacterMap.get -> bool
 Egami.Fonts.Typeface.HasKerning.get -> bool
 Egami.Fonts.Typeface.HheaMetrics.get -> Egami.Fonts.VerticalMetrics
 Egami.Fonts.Typeface.IsFixedPitch.get -> bool
+Egami.Fonts.Typeface.IsVariable.get -> bool
 Egami.Fonts.Typeface.MapCodePoints(System.ReadOnlySpan<char> text, System.Span<ushort> glyphs) -> int
+Egami.Fonts.Typeface.NamedInstances.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.NamedInstance!>!
 Egami.Fonts.Typeface.Outlines.get -> Egami.Fonts.FontOutlines
 Egami.Fonts.Typeface.PostScriptName.get -> string!
 Egami.Fonts.Typeface.Style.get -> Egami.Fonts.FontStyle
@@ -294,7 +320,11 @@ Egami.Fonts.Typeface.TryGetGlyph(int codePoint, out ushort glyph) -> bool
 Egami.Fonts.Typeface.TryGetTable(Egami.Fonts.FontTag tag, out System.ReadOnlyMemory<byte> data) -> bool
 Egami.Fonts.Typeface.TypoMetrics.get -> Egami.Fonts.VerticalMetrics
 Egami.Fonts.Typeface.UnitsPerEm.get -> int
+Egami.Fonts.Typeface.VariationAxes.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.VariationAxis!>!
+Egami.Fonts.Typeface.Variations.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontVariation>!
 Egami.Fonts.Typeface.WinMetrics.get -> Egami.Fonts.VerticalMetrics
+Egami.Fonts.Typeface.WithNamedInstance(int index) -> Egami.Fonts.Typeface!
+Egami.Fonts.Typeface.WithVariations(params System.ReadOnlySpan<Egami.Fonts.FontVariation> variations) -> Egami.Fonts.Typeface!
 Egami.Fonts.Unicode.Bidi
 Egami.Fonts.Unicode.BidiClass
 Egami.Fonts.Unicode.BidiClass.ArabicLetter = 1 -> Egami.Fonts.Unicode.BidiClass
@@ -558,6 +588,23 @@ Egami.Fonts.Unicode.WordEnumerator.Current.get -> Egami.Fonts.Unicode.TextSegmen
 Egami.Fonts.Unicode.WordEnumerator.GetEnumerator() -> Egami.Fonts.Unicode.WordEnumerator
 Egami.Fonts.Unicode.WordEnumerator.MoveNext() -> bool
 Egami.Fonts.Unicode.WordEnumerator.WordEnumerator() -> void
+Egami.Fonts.VariationAxis
+Egami.Fonts.VariationAxis.<Clone>$() -> Egami.Fonts.VariationAxis!
+Egami.Fonts.VariationAxis.Deconstruct(out Egami.Fonts.FontTag Tag, out string! Name, out float Min, out float Default, out float Max, out bool IsHidden) -> void
+Egami.Fonts.VariationAxis.Default.get -> float
+Egami.Fonts.VariationAxis.Default.init -> void
+Egami.Fonts.VariationAxis.Equals(Egami.Fonts.VariationAxis? other) -> bool
+Egami.Fonts.VariationAxis.IsHidden.get -> bool
+Egami.Fonts.VariationAxis.IsHidden.init -> void
+Egami.Fonts.VariationAxis.Max.get -> float
+Egami.Fonts.VariationAxis.Max.init -> void
+Egami.Fonts.VariationAxis.Min.get -> float
+Egami.Fonts.VariationAxis.Min.init -> void
+Egami.Fonts.VariationAxis.Name.get -> string!
+Egami.Fonts.VariationAxis.Name.init -> void
+Egami.Fonts.VariationAxis.Tag.get -> Egami.Fonts.FontTag
+Egami.Fonts.VariationAxis.Tag.init -> void
+Egami.Fonts.VariationAxis.VariationAxis(Egami.Fonts.FontTag Tag, string! Name, float Min, float Default, float Max, bool IsHidden) -> void
 Egami.Fonts.VerticalMetrics
 Egami.Fonts.VerticalMetrics.Ascent.get -> int
 Egami.Fonts.VerticalMetrics.Ascent.init -> void
@@ -584,7 +631,11 @@ override Egami.Fonts.FontProbe.GetHashCode() -> int
 override Egami.Fonts.FontStyle.GetHashCode() -> int
 override Egami.Fonts.FontTag.GetHashCode() -> int
 override Egami.Fonts.FontTag.ToString() -> string!
+override Egami.Fonts.FontVariation.GetHashCode() -> int
 override Egami.Fonts.GlyphExtents.GetHashCode() -> int
+override Egami.Fonts.NamedInstance.Equals(object? obj) -> bool
+override Egami.Fonts.NamedInstance.GetHashCode() -> int
+override Egami.Fonts.NamedInstance.ToString() -> string!
 override Egami.Fonts.SubsetOptions.Equals(object? obj) -> bool
 override Egami.Fonts.SubsetOptions.GetHashCode() -> int
 override Egami.Fonts.SubsetOptions.ToString() -> string!
@@ -595,6 +646,9 @@ override Egami.Fonts.Unicode.BidiRun.GetHashCode() -> int
 override Egami.Fonts.Unicode.Script.GetHashCode() -> int
 override Egami.Fonts.Unicode.Script.ToString() -> string!
 override Egami.Fonts.Unicode.TextSegment.GetHashCode() -> int
+override Egami.Fonts.VariationAxis.Equals(object? obj) -> bool
+override Egami.Fonts.VariationAxis.GetHashCode() -> int
+override Egami.Fonts.VariationAxis.ToString() -> string!
 override Egami.Fonts.VerticalMetrics.GetHashCode() -> int
 static Egami.Fonts.CffOptions.Default.get -> Egami.Fonts.CffOptions!
 static Egami.Fonts.CffOptions.operator !=(Egami.Fonts.CffOptions? left, Egami.Fonts.CffOptions? right) -> bool
@@ -626,10 +680,24 @@ static Egami.Fonts.FontStyle.operator ==(Egami.Fonts.FontStyle left, Egami.Fonts
 static Egami.Fonts.FontSubsetter.Subset(Egami.Fonts.Typeface! face, System.Collections.Generic.IEnumerable<ushort>! glyphs, Egami.Fonts.SubsetOptions? options = null) -> Egami.Fonts.FontSubset!
 static Egami.Fonts.FontTag.operator !=(Egami.Fonts.FontTag left, Egami.Fonts.FontTag right) -> bool
 static Egami.Fonts.FontTag.operator ==(Egami.Fonts.FontTag left, Egami.Fonts.FontTag right) -> bool
+static Egami.Fonts.FontVariation.Italic(float value) -> Egami.Fonts.FontVariation
+static Egami.Fonts.FontVariation.ItalicAxis.get -> Egami.Fonts.FontTag
+static Egami.Fonts.FontVariation.operator !=(Egami.Fonts.FontVariation left, Egami.Fonts.FontVariation right) -> bool
+static Egami.Fonts.FontVariation.operator ==(Egami.Fonts.FontVariation left, Egami.Fonts.FontVariation right) -> bool
+static Egami.Fonts.FontVariation.OpticalSize(float points) -> Egami.Fonts.FontVariation
+static Egami.Fonts.FontVariation.OpticalSizeAxis.get -> Egami.Fonts.FontTag
+static Egami.Fonts.FontVariation.Slant(float degrees) -> Egami.Fonts.FontVariation
+static Egami.Fonts.FontVariation.SlantAxis.get -> Egami.Fonts.FontTag
+static Egami.Fonts.FontVariation.Weight(float value) -> Egami.Fonts.FontVariation
+static Egami.Fonts.FontVariation.WeightAxis.get -> Egami.Fonts.FontTag
+static Egami.Fonts.FontVariation.Width(float percent) -> Egami.Fonts.FontVariation
+static Egami.Fonts.FontVariation.WidthAxis.get -> Egami.Fonts.FontTag
 static Egami.Fonts.GlyphExtents.Empty.get -> Egami.Fonts.GlyphExtents
 static Egami.Fonts.GlyphExtents.operator !=(Egami.Fonts.GlyphExtents left, Egami.Fonts.GlyphExtents right) -> bool
 static Egami.Fonts.GlyphExtents.operator ==(Egami.Fonts.GlyphExtents left, Egami.Fonts.GlyphExtents right) -> bool
 static Egami.Fonts.GlyphRun.Create(Egami.Fonts.Font font, System.ReadOnlySpan<ushort> glyphs, System.ReadOnlySpan<System.Numerics.Vector2> positions, string? text = null, System.ReadOnlySpan<int> clusters = default(System.ReadOnlySpan<int>)) -> Egami.Fonts.GlyphRun!
+static Egami.Fonts.NamedInstance.operator !=(Egami.Fonts.NamedInstance? left, Egami.Fonts.NamedInstance? right) -> bool
+static Egami.Fonts.NamedInstance.operator ==(Egami.Fonts.NamedInstance? left, Egami.Fonts.NamedInstance? right) -> bool
 static Egami.Fonts.SubsetOptions.Default.get -> Egami.Fonts.SubsetOptions!
 static Egami.Fonts.SubsetOptions.operator !=(Egami.Fonts.SubsetOptions? left, Egami.Fonts.SubsetOptions? right) -> bool
 static Egami.Fonts.SubsetOptions.operator ==(Egami.Fonts.SubsetOptions? left, Egami.Fonts.SubsetOptions? right) -> bool
@@ -851,6 +919,8 @@ static Egami.Fonts.Unicode.UnicodeData.IsEmojiPresentation(int codePoint) -> boo
 static Egami.Fonts.Unicode.UnicodeData.IsExtendedPictographic(int codePoint) -> bool
 static Egami.Fonts.Unicode.UnicodeData.TryGetBidiMirroringGlyph(int codePoint, out int mirror) -> bool
 static Egami.Fonts.Unicode.UnicodeData.UnicodeVersion.get -> System.Version!
+static Egami.Fonts.VariationAxis.operator !=(Egami.Fonts.VariationAxis? left, Egami.Fonts.VariationAxis? right) -> bool
+static Egami.Fonts.VariationAxis.operator ==(Egami.Fonts.VariationAxis? left, Egami.Fonts.VariationAxis? right) -> bool
 static Egami.Fonts.VerticalMetrics.operator !=(Egami.Fonts.VerticalMetrics left, Egami.Fonts.VerticalMetrics right) -> bool
 static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left, Egami.Fonts.VerticalMetrics right) -> bool
 ~override Egami.Fonts.Font.Equals(object obj) -> bool
@@ -866,6 +936,8 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.FontStyle.Equals(object obj) -> bool
 ~override Egami.Fonts.FontStyle.ToString() -> string
 ~override Egami.Fonts.FontTag.Equals(object obj) -> bool
+~override Egami.Fonts.FontVariation.Equals(object obj) -> bool
+~override Egami.Fonts.FontVariation.ToString() -> string
 ~override Egami.Fonts.GlyphExtents.Equals(object obj) -> bool
 ~override Egami.Fonts.GlyphExtents.ToString() -> string
 ~override Egami.Fonts.TextBounds.Equals(object obj) -> bool

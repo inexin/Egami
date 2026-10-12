@@ -39,6 +39,7 @@ public sealed partial class Typeface
     private PostTable? _post;
     private StyleAndNames? _style;
     private DecodedFont? _web;
+    private readonly Lock _lock = new();
 
     private Typeface(ReadOnlyMemory<byte> data, int faceIndex, int faceOffset, TableRecord[] tables, uint sfntVersion, FontLoadOptions options)
     {
@@ -50,12 +51,11 @@ public sealed partial class Typeface
         _options = options;
 
         _head = LoadHead();
-        Outlines = HasTable(Tags.Cff) && !HasTable(Tags.Glyf) ? FontOutlines.Cff : FontOutlines.TrueType;
+        IsCff2 = HasTable(Tags.Cff2) && !HasTable(Tags.Glyf) && !HasTable(Tags.Cff);
+        Outlines = (HasTable(Tags.Cff) || IsCff2) && !HasTable(Tags.Glyf) ? FontOutlines.Cff : FontOutlines.TrueType;
         if (Outlines == FontOutlines.TrueType && !HasTable(Tags.Glyf))
         {
-            throw HasTable(Tags.Cff2)
-                ? new UnsupportedFormatException("CFF2 outlines are read from Egami.Fonts 2.7.2 on.")
-                : FontErrors.Corrupt(faceOffset, "The font has no glyph data: neither glyf nor CFF is present.");
+            throw FontErrors.Corrupt(faceOffset, "The font has no glyph data: neither glyf, CFF nor CFF2 is present.");
         }
 
         GlyphCount = LoadGlyphData();
@@ -331,12 +331,17 @@ public sealed partial class Typeface
         return default;
     }
 
-    internal NameTable Name => Volatile.Read(ref _name) ?? Publish(ref _name, LoadTable(Tags.Name, NameTable.Read, NameTable.Empty, "the family is \"Unknown\""));
+    internal NameTable Name => _base?.Name ?? Volatile.Read(ref _name) ?? Publish(ref _name, LoadTable(Tags.Name, NameTable.Read, NameTable.Empty, "the family is \"Unknown\""));
 
     internal Os2Table Os2
     {
         get
         {
+            if (_base is not null)
+            {
+                return _base.Os2;
+            }
+
             Os2Table? os2 = Volatile.Read(ref _os2);
             if (os2 is not null)
             {
@@ -364,6 +369,11 @@ public sealed partial class Typeface
     {
         get
         {
+            if (_base is not null)
+            {
+                return _base.Os2Missing;
+            }
+
             _ = Os2;
             return _os2Missing || IsBareCff;
         }
@@ -378,12 +388,17 @@ public sealed partial class Typeface
                 return null;
             }
 
+            if (_base is not null)
+            {
+                return _base.Hhea;
+            }
+
             Box<HheaTable?>? box = Volatile.Read(ref _hhea);
             return (box ?? Publish(ref _hhea, new Box<HheaTable?>(LoadTable<HheaTable?>(Tags.Hhea, HheaTable.Read, null, "advances and line metrics come from other tables")))).Value;
         }
     }
 
-    internal PostTable Post => Volatile.Read(ref _post) ?? Publish(ref _post, IsBareCff ? new PostTable() : LoadTable(Tags.Post, PostTable.Read, new PostTable(), "the italic angle is 0 and the underline is derived from the em"));
+    internal PostTable Post => _base?.Post ?? Volatile.Read(ref _post) ?? Publish(ref _post, IsBareCff ? new PostTable() : LoadTable(Tags.Post, PostTable.Read, new PostTable(), "the italic angle is 0 and the underline is derived from the em"));
 
     private StyleAndNames StyleInfo => Volatile.Read(ref _style) ?? Publish(ref _style, StyleAndNames.Compute(this));
 
@@ -505,9 +520,9 @@ public sealed partial class Typeface
 
         if (Outlines == FontOutlines.Cff)
         {
-            TryGetTable(Tags.Cff, out ReadOnlyMemory<byte> cffData);
-            int cffOffset = 0;
-            GetTableSpan(Tags.Cff, out cffOffset);
+            FontTag cffTag = IsCff2 ? Tags.Cff2 : Tags.Cff;
+            TryGetTable(cffTag, out ReadOnlyMemory<byte> cffData);
+            GetTableSpan(cffTag, out int cffOffset);
             _cff = CffFont.Read(cffData, cffOffset);
             int count = _cff.GlyphCount;
             if (declared >= 0 && declared != count)
@@ -606,6 +621,31 @@ public sealed partial class Typeface
             string full = name.GetEnglish(4) ?? (subfamily == "Regular" ? family : $"{family} {subfamily}");
 
             FontStyle style = Matching.FaceIndexer.StyleOf(face.Os2Missing ? null : face.Os2, face._head.MacStyle);
+            int named = face.NamedInstanceIndex();
+            if (named >= 0)
+            {
+                // A named instance names the face, the default position's too.
+                subfamily = face.NamedInstances[named].Name;
+                full = subfamily == "Regular" ? family : $"{family} {subfamily}";
+            }
+
+            if (face._instance is not null)
+            {
+                // Another position keeps the default face's names but gets its own PostScript name.
+                if (named < 0)
+                {
+                    subfamily = face.Root.SubfamilyName;
+                    full = face.Root.FullName;
+                }
+
+                postScript = face.VariedPostScriptName(family, named);
+                style = face.VariedStyle(style);
+            }
+            else if (named >= 0 && face.NamedInstances[named].PostScriptName is string own)
+            {
+                postScript = own;
+            }
+
             return new StyleAndNames(family, subfamily, full, postScript, style);
         }
 
