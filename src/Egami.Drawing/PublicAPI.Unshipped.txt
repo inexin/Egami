@@ -122,6 +122,7 @@ Egami.Drawing.Path.IsEmpty.get -> bool
 Egami.Drawing.Path.Points.get -> System.ReadOnlySpan<System.Numerics.Vector2>
 Egami.Drawing.Path.Reverse() -> Egami.Drawing.Path!
 Egami.Drawing.Path.TightBounds.get -> Egami.Drawing.RectF
+Egami.Drawing.Path.ToSvg(Egami.Drawing.SvgPathFormat? format = null) -> string!
 Egami.Drawing.Path.Transform(Egami.Operations.Homography homography) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Transform(System.Numerics.Matrix3x2 matrix) -> Egami.Drawing.Path!
 Egami.Drawing.Path.Verbs.get -> System.ReadOnlySpan<Egami.Drawing.PathVerb>
@@ -240,6 +241,20 @@ Egami.Drawing.Stroke.MiterLimit.init -> void
 Egami.Drawing.Stroke.Stroke(float width = 1) -> void
 Egami.Drawing.Stroke.Width.get -> float
 Egami.Drawing.Stroke.Width.init -> void
+Egami.Drawing.SvgPathException
+Egami.Drawing.SvgPathException.Position.get -> int
+Egami.Drawing.SvgPathException.Problem.get -> string!
+Egami.Drawing.SvgPathException.SvgPathException(int position, string! problem) -> void
+Egami.Drawing.SvgPathFormat
+Egami.Drawing.SvgPathFormat.<Clone>$() -> Egami.Drawing.SvgPathFormat!
+Egami.Drawing.SvgPathFormat.Compact.get -> bool
+Egami.Drawing.SvgPathFormat.Compact.init -> void
+Egami.Drawing.SvgPathFormat.Equals(Egami.Drawing.SvgPathFormat? other) -> bool
+Egami.Drawing.SvgPathFormat.Precision.get -> int
+Egami.Drawing.SvgPathFormat.Precision.init -> void
+Egami.Drawing.SvgPathFormat.Relative.get -> bool
+Egami.Drawing.SvgPathFormat.Relative.init -> void
+Egami.Drawing.SvgPathFormat.SvgPathFormat() -> void
 override Egami.Drawing.CanvasOptions.Equals(object? obj) -> bool
 override Egami.Drawing.CanvasOptions.GetHashCode() -> int
 override Egami.Drawing.CanvasOptions.ToString() -> string!
@@ -261,6 +276,9 @@ override Egami.Drawing.SolidPaint.ToString() -> string!
 override Egami.Drawing.Stroke.Equals(object? obj) -> bool
 override Egami.Drawing.Stroke.GetHashCode() -> int
 override Egami.Drawing.Stroke.ToString() -> string!
+override Egami.Drawing.SvgPathFormat.Equals(object? obj) -> bool
+override Egami.Drawing.SvgPathFormat.GetHashCode() -> int
+override Egami.Drawing.SvgPathFormat.ToString() -> string!
 override sealed Egami.Drawing.SolidPaint.Equals(Egami.Drawing.Paint? other) -> bool
 static Egami.Drawing.CanvasOptions.Default.get -> Egami.Drawing.CanvasOptions!
 static Egami.Drawing.CanvasOptions.operator !=(Egami.Drawing.CanvasOptions? left, Egami.Drawing.CanvasOptions? right) -> bool
@@ -289,6 +307,7 @@ static Egami.Drawing.Path.Circle(System.Numerics.Vector2 center, float radius) -
 static Egami.Drawing.Path.Empty.get -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Line(System.Numerics.Vector2 start, System.Numerics.Vector2 end) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Oval(Egami.Drawing.RectF bounds) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.ParseSvg(System.ReadOnlySpan<char> data, Egami.Drawing.FillRule fillRule = Egami.Drawing.FillRule.NonZero, bool lenient = false) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Pie(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Polygon(System.ReadOnlySpan<System.Numerics.Vector2> points, bool close = true) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Rect(Egami.Drawing.RectF rect) -> Egami.Drawing.Path!
@@ -296,6 +315,7 @@ static Egami.Drawing.Path.RegularPolygon(System.Numerics.Vector2 center, float r
 static Egami.Drawing.Path.Ring(Egami.Drawing.RoundRect outer, Egami.Drawing.RoundRect inner) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.RoundRect(Egami.Drawing.RoundRect roundRect) -> Egami.Drawing.Path!
 static Egami.Drawing.Path.Star(System.Numerics.Vector2 center, float outerRadius, float innerRadius, int points, float rotationDegrees = 0) -> Egami.Drawing.Path!
+static Egami.Drawing.Path.TryParseSvg(System.ReadOnlySpan<char> data, out Egami.Drawing.Path? path) -> bool
 static Egami.Drawing.RectF.Empty.get -> Egami.Drawing.RectF
 static Egami.Drawing.RectF.FromEdges(float left, float top, float right, float bottom) -> Egami.Drawing.RectF
 static Egami.Drawing.RectF.FromPoints(System.ReadOnlySpan<System.Numerics.Vector2> points) -> Egami.Drawing.RectF
@@ -311,6 +331,9 @@ static Egami.Drawing.SolidPaint.operator ==(Egami.Drawing.SolidPaint? left, Egam
 static Egami.Drawing.Stroke.Hairline.get -> Egami.Drawing.Stroke!
 static Egami.Drawing.Stroke.operator !=(Egami.Drawing.Stroke? left, Egami.Drawing.Stroke? right) -> bool
 static Egami.Drawing.Stroke.operator ==(Egami.Drawing.Stroke? left, Egami.Drawing.Stroke? right) -> bool
+static Egami.Drawing.SvgPathFormat.Default.get -> Egami.Drawing.SvgPathFormat!
+static Egami.Drawing.SvgPathFormat.operator !=(Egami.Drawing.SvgPathFormat? left, Egami.Drawing.SvgPathFormat? right) -> bool
+static Egami.Drawing.SvgPathFormat.operator ==(Egami.Drawing.SvgPathFormat? left, Egami.Drawing.SvgPathFormat? right) -> bool
 virtual Egami.Drawing.Canvas.Dispose(bool disposing) -> void
 virtual Egami.Drawing.Canvas.OnClipRect(Egami.Drawing.RectF rect, Egami.Drawing.ClipOp op, bool antialias) -> void
 virtual Egami.Drawing.Canvas.OnClipRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Drawing.ClipOp op, bool antialias) -> void

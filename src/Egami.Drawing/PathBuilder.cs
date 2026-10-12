@@ -538,6 +538,33 @@ public sealed class PathBuilder
         return this;
     }
 
+    /// <summary>Remembers the builder's state, for <see cref="Rewind"/>.</summary>
+    internal (int Verbs, int Points, Vector2 ContourStart, Vector2 Current, bool Open) Mark() => (_verbs.Count, _points.Count, _contourStart, CurrentPoint, _open);
+
+    /// <summary>Returns whether every point added since <paramref name="mark"/> is finite.</summary>
+    internal bool FiniteSince((int Verbs, int Points, Vector2 ContourStart, Vector2 Current, bool Open) mark)
+    {
+        for (int i = mark.Points; i < _points.Count; i++)
+        {
+            if (!float.IsFinite(_points[i].X) || !float.IsFinite(_points[i].Y))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Drops everything added since <paramref name="mark"/>.</summary>
+    internal void Rewind((int Verbs, int Points, Vector2 ContourStart, Vector2 Current, bool Open) mark)
+    {
+        _verbs.RemoveRange(mark.Verbs, _verbs.Count - mark.Verbs);
+        _points.RemoveRange(mark.Points, _points.Count - mark.Points);
+        _contourStart = mark.ContourStart;
+        CurrentPoint = mark.Current;
+        _open = mark.Open;
+    }
+
     private void EnsureContour()
     {
         if (!_open)
