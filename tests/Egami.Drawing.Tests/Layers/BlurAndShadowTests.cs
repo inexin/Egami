@@ -8,34 +8,29 @@ namespace Egami.Drawing.Tests.Layers;
 public class BlurAndShadowTests
 {
     /// <summary>
-    /// The analytic rectangle and round rectangle are the true pixel means of a Gaussian blur, so they are checked against Egami's
-    /// exact blur of the shape's coverage: a rectangle within one level from σ = 2 and two below (where the exact blur's sampled
-    /// kernel and the pixel mean part); a round rectangle within two, and four at σ = 1.5, because the general path's corners are
-    /// flattened to chords up to 0.1 pixel inside the arcs while the analytic ones are exact. Against the general path's fast
-    /// blur, whose box cascade is up to five levels from a true Gaussian, they stay within six.
+    /// The analytic rectangle is the true pixel mean of a Gaussian blur, so it is checked against Egami's exact blur of the
+    /// rectangle's coverage: within one level from σ = 2 and two below, where the exact blur's sampled kernel and the pixel mean
+    /// part. Against the general path's fast blur, whose box cascade is up to five levels from a true Gaussian, it stays within six.
+    /// Round rectangles take the general path.
     /// </summary>
     [Theory]
-    [InlineData(1.5f, 2, 4)]
-    [InlineData(4, 1, 2)]
-    [InlineData(12, 1, 2)]
-    public void TheAnalyticBlursMatchAnExactBlurOfTheCoverage(float sigma, int rectTolerance, int roundTolerance)
+    [InlineData(1.5f, 2)]
+    [InlineData(4, 1)]
+    [InlineData(12, 1)]
+    public void TheAnalyticRectBlurMatchesAnExactBlurOfTheCoverage(float sigma, int tolerance)
     {
         SolidPaint paint = new(Rgba8.Black) { Blur = new MaskBlur(sigma) };
         RectF rect = new(30.25f, 20.5f, 47.5f, 31);
+        Rgba8[] drawn = Draw(c => c.FillRect(rect, paint), transparent: true);
+        Rgba8[] exact = Blurred(Path.Rect(rect), sigma, BlurMethod.Exact);
+        Rgba8[] general = Draw(c => c.FillPath(Path.Rect(rect), paint), transparent: true);
+        Assert.True(MaxDifference(drawn, exact) <= tolerance, $"σ {sigma}: {MaxDifference(drawn, exact)} levels from the exact blur");
+        Assert.True(MaxDifference(drawn, general) <= 6, $"σ {sigma}: {MaxDifference(drawn, general)} levels from the fast blur");
+
+        // A round rectangle is the fast blur of its coverage.
         RoundRect round = new(rect, new CornerRadii(new Vector2(12, 8), new Vector2(3, 3), new Vector2(15, 15), Vector2.Zero));
-        foreach ((string name, Action<Drawing.Canvas> analytic, Path path, int tolerance) in new (string, Action<Drawing.Canvas>, Path, int)[]
-        {
-            ("rect", c => c.FillRect(rect, paint), Path.Rect(rect), rectTolerance),
-            ("round rect", c => c.FillRoundRect(round, paint), Path.RoundRect(round), roundTolerance),
-        })
-        {
-            Rgba8[] drawn = Draw(analytic, transparent: true);
-            Rgba8[] exact = Blurred(path, sigma, BlurMethod.Exact);
-            Rgba8[] general = Draw(c => c.FillPath(path, paint), transparent: true);
-            Assert.True(MaxDifference(drawn, exact) <= tolerance, $"{name} σ {sigma}: {MaxDifference(drawn, exact)} levels from the exact blur");
-            Assert.True(MaxDifference(drawn, general) <= 6, $"{name} σ {sigma}: {MaxDifference(drawn, general)} levels from the fast blur");
-            Assert.True(MaxDifference(Blurred(path, sigma, BlurMethod.Fast), general) <= 1, $"{name} σ {sigma}: the general path is not the fast blur of the coverage");
-        }
+        Rgba8[] roundDrawn = Draw(c => c.FillRoundRect(round, paint), transparent: true);
+        Assert.True(MaxDifference(Blurred(Path.RoundRect(round), sigma, BlurMethod.Fast), roundDrawn) <= 1);
     }
 
     [Fact]

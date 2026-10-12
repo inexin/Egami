@@ -211,8 +211,8 @@ Paints and layers, in the same preview package. See [Gradients](docs/articles/gu
   `SoftMaskKind.Alpha` or `Luminosity`, a backdrop color and a transfer curve, as PDF soft masks. Within a mean level of SkiaSharp's
   saveLayer with alpha and blend modes.
 - `Paint.Blur` with `MaskBlur` and `BlurStyle` (`Normal`, `Solid`, `Outer`, `Inner`), on Egami's fast blur, as Skia's blur mask
-  filter (within a mean level of SkiaSharp's in every style); axis-aligned rectangles and round rectangles are blurred exactly from
-  the error function. `DrawShadow` with `ShadowOptions`: ambient and spot shadows after Skia's shadow model.
+  filter (within a mean level of SkiaSharp's in every style); axis-aligned rectangles are blurred exactly from the error
+  function. `DrawShadow` with `ShadowOptions`: ambient and spot shadows after Skia's shadow model.
 - Speed (ms, 2048 × 2048, 1 thread and 24 cores): a full-frame linear gradient 26 and 3.8 against the reference drawing library 2.1.7's 378
   and 33; radial 22 and 2.9 against 254 and 30; a tiled image brush 5.6 and 0.8 against 41 and 4.3. A full-frame half-opacity
   layer costs 1.38 times the drawing inside it at 1 thread and 1.14 at 24.

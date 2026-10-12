@@ -121,8 +121,8 @@ operation works on a layer.
 ## Blurs and shadows
 
 `Paint.Blur` takes a `MaskBlur`: the shape's coverage blurred by a sigma in device pixels before the paint is applied, keeping
-the inside and outside as its `BlurStyle` says, as Skia's blur mask filter. Axis-aligned rectangles and round rectangles with the
-normal style are blurred exactly, from the error function. `DrawShadow` casts a Material-style shadow from a shape's elevation and
+the inside and outside as its `BlurStyle` says, as Skia's blur mask filter. Axis-aligned rectangles with the normal style are
+blurred exactly, from the error function. `DrawShadow` casts a Material-style shadow from a shape's elevation and
 a light, after Skia's shadow utilities; a group's drop shadow is a layer filter.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#blur)]

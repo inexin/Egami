@@ -147,8 +147,7 @@ public enum BlurStyle
 /// <summary>
 /// A Gaussian blur of a shape's coverage before the paint is applied, as Skia's blur mask filter: <see cref="Sigma"/> is in device
 /// pixels, so it does not scale with the canvas transform. Set it as <see cref="Paint.Blur"/>. Egami blurs with its fast blur; an
-/// axis-aligned rectangle or round rectangle with <see cref="BlurStyle.Normal"/> is computed exactly from the error function,
-/// which is faster still.
+/// axis-aligned rectangle with <see cref="BlurStyle.Normal"/> is computed exactly from the error function, which is faster still.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Paints.cs" region="blur"/>

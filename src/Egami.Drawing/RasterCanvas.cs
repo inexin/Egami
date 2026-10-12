@@ -282,20 +282,6 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     }
 
     /// <inheritdoc/>
-    /// <remarks>An axis-aligned round rectangle with a normal <see cref="Paint.Blur"/> is blurred from the error function.</remarks>
-    protected override void OnDrawRoundRect(RoundRect roundRect, Stroke? stroke, Paint paint)
-    {
-        if (stroke is null && TryAnalyticBlur(paint, out MaskBlur blur, out Matrix3x2 m) && m.M11 > 0 && m.M22 > 0)
-        {
-            RoundRect device = DeviceRoundRect(roundRect, m);
-            DrawAnalytic(paint, sink => MaskBlurs.FillRoundRect(device, blur.Sigma, _clip.Bounds, sink, _context.MaxParallelism));
-            return;
-        }
-
-        base.OnDrawRoundRect(roundRect, stroke, paint);
-    }
-
-    /// <inheritdoc/>
     protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
     {
         if (_clip.Bounds.IsEmpty)
@@ -366,16 +352,6 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
 
     private static Rect Grow(Rect r, OperationReach reach)
         => new(r.X - reach.X, r.Y - reach.Y, r.Width + (2 * reach.X), r.Height + (2 * reach.Y));
-
-    /// <summary>A round rectangle under a positive scale and translation, in device pixels.</summary>
-    private static RoundRect DeviceRoundRect(RoundRect roundRect, Matrix3x2 m)
-    {
-        RectF r = roundRect.Bounds;
-        RectF device = new((r.X * m.M11) + m.M31, (r.Y * m.M22) + m.M32, r.Width * m.M11, r.Height * m.M22);
-        CornerRadii radii = roundRect.Radii;
-        Vector2 s = new(m.M11, m.M22);
-        return new RoundRect(device, new CornerRadii(radii.TopLeft * s, radii.TopRight * s, radii.BottomRight * s, radii.BottomLeft * s));
-    }
 
     /// <summary>
     /// A device rectangle that covers whole pixels: its edges are whole numbers, or, without antialiasing, the pixels whose centers
