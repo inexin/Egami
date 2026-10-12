@@ -282,6 +282,10 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
 - Filters: every SVG 1.1 primitive, feDropShadow and the CSS filter functions, in linearRGB or sRGB, run in a raster lined up
   with the device pixels (`SvgRenderOptions.FilterScale` sets its resolution on vector canvases). feGaussianBlur is SVG's three
   box blurs on premultiplied colors; feConvolveMatrix and the lighting primitives follow the specification's kernels.
+- `SvgCanvas` writes any Egami.Drawing canvas drawing as SVG: paths, strokes and dashes, gradients, patterns, pictures,
+  clips, layers with opacity, CSS blend modes and masks, images and text as glyph outlines or `text` elements, with shared
+  `defs` (`SvgWriteOptions`). What SVG cannot express is drawn by Egami into an embedded PNG and reported as
+  `Svg.FallbackImage`. Read back by Egami.Svg its files draw like the canvas calls, and Chromium and Inkscape open them cleanly.
 - Gates: on resvg's own test suite, 94 to 100% of the shapes, painting, structure, paint-server and masking tests match resvg's
   reference renders (at most 0.5% of pixels differ, allowing a one-pixel shift; deviations are listed with reasons in
   egami-compare), 99% of the filter tests and 98.7% of the text tests (78% of the text tests are also close to

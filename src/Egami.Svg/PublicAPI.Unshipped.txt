@@ -23,6 +23,9 @@ Egami.Svg.SvgAttributeCollection.SetPath(string! name, Egami.Drawing.Path! path)
 Egami.Svg.SvgAttributeCollection.this[int index].get -> Egami.Svg.SvgAttribute!
 Egami.Svg.SvgAttributeCollection.this[string! name].get -> string?
 Egami.Svg.SvgAttributeCollection.this[string! name].set -> void
+Egami.Svg.SvgCanvas
+Egami.Svg.SvgCanvas.Options.get -> Egami.Svg.SvgWriteOptions!
+Egami.Svg.SvgCanvas.SvgCanvas(System.IO.Stream! stream, float width, float height, Egami.Svg.SvgWriteOptions? options = null) -> void
 Egami.Svg.SvgClip
 Egami.Svg.SvgClip.<Clone>$() -> Egami.Svg.SvgClip!
 Egami.Svg.SvgClip.Content.get -> Egami.Svg.SvgGroup?
@@ -118,6 +121,9 @@ Egami.Svg.SvgImage.Sampling.init -> void
 Egami.Svg.SvgImage.Source.get -> Egami.Drawing.RectF
 Egami.Svg.SvgImage.Source.init -> void
 Egami.Svg.SvgImage.SvgImage() -> void
+Egami.Svg.SvgImageFormat
+Egami.Svg.SvgImageFormat.Jpeg = 1 -> Egami.Svg.SvgImageFormat
+Egami.Svg.SvgImageFormat.Png = 0 -> Egami.Svg.SvgImageFormat
 Egami.Svg.SvgLoadOptions
 Egami.Svg.SvgLoadOptions.<Clone>$() -> Egami.Svg.SvgLoadOptions!
 Egami.Svg.SvgLoadOptions.BaseUri.get -> System.Uri?
@@ -239,6 +245,9 @@ Egami.Svg.SvgTextContent.IsCData.get -> bool
 Egami.Svg.SvgTextContent.SvgTextContent(string! value, bool isCData = false) -> void
 Egami.Svg.SvgTextContent.Value.get -> string!
 Egami.Svg.SvgTextContent.Value.set -> void
+Egami.Svg.SvgTextMode
+Egami.Svg.SvgTextMode.Outlines = 0 -> Egami.Svg.SvgTextMode
+Egami.Svg.SvgTextMode.Text = 1 -> Egami.Svg.SvgTextMode
 Egami.Svg.SvgTextRun
 Egami.Svg.SvgTextRun.Antialias.get -> bool
 Egami.Svg.SvgTextRun.Antialias.init -> void
@@ -254,6 +263,24 @@ Egami.Svg.SvgTextRun.Stroke.init -> void
 Egami.Svg.SvgTextRun.StrokePaint.get -> Egami.Drawing.Paint?
 Egami.Svg.SvgTextRun.StrokePaint.init -> void
 Egami.Svg.SvgTextRun.SvgTextRun(Egami.Fonts.GlyphRun! run) -> void
+Egami.Svg.SvgWriteOptions
+Egami.Svg.SvgWriteOptions.<Clone>$() -> Egami.Svg.SvgWriteOptions!
+Egami.Svg.SvgWriteOptions.Compact.get -> bool
+Egami.Svg.SvgWriteOptions.Compact.init -> void
+Egami.Svg.SvgWriteOptions.Context.get -> Egami.EgamiContext?
+Egami.Svg.SvgWriteOptions.Context.init -> void
+Egami.Svg.SvgWriteOptions.EmbedSubset.get -> bool
+Egami.Svg.SvgWriteOptions.EmbedSubset.init -> void
+Egami.Svg.SvgWriteOptions.Equals(Egami.Svg.SvgWriteOptions? other) -> bool
+Egami.Svg.SvgWriteOptions.FallbackScale.get -> float
+Egami.Svg.SvgWriteOptions.FallbackScale.init -> void
+Egami.Svg.SvgWriteOptions.ImageFormat.get -> Egami.Svg.SvgImageFormat
+Egami.Svg.SvgWriteOptions.ImageFormat.init -> void
+Egami.Svg.SvgWriteOptions.Precision.get -> int
+Egami.Svg.SvgWriteOptions.Precision.init -> void
+Egami.Svg.SvgWriteOptions.SvgWriteOptions() -> void
+Egami.Svg.SvgWriteOptions.Text.get -> Egami.Svg.SvgTextMode
+Egami.Svg.SvgWriteOptions.Text.init -> void
 override Egami.Svg.SvgAttribute.ToString() -> string!
 override Egami.Svg.SvgClip.Equals(object? obj) -> bool
 override Egami.Svg.SvgClip.GetHashCode() -> int
@@ -303,6 +330,9 @@ override Egami.Svg.SvgTextRun.<Clone>$() -> Egami.Svg.SvgTextRun!
 override Egami.Svg.SvgTextRun.Equals(object? obj) -> bool
 override Egami.Svg.SvgTextRun.GetHashCode() -> int
 override Egami.Svg.SvgTextRun.ToString() -> string!
+override Egami.Svg.SvgWriteOptions.Equals(object? obj) -> bool
+override Egami.Svg.SvgWriteOptions.GetHashCode() -> int
+override Egami.Svg.SvgWriteOptions.ToString() -> string!
 override sealed Egami.Svg.SvgGroup.Equals(Egami.Svg.SvgNode? other) -> bool
 override sealed Egami.Svg.SvgImage.Equals(Egami.Svg.SvgNode? other) -> bool
 override sealed Egami.Svg.SvgPath.Equals(Egami.Svg.SvgNode? other) -> bool
@@ -339,6 +369,9 @@ static Egami.Svg.SvgSaveOptions.operator !=(Egami.Svg.SvgSaveOptions? left, Egam
 static Egami.Svg.SvgSaveOptions.operator ==(Egami.Svg.SvgSaveOptions? left, Egami.Svg.SvgSaveOptions? right) -> bool
 static Egami.Svg.SvgTextRun.operator !=(Egami.Svg.SvgTextRun? left, Egami.Svg.SvgTextRun? right) -> bool
 static Egami.Svg.SvgTextRun.operator ==(Egami.Svg.SvgTextRun? left, Egami.Svg.SvgTextRun? right) -> bool
+static Egami.Svg.SvgWriteOptions.Default.get -> Egami.Svg.SvgWriteOptions!
+static Egami.Svg.SvgWriteOptions.operator !=(Egami.Svg.SvgWriteOptions? left, Egami.Svg.SvgWriteOptions? right) -> bool
+static Egami.Svg.SvgWriteOptions.operator ==(Egami.Svg.SvgWriteOptions? left, Egami.Svg.SvgWriteOptions? right) -> bool
 virtual Egami.Svg.SvgNode.EqualityContract.get -> System.Type!
 virtual Egami.Svg.SvgNode.Equals(Egami.Svg.SvgNode? other) -> bool
 virtual Egami.Svg.SvgNode.PrintMembers(System.Text.StringBuilder! builder) -> bool

@@ -1,4 +1,7 @@
+using System.Numerics;
+
 using Egami.Drawing;
+using Egami.Fonts;
 using Egami.Pixels;
 using Egami.Svg;
 
@@ -289,5 +292,45 @@ public class Svg
         using Raster<Rgba8> raster = label.Rasterize<Rgba8>(new SvgRenderOptions { TextAsPaths = false });
         #endregion
         Assert.Empty(label.Warnings);
+    }
+
+    [Fact]
+    public void DrawToSvg()
+    {
+        using MemoryStream file = new();
+        #region svg-canvas
+        // Anything drawn on a Canvas can be written as SVG: gradients, clips, images and pictures go once into defs.
+        using (SvgCanvas canvas = new(file, 200, 120, new SvgWriteOptions { Precision = 2, ImageFormat = SvgImageFormat.Png }))
+        {
+            canvas.FillRoundRect(new RoundRect(new RectF(10, 10, 180, 100), 12), new LinearGradient(new Vector2(10, 0), new Vector2(190, 0), new RgbaF32(0.1f, 0.4f, 0.9f, 1), new RgbaF32(0.9f, 0.2f, 0.5f, 1)));
+            canvas.SaveLayer(0.5f);
+            canvas.StrokePath(Egami.Drawing.Path.Oval(new RectF(30, 30, 140, 60)), new Stroke(6) { Dash = new DashPattern([10, 5]) }, new Rgba8(255, 255, 255, 255));
+            canvas.Restore();
+
+            // A sweep gradient has no SVG form: it is drawn by Egami and embedded as a PNG (Svg.FallbackImage).
+            canvas.FillCircle(new Vector2(100, 60), 20, new SweepGradient(new Vector2(100, 60), [new GradientStop(0, new RgbaF32(1, 1, 0, 1)), new GradientStop(1, new RgbaF32(0, 1, 1, 1))]));
+        }
+
+        // Disposing writes the file; the stream stays open.
+        #endregion
+        Assert.True(file.Length > 0);
+        Assert.Contains("linearGradient", System.Text.Encoding.UTF8.GetString(file.ToArray()), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WriteTextToSvg()
+    {
+        Typeface face = Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf"));
+        using MemoryStream file = new();
+        #region svg-canvas-text
+        // By default text is glyph outlines, each written once and reused, so the file needs no fonts.
+        // SvgTextMode.Text writes text elements instead, searchable and selectable; EmbedSubset adds the glyphs used as a font.
+        SvgWriteOptions options = new() { Text = SvgTextMode.Text, EmbedSubset = true };
+        using (SvgCanvas canvas = new(file, 300, 60, options))
+        {
+            canvas.DrawText("Hello, SVG", new Vector2(10, 40), new Font(face, 28), new Rgba8(20, 20, 20, 255));
+        }
+        #endregion
+        Assert.Contains("@font-face", System.Text.Encoding.UTF8.GetString(file.ToArray()), StringComparison.Ordinal);
     }
 }

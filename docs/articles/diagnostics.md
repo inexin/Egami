@@ -209,12 +209,15 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
+| `Svg.Approximated` | Warning | A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas) |
 | `Svg.BadAttribute` | Warning | An attribute's value cannot be read (a length, number, list, viewBox or keyword); it is ignored, as browsers ignore it (Egami.Svg) |
 | `Svg.BadPathData` | Warning | Path data breaks the grammar; the path is drawn up to the error, as SVG says (Egami.Svg) |
 | `Svg.BadReference` | Warning | A reference (href, url(#id) in fill, stroke, clip-path, mask, marker) names no element of the right kind, or forms a cycle; what refers to it draws as SVG says for a missing reference (Egami.Svg) |
 | `Svg.BadStyle` | Warning | A property's value cannot be used where it is applied; the inherited or initial value is used (Egami.Svg) |
 | `Svg.BadStyleSheet` | Warning | A style sheet or style attribute has a CSS syntax error; the declaration or rule is dropped and the rest applies, as CSS says (Egami.Svg) |
 | `Svg.DefaultSize` | Warning | The root has no width, height or viewBox to size it; it is drawn at 100 by 100 pixels, as resvg does (Egami.Svg) |
+| `Svg.FallbackImage` | Info | A drawing call SVG cannot express was drawn by Egami and embedded as a PNG image (Egami.Svg's SvgCanvas) |
+| `Svg.FontNotEmbedded` | Warning | A font's license forbids embedding a subset, or it could not be subset; its text names the font only (Egami.Svg's SvgCanvas) |
 | `Svg.FontNotFound` | Warning | A font-family names a family no font has, or no font is available at all; the next family, the serif family or no text is drawn (Egami.Svg) |
 | `Svg.FontNotLoaded` | Warning | An @font-face rule has no single family, or none of its sources could be read; the family falls back (Egami.Svg) |
 | `Svg.ImageNotLoaded` | Warning | An image was not loaded: no resolver allows its URI, the resolver refused it, or it cannot be decoded; it draws nothing (Egami.Svg) |

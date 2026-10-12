@@ -4,8 +4,8 @@ Egami.Svg reads SVG 1.1 and SVG 2 files into an editable element tree, saves the
 canvas, so the same document renders to a raster, to a PDF page or back out as SVG. It is fully managed and opens nothing
 outside the file unless you allow it.
 
-Phase 2.10 is landing: reading, saving, styles and drawing are in; text, filters and SVG output follow, and this guide grows
-with them.
+Phase 2.10 is landing: reading, saving, styles, drawing, filters and SVG output are in; text is arriving, and this guide
+grows with them.
 
 ## Loading
 
@@ -104,3 +104,32 @@ only through `SvgLoadOptions.Resolver`; `SvgResolvers.SameDirectory` allows file
 URIs always work. Egami never opens a network connection itself.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#resolver)]
+
+## Writing SVG
+
+`SvgCanvas` is a `Canvas` that writes SVG: anything drawn on it, by your code or by a `Picture`, becomes a vector file that
+browsers, Inkscape and Egami.Svg read. Disposing it writes the file to the stream, which stays open. Each call becomes a
+`path`, `use`, `image` or `text` element with the canvas transform; equal gradients, clips, masks and patterns are written
+once in `defs` and shared, an image or a picture drawn many times is stored once, and clips add no nesting (each clip path's
+shape is clipped by the one before, and a chain longer than 16 is written as one intersected shape, since readers limit how
+deep references nest), so a deep save/restore stack stays flat. Gradients mixed in linear light, or between stops of
+different alpha, get extra stops mixed as Egami mixes them, so every viewer draws them alike. Layers become groups with `opacity`, CSS `mix-blend-mode` and `isolation`, and soft masks
+become `mask` elements.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-canvas)]
+
+`SvgWriteOptions` sets the number of decimals (`Precision`), `Compact` output, the `SvgImageFormat` drawn images are embedded
+in (PNG, or JPEG for opaque images) and the resolution of fallback images. What SVG cannot express is drawn by Egami into a
+PNG over the area it covers, at `FallbackScale` pixels per unit, and reported as `Svg.FallbackImage` to the options' context:
+sweep gradients, noise, blend and color matrix paints, custom paints, gradients mixed in Oklab or Oklch, clamped images
+drawn past their edges, two-point conical gradients whose start circle is not inside the end circle, inner and outer mask
+blurs, meshes and patches, and layers with a filter, a backdrop or a mask transfer function. Blend modes CSS lacks (the
+Porter-Duff modes other than source-over and plus) are drawn as source-over and reported as `Svg.Approximated`.
+
+Text is written as glyph outlines by default (`SvgTextMode.Outlines`): each glyph's outline is in `defs` once, in font units,
+and every use of it scales it, so the file looks the same everywhere. `SvgTextMode.Text` writes `text` elements with the font's
+family, size, weight and style and each cluster's position, so the text stays searchable and lines up with Egami's layout;
+with `EmbedSubset` each font's glyphs used are embedded as an OpenType subset in an `@font-face` rule (unless the font's license
+forbids it, reported as `Svg.FontNotEmbedded`). Synthetic bold and italic are drawn as Egami draws them, as a stroke and a slant.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-canvas-text)]
