@@ -949,3 +949,14 @@ virtual Egami.Drawing.PathEffect.PrintMembers(System.Text.StringBuilder! builder
 ~override Egami.Drawing.RoundRect.Equals(object obj) -> bool
 ~override Egami.Drawing.SpriteTransform.Equals(object obj) -> bool
 ~override Egami.Drawing.SpriteTransform.ToString() -> string
+Egami.Drawing.Canvas.DrawText(Egami.Fonts.Layout.RichText! text, Egami.Drawing.RectF rect, Egami.Fonts.Layout.ParagraphStyle! style, Egami.Drawing.VerticalAlign verticalAlign = Egami.Drawing.VerticalAlign.Top) -> Egami.Fonts.Layout.TextLayout!
+Egami.Drawing.Canvas.DrawText(string! text, Egami.Drawing.RectF rect, Egami.Fonts.Layout.ParagraphStyle! style, Egami.Drawing.VerticalAlign verticalAlign = Egami.Drawing.VerticalAlign.Top) -> Egami.Fonts.Layout.TextLayout!
+Egami.Drawing.Canvas.DrawTextLayout(Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin, Egami.Drawing.RectF? visibleRect = null, Egami.Drawing.PlaceholderPainter? placeholderPainter = null) -> void
+Egami.Drawing.PlaceholderPainter
+Egami.Drawing.VerticalAlign
+Egami.Drawing.VerticalAlign.Bottom = 2 -> Egami.Drawing.VerticalAlign
+Egami.Drawing.VerticalAlign.Middle = 1 -> Egami.Drawing.VerticalAlign
+Egami.Drawing.VerticalAlign.Top = 0 -> Egami.Drawing.VerticalAlign
+static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.DecorationShape! shape, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.Layout.TextLayout! layout, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+virtual Egami.Drawing.PlaceholderPainter.Invoke(Egami.Drawing.Canvas! canvas, int index, Egami.Drawing.RectF box) -> void

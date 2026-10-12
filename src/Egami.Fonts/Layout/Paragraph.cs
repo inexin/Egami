@@ -139,6 +139,21 @@ public sealed class Paragraph
     /// </example>
     public LineFlow CreateFlow() => new(this);
 
+    /// <summary>
+    /// Gets the text style a run with <see cref="LayoutRun.StyleIndex"/> (or a decoration with
+    /// <see cref="DecorationShape.StyleIndex"/>) was laid out in: the default style for 0, else that span's style with the
+    /// default's values filled in where it sets none.
+    /// </summary>
+    /// <param name="styleIndex">0 for the default style, else 1 plus the span's index in <see cref="RichText.Spans"/>.</param>
+    /// <returns>The style.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="styleIndex"/> is not a style of this paragraph.</exception>
+    public TextStyle GetStyle(int styleIndex)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(styleIndex);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(styleIndex, Styles.Length);
+        return Styles[styleIndex].Style;
+    }
+
     /// <summary>Prepares a plain-text paragraph in the paragraph's default style.</summary>
     /// <param name="text">The text.</param>
     /// <param name="style">The paragraph style; its <see cref="ParagraphStyle.DefaultStyle"/> must name font families.</param>

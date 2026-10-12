@@ -172,6 +172,18 @@ font size, floored to whole pixels; the underline sits half a thickness below th
 the overline on the ascent; the line-through a third of the ascent up. Thicknesses, positions and skip-ink gaps equal
 Chromium's ink within half a pixel on sans and serif text. Vertical layouts have no decorations yet.
 
+### Drawing paragraphs
+
+`Canvas.DrawTextLayout` (Egami.Drawing) draws a layout with its top-left corner at a point, line by line in CSS's order: text
+shadows, run backgrounds, underlines and overlines, glyphs and placeholders, then line-throughs. A run's paint is its style's
+`Paint` (an Egami.Drawing `Paint`) or `Color`; shadows blur with a standard deviation of half their blur radius, as CSS. Lines
+outside the clip or the optional visible rectangle are skipped, and a `PlaceholderPainter` draws each placeholder in its box.
+`Canvas.DrawText` into a `RectF` lays out and draws in one call, placing the lines by `VerticalAlign`, and
+`TextLayout.ToPath(origin)` gives glyphs and decorations as one `Path`. On a PDF canvas the glyph runs keep their text, and an
+ellipsis or a soft hyphen's hyphen is marked content whose ActualText is the text it stands for.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#draw)]
+
 ### Vertical lines
 
 `WritingMode.VerticalRl` stacks top-to-bottom lines from right to left, as Chinese and Japanese books, and `VerticalLr` from

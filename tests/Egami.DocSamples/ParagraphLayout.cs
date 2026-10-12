@@ -1,3 +1,4 @@
+using Egami.Drawing;
 using Egami.Fonts;
 using Egami.Fonts.Layout;
 using Egami.Pixels;
@@ -186,6 +187,44 @@ public class ParagraphLayout
 
         Assert.True(layout.Decorations[0].Segments.Count > 1);
         Assert.True(path.Count > 0);
+    }
+
+    [Fact]
+    public void DrawParagraphs()
+    {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSans-Regular.ttf"));
+        fonts.TryGetFamily("Noto Sans", out FontFamily family);
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(320, 200);
+        using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+        canvas.Clear(Rgba8.White);
+        #region draw
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle
+            {
+                FontFamilies = [family],
+                Size = 18,
+                Color = new Rgba8(30, 30, 60, 255),
+                Shadows = [new TextShadow(new System.Numerics.Vector2(1, 1), 2, new Rgba8(0, 0, 0, 80))],
+            },
+            Align = TextAlign.Justify,
+        };
+
+        // One call: wrap into a box, centred across the lines.
+        TextLayout boxed = canvas.DrawText("Paragraphs wrap, justify and drop shadows.", new RectF(10, 10, 300, 80), style, VerticalAlign.Middle);
+
+        // Or lay out once and draw where needed, skipping lines outside the visible part.
+        TextLayout layout = Paragraph.Create("Laid out once, drawn many times.", style).Layout(300);
+        canvas.DrawTextLayout(layout, new System.Numerics.Vector2(10, 110), visibleRect: new RectF(0, 0, 320, 200));
+
+        // The same text as one path: glyphs and decorations.
+        Egami.Drawing.Path outline = layout.ToPath(new System.Numerics.Vector2(10, 150));
+        #endregion
+
+        Assert.True(boxed.Lines.Count >= 1);
+        Assert.False(outline.IsEmpty);
     }
 
     private sealed class PathRecorder : IGlyphOutlineSink

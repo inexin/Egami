@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Fonts;
+using Egami.Fonts.Layout;
 
 namespace Egami.Drawing;
 
@@ -99,6 +100,66 @@ public static partial class FontExtensions
     /// <param name="bounds">The bounds.</param>
     /// <returns>The rectangle.</returns>
     public static RectF ToRectF(this TextBounds bounds) => RectF.FromEdges(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+
+    /// <summary>
+    /// Gets a laid-out paragraph as one path: every glyph run's outline with its font's synthetic bold and italic, then every
+    /// decoration, the layout's top-left corner at <paramref name="origin"/>.
+    /// </summary>
+    /// <param name="layout">The layout.</param>
+    /// <param name="origin">Where the layout's top-left corner goes.</param>
+    /// <returns>The outline, in one path.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/ParagraphLayout.cs" region="draw"/>
+    /// </example>
+    public static Path ToPath(this TextLayout layout, Vector2 origin)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        var builder = new PathBuilder();
+        foreach (TextLine line in layout.Lines)
+        {
+            foreach (LayoutRun run in line.Runs)
+            {
+                if (run.Glyphs is GlyphRun glyphs && glyphs.Count > 0)
+                {
+                    builder.AddPath(glyphs.ToPath(origin));
+                }
+            }
+        }
+
+        foreach (DecorationShape shape in layout.Decorations)
+        {
+            shape.AddTo(new OffsetSink(builder, origin));
+        }
+
+        return builder.ToPath();
+    }
+
+    /// <summary>Gets a decoration line's outline, the layout's top-left corner at <paramref name="origin"/>.</summary>
+    /// <param name="shape">The decoration.</param>
+    /// <param name="origin">Where the layout's top-left corner goes.</param>
+    /// <returns>The outline.</returns>
+    public static Path ToPath(this DecorationShape shape, Vector2 origin)
+    {
+        ArgumentNullException.ThrowIfNull(shape);
+        var builder = new PathBuilder();
+        shape.AddTo(new OffsetSink(builder, origin));
+        return builder.ToPath();
+    }
+
+    /// <summary>Moves layout coordinates (y down already) to an origin while building a path.</summary>
+    private sealed class OffsetSink(PathBuilder builder, Vector2 origin) : IGlyphOutlineSink
+    {
+        public void MoveTo(float x, float y) => builder.MoveTo(origin.X + x, origin.Y + y);
+
+        public void LineTo(float x, float y) => builder.LineTo(origin.X + x, origin.Y + y);
+
+        public void QuadTo(float cx, float cy, float x, float y) => builder.QuadTo(origin.X + cx, origin.Y + cy, origin.X + x, origin.Y + y);
+
+        public void CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y)
+            => builder.CubicTo(origin.X + c1x, origin.Y + c1y, origin.X + c2x, origin.Y + c2y, origin.X + x, origin.Y + y);
+
+        public void Close() => builder.Close();
+    }
 
     /// <summary>Scales font units, slants, flips y and moves the origin while building a path.</summary>
     private sealed class PathSink(PathBuilder builder, float scale, float x, float y, float skew = 0) : IGlyphOutlineSink

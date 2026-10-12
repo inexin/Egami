@@ -2071,3 +2071,4 @@ static Egami.Fonts.Layout.DecorationSegment.operator !=(Egami.Fonts.Layout.Decor
 static Egami.Fonts.Layout.DecorationSegment.operator ==(Egami.Fonts.Layout.DecorationSegment left, Egami.Fonts.Layout.DecorationSegment right) -> bool
 ~override Egami.Fonts.Layout.DecorationSegment.Equals(object obj) -> bool
 ~override Egami.Fonts.Layout.DecorationSegment.ToString() -> string
+Egami.Fonts.Layout.Paragraph.GetStyle(int styleIndex) -> Egami.Fonts.Layout.TextStyle!
