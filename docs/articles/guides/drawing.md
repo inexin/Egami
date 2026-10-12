@@ -191,17 +191,17 @@ colors stay smooth inside each triangle.
 
 ## Recorded drawings
 
-A `DrawingRecorder` is a canvas that records instead of drawing; `Finish` returns an immutable `Drawing`. `DrawDrawing` replays
+A `PictureRecorder` is a canvas that records instead of drawing; `Finish` returns an immutable `Picture`. `DrawPicture` replays
 it on any canvas under a matrix, through the public calls, so it stays sharp at any scale and a vector backend receives it as
 vectors. A paint with an opacity or a blend mode merges the whole drawing as one layer; `cacheAsImage` draws an image of it
 rendered at the current scale and kept with the drawing, for a drawing repeated many times at one scale. `ToRaster` renders it,
-and `Playback` replays it without the state `DrawDrawing` adds. A drawing replays on many threads and canvases at once.
+and `Playback` replays it without the state `DrawPicture` adds. A drawing replays on many threads and canvases at once.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#recording)]
 
 ### Drawing patterns
 
-A `DrawingPaint` fills shapes with a drawing repeated by tile modes: the tiling patterns of PDF and SVG, and Skia's picture
+A `PicturePaint` fills shapes with a drawing repeated by tile modes: the tiling patterns of PDF and SVG, and Skia's picture
 shader. The raster backend renders one tile at the scale it is drawn at and keeps it with the drawing, so a zoomed pattern stays
 sharp.
 
@@ -209,7 +209,7 @@ sharp.
 
 ### Saving drawings
 
-`Drawing.Save` writes Egami's own documented binary format, [.egdr](egdr-format.md), and `Drawing.Load` reads it back as
+`Picture.Save` writes Egami's own documented binary format, [.egdr](egdr-format.md), and `Picture.Load` reads it back as
 untrusted input, under the context's safety limits. Images are kept as PNG, text as its outlines. A drawing that holds C# code (a
 `CustomPaint`, or a layer's filter or soft mask) cannot be saved: `Save` throws and names the call.
 
@@ -286,7 +286,7 @@ Hooks a backend leaves alone have defaults: rectangles, round rectangles and ova
 call (a blend mode its format lacks, a `CustomPaint`, a filtered layer) can draw it into pixels with `RasterizeFallback`, which
 returns a `FallbackImage`. Layers reach a backend through `OnSaveLayer` and `OnRestoreLayer`; a PDF page would write a
 transparency group with its opacity, blend mode and soft mask. `OnDrawMesh` and `OnDrawPatch` let a PDF page write shading
-types 4 to 7, `OnDrawDrawing` a form XObject drawn once and referenced each time, and `OnDrawLattice` and `OnDrawAtlas` images
+types 4 to 7, `OnDrawPicture` a form XObject drawn once and referenced each time, and `OnDrawLattice` and `OnDrawAtlas` images
 per cell or sprite; by default meshes go through the raster fallback, patches become meshes, and the others become images and
 meshes.
 

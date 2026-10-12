@@ -10,7 +10,7 @@ namespace Egami.Drawing.Recording;
 /// <summary>
 /// Reads .egdr, an untrusted format: every count is checked against the bytes left before anything is allocated, every number
 /// and enum goes through the public constructors' checks, paths must be well formed, images go through the PNG reader with the
-/// context's limits, and the nesting of drawings and the calls a drawing would replay, nested drawings expanded, are bounded.
+/// context's limits, and the nesting of pictures and the calls a picture would replay, nested pictures expanded, are bounded.
 /// Every failure is an <see cref="EgamiException"/>.
 /// </summary>
 internal sealed class EgdrReader
@@ -20,7 +20,7 @@ internal sealed class EgdrReader
     private readonly EgamiContext _context;
     private readonly List<Raster> _images = [];
     private readonly List<Path> _paths = [];
-    private readonly List<(Drawing Drawing, int Depth, long Expanded)> _drawings = [];
+    private readonly List<(Picture Picture, int Depth, long Expanded)> _pictures = [];
     private long _budget;
 
     private EgdrReader(EgamiContext context)
@@ -29,7 +29,7 @@ internal sealed class EgdrReader
         _budget = context.Limits.MaxTotalBytes;
     }
 
-    internal static Drawing Read(Stream stream, EgamiContext context)
+    internal static Picture Read(Stream stream, EgamiContext context)
     {
         byte[] data;
         using (MemoryStream copy = new())
@@ -40,13 +40,13 @@ internal sealed class EgdrReader
 
         if (data.Length < 12 || !data.AsSpan(0, 8).SequenceEqual(Egdr.Signature))
         {
-            throw new UnsupportedFormatException("The data is not an Egami drawing (.egdr): the signature is missing.");
+            throw new UnsupportedFormatException("The data is not an Egami picture (.egdr): the signature is missing.");
         }
 
         ushort major = BinaryPrimitives.ReadUInt16LittleEndian(data.AsSpan(8));
         if (major != Egdr.Major)
         {
-            throw new UnsupportedFormatException($"The drawing is .egdr version {major}; this Egami.Drawing reads version {Egdr.Major}.");
+            throw new UnsupportedFormatException($"The picture is .egdr version {major}; this Egami.Drawing reads version {Egdr.Major}.");
         }
 
         EgdrReader reader = new(context);
@@ -60,7 +60,7 @@ internal sealed class EgdrReader
         }
     }
 
-    private Drawing Chunks(byte[] data)
+    private Picture Chunks(byte[] data)
     {
         int at = 12;
         while (true)
@@ -81,7 +81,7 @@ internal sealed class EgdrReader
             ReadOnlyMemory<byte> payload = data.AsMemory(at, (int)length);
             if (type == Egdr.End)
             {
-                return _drawings.Count > 0 ? _drawings[^1].Drawing : throw Corrupt(at, "the file holds no drawing.");
+                return _pictures.Count > 0 ? _pictures[^1].Picture : throw Corrupt(at, "the file holds no picture.");
             }
 
             if (type == Egdr.Image)
@@ -97,7 +97,7 @@ internal sealed class EgdrReader
             else if (type == Egdr.DrawingChunk)
             {
                 Cursor cursor = new(payload, at, this);
-                _drawings.Add(cursor.ReadDrawing());
+                _pictures.Add(cursor.ReadPicture());
             }
 
             // Any other chunk type comes from a later minor version and is skipped.
@@ -160,7 +160,7 @@ internal sealed class EgdrReader
             return new Path(points, verbs, rule);
         }
 
-        internal (Drawing Drawing, int Depth, long Expanded) ReadDrawing()
+        internal (Picture Picture, int Depth, long Expanded) ReadPicture()
         {
             RectF bounds = ReadRect();
             int count = Count(1);
@@ -179,11 +179,11 @@ internal sealed class EgdrReader
 
             if (!(bounds.IsFinite && !bounds.IsEmpty))
             {
-                throw Problem("a drawing's bounds must be finite and not empty.");
+                throw Problem("a picture's bounds must be finite and not empty.");
             }
 
             reader.Spend(count * 16L);
-            return (new Drawing(bounds, calls), _depth + 1, _expanded);
+            return (new Picture(bounds, calls), _depth + 1, _expanded);
         }
 
         private DrawingCall ReadCall()
@@ -290,11 +290,11 @@ internal sealed class EgdrReader
                         return new DrawPatchCall(patch, paint, blend, stops);
                     }
 
-                case Egdr.Op.DrawDrawing:
+                case Egdr.Op.DrawPicture:
                     {
-                        Drawing drawing = DrawingRef();
+                        Picture picture = DrawingRef();
                         Matrix3x2 matrix = ReadMatrix();
-                        return new DrawDrawingCall(drawing, matrix, ReadOptionalPaint(), Bool());
+                        return new DrawPictureCall(picture, matrix, ReadOptionalPaint(), Bool());
                     }
 
                 default:
@@ -549,11 +549,11 @@ internal sealed class EgdrReader
                         break;
                     }
 
-                case Egdr.PaintKind.Drawing:
+                case Egdr.PaintKind.Picture:
                     {
-                        Drawing drawing = DrawingRef();
+                        Picture picture = DrawingRef();
                         TileMode x = Enum<TileMode>(), y = Enum<TileMode>();
-                        paint = new DrawingPaint(drawing, x, y, ReadRect());
+                        paint = new PicturePaint(picture, x, y, ReadRect());
                         break;
                     }
 
@@ -564,7 +564,7 @@ internal sealed class EgdrReader
             return paint with { BlendMode = mode, Opacity = opacity, Antialias = (flags & 1) != 0, Dither = (flags & 2) != 0, LocalMatrix = local, Blur = blur };
         }
 
-        /// <summary>A paint inside a paint; nesting counts toward the same depth limit as drawings.</summary>
+        /// <summary>A paint inside a paint; nesting counts toward the same depth limit as pictures.</summary>
         private Paint ReadNested()
         {
             if (++_paintDepth > Egdr.MaxNesting)
@@ -669,15 +669,15 @@ internal sealed class EgdrReader
             return i < (uint)reader._images.Count ? reader._images[(int)i] : throw Problem($"image {i} is not defined before it is used.");
         }
 
-        private Drawing DrawingRef()
+        private Picture DrawingRef()
         {
             uint i = U32();
-            if (i >= (uint)reader._drawings.Count)
+            if (i >= (uint)reader._pictures.Count)
             {
-                throw Problem($"drawing {i} is not defined before it is used.");
+                throw Problem($"picture {i} is not defined before it is used.");
             }
 
-            (Drawing drawing, int depth, long expanded) = reader._drawings[(int)i];
+            (Picture picture, int depth, long expanded) = reader._pictures[(int)i];
             _depth = Math.Max(_depth, depth);
             if (_depth >= Egdr.MaxNesting)
             {
@@ -690,7 +690,7 @@ internal sealed class EgdrReader
                 throw new LimitExceededException("ExpandedDrawingCalls", Egdr.MaxExpandedCalls, _expanded);
             }
 
-            return drawing;
+            return picture;
         }
 
         private static void CheckSource(Raster image, RectF source)

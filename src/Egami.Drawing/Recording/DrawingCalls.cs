@@ -8,7 +8,7 @@ namespace Egami.Drawing.Recording;
 
 /// <summary>
 /// One recorded hook call. Replaying it makes the public call that ends in the same hook, so the target's own checks, transform
-/// and clip apply; a recorded transform is replayed after the transform the drawing is replayed under.
+/// and clip apply; a recorded transform is replayed after the transform the picture is replayed under.
 /// </summary>
 internal abstract record class DrawingCall
 {
@@ -154,7 +154,7 @@ internal sealed record class DrawPatchCall(Patch Patch, Paint Paint, BlendMode C
     internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawPatch(Patch, Paint, ColorBlend, Stops);
 }
 
-internal sealed record class DrawDrawingCall(Drawing Drawing, Matrix3x2 Matrix, Paint? Paint, bool CacheAsImage) : DrawingCall
+internal sealed record class DrawPictureCall(Picture Picture, Matrix3x2 Matrix, Paint? Paint, bool CacheAsImage) : DrawingCall
 {
-    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawDrawing(Drawing, Matrix, Paint, CacheAsImage);
+    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawPicture(Picture, Matrix, Paint, CacheAsImage);
 }

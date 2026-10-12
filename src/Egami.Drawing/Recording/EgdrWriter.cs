@@ -14,10 +14,10 @@ internal static class Egdr
     internal const ushort Major = 1;
     internal const ushort Minor = 0;
 
-    /// <summary>The deepest nesting of drawings a file may hold, counting drawing paints.</summary>
+    /// <summary>The deepest nesting of pictures a file may hold, counting picture paints.</summary>
     internal const int MaxNesting = 64;
 
-    /// <summary>The most calls a loaded drawing may replay, nested drawings expanded.</summary>
+    /// <summary>The most calls a loaded picture may replay, nested pictures expanded.</summary>
     internal const long MaxExpandedCalls = 50_000_000;
 
     internal static ReadOnlySpan<byte> Signature => [0x89, (byte)'E', (byte)'G', (byte)'D', (byte)'R', 0x0D, 0x0A, 0x1A];
@@ -49,7 +49,7 @@ internal static class Egdr
         DrawAtlas = 16,
         DrawMesh = 17,
         DrawPatch = 18,
-        DrawDrawing = 19,
+        DrawPicture = 19,
     }
 
     internal enum PaintKind : byte
@@ -63,27 +63,27 @@ internal static class Egdr
         Noise = 7,
         Blend = 8,
         ColorMatrix = 9,
-        Drawing = 10,
+        Picture = 10,
     }
 }
 
 /// <summary>
-/// Writes a drawing as .egdr: every image, path and nested drawing once, as its own chunk, in the order first used, then the
-/// drawing's calls referring to them by number.
+/// Writes a picture as .egdr: every image, path and nested picture once, as its own chunk, in the order first used, then the
+/// picture's calls referring to them by number.
 /// </summary>
 internal sealed class EgdrWriter
 {
     private readonly Stream _stream;
     private readonly Dictionary<Raster, int> _images = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<Path, int> _paths = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<Drawing, int> _drawings = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<Picture, int> _pictures = new(ReferenceEqualityComparer.Instance);
 
     private EgdrWriter(Stream stream)
     {
         _stream = stream;
     }
 
-    internal static void Write(Drawing drawing, Stream stream)
+    internal static void Write(Picture picture, Stream stream)
     {
         EgdrWriter writer = new(stream);
         stream.Write(Egdr.Signature);
@@ -91,7 +91,7 @@ internal sealed class EgdrWriter
         BinaryPrimitives.WriteUInt16LittleEndian(version, Egdr.Major);
         BinaryPrimitives.WriteUInt16LittleEndian(version[2..], Egdr.Minor);
         stream.Write(version);
-        writer.DrawingIndex(drawing);
+        writer.DrawingIndex(picture);
         writer.Chunk(Egdr.End, []);
     }
 
@@ -144,17 +144,17 @@ internal sealed class EgdrWriter
         return index;
     }
 
-    private int DrawingIndex(Drawing drawing)
+    private int DrawingIndex(Picture picture)
     {
-        if (_drawings.TryGetValue(drawing, out int index))
+        if (_pictures.TryGetValue(picture, out int index))
         {
             return index;
         }
 
-        // Everything a call refers to is written before the drawing's own chunk.
+        // Everything a call refers to is written before the picture's own chunk.
         Buffer b = new();
-        b.Rect(drawing.Bounds);
-        ReadOnlySpan<DrawingCall> calls = drawing.Calls;
+        b.Rect(picture.Bounds);
+        ReadOnlySpan<DrawingCall> calls = picture.Calls;
         b.U32((uint)calls.Length);
         for (int i = 0; i < calls.Length; i++)
         {
@@ -164,13 +164,13 @@ internal sealed class EgdrWriter
             }
             catch (NotSupportedException e)
             {
-                throw new NotSupportedException($"Call {i} of the drawing cannot be saved: {e.Message}", e);
+                throw new NotSupportedException($"Call {i} of the picture cannot be saved: {e.Message}", e);
             }
         }
 
         Chunk(Egdr.DrawingChunk, b.Span);
-        index = _drawings.Count;
-        _drawings[drawing] = index;
+        index = _pictures.Count;
+        _pictures[picture] = index;
         return index;
     }
 
@@ -443,12 +443,12 @@ internal sealed class EgdrWriter
                     break;
                 }
 
-            case DrawDrawingCall c:
+            case DrawPictureCall c:
                 {
-                    int drawing = DrawingIndex(c.Drawing);
+                    int picture = DrawingIndex(c.Picture);
                     Buffer? paint = c.Paint is null ? null : PaintBytes(c.Paint);
-                    b.Op(Egdr.Op.DrawDrawing);
-                    b.U32((uint)drawing);
+                    b.Op(Egdr.Op.DrawPicture);
+                    b.U32((uint)picture);
                     b.Matrix(c.Matrix);
                     b.OptionalPaint(paint);
                     b.Bool(c.CacheAsImage);
@@ -474,7 +474,7 @@ internal sealed class EgdrWriter
         b.Append(p);
     }
 
-    /// <summary>A paint's bytes; images and drawings it uses are written as chunks first.</summary>
+    /// <summary>A paint's bytes; images and pictures it uses are written as chunks first.</summary>
     private Buffer PaintBytes(Paint paint)
     {
         Buffer b = new();
@@ -572,12 +572,12 @@ internal sealed class EgdrWriter
                     break;
                 }
 
-            case DrawingPaint dp:
+            case PicturePaint dp:
                 {
-                    int drawing = DrawingIndex(dp.Drawing);
-                    b.U8((byte)Egdr.PaintKind.Drawing);
+                    int picture = DrawingIndex(dp.Picture);
+                    b.U8((byte)Egdr.PaintKind.Picture);
                     Common(b, paint);
-                    b.U32((uint)drawing);
+                    b.U32((uint)picture);
                     b.U8((byte)dp.TileX);
                     b.U8((byte)dp.TileY);
                     b.Rect(dp.Tile);

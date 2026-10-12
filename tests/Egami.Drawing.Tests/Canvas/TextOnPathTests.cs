@@ -131,12 +131,12 @@ public class TextOnPathTests
     [Fact]
     public void DrawTextOnPathRecordsOneGlyphRun()
     {
-        var recorder = new DrawingRecorder(new RectF(0, 0, 300, 200));
+        var recorder = new PictureRecorder(new RectF(0, 0, 300, 200));
         Path arc = new PathBuilder().MoveTo(20, 150).QuadTo(150, 0, 280, 150).ToPath();
         recorder.DrawTextOnPath("Recorded", arc, new Font(Noto, 18), Rgba8.Black);
-        Drawing drawing = recorder.Finish();
-        Assert.Equal(1, drawing.CallCount);
-        using Raster<Rgba8> image = drawing.ToRaster<Rgba8>();
+        Picture picture = recorder.Finish();
+        Assert.Equal(1, picture.CallCount);
+        using Raster<Rgba8> image = picture.ToRaster<Rgba8>();
         Assert.Contains(Enumerable.Range(0, 300).SelectMany(x => Enumerable.Range(0, 200).Select(y => image.GetPixel(x, y))), p => p.A > 0);
     }
 }

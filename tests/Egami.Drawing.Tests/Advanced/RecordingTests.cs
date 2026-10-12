@@ -42,9 +42,9 @@ public class RecordingTests
         using TraceCanvas direct = new(128, 100);
         Scene(direct, image);
 
-        Drawing drawing = Record(image);
+        Picture picture = Record(image);
         using TraceCanvas replayed = new(128, 100);
-        drawing.Playback(replayed);
+        picture.Playback(replayed);
 
         // Playback brackets the calls in a Save and Restore of its own.
         Assert.Equal("Save", replayed.Calls[0]);
@@ -57,10 +57,10 @@ public class RecordingTests
     {
         using Raster<Rgba8> image = Pixels.Photo(16, 12);
         using Raster<Rgba8> direct = Pixels.Draw(128, 100, c => Scene(c, image));
-        Drawing drawing = Record(image);
-        using Raster<Rgba8> replayed = Pixels.Draw(128, 100, drawing.Playback);
+        Picture picture = Record(image);
+        using Raster<Rgba8> replayed = Pixels.Draw(128, 100, picture.Playback);
         Pixels.Equal(direct, replayed);
-        using Raster<Rgba8> nested = Pixels.Draw(128, 100, c => c.DrawDrawing(drawing));
+        using Raster<Rgba8> nested = Pixels.Draw(128, 100, c => c.DrawPicture(picture));
         Pixels.Equal(direct, nested);
     }
 
@@ -68,9 +68,9 @@ public class RecordingTests
     public void ADrawingReplaysUnderAMatrixAsDrawnThere()
     {
         using Raster<Rgba8> image = Pixels.Photo(16, 12);
-        Drawing drawing = Record(image);
+        Picture picture = Record(image);
         Matrix3x2 m = Matrix3x2.CreateScale(3) * Matrix3x2.CreateTranslation(-40, -20);
-        using Raster<Rgba8> scaled = Pixels.Draw(256, 200, c => c.DrawDrawing(drawing, m));
+        using Raster<Rgba8> scaled = Pixels.Draw(256, 200, c => c.DrawPicture(picture, m));
         using Raster<Rgba8> direct = Pixels.Draw(256, 200, c =>
         {
             c.SetMatrix(m);
@@ -82,71 +82,71 @@ public class RecordingTests
     [Fact]
     public void APaintMergesTheDrawingAsOneLayer()
     {
-        DrawingRecorder recorder = new(new RectF(0, 0, 40, 40));
+        PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
         recorder.FillRect(new RectF(5, 5, 20, 20), Rgba8.Red);
         recorder.FillRect(new RectF(15, 15, 20, 20), Rgba8.Red);
-        Drawing drawing = recorder.Finish();
-        using Raster<Rgba8> drawn = Pixels.Draw(40, 40, c => c.DrawDrawing(drawing, paint: new SolidPaint(Rgba8.White) { Opacity = 0.5f }));
+        Picture picture = recorder.Finish();
+        using Raster<Rgba8> drawn = Pixels.Draw(40, 40, c => c.DrawPicture(picture, paint: new SolidPaint(Rgba8.White) { Opacity = 0.5f }));
 
         // Group opacity: the overlap is no darker than the rest.
         Assert.Equal(drawn.GetPixel(10, 10), drawn.GetPixel(20, 20));
         Assert.InRange(drawn.GetPixel(20, 20).G, 127, 128);
 
         using TraceCanvas trace = new(40, 40);
-        trace.DrawDrawing(drawing, paint: new SolidPaint(Rgba8.White) { Opacity = 0.5f });
+        trace.DrawPicture(picture, paint: new SolidPaint(Rgba8.White) { Opacity = 0.5f });
         Assert.Contains("SaveLayer 0.5 SourceOver True", trace.Calls);
     }
 
     [Fact]
     public void ToRasterRendersTheBoundsAtAScale()
     {
-        DrawingRecorder recorder = new(new RectF(10, 20, 16, 8));
+        PictureRecorder recorder = new(new RectF(10, 20, 16, 8));
         recorder.FillRect(new RectF(10, 20, 8, 8), Rgba8.Blue);
-        Drawing drawing = recorder.Finish();
-        using Raster<Rgba8> raster = drawing.ToRaster<Rgba8>(2.5f);
+        Picture picture = recorder.Finish();
+        using Raster<Rgba8> raster = picture.ToRaster<Rgba8>(2.5f);
         Assert.Equal(40, raster.Width);
         Assert.Equal(20, raster.Height);
         Assert.Equal(Rgba8.Blue, raster.GetPixel(5, 5));
         Assert.Equal(default, raster.GetPixel(30, 5));
-        Assert.Throws<ArgumentOutOfRangeException>(() => drawing.ToRaster<Rgba8>(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => picture.ToRaster<Rgba8>(0));
     }
 
     [Fact]
     public void CacheAsImageDrawsTheSameAtAWholeScale()
     {
         using Raster<Rgba8> image = Pixels.Photo(16, 12);
-        Drawing drawing = Record(image);
-        using Raster<Rgba8> vector = Pixels.Draw(128, 100, c => c.DrawDrawing(drawing));
+        Picture picture = Record(image);
+        using Raster<Rgba8> vector = Pixels.Draw(128, 100, c => c.DrawPicture(picture));
         using Raster<Rgba8> cached = Pixels.Draw(128, 100, c =>
         {
-            c.DrawDrawing(drawing, cacheAsImage: true);
-            c.DrawDrawing(drawing, cacheAsImage: true);
+            c.DrawPicture(picture, cacheAsImage: true);
+            c.DrawPicture(picture, cacheAsImage: true);
         });
-        using Raster<Rgba8> once = Pixels.Draw(128, 100, c => c.DrawDrawing(drawing, cacheAsImage: true));
+        using Raster<Rgba8> once = Pixels.Draw(128, 100, c => c.DrawPicture(picture, cacheAsImage: true));
         Assert.True(Pixels.MeanDifference(vector, once) < 0.5, $"mean {Pixels.MeanDifference(vector, once)}");
     }
 
     [Fact]
     public void TheRecorderEndsOnce()
     {
-        DrawingRecorder recorder = new(new RectF(0, 0, 10, 10));
+        PictureRecorder recorder = new(new RectF(0, 0, 10, 10));
         recorder.Save();
         recorder.Translate(1, 1);
-        Drawing drawing = recorder.Finish();
-        Assert.Equal(3, drawing.CallCount);
+        Picture picture = recorder.Finish();
+        Assert.Equal(3, picture.CallCount);
         Assert.Throws<InvalidOperationException>(() => recorder.Finish());
         Assert.Throws<ObjectDisposedException>(() => recorder.FillRect(new RectF(0, 0, 1, 1), Rgba8.Red));
-        Assert.Throws<ArgumentException>(() => new DrawingRecorder(new RectF(0, 0, 0, 5)));
+        Assert.Throws<ArgumentException>(() => new PictureRecorder(new RectF(0, 0, 0, 5)));
     }
 
     [Fact]
-    public void DrawingPatternsTileTheDrawing()
+    public void DrawingPatternsTileThePicture()
     {
-        DrawingRecorder recorder = new(new RectF(0, 0, 10, 10));
+        PictureRecorder recorder = new(new RectF(0, 0, 10, 10));
         recorder.FillCircle(new Vector2(5, 5), 3.5f, Rgba8.Red);
-        Drawing dot = recorder.Finish();
+        Picture dot = recorder.Finish();
         using Raster<Rgba8> tile = dot.ToRaster<Rgba8>();
-        using Raster<Rgba8> pattern = Pixels.Draw(50, 40, c => c.FillRect(new RectF(0, 0, 50, 40), new DrawingPaint(dot)));
+        using Raster<Rgba8> pattern = Pixels.Draw(50, 40, c => c.FillRect(new RectF(0, 0, 50, 40), new PicturePaint(dot)));
         using Raster<Rgba8> images = Pixels.Draw(50, 40, c => c.FillRect(new RectF(0, 0, 50, 40), new ImagePaint(tile, TileMode.Repeat, TileMode.Repeat, new SamplingOptions { Filter = ResampleFilter.Bilinear })));
         Pixels.Equal(pattern, images);
 
@@ -154,7 +154,7 @@ public class RecordingTests
         using Raster<Rgba8> zoomed = Pixels.Draw(80, 80, c =>
         {
             c.Scale(8);
-            c.FillRect(new RectF(0, 0, 10, 10), new DrawingPaint(dot));
+            c.FillRect(new RectF(0, 0, 10, 10), new PicturePaint(dot));
         });
         using Raster<Rgba8> sharp = Pixels.Draw(80, 80, c =>
         {
@@ -173,15 +173,15 @@ public class RecordingTests
     [Fact]
     public void DrawingsNest()
     {
-        DrawingRecorder inner = new(new RectF(0, 0, 10, 10));
+        PictureRecorder inner = new(new RectF(0, 0, 10, 10));
         inner.FillRect(new RectF(0, 0, 10, 10), Rgba8.Green);
-        Drawing square = inner.Finish();
-        DrawingRecorder outer = new(new RectF(0, 0, 40, 20));
-        outer.DrawDrawing(square, Matrix3x2.CreateTranslation(2, 2));
-        outer.DrawDrawing(square, Matrix3x2.CreateTranslation(20, 5));
-        Drawing two = outer.Finish();
+        Picture square = inner.Finish();
+        PictureRecorder outer = new(new RectF(0, 0, 40, 20));
+        outer.DrawPicture(square, Matrix3x2.CreateTranslation(2, 2));
+        outer.DrawPicture(square, Matrix3x2.CreateTranslation(20, 5));
+        Picture two = outer.Finish();
         Assert.Equal(2, two.CallCount);
-        using Raster<Rgba8> drawn = Pixels.Draw(40, 20, c => c.DrawDrawing(two));
+        using Raster<Rgba8> drawn = Pixels.Draw(40, 20, c => c.DrawPicture(two));
         Assert.Equal(Rgba8.Green, drawn.GetPixel(5, 5));
         Assert.Equal(Rgba8.Green, drawn.GetPixel(25, 10));
         Assert.Equal(Rgba8.White, drawn.GetPixel(15, 15));
@@ -191,11 +191,11 @@ public class RecordingTests
     public void ReplayUnderAnOverflowingTransformDrawsNothing()
     {
         using Raster<Rgba8> image = Pixels.Photo(16, 12);
-        Drawing drawing = Record(image);
+        Picture picture = Record(image);
         using Raster<Rgba8> drawn = Pixels.Draw(128, 100, c =>
         {
             c.Scale(3e37f);
-            c.DrawDrawing(drawing, Matrix3x2.CreateScale(1e10f));
+            c.DrawPicture(picture, Matrix3x2.CreateScale(1e10f));
             c.ResetMatrix();
             c.Scale(0);
             c.DrawImage(image, new Vector2(3, 3));
@@ -206,9 +206,9 @@ public class RecordingTests
         Assert.Equal(drawn.GetPixel(2, 2), drawn.GetPixel(5, 5));
     }
 
-    internal static Drawing Record(Raster image)
+    internal static Picture Record(Raster image)
     {
-        DrawingRecorder recorder = new(new RectF(0, 0, 128, 100));
+        PictureRecorder recorder = new(new RectF(0, 0, 128, 100));
         Scene(recorder, image);
         return recorder.Finish();
     }

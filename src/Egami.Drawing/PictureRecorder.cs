@@ -8,30 +8,30 @@ using Egami.Pixels;
 namespace Egami.Drawing;
 
 /// <summary>
-/// A canvas that records instead of drawing: every hook call is kept with its arguments, and <see cref="Finish"/> returns them as
-/// an immutable <see cref="Drawing"/> to replay on any canvas, at any scale, as often as needed, as Skia's SkPictureRecorder.
-/// Any code that draws on a <see cref="Canvas"/> can draw into it. Paths, paints, images and nested drawings are kept by
-/// reference: images must not change while the drawing is in use.
+/// A canvas that records instead of picture: every hook call is kept with its arguments, and <see cref="Finish"/> returns them as
+/// an immutable <see cref="Picture"/> to replay on any canvas, at any scale, as often as needed, as Skia's SkPictureRecorder.
+/// Any code that draws on a <see cref="Canvas"/> can draw into it. Paths, paints, images and nested pictures are kept by
+/// reference: images must not change while the picture is in use.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="recording"/>
 /// </example>
-public sealed class DrawingRecorder : Canvas
+public sealed class PictureRecorder : Canvas
 {
     private readonly List<DrawingCall> _calls = [];
     private readonly RectF _bounds;
     private bool _finished;
 
-    /// <summary>Initializes a new instance of the <see cref="DrawingRecorder"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="PictureRecorder"/> class.</summary>
     /// <param name="bounds">
-    /// The drawing's bounds in its own coordinates: the clip recording starts with, and what <see cref="Drawing.ToRaster{TPixel}"/>
-    /// and drawing patterns render; calls outside them are still recorded.
+    /// The picture's bounds in its own coordinates: the clip recording starts with, and what <see cref="Picture.ToRaster{TPixel}"/>
+    /// and picture patterns render; calls outside them are still recorded.
     /// </param>
     /// <exception cref="ArgumentException"><paramref name="bounds"/> is empty or not finite.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="recording"/>
     /// </example>
-    public DrawingRecorder(RectF bounds)
+    public PictureRecorder(RectF bounds)
         : base(CheckBounds(bounds))
     {
         _bounds = bounds;
@@ -40,10 +40,10 @@ public sealed class DrawingRecorder : Canvas
     /// <summary>Gets the number of calls recorded so far.</summary>
     public int CallCount => _calls.Count;
 
-    /// <summary>Ends the recording: restores what is still saved, so the drawing is balanced, and returns it. The recorder cannot be used afterwards.</summary>
-    /// <returns>The drawing.</returns>
+    /// <summary>Ends the recording: restores what is still saved, so the picture is balanced, and returns it. The recorder cannot be used afterwards.</summary>
+    /// <returns>The picture.</returns>
     /// <exception cref="InvalidOperationException">The recording has already finished.</exception>
-    public Drawing Finish()
+    public Picture Finish()
     {
         if (_finished)
         {
@@ -52,9 +52,9 @@ public sealed class DrawingRecorder : Canvas
 
         RestoreToCount(1);
         _finished = true;
-        Drawing drawing = new(_bounds, [.. _calls]);
+        Picture picture = new(_bounds, [.. _calls]);
         Dispose();
-        return drawing;
+        return picture;
     }
 
     /// <inheritdoc/>
@@ -119,7 +119,7 @@ public sealed class DrawingRecorder : Canvas
     protected override void OnDrawPatch(Patch patch, Paint paint, BlendMode colorBlend, ReadOnlySpan<GradientStop> valueStops) => _calls.Add(new DrawPatchCall(patch, paint, colorBlend, valueStops.ToArray()));
 
     /// <inheritdoc/>
-    protected override void OnDrawDrawing(Drawing drawing, Matrix3x2 matrix, Paint? paint, bool cacheAsImage) => _calls.Add(new DrawDrawingCall(drawing, matrix, paint, cacheAsImage));
+    protected override void OnDrawPicture(Picture picture, Matrix3x2 matrix, Paint? paint, bool cacheAsImage) => _calls.Add(new DrawPictureCall(picture, matrix, paint, cacheAsImage));
 
     private static RectF CheckBounds(RectF bounds)
     {

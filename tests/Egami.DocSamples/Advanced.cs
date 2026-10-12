@@ -4,7 +4,6 @@ using Egami.Drawing;
 using Egami.Operations;
 using Egami.Pixels;
 
-using EgamiDrawing = Egami.Drawing.Drawing;
 using Path = Egami.Drawing.Path;
 
 namespace Egami.DocSamples;
@@ -137,24 +136,24 @@ public class Advanced
         using Raster<Rgba8> raster = Raster.Create(400, 200, Rgba8.White);
 
         #region recording
-        // Record any drawing code once...
-        DrawingRecorder recorder = new(new RectF(0, 0, 40, 40));
+        // Record any picture code once...
+        PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
         DrawLogo(recorder);
-        EgamiDrawing logo = recorder.Finish();
+        Picture logo = recorder.Finish();
 
         using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas())
         {
             // ...and replay it anywhere, at any scale, still sharp: replay is vector.
-            canvas.DrawDrawing(logo, Matrix3x2.CreateTranslation(10, 10));
-            canvas.DrawDrawing(logo, Matrix3x2.CreateScale(4) * Matrix3x2.CreateTranslation(60, 10));
+            canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(10, 10));
+            canvas.DrawPicture(logo, Matrix3x2.CreateScale(4) * Matrix3x2.CreateTranslation(60, 10));
 
-            // A paint with an opacity merges the whole drawing as one layer.
-            canvas.DrawDrawing(logo, Matrix3x2.CreateTranslation(240, 10), new SolidPaint(Rgba8.White) { Opacity = 0.4f });
+            // A paint with an opacity merges the whole picture as one layer.
+            canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(240, 10), new SolidPaint(Rgba8.White) { Opacity = 0.4f });
 
             // Drawn many times at one scale, a cached image is cheaper than replaying.
             for (int i = 0; i < 6; i++)
             {
-                canvas.DrawDrawing(logo, Matrix3x2.CreateTranslation(230 + (i * 25), 150), cacheAsImage: true);
+                canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(230 + (i * 25), 150), cacheAsImage: true);
             }
         }
 
@@ -171,10 +170,10 @@ public class Advanced
 
         #region pattern
         // A tile drawn once as vectors fills any shape, repeated, and stays sharp when the canvas is zoomed.
-        DrawingRecorder tile = new(new RectF(0, 0, 20, 20));
+        PictureRecorder tile = new(new RectF(0, 0, 20, 20));
         tile.FillCircle(new Vector2(10, 10), 4, new Rgba8(220, 60, 60, 255));
         tile.StrokeRect(new RectF(0.5f, 0.5f, 19, 19), new Stroke(1), new Rgba8(230, 230, 230, 255));
-        DrawingPaint dots = new(tile.Finish(), TileMode.Repeat, TileMode.Repeat) { LocalMatrix = Matrix3x2.CreateRotation(MathF.PI / 8) };
+        PicturePaint dots = new(tile.Finish(), TileMode.Repeat, TileMode.Repeat) { LocalMatrix = Matrix3x2.CreateRotation(MathF.PI / 8) };
         using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas())
         {
             canvas.FillRoundRect(new RoundRect(new RectF(10, 10, 280, 180), 24), dots);
@@ -193,22 +192,22 @@ public class Advanced
     [Fact]
     public void Files()
     {
-        DrawingRecorder recorder = new(new RectF(0, 0, 40, 40));
+        PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
         DrawLogo(recorder);
-        EgamiDrawing logo = recorder.Finish();
+        Picture logo = recorder.Finish();
 
         #region egdr
-        // Keep a drawing in Egami's own documented format, and load it later; a loaded file is untrusted, so the context's
+        // Keep a picture in Egami's own documented format, and load it later; a loaded file is untrusted, so the context's
         // safety limits apply.
         using (FileStream file = File.Create("logo.egdr"))
         {
             logo.Save(file);
         }
 
-        EgamiDrawing loaded;
+        Picture loaded;
         using (FileStream file = File.OpenRead("logo.egdr"))
         {
-            loaded = EgamiDrawing.Load(file);
+            loaded = Picture.Load(file);
         }
         #endregion
 

@@ -187,29 +187,29 @@ public abstract partial class Canvas
     }
 
     /// <summary>
-    /// Replays a recorded <see cref="Drawing"/>: inside a <see cref="Save"/> and <see cref="Restore"/>, with <paramref name="matrix"/>
+    /// Replays a recorded <see cref="Picture"/>: inside a <see cref="Save"/> and <see cref="Restore"/>, with <paramref name="matrix"/>
     /// added to the transform, so it stays sharp at any scale. A paint with an opacity below 1 or a blend mode other than
-    /// source-over merges the drawing as one layer bounded by its <see cref="Drawing.Bounds"/>, as Skia's drawPicture does.
+    /// source-over merges the picture as one layer bounded by its <see cref="Picture.Bounds"/>, as Skia's drawPicture does.
     /// </summary>
-    /// <param name="drawing">The drawing.</param>
+    /// <param name="picture">The picture.</param>
     /// <param name="matrix">A transform applied before the canvas's, or <see langword="null"/> for none.</param>
-    /// <param name="paint">The opacity and blend mode of the whole drawing, or <see langword="null"/> to replay it directly.</param>
+    /// <param name="paint">The opacity and blend mode of the whole picture, or <see langword="null"/> to replay it directly.</param>
     /// <param name="cacheAsImage">
-    /// Whether to draw the drawing as an image rendered at the current scale and kept with the drawing, for a drawing repeated
+    /// Whether to draw the picture as an image rendered at the current scale and kept with the picture, for a picture repeated
     /// many times at one scale (a map's symbols, a game's sprites). The image is resampled under rotation and skew.
     /// </param>
     /// <exception cref="ArgumentException">An element of <paramref name="matrix"/> is not finite.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="recording"/>
     /// </example>
-    public void DrawDrawing(Drawing drawing, Matrix3x2? matrix = null, Paint? paint = null, bool cacheAsImage = false)
+    public void DrawPicture(Picture picture, Matrix3x2? matrix = null, Paint? paint = null, bool cacheAsImage = false)
     {
-        ArgumentNullException.ThrowIfNull(drawing);
+        ArgumentNullException.ThrowIfNull(picture);
         CheckLive();
         Matrix3x2 m = matrix is Matrix3x2 given ? FiniteMatrix(given, nameof(matrix)) : Matrix3x2.Identity;
-        if (drawing.CallCount > 0)
+        if (picture.CallCount > 0)
         {
-            OnDrawDrawing(drawing, m, paint, cacheAsImage);
+            OnDrawPicture(picture, m, paint, cacheAsImage);
         }
     }
 
@@ -322,15 +322,15 @@ public abstract partial class Canvas
     }
 
     /// <summary>
-    /// Draws a recorded drawing. A PDF backend can write it once as a form XObject and reference it each time. By default it saves
-    /// the state, adds the matrix, starts a layer when the paint asks for one, replays the drawing through the public calls (or
+    /// Draws a recorded picture. A PDF backend can write it once as a form XObject and reference it each time. By default it saves
+    /// the state, adds the matrix, starts a layer when the paint asks for one, replays the picture through the public calls (or
     /// draws its cached image) and restores.
     /// </summary>
-    /// <param name="drawing">The drawing, with at least one call.</param>
+    /// <param name="picture">The picture, with at least one call.</param>
     /// <param name="matrix">The transform added before the canvas's.</param>
-    /// <param name="paint">The opacity and blend mode of the whole drawing, or <see langword="null"/>.</param>
-    /// <param name="cacheAsImage">Whether to draw the drawing's cached image instead of its calls.</param>
-    protected virtual void OnDrawDrawing(Drawing drawing, Matrix3x2 matrix, Paint? paint, bool cacheAsImage)
+    /// <param name="paint">The opacity and blend mode of the whole picture, or <see langword="null"/>.</param>
+    /// <param name="cacheAsImage">Whether to draw the picture's cached image instead of its calls.</param>
+    protected virtual void OnDrawPicture(Picture picture, Matrix3x2 matrix, Paint? paint, bool cacheAsImage)
     {
         int count = Save();
         try
@@ -338,18 +338,18 @@ public abstract partial class Canvas
             SetMatrix(Compose(matrix, Matrix));
             if (paint is not null && (paint.Opacity < 1 || paint.BlendMode != BlendMode.SourceOver))
             {
-                SaveLayer(new LayerOptions { Opacity = paint.Opacity, BlendMode = paint.BlendMode, Bounds = drawing.Bounds });
+                SaveLayer(new LayerOptions { Opacity = paint.Opacity, BlendMode = paint.BlendMode, Bounds = picture.Bounds });
             }
 
             float scale = MathF.Sqrt(MathF.Abs(Matrix.GetDeterminant()));
             if (cacheAsImage && scale > 0 && float.IsFinite(scale))
             {
-                (Raster<RgbaF32> image, RectF destination) = drawing.CachedImage(scale);
+                (Raster<RgbaF32> image, RectF destination) = picture.CachedImage(scale);
                 DrawImage(image, destination, CacheSampling);
             }
             else
             {
-                drawing.Playback(this);
+                picture.Playback(this);
             }
         }
         finally
@@ -362,7 +362,7 @@ public abstract partial class Canvas
 
     /// <summary>
     /// <paramref name="first"/> then <paramref name="then"/>, or, when the product overflows, the zero matrix, under which nothing
-    /// draws: a replayed drawing's transforms are data that may not compose with every canvas's.
+    /// draws: a replayed picture's transforms are data that may not compose with every canvas's.
     /// </summary>
     internal static Matrix3x2 Compose(Matrix3x2 first, Matrix3x2 then)
     {

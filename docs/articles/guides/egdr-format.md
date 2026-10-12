@@ -1,7 +1,7 @@
 # The .egdr format
 
-An Egami drawing file holds a recorded `Drawing`: the calls a `DrawingRecorder` kept, and the images, paths and nested drawings
-they use. `Drawing.Save` writes it and `Drawing.Load` reads it; this page is the format's specification, version 1.0, for
+An Egami drawing file holds a recorded `Picture`: the calls a `PictureRecorder` kept, and the images, paths and nested drawings
+they use. `Picture.Save` writes it and `Picture.Load` reads it; this page is the format's specification, version 1.0, for
 anyone writing a reader or writer of their own. See [Drawing](drawing.md#recorded-drawings) for the API.
 
 ## Layout
@@ -79,7 +79,7 @@ bottom-left. An enum is a `u8` with the value Egami's enum of that name has. Eve
 | 16 | DrawAtlas | Image number, count `u32`, that many sprite transforms (four `f32`: ScaleCos, ScaleSin, Tx, Ty), that many source rectangles, has-colors `bool`, that many colors if it has them, BlendMode, sampling, has-paint `bool`, paint |
 | 17 | DrawMesh | Mesh, paint, BlendMode, stops |
 | 18 | DrawPatch | Patch, paint, BlendMode, stops |
-| 19 | DrawDrawing | Drawing number `u32`, matrix, has-paint `bool`, paint, cache-as-image `bool` |
+| 19 | DrawPicture | Drawing number `u32`, matrix, has-paint `bool`, paint, cache-as-image `bool` |
 
 Coordinates are those the recorder's hooks received: local coordinates under the matrix last set. Replaying a drawing sets each
 recorded matrix after the matrix the drawing is replayed under. Text is written as `DrawPath` of its outlines, filled, since a
@@ -128,7 +128,7 @@ A paint is its kind `u8`, the fields every paint has, then its own:
 | 7 | NoisePaint | NoiseType, base frequency x and y `f32`, octaves `i32`, seed `i32`, has-tile `bool`, tile width and height `i32` |
 | 8 | BlendPaint | Destination paint, source paint, BlendMode |
 | 9 | ColorMatrixPaint | Source paint, the 20 matrix values `f32`, row by row |
-| 10 | DrawingPaint | Drawing number `u32`, TileMode x, TileMode y, tile rectangle |
+| 10 | PicturePaint | Drawing number `u32`, TileMode x, TileMode y, tile rectangle |
 
 The gradient fields are the stops (at least one), TileMode, a flags `u8` (1 extend start, 2 extend end, 4 premultiplied),
 InterpolationSpace and HueMethod. A simplex noise uses its x frequency.

@@ -39,8 +39,8 @@ using DrawingPath = Egami.Drawing.Path;
 // (Phase 2.3.3) loads PSD and PSB files every way (whole, as other pixel types, from a stream that cannot seek, rows, regions,
 // reductions), which must agree; psddata puts its input behind a small header its first bytes choose (mode, depth, compression,
 // PSD or PSB), so mutations reach the PackBits row table, the Deflate planes and the prediction directly. The egdr target
-// (Phase 2.6.4) loads recorded drawings: a drawing that loads must save and load again to the same bytes, and replays on a
-// small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested drawings.
+// (Phase 2.6.4) loads recorded pictures: a picture that loads must save and load again to the same bytes, and replays on a
+// small raster canvas, so mutations reach lattices, atlases, meshes, patches, patterns and nested pictures.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -1737,27 +1737,27 @@ static void LoadDrawing(Stream stream)
     byte[] data = ReadAll(stream);
     try
     {
-        Egami.Drawing.Drawing drawing = Egami.Drawing.Drawing.Load(new MemoryStream(data), context);
-        byte[] first = SaveDrawing(drawing);
-        byte[] second = SaveDrawing(Egami.Drawing.Drawing.Load(new MemoryStream(first), context));
+        Egami.Drawing.Picture picture = Egami.Drawing.Picture.Load(new MemoryStream(data), context);
+        byte[] first = SaveDrawing(picture);
+        byte[] second = SaveDrawing(Egami.Drawing.Picture.Load(new MemoryStream(first), context));
         if (!first.AsSpan().SequenceEqual(second))
         {
-            throw new InvalidOperationException("A loaded drawing does not save to the same bytes twice.");
+            throw new InvalidOperationException("A loaded picture does not save to the same bytes twice.");
         }
 
         using Raster<Rgba8> target = Raster.Create<Rgba8>(32, 32, context);
         using Egami.Drawing.RasterCanvas<Rgba8> canvas = new(target);
-        canvas.Scale(32 / MathF.Max(drawing.Bounds.Width, drawing.Bounds.Height));
-        canvas.DrawDrawing(drawing);
+        canvas.Scale(32 / MathF.Max(picture.Bounds.Width, picture.Bounds.Height));
+        canvas.DrawPicture(picture);
     }
     catch (EgamiException)
     {
     }
 
-    static byte[] SaveDrawing(Egami.Drawing.Drawing drawing)
+    static byte[] SaveDrawing(Egami.Drawing.Picture picture)
     {
         using MemoryStream output = new();
-        drawing.Save(output);
+        picture.Save(output);
         return output.ToArray();
     }
 }

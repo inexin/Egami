@@ -12,20 +12,20 @@ public class EgdrTests
     public void RoundTripsAreIdentical()
     {
         using Raster<Rgba8> image = Pixels.Photo(16, 12);
-        foreach (Drawing drawing in Corpus(image))
+        foreach (Picture picture in Corpus(image))
         {
-            byte[] first = Bytes(drawing);
-            Drawing loaded = Drawing.Load(new MemoryStream(first));
-            Assert.Equal(drawing.Bounds, loaded.Bounds);
-            Assert.Equal(drawing.CallCount, loaded.CallCount);
+            byte[] first = Bytes(picture);
+            Picture loaded = Picture.Load(new MemoryStream(first));
+            Assert.Equal(picture.Bounds, loaded.Bounds);
+            Assert.Equal(picture.CallCount, loaded.CallCount);
             Assert.Equal(first, Bytes(loaded));
 
             using TraceCanvas a = new(128, 100), b = new(128, 100);
-            drawing.Playback(a);
+            picture.Playback(a);
             loaded.Playback(b);
             Assert.Equal(a.Calls, b.Calls);
 
-            using Raster<Rgba8> p = Pixels.Draw(128, 100, drawing.Playback), q = Pixels.Draw(128, 100, loaded.Playback);
+            using Raster<Rgba8> p = Pixels.Draw(128, 100, picture.Playback), q = Pixels.Draw(128, 100, loaded.Playback);
             Pixels.Equal(p, q);
         }
     }
@@ -34,10 +34,10 @@ public class EgdrTests
     public void TextIsSavedAsOutlines()
     {
         Fonts.Typeface face = TextTests.Noto.Value;
-        DrawingRecorder recorder = new(new RectF(0, 0, 100, 30));
+        PictureRecorder recorder = new(new RectF(0, 0, 100, 30));
         recorder.DrawText("Egami", new Vector2(4, 22), new Fonts.Font(face, 18), Rgba8.Black);
-        Drawing drawing = recorder.Finish();
-        Drawing loaded = Drawing.Load(new MemoryStream(Bytes(drawing)));
+        Picture picture = recorder.Finish();
+        Picture loaded = Picture.Load(new MemoryStream(Bytes(picture)));
         using TraceCanvas trace = new(100, 30);
         loaded.Playback(trace);
         Assert.Contains(trace.Calls, c => c.StartsWith("DrawPath", StringComparison.Ordinal));
@@ -57,21 +57,21 @@ public class EgdrTests
         byte[] extra = [.. "XTRA"u8, 5, 0, 0, 0, 1, 2, 3, 4, 5];
         byte[] grown = [.. bytes.AsSpan(0, 12), .. extra, .. bytes.AsSpan(12)];
         BinaryPrimitives.WriteUInt16LittleEndian(grown.AsSpan(10), 7);
-        Drawing loaded = Drawing.Load(new MemoryStream(grown));
+        Picture loaded = Picture.Load(new MemoryStream(grown));
         Assert.Equal(bytes, Bytes(loaded));
     }
 
     [Fact]
     public void CustomPaintsCannotBeSaved()
     {
-        DrawingRecorder recorder = new(new RectF(0, 0, 10, 10));
+        PictureRecorder recorder = new(new RectF(0, 0, 10, 10));
         recorder.FillRect(new RectF(0, 0, 5, 5), Rgba8.Red);
         recorder.FillRect(new RectF(0, 0, 5, 5), new Stripes());
-        Drawing drawing = recorder.Finish();
-        NotSupportedException e = Assert.Throws<NotSupportedException>(() => drawing.Save(new MemoryStream()));
+        Picture picture = recorder.Finish();
+        NotSupportedException e = Assert.Throws<NotSupportedException>(() => picture.Save(new MemoryStream()));
         Assert.Contains("Call 1", e.Message, StringComparison.Ordinal);
 
-        DrawingRecorder layered = new(new RectF(0, 0, 10, 10));
+        PictureRecorder layered = new(new RectF(0, 0, 10, 10));
         layered.SaveLayer(new LayerOptions { Filter = o => o.Invert() });
         Assert.Throws<NotSupportedException>(() => layered.Finish().Save(new MemoryStream()));
     }
@@ -81,13 +81,13 @@ public class EgdrTests
     {
         using Raster<Rgba8> image = Pixels.Photo(16, 12);
         byte[] bytes = Bytes(RecordingTests.Record(image));
-        Assert.Throws<UnsupportedFormatException>(() => Drawing.Load(new MemoryStream([.. bytes.AsSpan(1)])));
+        Assert.Throws<UnsupportedFormatException>(() => Picture.Load(new MemoryStream([.. bytes.AsSpan(1)])));
         byte[] major = [.. bytes];
         major[8] = 2;
-        Assert.Throws<UnsupportedFormatException>(() => Drawing.Load(new MemoryStream(major)));
+        Assert.Throws<UnsupportedFormatException>(() => Picture.Load(new MemoryStream(major)));
         for (int cut = 12; cut < bytes.Length; cut += 97)
         {
-            Assert.ThrowsAny<EgamiException>(() => Drawing.Load(new MemoryStream(bytes[..cut])));
+            Assert.ThrowsAny<EgamiException>(() => Picture.Load(new MemoryStream(bytes[..cut])));
         }
 
         Random random = new(3);
@@ -97,7 +97,7 @@ public class EgdrTests
             damaged[12 + random.Next(damaged.Length - 12)] ^= (byte)(1 << random.Next(8));
             try
             {
-                Drawing.Load(new MemoryStream(damaged));
+                Picture.Load(new MemoryStream(damaged));
             }
             catch (EgamiException)
             {
@@ -108,25 +108,25 @@ public class EgdrTests
     [Fact]
     public void NestingAndExpansionAreBounded()
     {
-        // Each drawing draws the one before it twice: 70 levels would replay 2^70 calls.
-        DrawingRecorder first = new(new RectF(0, 0, 4, 4));
+        // Each picture draws the one before it twice: 70 levels would replay 2^70 calls.
+        PictureRecorder first = new(new RectF(0, 0, 4, 4));
         first.FillRect(new RectF(0, 0, 1, 1), Rgba8.Red);
-        Drawing drawing = first.Finish();
+        Picture picture = first.Finish();
         for (int i = 0; i < 70; i++)
         {
-            DrawingRecorder next = new(new RectF(0, 0, 4, 4));
-            next.DrawDrawing(drawing);
-            next.DrawDrawing(drawing);
-            drawing = next.Finish();
+            PictureRecorder next = new(new RectF(0, 0, 4, 4));
+            next.DrawPicture(picture);
+            next.DrawPicture(picture);
+            picture = next.Finish();
         }
 
-        LimitExceededException e = Assert.Throws<LimitExceededException>(() => Drawing.Load(new MemoryStream(Bytes(drawing))));
+        LimitExceededException e = Assert.Throws<LimitExceededException>(() => Picture.Load(new MemoryStream(Bytes(picture))));
         Assert.Equal("ExpandedDrawingCalls", e.LimitName);
 
         // Deep but cheap: one call per level.
-        Drawing deep = Chain(70);
-        Assert.Equal("DrawingNesting", Assert.Throws<LimitExceededException>(() => Drawing.Load(new MemoryStream(Bytes(deep)))).LimitName);
-        Assert.Equal(1, Drawing.Load(new MemoryStream(Bytes(Chain(40)))).CallCount);
+        Picture deep = Chain(70);
+        Assert.Equal("DrawingNesting", Assert.Throws<LimitExceededException>(() => Picture.Load(new MemoryStream(Bytes(deep)))).LimitName);
+        Assert.Equal(1, Picture.Load(new MemoryStream(Bytes(Chain(40)))).CallCount);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class EgdrTests
             Directory.CreateDirectory(folder);
             using Raster<Rgba8> image = Pixels.Photo(16, 12);
             int n = 0;
-            foreach (Drawing d in Corpus(image).Append(Chain(3)))
+            foreach (Picture d in Corpus(image).Append(Chain(3)))
             {
                 File.WriteAllBytes(System.IO.Path.Combine(folder, $"seed{n++}.egdr"), Bytes(d));
             }
@@ -149,39 +149,39 @@ public class EgdrTests
         foreach (string seed in seeds)
         {
             using FileStream file = File.OpenRead(seed);
-            Assert.True(Drawing.Load(file).CallCount > 0);
+            Assert.True(Picture.Load(file).CallCount > 0);
         }
     }
 
-    private static Drawing Chain(int levels)
+    private static Picture Chain(int levels)
     {
-        DrawingRecorder first = new(new RectF(0, 0, 4, 4));
+        PictureRecorder first = new(new RectF(0, 0, 4, 4));
         first.FillRect(new RectF(0, 0, 1, 1), Rgba8.Red);
-        Drawing drawing = first.Finish();
+        Picture picture = first.Finish();
         for (int i = 0; i < levels; i++)
         {
-            DrawingRecorder next = new(new RectF(0, 0, 4, 4));
-            next.DrawDrawing(drawing);
-            drawing = next.Finish();
+            PictureRecorder next = new(new RectF(0, 0, 4, 4));
+            next.DrawPicture(picture);
+            picture = next.Finish();
         }
 
-        return drawing;
+        return picture;
     }
 
-    internal static IEnumerable<Drawing> Corpus(Raster image)
+    internal static IEnumerable<Picture> Corpus(Raster image)
     {
         yield return RecordingTests.Record(image);
 
-        DrawingRecorder patterns = new(new RectF(0, 0, 128, 100));
-        DrawingRecorder dot = new(new RectF(0, 0, 8, 8));
+        PictureRecorder patterns = new(new RectF(0, 0, 128, 100));
+        PictureRecorder dot = new(new RectF(0, 0, 8, 8));
         dot.FillCircle(new Vector2(4, 4), 3, Rgba8.Blue);
-        Drawing tile = dot.Finish();
-        patterns.FillRect(new RectF(0, 0, 128, 100), new DrawingPaint(tile, TileMode.Repeat, TileMode.Mirror) { LocalMatrix = Matrix3x2.CreateRotation(0.3f) });
+        Picture tile = dot.Finish();
+        patterns.FillRect(new RectF(0, 0, 128, 100), new PicturePaint(tile, TileMode.Repeat, TileMode.Mirror) { LocalMatrix = Matrix3x2.CreateRotation(0.3f) });
         patterns.FillOval(new RectF(10, 10, 60, 40), new BlendPaint(NoisePaint.Turbulence(0.05f, 0.08f, 3, 7, new Size(32, 32)), new ImagePaint(image, TileMode.Repeat, TileMode.Decal) { Opacity = 0.7f }, Operations.BlendMode.Screen));
         patterns.FillRect(new RectF(70, 50, 40, 40), new SweepGradient(new Vector2(90, 70), 20, 300, new GradientStop(0, Rgba8.Red), new GradientStop(1, Rgba8.Blue)) { Interpolation = GradientInterpolation.Oklch(HueMethod.Longer), ExtendStart = false });
         patterns.FillRect(new RectF(5, 60, 50, 30), new ConicalGradient(new Vector2(10, 70), 3, new Vector2(40, 75), 20, new GradientStop(0, Rgba8.Green), new GradientStop(1, Rgba8.Black)).WithColorMatrix(Operations.ColorMatrix.Identity) with { Dither = true });
         patterns.FillPath(Path.Circle(new Vector2(100, 20), 12), new SolidPaint(Rgba8.Red) { Blur = new MaskBlur(2, BlurStyle.Outer), Antialias = false });
-        patterns.DrawDrawing(tile, Matrix3x2.CreateScale(2), new SolidPaint(Rgba8.White) { Opacity = 0.5f }, cacheAsImage: true);
+        patterns.DrawPicture(tile, Matrix3x2.CreateScale(2), new SolidPaint(Rgba8.White) { Opacity = 0.5f }, cacheAsImage: true);
         patterns.ClipPath(Path.Circle(new Vector2(64, 50), 30), ClipOp.Difference, antialias: false);
         patterns.SaveLayer(new LayerOptions { Bounds = new RectF(0, 0, 50, 50), Isolated = false, BlendMode = Operations.BlendMode.Overlay, Opacity = 0.9f });
         patterns.DrawImageLattice(image, new Lattice([4, 12], [3, 9]) { Bounds = new Rect(1, 1, 14, 10), CellKinds = [.. Enumerable.Repeat(LatticeCellKind.Default, 8), LatticeCellKind.FixedColor], CellColors = [.. Enumerable.Repeat(new RgbaF32(0, 1, 1, 1), 9)] }, new RectF(0, 0, 40, 30));
@@ -190,10 +190,10 @@ public class EgdrTests
         yield return patterns.Finish();
     }
 
-    private static byte[] Bytes(Drawing drawing)
+    private static byte[] Bytes(Picture picture)
     {
         using MemoryStream stream = new();
-        drawing.Save(stream);
+        picture.Save(stream);
         return stream.ToArray();
     }
 

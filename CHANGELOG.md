@@ -241,12 +241,12 @@ and [the .egdr format](docs/articles/guides/egdr-format.md).
 - `Patch.Coons` and `Patch.Tensor` with corner colors, values or texture coordinates and `DrawPatch`, cut into triangles until
   they stray less than a quarter of a device pixel, later parts covering earlier ones where a patch folds, as PDF requires.
   Within a mean level of SkiaSharp's drawPatch.
-- `DrawingRecorder` records any canvas code into an immutable `Drawing`: `DrawDrawing` replays it under a matrix, with a paint
-  that merges it as one layer or as an image cached at the current scale; `Playback`, `ToRaster`. `DrawingPaint` tiles a
+- `PictureRecorder` records any canvas code into an immutable `Picture`: `DrawPicture` replays it under a matrix, with a paint
+  that merges it as one layer or as an image cached at the current scale; `Playback`, `ToRaster`. `PicturePaint` tiles a
   drawing as a pattern rendered at the device scale. Within a mean level of SkiaSharp's drawPicture and picture shaders.
-- `Drawing.Save` and `Drawing.Load`: Egami's own documented binary format, .egdr, versioned and chunked, with images as PNG;
+- `Picture.Save` and `Picture.Load`: Egami's own documented binary format, .egdr, versioned and chunked, with images as PNG;
   loading checks every count and number, honors `SafetyLimits` and bounds nesting and replay, and has a fuzz target (`egdr`).
-- Backends get `OnDrawLattice`, `OnDrawAtlas`, `OnDrawMesh`, `OnDrawPatch` and `OnDrawDrawing`, with defaults: images per cell or
+- Backends get `OnDrawLattice`, `OnDrawAtlas`, `OnDrawMesh`, `OnDrawPatch` and `OnDrawPicture`, with defaults: images per cell or
   sprite, meshes through the raster fallback, patches as meshes, drawings replayed.
 - Fixed: `DrawImage` under a transform that collapses the image threw; it draws nothing. Scaling overlapping `RoundRect` radii
   was not idempotent; scaled radii now round down.
