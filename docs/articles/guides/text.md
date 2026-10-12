@@ -108,6 +108,20 @@ are.
   advances unchanged, and italic slants 14 degrees, CSS's default oblique. Glyph paths and ink bounds include it;
   `Font.AllowSynthesis = false` turns it off.
 
+## Text on a path
+
+`Canvas.DrawTextOnPath` lays a line of text along a `Path` by SVG's textPath rules, through `Font.ShapeOnPath`: each glyph's
+advance midpoint sits on the path, turned to its direction, and glyphs past either end are left out. `TextOnPathOptions` sets
+the start (`StartOffset` in canvas units plus `StartFraction` of the length), the `TextAnchor`, the `BaselineShift` along the
+normal, the `TextPathSide` and whether a closed contour wraps.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#path)]
+
+- The result is a `GlyphRun` with a `GlyphTransform` per glyph (a rotation and uniform scale, then an origin, as Skia's RSXform),
+  so a PDF backend writes it as real, searchable text; `GlyphRun.CreateTransformed` builds such runs by hand.
+- Glyphs that are only moved draw from the glyph cache like any text; turned or scaled ones fill as paths. Text is not warped:
+  each glyph keeps its shape, as SVG and browsers draw it.
+
 ## Measuring
 
 `Font.MeasureText` lays text out exactly as `DrawText` does and returns a `TextMeasure`: the widest line's advance, the exact ink

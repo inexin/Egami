@@ -117,6 +117,38 @@ public class Text
     }
 
     [Fact]
+    public void TextAlongAPath()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgba8> image = Raster.Create(320, 180, Rgba8.White);
+
+        #region path
+        // A label along a curve: each glyph's midpoint on the path, turned to its direction, as SVG's textPath. The result is
+        // still a glyph run, so a PDF backend writes it as searchable text.
+        Path curve = new PathBuilder().MoveTo(20, 150).CubicTo(80, 20, 240, 20, 300, 150).ToPath();
+        var font = new Font(face, 18);
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawTextOnPath("Text that follows the curve", curve, font, Rgba8.Black,
+                new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Middle, BaselineShift = 4 });
+        }
+
+        // Or place glyphs yourself, each with its own turn and scale.
+        GlyphRun dial = GlyphRun.CreateTransformed(font, [face.GetGlyph('N'), face.GetGlyph('E')],
+            [GlyphTransform.FromRotationScale(1, 0, new Vector2(150, 30)), GlyphTransform.FromRotationScale(1, 90, new Vector2(290, 90))]);
+        #endregion
+
+        Assert.Equal(2, dial.Count);
+        int inked = 0;
+        for (int x = 0; x < image.Width; x++)
+        {
+            inked += image.GetPixel(x, 60) != Rgba8.White ? 1 : 0;
+        }
+
+        Assert.True(inked > 5);
+    }
+
+    [Fact]
     public void GlyphsAndMetrics()
     {
         Typeface face = Typeface.FromFile(FontFile);

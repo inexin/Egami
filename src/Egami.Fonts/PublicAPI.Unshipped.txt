@@ -230,6 +230,22 @@ Egami.Fonts.GlyphRun.Font.get -> Egami.Fonts.Font
 Egami.Fonts.GlyphRun.Glyphs.get -> System.ReadOnlySpan<ushort>
 Egami.Fonts.GlyphRun.Positions.get -> System.ReadOnlySpan<System.Numerics.Vector2>
 Egami.Fonts.GlyphRun.Text.get -> string?
+Egami.Fonts.GlyphRun.Transforms.get -> System.ReadOnlySpan<Egami.Fonts.GlyphTransform>
+Egami.Fonts.GlyphTransform
+Egami.Fonts.GlyphTransform.Deconstruct(out float ScaleCos, out float ScaleSin, out float Tx, out float Ty) -> void
+Egami.Fonts.GlyphTransform.Equals(Egami.Fonts.GlyphTransform other) -> bool
+Egami.Fonts.GlyphTransform.GlyphTransform() -> void
+Egami.Fonts.GlyphTransform.GlyphTransform(float ScaleCos, float ScaleSin, float Tx, float Ty) -> void
+Egami.Fonts.GlyphTransform.IsTranslation.get -> bool
+Egami.Fonts.GlyphTransform.ScaleCos.get -> float
+Egami.Fonts.GlyphTransform.ScaleCos.init -> void
+Egami.Fonts.GlyphTransform.ScaleSin.get -> float
+Egami.Fonts.GlyphTransform.ScaleSin.init -> void
+Egami.Fonts.GlyphTransform.ToMatrix() -> System.Numerics.Matrix3x2
+Egami.Fonts.GlyphTransform.Tx.get -> float
+Egami.Fonts.GlyphTransform.Tx.init -> void
+Egami.Fonts.GlyphTransform.Ty.get -> float
+Egami.Fonts.GlyphTransform.Ty.init -> void
 Egami.Fonts.IGlyphOutlineSink
 Egami.Fonts.IGlyphOutlineSink.Close() -> void
 Egami.Fonts.IGlyphOutlineSink.CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y) -> void
@@ -653,6 +669,7 @@ override Egami.Fonts.FontTag.GetHashCode() -> int
 override Egami.Fonts.FontTag.ToString() -> string!
 override Egami.Fonts.FontVariation.GetHashCode() -> int
 override Egami.Fonts.GlyphExtents.GetHashCode() -> int
+override Egami.Fonts.GlyphTransform.GetHashCode() -> int
 override Egami.Fonts.NamedInstance.Equals(object? obj) -> bool
 override Egami.Fonts.NamedInstance.GetHashCode() -> int
 override Egami.Fonts.NamedInstance.ToString() -> string!
@@ -716,6 +733,10 @@ static Egami.Fonts.GlyphExtents.Empty.get -> Egami.Fonts.GlyphExtents
 static Egami.Fonts.GlyphExtents.operator !=(Egami.Fonts.GlyphExtents left, Egami.Fonts.GlyphExtents right) -> bool
 static Egami.Fonts.GlyphExtents.operator ==(Egami.Fonts.GlyphExtents left, Egami.Fonts.GlyphExtents right) -> bool
 static Egami.Fonts.GlyphRun.Create(Egami.Fonts.Font font, System.ReadOnlySpan<ushort> glyphs, System.ReadOnlySpan<System.Numerics.Vector2> positions, string? text = null, System.ReadOnlySpan<int> clusters = default(System.ReadOnlySpan<int>)) -> Egami.Fonts.GlyphRun!
+static Egami.Fonts.GlyphRun.CreateTransformed(Egami.Fonts.Font font, System.ReadOnlySpan<ushort> glyphs, System.ReadOnlySpan<Egami.Fonts.GlyphTransform> transforms, string? text = null, System.ReadOnlySpan<int> clusters = default(System.ReadOnlySpan<int>)) -> Egami.Fonts.GlyphRun!
+static Egami.Fonts.GlyphTransform.FromRotationScale(float scale, float degrees, System.Numerics.Vector2 origin) -> Egami.Fonts.GlyphTransform
+static Egami.Fonts.GlyphTransform.operator !=(Egami.Fonts.GlyphTransform left, Egami.Fonts.GlyphTransform right) -> bool
+static Egami.Fonts.GlyphTransform.operator ==(Egami.Fonts.GlyphTransform left, Egami.Fonts.GlyphTransform right) -> bool
 static Egami.Fonts.NamedInstance.operator !=(Egami.Fonts.NamedInstance? left, Egami.Fonts.NamedInstance? right) -> bool
 static Egami.Fonts.NamedInstance.operator ==(Egami.Fonts.NamedInstance? left, Egami.Fonts.NamedInstance? right) -> bool
 static Egami.Fonts.SubsetOptions.Default.get -> Egami.Fonts.SubsetOptions!
@@ -960,6 +981,8 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.FontVariation.ToString() -> string
 ~override Egami.Fonts.GlyphExtents.Equals(object obj) -> bool
 ~override Egami.Fonts.GlyphExtents.ToString() -> string
+~override Egami.Fonts.GlyphTransform.Equals(object obj) -> bool
+~override Egami.Fonts.GlyphTransform.ToString() -> string
 ~override Egami.Fonts.TextBounds.Equals(object obj) -> bool
 ~override Egami.Fonts.TextBounds.ToString() -> string
 ~override Egami.Fonts.TextMeasure.Equals(object obj) -> bool

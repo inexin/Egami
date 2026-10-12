@@ -37,6 +37,38 @@ public abstract partial class Canvas
         }
     }
 
+    /// <summary>
+    /// Draws text along a path by SVG's textPath rules, through <see cref="FontExtensions.ShapeOnPath(Font, string, Path, TextOnPathOptions?)"/>
+    /// and <see cref="DrawGlyphRun(GlyphRun, Vector2, Paint)"/>: each glyph's midpoint sits on the path, turned to its direction, and
+    /// glyphs past either end are left out. The result is a glyph run, so backends that write text keep it as text.
+    /// </summary>
+    /// <param name="text">The text; newlines draw nothing.</param>
+    /// <param name="path">The path, in local coordinates.</param>
+    /// <param name="font">The face and size.</param>
+    /// <param name="paint">The paint.</param>
+    /// <param name="options">Where the text starts and sits, or <see langword="null"/> for the defaults.</param>
+    /// <exception cref="ArgumentException"><paramref name="font"/> has no typeface.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="path"/>
+    /// </example>
+    public void DrawTextOnPath(string text, Path path, Font font, Paint paint, TextOnPathOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(path);
+        CheckFont(font);
+        Check(paint);
+        if (text.Length == 0)
+        {
+            return;
+        }
+
+        GlyphRun run = font.ShapeOnPath(text, path, options);
+        if (run.Count > 0)
+        {
+            OnDrawGlyphRun(run, Vector2.Zero, paint);
+        }
+    }
+
     /// <summary>Draws positioned glyphs, such as a run from <see cref="Font.Shape(string)"/> or a layout engine.</summary>
     /// <param name="run">The glyphs.</param>
     /// <param name="origin">Where the run's origin goes, in local coordinates.</param>

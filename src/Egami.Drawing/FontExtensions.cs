@@ -8,7 +8,7 @@ namespace Egami.Drawing;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="paths"/>
 /// </example>
-public static class FontExtensions
+public static partial class FontExtensions
 {
     /// <summary>
     /// Gets a glyph's outline at the font's size, with the glyph's origin at (0, 0) on the baseline, y down: slanted 14 degrees
@@ -61,12 +61,27 @@ public static class FontExtensions
         Typeface face = font.EffectiveTypeface;
         ReadOnlySpan<ushort> glyphs = run.Glyphs;
         ReadOnlySpan<Vector2> positions = run.Positions;
-        for (int i = 0; i < glyphs.Length; i++)
+        ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
+        if (transforms.IsEmpty)
         {
-            AddGlyph(builder, font, face, glyphs[i], origin + positions[i]);
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                AddGlyph(builder, font, face, glyphs[i], origin + positions[i]);
+            }
+
+            return Synthesize(builder.ToPath(), font);
         }
 
-        return Synthesize(builder.ToPath(), font);
+        // Each glyph's outline, synthesis included, through its own transform, then to the run's origin.
+        Matrix3x2 toOrigin = Matrix3x2.CreateTranslation(origin);
+        for (int i = 0; i < glyphs.Length; i++)
+        {
+            var glyph = new PathBuilder();
+            AddGlyph(glyph, font, face, glyphs[i], Vector2.Zero);
+            builder.AddPath(Synthesize(glyph.ToPath(), font), transforms[i].ToMatrix() * toOrigin);
+        }
+
+        return builder.ToPath();
     }
 
     // A glyph's outline at a position, slanted for synthetic italic about its own baseline origin.

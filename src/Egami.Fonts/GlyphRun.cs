@@ -14,16 +14,18 @@ public sealed class GlyphRun
 {
     private readonly ushort[] _glyphs;
     private readonly Vector2[] _positions;
+    private readonly GlyphTransform[]? _transforms;
     private readonly int[]? _clusters;
     private TextBounds? _bounds;
 
-    internal GlyphRun(Font font, ushort[] glyphs, Vector2[] positions, string? text, int[]? clusters)
+    internal GlyphRun(Font font, ushort[] glyphs, Vector2[] positions, string? text, int[]? clusters, GlyphTransform[]? transforms = null)
     {
         Font = font;
         _glyphs = glyphs;
         _positions = positions;
         Text = text;
         _clusters = clusters;
+        _transforms = transforms;
     }
 
     /// <summary>Gets the font every glyph is drawn in.</summary>
@@ -35,8 +37,17 @@ public sealed class GlyphRun
     /// <summary>Gets the glyph ids.</summary>
     public ReadOnlySpan<ushort> Glyphs => _glyphs;
 
-    /// <summary>Gets each glyph's origin on its baseline, relative to the run's origin, y down.</summary>
+    /// <summary>
+    /// Gets each glyph's origin on its baseline, relative to the run's origin, y down; for a run with <see cref="Transforms"/>, the
+    /// translation of each glyph's transform.
+    /// </summary>
     public ReadOnlySpan<Vector2> Positions => _positions;
+
+    /// <summary>
+    /// Gets each glyph's rotation, scale and origin, which replace <see cref="Positions"/> when present (a run from
+    /// <see cref="CreateTransformed"/>, such as text on a path); empty for a run of plain positions.
+    /// </summary>
+    public ReadOnlySpan<GlyphTransform> Transforms => _transforms;
 
     /// <summary>Gets the source text, or <see langword="null"/> when the run was built from glyphs alone.</summary>
     public string? Text { get; }
@@ -44,7 +55,7 @@ public sealed class GlyphRun
     /// <summary>Gets the index in <see cref="Text"/> each glyph came from; empty when there is no text.</summary>
     public ReadOnlySpan<int> Clusters => _clusters;
 
-    /// <summary>Gets the end of the last glyph's advance on its line: the pen position after the run.</summary>
+    /// <summary>Gets the end of the last glyph's advance on its line: the pen position after the run (for a transformed run, along x from each glyph's origin).</summary>
     public float Advance
     {
         get
@@ -78,6 +89,50 @@ public sealed class GlyphRun
             throw new ArgumentException("There must be one position per glyph.", nameof(positions));
         }
 
+        CheckClusters(text, clusters, glyphs.Length);
+        return new GlyphRun(font, glyphs.ToArray(), positions.ToArray(), text, clusters.IsEmpty ? null : clusters.ToArray());
+    }
+
+    /// <summary>
+    /// Creates a run whose glyphs each have their own rotation, uniform scale and origin, as Skia's RSXform runs: text on a path,
+    /// or labels around a dial. Glyphs that only move are drawn as any run's; turned or scaled ones fill as paths.
+    /// </summary>
+    /// <param name="font">The font.</param>
+    /// <param name="glyphs">The glyph ids.</param>
+    /// <param name="transforms">One transform per glyph, relative to the run's origin, y down.</param>
+    /// <param name="text">The source text, or <see langword="null"/>.</param>
+    /// <param name="clusters">The index in <paramref name="text"/> of each glyph; empty when <paramref name="text"/> is null.</param>
+    /// <returns>The run, holding copies of the spans.</returns>
+    /// <exception cref="ArgumentException">The spans differ in length, a transform is not finite, or clusters are given without text or point outside it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="path"/>
+    /// </example>
+    public static GlyphRun CreateTransformed(Font font, ReadOnlySpan<ushort> glyphs, ReadOnlySpan<GlyphTransform> transforms, string? text = null, ReadOnlySpan<int> clusters = default)
+    {
+        ArgumentNullException.ThrowIfNull(font.Typeface, nameof(font));
+        if (glyphs.Length != transforms.Length)
+        {
+            throw new ArgumentException("There must be one transform per glyph.", nameof(transforms));
+        }
+
+        var positions = new Vector2[transforms.Length];
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            GlyphTransform t = transforms[i];
+            if (!float.IsFinite(t.ScaleCos) || !float.IsFinite(t.ScaleSin) || !float.IsFinite(t.Tx) || !float.IsFinite(t.Ty))
+            {
+                throw new ArgumentException("A transform is not finite.", nameof(transforms));
+            }
+
+            positions[i] = new Vector2(t.Tx, t.Ty);
+        }
+
+        CheckClusters(text, clusters, glyphs.Length);
+        return new GlyphRun(font, glyphs.ToArray(), positions, text, clusters.IsEmpty ? null : clusters.ToArray(), transforms.ToArray());
+    }
+
+    private static void CheckClusters(string? text, ReadOnlySpan<int> clusters, int count)
+    {
         if (text is null)
         {
             if (!clusters.IsEmpty)
@@ -87,7 +142,7 @@ public sealed class GlyphRun
         }
         else if (!clusters.IsEmpty)
         {
-            if (clusters.Length != glyphs.Length)
+            if (clusters.Length != count)
             {
                 throw new ArgumentException("There must be one cluster per glyph.", nameof(clusters));
             }
@@ -100,8 +155,6 @@ public sealed class GlyphRun
                 }
             }
         }
-
-        return new GlyphRun(font, glyphs.ToArray(), positions.ToArray(), text, clusters.IsEmpty ? null : clusters.ToArray());
     }
 
     private TextBounds ComputeBounds()
@@ -110,15 +163,60 @@ public sealed class GlyphRun
         for (int i = 0; i < _glyphs.Length; i++)
         {
             GlyphExtents e = Font.GetGlyphExtents(_glyphs[i]);
-            if (!e.IsEmpty)
+            if (e.IsEmpty)
+            {
+                continue;
+            }
+
+            if (_transforms is null)
             {
                 Vector2 p = _positions[i];
                 bounds = bounds.Union(new TextBounds(p.X + e.XMin, p.Y - e.YMax, p.X + e.XMax, p.Y - e.YMin));
+                continue;
             }
+
+            // The box of the glyph's box turned: its four corners through the transform, y down.
+            Matrix3x2 m = _transforms[i].ToMatrix();
+            Vector2 a = Vector2.Transform(new Vector2(e.XMin, -e.YMax), m), b = Vector2.Transform(new Vector2(e.XMax, -e.YMax), m);
+            Vector2 c = Vector2.Transform(new Vector2(e.XMin, -e.YMin), m), d = Vector2.Transform(new Vector2(e.XMax, -e.YMin), m);
+            Vector2 min = Vector2.Min(Vector2.Min(a, b), Vector2.Min(c, d)), max = Vector2.Max(Vector2.Max(a, b), Vector2.Max(c, d));
+            bounds = bounds.Union(new TextBounds(min.X, min.Y, max.X, max.Y));
         }
 
         return bounds;
     }
+}
+
+/// <summary>
+/// A glyph's placement in a transformed <see cref="GlyphRun"/>: a rotation and uniform scale, then its origin, as Skia's RSXform.
+/// A point (x, y) of the glyph, y down, goes to (ScaleCos x - ScaleSin y + Tx, ScaleSin x + ScaleCos y + Ty).
+/// </summary>
+/// <param name="ScaleCos">The scale times the cosine of the turn; 1 for an upright glyph at the font's size.</param>
+/// <param name="ScaleSin">The scale times the sine of the turn (clockwise on a y-down canvas); 0 for an upright glyph.</param>
+/// <param name="Tx">The glyph origin's x, relative to the run's origin.</param>
+/// <param name="Ty">The glyph origin's y, relative to the run's origin, y down.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="path"/>
+/// </example>
+public readonly record struct GlyphTransform(float ScaleCos, float ScaleSin, float Tx, float Ty)
+{
+    /// <summary>Creates a placement that scales and turns a glyph about its origin and puts the origin at a position.</summary>
+    /// <param name="scale">The scale; 1 for the font's size.</param>
+    /// <param name="degrees">The clockwise turn on a y-down canvas.</param>
+    /// <param name="origin">Where the glyph's origin goes, relative to the run's origin.</param>
+    /// <returns>The placement.</returns>
+    public static GlyphTransform FromRotationScale(float scale, float degrees, Vector2 origin)
+    {
+        float radians = degrees * MathF.PI / 180;
+        return new GlyphTransform(scale * MathF.Cos(radians), scale * MathF.Sin(radians), origin.X, origin.Y);
+    }
+
+    /// <summary>Gets whether the glyph is only moved, not turned or scaled.</summary>
+    public bool IsTranslation => ScaleCos == 1 && ScaleSin == 0;
+
+    /// <summary>Returns the transform as a matrix from the glyph's y-down coordinates to the run's.</summary>
+    /// <returns>The matrix.</returns>
+    public Matrix3x2 ToMatrix() => new(ScaleCos, ScaleSin, -ScaleSin, ScaleCos, Tx, Ty);
 }
 
 /// <summary>A box in canvas units with y down, such as the ink of a <see cref="GlyphRun"/> relative to its origin.</summary>

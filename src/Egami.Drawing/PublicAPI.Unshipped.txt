@@ -46,6 +46,7 @@ Egami.Drawing.Canvas.DrawPatch(Egami.Drawing.Patch! patch, Egami.Drawing.Paint? 
 Egami.Drawing.Canvas.DrawPoints(Egami.Drawing.PointMode mode, System.ReadOnlySpan<System.Numerics.Vector2> points, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawShadow(Egami.Drawing.Path! path, Egami.Drawing.ShadowOptions? options = null) -> void
 Egami.Drawing.Canvas.DrawText(string! text, System.Numerics.Vector2 origin, Egami.Fonts.Font font, Egami.Drawing.Paint! paint) -> void
+Egami.Drawing.Canvas.DrawTextOnPath(string! text, Egami.Drawing.Path! path, Egami.Fonts.Font font, Egami.Drawing.Paint! paint, Egami.Drawing.TextOnPathOptions? options = null) -> void
 Egami.Drawing.Canvas.FillArc(Egami.Drawing.RectF oval, float startDegrees, float sweepDegrees, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.FillCircle(System.Numerics.Vector2 center, float radius, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.FillOval(Egami.Drawing.RectF oval, Egami.Drawing.Paint! paint) -> void
@@ -587,6 +588,29 @@ Egami.Drawing.SweepGradient.Equals(Egami.Drawing.SweepGradient? other) -> bool
 Egami.Drawing.SweepGradient.StartAngle.get -> float
 Egami.Drawing.SweepGradient.SweepGradient(System.Numerics.Vector2 center, float startAngle, float endAngle, params System.ReadOnlySpan<Egami.Drawing.GradientStop> stops) -> void
 Egami.Drawing.SweepGradient.SweepGradient(System.Numerics.Vector2 center, params System.ReadOnlySpan<Egami.Drawing.GradientStop> stops) -> void
+Egami.Drawing.TextAnchor
+Egami.Drawing.TextAnchor.End = 2 -> Egami.Drawing.TextAnchor
+Egami.Drawing.TextAnchor.Middle = 1 -> Egami.Drawing.TextAnchor
+Egami.Drawing.TextAnchor.Start = 0 -> Egami.Drawing.TextAnchor
+Egami.Drawing.TextOnPathOptions
+Egami.Drawing.TextOnPathOptions.<Clone>$() -> Egami.Drawing.TextOnPathOptions!
+Egami.Drawing.TextOnPathOptions.Anchor.get -> Egami.Drawing.TextAnchor
+Egami.Drawing.TextOnPathOptions.Anchor.init -> void
+Egami.Drawing.TextOnPathOptions.BaselineShift.get -> float
+Egami.Drawing.TextOnPathOptions.BaselineShift.init -> void
+Egami.Drawing.TextOnPathOptions.Equals(Egami.Drawing.TextOnPathOptions? other) -> bool
+Egami.Drawing.TextOnPathOptions.Side.get -> Egami.Drawing.TextPathSide
+Egami.Drawing.TextOnPathOptions.Side.init -> void
+Egami.Drawing.TextOnPathOptions.StartFraction.get -> float
+Egami.Drawing.TextOnPathOptions.StartFraction.init -> void
+Egami.Drawing.TextOnPathOptions.StartOffset.get -> float
+Egami.Drawing.TextOnPathOptions.StartOffset.init -> void
+Egami.Drawing.TextOnPathOptions.TextOnPathOptions() -> void
+Egami.Drawing.TextOnPathOptions.WrapClosed.get -> bool
+Egami.Drawing.TextOnPathOptions.WrapClosed.init -> void
+Egami.Drawing.TextPathSide
+Egami.Drawing.TextPathSide.Left = 0 -> Egami.Drawing.TextPathSide
+Egami.Drawing.TextPathSide.Right = 1 -> Egami.Drawing.TextPathSide
 Egami.Drawing.TileMode
 Egami.Drawing.TileMode.Clamp = 0 -> Egami.Drawing.TileMode
 Egami.Drawing.TileMode.Decal = 3 -> Egami.Drawing.TileMode
@@ -691,6 +715,9 @@ override Egami.Drawing.SweepGradient.<Clone>$() -> Egami.Drawing.SweepGradient!
 override Egami.Drawing.SweepGradient.Equals(object? obj) -> bool
 override Egami.Drawing.SweepGradient.GetHashCode() -> int
 override Egami.Drawing.SweepGradient.ToString() -> string!
+override Egami.Drawing.TextOnPathOptions.Equals(object? obj) -> bool
+override Egami.Drawing.TextOnPathOptions.GetHashCode() -> int
+override Egami.Drawing.TextOnPathOptions.ToString() -> string!
 override sealed Egami.Drawing.BlendPaint.Equals(Egami.Drawing.Paint? other) -> bool
 override sealed Egami.Drawing.ColorMatrixPaint.Equals(Egami.Drawing.Paint? other) -> bool
 override sealed Egami.Drawing.ConicalGradient.Equals(Egami.Drawing.Gradient? other) -> bool
@@ -729,6 +756,7 @@ static Egami.Drawing.FallbackImage.operator !=(Egami.Drawing.FallbackImage? left
 static Egami.Drawing.FallbackImage.operator ==(Egami.Drawing.FallbackImage? left, Egami.Drawing.FallbackImage? right) -> bool
 static Egami.Drawing.FontExtensions.GetGlyphPath(this Egami.Fonts.Font font, ushort glyph) -> Egami.Drawing.Path!
 static Egami.Drawing.FontExtensions.GetTextPath(this Egami.Fonts.Font font, string! text, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
+static Egami.Drawing.FontExtensions.ShapeOnPath(this Egami.Fonts.Font font, string! text, Egami.Drawing.Path! path, Egami.Drawing.TextOnPathOptions? options = null) -> Egami.Fonts.GlyphRun!
 static Egami.Drawing.FontExtensions.ToPath(this Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin) -> Egami.Drawing.Path!
 static Egami.Drawing.FontExtensions.ToRectF(this Egami.Fonts.TextBounds bounds) -> Egami.Drawing.RectF
 static Egami.Drawing.GlyphCache.ByteLimit.get -> long
@@ -822,6 +850,9 @@ static Egami.Drawing.SvgPathFormat.operator !=(Egami.Drawing.SvgPathFormat? left
 static Egami.Drawing.SvgPathFormat.operator ==(Egami.Drawing.SvgPathFormat? left, Egami.Drawing.SvgPathFormat? right) -> bool
 static Egami.Drawing.SweepGradient.operator !=(Egami.Drawing.SweepGradient? left, Egami.Drawing.SweepGradient? right) -> bool
 static Egami.Drawing.SweepGradient.operator ==(Egami.Drawing.SweepGradient? left, Egami.Drawing.SweepGradient? right) -> bool
+static Egami.Drawing.TextOnPathOptions.Default.get -> Egami.Drawing.TextOnPathOptions!
+static Egami.Drawing.TextOnPathOptions.operator !=(Egami.Drawing.TextOnPathOptions? left, Egami.Drawing.TextOnPathOptions? right) -> bool
+static Egami.Drawing.TextOnPathOptions.operator ==(Egami.Drawing.TextOnPathOptions? left, Egami.Drawing.TextOnPathOptions? right) -> bool
 virtual Egami.Drawing.Canvas.Dispose(bool disposing) -> void
 virtual Egami.Drawing.Canvas.OnClipRect(Egami.Drawing.RectF rect, Egami.Drawing.ClipOp op, bool antialias) -> void
 virtual Egami.Drawing.Canvas.OnClipRoundRect(Egami.Drawing.RoundRect roundRect, Egami.Drawing.ClipOp op, bool antialias) -> void

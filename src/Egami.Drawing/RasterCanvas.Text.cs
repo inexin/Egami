@@ -62,6 +62,13 @@ public sealed partial class RasterCanvas<TPixel>
             return;
         }
 
+        // Turned or scaled glyphs of a transformed run fill as one path; the rest take the mask route below.
+        ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
+        if (!transforms.IsEmpty)
+        {
+            DrawTurnedGlyphs(run, origin, paint, edging);
+        }
+
         Typeface face = font.EffectiveTypeface;
         var style = new GlyphStyle(
             edging,
@@ -75,6 +82,11 @@ public sealed partial class RasterCanvas<TPixel>
         ReadOnlySpan<Vector2> positions = run.Positions;
         for (int i = 0; i < glyphs.Length; i++)
         {
+            if (!transforms.IsEmpty && !transforms[i].IsTranslation)
+            {
+                continue;
+            }
+
             Vector2 device = Vector2.Transform(origin + positions[i], m);
             if (!(MathF.Abs(device.X) < 1e9f && MathF.Abs(device.Y) < 1e9f))
             {
@@ -120,6 +132,33 @@ public sealed partial class RasterCanvas<TPixel>
 
                 sink!.Blend(y, visible.X, row);
             }
+        }
+    }
+
+    // The run's turned or scaled glyphs as one path, filled through the canvas like any path.
+    private void DrawTurnedGlyphs(GlyphRun run, Vector2 origin, Paint paint, FontEdging edging)
+    {
+        var turned = new List<int>();
+        ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            if (!transforms[i].IsTranslation)
+            {
+                turned.Add(i);
+            }
+        }
+
+        if (turned.Count == 0)
+        {
+            return;
+        }
+
+        ushort[] glyphs = [.. turned.Select(i => run.Glyphs[i])];
+        GlyphTransform[] placed = [.. turned.Select(i => run.Transforms[i])];
+        Path path = GlyphRun.CreateTransformed(run.Font, glyphs, placed).ToPath(origin);
+        if (!path.IsEmpty)
+        {
+            OnDrawPath(path, null, edging == FontEdging.Alias && paint.Antialias ? paint with { Antialias = false } : paint);
         }
     }
 
