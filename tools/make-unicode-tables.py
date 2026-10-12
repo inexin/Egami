@@ -7,6 +7,7 @@ committed) and writes:
   src/Egami.Fonts/Unicode/UnicodeEnums.g.cs    the property value enums
   src/Egami.Fonts/Unicode/Script.g.cs          one Script member per Unicode script, with its ISO 15924 code and OpenType tags
   tests/reference/unicode/*.txt.gz             the expected values per code point and Unicode's conformance test files
+                                                 (bidi, grapheme, word and, from 2.8.2, line break)
 
 The output depends only on the UCD files, so running the tool twice gives the same bytes.
 
@@ -145,6 +146,7 @@ ea = enumerated("EastAsianWidth.txt", "ea", default="N")
 gcb = enumerated("auxiliary/GraphemeBreakProperty.txt", "GCB", default="XX")
 wb = enumerated("auxiliary/WordBreakProperty.txt", "WB", default="XX")
 incb = enumerated("DerivedCoreProperties.txt", "InCB", default="None")
+lb = enumerated("LineBreak.txt", "lb", default="XX")
 
 FLAGS = [
     ("Emoji", binary("emoji/emoji-data.txt", "Emoji")),
@@ -203,6 +205,7 @@ ENUMS = [
     enum_spec("GraphemeClusterBreak", "GCB", "XX", gcb, False, "A code point's Grapheme_Cluster_Break (UAX #29).", "{long}."),
     enum_spec("WordBreak", "WB", "XX", wb, False, "A code point's Word_Break (UAX #29).", "{long}."),
     enum_spec("IndicConjunctBreak", None, "None", incb, False, "A code point's Indic_Conjunct_Break (UAX #29 rule GB9c).", "{long}."),
+    enum_spec("LineBreakClass", "lb", "XX", lb, True, "A code point's Line_Break class (UAX #14), which line breaking starts from.", "Line_Break {short} ({long})."),
 ]
 for e in ENUMS:
     if e["name"] == "IndicPositionalCategory":
@@ -286,7 +289,7 @@ for cp in range(MAX):
            ENUM_INDEX["JoiningGroup"][jg[cp]], ccc[cp], ENUM_INDEX["IndicSyllabicCategory"][insc[cp]],
            ENUM_INDEX["IndicPositionalCategory"][inpc[cp]], ENUM_INDEX["VerticalOrientation"][vo[cp]],
            ENUM_INDEX["EastAsianWidth"][ea[cp]], ENUM_INDEX["GraphemeClusterBreak"][gcb[cp]], ENUM_INDEX["WordBreak"][wb[cp]],
-           ENUM_INDEX["IndicConjunctBreak"][incb[cp]], flags)
+           ENUM_INDEX["IndicConjunctBreak"][incb[cp]], ENUM_INDEX["LineBreakClass"][lb[cp]], flags)
     index = records.get(rec)
     if index is None:
         index = records[rec] = len(records)
@@ -294,7 +297,7 @@ for cp in range(MAX):
 assert len(records) < 65536
 FIELDS = ["GeneralCategory", "Script", "BidiClass", "JoiningType", "JoiningGroup", "CombiningClass", "IndicSyllabicCategory",
           "IndicPositionalCategory", "VerticalOrientation", "EastAsianWidth", "GraphemeClusterBreak", "WordBreak",
-          "IndicConjunctBreak", "Flags"]
+          "IndicConjunctBreak", "LineBreakClass", "Flags"]
 record_list = sorted(records.items(), key=lambda kv: kv[1])
 
 SHIFT = 7
@@ -459,7 +462,7 @@ columns = [("gc", [GC_NAMES[GC_ORDER.index(v)] for v in gc]), ("sc", sc), ("bc",
            ("InSC", members("IndicSyllabicCategory", insc)), ("InPC", members("IndicPositionalCategory", inpc)),
            ("vo", members("VerticalOrientation", vo)), ("ea", members("EastAsianWidth", ea)),
            ("GCB", members("GraphemeClusterBreak", gcb)), ("WB", members("WordBreak", wb)),
-           ("InCB", members("IndicConjunctBreak", incb))] + [(name, [1 if v else 0 for v in values]) for name, values in FLAGS]
+           ("InCB", members("IndicConjunctBreak", incb)), ("lb", members("LineBreakClass", lb))] + [(name, [1 if v else 0 for v in values]) for name, values in FLAGS]
 for name, values in columns:
     lines.append(f"@{name}")
     start = 0
@@ -476,7 +479,8 @@ lines.append("@bpb")
 lines.extend(f"{a:X} {b:X} {t}" for a, b, t in brackets)
 gz(f"{REF}/properties.txt.gz", "\n".join(lines) + "\n")
 
-for name in ["BidiTest.txt", "BidiCharacterTest.txt", "auxiliary/GraphemeBreakTest.txt", "auxiliary/WordBreakTest.txt"]:
+for name in ["BidiTest.txt", "BidiCharacterTest.txt", "auxiliary/GraphemeBreakTest.txt", "auxiliary/WordBreakTest.txt",
+             "auxiliary/LineBreakTest.txt"]:
     gz(f"{REF}/{os.path.basename(name)}.gz", read(name))
 
 print(f"{len(records)} records, {len(blocks)} blocks of {BLOCK}, {len(scx_sets)} script extension sets, {len(SCRIPTS)} scripts.")

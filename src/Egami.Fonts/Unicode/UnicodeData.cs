@@ -119,6 +119,13 @@ public static class UnicodeData
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="codePoint"/> is outside 0 to 0x10FFFF.</exception>
     public static EastAsianWidth GetEastAsianWidth(int codePoint) => (EastAsianWidth)UnicodeTables.RecordEastAsianWidth[Record(Check(codePoint))];
 
+    /// <summary>Gets a code point's Line_Break class (UAX #14).</summary>
+    /// <param name="codePoint">A code point, 0 to 0x10FFFF.</param>
+    /// <returns>The class as the Unicode Character Database lists it, before UAX #14's rule LB1 resolves
+    /// <see cref="LineBreakClass.Ambiguous"/>, <see cref="LineBreakClass.ComplexContext"/> and similar classes.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="codePoint"/> is outside 0 to 0x10FFFF.</exception>
+    public static LineBreakClass GetLineBreakClass(int codePoint) => LineBreakClassOf(Check(codePoint));
+
     /// <summary>Gets whether a code point has the Emoji property (UTS #51).</summary>
     /// <param name="codePoint">A code point, 0 to 0x10FFFF.</param>
     /// <returns><see langword="true"/> for emoji characters, which include digits, # and *.</returns>
@@ -179,6 +186,8 @@ public static class UnicodeData
     internal static WordBreak WordBreakOf(int codePoint) => (WordBreak)UnicodeTables.RecordWordBreak[Record(codePoint)];
 
     internal static IndicConjunctBreak IndicConjunctBreakOf(int codePoint) => (IndicConjunctBreak)UnicodeTables.RecordIndicConjunctBreak[Record(codePoint)];
+
+    internal static LineBreakClass LineBreakClassOf(int codePoint) => (LineBreakClass)UnicodeTables.RecordLineBreakClass[Record(codePoint)];
 
     internal static bool HasFlag(int codePoint, byte flag) => (UnicodeTables.RecordFlags[Record(codePoint)] & flag) != 0;
 

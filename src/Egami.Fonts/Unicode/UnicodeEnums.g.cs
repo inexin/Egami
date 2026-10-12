@@ -769,3 +769,157 @@ internal enum IndicConjunctBreak
     /// <summary>Linker.</summary>
     Linker = 3,
 }
+
+/// <summary>A code point's Line_Break class (UAX #14), which line breaking starts from.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/Unicode.cs" region="properties"/>
+/// </example>
+public enum LineBreakClass
+{
+    /// <summary>Line_Break XX (Unknown).</summary>
+    Unknown = 0,
+
+    /// <summary>Line_Break AI (Ambiguous).</summary>
+    Ambiguous = 1,
+
+    /// <summary>Line_Break AK (Aksara).</summary>
+    Aksara = 2,
+
+    /// <summary>Line_Break AL (Alphabetic).</summary>
+    Alphabetic = 3,
+
+    /// <summary>Line_Break AP (Aksara_Prebase).</summary>
+    AksaraPrebase = 4,
+
+    /// <summary>Line_Break AS (Aksara_Start).</summary>
+    AksaraStart = 5,
+
+    /// <summary>Line_Break B2 (Break_Both).</summary>
+    BreakBoth = 6,
+
+    /// <summary>Line_Break BA (Break_After).</summary>
+    BreakAfter = 7,
+
+    /// <summary>Line_Break BB (Break_Before).</summary>
+    BreakBefore = 8,
+
+    /// <summary>Line_Break BK (Mandatory_Break).</summary>
+    MandatoryBreak = 9,
+
+    /// <summary>Line_Break CB (Contingent_Break).</summary>
+    ContingentBreak = 10,
+
+    /// <summary>Line_Break CJ (Conditional_Japanese_Starter).</summary>
+    ConditionalJapaneseStarter = 11,
+
+    /// <summary>Line_Break CL (Close_Punctuation).</summary>
+    ClosePunctuation = 12,
+
+    /// <summary>Line_Break CM (Combining_Mark).</summary>
+    CombiningMark = 13,
+
+    /// <summary>Line_Break CP (Close_Parenthesis).</summary>
+    CloseParenthesis = 14,
+
+    /// <summary>Line_Break CR (Carriage_Return).</summary>
+    CarriageReturn = 15,
+
+    /// <summary>Line_Break EB (E_Base).</summary>
+    EBase = 16,
+
+    /// <summary>Line_Break EM (E_Modifier).</summary>
+    EModifier = 17,
+
+    /// <summary>Line_Break EX (Exclamation).</summary>
+    Exclamation = 18,
+
+    /// <summary>Line_Break GL (Glue).</summary>
+    Glue = 19,
+
+    /// <summary>Line_Break H2 (H2).</summary>
+    H2 = 20,
+
+    /// <summary>Line_Break H3 (H3).</summary>
+    H3 = 21,
+
+    /// <summary>Line_Break HH (Unambiguous_Hyphen).</summary>
+    UnambiguousHyphen = 22,
+
+    /// <summary>Line_Break HL (Hebrew_Letter).</summary>
+    HebrewLetter = 23,
+
+    /// <summary>Line_Break HY (Hyphen).</summary>
+    Hyphen = 24,
+
+    /// <summary>Line_Break ID (Ideographic).</summary>
+    Ideographic = 25,
+
+    /// <summary>Line_Break IN (Inseparable).</summary>
+    Inseparable = 26,
+
+    /// <summary>Line_Break IS (Infix_Numeric).</summary>
+    InfixNumeric = 27,
+
+    /// <summary>Line_Break JL (JL).</summary>
+    JL = 28,
+
+    /// <summary>Line_Break JT (JT).</summary>
+    JT = 29,
+
+    /// <summary>Line_Break JV (JV).</summary>
+    JV = 30,
+
+    /// <summary>Line_Break LF (Line_Feed).</summary>
+    LineFeed = 31,
+
+    /// <summary>Line_Break NL (Next_Line).</summary>
+    NextLine = 32,
+
+    /// <summary>Line_Break NS (Nonstarter).</summary>
+    Nonstarter = 33,
+
+    /// <summary>Line_Break NU (Numeric).</summary>
+    Numeric = 34,
+
+    /// <summary>Line_Break OP (Open_Punctuation).</summary>
+    OpenPunctuation = 35,
+
+    /// <summary>Line_Break PO (Postfix_Numeric).</summary>
+    PostfixNumeric = 36,
+
+    /// <summary>Line_Break PR (Prefix_Numeric).</summary>
+    PrefixNumeric = 37,
+
+    /// <summary>Line_Break QU (Quotation).</summary>
+    Quotation = 38,
+
+    /// <summary>Line_Break RI (Regional_Indicator).</summary>
+    RegionalIndicator = 39,
+
+    /// <summary>Line_Break SA (Complex_Context).</summary>
+    ComplexContext = 40,
+
+    /// <summary>Line_Break SG (Surrogate).</summary>
+    Surrogate = 41,
+
+    /// <summary>Line_Break SP (Space).</summary>
+    Space = 42,
+
+    /// <summary>Line_Break SY (Break_Symbols).</summary>
+    BreakSymbols = 43,
+
+    /// <summary>Line_Break VF (Virama_Final).</summary>
+    ViramaFinal = 44,
+
+    /// <summary>Line_Break VI (Virama).</summary>
+    Virama = 45,
+
+    /// <summary>Line_Break WJ (Word_Joiner).</summary>
+    WordJoiner = 46,
+
+    /// <summary>Line_Break ZW (ZWSpace).</summary>
+    ZWSpace = 47,
+
+    /// <summary>Line_Break ZWJ (ZWJ).</summary>
+    ZWJ = 48,
+}

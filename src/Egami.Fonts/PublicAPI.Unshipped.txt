@@ -1527,3 +1527,54 @@ Egami.Fonts.GlyphRun.Script.get -> Egami.Fonts.Unicode.Script
 Egami.Fonts.GlyphRun.Language.get -> string?
 Egami.Fonts.SubsetOptions.LayoutClosure.get -> bool
 Egami.Fonts.SubsetOptions.LayoutClosure.init -> void
+Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Aksara = 2 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.AksaraPrebase = 4 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.AksaraStart = 5 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Alphabetic = 3 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Ambiguous = 1 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.BreakAfter = 7 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.BreakBefore = 8 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.BreakBoth = 6 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.BreakSymbols = 43 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.CarriageReturn = 15 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.CloseParenthesis = 14 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ClosePunctuation = 12 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.CombiningMark = 13 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ComplexContext = 40 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ConditionalJapaneseStarter = 11 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ContingentBreak = 10 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.EBase = 16 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.EModifier = 17 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Exclamation = 18 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Glue = 19 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.H2 = 20 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.H3 = 21 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.HebrewLetter = 23 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Hyphen = 24 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Ideographic = 25 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.InfixNumeric = 27 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Inseparable = 26 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.JL = 28 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.JT = 29 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.JV = 30 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.LineFeed = 31 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.MandatoryBreak = 9 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.NextLine = 32 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Nonstarter = 33 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Numeric = 34 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.OpenPunctuation = 35 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.PostfixNumeric = 36 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.PrefixNumeric = 37 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Quotation = 38 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.RegionalIndicator = 39 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Space = 42 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Surrogate = 41 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.UnambiguousHyphen = 22 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Unknown = 0 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.Virama = 45 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ViramaFinal = 44 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.WordJoiner = 46 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ZWJ = 48 -> Egami.Fonts.Unicode.LineBreakClass
+Egami.Fonts.Unicode.LineBreakClass.ZWSpace = 47 -> Egami.Fonts.Unicode.LineBreakClass
+static Egami.Fonts.Unicode.UnicodeData.GetLineBreakClass(int codePoint) -> Egami.Fonts.Unicode.LineBreakClass

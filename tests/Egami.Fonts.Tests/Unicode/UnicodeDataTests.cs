@@ -24,6 +24,7 @@ public sealed class UnicodeDataTests
     [InlineData("GCB")]
     [InlineData("WB")]
     [InlineData("InCB")]
+    [InlineData("lb")]
     [InlineData("Emoji")]
     [InlineData("EmojiPresentation")]
     [InlineData("EmojiModifier")]
@@ -48,6 +49,7 @@ public sealed class UnicodeDataTests
             "GCB" => cp => UnicodeData.GraphemeBreakOf(cp).ToString(),
             "WB" => cp => UnicodeData.WordBreakOf(cp).ToString(),
             "InCB" => cp => UnicodeData.IndicConjunctBreakOf(cp).ToString(),
+            "lb" => cp => UnicodeData.GetLineBreakClass(cp).ToString(),
             "Emoji" => cp => Bit(UnicodeData.IsEmoji(cp)),
             "EmojiPresentation" => cp => Bit(UnicodeData.IsEmojiPresentation(cp)),
             "EmojiModifier" => cp => Bit(UnicodeData.IsEmojiModifier(cp)),

@@ -15,7 +15,7 @@ so the same text gives the same answer on every runtime and machine. `UnicodeDat
 `UnicodeData` answers per code point: the general category (as the runtime's `UnicodeCategory`), the `Script` and its script
 extensions, the `BidiClass`, the mirroring character and `BidiPairedBracketType`, the `JoiningType` and `JoiningGroup` of Arabic
 and Syriac letters, the canonical combining class, the `IndicSyllabicCategory` and `IndicPositionalCategory`, the
-`VerticalOrientation`, the `EastAsianWidth`, the emoji properties and whether a character is default ignorable.
+`VerticalOrientation`, the `EastAsianWidth`, the `LineBreakClass` (UAX #14), the emoji properties and whether a character is default ignorable.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Unicode.cs#properties)]
 
