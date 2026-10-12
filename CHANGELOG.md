@@ -259,6 +259,31 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
+### Egami.Svg 1.0.0-preview.1 and Egami.Css 1.0.0-preview.1
+
+Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/articles/guides/css.md).
+
+- `SvgDocument` loads SVG and SVGZ into an editable tree of `SvgElement`, `SvgAttribute` and text, with a locked-down XML reader:
+  internal DTD entities are capped, nothing outside the file is opened unless an `SvgLoadOptions.Resolver` allows it
+  (`SvgResolvers.SameDirectory`), and element, depth and size limits come from `SafetyLimits`. A lenient load reports what it
+  skips as `Svg.*` warnings; a strict one throws `SvgException` with the line and column. `Save` writes the tree back with its
+  declaration, DOCTYPE, comments and foreign namespaces, numbers set in code at `SvgSaveOptions.Precision`.
+- Styles cascade with Egami.Css: `style` elements with media queries, the `style` attribute and presentation attributes.
+- Drawing follows resvg where SVG leaves a choice: shapes, fills, strokes, paint-order, markers, nested svg, use and symbol,
+  linear and radial gradients, patterns, Inkscape's mesh gradients, clip paths, masks, opacity, blend modes, raster and SVG
+  images and switch. `Rasterize` draws into a new raster at the document's size, a scale or a target size; `Draw` draws on any
+  Egami.Drawing canvas, the whole document or one element by id; `RenderTree` exposes the resolved `SvgNode` tree. Filters are
+  in progress; text is not drawn yet.
+- Gates: on resvg's own test suite, 94 to 100% of the shapes, painting, structure, paint-server and masking tests match resvg's
+  reference renders (at most 0.5% of pixels differ, allowing a one-pixel shift; deviations are listed with reasons in
+  egami-compare), filters 87%; 196 of the 200 corpus files
+  match resvg's CLI. Seven of eight mesh samples match Inkscape's export.
+- Speed, one thread, on 200 real files: loading and drawing them takes 0.87 s, against 2.1 s for Svg.Skia, 3.1 s for the resvg
+  CLI (which also writes PNG; Egami does that in 1.4 s) and 0.69 s for resvg's library.
+- Egami.Css parses CSS Syntax 3, matches Selectors 4 over any `ICssElement` tree, cascades with specificity, `!important`,
+  custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts. It stays a preview
+  until Egap's HTML reader has used it.
+
 ### Egami.Fonts 1.0.0-preview.3: text shaping
 
 OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's, in the same preview package. See

@@ -21,8 +21,10 @@ internal sealed class SvgStyler
     private static readonly CssStyleSheet s_userAgent = CssStyleSheet.Parse(UserAgentSheet);
 
     private readonly CssCascade _cascade;
-    private readonly Dictionary<SvgElement, CssCascadedStyle> _cascaded = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<SvgElement, CssCascadedStyle> _cascaded = new(IdentityComparer.Instance);
     private readonly SvgReport _report;
+    private readonly Dictionary<(string Name, string Value), CssDeclaration> _hints = [];
+    private readonly Dictionary<string, IReadOnlyList<CssDeclaration>> _inline = new(StringComparer.Ordinal);
 
     public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media)
     {
@@ -93,7 +95,14 @@ internal sealed class SvgStyler
                     continue;
                 }
 
-                (hints ??= []).Add(CssDeclaration.Create(attribute.Name, attribute.Value));
+                // Files repeat the same few values thousands of times; each is parsed once per document.
+                if (!_hints.TryGetValue((attribute.Name, attribute.Value), out CssDeclaration? hint))
+                {
+                    hint = CssDeclaration.Create(attribute.Name, attribute.Value);
+                    _hints[(attribute.Name, attribute.Value)] = hint;
+                }
+
+                (hints ??= []).Add(hint);
             }
         }
 
@@ -108,10 +117,27 @@ internal sealed class SvgStyler
             return null;
         }
 
-        return CssDeclaration.ParseList(style, new CssParseOptions
+        if (_inline.TryGetValue(style, out IReadOnlyList<CssDeclaration>? cached))
         {
-            Errors = e => _report.Note("Svg.BadStyleSheet", $"The style attribute has an error at column {e.Column}: {e.Message}", element),
+            return cached;
+        }
+
+        // A style with an error is parsed again for each element, so each gets its report; the others are shared.
+        bool clean = true;
+        IReadOnlyList<CssDeclaration> declarations = CssDeclaration.ParseList(style, new CssParseOptions
+        {
+            Errors = e =>
+            {
+                clean = false;
+                _report.Note("Svg.BadStyleSheet", $"The style attribute has an error at column {e.Column}: {e.Message}", element);
+            },
         });
+        if (clean)
+        {
+            _inline[style] = declarations;
+        }
+
+        return declarations;
     }
 
     private static IEnumerable<SvgElement> Descendants(SvgElement root)

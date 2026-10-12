@@ -44,7 +44,9 @@ internal static class SvgFilterRenderer
             sy *= down;
         }
 
-        Frame frame = Frame.Of(region, sx, sy);
+        // On a raster canvas without rotation or skew the raster lines up with the device pixels, so drawing it back copies them.
+        bool aligned = IsRaster(canvas) && m.M12 == 0 && m.M21 == 0 && m.M11 > 0 && m.M22 > 0 && area <= MaxPixels;
+        Frame frame = Frame.Of(region, sx, sy, aligned ? new Vector2(m.M31, m.M32) : Vector2.Zero);
         if (frame.Width <= 0 || frame.Height <= 0)
         {
             return;
@@ -91,14 +93,17 @@ internal static class SvgFilterRenderer
         return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(RasterCanvas<>);
     }
 
-    /// <summary>The filter raster's place: its pixel origin and size, and the user-to-pixel scale.</summary>
-    private readonly record struct Frame(int X, int Y, int Width, int Height, float Sx, float Sy)
+    /// <summary>
+    /// The filter raster's place: the scaled user coordinates of its first pixel, its size, and the user-to-pixel scale. With a
+    /// device offset its pixels fall on whole device pixels.
+    /// </summary>
+    private readonly record struct Frame(float X, float Y, int Width, int Height, float Sx, float Sy)
     {
-        public static Frame Of(RectF region, float sx, float sy)
+        public static Frame Of(RectF region, float sx, float sy, Vector2 device)
         {
-            int x0 = (int)MathF.Floor(region.Left * sx), y0 = (int)MathF.Floor(region.Top * sy);
-            int x1 = (int)MathF.Ceiling(region.Right * sx), y1 = (int)MathF.Ceiling(region.Bottom * sy);
-            return new Frame(x0, y0, Math.Max(0, x1 - x0), Math.Max(0, y1 - y0), sx, sy);
+            int x0 = (int)MathF.Floor((region.Left * sx) + device.X), y0 = (int)MathF.Floor((region.Top * sy) + device.Y);
+            int x1 = (int)MathF.Ceiling((region.Right * sx) + device.X), y1 = (int)MathF.Ceiling((region.Bottom * sy) + device.Y);
+            return new Frame(x0 - device.X, y0 - device.Y, Math.Max(0, x1 - x0), Math.Max(0, y1 - y0), sx, sy);
         }
 
         /// <summary>A user-space rectangle as pixels of the raster, clamped to it.</summary>
@@ -405,44 +410,8 @@ internal static class SvgFilterRenderer
                 return pixels;
             }
 
-            int padX = (int)MathF.Ceiling(3 * Math.Max(0, sigmaX)) + 1, padY = (int)MathF.Ceiling(3 * Math.Max(0, sigmaY)) + 1;
-            int pw = W + (2 * padX), ph = H + (2 * padY);
-            RgbaF32[] padded = new RgbaF32[pw * ph];
-            for (int y = 0; y < H; y++)
-            {
-                pixels.AsSpan(y * W, W).CopyTo(padded.AsSpan(((y + padY) * pw) + padX, W));
-            }
-
-            using (Raster<RgbaF32> r = Raster.Wrap<RgbaF32>(padded.AsMemory(), pw, ph))
-            {
-                if (sigmaX == sigmaY)
-                {
-                    Operate(r, padded, ops => ops.Blur(sigmaX));
-                }
-                else
-                {
-                    Operate(r, padded, ops =>
-                    {
-                        if (sigmaX > 0)
-                        {
-                            ops.MotionBlur(Math.Min(127, MathF.Ceiling(3 * sigmaX)), sigmaX, 0, centered: true);
-                        }
-
-                        if (sigmaY > 0)
-                        {
-                            ops.MotionBlur(Math.Min(127, MathF.Ceiling(3 * sigmaY)), sigmaY, 90, centered: true);
-                        }
-                    });
-                }
-            }
-
-            RgbaF32[] result = new RgbaF32[W * H];
-            for (int y = 0; y < H; y++)
-            {
-                padded.AsSpan(((y + padY) * pw) + padX, W).CopyTo(result.AsSpan(y * W, W));
-            }
-
-            return result;
+            SvgGaussianBlur.Blur(pixels, W, H, Math.Max(0, sigmaX), Math.Max(0, sigmaY));
+            return pixels;
         }
 
         /// <summary>Moves the pixels by whole pixels (rounded), transparent where nothing moves in.</summary>

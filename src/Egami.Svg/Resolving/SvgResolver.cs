@@ -66,9 +66,9 @@ internal sealed partial class SvgResolver
     private readonly SvgGeometry _geometry;
     private readonly SvgLimits _limits;
     private readonly IReadOnlyList<string> _languages;
-    private readonly Dictionary<SvgElement, (SvgStyle Style, CssComputedStyle Css)> _original = new(ReferenceEqualityComparer.Instance);
-    private readonly HashSet<SvgElement> _active = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<SvgElement, bool> _useCycles = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<SvgElement, (SvgStyle Style, CssComputedStyle Css)> _original = new(IdentityComparer.Instance);
+    private readonly HashSet<SvgElement> _active = new(IdentityComparer.Instance);
+    private readonly Dictionary<SvgElement, bool> _useCycles = new(IdentityComparer.Instance);
     private int _depth;
     private long _elements;
 
@@ -499,7 +499,7 @@ internal sealed partial class SvgResolver
         }
 
         bool cycle = false;
-        HashSet<SvgElement> seen = new(ReferenceEqualityComparer.Instance) { target };
+        HashSet<SvgElement> seen = new(IdentityComparer.Instance) { target };
         Stack<SvgElement> pending = new();
         pending.Push(target);
         while (pending.Count > 0 && !cycle)

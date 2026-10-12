@@ -15,6 +15,8 @@ namespace Egami.Svg;
 /// </example>
 public sealed partial class SvgElement : SvgContent
 {
+    private static int s_serial;
+
     /// <summary>Initializes a new instance of the <see cref="SvgElement"/> class in the SVG namespace.</summary>
     /// <param name="name">The local name, such as <c>rect</c>.</param>
     public SvgElement(string name)
@@ -89,6 +91,12 @@ public sealed partial class SvgElement : SvgContent
 
     /// <summary>Gets the document this element is the root of, when it is one.</summary>
     internal SvgDocument? OwnerDocument { get; set; }
+
+    /// <summary>
+    /// Gets a number set when the element is made, the hash <see cref="Reading.IdentityComparer"/> uses: an object's own identity hash is
+    /// slow to make the first time, and every load makes thousands of elements.
+    /// </summary>
+    internal int Serial { get; } = Interlocked.Increment(ref s_serial);
 
     /// <summary>Gets the child elements, in order, skipping text and comments.</summary>
     /// <returns>The child elements.</returns>

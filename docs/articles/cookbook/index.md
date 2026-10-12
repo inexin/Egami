@@ -184,6 +184,22 @@ Boolean operations keep curves, so the frame exports to PDF or SVG exactly. See 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#svg)]
 
+## Render an SVG to PNG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-to-png)]
+
+Egami.Svg draws as resvg does where SVG leaves a choice; see [SVG](../guides/svg.md).
+
+## Recolor an SVG icon
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#recolor)]
+
+## Draw icons from an SVG sprite sheet
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#sprite-sheet)]
+
+A symbol's viewBox fits it into each cell; the same calls draw on a PDF page.
+
 ## Paint a dusk sky
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#sky-gradient)]

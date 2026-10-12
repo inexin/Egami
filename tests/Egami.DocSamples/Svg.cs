@@ -199,4 +199,75 @@ public class Svg
         #endregion
         Assert.NotNull(document.Root);
     }
+
+    private const string Sheet = """
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <symbol id="plus" viewBox="0 0 24 24"><path d="M11 4h2v16h-2zM4 11h16v2H4z" fill="currentColor"/></symbol>
+          <symbol id="dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/></symbol>
+        </svg>
+        """;
+
+    [Fact]
+    public void SvgToPng()
+    {
+        string input = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.svg");
+        string output = System.IO.Path.ChangeExtension(input, ".png");
+        File.WriteAllText(input, Icon);
+        try
+        {
+            #region svg-to-png
+            // An SVG drawn 256 pixels wide and saved as PNG; the height keeps the aspect ratio.
+            SvgDocument document = SvgDocument.Load(input);
+            using Raster<Rgba8> raster = document.Rasterize<Rgba8>(new SvgRenderOptions { Width = 256 });
+            raster.Save(output);
+            #endregion
+            Assert.Equal(256, Raster.Probe(output).Height);
+        }
+        finally
+        {
+            File.Delete(input);
+            File.Delete(output);
+        }
+    }
+
+    [Fact]
+    public void RecolorAnIcon()
+    {
+        #region recolor
+        // Every fill and stroke of a one-color icon set to a brand color, then drawn: edits redraw at once.
+        SvgDocument icon = SvgDocument.Parse(Icon);
+        foreach (SvgElement element in icon.Root.Descendants())
+        {
+            foreach (string paint in (string[])["fill", "stroke"])
+            {
+                if (element.Attributes[paint] is string value && value != "none")
+                {
+                    element.Attributes[paint] = "#7b2ff7";
+                }
+            }
+        }
+
+        using Raster<Rgba8> branded = icon.Rasterize<Rgba8>(new SvgRenderOptions { Width = 64 });
+        #endregion
+        Assert.Equal("#7b2ff7", icon.FindById("body")!.Attributes["fill"]);
+    }
+
+    [Fact]
+    public void IconsFromASpriteSheet()
+    {
+        #region sprite-sheet
+        // Each symbol of a sprite sheet drawn into its own 32-pixel cell of a toolbar strip.
+        SvgDocument sheet = SvgDocument.Parse(Sheet);
+        string[] icons = ["plus", "dot", "plus"];
+        using Raster<Rgba8> strip = Raster.Create<Rgba8>(32 * icons.Length, 32);
+        using (RasterCanvas<Rgba8> canvas = strip.CreateCanvas())
+        {
+            for (int i = 0; i < icons.Length; i++)
+            {
+                sheet.Draw(canvas, icons[i], new RectF(32 * i, 0, 32, 32));
+            }
+        }
+        #endregion
+        Assert.Equal(96, strip.Width);
+    }
 }

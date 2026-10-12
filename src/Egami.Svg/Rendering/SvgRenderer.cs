@@ -45,6 +45,7 @@ internal static class SvgRenderer
             {
                 canvas.SaveLayer(new LayerOptions
                 {
+                    Bounds = node.Filter is SvgFilter region ? region.Region : SvgVisualBounds.Of(node),
                     Opacity = Math.Clamp(node.Opacity, 0, 1),
                     BlendMode = node.BlendMode,
                     Isolated = true,
