@@ -156,7 +156,8 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 ### Egami.Drawing 1.0.0-preview.1
 
 A new package, over Egami's public API only, that draws antialiased paths, shapes, strokes, clips and images on a canvas. A
-preview: its API may change before 1.0. See the [Drawing guide](docs/articles/guides/drawing.md).
+preview: its API may change before 1.0. See the [Drawing guide](docs/articles/guides/drawing.md). Text arrives with Egami.Fonts,
+below.
 
 - `Canvas` is abstract: public calls are checked and tracked (transform, clip bounds, save stack) and each ends in one protected
   hook, so other backends (a PDF page, a recorder) see shapes and pens as data. `RasterCanvas<TPixel>` draws into any pixel type;
@@ -173,6 +174,31 @@ preview: its API may change before 1.0. See the [Drawing guide](docs/articles/gu
 - Faster than the reference drawing library 2.1.7 in every scenario timed (ms, 1 thread): 1,000 small shapes 4.0 against 11.1, a 4000×4000
   star 19.8 against 49.4 (4.8 on 24 cores against 47.6), 10,000 icons 109 against 312, 200 thick curves 40 against 360, 10,000
   hairlines 48 against 208.
+
+### Egami.Fonts 1.0.0-preview.1 and text on the canvas
+
+A new package, over Egami's public API only, that reads TrueType and OpenType fonts in managed code; Egami.Drawing uses it to draw
+text. A preview: its API may change before 1.0. See the [Fonts and text guide](docs/articles/guides/text.md).
+
+- `Typeface` loads TrueType, OpenType CFF (CID-keyed too), collections and bare CFF streams as PDF embeds them, lazily from one
+  block of memory; leniently by default, with `Font.*` diagnostics and documented defaults for missing or damaged tables, or
+  strictly. Names in every language, `FontStyle`, `FontEmbedding` (reported, never enforced), cmap formats 0, 4, 6, 10, 12, 13 and
+  14 with symbol and Mac Roman fonts, glyph outlines through `IGlyphOutlineSink` (TrueType quadratics, a Type 2 charstring
+  interpreter with subroutines, flex and seac), advances, glyph bounds, `FontExtents` by the browsers' vertical-metrics rule, and
+  GPOS pair kerning (or the kern table). Every table field, mapped code point, outline point, bound and sampled kerning pair of
+  the test fonts equals fontTools'.
+- `FontCollection` with `FontCollection.System`, found without native calls (503 installed faces indexed in 152 ms on first use),
+  names in any language, CSS Fonts 4 style matching with the synthesis a lighter or upright face wants, and generic families.
+- `FontSubsetter` writes TrueType, OpenType CFF or bare CID-keyed CFF subsets with composite and seac closure, dense or kept glyph
+  ids and unused CFF subroutines dropped; every subset re-loads with its glyphs unchanged and opens in fontTools and FreeType;
+  200 glyphs from a 16 MB CJK font in about 2 ms.
+- `Font` (a typeface at an em size in canvas units), `Font.Shape` (cmap, pair kerning, newlines) and `MeasureText`; `GlyphRun`
+  keeps the source text and a cluster per glyph. `Canvas.DrawText`, `DrawGlyphRun` and the `OnDrawGlyphRun` hook; small glyphs
+  are drawn from `GlyphCache` masks at whole pixels, which changes speed, not pixels; `GetGlyphPath`, `GetTextPath` and
+  `GlyphRun.ToPath`. Drawn text is within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area.
+- Faster than the reference font library 2.1.3 at loading (0.18 against 127 ms for nine fonts), matching and measuring (3.3 against 122 ms
+  for 1,000 strings), and than the reference drawing library 2.1.7 at drawing a 2,000-word page (15 against 402 ms at 12 pixels).
+- Fuzz targets `font`, `cff` and `subset`. Shaping, bidi and wrapping come in 2.8; WOFF, WOFF2 and variable fonts in 2.7.2.
 
 ### Regions and masks (in progress)
 

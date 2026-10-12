@@ -47,6 +47,7 @@ internal sealed class OutlineRecorder : IGlyphOutlineSink
         _verbCount = 0;
         _coordinateCount = 0;
         _open = false;
+        _startX = _startY = _lastX = _lastY = 0;
     }
 
     public void MoveTo(float x, float y)

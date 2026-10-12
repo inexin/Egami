@@ -17,6 +17,9 @@ Targets:
 | `webpcodec` | The first byte picks: a raw VP8 frame, a raw VP8L stream, or the rest as pixels for both encoders, whose lossless round trip must be exact | `tests/images/fuzz/webpcodec-seeds/*` |
 | `cube` | .cube LUT files (Adobe 1D and 3D, Resolve's 1D shaper with a 3D table): read with low limits, written back and read again to the same values, and run as a filter with every interpolation | `tests/images/fuzz/cube-seeds/*` |
 | `stream` | Any format through `RasterDecoder`, whole and incremental, with a region, a reduction, a band height and the sizes the bytes arrive in all picked from the input's hash, and previews drawn on the way; a strict incremental decode must give the whole decode's rows | `tests/images/fuzz/stream-seeds/*` |
+| `font` | TrueType, OpenType and collection data (Egami.Fonts): probed, every face loaded leniently and strictly, names, metrics, the first glyphs' outlines, bounds and kerning read, text shaped and measured | `tests/images/fuzz/font-seeds/*` |
+| `cff` | Bare CFF streams as PDF embeds them: loaded, then read as `font` does | `tests/images/fuzz/cff-seeds/*` |
+| `subset` | What `font` or `cff` loads is subsetted (numbering, cmap and prefix picked by the last byte), re-loaded, and every kept glyph's outline must be unchanged | `tests/images/fuzz/font-seeds/*` |
 
 ## Running locally (Linux or WSL)
 

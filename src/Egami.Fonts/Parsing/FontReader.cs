@@ -106,7 +106,7 @@ internal static class BigEndian
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ushort UInt16(ReadOnlySpan<byte> data, int offset)
     {
-        if ((uint)offset > (uint)(data.Length - 2))
+        if (offset < 0 || offset > data.Length - 2)
         {
             throw FontErrors.Truncated(offset);
         }
@@ -120,7 +120,7 @@ internal static class BigEndian
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint UInt32(ReadOnlySpan<byte> data, int offset)
     {
-        if ((uint)offset > (uint)(data.Length - 4))
+        if (offset < 0 || offset > data.Length - 4)
         {
             throw FontErrors.Truncated(offset);
         }
@@ -131,7 +131,7 @@ internal static class BigEndian
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint UInt24(ReadOnlySpan<byte> data, int offset)
     {
-        if ((uint)offset > (uint)(data.Length - 3))
+        if (offset < 0 || offset > data.Length - 3)
         {
             throw FontErrors.Truncated(offset);
         }

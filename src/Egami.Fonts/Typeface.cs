@@ -478,6 +478,11 @@ public sealed partial class Typeface
                 count = Math.Min(declared, count);
             }
 
+            if (count <= 0)
+            {
+                throw FontErrors.Corrupt(FaceOffset, "The font has no glyphs.");
+            }
+
             return count;
         }
 

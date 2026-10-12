@@ -119,7 +119,10 @@ static Action<Stream> Target(string name) => name switch
     "cube" => LoadCube,
     "jpeg2000" => LoadJpeg2000,
     "jpeg2000codec" => DecodeJpeg2000Codec,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec."),
+    "font" => LoadFont,
+    "cff" => LoadCff,
+    "subset" => SubsetFont,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset."),
 };
 
 static EgamiContext Context()
@@ -1377,6 +1380,126 @@ static byte[] ReadAll(Stream stream)
     return copy.ToArray();
 }
 
+// Fonts (Phase 2.7.1): every face of the data loaded leniently and strictly, every name, metric and table read, the first glyphs'
+// outlines and extents, kerning among them, and text shaped and measured. Only EgamiExceptions may escape.
+static void LoadFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    _ = Egami.Fonts.FontLoader.Probe(data);
+    foreach (bool strict in new[] { false, true })
+    {
+        var options = new Egami.Fonts.FontLoadOptions { Strict = strict, Context = Context() };
+        IReadOnlyList<Egami.Fonts.Typeface> faces;
+        try
+        {
+            faces = Egami.Fonts.FontLoader.LoadAll(data, options);
+        }
+        catch (EgamiException)
+        {
+            continue;
+        }
+
+        foreach (Egami.Fonts.Typeface face in faces)
+        {
+            try
+            {
+                ExerciseFace(face);
+            }
+            catch (EgamiException) when (strict)
+            {
+            }
+        }
+    }
+}
+
+// Bare CFF streams, as PDF embeds them.
+static void LoadCff(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    Egami.Fonts.Typeface face;
+    try
+    {
+        face = Egami.Fonts.Typeface.FromCff(data, new Egami.Fonts.CffOptions { LoadOptions = new Egami.Fonts.FontLoadOptions { Context = Context() } });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    ExerciseFace(face);
+}
+
+// Subsets of whatever loads: written, re-loaded, and every kept glyph's outline unchanged.
+static void SubsetFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    Egami.Fonts.Typeface face;
+    try
+    {
+        face = Egami.Fonts.FontLoader.Probe(data).Kind == Egami.Fonts.FontFileKind.Cff
+            ? Egami.Fonts.Typeface.FromCff(data)
+            : Egami.Fonts.Typeface.FromMemory(data, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    int hash = data.Length > 0 ? data[^1] : 0;
+    ushort[] glyphs = [.. Enumerable.Range(0, Math.Min(face.GlyphCount, 40)).Where(g => ((g + hash) % 3) != 0).Select(g => (ushort)g)];
+    var options = new Egami.Fonts.SubsetOptions { RetainGlyphIds = (hash & 1) != 0, KeepCmap = (hash & 2) != 0, FontNamePrefix = "FUZZED+" };
+    Egami.Fonts.FontSubset subset;
+    try
+    {
+        subset = Egami.Fonts.FontSubsetter.Subset(face, glyphs, options);
+    }
+    catch (EgamiException)
+    {
+        // A kept glyph that cannot be read.
+        return;
+    }
+
+    Egami.Fonts.Typeface again = subset.ToTypeface();
+    foreach ((ushort old, ushort now) in subset.GlyphMap)
+    {
+        var a = new RecordingSink();
+        var b = new RecordingSink();
+        bool readA = face.GetGlyphOutline(old, a), readB = again.GetGlyphOutline(now, b);
+        if (readA && (!readB || !a.SameAs(b)))
+        {
+            throw new InvalidOperationException($"Glyph {old} changed in the subset.");
+        }
+    }
+}
+
+static void ExerciseFace(Egami.Fonts.Typeface face)
+{
+    _ = face.FamilyName + face.SubfamilyName + face.FullName + face.PostScriptName;
+    _ = face.Style;
+    _ = face.Extents;
+    _ = face.HheaMetrics;
+    _ = face.TypoMetrics;
+    _ = face.WinMetrics;
+    _ = face.Embedding;
+    _ = face.IsFixedPitch;
+    _ = face.GetNames().Count;
+    var sink = new RecordingSink();
+    int count = Math.Min(face.GlyphCount, 64);
+    for (int g = 0; g < count; g++)
+    {
+        face.GetGlyphOutline((ushort)g, sink);
+        _ = face.GetGlyphExtents((ushort)g);
+        _ = face.GetAdvance((ushort)g);
+        _ = face.GetLeftSideBearing((ushort)g);
+        _ = face.GetKerning((ushort)g, (ushort)((g * 7) % count));
+    }
+
+    var font = new Egami.Fonts.Font(face, 16);
+    Egami.Fonts.GlyphRun run = font.Shape("Fuzz AV\u00C5\r\nfi \U0001F600\uFE0F");
+    _ = run.Bounds;
+    _ = font.MeasureText("To Wa");
+}
+
 /// <summary>A simple mutation fuzzer: random edits of seed files, run in process, with a watchdog for hangs.</summary>
 internal static class Mutator
 {
@@ -1502,4 +1625,38 @@ internal sealed class ForwardOnlyStream(byte[] data) : MemoryStream(data, writab
     public override long Length => throw new NotSupportedException();
 
     public override long Seek(long offset, SeekOrigin loc) => throw new NotSupportedException();
+}
+
+/// <summary>Records an outline to compare two of them.</summary>
+internal sealed class RecordingSink : Egami.Fonts.IGlyphOutlineSink
+{
+    private readonly List<float> _values = [];
+
+    public void MoveTo(float x, float y) => _values.AddRange([1, x, y]);
+
+    public void LineTo(float x, float y) => _values.AddRange([2, x, y]);
+
+    public void QuadTo(float cx, float cy, float x, float y) => _values.AddRange([3, cx, cy, x, y]);
+
+    public void CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y) => _values.AddRange([4, c1x, c1y, c2x, c2y, x, y]);
+
+    public void Close() => _values.Add(5);
+
+    public bool SameAs(RecordingSink other)
+    {
+        if (_values.Count != other._values.Count)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < _values.Count; i++)
+        {
+            if (MathF.Abs(_values[i] - other._values[i]) > 1e-3f && !(float.IsNaN(_values[i]) && float.IsNaN(other._values[i])))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

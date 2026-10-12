@@ -183,6 +183,10 @@ internal sealed class CffFont
 
         CffIndex charStrings = CffIndex.Read(data, charStringsOffset);
         int glyphCount = charStrings.Count;
+        if (glyphCount == 0)
+        {
+            throw FontErrors.Corrupt(fileOffset + charStringsOffset, "The CFF data has no charstrings.");
+        }
         ushort[] charset = ReadCharset(span, top.GetInt(OpCharset, 0), glyphCount, fileOffset);
 
         PrivateData[] privates;
@@ -235,9 +239,9 @@ internal sealed class CffFont
             return charset;
         }
 
-        if (offset >= data.Length)
+        if (offset < 0 || offset >= data.Length)
         {
-            throw FontErrors.Corrupt(fileOffset, "The CFF charset offset is past the end.");
+            throw FontErrors.Corrupt(fileOffset, "The CFF charset offset is outside the data.");
         }
 
         var r = new FontReader(data[offset..], fileOffset + offset);

@@ -127,7 +127,8 @@ internal static class TrueTypeSubsetter
 
             flags = BinaryPrimitives.ReadUInt16BigEndian(copy.AsSpan(at));
             ushort old = BinaryPrimitives.ReadUInt16BigEndian(copy.AsSpan(at + 2));
-            BinaryPrimitives.WriteUInt16BigEndian(copy.AsSpan(at + 2), map[old]);
+            // A component the face does not have stays out of range in the subset too, so it still draws nothing.
+            BinaryPrimitives.WriteUInt16BigEndian(copy.AsSpan(at + 2), map.TryGetValue(old, out ushort now) ? now : (ushort)0xFFFF);
             int size = (flags & 0x0001) != 0 ? 4 : 2;
             size += (flags & 0x0008) != 0 ? 2 : (flags & 0x0040) != 0 ? 4 : (flags & 0x0080) != 0 ? 8 : 0;
             at += 4 + size;

@@ -36,7 +36,7 @@ internal static class CffSubsetter
             interpreter.Draw(glyph, null, usage);
             foreach (int seac in usage.SeacGlyphs)
             {
-                if (!kept.Contains((ushort)seac))
+                if (seac < face.GlyphCount && !kept.Contains((ushort)seac))
                 {
                     pending.Push((ushort)seac);
                 }

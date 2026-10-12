@@ -121,7 +121,7 @@ internal sealed class CharStringInterpreter
     {
         if ((uint)glyph >= (uint)_font.GlyphCount)
         {
-            throw new ArgumentOutOfRangeException(nameof(glyph));
+            throw Error($"Glyph {glyph} is past the CFF data's {_font.GlyphCount} charstrings.");
         }
 
         _glyph = glyph;
