@@ -1,5 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Security.Cryptography;
 
 using Egami.Analysis;
@@ -198,6 +200,11 @@ public abstract partial class Raster
             return true;
         }
 
+        if (Layout.ChannelType == PixelChannelType.Unorm8 && Layout.ChannelCount == 4 && Layout.ChannelOrder is PixelChannelOrder.Rgba or PixelChannelOrder.Bgra or PixelChannelOrder.Argb or PixelChannelOrder.Abgr)
+        {
+            return Accept(new OpaqueVisitor(frame));
+        }
+
         return !AnyFrame(frame, p => p.A < 1);
     }
 
@@ -310,6 +317,80 @@ public abstract partial class Raster
         }
 
         return false;
+    }
+
+    /// <summary>IsOpaque for 4-byte types with 8-bit alpha: the alpha byte of 8 pixels at a time, without converting.</summary>
+    private sealed class OpaqueVisitor(int frame) : IRasterVisitor<bool>
+    {
+        public bool Visit<TPixel>(Raster<TPixel> raster)
+            where TPixel : unmanaged, IPixelType<TPixel>
+        {
+            raster.ThrowIfDisposed();
+            uint mask = TPixel.Layout.ChannelOrder is PixelChannelOrder.Argb or PixelChannelOrder.Abgr ? 0xFFu : 0xFF000000u;
+            for (int f = frame < 0 ? 0 : frame; f < (frame < 0 ? raster.FrameCount : frame + 1); f++)
+            {
+                PixelPlane<TPixel> plane = raster.Frames[f].Plane;
+                if (RowRunner.IsSequential(plane.Height, (long)plane.Width * 4, raster.Context.MaxParallelism) && plane.TryGetContiguous(out Span<TPixel> all))
+                {
+                    if (!Opaque(MemoryMarshal.Cast<TPixel, uint>(all), mask))
+                    {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                int found = 0;
+                RowRunner.Run(plane.Height, (long)plane.Width * 4, raster.Context.MaxParallelism, (start, end) =>
+                {
+                    for (int y = start; y < end && Volatile.Read(ref found) == 0; y++)
+                    {
+                        ReadOnlySpan<uint> row = MemoryMarshal.Cast<TPixel, uint>(plane.Row(y));
+                        if (!Opaque(row, mask))
+                        {
+                            Volatile.Write(ref found, 1);
+                            return;
+                        }
+                    }
+                }, CancellationToken.None);
+                if (found != 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>Returns whether every alpha byte is 255: any that is not leaves a bit set in the accumulated difference.</summary>
+        private static bool Opaque(ReadOnlySpan<uint> pixels, uint mask)
+        {
+            ref uint first = ref MemoryMarshal.GetReference(pixels);
+            Vector256<uint> m = Vector256.Create(mask);
+            Vector256<uint> missing = Vector256<uint>.Zero;
+            int x = 0;
+            for (; x <= pixels.Length - 32; x += 32)
+            {
+                missing |= (Vector256.LoadUnsafe(ref first, (nuint)x) & m) ^ m;
+                missing |= (Vector256.LoadUnsafe(ref first, (nuint)(x + 8)) & m) ^ m;
+                missing |= (Vector256.LoadUnsafe(ref first, (nuint)(x + 16)) & m) ^ m;
+                missing |= (Vector256.LoadUnsafe(ref first, (nuint)(x + 24)) & m) ^ m;
+
+                // A large buffer stops at the first block of 64K pixels with a translucent one.
+                if ((x & 0xFFFF) == 0xFFE0 && missing != Vector256<uint>.Zero)
+                {
+                    return false;
+                }
+            }
+
+            uint rest = 0;
+            for (; x < pixels.Length; x++)
+            {
+                rest |= (pixels[x] & mask) ^ mask;
+            }
+
+            return rest == 0 && missing == Vector256<uint>.Zero;
+        }
     }
 
     private sealed class CountColorsVisitor(int frame) : IRasterVisitor<long>

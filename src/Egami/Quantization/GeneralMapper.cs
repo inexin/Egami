@@ -96,23 +96,29 @@ internal static class GeneralMapper
                     int index = match.Index(new Rgba8((byte)value[0], (byte)value[1], (byte)value[2], (byte)value[3]));
                     target[x] = (byte)index;
                     Rgba8 chosen = palette[index];
-                    for (int c = 0; c < channels; c++)
+                    double er = (value[0] - chosen.R) * (double)strength;
+                    double eg = (value[1] - chosen.G) * (double)strength;
+                    double eb = (value[2] - chosen.B) * (double)strength;
+                    double ea = channels == 4 ? (value[3] - chosen.A) * (double)strength : 0;
+                    if (er == 0 && eg == 0 && eb == 0 && ea == 0)
                     {
-                        double error = (value[c] - Channel(chosen, c)) * (double)strength;
-                        if (error == 0)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        foreach ((int dx, int dy, double weight) in taps)
+                    // The rows are padded by the kernel's reach on both sides, and error spread into the padding or below the
+                    // last row is never read, so no tap needs a bounds check.
+                    int sign = backwards ? -channels : channels;
+                    for (int k = 0; k < taps.Length; k++)
+                    {
+                        (int dx, int dy, double w) = taps[k];
+                        double[] below = rows[dy];
+                        int to = at + (dx * sign);
+                        below[to] += er * w;
+                        below[to + 1] += eg * w;
+                        below[to + 2] += eb * w;
+                        if (channels == 4)
                         {
-                            int tx = x + (backwards ? -dx : dx);
-                            if (tx < 0 || tx >= width || y + dy >= height)
-                            {
-                                continue;
-                            }
-
-                            rows[dy][((tx + reach) * channels) + c] += error * weight;
+                            below[to + 3] += ea * w;
                         }
                     }
                 }
