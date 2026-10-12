@@ -20,4 +20,8 @@
     <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Egami.Fuzz\SvgFuzzTarget.cs" Link="SvgFuzzTarget.cs" />
+    <EmbeddedResource Include="..\Egami.Fuzz\NotoSansArabic-subset.ttf" LogicalName="NotoSansArabic-subset.ttf" />
+  </ItemGroup>
 </Project>

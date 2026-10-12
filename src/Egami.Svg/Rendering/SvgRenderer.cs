@@ -32,6 +32,11 @@ internal static class SvgRenderer
         {
             if (!node.Transform.IsIdentity)
             {
+                if (!IsFinite(node.Transform))
+                {
+                    return;
+                }
+
                 canvas.Concat(node.Transform);
             }
 
@@ -241,14 +246,25 @@ internal static class SvgRenderer
         }
         else if (image.Document is SvgDocument document && image.Source.Width > 0 && image.Source.Height > 0)
         {
-            canvas.Concat(new Matrix3x2(
+            Matrix3x2 fit = new(
                 image.Destination.Width / image.Source.Width, 0,
                 0, image.Destination.Height / image.Source.Height,
                 image.Destination.X - (image.Source.X * image.Destination.Width / image.Source.Width),
-                image.Destination.Y - (image.Source.Y * image.Destination.Height / image.Source.Height)));
+                image.Destination.Y - (image.Source.Y * image.Destination.Height / image.Source.Height));
+            if (!IsFinite(fit))
+            {
+                return;
+            }
+
+            canvas.Concat(fit);
             Draw(canvas, document.RenderTree, options, depth + 1);
         }
     }
+
+    /// <summary>Whether a transform can be drawn with: every element finite and the scale not collapsed to nothing.</summary>
+    internal static bool IsFinite(Matrix3x2 m) =>
+        float.IsFinite(m.M11) && float.IsFinite(m.M12) && float.IsFinite(m.M21) && float.IsFinite(m.M22) && float.IsFinite(m.M31) && float.IsFinite(m.M32) &&
+        float.IsFinite(m.GetDeterminant());
 
     /// <summary>Clips to one path when the clip is one; otherwise draws the clip's content as an alpha mask in a layer.</summary>
     private static void ApplyClip(Canvas canvas, SvgClip clip, SvgRenderOptions options, int depth)

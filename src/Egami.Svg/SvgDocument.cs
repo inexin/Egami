@@ -198,7 +198,14 @@ public sealed class SvgDocument
                 return;
             }
 
-            canvas.Concat(RootAspect().Transform(new RectF(0, 0, size.X, size.Y), target));
+            Matrix3x2 fit = RootAspect().Transform(new RectF(0, 0, size.X, size.Y), target);
+            if (!SvgRenderer.IsFinite(fit))
+            {
+                canvas.RestoreToCount(count);
+                return;
+            }
+
+            canvas.Concat(fit);
         }
 
         SvgRenderer.Draw(canvas, tree, options);
@@ -244,7 +251,14 @@ public sealed class SvgDocument
                 return;
             }
 
-            canvas.Concat(SvgAspectRatio.Default.Transform(source, target));
+            Matrix3x2 fit = SvgAspectRatio.Default.Transform(source, target);
+            if (!SvgRenderer.IsFinite(fit))
+            {
+                canvas.RestoreToCount(count);
+                return;
+            }
+
+            canvas.Concat(fit);
         }
 
         SvgRenderer.Draw(canvas, node, options);
@@ -311,9 +325,10 @@ public sealed class SvgDocument
             canvas.Clear(options.Background);
         }
 
-        if (size.X > 0 && size.Y > 0)
+        Matrix3x2 scale = Matrix3x2.CreateScale((float)(w / size.X), (float)(h / size.Y));
+        if (size.X > 0 && size.Y > 0 && SvgRenderer.IsFinite(scale))
         {
-            canvas.Scale((float)(w / size.X), (float)(h / size.Y));
+            canvas.Concat(scale);
             SvgRenderer.Draw(canvas, Tree(options.Languages), options);
         }
 

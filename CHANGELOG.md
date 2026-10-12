@@ -298,8 +298,12 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
   egami-compare), 99% of the filter tests and 98.7% of the text tests (78% of the text tests are also close to
   Chromium's renders); 196 of the 200 corpus files
   match resvg's CLI. Seven of eight mesh samples match Inkscape's export.
-- Speed, one thread, on 200 real files: loading and drawing them takes 0.87 s, against 2.1 s for Svg.Skia, 3.1 s for the resvg
-  CLI (which also writes PNG; Egami does that in 1.4 s) and 0.69 s for resvg's library.
+- Speed, one thread, on 200 real files: loading and drawing them takes 0.92 s, against 2.0 s for Svg.Skia, 3.1 s for the resvg
+  CLI (which also writes PNG; Egami does that in 1.4 s) and 9.5 s for resvg's library with text on (0.69 s with text off).
+  resvg's text chapter takes 0.12 s against Svg.Skia's 0.45 s and resvg's 26 s; its filter chapter 0.91 s against 1.25 s and
+  12 s.
+- A fuzz target for Load, Rasterize and Save (`svg` in tests/Egami.Fuzz); its first runs found image data that was damaged
+  after its header made drawing throw, and images are now decoded when the document is read.
 - Egami.Css parses CSS Syntax 3, matches Selectors 4 over any `ICssElement` tree, cascades with specificity, `!important`,
   custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts. It stays a preview
   until Egap's HTML reader has used it.
