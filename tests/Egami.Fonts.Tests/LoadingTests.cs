@@ -134,9 +134,17 @@ public class LoadingTests
     }
 
     [Fact]
-    public void NoGlyphDataThrowsCorrupt()
+    public void NoGlyphDataLoadsWithEmptyGlyphs()
     {
-        Assert.Throws<CorruptDataException>(() => Typeface.FromMemory(RenameTable(TestFonts.Bytes("NotoSans-Regular.ttf"), "glyf", "zzzz")));
+        // As HarfBuzz and FreeType load them: the face maps, measures and shapes; its glyphs have no ink.
+        byte[] noGlyf = RenameTable(TestFonts.Bytes("NotoSans-Regular.ttf"), "glyf", "zzzz");
+        List<EgamiDiagnostic> seen = [];
+        Typeface face = Typeface.FromMemory(noGlyf, 0, new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } });
+        Assert.Equal(FontOutlines.None, face.Outlines);
+        Assert.Contains(seen, d => d.Id == "Font.MissingTable");
+        Assert.True(face.GetAdvance(face.GetGlyph('A')) > 0);
+        Assert.True(face.GetGlyphExtents(face.GetGlyph('A')).IsEmpty);
+        Assert.Throws<CorruptDataException>(() => Typeface.FromMemory(noGlyf, 0, new FontLoadOptions { Strict = true }));
         Assert.Throws<CorruptDataException>(() => Typeface.FromMemory(RenameTable(TestFonts.Bytes("NotoSans-Regular.ttf"), "loca", "zzzz")));
     }
 

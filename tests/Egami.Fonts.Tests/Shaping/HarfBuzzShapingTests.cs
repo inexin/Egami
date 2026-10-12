@@ -18,11 +18,7 @@ public sealed class HarfBuzzShapingTests
     /// </summary>
     private static readonly Dictionary<string, string> s_waiting = new()
     {
-        ["indic-decompose.tests"] = "a font without outlines, which Typeface does not load",
-        ["indic-misc.tests"] = "a font without outlines, which Typeface does not load",
         ["myanmar-zawgyi.tests"] = "the Qaag (Zawgyi) script, which Script does not have",
-        ["context-matching.tests"] = "a font without outlines, which Typeface does not load",
-        ["variations.tests"] = "an fvar with three axes of one tag, all of which hb-shape sets but Typeface.WithVariations sets the first",
         ["collections.tests"] = "a dfont collection",
         ["emoji.tests"] = "an sbix-only font",
         ["color-fonts.tests"] = "extents output",

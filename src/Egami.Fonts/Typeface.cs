@@ -55,10 +55,19 @@ public sealed partial class Typeface
         Outlines = (HasTable(Tags.Cff) || IsCff2) && !HasTable(Tags.Glyf) ? FontOutlines.Cff : FontOutlines.TrueType;
         if (Outlines == FontOutlines.TrueType && !HasTable(Tags.Glyf))
         {
-            // A bitmap-only color font has images and no outlines.
+            // A bitmap-only color font has images and no outlines; a font with neither (a subset made for shaping, say) still maps,
+            // measures and shapes, its glyphs empty, as HarfBuzz and FreeType load it.
             bool bitmaps = (HasTable(new FontTag("CBDT")) && HasTable(new FontTag("CBLC"))) || HasTable(new FontTag("sbix"));
-            Outlines = bitmaps && HasTable(Tags.Maxp) ? FontOutlines.None
-                : throw FontErrors.Corrupt(faceOffset, "The font has no glyph data: neither glyf, CFF, CFF2 nor bitmaps are present.");
+            if (!HasTable(Tags.Maxp))
+            {
+                throw FontErrors.Corrupt(faceOffset, "The font has no glyph data and no maxp table: neither glyf, CFF, CFF2 nor bitmaps are present.");
+            }
+
+            Outlines = FontOutlines.None;
+            if (!bitmaps)
+            {
+                Report(options, "Font.MissingTable", "The font has no glyph data (neither glyf, CFF, CFF2 nor bitmaps); its glyphs draw empty.", faceOffset);
+            }
         }
 
         GlyphCount = LoadGlyphData();
@@ -335,6 +344,9 @@ public sealed partial class Typeface
     }
 
     internal NameTable Name => _base?.Name ?? Volatile.Read(ref _name) ?? Publish(ref _name, LoadTable(Tags.Name, NameTable.Read, NameTable.Empty, "the family is \"Unknown\""));
+
+    /// <summary>The Windows 3.1 font page: the high byte of a version 0 OS/2 table's fsSelection, else 0.</summary>
+    internal int FontPage => Os2Missing || Os2.Version != 0 ? 0 : Os2.FsSelection & 0xFF00;
 
     internal Os2Table Os2
     {

@@ -43,23 +43,11 @@ internal sealed class CmapTable
 
         switch (Kind)
         {
-            case CmapKind.Symbol when _symbolRemap is not null:
-                int mapped = _primary.Map(codePoint);
-                if (mapped == 0 && _symbolRemap(codePoint) is int remapped and > 0)
-                {
-                    mapped = _primary.Map(remapped);
-                }
-
-                return mapped;
             case CmapKind.Symbol:
                 int glyph = _primary.Map(codePoint);
-                if (glyph == 0 && codePoint is >= 0 and <= 0xFF)
+                if (glyph == 0 && _symbolRemap?.Invoke(codePoint) is int remapped and > 0)
                 {
-                    glyph = _primary.Map(0xF000 + codePoint);
-                }
-                else if (glyph == 0 && codePoint is >= 0xF000 and <= 0xF0FF)
-                {
-                    glyph = _primary.Map(codePoint - 0xF000);
+                    glyph = _primary.Map(remapped);
                 }
 
                 return glyph;
@@ -115,30 +103,15 @@ internal sealed class CmapTable
         _primary.Enumerate(action);
     }
 
-    internal static CmapTable ReadChosen(ReadOnlySpan<byte> data, int subtableOffset, CmapKind kind, int platform, int encoding, Func<int, int>? symbolRemap)
-    {
-        var r = new FontReader(data, 0);
-        r.Skip(2);
-        int count = r.ReadUInt16();
-        int variationOffset = -1;
-        for (int i = 0; i < count; i++)
-        {
-            int p = r.ReadUInt16();
-            int e = r.ReadUInt16();
-            int offset = (int)Math.Min(r.ReadUInt32(), int.MaxValue);
-            if (p == 0 && e == 5 && offset + 2 <= data.Length && BigEndian.UInt16(data, offset) == 14)
-            {
-                variationOffset = offset;
-            }
-        }
-
-        CmapSubtable primary = CmapSubtable.Read(data, subtableOffset, 0);
-        VariationSubtable? variations = variationOffset < 0 ? null : VariationSubtable.Read(data, variationOffset, 0);
-        return new CmapTable(primary, kind, variations, platform, encoding, symbolRemap);
-    }
-
-    /// <summary>Reads the cmap, choosing (3,10), then (0,4) or (0,6), (3,1), (0,3), other Unicode, (3,0) symbol, then (1,0).</summary>
-    public static CmapTable Read(ReadOnlySpan<byte> data, long offset)
+    /// <summary>
+    /// Reads the cmap, choosing the subtable HarfBuzz does: (3,0) symbol first, then (3,10), (0,6), (0,4), (3,1), (0,3), (0,2),
+    /// (0,1), (0,0) and (1,0) Mac Roman. A symbol subtable also maps U+0000 to U+00FF through U+F000 to U+F0FF, or, in a Windows 3.1
+    /// Simplified or Traditional Arabic font page, Unicode Arabic through the font's private use characters.
+    /// </summary>
+    /// <param name="data">The cmap table.</param>
+    /// <param name="offset">The table's offset in the file, for error messages.</param>
+    /// <param name="fontPage">The Windows 3.1 font page (the high byte of a version 0 OS/2 fsSelection), or 0.</param>
+    public static CmapTable Read(ReadOnlySpan<byte> data, long offset, int fontPage)
     {
         var r = new FontReader(data, offset);
         r.Skip(2);
@@ -167,66 +140,6 @@ internal sealed class CmapTable
 
             int rank = (platform, encoding) switch
             {
-                (3, 10) => 0,
-                (0, 4) or (0, 6) => 1,
-                (3, 1) => 2,
-                (0, 3) => 3,
-                (0, _) => 4,
-                (3, 0) => 5,
-                (1, 0) => 6,
-                _ => int.MaxValue,
-            };
-            if (rank < bestRank && format is 0 or 4 or 6 or 10 or 12 or 13)
-            {
-                bestRank = rank;
-                bestOffset = subtableOffset;
-                bestPlatform = platform;
-                bestEncoding = encoding;
-            }
-        }
-
-        CmapSubtable? primary = bestOffset < 0 ? null : CmapSubtable.Read(data, bestOffset, offset);
-        VariationSubtable? variations = variationOffset < 0 ? null : VariationSubtable.Read(data, variationOffset, offset);
-        CmapKind kind = bestRank switch
-        {
-            5 => CmapKind.Symbol,
-            6 => CmapKind.MacRoman,
-            _ => CmapKind.Unicode,
-        };
-        return new CmapTable(primary, kind, variations, bestPlatform, bestEncoding);
-    }
-}
-
-internal static class CmapForShaping
-{
-    /// <summary>
-    /// The cmap as HarfBuzz reads it for shaping, which can differ from <see cref="CmapTable.Read"/>'s choice: a (3,0) symbol
-    /// subtable first, then (3,10), (0,6), (0,4), (3,1), (0,3), (0,2), (0,1), (0,0) and Mac Roman; a symbol subtable also maps
-    /// U+0000 to U+00FF to U+F000 to U+F0FF, or, in a Windows 3.1 Arabic font page, Unicode Arabic to the font's private use
-    /// characters. Returns <paramref name="face"/>'s own cmap when the two choose the same subtable.
-    /// </summary>
-    public static CmapTable Read(ReadOnlySpan<byte> data, CmapTable face, int fontPage, Func<int, int> simplifiedArabic, Func<int, int> traditionalArabic)
-    {
-        if (data.Length < 4)
-        {
-            return face;
-        }
-
-        int count = BigEndian.UInt16(data, 2);
-        int bestRank = int.MaxValue, bestOffset = -1, bestPlatform = 0, bestEncoding = 0;
-        for (int i = 0; i < count && 4 + (i * 8) + 8 <= data.Length; i++)
-        {
-            int platform = BigEndian.UInt16(data, 4 + (i * 8));
-            int encoding = BigEndian.UInt16(data, 6 + (i * 8));
-            long subtableOffset = BigEndian.UInt32(data, 8 + (i * 8));
-            if (subtableOffset + 2 > data.Length)
-            {
-                continue;
-            }
-
-            int format = BigEndian.UInt16(data, (int)subtableOffset);
-            int rank = (platform, encoding) switch
-            {
                 (3, 0) => 0,
                 (3, 10) => 1,
                 (0, 6) => 2,
@@ -242,26 +155,28 @@ internal static class CmapForShaping
             if (rank < bestRank && format is 0 or 4 or 6 or 10 or 12 or 13)
             {
                 bestRank = rank;
-                bestOffset = (int)subtableOffset;
+                bestOffset = subtableOffset;
                 bestPlatform = platform;
                 bestEncoding = encoding;
             }
         }
 
-        if (bestOffset < 0 || (bestRank != 0 && bestPlatform == face.PlatformId && bestEncoding == face.EncodingId))
+        CmapSubtable? primary = bestOffset < 0 ? null : CmapSubtable.Read(data, bestOffset, offset);
+        VariationSubtable? variations = variationOffset < 0 ? null : VariationSubtable.Read(data, variationOffset, offset);
+        CmapKind kind = bestRank switch
         {
-            return face;
-        }
-
-        Func<int, int>? remap = bestRank != 0 ? null : fontPage switch
+            0 => CmapKind.Symbol,
+            9 => CmapKind.MacRoman,
+            _ => CmapKind.Unicode,
+        };
+        Func<int, int>? remap = kind != CmapKind.Symbol ? null : fontPage switch
         {
             0 => static u => u <= 0xFF ? 0xF000 + u : 0,
-            0xB200 => simplifiedArabic,
-            0xB300 => traditionalArabic,
-            _ => static _ => 0,
+            0xB200 => Shaping.ArabicTables.SimplifiedArabicPua,
+            0xB300 => Shaping.ArabicTables.TraditionalArabicPua,
+            _ => null,
         };
-        return CmapTable.ReadChosen(data, bestOffset, bestRank switch { 0 => CmapKind.Symbol, 9 => CmapKind.MacRoman, _ => CmapKind.Unicode },
-            bestPlatform, bestEncoding, remap);
+        return new CmapTable(primary, kind, variations, bestPlatform, bestEncoding, remap);
     }
 }
 

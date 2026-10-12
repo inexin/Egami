@@ -37,7 +37,7 @@ public sealed partial class Typeface
     /// <summary>Gets whether the face maps characters to glyphs; false for a bare CFF font or a font without a usable cmap.</summary>
     public bool HasCharacterMap => !Cmap.IsEmpty;
 
-    internal CmapTable Cmap => _base?.Cmap ?? Volatile.Read(ref _cmap) ?? Publish(ref _cmap, LoadTable(Tags.Cmap, CmapTable.Read, CmapTable.Empty, "glyphs can be reached by id only"));
+    internal CmapTable Cmap => _base?.Cmap ?? Volatile.Read(ref _cmap) ?? Publish(ref _cmap, LoadTable(Tags.Cmap, (data, offset) => CmapTable.Read(data, offset, FontPage), CmapTable.Empty, "glyphs can be reached by id only"));
 
     internal Kerning Kerning => Volatile.Read(ref _kerning) ?? Publish(ref _kerning, _instance is null ? LoadKerning() : LoadVariedKerning());
 

@@ -147,7 +147,7 @@ public static class FontSubsetter
 
         if (face.Outlines == FontOutlines.None)
         {
-            throw new ArgumentException("A bitmap-only face has no outlines to subset.", nameof(face));
+            throw new ArgumentException("A face without outlines (bitmap-only, or without glyph data) has none to subset.", nameof(face));
         }
 
         SubsetFormat format = options.Format;

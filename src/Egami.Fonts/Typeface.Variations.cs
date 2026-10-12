@@ -107,7 +107,7 @@ public sealed partial class Typeface
     /// <summary>
     /// Returns this face at another position on its axes, sharing the file's memory and parsed tables: outlines, advances, extents,
     /// kerning, names and subsets all answer for that position. Axes not named keep this face's values; values clamp to each
-    /// axis's range; axes the font does not have are ignored.
+    /// axis's range; a tag the font repeats sets every axis with it; axes the font does not have are ignored.
     /// </summary>
     /// <param name="variations">The axis values, such as <c>FontVariation.Weight(650)</c>.</param>
     /// <returns>The face at that position: the default face when every axis is at its default, this face for a static font.</returns>
@@ -126,10 +126,18 @@ public sealed partial class Typeface
         float[] user = _instance is null ? [.. axes.Select(a => a.Default)] : (float[])_instance.User.Clone();
         foreach (FontVariation v in variations)
         {
-            int i = data.Space.AxisIndex(v.Axis);
-            if (i >= 0 && float.IsFinite(v.Value))
+            if (!float.IsFinite(v.Value))
             {
-                user[i] = Math.Clamp(v.Value, axes[i].Min, axes[i].Max);
+                continue;
+            }
+
+            // Every axis with the tag, as HarfBuzz's hb_font_set_variations sets them, when a font repeats one.
+            for (int i = 0; i < axes.Length; i++)
+            {
+                if (axes[i].Tag == v.Axis)
+                {
+                    user[i] = Math.Clamp(v.Value, axes[i].Min, axes[i].Max);
+                }
             }
         }
 

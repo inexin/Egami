@@ -140,7 +140,10 @@ public class RobustnessTests
                 }
 
                 _ = new Font(face, 12).MeasureText("Hello AV Å");
-                _ = FontSubsetter.Subset(face, [1, 2, 3], new SubsetOptions { Format = SubsetFormat.Auto }).ToTypeface().GlyphCount;
+                if (face.Outlines != FontOutlines.None)
+                {
+                    _ = FontSubsetter.Subset(face, [1, 2, 3], new SubsetOptions { Format = SubsetFormat.Auto }).ToTypeface().GlyphCount;
+                }
             }
             catch (EgamiException)
             {

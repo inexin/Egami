@@ -21,32 +21,14 @@ internal sealed class OpenTypeLayoutTables
         Gsub = Read(face, "GSUB", d => LayoutSanitizer.SanitizeLayout(d.Span, false), d => new LayoutTable(d, false), LayoutTable.EmptyGsub);
         Gpos = Read(face, "GPOS", d => LayoutSanitizer.SanitizeLayout(d.Span, true), d => new LayoutTable(d, true), LayoutTable.EmptyGpos);
         Kern = face.TryGetTable(new FontTag("kern"), out ReadOnlyMemory<byte> kern) ? new KernTable(kern) : KernTable.Empty;
-        Cmap = ReadCmap(face);
+        Cmap = face.Cmap;
         GlyphCount = face.GlyphCount;
     }
 
     /// <summary>Gets the face's glyph count.</summary>
     public int GlyphCount { get; }
 
-    private static CmapTable ReadCmap(Typeface face)
-    {
-        if (!face.TryGetTable(new FontTag("cmap"), out ReadOnlyMemory<byte> data))
-        {
-            return face.Cmap;
-        }
-
-        try
-        {
-            int fontPage = face.Os2.Version == 0 ? face.Os2.FsSelection & 0xFF00 : 0;
-            return CmapForShaping.Read(data.Span, face.Cmap, fontPage, ArabicTables.SimplifiedArabicPua, ArabicTables.TraditionalArabicPua);
-        }
-        catch (CorruptDataException)
-        {
-            return face.Cmap;
-        }
-    }
-
-    /// <summary>Gets the cmap as HarfBuzz chooses it for shaping (a symbol subtable first).</summary>
+    /// <summary>Gets the face's cmap, chosen as HarfBuzz chooses it (a symbol subtable first).</summary>
     public CmapTable Cmap { get; }
 
     private static T Read<T>(Typeface face, string tag, Func<ReadOnlyMemory<byte>, bool> sound, Func<ReadOnlyMemory<byte>, T> create, T empty)

@@ -12,6 +12,7 @@ public enum FontOutlines
     /// <summary>Cubic Type 2 charstrings in a Compact Font Format table (CFF, or CFF2 in a variable font), in an OpenType font or as a bare CFF stream.</summary>
     Cff,
 
-    /// <summary>No outlines: a color font of bitmaps only (CBDT or sbix), whose glyphs draw from their images and have no paths.</summary>
+    /// <summary>No outlines: a color font of bitmaps only (CBDT or sbix), whose glyphs draw from their images and have no paths, or a
+    /// font with no glyph data at all (a subset made for shaping), whose glyphs are empty.</summary>
     None,
 }

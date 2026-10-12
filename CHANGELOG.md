@@ -260,6 +260,9 @@ OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's, in the sam
   the reference font library 2.1.3 on English, Arabic and Hindi pages (3.7, 7.5 and 13.4 against 41, 64 and 269 ms) and about half
   HarfBuzzSharp's speed.
 - Fuzz targets `shaping` and `bidi`.
+- From the API review: a font with no glyph data (a subset made for shaping) loads with empty glyphs and a `Font.MissingTable`
+  warning; `WithVariations` sets every axis of a repeated tag; the cmap subtable is chosen as HarfBuzz chooses it (a symbol
+  subtable first, Windows 3.1 Arabic font pages through their private use characters), for drawing and shaping alike.
 
 ### Egami.Drawing 1.0.0-preview.6
 
