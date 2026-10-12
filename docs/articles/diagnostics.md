@@ -91,6 +91,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Decode.ScaleChosen` | Info | For `ReaderOptions.MinimumSize`, the 1/N scale the reader decodes at and the box factor after it |
 | `Detect.Format` | Info | The format detected, and how |
 | `Exif.Damaged` | Warning | The EXIF block would not parse in full; it is kept as bytes |
+| `Font.BadColorGlyph` | Warning | A glyph's color data (COLR, sbix, CBDT or SVG) is damaged, cyclic or deeper than 64 paints; the part that cannot be drawn is left out, or the glyph draws as its outline (Egami.Fonts) |
 | `Font.BadContainer` | Warning | A WOFF or WOFF2 file's header or blocks disagree with its data (a wrong length, a misplaced metadata block); the tables are still read (Egami.Fonts) |
 | `Font.BadDirectory` | Warning | A font's table directory lists a table outside the file; it was dropped or cut short (Egami.Fonts) |
 | `Font.BadGlyph` | Warning | A glyph's data cannot be read; it draws empty (Egami.Fonts) |

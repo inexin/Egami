@@ -211,6 +211,9 @@ internal sealed class NameSet
 /// <summary>Reads the names and style of every face of a font file from its table directory, name, OS/2 and head tables only.</summary>
 internal static class FaceIndexer
 {
+    private static readonly FontTag s_cbdt = new("CBDT");
+    private static readonly FontTag s_sbix = new("sbix");
+
     private const int MaxNameTable = 1 << 20;
 
     public static void Index(string path, List<FaceEntry> into, FontLoadOptions options)
@@ -283,7 +286,7 @@ internal static class FaceIndexer
             {
                 macStyle = BigEndian.UInt16(Read(handle, at + 44, 2, length), 0);
             }
-            else if (tag == Tags.Glyf || tag == Tags.Cff || tag == Tags.Cff2)
+            else if (tag == Tags.Glyf || tag == Tags.Cff || tag == Tags.Cff2 || tag == s_cbdt || tag == s_sbix)
             {
                 hasGlyphs = true;
             }

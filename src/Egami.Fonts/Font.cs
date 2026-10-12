@@ -38,6 +38,8 @@ public readonly record struct Font
     private readonly bool _noSynthesis;
     private readonly FontHinting _hinting;
     private readonly FontEdging _edging;
+    private readonly bool _noColorGlyphs;
+    private readonly FontPalette? _palette;
 
     /// <summary>Initializes a font.</summary>
     /// <param name="typeface">The face.</param>
@@ -96,6 +98,15 @@ public readonly record struct Font
         get => _edging;
         init => _edging = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
+
+    /// <summary>
+    /// Gets whether color glyphs (COLR, sbix, CBDT) draw in color; false draws every glyph's outline in the paint. Defaults to true.
+    /// </summary>
+    public bool ColorGlyphs { get => !_noColorGlyphs; init => _noColorGlyphs = !value; }
+
+    /// <summary>Gets the palette color glyphs draw with. Defaults to <see cref="FontPalette.Default"/>.</summary>
+    /// <exception cref="ArgumentNullException">The value is <see langword="null"/>.</exception>
+    public FontPalette Palette { get => _palette ?? FontPalette.Default; init => _palette = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets the synthesis drawn: <see cref="Synthesis"/>, or none when <see cref="AllowSynthesis"/> is off.</summary>
     internal FontSynthesis AppliedSynthesis => _noSynthesis ? FontSynthesis.None : Synthesis;

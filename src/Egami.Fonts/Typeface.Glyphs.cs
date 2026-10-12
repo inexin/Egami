@@ -265,9 +265,9 @@ public sealed partial class Typeface
             {
                 _glyf.GetOutline(glyph, recorder);
             }
-            else
+            else if (_cff is not null)
             {
-                CharStringInterpreter.For(_cff!).Draw(glyph, recorder);
+                CharStringInterpreter.For(_cff).Draw(glyph, recorder);
             }
 
             return true;

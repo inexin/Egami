@@ -125,6 +125,11 @@ public static class FontSubsetter
             face = face.WithVariations([.. variations]);
         }
 
+        if (face.Outlines == FontOutlines.None)
+        {
+            throw new ArgumentException("A bitmap-only face has no outlines to subset.", nameof(face));
+        }
+
         SubsetFormat format = options.Format;
         if (format == SubsetFormat.Auto)
         {

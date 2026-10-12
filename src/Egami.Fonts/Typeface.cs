@@ -55,7 +55,10 @@ public sealed partial class Typeface
         Outlines = (HasTable(Tags.Cff) || IsCff2) && !HasTable(Tags.Glyf) ? FontOutlines.Cff : FontOutlines.TrueType;
         if (Outlines == FontOutlines.TrueType && !HasTable(Tags.Glyf))
         {
-            throw FontErrors.Corrupt(faceOffset, "The font has no glyph data: neither glyf, CFF nor CFF2 is present.");
+            // A bitmap-only color font has images and no outlines.
+            bool bitmaps = (HasTable(new FontTag("CBDT")) && HasTable(new FontTag("CBLC"))) || HasTable(new FontTag("sbix"));
+            Outlines = bitmaps && HasTable(Tags.Maxp) ? FontOutlines.None
+                : throw FontErrors.Corrupt(faceOffset, "The font has no glyph data: neither glyf, CFF, CFF2 nor bitmaps are present.");
         }
 
         GlyphCount = LoadGlyphData();
@@ -516,6 +519,16 @@ public sealed partial class Typeface
             {
                 Repair("Font.BadTable", $"The maxp table is damaged ({e.Message}); the glyph count comes from the glyph data.", maxpOffset);
             }
+        }
+
+        if (Outlines == FontOutlines.None)
+        {
+            if (declared <= 0)
+            {
+                throw FontErrors.Corrupt(FaceOffset, "The bitmap font has no glyphs.");
+            }
+
+            return declared;
         }
 
         if (Outlines == FontOutlines.Cff)

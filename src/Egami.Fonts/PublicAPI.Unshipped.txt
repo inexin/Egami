@@ -1,4 +1,28 @@
 #nullable enable
+abstract Egami.Fonts.ColorGlyph.<Clone>$() -> Egami.Fonts.ColorGlyph!
+abstract Egami.Fonts.ColorPaint.<Clone>$() -> Egami.Fonts.ColorPaint!
+abstract Egami.Fonts.ColorPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+Egami.Fonts.BitmapColorGlyph
+Egami.Fonts.BitmapColorGlyph.BitmapColorGlyph(ushort Glyph, Egami.Fonts.ColorGlyphFormats Format, System.ReadOnlyMemory<byte> Data, Egami.Fonts.BitmapGlyphEncoding Encoding, int PixelWidth, int PixelHeight, int PixelsPerEm, Egami.Fonts.GlyphExtents Bounds) -> void
+Egami.Fonts.BitmapColorGlyph.Bounds.get -> Egami.Fonts.GlyphExtents
+Egami.Fonts.BitmapColorGlyph.Bounds.init -> void
+Egami.Fonts.BitmapColorGlyph.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Fonts.BitmapColorGlyph.Data.init -> void
+Egami.Fonts.BitmapColorGlyph.Deconstruct(out ushort Glyph, out Egami.Fonts.ColorGlyphFormats Format, out System.ReadOnlyMemory<byte> Data, out Egami.Fonts.BitmapGlyphEncoding Encoding, out int PixelWidth, out int PixelHeight, out int PixelsPerEm, out Egami.Fonts.GlyphExtents Bounds) -> void
+Egami.Fonts.BitmapColorGlyph.Encoding.get -> Egami.Fonts.BitmapGlyphEncoding
+Egami.Fonts.BitmapColorGlyph.Encoding.init -> void
+Egami.Fonts.BitmapColorGlyph.Equals(Egami.Fonts.BitmapColorGlyph? other) -> bool
+Egami.Fonts.BitmapColorGlyph.PixelHeight.get -> int
+Egami.Fonts.BitmapColorGlyph.PixelHeight.init -> void
+Egami.Fonts.BitmapColorGlyph.PixelsPerEm.get -> int
+Egami.Fonts.BitmapColorGlyph.PixelsPerEm.init -> void
+Egami.Fonts.BitmapColorGlyph.PixelWidth.get -> int
+Egami.Fonts.BitmapColorGlyph.PixelWidth.init -> void
+Egami.Fonts.BitmapGlyphEncoding
+Egami.Fonts.BitmapGlyphEncoding.Jpeg = 1 -> Egami.Fonts.BitmapGlyphEncoding
+Egami.Fonts.BitmapGlyphEncoding.Png = 0 -> Egami.Fonts.BitmapGlyphEncoding
+Egami.Fonts.BitmapGlyphEncoding.PremultipliedBgra = 3 -> Egami.Fonts.BitmapGlyphEncoding
+Egami.Fonts.BitmapGlyphEncoding.Tiff = 2 -> Egami.Fonts.BitmapGlyphEncoding
 Egami.Fonts.CffOptions
 Egami.Fonts.CffOptions.<Clone>$() -> Egami.Fonts.CffOptions!
 Egami.Fonts.CffOptions.CffOptions() -> void
@@ -9,9 +33,134 @@ Egami.Fonts.CffOptions.UnitsPerEm.get -> int?
 Egami.Fonts.CffOptions.UnitsPerEm.init -> void
 Egami.Fonts.CffOptions.Widths.get -> System.Collections.Generic.IReadOnlyList<float>?
 Egami.Fonts.CffOptions.Widths.init -> void
+Egami.Fonts.ColorCompositePaint
+Egami.Fonts.ColorCompositePaint.Backdrop.get -> Egami.Fonts.ColorPaint!
+Egami.Fonts.ColorCompositePaint.Backdrop.init -> void
+Egami.Fonts.ColorCompositePaint.ColorCompositePaint(Egami.Operations.BlendMode Mode, Egami.Fonts.ColorPaint! Source, Egami.Fonts.ColorPaint! Backdrop) -> void
+Egami.Fonts.ColorCompositePaint.Deconstruct(out Egami.Operations.BlendMode Mode, out Egami.Fonts.ColorPaint! Source, out Egami.Fonts.ColorPaint! Backdrop) -> void
+Egami.Fonts.ColorCompositePaint.Equals(Egami.Fonts.ColorCompositePaint? other) -> bool
+Egami.Fonts.ColorCompositePaint.Mode.get -> Egami.Operations.BlendMode
+Egami.Fonts.ColorCompositePaint.Mode.init -> void
+Egami.Fonts.ColorCompositePaint.Source.get -> Egami.Fonts.ColorPaint!
+Egami.Fonts.ColorCompositePaint.Source.init -> void
+Egami.Fonts.ColorExtend
+Egami.Fonts.ColorExtend.Pad = 0 -> Egami.Fonts.ColorExtend
+Egami.Fonts.ColorExtend.Reflect = 2 -> Egami.Fonts.ColorExtend
+Egami.Fonts.ColorExtend.Repeat = 1 -> Egami.Fonts.ColorExtend
+Egami.Fonts.ColorGlyph
+Egami.Fonts.ColorGlyph.ColorGlyph(Egami.Fonts.ColorGlyph! original) -> void
+Egami.Fonts.ColorGlyph.ColorGlyph(ushort Glyph, Egami.Fonts.ColorGlyphFormats Format) -> void
+Egami.Fonts.ColorGlyph.Deconstruct(out ushort Glyph, out Egami.Fonts.ColorGlyphFormats Format) -> void
+Egami.Fonts.ColorGlyph.Format.get -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyph.Format.init -> void
+Egami.Fonts.ColorGlyph.Glyph.get -> ushort
+Egami.Fonts.ColorGlyph.Glyph.init -> void
+Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphFormats.Cbdt = 8 -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphFormats.ColrV0 = 1 -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphFormats.ColrV1 = 2 -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphFormats.None = 0 -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphFormats.Sbix = 4 -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphFormats.Svg = 16 -> Egami.Fonts.ColorGlyphFormats
+Egami.Fonts.ColorGlyphPaint
+Egami.Fonts.ColorGlyphPaint.ColorGlyphPaint(ushort Glyph, Egami.Fonts.ColorPaint! Paint) -> void
+Egami.Fonts.ColorGlyphPaint.Deconstruct(out ushort Glyph, out Egami.Fonts.ColorPaint! Paint) -> void
+Egami.Fonts.ColorGlyphPaint.Equals(Egami.Fonts.ColorGlyphPaint? other) -> bool
+Egami.Fonts.ColorGlyphPaint.Glyph.get -> ushort
+Egami.Fonts.ColorGlyphPaint.Glyph.init -> void
+Egami.Fonts.ColorGlyphPaint.Paint.get -> Egami.Fonts.ColorPaint!
+Egami.Fonts.ColorGlyphPaint.Paint.init -> void
+Egami.Fonts.ColorGlyphReferencePaint
+Egami.Fonts.ColorGlyphReferencePaint.ColorGlyphReferencePaint(ushort Glyph, Egami.Fonts.ColorPaint! Paint) -> void
+Egami.Fonts.ColorGlyphReferencePaint.Deconstruct(out ushort Glyph, out Egami.Fonts.ColorPaint! Paint) -> void
+Egami.Fonts.ColorGlyphReferencePaint.Equals(Egami.Fonts.ColorGlyphReferencePaint? other) -> bool
+Egami.Fonts.ColorGlyphReferencePaint.Glyph.get -> ushort
+Egami.Fonts.ColorGlyphReferencePaint.Glyph.init -> void
+Egami.Fonts.ColorGlyphReferencePaint.Paint.get -> Egami.Fonts.ColorPaint!
+Egami.Fonts.ColorGlyphReferencePaint.Paint.init -> void
+Egami.Fonts.ColorLayersPaint
+Egami.Fonts.ColorLayersPaint.ColorLayersPaint(System.Collections.Generic.IReadOnlyList<Egami.Fonts.ColorPaint!>! Layers) -> void
+Egami.Fonts.ColorLayersPaint.Deconstruct(out System.Collections.Generic.IReadOnlyList<Egami.Fonts.ColorPaint!>! Layers) -> void
+Egami.Fonts.ColorLayersPaint.Equals(Egami.Fonts.ColorLayersPaint? other) -> bool
+Egami.Fonts.ColorLayersPaint.Layers.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.ColorPaint!>!
+Egami.Fonts.ColorLayersPaint.Layers.init -> void
+Egami.Fonts.ColorLine
+Egami.Fonts.ColorLine.<Clone>$() -> Egami.Fonts.ColorLine!
+Egami.Fonts.ColorLine.ColorLine(System.Collections.Generic.IReadOnlyList<Egami.Fonts.ColorStop>! Stops, Egami.Fonts.ColorExtend Extend) -> void
+Egami.Fonts.ColorLine.Deconstruct(out System.Collections.Generic.IReadOnlyList<Egami.Fonts.ColorStop>! Stops, out Egami.Fonts.ColorExtend Extend) -> void
+Egami.Fonts.ColorLine.Equals(Egami.Fonts.ColorLine? other) -> bool
+Egami.Fonts.ColorLine.Extend.get -> Egami.Fonts.ColorExtend
+Egami.Fonts.ColorLine.Extend.init -> void
+Egami.Fonts.ColorLine.Stops.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.ColorStop>!
+Egami.Fonts.ColorLine.Stops.init -> void
+Egami.Fonts.ColorLinearGradientPaint
+Egami.Fonts.ColorLinearGradientPaint.ColorLinearGradientPaint(System.Numerics.Vector2 P0, System.Numerics.Vector2 P1, System.Numerics.Vector2 P2, Egami.Fonts.ColorLine! Line) -> void
+Egami.Fonts.ColorLinearGradientPaint.Deconstruct(out System.Numerics.Vector2 P0, out System.Numerics.Vector2 P1, out System.Numerics.Vector2 P2, out Egami.Fonts.ColorLine! Line) -> void
+Egami.Fonts.ColorLinearGradientPaint.Equals(Egami.Fonts.ColorLinearGradientPaint? other) -> bool
+Egami.Fonts.ColorLinearGradientPaint.Line.get -> Egami.Fonts.ColorLine!
+Egami.Fonts.ColorLinearGradientPaint.Line.init -> void
+Egami.Fonts.ColorLinearGradientPaint.P0.get -> System.Numerics.Vector2
+Egami.Fonts.ColorLinearGradientPaint.P0.init -> void
+Egami.Fonts.ColorLinearGradientPaint.P1.get -> System.Numerics.Vector2
+Egami.Fonts.ColorLinearGradientPaint.P1.init -> void
+Egami.Fonts.ColorLinearGradientPaint.P2.get -> System.Numerics.Vector2
+Egami.Fonts.ColorLinearGradientPaint.P2.init -> void
+Egami.Fonts.ColorPaint
+Egami.Fonts.ColorPaint.ColorPaint(Egami.Fonts.ColorPaint! original) -> void
+Egami.Fonts.ColorRadialGradientPaint
+Egami.Fonts.ColorRadialGradientPaint.Center0.get -> System.Numerics.Vector2
+Egami.Fonts.ColorRadialGradientPaint.Center0.init -> void
+Egami.Fonts.ColorRadialGradientPaint.Center1.get -> System.Numerics.Vector2
+Egami.Fonts.ColorRadialGradientPaint.Center1.init -> void
+Egami.Fonts.ColorRadialGradientPaint.ColorRadialGradientPaint(System.Numerics.Vector2 Center0, float Radius0, System.Numerics.Vector2 Center1, float Radius1, Egami.Fonts.ColorLine! Line) -> void
+Egami.Fonts.ColorRadialGradientPaint.Deconstruct(out System.Numerics.Vector2 Center0, out float Radius0, out System.Numerics.Vector2 Center1, out float Radius1, out Egami.Fonts.ColorLine! Line) -> void
+Egami.Fonts.ColorRadialGradientPaint.Equals(Egami.Fonts.ColorRadialGradientPaint? other) -> bool
+Egami.Fonts.ColorRadialGradientPaint.Line.get -> Egami.Fonts.ColorLine!
+Egami.Fonts.ColorRadialGradientPaint.Line.init -> void
+Egami.Fonts.ColorRadialGradientPaint.Radius0.get -> float
+Egami.Fonts.ColorRadialGradientPaint.Radius0.init -> void
+Egami.Fonts.ColorRadialGradientPaint.Radius1.get -> float
+Egami.Fonts.ColorRadialGradientPaint.Radius1.init -> void
+Egami.Fonts.ColorSolidPaint
+Egami.Fonts.ColorSolidPaint.Color.get -> Egami.Fonts.GlyphColor
+Egami.Fonts.ColorSolidPaint.Color.init -> void
+Egami.Fonts.ColorSolidPaint.ColorSolidPaint(Egami.Fonts.GlyphColor Color) -> void
+Egami.Fonts.ColorSolidPaint.Deconstruct(out Egami.Fonts.GlyphColor Color) -> void
+Egami.Fonts.ColorSolidPaint.Equals(Egami.Fonts.ColorSolidPaint? other) -> bool
+Egami.Fonts.ColorStop
+Egami.Fonts.ColorStop.Color.get -> Egami.Fonts.GlyphColor
+Egami.Fonts.ColorStop.Color.init -> void
+Egami.Fonts.ColorStop.ColorStop() -> void
+Egami.Fonts.ColorStop.ColorStop(float Offset, Egami.Fonts.GlyphColor Color) -> void
+Egami.Fonts.ColorStop.Deconstruct(out float Offset, out Egami.Fonts.GlyphColor Color) -> void
+Egami.Fonts.ColorStop.Equals(Egami.Fonts.ColorStop other) -> bool
+Egami.Fonts.ColorStop.Offset.get -> float
+Egami.Fonts.ColorStop.Offset.init -> void
+Egami.Fonts.ColorSweepGradientPaint
+Egami.Fonts.ColorSweepGradientPaint.Center.get -> System.Numerics.Vector2
+Egami.Fonts.ColorSweepGradientPaint.Center.init -> void
+Egami.Fonts.ColorSweepGradientPaint.ColorSweepGradientPaint(System.Numerics.Vector2 Center, float StartAngle, float EndAngle, Egami.Fonts.ColorLine! Line) -> void
+Egami.Fonts.ColorSweepGradientPaint.Deconstruct(out System.Numerics.Vector2 Center, out float StartAngle, out float EndAngle, out Egami.Fonts.ColorLine! Line) -> void
+Egami.Fonts.ColorSweepGradientPaint.EndAngle.get -> float
+Egami.Fonts.ColorSweepGradientPaint.EndAngle.init -> void
+Egami.Fonts.ColorSweepGradientPaint.Equals(Egami.Fonts.ColorSweepGradientPaint? other) -> bool
+Egami.Fonts.ColorSweepGradientPaint.Line.get -> Egami.Fonts.ColorLine!
+Egami.Fonts.ColorSweepGradientPaint.Line.init -> void
+Egami.Fonts.ColorSweepGradientPaint.StartAngle.get -> float
+Egami.Fonts.ColorSweepGradientPaint.StartAngle.init -> void
+Egami.Fonts.ColorTransformPaint
+Egami.Fonts.ColorTransformPaint.ColorTransformPaint(System.Numerics.Matrix3x2 Matrix, Egami.Fonts.ColorPaint! Paint) -> void
+Egami.Fonts.ColorTransformPaint.Deconstruct(out System.Numerics.Matrix3x2 Matrix, out Egami.Fonts.ColorPaint! Paint) -> void
+Egami.Fonts.ColorTransformPaint.Equals(Egami.Fonts.ColorTransformPaint? other) -> bool
+Egami.Fonts.ColorTransformPaint.Matrix.get -> System.Numerics.Matrix3x2
+Egami.Fonts.ColorTransformPaint.Matrix.init -> void
+Egami.Fonts.ColorTransformPaint.Paint.get -> Egami.Fonts.ColorPaint!
+Egami.Fonts.ColorTransformPaint.Paint.init -> void
 Egami.Fonts.Font
 Egami.Fonts.Font.AllowSynthesis.get -> bool
 Egami.Fonts.Font.AllowSynthesis.init -> void
+Egami.Fonts.Font.ColorGlyphs.get -> bool
+Egami.Fonts.Font.ColorGlyphs.init -> void
 Egami.Fonts.Font.Edging.get -> Egami.Fonts.FontEdging
 Egami.Fonts.Font.Edging.init -> void
 Egami.Fonts.Font.EffectiveTypeface.get -> Egami.Fonts.Typeface!
@@ -29,6 +178,8 @@ Egami.Fonts.Font.LineHeight.get -> float
 Egami.Fonts.Font.MeasureText(string! text) -> Egami.Fonts.TextMeasure
 Egami.Fonts.Font.OpticalSizing.get -> Egami.Fonts.OpticalSizing
 Egami.Fonts.Font.OpticalSizing.init -> void
+Egami.Fonts.Font.Palette.get -> Egami.Fonts.FontPalette!
+Egami.Fonts.Font.Palette.init -> void
 Egami.Fonts.Font.Scale.get -> float
 Egami.Fonts.Font.Shape(string! text) -> Egami.Fonts.GlyphRun!
 Egami.Fonts.Font.Size.get -> float
@@ -142,7 +293,42 @@ Egami.Fonts.FontNameRecord.Value.get -> string!
 Egami.Fonts.FontNameRecord.Value.init -> void
 Egami.Fonts.FontOutlines
 Egami.Fonts.FontOutlines.Cff = 1 -> Egami.Fonts.FontOutlines
+Egami.Fonts.FontOutlines.None = 2 -> Egami.Fonts.FontOutlines
 Egami.Fonts.FontOutlines.TrueType = 0 -> Egami.Fonts.FontOutlines
+Egami.Fonts.FontPalette
+Egami.Fonts.FontPalette.<Clone>$() -> Egami.Fonts.FontPalette!
+Egami.Fonts.FontPalette.Background.get -> Egami.Fonts.FontPaletteBackground
+Egami.Fonts.FontPalette.Background.init -> void
+Egami.Fonts.FontPalette.Equals(Egami.Fonts.FontPalette? other) -> bool
+Egami.Fonts.FontPalette.FontPalette(int index = 0, params System.ReadOnlySpan<Egami.Fonts.FontPaletteEntry> overrides) -> void
+Egami.Fonts.FontPalette.Index.get -> int
+Egami.Fonts.FontPalette.Overrides.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontPaletteEntry>!
+Egami.Fonts.FontPaletteBackground
+Egami.Fonts.FontPaletteBackground.Any = 0 -> Egami.Fonts.FontPaletteBackground
+Egami.Fonts.FontPaletteBackground.Dark = 2 -> Egami.Fonts.FontPaletteBackground
+Egami.Fonts.FontPaletteBackground.Light = 1 -> Egami.Fonts.FontPaletteBackground
+Egami.Fonts.FontPaletteEntry
+Egami.Fonts.FontPaletteEntry.Color.get -> Egami.Pixels.RgbaF32
+Egami.Fonts.FontPaletteEntry.Color.init -> void
+Egami.Fonts.FontPaletteEntry.Deconstruct(out int Index, out Egami.Pixels.RgbaF32 Color) -> void
+Egami.Fonts.FontPaletteEntry.Equals(Egami.Fonts.FontPaletteEntry other) -> bool
+Egami.Fonts.FontPaletteEntry.FontPaletteEntry() -> void
+Egami.Fonts.FontPaletteEntry.FontPaletteEntry(int Index, Egami.Pixels.RgbaF32 Color) -> void
+Egami.Fonts.FontPaletteEntry.Index.get -> int
+Egami.Fonts.FontPaletteEntry.Index.init -> void
+Egami.Fonts.FontPaletteInfo
+Egami.Fonts.FontPaletteInfo.<Clone>$() -> Egami.Fonts.FontPaletteInfo!
+Egami.Fonts.FontPaletteInfo.Colors.get -> System.Collections.Generic.IReadOnlyList<Egami.Pixels.Rgba8>!
+Egami.Fonts.FontPaletteInfo.Colors.init -> void
+Egami.Fonts.FontPaletteInfo.Deconstruct(out string? Name, out bool UsableWithLightBackground, out bool UsableWithDarkBackground, out System.Collections.Generic.IReadOnlyList<Egami.Pixels.Rgba8>! Colors) -> void
+Egami.Fonts.FontPaletteInfo.Equals(Egami.Fonts.FontPaletteInfo? other) -> bool
+Egami.Fonts.FontPaletteInfo.FontPaletteInfo(string? Name, bool UsableWithLightBackground, bool UsableWithDarkBackground, System.Collections.Generic.IReadOnlyList<Egami.Pixels.Rgba8>! Colors) -> void
+Egami.Fonts.FontPaletteInfo.Name.get -> string?
+Egami.Fonts.FontPaletteInfo.Name.init -> void
+Egami.Fonts.FontPaletteInfo.UsableWithDarkBackground.get -> bool
+Egami.Fonts.FontPaletteInfo.UsableWithDarkBackground.init -> void
+Egami.Fonts.FontPaletteInfo.UsableWithLightBackground.get -> bool
+Egami.Fonts.FontPaletteInfo.UsableWithLightBackground.init -> void
 Egami.Fonts.FontProbe
 Egami.Fonts.FontProbe.Deconstruct(out Egami.Fonts.FontFileKind Kind, out int FaceCount, out Egami.Fonts.FontOutlines? Outlines) -> void
 Egami.Fonts.FontProbe.Equals(Egami.Fonts.FontProbe other) -> bool
@@ -204,6 +390,16 @@ Egami.Fonts.GenericFamily.Fantasy = 4 -> Egami.Fonts.GenericFamily
 Egami.Fonts.GenericFamily.Monospace = 2 -> Egami.Fonts.GenericFamily
 Egami.Fonts.GenericFamily.SansSerif = 0 -> Egami.Fonts.GenericFamily
 Egami.Fonts.GenericFamily.Serif = 1 -> Egami.Fonts.GenericFamily
+Egami.Fonts.GlyphColor
+Egami.Fonts.GlyphColor.Color.get -> Egami.Pixels.RgbaF32
+Egami.Fonts.GlyphColor.Color.init -> void
+Egami.Fonts.GlyphColor.Deconstruct(out Egami.Pixels.RgbaF32 Color, out bool IsForeground) -> void
+Egami.Fonts.GlyphColor.Equals(Egami.Fonts.GlyphColor other) -> bool
+Egami.Fonts.GlyphColor.GlyphColor() -> void
+Egami.Fonts.GlyphColor.GlyphColor(Egami.Pixels.RgbaF32 Color, bool IsForeground) -> void
+Egami.Fonts.GlyphColor.IsForeground.get -> bool
+Egami.Fonts.GlyphColor.IsForeground.init -> void
+Egami.Fonts.GlyphColor.Resolve(Egami.Pixels.RgbaF32 foreground) -> Egami.Pixels.RgbaF32
 Egami.Fonts.GlyphExtents
 Egami.Fonts.GlyphExtents.Deconstruct(out float XMin, out float YMin, out float XMax, out float YMax) -> void
 Egami.Fonts.GlyphExtents.Equals(Egami.Fonts.GlyphExtents other) -> bool
@@ -246,6 +442,16 @@ Egami.Fonts.GlyphTransform.Tx.get -> float
 Egami.Fonts.GlyphTransform.Tx.init -> void
 Egami.Fonts.GlyphTransform.Ty.get -> float
 Egami.Fonts.GlyphTransform.Ty.init -> void
+Egami.Fonts.IColorPaintVisitor
+Egami.Fonts.IColorPaintVisitor.VisitColorGlyph(Egami.Fonts.ColorGlyphReferencePaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitComposite(Egami.Fonts.ColorCompositePaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitGlyph(Egami.Fonts.ColorGlyphPaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitLayers(Egami.Fonts.ColorLayersPaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitLinearGradient(Egami.Fonts.ColorLinearGradientPaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitRadialGradient(Egami.Fonts.ColorRadialGradientPaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitSolid(Egami.Fonts.ColorSolidPaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitSweepGradient(Egami.Fonts.ColorSweepGradientPaint! paint) -> void
+Egami.Fonts.IColorPaintVisitor.VisitTransform(Egami.Fonts.ColorTransformPaint! paint) -> void
 Egami.Fonts.IGlyphOutlineSink
 Egami.Fonts.IGlyphOutlineSink.Close() -> void
 Egami.Fonts.IGlyphOutlineSink.CubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y) -> void
@@ -333,6 +539,14 @@ Egami.Fonts.Shaping.RunProperties.RunProperties() -> void
 Egami.Fonts.Shaping.RunProperties.Script.get -> Egami.Fonts.Unicode.Script?
 Egami.Fonts.Shaping.RunProperties.Script.init -> void
 Egami.Fonts.Shaping.TextShaper
+Egami.Fonts.PaintColorGlyph
+Egami.Fonts.PaintColorGlyph.ClipBox.get -> Egami.Fonts.GlyphExtents?
+Egami.Fonts.PaintColorGlyph.ClipBox.init -> void
+Egami.Fonts.PaintColorGlyph.Deconstruct(out ushort Glyph, out Egami.Fonts.ColorGlyphFormats Format, out Egami.Fonts.ColorPaint! Paint, out Egami.Fonts.GlyphExtents? ClipBox) -> void
+Egami.Fonts.PaintColorGlyph.Equals(Egami.Fonts.PaintColorGlyph? other) -> bool
+Egami.Fonts.PaintColorGlyph.Paint.get -> Egami.Fonts.ColorPaint!
+Egami.Fonts.PaintColorGlyph.Paint.init -> void
+Egami.Fonts.PaintColorGlyph.PaintColorGlyph(ushort Glyph, Egami.Fonts.ColorGlyphFormats Format, Egami.Fonts.ColorPaint! Paint, Egami.Fonts.GlyphExtents? ClipBox) -> void
 Egami.Fonts.SubsetFormat
 Egami.Fonts.SubsetFormat.Auto = 0 -> Egami.Fonts.SubsetFormat
 Egami.Fonts.SubsetFormat.BareCff = 3 -> Egami.Fonts.SubsetFormat
@@ -391,6 +605,7 @@ Egami.Fonts.TextMeasure.LineHeight.init -> void
 Egami.Fonts.TextMeasure.TextMeasure() -> void
 Egami.Fonts.TextMeasure.TextMeasure(float Advance, Egami.Fonts.TextBounds InkBounds, int LineCount, float Ascent, float Descent, float LineHeight) -> void
 Egami.Fonts.Typeface
+Egami.Fonts.Typeface.ColorFormats.get -> Egami.Fonts.ColorGlyphFormats
 Egami.Fonts.Typeface.Container.get -> Egami.Fonts.FontFileKind
 Egami.Fonts.Typeface.Embedding.get -> Egami.Fonts.FontEmbedding
 Egami.Fonts.Typeface.Extents.get -> Egami.Fonts.FontExtents
@@ -409,6 +624,7 @@ Egami.Fonts.Typeface.GetWoffMetadata() -> string?
 Egami.Fonts.Typeface.GetWoffPrivateData() -> System.ReadOnlyMemory<byte>
 Egami.Fonts.Typeface.GlyphCount.get -> int
 Egami.Fonts.Typeface.HasCharacterMap.get -> bool
+Egami.Fonts.Typeface.HasColorGlyph(ushort glyph) -> bool
 Egami.Fonts.Typeface.HasKerning.get -> bool
 Egami.Fonts.Typeface.HheaMetrics.get -> Egami.Fonts.VerticalMetrics
 Egami.Fonts.Typeface.IsFixedPitch.get -> bool
@@ -417,10 +633,13 @@ Egami.Fonts.Typeface.Layout.get -> Egami.Fonts.Shaping.OpenTypeLayout!
 Egami.Fonts.Typeface.MapCodePoints(System.ReadOnlySpan<char> text, System.Span<ushort> glyphs) -> int
 Egami.Fonts.Typeface.NamedInstances.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.NamedInstance!>!
 Egami.Fonts.Typeface.Outlines.get -> Egami.Fonts.FontOutlines
+Egami.Fonts.Typeface.Palettes.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontPaletteInfo!>!
 Egami.Fonts.Typeface.PostScriptName.get -> string!
 Egami.Fonts.Typeface.Style.get -> Egami.Fonts.FontStyle
 Egami.Fonts.Typeface.SubfamilyName.get -> string!
+Egami.Fonts.Typeface.TryGetColorGlyph(ushort glyph, Egami.Fonts.FontPalette? palette, out Egami.Fonts.ColorGlyph? colorGlyph, float pixelsPerEm = 0) -> bool
 Egami.Fonts.Typeface.TryGetGlyph(int codePoint, out ushort glyph) -> bool
+Egami.Fonts.Typeface.TryGetSvgDocument(ushort glyph, out System.ReadOnlyMemory<byte> document, out ushort firstGlyph, out ushort lastGlyph) -> bool
 Egami.Fonts.Typeface.TryGetTable(Egami.Fonts.FontTag tag, out System.ReadOnlyMemory<byte> data) -> bool
 Egami.Fonts.Typeface.TypoMetrics.get -> Egami.Fonts.VerticalMetrics
 Egami.Fonts.Typeface.UnitsPerEm.get -> int
@@ -720,9 +939,68 @@ Egami.Fonts.VerticalMetrics.LineGap.get -> int
 Egami.Fonts.VerticalMetrics.LineGap.init -> void
 Egami.Fonts.VerticalMetrics.VerticalMetrics() -> void
 Egami.Fonts.VerticalMetrics.VerticalMetrics(int Ascent, int Descent, int LineGap) -> void
+override Egami.Fonts.BitmapColorGlyph.<Clone>$() -> Egami.Fonts.BitmapColorGlyph!
+override Egami.Fonts.BitmapColorGlyph.Equals(object? obj) -> bool
+override Egami.Fonts.BitmapColorGlyph.GetHashCode() -> int
+override Egami.Fonts.BitmapColorGlyph.ToString() -> string!
 override Egami.Fonts.CffOptions.Equals(object? obj) -> bool
 override Egami.Fonts.CffOptions.GetHashCode() -> int
 override Egami.Fonts.CffOptions.ToString() -> string!
+override Egami.Fonts.ColorCompositePaint.<Clone>$() -> Egami.Fonts.ColorCompositePaint!
+override Egami.Fonts.ColorCompositePaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorCompositePaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorCompositePaint.GetHashCode() -> int
+override Egami.Fonts.ColorCompositePaint.ToString() -> string!
+override Egami.Fonts.ColorGlyph.Equals(object? obj) -> bool
+override Egami.Fonts.ColorGlyph.GetHashCode() -> int
+override Egami.Fonts.ColorGlyph.ToString() -> string!
+override Egami.Fonts.ColorGlyphPaint.<Clone>$() -> Egami.Fonts.ColorGlyphPaint!
+override Egami.Fonts.ColorGlyphPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorGlyphPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorGlyphPaint.GetHashCode() -> int
+override Egami.Fonts.ColorGlyphPaint.ToString() -> string!
+override Egami.Fonts.ColorGlyphReferencePaint.<Clone>$() -> Egami.Fonts.ColorGlyphReferencePaint!
+override Egami.Fonts.ColorGlyphReferencePaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorGlyphReferencePaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorGlyphReferencePaint.GetHashCode() -> int
+override Egami.Fonts.ColorGlyphReferencePaint.ToString() -> string!
+override Egami.Fonts.ColorLayersPaint.<Clone>$() -> Egami.Fonts.ColorLayersPaint!
+override Egami.Fonts.ColorLayersPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorLayersPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorLayersPaint.GetHashCode() -> int
+override Egami.Fonts.ColorLayersPaint.ToString() -> string!
+override Egami.Fonts.ColorLine.Equals(object? obj) -> bool
+override Egami.Fonts.ColorLine.GetHashCode() -> int
+override Egami.Fonts.ColorLine.ToString() -> string!
+override Egami.Fonts.ColorLinearGradientPaint.<Clone>$() -> Egami.Fonts.ColorLinearGradientPaint!
+override Egami.Fonts.ColorLinearGradientPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorLinearGradientPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorLinearGradientPaint.GetHashCode() -> int
+override Egami.Fonts.ColorLinearGradientPaint.ToString() -> string!
+override Egami.Fonts.ColorPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorPaint.GetHashCode() -> int
+override Egami.Fonts.ColorPaint.ToString() -> string!
+override Egami.Fonts.ColorRadialGradientPaint.<Clone>$() -> Egami.Fonts.ColorRadialGradientPaint!
+override Egami.Fonts.ColorRadialGradientPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorRadialGradientPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorRadialGradientPaint.GetHashCode() -> int
+override Egami.Fonts.ColorRadialGradientPaint.ToString() -> string!
+override Egami.Fonts.ColorSolidPaint.<Clone>$() -> Egami.Fonts.ColorSolidPaint!
+override Egami.Fonts.ColorSolidPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorSolidPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorSolidPaint.GetHashCode() -> int
+override Egami.Fonts.ColorSolidPaint.ToString() -> string!
+override Egami.Fonts.ColorStop.GetHashCode() -> int
+override Egami.Fonts.ColorSweepGradientPaint.<Clone>$() -> Egami.Fonts.ColorSweepGradientPaint!
+override Egami.Fonts.ColorSweepGradientPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorSweepGradientPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorSweepGradientPaint.GetHashCode() -> int
+override Egami.Fonts.ColorSweepGradientPaint.ToString() -> string!
+override Egami.Fonts.ColorTransformPaint.<Clone>$() -> Egami.Fonts.ColorTransformPaint!
+override Egami.Fonts.ColorTransformPaint.Accept(Egami.Fonts.IColorPaintVisitor! visitor) -> void
+override Egami.Fonts.ColorTransformPaint.Equals(object? obj) -> bool
+override Egami.Fonts.ColorTransformPaint.GetHashCode() -> int
+override Egami.Fonts.ColorTransformPaint.ToString() -> string!
 override Egami.Fonts.Font.GetHashCode() -> int
 override Egami.Fonts.FontExtents.GetHashCode() -> int
 override Egami.Fonts.FontFamily.ToString() -> string!
@@ -731,11 +1009,19 @@ override Egami.Fonts.FontLoadOptions.GetHashCode() -> int
 override Egami.Fonts.FontLoadOptions.ToString() -> string!
 override Egami.Fonts.FontMatch.GetHashCode() -> int
 override Egami.Fonts.FontNameRecord.GetHashCode() -> int
+override Egami.Fonts.FontPalette.Equals(object? obj) -> bool
+override Egami.Fonts.FontPalette.GetHashCode() -> int
+override Egami.Fonts.FontPalette.ToString() -> string!
+override Egami.Fonts.FontPaletteEntry.GetHashCode() -> int
+override Egami.Fonts.FontPaletteInfo.Equals(object? obj) -> bool
+override Egami.Fonts.FontPaletteInfo.GetHashCode() -> int
+override Egami.Fonts.FontPaletteInfo.ToString() -> string!
 override Egami.Fonts.FontProbe.GetHashCode() -> int
 override Egami.Fonts.FontStyle.GetHashCode() -> int
 override Egami.Fonts.FontTag.GetHashCode() -> int
 override Egami.Fonts.FontTag.ToString() -> string!
 override Egami.Fonts.FontVariation.GetHashCode() -> int
+override Egami.Fonts.GlyphColor.GetHashCode() -> int
 override Egami.Fonts.GlyphExtents.GetHashCode() -> int
 override Egami.Fonts.GlyphTransform.GetHashCode() -> int
 override Egami.Fonts.NamedInstance.Equals(object? obj) -> bool
@@ -745,6 +1031,10 @@ override Egami.Fonts.Shaping.FontFeature.GetHashCode() -> int
 override Egami.Fonts.Shaping.FontFeature.ToString() -> string!
 override Egami.Fonts.Shaping.GlyphPosition.GetHashCode() -> int
 override Egami.Fonts.Shaping.RunProperties.GetHashCode() -> int
+override Egami.Fonts.PaintColorGlyph.<Clone>$() -> Egami.Fonts.PaintColorGlyph!
+override Egami.Fonts.PaintColorGlyph.Equals(object? obj) -> bool
+override Egami.Fonts.PaintColorGlyph.GetHashCode() -> int
+override Egami.Fonts.PaintColorGlyph.ToString() -> string!
 override Egami.Fonts.SubsetOptions.Equals(object? obj) -> bool
 override Egami.Fonts.SubsetOptions.GetHashCode() -> int
 override Egami.Fonts.SubsetOptions.ToString() -> string!
@@ -759,9 +1049,48 @@ override Egami.Fonts.VariationAxis.Equals(object? obj) -> bool
 override Egami.Fonts.VariationAxis.GetHashCode() -> int
 override Egami.Fonts.VariationAxis.ToString() -> string!
 override Egami.Fonts.VerticalMetrics.GetHashCode() -> int
+override sealed Egami.Fonts.BitmapColorGlyph.Equals(Egami.Fonts.ColorGlyph? other) -> bool
+override sealed Egami.Fonts.ColorCompositePaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorGlyphPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorGlyphReferencePaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorLayersPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorLinearGradientPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorRadialGradientPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorSolidPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorSweepGradientPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.ColorTransformPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+override sealed Egami.Fonts.PaintColorGlyph.Equals(Egami.Fonts.ColorGlyph? other) -> bool
+static Egami.Fonts.BitmapColorGlyph.operator !=(Egami.Fonts.BitmapColorGlyph? left, Egami.Fonts.BitmapColorGlyph? right) -> bool
+static Egami.Fonts.BitmapColorGlyph.operator ==(Egami.Fonts.BitmapColorGlyph? left, Egami.Fonts.BitmapColorGlyph? right) -> bool
 static Egami.Fonts.CffOptions.Default.get -> Egami.Fonts.CffOptions!
 static Egami.Fonts.CffOptions.operator !=(Egami.Fonts.CffOptions? left, Egami.Fonts.CffOptions? right) -> bool
 static Egami.Fonts.CffOptions.operator ==(Egami.Fonts.CffOptions? left, Egami.Fonts.CffOptions? right) -> bool
+static Egami.Fonts.ColorCompositePaint.operator !=(Egami.Fonts.ColorCompositePaint? left, Egami.Fonts.ColorCompositePaint? right) -> bool
+static Egami.Fonts.ColorCompositePaint.operator ==(Egami.Fonts.ColorCompositePaint? left, Egami.Fonts.ColorCompositePaint? right) -> bool
+static Egami.Fonts.ColorGlyph.operator !=(Egami.Fonts.ColorGlyph? left, Egami.Fonts.ColorGlyph? right) -> bool
+static Egami.Fonts.ColorGlyph.operator ==(Egami.Fonts.ColorGlyph? left, Egami.Fonts.ColorGlyph? right) -> bool
+static Egami.Fonts.ColorGlyphPaint.operator !=(Egami.Fonts.ColorGlyphPaint? left, Egami.Fonts.ColorGlyphPaint? right) -> bool
+static Egami.Fonts.ColorGlyphPaint.operator ==(Egami.Fonts.ColorGlyphPaint? left, Egami.Fonts.ColorGlyphPaint? right) -> bool
+static Egami.Fonts.ColorGlyphReferencePaint.operator !=(Egami.Fonts.ColorGlyphReferencePaint? left, Egami.Fonts.ColorGlyphReferencePaint? right) -> bool
+static Egami.Fonts.ColorGlyphReferencePaint.operator ==(Egami.Fonts.ColorGlyphReferencePaint? left, Egami.Fonts.ColorGlyphReferencePaint? right) -> bool
+static Egami.Fonts.ColorLayersPaint.operator !=(Egami.Fonts.ColorLayersPaint? left, Egami.Fonts.ColorLayersPaint? right) -> bool
+static Egami.Fonts.ColorLayersPaint.operator ==(Egami.Fonts.ColorLayersPaint? left, Egami.Fonts.ColorLayersPaint? right) -> bool
+static Egami.Fonts.ColorLine.operator !=(Egami.Fonts.ColorLine? left, Egami.Fonts.ColorLine? right) -> bool
+static Egami.Fonts.ColorLine.operator ==(Egami.Fonts.ColorLine? left, Egami.Fonts.ColorLine? right) -> bool
+static Egami.Fonts.ColorLinearGradientPaint.operator !=(Egami.Fonts.ColorLinearGradientPaint? left, Egami.Fonts.ColorLinearGradientPaint? right) -> bool
+static Egami.Fonts.ColorLinearGradientPaint.operator ==(Egami.Fonts.ColorLinearGradientPaint? left, Egami.Fonts.ColorLinearGradientPaint? right) -> bool
+static Egami.Fonts.ColorPaint.operator !=(Egami.Fonts.ColorPaint? left, Egami.Fonts.ColorPaint? right) -> bool
+static Egami.Fonts.ColorPaint.operator ==(Egami.Fonts.ColorPaint? left, Egami.Fonts.ColorPaint? right) -> bool
+static Egami.Fonts.ColorRadialGradientPaint.operator !=(Egami.Fonts.ColorRadialGradientPaint? left, Egami.Fonts.ColorRadialGradientPaint? right) -> bool
+static Egami.Fonts.ColorRadialGradientPaint.operator ==(Egami.Fonts.ColorRadialGradientPaint? left, Egami.Fonts.ColorRadialGradientPaint? right) -> bool
+static Egami.Fonts.ColorSolidPaint.operator !=(Egami.Fonts.ColorSolidPaint? left, Egami.Fonts.ColorSolidPaint? right) -> bool
+static Egami.Fonts.ColorSolidPaint.operator ==(Egami.Fonts.ColorSolidPaint? left, Egami.Fonts.ColorSolidPaint? right) -> bool
+static Egami.Fonts.ColorStop.operator !=(Egami.Fonts.ColorStop left, Egami.Fonts.ColorStop right) -> bool
+static Egami.Fonts.ColorStop.operator ==(Egami.Fonts.ColorStop left, Egami.Fonts.ColorStop right) -> bool
+static Egami.Fonts.ColorSweepGradientPaint.operator !=(Egami.Fonts.ColorSweepGradientPaint? left, Egami.Fonts.ColorSweepGradientPaint? right) -> bool
+static Egami.Fonts.ColorSweepGradientPaint.operator ==(Egami.Fonts.ColorSweepGradientPaint? left, Egami.Fonts.ColorSweepGradientPaint? right) -> bool
+static Egami.Fonts.ColorTransformPaint.operator !=(Egami.Fonts.ColorTransformPaint? left, Egami.Fonts.ColorTransformPaint? right) -> bool
+static Egami.Fonts.ColorTransformPaint.operator ==(Egami.Fonts.ColorTransformPaint? left, Egami.Fonts.ColorTransformPaint? right) -> bool
 static Egami.Fonts.Font.FromPoints(Egami.Fonts.Typeface! typeface, float points, float dpi) -> Egami.Fonts.Font
 static Egami.Fonts.Font.operator !=(Egami.Fonts.Font left, Egami.Fonts.Font right) -> bool
 static Egami.Fonts.Font.operator ==(Egami.Fonts.Font left, Egami.Fonts.Font right) -> bool
@@ -778,6 +1107,15 @@ static Egami.Fonts.FontMatch.operator !=(Egami.Fonts.FontMatch left, Egami.Fonts
 static Egami.Fonts.FontMatch.operator ==(Egami.Fonts.FontMatch left, Egami.Fonts.FontMatch right) -> bool
 static Egami.Fonts.FontNameRecord.operator !=(Egami.Fonts.FontNameRecord left, Egami.Fonts.FontNameRecord right) -> bool
 static Egami.Fonts.FontNameRecord.operator ==(Egami.Fonts.FontNameRecord left, Egami.Fonts.FontNameRecord right) -> bool
+static Egami.Fonts.FontPalette.Dark.get -> Egami.Fonts.FontPalette!
+static Egami.Fonts.FontPalette.Default.get -> Egami.Fonts.FontPalette!
+static Egami.Fonts.FontPalette.Light.get -> Egami.Fonts.FontPalette!
+static Egami.Fonts.FontPalette.operator !=(Egami.Fonts.FontPalette? left, Egami.Fonts.FontPalette? right) -> bool
+static Egami.Fonts.FontPalette.operator ==(Egami.Fonts.FontPalette? left, Egami.Fonts.FontPalette? right) -> bool
+static Egami.Fonts.FontPaletteEntry.operator !=(Egami.Fonts.FontPaletteEntry left, Egami.Fonts.FontPaletteEntry right) -> bool
+static Egami.Fonts.FontPaletteEntry.operator ==(Egami.Fonts.FontPaletteEntry left, Egami.Fonts.FontPaletteEntry right) -> bool
+static Egami.Fonts.FontPaletteInfo.operator !=(Egami.Fonts.FontPaletteInfo? left, Egami.Fonts.FontPaletteInfo? right) -> bool
+static Egami.Fonts.FontPaletteInfo.operator ==(Egami.Fonts.FontPaletteInfo? left, Egami.Fonts.FontPaletteInfo? right) -> bool
 static Egami.Fonts.FontProbe.operator !=(Egami.Fonts.FontProbe left, Egami.Fonts.FontProbe right) -> bool
 static Egami.Fonts.FontProbe.operator ==(Egami.Fonts.FontProbe left, Egami.Fonts.FontProbe right) -> bool
 static Egami.Fonts.FontStyle.Bold.get -> Egami.Fonts.FontStyle
@@ -801,6 +1139,8 @@ static Egami.Fonts.FontVariation.Weight(float value) -> Egami.Fonts.FontVariatio
 static Egami.Fonts.FontVariation.WeightAxis.get -> Egami.Fonts.FontTag
 static Egami.Fonts.FontVariation.Width(float percent) -> Egami.Fonts.FontVariation
 static Egami.Fonts.FontVariation.WidthAxis.get -> Egami.Fonts.FontTag
+static Egami.Fonts.GlyphColor.operator !=(Egami.Fonts.GlyphColor left, Egami.Fonts.GlyphColor right) -> bool
+static Egami.Fonts.GlyphColor.operator ==(Egami.Fonts.GlyphColor left, Egami.Fonts.GlyphColor right) -> bool
 static Egami.Fonts.GlyphExtents.Empty.get -> Egami.Fonts.GlyphExtents
 static Egami.Fonts.GlyphExtents.operator !=(Egami.Fonts.GlyphExtents left, Egami.Fonts.GlyphExtents right) -> bool
 static Egami.Fonts.GlyphExtents.operator ==(Egami.Fonts.GlyphExtents left, Egami.Fonts.GlyphExtents right) -> bool
@@ -826,6 +1166,8 @@ static Egami.Fonts.Shaping.OpenTypeLayout.DefaultClosureFeatures.get -> System.C
 static Egami.Fonts.Shaping.RunProperties.operator !=(Egami.Fonts.Shaping.RunProperties left, Egami.Fonts.Shaping.RunProperties right) -> bool
 static Egami.Fonts.Shaping.RunProperties.operator ==(Egami.Fonts.Shaping.RunProperties left, Egami.Fonts.Shaping.RunProperties right) -> bool
 static Egami.Fonts.Shaping.TextShaper.ShapeRun(System.ReadOnlySpan<char> text, int start, int length, Egami.Fonts.Font font, Egami.Fonts.Shaping.RunProperties properties, Egami.Fonts.Shaping.GlyphBuffer! buffer) -> void
+static Egami.Fonts.PaintColorGlyph.operator !=(Egami.Fonts.PaintColorGlyph? left, Egami.Fonts.PaintColorGlyph? right) -> bool
+static Egami.Fonts.PaintColorGlyph.operator ==(Egami.Fonts.PaintColorGlyph? left, Egami.Fonts.PaintColorGlyph? right) -> bool
 static Egami.Fonts.SubsetOptions.Default.get -> Egami.Fonts.SubsetOptions!
 static Egami.Fonts.SubsetOptions.operator !=(Egami.Fonts.SubsetOptions? left, Egami.Fonts.SubsetOptions? right) -> bool
 static Egami.Fonts.SubsetOptions.operator ==(Egami.Fonts.SubsetOptions? left, Egami.Fonts.SubsetOptions? right) -> bool
@@ -1051,6 +1393,14 @@ static Egami.Fonts.VariationAxis.operator !=(Egami.Fonts.VariationAxis? left, Eg
 static Egami.Fonts.VariationAxis.operator ==(Egami.Fonts.VariationAxis? left, Egami.Fonts.VariationAxis? right) -> bool
 static Egami.Fonts.VerticalMetrics.operator !=(Egami.Fonts.VerticalMetrics left, Egami.Fonts.VerticalMetrics right) -> bool
 static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left, Egami.Fonts.VerticalMetrics right) -> bool
+virtual Egami.Fonts.ColorGlyph.EqualityContract.get -> System.Type!
+virtual Egami.Fonts.ColorGlyph.Equals(Egami.Fonts.ColorGlyph? other) -> bool
+virtual Egami.Fonts.ColorGlyph.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Egami.Fonts.ColorPaint.EqualityContract.get -> System.Type!
+virtual Egami.Fonts.ColorPaint.Equals(Egami.Fonts.ColorPaint? other) -> bool
+virtual Egami.Fonts.ColorPaint.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~override Egami.Fonts.ColorStop.Equals(object obj) -> bool
+~override Egami.Fonts.ColorStop.ToString() -> string
 ~override Egami.Fonts.Font.Equals(object obj) -> bool
 ~override Egami.Fonts.Font.ToString() -> string
 ~override Egami.Fonts.FontExtents.Equals(object obj) -> bool
@@ -1059,6 +1409,8 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.FontMatch.ToString() -> string
 ~override Egami.Fonts.FontNameRecord.Equals(object obj) -> bool
 ~override Egami.Fonts.FontNameRecord.ToString() -> string
+~override Egami.Fonts.FontPaletteEntry.Equals(object obj) -> bool
+~override Egami.Fonts.FontPaletteEntry.ToString() -> string
 ~override Egami.Fonts.FontProbe.Equals(object obj) -> bool
 ~override Egami.Fonts.FontProbe.ToString() -> string
 ~override Egami.Fonts.FontStyle.Equals(object obj) -> bool
@@ -1066,6 +1418,8 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.FontTag.Equals(object obj) -> bool
 ~override Egami.Fonts.FontVariation.Equals(object obj) -> bool
 ~override Egami.Fonts.FontVariation.ToString() -> string
+~override Egami.Fonts.GlyphColor.Equals(object obj) -> bool
+~override Egami.Fonts.GlyphColor.ToString() -> string
 ~override Egami.Fonts.GlyphExtents.Equals(object obj) -> bool
 ~override Egami.Fonts.GlyphExtents.ToString() -> string
 ~override Egami.Fonts.GlyphTransform.Equals(object obj) -> bool

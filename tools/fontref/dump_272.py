@@ -201,6 +201,123 @@ def dump_instances():
         print("dumped instances of", name)
 
 
+COLOR = ["NotoColorEmoji-COLRv1-subset.ttf", "NotoColorEmoji-CBDT-subset.ttf", "Twemoji-COLRv0-subset.ttf", "Twemoji-sbix.ttf",
+         "Svg-test.ttf", "../test_glyphs-glyf_colr_1.ttf", "../test_glyphs-glyf_colr_1_variable.ttf"]
+
+
+def color_of(palette, index, alpha):
+    """A palette entry as straight RGBA floats with the alpha factor, or the foreground; the same rule Egami follows."""
+    if index == 0xFFFF:
+        return {"fg": r4(alpha)}
+    if index >= len(palette):
+        return {"rgba": [0, 0, 0, 0]}
+    c = palette[index]
+    return {"rgba": [r4(c.red / 255), r4(c.green / 255), r4(c.blue / 255), r4(c.alpha / 255 * alpha)]}
+
+
+def paint_tree(font, paint, palette, ids, depth=0):
+    """fontTools' paint at its default values in Egami's canonical form: transform paints as matrices (fontTools' getTransform)."""
+    from fontTools.ttLib.tables.otTables import PaintFormat
+
+    if depth > 64:
+        return None
+    f = paint.Format
+    base = f - 1 if PaintFormat(f).is_variable() else f
+    name = PaintFormat(base).name
+
+    def line(cl):
+        return {"extend": int(cl.Extend), "stops": [[r4(s.StopOffset), color_of(palette, s.PaletteIndex, s.Alpha)] for s in cl.ColorStop]}
+
+    def child(p):
+        return paint_tree(font, p, palette, ids, depth + 1)
+
+    if name == "PaintColrLayers":
+        layers = font["COLR"].table.LayerList.Paint[paint.FirstLayerIndex:paint.FirstLayerIndex + paint.NumLayers]
+        return {"t": "layers", "c": [child(p) for p in layers]}
+    if name == "PaintSolid":
+        return {"t": "solid", "color": color_of(palette, paint.PaletteIndex, paint.Alpha)}
+    if name == "PaintLinearGradient":
+        return {"t": "linear", "p": [paint.x0, paint.y0, paint.x1, paint.y1, paint.x2, paint.y2], "line": line(paint.ColorLine)}
+    if name == "PaintRadialGradient":
+        return {"t": "radial", "p": [paint.x0, paint.y0, paint.r0, paint.x1, paint.y1, paint.r1], "line": line(paint.ColorLine)}
+    if name == "PaintSweepGradient":
+        return {"t": "sweep", "p": [paint.centerX, paint.centerY, r4(paint.startAngle), r4(paint.endAngle)], "line": line(paint.ColorLine)}
+    if name == "PaintGlyph":
+        return {"t": "glyph", "g": ids[paint.Glyph], "c": child(paint.Paint)}
+    if name == "PaintColrGlyph":
+        return {"t": "colr", "g": ids[paint.Glyph]}
+    if name == "PaintComposite":
+        return {"t": "comp", "m": int(paint.CompositeMode), "s": child(paint.SourcePaint), "b": child(paint.BackdropPaint)}
+    # The transform family: fontTools' own matrix, read at the default values.
+    saved = paint.Format
+    paint.Format = base
+    t = paint.getTransform()
+    paint.Format = saved
+    return {"t": "xf", "m": [r4(v) for v in tuple(t)], "c": child(paint.Paint)}
+
+
+def dump_color():
+    for name in COLOR:
+        path = os.path.normpath(os.path.join(DERIVED, name))
+        font = TTFont(path)
+        order = font.getGlyphOrder()
+        ids = {n: i for i, n in enumerate(order)}
+        data = {"glyphCount": len(order), "palettes": [], "glyphs": {}}
+        palette = []
+        if "CPAL" in font:
+            cpal = font["CPAL"]
+            types = getattr(cpal, "paletteTypes", None) or [0] * len(cpal.palettes)
+            for p, colors in enumerate(cpal.palettes):
+                data["palettes"].append({"type": types[p], "colors": [[c.red, c.green, c.blue, c.alpha] for c in colors]})
+            palette = cpal.palettes[0] if cpal.palettes else []
+        if "COLR" in font:
+            colr = font["COLR"]
+            data["colrVersion"] = colr.version
+            if colr.version >= 1 and colr.table.BaseGlyphList:
+                clips = colr.table.ClipList.clips if colr.table.ClipList else {}
+                for rec in colr.table.BaseGlyphList.BaseGlyphPaintRecord:
+                    entry = {"v": 1, "tree": paint_tree(font, rec.Paint, palette, ids)}
+                    if rec.BaseGlyph in clips:
+                        b = clips[rec.BaseGlyph]
+                        entry["clip"] = [b.xMin, b.yMin, b.xMax, b.yMax]
+                    data["glyphs"][str(ids[rec.BaseGlyph])] = entry
+            if colr.version == 0 or getattr(colr, "ColorLayers", None):
+                for gname, layers in (getattr(colr, "ColorLayers", None) or {}).items():
+                    key = str(ids[gname])
+                    if key not in data["glyphs"]:
+                        data["glyphs"][key] = {"v": 0, "tree": {"t": "layers", "c": [
+                            {"t": "glyph", "g": ids[l.name], "c": {"t": "solid", "color": color_of(palette, l.colorID, 1)}} for l in layers]}}
+        if "sbix" in font:
+            sbix = font["sbix"]
+            strikes = {}
+            for ppem, strike in sbix.strikes.items():
+                for gname, g in strike.glyphs.items():
+                    if g.graphicType is None:
+                        continue
+                    strikes.setdefault(str(ids[gname]), {})[str(ppem)] = {
+                        "type": g.graphicType, "x": g.originOffsetX, "y": g.originOffsetY,
+                        "ref": ids[g.referenceGlyphName] if g.graphicType == "dupe" else None,
+                        "sha256": hashlib.sha256(g.imageData).hexdigest() if g.graphicType != "dupe" else None}
+            data["sbix"] = strikes
+        if "CBDT" in font:
+            cbdt = font["CBDT"]
+            strikes = {}
+            for s, strike in enumerate(cbdt.strikeData):
+                ppem = font["CBLC"].strikes[s].bitmapSizeTable.ppemY
+                for gname, g in strike.items():
+                    m = g.metrics
+                    strikes.setdefault(str(ids[gname]), {})[str(ppem)] = {
+                        "format": g.getFormat(), "width": m.width, "height": m.height,
+                        "bearingX": m.BearingX if hasattr(m, "BearingX") else m.horiBearingX,
+                        "bearingY": m.BearingY if hasattr(m, "BearingY") else m.horiBearingY,
+                        "sha256": hashlib.sha256(g.imageData).hexdigest()}
+            data["cbdt"] = strikes
+        if "SVG " in font:
+            data["svg"] = [{"first": first, "last": last, "sha256": hashlib.sha256(doc.encode("utf-8")).hexdigest()} for doc, first, last in font["SVG "].docList]
+        write(os.path.join(OUT, "color", os.path.splitext(os.path.basename(name))[0] + ".json.gz"), data)
+        print("dumped", name)
+
+
 def main():
     if "web" in WHAT:
         dump_web()
@@ -208,6 +325,8 @@ def main():
         dump_var()
     if "instances" in WHAT:
         dump_instances()
+    if "color" in WHAT:
+        dump_color()
 
 
 if __name__ == "__main__":
