@@ -418,7 +418,7 @@ internal sealed class PsdFile
         }
 
         string key = Encoding.Latin1.GetString(blend.Slice(4, 4));
-        int opacity = blend[8];
+        float opacity = blend[8] / 255f;
         bool clipped = blend[9] != 0;
         bool visible = (blend[10] & 0x02) == 0;
         long extra = input.ReadUInt32BigEndian();

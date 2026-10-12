@@ -153,7 +153,7 @@ internal sealed class IcoWriter : IFormatWriter, IMultiImageWriter
         {
             IcoEntryEncoding.Png => IcoEntryEncoding.Png,
             IcoEntryEncoding.Bmp => IcoEntryEncoding.Bmp,
-            _ when ownSize && details is not null => details.Encoding,
+            null when ownSize && details is not null => details.Encoding,
             _ => width == 256 && height == 256 ? IcoEntryEncoding.Png : IcoEntryEncoding.Bmp,
         };
 

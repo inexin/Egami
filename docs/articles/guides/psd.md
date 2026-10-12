@@ -47,7 +47,7 @@ Photoshop's blend modes, adjustment layers, effects and text. ImageMagick flatte
 ## Layers
 
 `PsdDetails.Layers` lists the layer records bottom to top as the file does: name (the Unicode name when there is one), bounds,
-opacity, blend mode (Photoshop's key and Egami's `BlendMode` where there is one), visibility, clipping, and whether the record is a
+opacity (0 to 1, as `DrawImage` takes it), blend mode (Photoshop's key and Egami's `BlendMode` where there is one), visibility, clipping, and whether the record is a
 layer or one end of a group, with its nesting level. Their pixels are not loaded; `LoadAll` returns the flattened image only.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-layers)]

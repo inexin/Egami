@@ -377,9 +377,8 @@ Egami.Formats.Ico.IcoEntry.IcoEntry(int Width, int Height, int BitsPerPixel, Ega
 Egami.Formats.Ico.IcoEntry.Width.get -> int
 Egami.Formats.Ico.IcoEntry.Width.init -> void
 Egami.Formats.Ico.IcoEntryEncoding
-Egami.Formats.Ico.IcoEntryEncoding.Auto = 0 -> Egami.Formats.Ico.IcoEntryEncoding
-Egami.Formats.Ico.IcoEntryEncoding.Bmp = 2 -> Egami.Formats.Ico.IcoEntryEncoding
-Egami.Formats.Ico.IcoEntryEncoding.Png = 1 -> Egami.Formats.Ico.IcoEntryEncoding
+Egami.Formats.Ico.IcoEntryEncoding.Bmp = 1 -> Egami.Formats.Ico.IcoEntryEncoding
+Egami.Formats.Ico.IcoEntryEncoding.Png = 0 -> Egami.Formats.Ico.IcoEntryEncoding
 Egami.Formats.Ico.IcoFormat
 Egami.Formats.Ico.IcoReaderOptions
 Egami.Formats.Ico.IcoReaderOptions.Entry.get -> int?
@@ -387,7 +386,7 @@ Egami.Formats.Ico.IcoReaderOptions.Entry.init -> void
 Egami.Formats.Ico.IcoReaderOptions.Equals(Egami.Formats.Ico.IcoReaderOptions? other) -> bool
 Egami.Formats.Ico.IcoReaderOptions.IcoReaderOptions() -> void
 Egami.Formats.Ico.IcoWriterOptions
-Egami.Formats.Ico.IcoWriterOptions.Encoding.get -> Egami.Formats.Ico.IcoEntryEncoding
+Egami.Formats.Ico.IcoWriterOptions.Encoding.get -> Egami.Formats.Ico.IcoEntryEncoding?
 Egami.Formats.Ico.IcoWriterOptions.Encoding.init -> void
 Egami.Formats.Ico.IcoWriterOptions.Filter.get -> Egami.Operations.ResampleFilter
 Egami.Formats.Ico.IcoWriterOptions.Filter.init -> void
@@ -605,7 +604,7 @@ Egami.Formats.Psd.PsdLayer.BlendModeKey.get -> string!
 Egami.Formats.Psd.PsdLayer.BlendModeKey.init -> void
 Egami.Formats.Psd.PsdLayer.Bounds.get -> Egami.Rect
 Egami.Formats.Psd.PsdLayer.Bounds.init -> void
-Egami.Formats.Psd.PsdLayer.Deconstruct(out string! Name, out Egami.Rect Bounds, out int Opacity, out string! BlendModeKey, out Egami.Operations.BlendMode? BlendMode, out bool IsVisible, out bool IsClipped, out Egami.Formats.Psd.PsdLayerKind Kind, out int Level) -> void
+Egami.Formats.Psd.PsdLayer.Deconstruct(out string! Name, out Egami.Rect Bounds, out float Opacity, out string! BlendModeKey, out Egami.Operations.BlendMode? BlendMode, out bool IsVisible, out bool IsClipped, out Egami.Formats.Psd.PsdLayerKind Kind, out int Level) -> void
 Egami.Formats.Psd.PsdLayer.Equals(Egami.Formats.Psd.PsdLayer? other) -> bool
 Egami.Formats.Psd.PsdLayer.IsClipped.get -> bool
 Egami.Formats.Psd.PsdLayer.IsClipped.init -> void
@@ -617,9 +616,9 @@ Egami.Formats.Psd.PsdLayer.Level.get -> int
 Egami.Formats.Psd.PsdLayer.Level.init -> void
 Egami.Formats.Psd.PsdLayer.Name.get -> string!
 Egami.Formats.Psd.PsdLayer.Name.init -> void
-Egami.Formats.Psd.PsdLayer.Opacity.get -> int
+Egami.Formats.Psd.PsdLayer.Opacity.get -> float
 Egami.Formats.Psd.PsdLayer.Opacity.init -> void
-Egami.Formats.Psd.PsdLayer.PsdLayer(string! Name, Egami.Rect Bounds, int Opacity, string! BlendModeKey, Egami.Operations.BlendMode? BlendMode, bool IsVisible, bool IsClipped, Egami.Formats.Psd.PsdLayerKind Kind, int Level) -> void
+Egami.Formats.Psd.PsdLayer.PsdLayer(string! Name, Egami.Rect Bounds, float Opacity, string! BlendModeKey, Egami.Operations.BlendMode? BlendMode, bool IsVisible, bool IsClipped, Egami.Formats.Psd.PsdLayerKind Kind, int Level) -> void
 Egami.Formats.Psd.PsdLayerKind
 Egami.Formats.Psd.PsdLayerKind.ClosedGroup = 2 -> Egami.Formats.Psd.PsdLayerKind
 Egami.Formats.Psd.PsdLayerKind.GroupEnd = 3 -> Egami.Formats.Psd.PsdLayerKind

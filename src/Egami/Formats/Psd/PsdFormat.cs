@@ -97,7 +97,7 @@ public enum PsdLayerKind
 /// <summary>One layer record of a PSD file, read as metadata: the layer's pixels are not loaded.</summary>
 /// <param name="Name">The layer's name: its Unicode name when the file has one, else its Pascal name.</param>
 /// <param name="Bounds">Where the layer's pixels lie in the image; empty for groups and layers without pixels.</param>
-/// <param name="Opacity">The opacity, 0 to 255.</param>
+/// <param name="Opacity">The opacity, 0 (transparent) to 1, as DrawImage takes it; the file stores it in 256 steps.</param>
 /// <param name="BlendModeKey">The blend mode as Photoshop names it, such as "norm", "mul " or "pass" (pass through, for groups).</param>
 /// <param name="BlendMode">The same blend mode in Egami's terms, or <see langword="null"/> when Egami has none like it.</param>
 /// <param name="IsVisible">Whether the layer is shown.</param>
@@ -107,7 +107,7 @@ public enum PsdLayerKind
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Psd.cs" region="psd-layers"/>
 /// </example>
-public sealed record PsdLayer(string Name, Rect Bounds, int Opacity, string BlendModeKey, BlendMode? BlendMode, bool IsVisible, bool IsClipped, PsdLayerKind Kind, int Level);
+public sealed record PsdLayer(string Name, Rect Bounds, float Opacity, string BlendModeKey, BlendMode? BlendMode, bool IsVisible, bool IsClipped, PsdLayerKind Kind, int Level);
 
 /// <summary>An image resource Egami does not map to <see cref="RasterMetadata"/>, kept as it was read.</summary>
 /// <param name="Id">The resource's number, such as 1036 for the thumbnail.</param>

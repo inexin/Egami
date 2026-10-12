@@ -36,11 +36,10 @@ public static class IcoFormat
 /// </example>
 public static class CurFormat
 {
-    /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>
+    /// <summary>Gets the format's registration: name, extension, signature, reader and writer. Cursors have no registered MIME type.</summary>
     public static FormatInfo Info { get; } = new()
     {
         Name = "CUR",
-        MimeTypes = ["image/x-win-bitmap"],
         Extensions = ["cur"],
         SignatureLength = IcoDirectory.SignatureLength,
         Matches = header => IcoDirectory.Matches(header, IcoDirectory.CursorType),
@@ -121,8 +120,12 @@ public sealed class IcoWriterOptions : WriterOptions
         }
     }
 
-    /// <summary>Gets how each entry is stored. Defaults to <see cref="IcoEntryEncoding.Auto"/>.</summary>
-    public IcoEntryEncoding Encoding { get; init; }
+    /// <summary>
+    /// Gets how every entry is stored, or <see langword="null"/> (the default) to choose per entry: PNG for 256 × 256 entries and
+    /// 32-bit BMP with an AND mask below, as Microsoft's icon guidance asks; an entry written at the size of a raster loaded from
+    /// an icon keeps that entry's encoding.
+    /// </summary>
+    public IcoEntryEncoding? Encoding { get; init; }
 
     /// <summary>Gets the filter that resizes rasters to <see cref="Sizes"/>, as for Resize. Defaults to <see cref="ResampleFilter.Bicubic"/>.</summary>
     public ResampleFilter Filter { get; init; }
@@ -140,12 +143,6 @@ public sealed class IcoWriterOptions : WriterOptions
 /// </example>
 public enum IcoEntryEncoding
 {
-    /// <summary>
-    /// For writing: PNG for 256 × 256 entries and 32-bit BMP with an AND mask below, as Microsoft's icon guidance asks; an entry
-    /// written at the size of a raster loaded from an icon keeps that entry's encoding. Never reported for an entry read.
-    /// </summary>
-    Auto,
-
     /// <summary>A whole PNG file.</summary>
     Png,
 

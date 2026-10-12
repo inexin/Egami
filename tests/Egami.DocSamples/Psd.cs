@@ -70,7 +70,7 @@ public class Psd
             }
 
             string kind = layer.Kind == PsdLayerKind.Layer ? "layer" : "group";
-            Console.WriteLine($"{new string(' ', 2 * layer.Level)}{layer.Name} ({kind}, {layer.BlendModeKey}, opacity {layer.Opacity}{(layer.IsVisible ? "" : ", hidden")})");
+            Console.WriteLine($"{new string(' ', 2 * layer.Level)}{layer.Name} ({kind}, {layer.BlendModeKey}, opacity {layer.Opacity:P0}{(layer.IsVisible ? "" : ", hidden")})");
         }
         #endregion
 

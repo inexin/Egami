@@ -16,7 +16,7 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   sizes); `MinimumSize` picks the smallest entry at least that big before reducing; `IcoReaderOptions.Entry` picks one by index;
   `Raster.LoadAll` returns every entry and `Raster.Probe` lists them (`ImageCount`, `IcoDetails.Entries`) without decoding.
 - `IcoWriterOptions`: `Sizes` with `FaviconSizes` and `WindowsSizes`, resized from the largest raster with `Filter` and centred on
-  transparency when not square, or taken as drawn; `Encoding` (`Auto`: PNG at 256, 32-bit BMP with an AND mask below; or all PNG
+  transparency when not square, or taken as drawn; `Encoding` (null: PNG at 256, 32-bit BMP with an AND mask below; or all PNG
   or all BMP); `Hotspot` for cursors, scaled to each entry. Rasters over 256 are fitted with the `Save.IcoFitted` warning. Files
   open in ImageMagick, Pillow, SkiaSharp and Windows' WIC with the same pixels; decoding is 1.1 to 2.2 times SkiaSharp's speed
   and writing Windows' six sizes twice Magick.NET's.

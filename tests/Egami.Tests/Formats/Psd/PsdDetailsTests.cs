@@ -23,7 +23,7 @@ public class PsdDetailsTests
         using JsonDocument document = JsonDocument.Parse(System.IO.File.ReadAllBytes(Path.Combine(PsdReaderTests.References, name + ".layers.json")));
         var expected = document.RootElement.EnumerateArray()
             .Select(e => (Name: e.GetProperty("name").GetString()!, Group: e.GetProperty("kind").GetString() == "group", Visible: e.GetProperty("visible").GetBoolean(),
-                Opacity: e.GetProperty("opacity").GetInt32(), Clipped: e.GetProperty("clipping").GetBoolean(), Level: e.GetProperty("depth").GetInt32()))
+                Opacity: e.GetProperty("opacity").GetInt32() / 255f, Clipped: e.GetProperty("clipping").GetBoolean(), Level: e.GetProperty("depth").GetInt32()))
             .Distinct()
             .OrderBy(e => e.Name, StringComparer.Ordinal).ToList();
         using Raster raster = Raster.Load(File(name));
@@ -43,7 +43,7 @@ public class PsdDetailsTests
         Assert.Equal(9, layers.Count);
         Assert.Equal([PsdLayerKind.Layer, PsdLayerKind.GroupEnd, PsdLayerKind.Layer, PsdLayerKind.GroupEnd, PsdLayerKind.Layer, PsdLayerKind.Layer, PsdLayerKind.ClosedGroup, PsdLayerKind.OpenGroup, PsdLayerKind.Layer], layers.Select(l => l.Kind));
         PsdLayer inner = layers[2];
-        Assert.Equal(("Inner", 128, "mul ", (BlendMode?)BlendMode.Multiply, new Rect(3, 2, 6, 4)), (inner.Name, inner.Opacity, inner.BlendModeKey, inner.BlendMode, inner.Bounds));
+        Assert.Equal(("Inner", 128 / 255f, "mul ", (BlendMode?)BlendMode.Multiply, new Rect(3, 2, 6, 4)), (inner.Name, inner.Opacity, inner.BlendModeKey, inner.BlendMode, inner.Bounds));
         Assert.Equal("Dyp æøå 深", layers[4].Name);
         Assert.False(layers[4].IsVisible);
         Assert.True(layers[5].IsClipped);
