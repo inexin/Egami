@@ -130,6 +130,15 @@ internal sealed class OutlineRecorder : IGlyphOutlineSink
         _open = false;
     }
 
+    /// <summary>Slants the recorded outline: each x moves by <paramref name="skew"/> times its y.</summary>
+    public void Skew(float skew)
+    {
+        for (int i = 0; i + 1 < _coordinateCount; i += 2)
+        {
+            _coordinates[i] += skew * _coordinates[i + 1];
+        }
+    }
+
     public void ReplayTo(IGlyphOutlineSink sink)
     {
         int c = 0;

@@ -54,9 +54,10 @@ public abstract partial class Canvas
     }
 
     /// <summary>
-    /// Draws a glyph run. The default turns the glyphs into one path and calls <see cref="OnDrawPath(Path, Stroke?, Paint)"/>, so
-    /// every backend draws text; a backend with text of its own, such as a PDF page writing text operators, overrides it and can
-    /// use <see cref="GlyphRun.Text"/> and <see cref="GlyphRun.Clusters"/> to keep the text searchable.
+    /// Draws a glyph run. The default turns the glyphs into one path, with the font's synthetic bold and italic, and calls
+    /// <see cref="OnDrawPath(Path, Stroke?, Paint)"/>, aliased for <see cref="FontEdging.Alias"/>, so every backend draws text; a
+    /// backend with text of its own, such as a PDF page writing text operators, overrides it and can use
+    /// <see cref="GlyphRun.Text"/> and <see cref="GlyphRun.Clusters"/> to keep the text searchable.
     /// </summary>
     /// <param name="run">The glyphs, never empty.</param>
     /// <param name="origin">Where the run's origin goes, in local coordinates.</param>
@@ -66,7 +67,7 @@ public abstract partial class Canvas
         Path path = run.ToPath(origin);
         if (!path.IsEmpty)
         {
-            OnDrawPath(path, null, paint);
+            OnDrawPath(path, null, run.Font.Edging == FontEdging.Alias && paint.Antialias ? paint with { Antialias = false } : paint);
         }
     }
 

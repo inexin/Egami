@@ -225,6 +225,26 @@ public sealed partial class Typeface
     /// <returns>The adjustment to the first glyph's advance, usually negative; 0 when the pair is not kerned.</returns>
     public float GetKerning(ushort left, ushort right) => Kerning.Get(left, right);
 
+    /// <summary>The exact box of a glyph's outline slanted by x += <paramref name="skew"/> times y, in font units.</summary>
+    internal GlyphExtents GetSkewedExtents(ushort glyph, float skew)
+    {
+        OutlineRecorder recorder = OutlineRecorder.Take();
+        try
+        {
+            if (!TryRecordOutline(glyph, recorder))
+            {
+                return GlyphExtents.Empty;
+            }
+
+            recorder.Skew(skew);
+            return recorder.ComputeBounds();
+        }
+        finally
+        {
+            recorder.Release();
+        }
+    }
+
     internal bool TryRecordOutline(int glyph, OutlineRecorder recorder)
     {
         if ((uint)glyph >= (uint)GlyphCount)

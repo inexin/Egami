@@ -31,6 +31,28 @@ public enum PointMode
     Polygon = 2,
 }
 
+/// <summary>The order of a display's color subpixels, which LCD text edging needs to know.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="quality"/>
+/// </example>
+public enum PixelGeometry
+{
+    /// <summary>Not known: LCD edging falls back to grayscale.</summary>
+    Unknown,
+
+    /// <summary>Red, green and blue stripes from left to right, the common LCD layout.</summary>
+    RgbHorizontal,
+
+    /// <summary>Blue, green and red stripes from left to right.</summary>
+    BgrHorizontal,
+
+    /// <summary>Red, green and blue stripes from top to bottom, as on a rotated display.</summary>
+    RgbVertical,
+
+    /// <summary>Blue, green and red stripes from top to bottom.</summary>
+    BgrVertical,
+}
+
 /// <summary>Settings for a raster canvas.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="canvas"/>
@@ -42,6 +64,7 @@ public sealed record class CanvasOptions
     internal const float DefaultTolerance = 0.1f;
 
     private readonly float _tolerance = DefaultTolerance;
+    private readonly PixelGeometry _pixelGeometry;
 
     /// <summary>Gets the options every canvas starts with.</summary>
     public static CanvasOptions Default { get; } = new();
@@ -56,6 +79,17 @@ public sealed record class CanvasOptions
     {
         get => _colorSpace;
         init => _colorSpace = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>
+    /// Gets the subpixel order of the display the image is for, which <see cref="Fonts.FontEdging.Lcd"/> text needs. Defaults to
+    /// <see cref="PixelGeometry.Unknown"/>, which draws LCD-edged text in grayscale.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public PixelGeometry PixelGeometry
+    {
+        get => _pixelGeometry;
+        init => _pixelGeometry = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
     }
 
     /// <summary>

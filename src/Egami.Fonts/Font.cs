@@ -34,6 +34,10 @@ public readonly record struct Font
 {
     private readonly bool _noKerning;
     private readonly bool _noOpticalSizing;
+    private readonly bool _noSubpixel;
+    private readonly bool _noSynthesis;
+    private readonly FontHinting _hinting;
+    private readonly FontEdging _edging;
 
     /// <summary>Initializes a font.</summary>
     /// <param name="typeface">The face.</param>
@@ -61,8 +65,40 @@ public readonly record struct Font
     /// <summary>Gets whether pair kerning is applied when shaping. Defaults to true.</summary>
     public bool Kerning { get => !_noKerning; init => _noKerning = !value; }
 
-    /// <summary>Gets the styling the face lacks and matching asked for; recorded in 2.7.1, drawn from 2.7.2 on.</summary>
+    /// <summary>
+    /// Gets the styling the face lacks and matching asked for: bold outsets the outline (em/24 at 9 pixels per em down to em/32 at
+    /// 36 and above, advances unchanged) and italic slants it 14 degrees. Drawn, measured as ink and returned by glyph paths unless
+    /// <see cref="AllowSynthesis"/> is off.
+    /// </summary>
     public FontSynthesis Synthesis { get; init; }
+
+    /// <summary>Gets whether <see cref="Synthesis"/> is applied. Defaults to true.</summary>
+    public bool AllowSynthesis { get => !_noSynthesis; init => _noSynthesis = !value; }
+
+    /// <summary>Gets how outlines are fitted to the pixel grid on a raster. Defaults to <see cref="FontHinting.None"/>.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public FontHinting Hinting
+    {
+        get => _hinting;
+        init => _hinting = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>
+    /// Gets whether glyph origins keep quarter-pixel x positions on a raster (four cached phases; y snaps to whole pixels), or
+    /// snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on it.
+    /// </summary>
+    public bool Subpixel { get => !_noSubpixel; init => _noSubpixel = !value; }
+
+    /// <summary>Gets how glyph edges become pixels on a raster. Defaults to <see cref="FontEdging.Antialias"/>.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public FontEdging Edging
+    {
+        get => _edging;
+        init => _edging = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
+
+    /// <summary>Gets the synthesis drawn: <see cref="Synthesis"/>, or none when <see cref="AllowSynthesis"/> is off.</summary>
+    internal FontSynthesis AppliedSynthesis => _noSynthesis ? FontSynthesis.None : Synthesis;
 
     /// <summary>
     /// Gets whether a variable face's optical size axis follows <see cref="Size"/>: <see cref="Fonts.OpticalSizing.Auto"/> (the
@@ -120,10 +156,27 @@ public readonly record struct Font
     /// <returns>The advance in canvas units.</returns>
     public float GetAdvance(ushort glyph) => Face.GetAdvance(glyph) * Scale;
 
-    /// <summary>Gets the box around a glyph's ink at this size, y up from the baseline.</summary>
+    /// <summary>Gets the box around a glyph's ink at this size, y up from the baseline, synthetic bold and italic included.</summary>
     /// <param name="glyph">The glyph id.</param>
     /// <returns>The box in canvas units.</returns>
-    public GlyphExtents GetGlyphExtents(ushort glyph) => Face.GetGlyphExtents(glyph).Scale(Scale);
+    public GlyphExtents GetGlyphExtents(ushort glyph)
+    {
+        FontSynthesis synthesis = AppliedSynthesis;
+        if (synthesis == FontSynthesis.None)
+        {
+            return Face.GetGlyphExtents(glyph).Scale(Scale);
+        }
+
+        GlyphExtents e = (synthesis & FontSynthesis.Italic) != 0 ? Face.GetSkewedExtents(glyph, Fonts.Synthesis.Skew) : Face.GetGlyphExtents(glyph);
+        e = e.Scale(Scale);
+        if ((synthesis & FontSynthesis.Bold) != 0 && !e.IsEmpty)
+        {
+            float d = Fonts.Synthesis.BoldOutset(Size);
+            e = new GlyphExtents(e.XMin - d, e.YMin - d, e.XMax + d, e.YMax + d);
+        }
+
+        return e;
+    }
 
     /// <summary>
     /// Turns text into a glyph run, the 2.7.1 way: one glyph per code point through the character map (variation selectors and

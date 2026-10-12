@@ -10,6 +10,10 @@ Egami.Fonts.CffOptions.UnitsPerEm.init -> void
 Egami.Fonts.CffOptions.Widths.get -> System.Collections.Generic.IReadOnlyList<float>?
 Egami.Fonts.CffOptions.Widths.init -> void
 Egami.Fonts.Font
+Egami.Fonts.Font.AllowSynthesis.get -> bool
+Egami.Fonts.Font.AllowSynthesis.init -> void
+Egami.Fonts.Font.Edging.get -> Egami.Fonts.FontEdging
+Egami.Fonts.Font.Edging.init -> void
 Egami.Fonts.Font.EffectiveTypeface.get -> Egami.Fonts.Typeface!
 Egami.Fonts.Font.Equals(Egami.Fonts.Font other) -> bool
 Egami.Fonts.Font.Extents.get -> Egami.Fonts.FontExtents
@@ -17,6 +21,8 @@ Egami.Fonts.Font.Font() -> void
 Egami.Fonts.Font.Font(Egami.Fonts.Typeface! typeface, float size) -> void
 Egami.Fonts.Font.GetAdvance(ushort glyph) -> float
 Egami.Fonts.Font.GetGlyphExtents(ushort glyph) -> Egami.Fonts.GlyphExtents
+Egami.Fonts.Font.Hinting.get -> Egami.Fonts.FontHinting
+Egami.Fonts.Font.Hinting.init -> void
 Egami.Fonts.Font.Kerning.get -> bool
 Egami.Fonts.Font.Kerning.init -> void
 Egami.Fonts.Font.LineHeight.get -> float
@@ -26,6 +32,8 @@ Egami.Fonts.Font.OpticalSizing.init -> void
 Egami.Fonts.Font.Scale.get -> float
 Egami.Fonts.Font.Shape(string! text) -> Egami.Fonts.GlyphRun!
 Egami.Fonts.Font.Size.get -> float
+Egami.Fonts.Font.Subpixel.get -> bool
+Egami.Fonts.Font.Subpixel.init -> void
 Egami.Fonts.Font.Synthesis.get -> Egami.Fonts.FontSynthesis
 Egami.Fonts.Font.Synthesis.init -> void
 Egami.Fonts.Font.Typeface.get -> Egami.Fonts.Typeface!
@@ -43,6 +51,10 @@ Egami.Fonts.FontCollection.MatchTypeface(string! familyName, Egami.Fonts.FontSty
 Egami.Fonts.FontCollection.Options.get -> Egami.Fonts.FontLoadOptions!
 Egami.Fonts.FontCollection.Refresh() -> void
 Egami.Fonts.FontCollection.TryGetFamily(string! name, out Egami.Fonts.FontFamily! family) -> bool
+Egami.Fonts.FontEdging
+Egami.Fonts.FontEdging.Alias = 1 -> Egami.Fonts.FontEdging
+Egami.Fonts.FontEdging.Antialias = 0 -> Egami.Fonts.FontEdging
+Egami.Fonts.FontEdging.Lcd = 2 -> Egami.Fonts.FontEdging
 Egami.Fonts.FontEmbedding
 Egami.Fonts.FontEmbedding.BitmapOnly = 512 -> Egami.Fonts.FontEmbedding
 Egami.Fonts.FontEmbedding.Editable = 8 -> Egami.Fonts.FontEmbedding
@@ -91,6 +103,9 @@ Egami.Fonts.FontFileKind.Sfnt = 1 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Unknown = 0 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Woff = 4 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Woff2 = 5 -> Egami.Fonts.FontFileKind
+Egami.Fonts.FontHinting
+Egami.Fonts.FontHinting.Light = 1 -> Egami.Fonts.FontHinting
+Egami.Fonts.FontHinting.None = 0 -> Egami.Fonts.FontHinting
 Egami.Fonts.FontLoader
 Egami.Fonts.FontLoadOptions
 Egami.Fonts.FontLoadOptions.<Clone>$() -> Egami.Fonts.FontLoadOptions!

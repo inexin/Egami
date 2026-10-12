@@ -86,6 +86,8 @@ Egami.Drawing.CanvasOptions.CanvasOptions() -> void
 Egami.Drawing.CanvasOptions.ColorSpace.get -> Egami.Operations.ColorSpace
 Egami.Drawing.CanvasOptions.ColorSpace.init -> void
 Egami.Drawing.CanvasOptions.Equals(Egami.Drawing.CanvasOptions? other) -> bool
+Egami.Drawing.CanvasOptions.PixelGeometry.get -> Egami.Drawing.PixelGeometry
+Egami.Drawing.CanvasOptions.PixelGeometry.init -> void
 Egami.Drawing.CanvasOptions.Tolerance.get -> float
 Egami.Drawing.CanvasOptions.Tolerance.init -> void
 Egami.Drawing.ClipOp
@@ -424,6 +426,12 @@ Egami.Drawing.PathVerb.Cubic = 3 -> Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Line = 1 -> Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Move = 0 -> Egami.Drawing.PathVerb
 Egami.Drawing.PathVerb.Quad = 2 -> Egami.Drawing.PathVerb
+Egami.Drawing.PixelGeometry
+Egami.Drawing.PixelGeometry.BgrHorizontal = 2 -> Egami.Drawing.PixelGeometry
+Egami.Drawing.PixelGeometry.BgrVertical = 4 -> Egami.Drawing.PixelGeometry
+Egami.Drawing.PixelGeometry.RgbHorizontal = 1 -> Egami.Drawing.PixelGeometry
+Egami.Drawing.PixelGeometry.RgbVertical = 3 -> Egami.Drawing.PixelGeometry
+Egami.Drawing.PixelGeometry.Unknown = 0 -> Egami.Drawing.PixelGeometry
 Egami.Drawing.PointMode
 Egami.Drawing.PointMode.Lines = 1 -> Egami.Drawing.PointMode
 Egami.Drawing.PointMode.Points = 0 -> Egami.Drawing.PointMode

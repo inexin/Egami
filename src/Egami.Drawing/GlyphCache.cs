@@ -5,10 +5,11 @@ using Egami.Fonts;
 namespace Egami.Drawing;
 
 /// <summary>
-/// The process-wide cache of glyph coverage masks the raster canvas draws small text from: one 8-bit mask per typeface, glyph,
-/// device em size, axis scales and antialiasing, for glyphs up to 256 device pixels per em under a scale-and-translate transform.
-/// Bigger, rotated or skewed glyphs fill as paths and are not cached. Masks are rendered by the same rasterizer as paths and drawn at
-/// whole device pixels, so the cache changes speed, never pixels. Shared by every canvas on every thread; least recently used masks
+/// The process-wide cache of glyph coverage masks the raster canvas draws small text from: one mask per typeface (each variation
+/// position its own), glyph, device em size, axis scales, subpixel phase, edging, hinting and synthesis, for glyphs up to 256
+/// device pixels per em under a scale-and-translate transform. Masks hold one byte per pixel, or three for LCD edging. Bigger,
+/// rotated or skewed glyphs fill as paths and are not cached. Masks are rendered by the same rasterizer as paths and drawn at the
+/// same rounded positions either way, so the cache changes speed, never pixels. Shared by every canvas on every thread; least recently used masks
 /// go first when the budget is spent.
 /// </summary>
 /// <example>
@@ -147,20 +148,25 @@ public static class GlyphCache
 }
 
 /// <summary>What a cached glyph mask depends on. The typeface compares by reference.</summary>
-internal readonly record struct GlyphKey(Typeface Face, ushort Glyph, float EmX, float EmY, bool Antialias)
+internal readonly record struct GlyphKey(Typeface Face, ushort Glyph, float EmX, float EmY, GlyphStyle Style, int Phase)
 {
     public bool Equals(GlyphKey other)
-        => ReferenceEquals(Face, other.Face) && Glyph == other.Glyph && EmX == other.EmX && EmY == other.EmY && Antialias == other.Antialias;
+        => ReferenceEquals(Face, other.Face) && Glyph == other.Glyph && EmX == other.EmX && EmY == other.EmY && Style == other.Style && Phase == other.Phase;
 
-    public override int GetHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(Face), Glyph, EmX, EmY, Antialias);
+    public override int GetHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(Face), Glyph, EmX, EmY, Style, Phase);
 }
 
-/// <summary>A glyph's coverage over whole device pixels, relative to its origin snapped to a pixel corner.</summary>
-internal sealed class GlyphMask(Rect bounds, byte[] coverage)
+/// <summary>
+/// A glyph's coverage over whole device pixels, relative to its origin snapped to a pixel corner: one byte per pixel, or three
+/// (red, green, blue) for LCD edging.
+/// </summary>
+internal sealed class GlyphMask(Rect bounds, byte[] coverage, int channels)
 {
-    public static readonly GlyphMask Empty = new(default, []);
+    public static readonly GlyphMask Empty = new(default, [], 1);
 
     public Rect Bounds { get; } = bounds;
 
     public byte[] Coverage { get; } = coverage;
+
+    public int Channels { get; } = channels;
 }

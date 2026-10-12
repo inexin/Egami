@@ -10,17 +10,24 @@ namespace Egami.Drawing;
 /// </example>
 public static class FontExtensions
 {
-    /// <summary>Gets a glyph's outline at the font's size, with the glyph's origin at (0, 0) on the baseline, y down.</summary>
+    /// <summary>
+    /// Gets a glyph's outline at the font's size, with the glyph's origin at (0, 0) on the baseline, y down: slanted 14 degrees
+    /// for synthetic italic and outset for synthetic bold when <see cref="Font.Synthesis"/> asks and <see cref="Font.AllowSynthesis"/>
+    /// allows.
+    /// </summary>
     /// <param name="font">The font.</param>
     /// <param name="glyph">The glyph id.</param>
     /// <returns>The outline; empty for a glyph without ink.</returns>
     public static Path GetGlyphPath(this Font font, ushort glyph)
     {
-        Typeface face = font.Typeface is null ? throw new ArgumentException("The font has no typeface.", nameof(font)) : font.EffectiveTypeface;
+        if (font.Typeface is null)
+        {
+            throw new ArgumentException("The font has no typeface.", nameof(font));
+        }
+
         var builder = new PathBuilder();
-        var sink = new PathSink(builder, font.Scale, 0, 0);
-        face.GetGlyphOutline(glyph, sink);
-        return builder.ToPath();
+        AddGlyph(builder, font, font.EffectiveTypeface, glyph, Vector2.Zero);
+        return Synthesize(builder.ToPath(), font);
     }
 
     /// <summary>Gets the outline of a line of text as <see cref="Canvas.DrawText(string, Vector2, Font, Paint)"/> lays it out.</summary>
@@ -39,7 +46,10 @@ public static class FontExtensions
         return font.Shape(text).ToPath(origin);
     }
 
-    /// <summary>Gets the outline of every glyph of a run, placed at its position relative to <paramref name="origin"/>.</summary>
+    /// <summary>
+    /// Gets the outline of every glyph of a run, placed at its position relative to <paramref name="origin"/>, with the font's
+    /// synthetic bold and italic.
+    /// </summary>
     /// <param name="run">The run.</param>
     /// <param name="origin">Where the run's origin goes.</param>
     /// <returns>The outline, in one path.</returns>
@@ -53,33 +63,43 @@ public static class FontExtensions
         ReadOnlySpan<Vector2> positions = run.Positions;
         for (int i = 0; i < glyphs.Length; i++)
         {
-            Vector2 at = origin + positions[i];
-            face.GetGlyphOutline(glyphs[i], new PathSink(builder, font.Scale, at.X, at.Y));
+            AddGlyph(builder, font, face, glyphs[i], origin + positions[i]);
         }
 
-        return builder.ToPath();
+        return Synthesize(builder.ToPath(), font);
     }
+
+    // A glyph's outline at a position, slanted for synthetic italic about its own baseline origin.
+    private static void AddGlyph(PathBuilder builder, Font font, Typeface face, ushort glyph, Vector2 at)
+    {
+        float skew = (font.AppliedSynthesis & FontSynthesis.Italic) != 0 ? Synthesis.Skew : 0;
+        face.GetGlyphOutline(glyph, new PathSink(builder, font.Scale, at.X, at.Y, skew));
+    }
+
+    // Synthetic bold outsets the whole outline with round joins, by em/24 at 9 units per em down to em/32 at 36 and above.
+    private static Path Synthesize(Path path, Font font)
+        => (font.AppliedSynthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty ? path.Offset(Synthesis.BoldOutset(font.Size)) : path;
 
     /// <summary>Converts text bounds to a rectangle.</summary>
     /// <param name="bounds">The bounds.</param>
     /// <returns>The rectangle.</returns>
     public static RectF ToRectF(this TextBounds bounds) => RectF.FromEdges(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
 
-    /// <summary>Scales font units, flips y and moves the origin while building a path.</summary>
-    private sealed class PathSink(PathBuilder builder, float scale, float x, float y) : IGlyphOutlineSink
+    /// <summary>Scales font units, slants, flips y and moves the origin while building a path.</summary>
+    private sealed class PathSink(PathBuilder builder, float scale, float x, float y, float skew = 0) : IGlyphOutlineSink
     {
-        public void MoveTo(float px, float py) => builder.MoveTo(X(px), Y(py));
+        public void MoveTo(float px, float py) => builder.MoveTo(X(px, py), Y(py));
 
-        public void LineTo(float px, float py) => builder.LineTo(X(px), Y(py));
+        public void LineTo(float px, float py) => builder.LineTo(X(px, py), Y(py));
 
-        public void QuadTo(float cx, float cy, float px, float py) => builder.QuadTo(X(cx), Y(cy), X(px), Y(py));
+        public void QuadTo(float cx, float cy, float px, float py) => builder.QuadTo(X(cx, cy), Y(cy), X(px, py), Y(py));
 
         public void CubicTo(float c1x, float c1y, float c2x, float c2y, float px, float py)
-            => builder.CubicTo(X(c1x), Y(c1y), X(c2x), Y(c2y), X(px), Y(py));
+            => builder.CubicTo(X(c1x, c1y), Y(c1y), X(c2x, c2y), Y(c2y), X(px, py), Y(py));
 
         public void Close() => builder.Close();
 
-        private float X(float v) => x + (v * scale);
+        private float X(float vx, float vy) => x + ((vx + (skew * vy)) * scale);
 
         private float Y(float v) => y - (v * scale);
     }

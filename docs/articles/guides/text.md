@@ -87,6 +87,27 @@ points at a resolution. `Canvas.DrawText` puts the left end of the first line's 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cache)]
 
+## Rendering quality
+
+Four switches on a `Font` change how a raster draws it, never how it measures: `MeasureText` gives the same numbers whatever they
+are.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#quality)]
+
+- `Font.Subpixel` (on by default) keeps glyph origins at quarter pixels horizontally, each quarter its own cached mask, so small
+  text is evenly spaced; off, origins snap to whole pixels as in 2.7.1. Vertical positions always snap to whole pixels.
+- `Font.Hinting` = `FontHinting.Light` snaps the baseline, x-height and cap-height zones (a CFF font's blue zones, else zones
+  measured from the face's own glyphs) to whole pixels, up to 48 pixels per em; x values and advances never move. There is no
+  TrueType bytecode hinting.
+- `Font.Edging` picks `FontEdging.Antialias` (the default), `Alias` (one bit, pixel centres inside the outline) or `Lcd`: three
+  samples per pixel along the canvas's `CanvasOptions.PixelGeometry`, filtered and blended per channel. LCD text draws only onto
+  an 8-bit RGB canvas outside layers with a solid source-over paint; anything else falls back to grayscale with one
+  `Text.LcdFallback` diagnostic per canvas. Images that leave the screen they were made for carry the colour fringes with them,
+  so LCD is opt-in.
+- `Font.Synthesis` (set by matching) is drawn: bold outsets the outline by em/24 at 9 pixels down to em/32 at 36 and above,
+  advances unchanged, and italic slants 14 degrees, CSS's default oblique. Glyph paths and ink bounds include it;
+  `Font.AllowSynthesis = false` turns it off.
+
 ## Measuring
 
 `Font.MeasureText` lays text out exactly as `DrawText` does and returns a `TextMeasure`: the widest line's advance, the exact ink

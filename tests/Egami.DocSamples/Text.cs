@@ -88,6 +88,35 @@ public class Text
     }
 
     [Fact]
+    public void RenderingQuality()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        using Raster<Rgba8> image = Raster.Create(300, 60, Rgba8.White);
+
+        #region quality
+        // Small text for a screen: light hinting (vertical only), quarter-pixel origins (the default) and, for an RGB display
+        // the image will not leave, LCD edging.
+        var screen = new Font(face, 13) { Hinting = FontHinting.Light, Edging = FontEdging.Lcd };
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas(new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal }))
+        {
+            canvas.DrawText("Crisp caption", new Vector2(8, 24), screen, Rgba8.Black);
+
+            // A face matched for bold italic it lacks is emboldened and slanted, unless AllowSynthesis is off.
+            var synthetic = new Font(face, 13) { Synthesis = FontSynthesis.Bold | FontSynthesis.Italic };
+            canvas.DrawText("Synthetic bold italic", new Vector2(8, 48), synthetic, Rgba8.Black);
+        }
+        #endregion
+
+        int inked = 0;
+        for (int x = 0; x < image.Width; x++)
+        {
+            inked += image.GetPixel(x, 20) != Rgba8.White ? 1 : 0;
+        }
+
+        Assert.True(inked > 10);
+    }
+
+    [Fact]
     public void GlyphsAndMetrics()
     {
         Typeface face = Typeface.FromFile(FontFile);
