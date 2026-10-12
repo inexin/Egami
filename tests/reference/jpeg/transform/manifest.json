@@ -1,0 +1,4372 @@
+{
+ "tools": "libjpeg-turbo version 3.0.3 (build 20240509); ImageMagick; alpine:3.20",
+ "entries": [
+  {
+   "source": "t420.jpg",
+   "result": "t420.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "result": "t440.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t440.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "result": "t411.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t411.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "result": "tari.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "result": "tari-prog.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tari-prog.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "result": "t420-whole.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "t420-whole.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.none.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal-trim.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.flipvertical.jpg",
+   "operation": "FlipVertical",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.flipvertical-trim.jpg",
+   "operation": "FlipVertical",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "FlipVertical",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90-trim.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "Rotate90",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180-trim.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "Rotate180",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate270.jpg",
+   "operation": "Rotate270",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate270-trim.jpg",
+   "operation": "Rotate270",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "Rotate270",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transpose.jpg",
+   "operation": "Transpose",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transpose-trim.jpg",
+   "operation": "Transpose",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "Transpose",
+   "edges": "Strict",
+   "perfect": true
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse-trim.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "operation": "Transverse",
+   "edges": "Strict",
+   "perfect": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.none-crop22x14+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.none-crop22x14+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.none-crop22x14+23+15.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.none-trim-crop22x14+23+15.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.none-trim-crop2x3+43+26.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal-crop22x14+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal-crop22x14+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal-crop22x14+23+15.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal-trim-crop22x14+23+15.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.fliphorizontal-trim-crop2x3+43+26.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-crop14x22+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-crop14x22+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-crop14x22+15+23.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-trim-crop14x22+15+23.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-trim-crop2x3+27+42.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    27,
+    42,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180-crop22x14+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180-crop22x14+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180-crop22x14+23+15.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180-trim-crop22x14+23+15.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate180-trim-crop2x3+43+26.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-crop14x22+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-crop14x22+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-crop14x22+15+23.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-trim-crop14x22+15+23.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-trim-crop2x3+27+42.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    27,
+    42,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none-crop21x13+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none-crop21x13+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none-crop21x13+22+14.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    22,
+    14,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none-trim-crop21x13+22+14.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    22,
+    14,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none-trim-crop2x3+41+24.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    41,
+    24,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal-crop21x13+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal-crop21x13+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal-crop21x13+22+14.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    22,
+    14,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal-trim-crop21x13+22+14.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    22,
+    14,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.fliphorizontal-trim-crop2x3+41+24.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    41,
+    24,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-crop13x21+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-crop13x21+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-crop13x21+14+22.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    14,
+    22,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-trim-crop13x21+14+22.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    14,
+    22,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-trim-crop2x3+25+40.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    25,
+    40,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180-crop21x13+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180-crop21x13+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180-crop21x13+22+14.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    22,
+    14,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180-trim-crop21x13+22+14.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    22,
+    14,
+    21,
+    13
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate180-trim-crop2x3+41+24.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    41,
+    24,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-crop13x21+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-crop13x21+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-crop13x21+14+22.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    14,
+    22,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-trim-crop13x21+14+22.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    14,
+    22,
+    13,
+    21
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-trim-crop2x3+25+40.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    25,
+    40,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.none-crop17x9+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.none-crop17x9+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.none-crop17x9+18+10.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    18,
+    10,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.none-trim-crop17x9+18+10.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    18,
+    10,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.none-trim-crop2x3+33+16.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    33,
+    16,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal-crop17x9+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal-crop17x9+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal-crop17x9+18+10.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    18,
+    10,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal-trim-crop17x9+18+10.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    18,
+    10,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.fliphorizontal-trim-crop2x3+33+16.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    33,
+    16,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90-crop9x17+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90-crop9x17+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90-crop9x17+10+18.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    10,
+    18,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90-trim-crop9x17+10+18.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    10,
+    18,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate90-trim-crop2x3+17+32.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    17,
+    32,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180-crop17x9+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180-crop17x9+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180-crop17x9+18+10.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    18,
+    10,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180-trim-crop17x9+18+10.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    18,
+    10,
+    17,
+    9
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.rotate180-trim-crop2x3+33+16.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    33,
+    16,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse-crop9x17+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse-crop9x17+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse-crop9x17+10+18.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    10,
+    18,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse-trim-crop9x17+10+18.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    10,
+    18,
+    9,
+    17
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t444.jpg",
+   "result": "t444.transverse-trim-crop2x3+17+32.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    17,
+    32,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.none-crop14x10+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.none-crop14x10+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.none-crop14x10+15+11.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    15,
+    11,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.none-trim-crop14x10+15+11.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    15,
+    11,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.none-trim-crop2x3+27+18.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    27,
+    18,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal-crop14x10+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal-crop14x10+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal-crop14x10+15+11.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    15,
+    11,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal-trim-crop14x10+15+11.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    15,
+    11,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.fliphorizontal-trim-crop2x3+27+18.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    27,
+    18,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90-crop10x14+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90-crop10x14+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90-crop10x14+11+15.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    11,
+    15,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90-trim-crop10x14+11+15.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    11,
+    15,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate90-trim-crop2x3+19+26.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    19,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180-crop14x10+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180-crop14x10+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180-crop14x10+15+11.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    15,
+    11,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180-trim-crop14x10+15+11.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    15,
+    11,
+    14,
+    10
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.rotate180-trim-crop2x3+27+18.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    27,
+    18,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse-crop10x14+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse-crop10x14+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse-crop10x14+11+15.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    11,
+    15,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse-trim-crop10x14+11+15.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    11,
+    15,
+    10,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tgray.jpg",
+   "result": "tgray.transverse-trim-crop2x3+19+26.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    19,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none-crop22x14+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none-crop22x14+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none-crop22x14+23+15.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none-trim-crop22x14+23+15.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none-trim-crop2x3+43+26.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal-crop22x14+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal-crop22x14+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal-crop22x14+23+15.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal-trim-crop22x14+23+15.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.fliphorizontal-trim-crop2x3+43+26.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-crop14x22+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-crop14x22+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-crop14x22+15+23.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-trim-crop14x22+15+23.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-trim-crop2x3+27+42.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    27,
+    42,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180-crop22x14+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180-crop22x14+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180-crop22x14+23+15.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180-trim-crop22x14+23+15.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate180-trim-crop2x3+43+26.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-crop14x22+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-crop14x22+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-crop14x22+15+23.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-trim-crop14x22+15+23.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-trim-crop2x3+27+42.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    27,
+    42,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none-crop22x14+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none-crop22x14+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none-crop22x14+23+15.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none-trim-crop22x14+23+15.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none-trim-crop2x3+43+26.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal-crop22x14+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal-crop22x14+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal-crop22x14+23+15.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal-trim-crop22x14+23+15.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.fliphorizontal-trim-crop2x3+43+26.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-crop14x22+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-crop14x22+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-crop14x22+15+23.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-trim-crop14x22+15+23.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-trim-crop2x3+27+42.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    27,
+    42,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180-crop22x14+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180-crop22x14+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180-crop22x14+23+15.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180-trim-crop22x14+23+15.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    23,
+    15,
+    22,
+    14
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate180-trim-crop2x3+43+26.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    43,
+    26,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-crop14x22+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-crop14x22+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-crop14x22+15+23.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-trim-crop14x22+15+23.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    15,
+    23,
+    14,
+    22
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-trim-crop2x3+27+42.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    27,
+    42,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.none-crop18x11+0+0.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.none-crop18x11+5+3.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.none-crop18x11+19+12.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": [
+    19,
+    12,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.none-trim-crop18x11+19+12.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    19,
+    12,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.none-trim-crop2x3+35+20.jpg",
+   "operation": "None",
+   "edges": "Trim",
+   "crop": [
+    35,
+    20,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal-crop18x11+0+0.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal-crop18x11+5+3.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal-crop18x11+19+12.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Keep",
+   "crop": [
+    19,
+    12,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal-trim-crop18x11+19+12.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    19,
+    12,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.fliphorizontal-trim-crop2x3+35+20.jpg",
+   "operation": "FlipHorizontal",
+   "edges": "Trim",
+   "crop": [
+    35,
+    20,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90-crop11x18+0+0.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90-crop11x18+5+3.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90-crop11x18+12+19.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": [
+    12,
+    19,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90-trim-crop11x18+12+19.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    12,
+    19,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate90-trim-crop2x3+21+34.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": [
+    21,
+    34,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180-crop18x11+0+0.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180-crop18x11+5+3.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180-crop18x11+19+12.jpg",
+   "operation": "Rotate180",
+   "edges": "Keep",
+   "crop": [
+    19,
+    12,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180-trim-crop18x11+19+12.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    19,
+    12,
+    18,
+    11
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.rotate180-trim-crop2x3+35+20.jpg",
+   "operation": "Rotate180",
+   "edges": "Trim",
+   "crop": [
+    35,
+    20,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse-crop11x18+0+0.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    0,
+    0,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse-crop11x18+5+3.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    5,
+    3,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse-crop11x18+12+19.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    12,
+    19,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse-trim-crop11x18+12+19.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    12,
+    19,
+    11,
+    18
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "tcmyk.jpg",
+   "result": "tcmyk.transverse-trim-crop2x3+21+34.jpg",
+   "operation": "Transverse",
+   "edges": "Trim",
+   "crop": [
+    21,
+    34,
+    2,
+    3
+   ],
+   "grayscale": false
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.none-gray.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.rotate90-trim-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t420.jpg",
+   "result": "t420.transverse-gray-crop20x15+3+4.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    3,
+    4,
+    20,
+    15
+   ],
+   "grayscale": true
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.none-gray.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.rotate90-trim-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t422.jpg",
+   "result": "t422.transverse-gray-crop20x15+3+4.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    3,
+    4,
+    20,
+    15
+   ],
+   "grayscale": true
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.none-gray.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.rotate90-trim-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "tprog.jpg",
+   "result": "tprog.transverse-gray-crop20x15+3+4.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    3,
+    4,
+    20,
+    15
+   ],
+   "grayscale": true
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.none-gray.jpg",
+   "operation": "None",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Keep",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.rotate90-trim-gray.jpg",
+   "operation": "Rotate90",
+   "edges": "Trim",
+   "crop": null,
+   "grayscale": true
+  },
+  {
+   "source": "t12.jpg",
+   "result": "t12.transverse-gray-crop20x15+3+4.jpg",
+   "operation": "Transverse",
+   "edges": "Keep",
+   "crop": [
+    3,
+    4,
+    20,
+    15
+   ],
+   "grayscale": true
+  }
+ ]
+}

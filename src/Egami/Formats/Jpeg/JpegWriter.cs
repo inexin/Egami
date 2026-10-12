@@ -143,7 +143,8 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
         }
     }
 
-    private static void Segment(JpegBitWriter writer, byte marker, ReadOnlySpan<byte> payload)
+    /// <summary>Writes a segment: the marker, then the payload behind its length.</summary>
+    internal static void Segment(JpegBitWriter writer, byte marker, ReadOnlySpan<byte> payload)
     {
         writer.Marker(marker);
         Span<byte> length = stackalloc byte[2];

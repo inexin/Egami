@@ -455,6 +455,41 @@ Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.get -> System.ReadOnlyMemory<b
 Egami.Formats.Jpeg.JpegDetails.PhotoshopResources.set -> void
 Egami.Formats.Jpeg.JpegDetails.Precision.get -> int
 Egami.Formats.Jpeg.JpegDetails.Precision.set -> void
+Egami.Formats.Jpeg.JpegTransform
+Egami.Formats.Jpeg.JpegTransformEdges
+Egami.Formats.Jpeg.JpegTransformEdges.Keep = 2 -> Egami.Formats.Jpeg.JpegTransformEdges
+Egami.Formats.Jpeg.JpegTransformEdges.Strict = 1 -> Egami.Formats.Jpeg.JpegTransformEdges
+Egami.Formats.Jpeg.JpegTransformEdges.Trim = 0 -> Egami.Formats.Jpeg.JpegTransformEdges
+Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.AutoOrient = 8 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.FlipHorizontal = 1 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.FlipVertical = 2 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.None = 0 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.Rotate180 = 4 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.Rotate270 = 5 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.Rotate90 = 3 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.Transpose = 6 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOperation.Transverse = 7 -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOptions
+Egami.Formats.Jpeg.JpegTransformOptions.CopyMetadata.get -> bool
+Egami.Formats.Jpeg.JpegTransformOptions.CopyMetadata.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Crop.get -> Egami.Rect?
+Egami.Formats.Jpeg.JpegTransformOptions.Crop.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Edges.get -> Egami.Formats.Jpeg.JpegTransformEdges
+Egami.Formats.Jpeg.JpegTransformOptions.Edges.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Grayscale.get -> bool
+Egami.Formats.Jpeg.JpegTransformOptions.Grayscale.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.JpegTransformOptions() -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Operation.get -> Egami.Formats.Jpeg.JpegTransformOperation
+Egami.Formats.Jpeg.JpegTransformOptions.Operation.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.OptimizeHuffman.get -> bool
+Egami.Formats.Jpeg.JpegTransformOptions.OptimizeHuffman.init -> void
+Egami.Formats.Jpeg.JpegTransformOptions.Progressive.get -> bool
+Egami.Formats.Jpeg.JpegTransformOptions.Progressive.init -> void
+Egami.Formats.Jpeg.JpegTransformResult
+Egami.Formats.Jpeg.JpegTransformResult.Height.get -> int
+Egami.Formats.Jpeg.JpegTransformResult.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
+Egami.Formats.Jpeg.JpegTransformResult.Width.get -> int
 Egami.Formats.Jpeg.JpegWriterOptions.Precision.get -> int
 Egami.Formats.Jpeg.JpegWriterOptions.Precision.init -> void
 Egami.Formats.Jpeg.JpegWriterOptions.Progressive.get -> bool
@@ -1990,6 +2025,9 @@ static Egami.Formats.Jbig2.Jbig2Format.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jbig2.Jbig2Globals.Parse(System.ReadOnlySpan<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Jbig2.Jbig2Globals!
 static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator !=(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
 static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator ==(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
+static Egami.Formats.Jpeg.JpegTransform.Apply(string! sourcePath, string! destinationPath, Egami.Formats.Jpeg.JpegTransformOptions! options, Egami.EgamiContext? context = null) -> Egami.Formats.Jpeg.JpegTransformResult!
+static Egami.Formats.Jpeg.JpegTransform.Apply(System.IO.Stream! source, System.IO.Stream! destination, Egami.Formats.Jpeg.JpegTransformOptions! options, Egami.EgamiContext? context = null) -> Egami.Formats.Jpeg.JpegTransformResult!
+static Egami.Formats.Jpeg.JpegTransformOptions.Default.get -> Egami.Formats.Jpeg.JpegTransformOptions!
 static Egami.Formats.Jpeg2000.Jpeg2000Channel.operator !=(Egami.Formats.Jpeg2000.Jpeg2000Channel left, Egami.Formats.Jpeg2000.Jpeg2000Channel right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000Channel.operator ==(Egami.Formats.Jpeg2000.Jpeg2000Channel left, Egami.Formats.Jpeg2000.Jpeg2000Channel right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000Component.operator !=(Egami.Formats.Jpeg2000.Jpeg2000Component left, Egami.Formats.Jpeg2000.Jpeg2000Component right) -> bool

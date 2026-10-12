@@ -135,6 +135,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jpeg.RestartResync` | Warning | A restart marker is missing or out of order; decoding picked up at the next one |
 | `Jpeg.SegmentTruncated` | Warning | A segment between scans is cut off |
 | `Jpeg.StrayBytes` | Warning | Stray bytes between segments after a scan were skipped |
+| `Jpeg.ThumbnailDropped` | Warning | A lossless transform could not turn the EXIF thumbnail with the image (it is not a JPEG, or is damaged); it was left out |
 | `Jpeg2000.ChannelsDropped` | Warning | Channels that are neither color nor alpha (by the channel definitions, or beyond the color space's count) were not loaded |
 | `Jpeg2000.ExtraCodestreams` | Warning | A JPX file holds several codestreams; only the first was read |
 | `Jpeg2000.MissingTiles` | Warning | Tiles have no data in the codestream; they were left black |

@@ -114,6 +114,12 @@ internal sealed class JpegHeader
     internal bool HasJfif { get; set; }
 
     /// <summary>
+    /// Gets or sets the list that collects every APPn and COM segment as read, marker and payload, in file order; null (the
+    /// default) keeps none. A lossless transform copies them.
+    /// </summary>
+    internal List<(byte Marker, byte[] Payload)>? Segments { get; set; }
+
+    /// <summary>
     /// Gets or sets whether the stream is embedded in another format whose samples are decoded raw (TIFF compression 7, DNG), so
     /// the two-component frames such files use are accepted.
     /// </summary>

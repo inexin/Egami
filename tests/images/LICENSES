@@ -48,6 +48,14 @@ jpeg/depth/ (all but testorig12.jpg)
   Decodes of the files above by djpeg, or by Richter's libjpeg for the ones libjpeg-turbo cannot read, and manifest.json, made by
   tools/make-jpeg-depth-references.py. Same licenses as the files they come from.
 
+jpeg/transform/
+  Made by tools/make-jpeg-transform-references.py from ops/duck.png above, with libjpeg-turbo's cjpeg and ImageMagick (the CMYK
+  file). Public domain, as their source.
+
+../reference/jpeg/transform/
+  The files above transformed by libjpeg-turbo's jpegtran, and manifest.json, made by tools/make-jpeg-transform-references.py.
+  Public domain, as their source. jpegtran runs in Docker as an oracle only; Egami contains none of its code.
+
 fuzz/exif-seeds/
   Seed EXIF blocks for the exif fuzz target: two taken from jpeg/exif-tags.jpg and jpeg/exif-orientation-6.jpg above, and one
   written by ExifData. Public domain.

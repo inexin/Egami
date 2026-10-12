@@ -92,6 +92,11 @@ internal static class JpegSegmentReader
             {
                 Span<byte> payload = data.AsSpan(0, length);
                 input.ReadExactly(payload);
+                if (header.Segments is not null && IsMetadata(marker))
+                {
+                    header.Segments.Add((marker, payload.ToArray()));
+                }
+
                 ReadSegment(input, header, marker, payload, at, iccChunks, ref iccCount, ref extended);
             }
             finally
