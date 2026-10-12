@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <ellipse id="e" cx="150" cy="150" rx="130" ry="110"/>
+  </defs>
+  <text xml:space="preserve" style="font-family:'Noto Sans';fill:#000;white-space:pre;font-size:15px;shape-inside:url(#e)">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. The quick brown fox jumps over the lazy dog, again and again, until the shape is full of words.</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <rect id="r" x="20" y="20" width="260" height="200"/>
+  </defs>
+  <text xml:space="preserve" style="font-family:'Noto Sans';fill:#000;white-space:pre;font-size:28px;shape-inside:url(#r)">The quick brown fox jumps over the lazy dog, again and again, until the shape is full of words.</text>
+</svg>

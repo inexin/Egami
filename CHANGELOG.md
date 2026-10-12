@@ -276,7 +276,9 @@ Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/
 - Text: x, y, dx, dy and rotate lists, tspan, tref and textPath, text-anchor, the baseline properties, letter-spacing,
   word-spacing, textLength and lengthAdjust, decorations, vertical writing and font variations, laid out as resvg lays text
   out and drawn as `SvgTextRun` glyph runs (`SvgRenderOptions.TextAsPaths` draws outlines). `SvgLoadOptions.Fonts`
-  (`SvgFontOptions`) gives the fonts: the caller's collection, then the machine's unless turned off.
+  (`SvgFontOptions`) gives the fonts: the caller's collection, the document's `@font-face` rules, then the machine's unless
+  turned off. SVG 2's wrapped text: `inline-size` lines as 2.8.2's paragraph layout fills them, and `shape-inside` text flowed
+  into shapes as Inkscape flows it (16 of 20 samples match Inkscape's export).
 - Filters: every SVG 1.1 primitive, feDropShadow and the CSS filter functions, in linearRGB or sRGB, run in a raster lined up
   with the device pixels (`SvgRenderOptions.FilterScale` sets its resolution on vector canvases). feGaussianBlur is SVG's three
   box blurs on premultiplied colors; feConvolveMatrix and the lighting primitives follow the specification's kernels.

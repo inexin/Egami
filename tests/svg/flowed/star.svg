@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    <path id="s" d="M 150 15 L 185 110 L 285 110 L 205 170 L 235 270 L 150 210 L 65 270 L 95 170 L 15 110 L 115 110 Z"/>
+  </defs>
+  <text xml:space="preserve" style="font-family:'Noto Sans';fill:#000;white-space:pre;font-size:12px;shape-inside:url(#s)">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</text>
+</svg>

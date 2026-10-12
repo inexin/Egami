@@ -71,7 +71,13 @@ textLength, anchored, put on a textPath or set vertically, and shifted to their 
 of glyphs becomes an `SvgTextRun` drawn with `DrawGlyphRun`, so a PDF page or an SVG canvas keeps real text;
 `SvgRenderOptions.TextAsPaths` draws the outlines instead, for a plotter or a cutter.
 
-Fonts come from `SvgFontOptions`: the caller's collection first, then the fonts installed on the machine unless
+Wrapped text from SVG 2 is laid out by Egami.Fonts' paragraph layout: `inline-size` fills lines of that length from the
+text's x and y, aligned by text-anchor, and `shape-inside` flows the text into shapes (less `shape-subtract` and its
+`shape-margin`, inside `shape-padding`), filling one shape after another as Inkscape's flowed text does. `white-space` keeps
+spaces and line breaks for pre, pre-wrap and pre-line.
+
+Fonts come from `SvgFontOptions`: the caller's collection first, then the document's `@font-face` rules (data URIs, or files
+the load options' resolver allows), then the fonts installed on the machine unless
 `UseSystemFonts` is off, then the serif family. A server that renders files it did not write should pass its own fonts and
 turn system fonts off, so the output does not depend on the machine.
 

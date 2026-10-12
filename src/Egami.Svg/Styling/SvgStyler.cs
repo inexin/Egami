@@ -53,9 +53,28 @@ internal sealed class SvgStyler
                 Errors = e => report.Note("Svg.BadStyleSheet", $"A style sheet has an error at its line {e.Line}, column {e.Column}: {e.Message}", element),
             });
             sheets.Add((sheet, CssOrigin.Author));
+            CollectFontFaces(sheet.Rules, media, element);
         }
 
         _cascade = new CssCascade(sheets, new CssCascadeOptions { Media = media, Registry = s_registry });
+    }
+
+    /// <summary>Gets the @font-face rules of the document's style sheets (those inside matching @media rules too), with their style element.</summary>
+    public List<(CssFontFaceRule Rule, SvgElement Element)> FontFaces { get; } = [];
+
+    private void CollectFontFaces(IReadOnlyList<CssRule> rules, CssMediaContext media, SvgElement element)
+    {
+        foreach (CssRule rule in rules)
+        {
+            if (rule is CssFontFaceRule face)
+            {
+                FontFaces.Add((face, element));
+            }
+            else if (rule is CssMediaRule m && m.Media.Matches(media))
+            {
+                CollectFontFaces(m.Rules, media, element);
+            }
+        }
     }
 
     /// <summary>Gets the registry of SVG's properties.</summary>

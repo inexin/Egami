@@ -39,14 +39,61 @@ internal sealed class SvgTextTree
 
     public bool IsText => Element is null;
 
-    /// <summary>Builds the tree of a text element, its white space already processed.</summary>
-    public static SvgTextTree Build(SvgElement text, SvgDocument document)
+    /// <summary>
+    /// Builds the tree of a text element, its white space already processed: as xml:space says, or for wrapped text as the
+    /// white-space property says (<paramref name="breaks"/>: pre, pre-wrap and break-spaces keep every space and line break,
+    /// pre-line keeps line breaks and collapses spaces).
+    /// </summary>
+    public static SvgTextTree Build(SvgElement text, SvgDocument document, string? breaks = null)
     {
         bool preserve = Space(text) ?? Ancestors(text).Select(Space).FirstOrDefault(s => s is not null) ?? false;
         SvgTextTree root = new(text, "text", null, 0, preserve);
         Add(root, text, document);
-        Trim(root);
+        if (breaks is "pre" or "pre-wrap" or "break-spaces" or "pre-line")
+        {
+            foreach (SvgTextTree node in root.Descendants().Where(n => n.IsText))
+            {
+                node.Text = Breaks(node.Source, breaks == "pre-line");
+            }
+        }
+        else
+        {
+            Trim(root);
+        }
+
         return root;
+    }
+
+    /// <summary>Gets the characters as written, before white space processing.</summary>
+    private string Source { get; init; } = "";
+
+    /// <summary>Line breaks kept as \n; with <paramref name="collapse"/> runs of spaces and tabs become one space and spaces at a break go.</summary>
+    private static string Breaks(string text, bool collapse)
+    {
+        string s = text.Replace("\r\n", "\n").Replace('\r', '\n');
+        if (!collapse)
+        {
+            return s;
+        }
+
+        StringBuilder b = new(s.Length);
+        foreach (char c0 in s)
+        {
+            char c = c0 == '\t' ? ' ' : c0;
+            if (c == ' ' && (b.Length == 0 || b[^1] is ' ' or '\n'))
+            {
+                continue;
+            }
+
+            if (c == '\n' && b.Length > 0 && b[^1] == ' ')
+            {
+                b.Length--;
+            }
+
+            b.Append(c);
+        }
+
+        return b.ToString();
     }
 
     /// <summary>The number of characters (Unicode scalar values) in a node and its descendants.</summary>
@@ -118,7 +165,7 @@ internal sealed class SvgTextTree
         {
             if (item is SvgTextContent content)
             {
-                parent.Children.Add(new SvgTextTree(null, "#text", parent, parent.Depth + 1, parent.Preserve) { Text = Collapse(content.Value, parent.Preserve) });
+                parent.Children.Add(new SvgTextTree(null, "#text", parent, parent.Depth + 1, parent.Preserve) { Text = Collapse(content.Value, parent.Preserve), Source = content.Value });
                 continue;
             }
 
@@ -150,7 +197,7 @@ internal sealed class SvgTextTree
                     string referenced = target.Text;
                     if (referenced.Length > 0)
                     {
-                        node.Children.Add(new SvgTextTree(null, "#text", node, node.Depth + 1, preserve) { Text = Collapse(referenced, preserve) });
+                        node.Children.Add(new SvgTextTree(null, "#text", node, node.Depth + 1, preserve) { Text = Collapse(referenced, preserve), Source = referenced });
                     }
                 }
             }

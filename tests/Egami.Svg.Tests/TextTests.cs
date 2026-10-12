@@ -140,4 +140,46 @@ public class TextTests
         Assert.Empty(Runs(document.RenderTree));
         Assert.Contains(document.Warnings, w => w.Id == "Svg.FontNotFound");
     }
+
+    [Fact]
+    public void FontFaceRulesAddFamilies()
+    {
+        string folder = Path.Combine(TestSvg.Root, "tests", "svg", "resvg", "fonts");
+        SvgLoadOptions options = new()
+        {
+            Fonts = new SvgFontOptions { UseSystemFonts = false },
+            Resolver = SvgResolvers.SameDirectory(folder),
+            BaseUri = new Uri(Path.Combine(folder, "page.svg")),
+        };
+        SvgDocument document = SvgDocument.Parse($$"""
+            <svg {{Ns}} width='100' height='40'>
+              <style>@font-face { font-family: Brand; src: url(missing.woff2), url(NotoSans-Regular.ttf); }</style>
+              <text x='5' y='30' font-family='Brand' font-size='20'>Brand</text>
+            </svg>
+            """, options);
+        SvgTextRun run = Assert.Single(Runs(document.RenderTree));
+        Assert.Equal("Noto Sans", run.Run.Font.Typeface.FamilyName);
+        Assert.DoesNotContain(document.Warnings, w => w.Id == "Svg.FontNotFound");
+    }
+
+    [Fact]
+    public void InlineSizeWrapsAsParagraphLayout()
+    {
+        string text = "Wrapped text fills lines no longer than the inline size, as paragraph layout fills them.";
+        SvgDocument document = Load($"<text x='10' y='30' style='inline-size:120px'>{text}</text>");
+        List<Vector2> positions = [.. Runs(document.RenderTree).SelectMany(r => r.Run.Positions.ToArray())];
+
+        Fonts.Layout.TextLayout layout = Fonts.Layout.Paragraph.Create(text, new Fonts.Layout.ParagraphStyle
+        {
+            DefaultStyle = new Fonts.Layout.TextStyle { FontFamilies = [s_fonts.Value.Collection!.Families[0]], Size = 20, LetterSpacing = 0, WordSpacing = 0 },
+        }).Layout(120);
+        Vector2 origin = new(10, 30 - layout.FirstBaseline);
+        List<Vector2> expected = [.. layout.Lines.SelectMany(l => l.Runs).Where(r => r.Glyphs is not null).SelectMany(r => r.Glyphs!.Positions.ToArray()).Select(p => p + origin)];
+        Assert.True(layout.Lines.Count > 2);
+        Assert.Equal(expected.Count, positions.Count);
+        for (int i = 0; i < expected.Count; i++)
+        {
+            Assert.True(Vector2.Distance(expected[i], positions[i]) < 1e-3f, $"glyph {i}: {positions[i]} instead of {expected[i]}");
+        }
+    }
 }

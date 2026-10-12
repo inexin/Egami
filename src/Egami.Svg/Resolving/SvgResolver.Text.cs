@@ -14,7 +14,31 @@ internal sealed partial class SvgResolver
 {
     private SvgFonts? _fonts;
 
-    private SvgFonts Fonts => _fonts ??= new SvgFonts(_options.Fonts, _report);
+    private SvgFonts Fonts
+    {
+        get
+        {
+            if (_fonts is null)
+            {
+                _fonts = new SvgFonts(_options.Fonts, _report);
+                if (_styler.FontFaces.Count > 0)
+                {
+                    _fonts.AddFontFaces(_styler.FontFaces, (href, element) =>
+                    {
+                        byte[]? data = SvgResources.Open(href, _options, out _, out string? problem);
+                        if (data is null && problem is not null)
+                        {
+                            _report.Warn("Svg.FontNotLoaded", $"The @font-face source \"{SvgGeometry.Clip(href)}\" was not loaded: {problem}", element);
+                        }
+
+                        return data;
+                    });
+                }
+            }
+
+            return _fonts;
+        }
+    }
 
     /// <summary>
     /// A text element (stage C, question 11): its characters collected with white space processed, placed by the x, y, dx, dy
@@ -23,6 +47,29 @@ internal sealed partial class SvgResolver
     /// </summary>
     private SvgGroup? Text(SvgElement element, SvgStyle style, in SvgContext context)
     {
+        // SVG 2 wrapped text: inline-size or shape-inside on the text element, in horizontal writing.
+        if (style.Css is CssComputedStyle css && Keyword(css, "writing-mode") is null or "horizontal-tb" or "lr" or "lr-tb" or "rl" or "rl-tb")
+        {
+            List<string> shapes = [];
+            if (css.TryGetValue("shape-inside", out IReadOnlyList<CssComponentValue>? inside))
+            {
+                foreach (CssComponentValue item in inside)
+                {
+                    if (CssUrl.TryParse(item, out CssUrl url))
+                    {
+                        shapes.Add(url.Url);
+                    }
+                }
+            }
+
+            float? inlineSize = css.TryGetValue("inline-size", out IReadOnlyList<CssComponentValue>? size) && SvgStyleValues.TryLength(size, out SvgLength l) &&
+                l.ToPixels(context.Lengths, SvgAxis.X) is float px && px > 0 ? px : null;
+            if (shapes.Count > 0 || inlineSize is not null)
+            {
+                return FlowText(element, style, context, inlineSize, shapes);
+            }
+        }
+
         SvgTextTree tree = SvgTextTree.Build(element, _document);
         Dictionary<SvgTextTree, (SvgStyle Style, CssComputedStyle Css)> styles = new(ReferenceEqualityComparer.Instance) { [tree] = (style, context.Css!) };
         StyleTree(tree, styles);
