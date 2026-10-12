@@ -447,3 +447,17 @@ dotnet publish -c Release -r linux-x64 -p:PublishAot=true
 ```
 
 Egami's own build publishes a small console app this way on every change and checks that it runs with no warnings.
+
+## Test renders against a baseline
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Analysis.cs#visual-regression)]
+
+## Find near-duplicate photos
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Analysis.cs#hashes)]
+
+Keep the 64-bit hashes in a database column; a lookup within a few bits finds recompressed and resized copies.
+
+## Check an image is grayscale
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Analysis.cs#grayscale-check)]

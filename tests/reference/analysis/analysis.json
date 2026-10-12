@@ -1,0 +1,2118 @@
+{
+ "compare": {
+  "alpha-a.png~alpha-b.png": {
+   "AE": {
+    "all": {
+     "normalized": null,
+     "raw": 806.0
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 782.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 790.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 795.0
+    }
+   },
+   "AE@5%": {
+    "all": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.0
+    }
+   },
+   "DSSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.07540872869148413
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.5
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.0767258611987815
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.10209792597245698
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.113255767993174
+    }
+   },
+   "MAE": {
+    "all": {
+     "normalized": 0.0027466549323977955,
+     "raw": 180.00203099468953
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.0026780815471613485,
+     "raw": 175.50807419321896
+    },
+    "green": {
+     "normalized": 0.002712543452838652,
+     "raw": 177.76653518178105
+    },
+    "red": {
+     "normalized": 0.002681625857042162,
+     "raw": 175.7403505412581
+    }
+   },
+   "MSE": {
+    "all": {
+     "normalized": 4.658852981449973e-05,
+     "raw": 3.05317930139324
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 4.382127228801726e-05,
+     "raw": 2.871827079395211
+    },
+    "green": {
+     "normalized": 4.487277452103788e-05,
+     "raw": 2.9407372782362176
+    },
+    "red": {
+     "normalized": 4.802471585532592e-05,
+     "raw": 3.147299753578784
+    }
+   },
+   "PAE": {
+    "all": {
+     "normalized": 0.04604382929642452,
+     "raw": 3017.4823529411806
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.04604382929642452,
+     "raw": 3017.4823529411806
+    },
+    "green": {
+     "normalized": 0.04327566320645902,
+     "raw": 2836.0705882352922
+    },
+    "red": {
+     "normalized": 0.0409073433294887,
+     "raw": 2680.862745098042
+    }
+   },
+   "PSNR": {
+    "all": {
+     "normalized": null,
+     "raw": 43.31720994285079
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 43.58315017472621
+    },
+    "green": {
+     "normalized": null,
+     "raw": 43.48017076847044
+    },
+    "red": {
+     "normalized": null,
+     "raw": 43.18535196020232
+    }
+   },
+   "RMSE": {
+    "all": {
+     "normalized": 0.006825579082722559,
+     "raw": 447.3143251862229
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.006619763763762062,
+     "raw": 433.82621825814675
+    },
+    "green": {
+     "normalized": 0.006698714393153202,
+     "raw": 439.0002477552951
+    },
+    "red": {
+     "normalized": 0.006929986713935743,
+     "raw": 454.1566792977789
+    }
+   },
+   "SSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.8491825426170317
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.846548277602437
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.795804148055086
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.773488464013652
+    }
+   }
+  },
+  "duck.png~duck-q75.png": {
+   "AE": {
+    "all": {
+     "normalized": null,
+     "raw": 304476.0
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 272016.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 260088.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 270035.0
+    }
+   },
+   "AE@5%": {
+    "all": {
+     "normalized": null,
+     "raw": 29968.0
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 17945.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 8578.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 14131.0
+    }
+   },
+   "DSSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.16007710828031124
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.5
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.05785393693945906
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.03276394948882749
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.049690546692958915
+    }
+   },
+   "MAE": {
+    "all": {
+     "normalized": 0.010579190921160202,
+     "raw": 693.3072770182339
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.015956392973856166,
+     "raw": 1045.702213541664
+    },
+    "green": {
+     "normalized": 0.011640561172385587,
+     "raw": 762.8641764322895
+    },
+    "red": {
+     "normalized": 0.014719809538398649,
+     "raw": 964.6627180989555
+    }
+   },
+   "MSE": {
+    "all": {
+     "normalized": 0.00035555062455946474,
+     "raw": 23.301010180504523
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.0005996548803344874,
+     "raw": 39.298382582720635
+    },
+    "green": {
+     "normalized": 0.00032375934135909254,
+     "raw": 21.21756843596813
+    },
+    "red": {
+     "normalized": 0.0004987882765442785,
+     "raw": 32.68808970332929
+    }
+   },
+   "PAE": {
+    "all": {
+     "normalized": 0.2901960784313726,
+     "raw": 19018.0
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.2901960784313726,
+     "raw": 19018.0
+    },
+    "green": {
+     "normalized": 0.21568627450980393,
+     "raw": 14135.0
+    },
+    "red": {
+     "normalized": 0.2627450980392157,
+     "raw": 17219.0
+    }
+   },
+   "PSNR": {
+    "all": {
+     "normalized": null,
+     "raw": 34.49098554142288
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 32.22098627431919
+    },
+    "green": {
+     "normalized": null,
+     "raw": 34.897776921240336
+    },
+    "red": {
+     "normalized": null,
+     "raw": 33.02083762675376
+    }
+   },
+   "RMSE": {
+    "all": {
+     "normalized": 0.018856050078408917,
+     "raw": 1235.7312418885283
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.02448785168883722,
+     "raw": 1604.8113604279472
+    },
+    "green": {
+     "normalized": 0.017993313795938,
+     "raw": 1179.191819616797
+    },
+    "red": {
+     "normalized": 0.022333568379107667,
+     "raw": 1463.630403724821
+    }
+   },
+   "SSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.6798457834393776
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.8842921261210819
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.9344721010223448
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.900618906614082
+    }
+   }
+  },
+  "egret.png~egret-q75.png": {
+   "AE": {
+    "all": {
+     "normalized": null,
+     "raw": 295537.0
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 274389.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 259977.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 264264.0
+    }
+   },
+   "AE@5%": {
+    "all": {
+     "normalized": null,
+     "raw": 40636.0
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 28585.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 8302.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 13537.0
+    }
+   },
+   "DSSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.14973395575683424
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.5
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.05392106090629367
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.018576013963377824
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.026438748157664727
+    }
+   },
+   "MAE": {
+    "all": {
+     "normalized": 0.011937302134395394,
+     "raw": 782.3110953776022
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.01984856260212415,
+     "raw": 1300.775550130206
+    },
+    "green": {
+     "normalized": 0.012983289930555527,
+     "raw": 850.8599055989565
+    },
+    "red": {
+     "normalized": 0.014917356004901933,
+     "raw": 977.6089257812481
+    }
+   },
+   "MSE": {
+    "all": {
+     "normalized": 0.00041932387282936416,
+     "raw": 27.48039000587238
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.0008479569656702561,
+     "raw": 55.57085974520023
+    },
+    "green": {
+     "normalized": 0.0003553849981577587,
+     "raw": 23.290155854268715
+    },
+    "red": {
+     "normalized": 0.000473953527489427,
+     "raw": 31.0605444240196
+    }
+   },
+   "PAE": {
+    "all": {
+     "normalized": 0.3568627450980392,
+     "raw": 23387.0
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.3568627450980392,
+     "raw": 23387.0
+    },
+    "green": {
+     "normalized": 0.14901960784313725,
+     "raw": 9766.0
+    },
+    "red": {
+     "normalized": 0.2,
+     "raw": 13107.0
+    }
+   },
+   "PSNR": {
+    "all": {
+     "normalized": null,
+     "raw": 33.77450411760693
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 30.716261878920896
+    },
+    "green": {
+     "normalized": null,
+     "raw": 34.493009089865836
+    },
+    "red": {
+     "normalized": null,
+     "raw": 33.24264240065068
+    }
+   },
+   "RMSE": {
+    "all": {
+     "normalized": 0.020477399073841485,
+     "raw": 1341.9863483042018
+    },
+    "alpha": {
+     "normalized": 0.0,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": 0.029119700645272036,
+     "raw": 1908.359581787903
+    },
+    "green": {
+     "normalized": 0.01885165770317716,
+     "raw": 1235.4433875777152
+    },
+    "red": {
+     "normalized": 0.021770473754363424,
+     "raw": 1426.7279974922071
+    }
+   },
+   "SSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.7005320884863314
+    },
+    "alpha": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.8921578781874127
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.9628479720732446
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.9471225036846705
+    }
+   }
+  },
+  "grad16-a.png~grad16-b.png": {
+   "AE": {
+    "all": {
+     "normalized": null,
+     "raw": 6144.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 6133.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 6042.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 6065.0
+    }
+   },
+   "AE@5%": {
+    "all": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.0
+    }
+   },
+   "DSSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.0022674578014436064
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.002664771943819977
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.0016896159848023284
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.002447985475708181
+    }
+   },
+   "MAE": {
+    "all": {
+     "normalized": 0.00227602070538007,
+     "raw": 149.1590169270829
+    },
+    "blue": {
+     "normalized": 0.002280786666158029,
+     "raw": 149.47135416666643
+    },
+    "green": {
+     "normalized": 0.0022669209240927203,
+     "raw": 148.56266276041643
+    },
+    "red": {
+     "normalized": 0.00228035452588947,
+     "raw": 149.44303385416643
+    }
+   },
+   "MSE": {
+    "all": {
+     "normalized": 6.979110844927929e-06,
+     "raw": 0.4573760292223518
+    },
+    "blue": {
+     "normalized": 6.963140906423619e-06,
+     "raw": 0.4563294393024719
+    },
+    "green": {
+     "normalized": 6.961275362171988e-06,
+     "raw": 0.4562071808599413
+    },
+    "red": {
+     "normalized": 7.012916266188161e-06,
+     "raw": 0.45959146750464114
+    }
+   },
+   "PAE": {
+    "all": {
+     "normalized": 0.004577706569008927,
+     "raw": 300.0
+    },
+    "blue": {
+     "normalized": 0.004577706569008927,
+     "raw": 300.0
+    },
+    "green": {
+     "normalized": 0.004577706569008927,
+     "raw": 300.0
+    },
+    "red": {
+     "normalized": 0.004577706569008927,
+     "raw": 300.0
+    }
+   },
+   "PSNR": {
+    "all": {
+     "normalized": null,
+     "raw": 51.56199903986989
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 51.571948163333865
+    },
+    "green": {
+     "normalized": null,
+     "raw": 51.57311186824393
+    },
+    "red": {
+     "normalized": null,
+     "raw": 51.541013465210845
+    }
+   },
+   "RMSE": {
+    "all": {
+     "normalized": 0.002641800682286218,
+     "raw": 173.1304077136273
+    },
+    "blue": {
+     "normalized": 0.0026387764032641376,
+     "raw": 172.93221158791525
+    },
+    "green": {
+     "normalized": 0.0026384228929745113,
+     "raw": 172.9090442910846
+    },
+    "red": {
+     "normalized": 0.002648191130977551,
+     "raw": 173.5492057686138
+    }
+   },
+   "SSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.9954650843971128
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.99467045611236
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.9966207680303953
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.9951040290485836
+    }
+   }
+  },
+  "tiny-a.png~tiny-b.png": {
+   "AE": {
+    "all": {
+     "normalized": null,
+     "raw": 8.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 1.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 3.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 4.0
+    }
+   },
+   "AE@5%": {
+    "all": {
+     "normalized": null,
+     "raw": 2.0
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 1.0
+    },
+    "green": {
+     "normalized": null,
+     "raw": 1.0
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.0
+    }
+   },
+   "DSSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.060629694219578034
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.0007353114738457567
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.18061001145559985
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.00054375972928844
+    }
+   },
+   "MAE": {
+    "all": {
+     "normalized": 0.024509803921568624,
+     "raw": 1606.2499999999998
+    },
+    "blue": {
+     "normalized": 0.004901960784313725,
+     "raw": 321.25
+    },
+    "green": {
+     "normalized": 0.06348039215686274,
+     "raw": 4160.1875
+    },
+    "red": {
+     "normalized": 0.005147058823529412,
+     "raw": 337.3125
+    }
+   },
+   "MSE": {
+    "all": {
+     "normalized": 0.021011149557862364,
+     "raw": 1376.96568627451
+    },
+    "blue": {
+     "normalized": 0.00038446751249519417,
+     "raw": 25.19607843137255
+    },
+    "green": {
+     "normalized": 0.06250961168781237,
+     "raw": 4096.567401960783
+    },
+    "red": {
+     "normalized": 0.0001393694732795079,
+     "raw": 9.13357843137255
+    }
+   },
+   "PAE": {
+    "all": {
+     "normalized": 1.0,
+     "raw": 65535.0
+    },
+    "blue": {
+     "normalized": 0.0784313725490196,
+     "raw": 5140.0
+    },
+    "green": {
+     "normalized": 1.0,
+     "raw": 65535.0
+    },
+    "red": {
+     "normalized": 0.0392156862745098,
+     "raw": 2570.0
+    }
+   },
+   "PSNR": {
+    "all": {
+     "normalized": null,
+     "raw": 16.77550185910151
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 34.15140352195873
+    },
+    "green": {
+     "normalized": null,
+     "raw": 12.040531989433678
+    },
+    "red": {
+     "normalized": null,
+     "raw": 38.558323412888605
+    }
+   },
+   "RMSE": {
+    "all": {
+     "normalized": 0.14495223198648016,
+     "raw": 9499.444523233977
+    },
+    "blue": {
+     "normalized": 0.0196078431372549,
+     "raw": 1285.0
+    },
+    "green": {
+     "normalized": 0.2500192226366052,
+     "raw": 16385.009755489922
+    },
+    "red": {
+     "normalized": 0.011805484881168917,
+     "raw": 773.672451687405
+    }
+   },
+   "SSIM": {
+    "all": {
+     "normalized": null,
+     "raw": 0.8787406115608439
+    },
+    "blue": {
+     "normalized": null,
+     "raw": 0.9985293770523085
+    },
+    "green": {
+     "normalized": null,
+     "raw": 0.6387799770888003
+    },
+    "red": {
+     "normalized": null,
+     "raw": 0.9989124805414231
+    }
+   }
+  }
+ },
+ "hashes": {
+  "duck-bright.png": {
+   "dhash": "c8b4669673310b83",
+   "phash": "ad9562dac125178f"
+  },
+  "duck-half.png": {
+   "dhash": "c8b4669673310b83",
+   "phash": "ad95625ae125178f"
+  },
+  "duck-q75.png": {
+   "dhash": "c8b4669673310b83",
+   "phash": "ad95625ac165178f"
+  },
+  "duck.png": {
+   "dhash": "c8b4669673310b83",
+   "phash": "ad95625ae125178f"
+  },
+  "egret-q75.png": {
+   "dhash": "13b132b99cc670a0",
+   "phash": "d8586d3732cb6436"
+  },
+  "egret.png": {
+   "dhash": "13b132b99cc670a0",
+   "phash": "d8586d3732cb6436"
+  },
+  "mosaic.png": {
+   "dhash": "e664496163654dcb",
+   "phash": "ce14612c0db3c3ef"
+  },
+  "shapes.png": {
+   "dhash": "362723232736ddff",
+   "phash": "aeee91918d52d22e"
+  },
+  "zone.png": {
+   "dhash": "080810a8a9100800",
+   "phash": "8673a96722719d66"
+  }
+ },
+ "imagehash": "4.3.1",
+ "statistics": {
+  "almost-gray.png": {
+   "channels": {
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9925249893481599
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2082637901184752
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.47639208026960783,
+      "raw": 121.47998046875
+     },
+     "median": {
+      "normalized": 0.4666666666666667,
+      "raw": 119.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.07101614906773791
+     },
+     "standard_deviation": {
+      "normalized": 0.2923964174910883,
+      "raw": 74.56108646022751
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9929848627518796
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.208849897113255
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.4881006178513072,
+      "raw": 124.46565755208334
+     },
+     "median": {
+      "normalized": 0.47843137254901963,
+      "raw": 122.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.07041076450260134
+     },
+     "standard_deviation": {
+      "normalized": 0.2924838345718504,
+      "raw": 74.58337781582185
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.982314095350484
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2081102874875498
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.4822546466503268,
+      "raw": 122.97493489583334
+     },
+     "median": {
+      "normalized": 0.47320261437908495,
+      "raw": 120.66666666666666
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.07061074220594227
+     },
+     "standard_deviation": {
+      "normalized": 0.2924676200285298,
+      "raw": 74.5792431072751
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9614324339514122
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2072171752309193
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.48227124183006537,
+      "raw": 122.97916666666666
+     },
+     "median": {
+      "normalized": 0.4745098039215686,
+      "raw": 121.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.07040531304748755
+     },
+     "standard_deviation": {
+      "normalized": 0.2925226080226507,
+      "raw": 74.59326504577592
+     }
+    }
+   },
+   "colors": 2819,
+   "opaque": "True",
+   "type": "TrueColor"
+  },
+  "alpha-a.png": {
+   "channels": {
+    "alpha": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.8500578795588982
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.4904786616945866
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.5536151960784313,
+      "raw": 141.171875
+     },
+     "median": {
+      "normalized": 0.5725490196078431,
+      "raw": 146.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": -0.1802070505754681
+     },
+     "standard_deviation": {
+      "normalized": 0.37823985498083235,
+      "raw": 96.45116302011225
+     }
+    },
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9542321231182815
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.1880667817900283
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.4522875816993464,
+      "raw": 115.33333333333334
+     },
+     "median": {
+      "normalized": 0.4392156862745098,
+      "raw": 112.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.15260005459516138
+     },
+     "standard_deviation": {
+      "normalized": 0.2956471525556283,
+      "raw": 75.39002390168523
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0000000000000007
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2022131248879389
+     },
+     "max": {
+      "normalized": 0.9215686274509803,
+      "raw": 235.0
+     },
+     "mean": {
+      "normalized": 0.46078431372549017,
+      "raw": 117.5
+     },
+     "median": {
+      "normalized": 0.45098039215686275,
+      "raw": 115.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 8.612409093573306e-19
+     },
+     "standard_deviation": {
+      "normalized": 0.271679498768397,
+      "raw": 69.27827218594123
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9510725006692952
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2706289879307482
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.49020118464052287,
+      "raw": 125.00130208333334
+     },
+     "median": {
+      "normalized": 0.4872549019607843,
+      "raw": 124.25
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": -0.00690174899507668
+     },
+     "standard_deviation": {
+      "normalized": 0.308846374033939,
+      "raw": 78.75582537865444
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2017573833504391
+     },
+     "max": {
+      "normalized": 0.9882352941176471,
+      "raw": 252.0
+     },
+     "mean": {
+      "normalized": 0.49411764705882355,
+      "raw": 126.0
+     },
+     "median": {
+      "normalized": 0.48627450980392156,
+      "raw": 124.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": -1.3411277844862268e-20
+     },
+     "standard_deviation": {
+      "normalized": 0.2898189898308982,
+      "raw": 73.90384240687905
+     }
+    }
+   },
+   "colors": 3072,
+   "opaque": "False",
+   "type": "TrueColorAlpha"
+  },
+  "duck.png": {
+   "channels": {
+    "alpha": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 0.0
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "median": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "min": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.0
+     },
+     "standard_deviation": {
+      "normalized": 0.0,
+      "raw": 0.0
+     }
+    },
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.924212132481643
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 0.5012912746474353
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.3590546747344771,
+      "raw": 91.55894205729167
+     },
+     "median": {
+      "normalized": 0.3843137254901961,
+      "raw": 98.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.503441229447197
+     },
+     "standard_deviation": {
+      "normalized": 0.1947644066731767,
+      "raw": 49.664923701660065
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9148752877772799
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 1.8170434458516957
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.3595523897058823,
+      "raw": 91.68585937499999
+     },
+     "median": {
+      "normalized": 0.36470588235294116,
+      "raw": 93.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.8626194016585778
+     },
+     "standard_deviation": {
+      "normalized": 0.19030137288059648,
+      "raw": 48.5268500845521
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.6925225974178444
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 0.8583535845154218
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.5283183849060458,
+      "raw": 134.72118815104164
+     },
+     "median": {
+      "normalized": 0.5303921568627451,
+      "raw": 135.25
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.5896814429583128
+     },
+     "standard_deviation": {
+      "normalized": 0.14937183387313135,
+      "raw": 38.089817637648494
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.931002969412455
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 1.1150796175625561
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.39466647518382353,
+      "raw": 100.63995117187501
+     },
+     "median": {
+      "normalized": 0.37254901960784315,
+      "raw": 95.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.9926651407274761
+     },
+     "standard_deviation": {
+      "normalized": 0.2124215559387522,
+      "raw": 54.167496764381816
+     }
+    }
+   },
+   "colors": 130271,
+   "opaque": "True",
+   "type": "TrueColorAlpha"
+  },
+  "egret.png": {
+   "channels": {
+    "alpha": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 0.0
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "median": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "min": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.0
+     },
+     "standard_deviation": {
+      "normalized": 0.0,
+      "raw": 0.0
+     }
+    },
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.8363826697001825
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 2.1893414245807388
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.20606177236519607,
+      "raw": 52.545751953125
+     },
+     "median": {
+      "normalized": 0.09803921568627451,
+      "raw": 25.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.8057719797377532
+     },
+     "standard_deviation": {
+      "normalized": 0.2384508574627444,
+      "raw": 60.80496865299982
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.8766517214356916
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 1.1352418947607246
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.2645976051879085,
+      "raw": 67.47238932291667
+     },
+     "median": {
+      "normalized": 0.1803921568627451,
+      "raw": 46.0
+     },
+     "min": {
+      "normalized": 0.023529411764705882,
+      "raw": 6.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.3550212058850113
+     },
+     "standard_deviation": {
+      "normalized": 0.23905738471947058,
+      "raw": 60.959633103465
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.6403957319439
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 1.3228610072729787
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.4219843175551471,
+      "raw": 107.60600097656251
+     },
+     "median": {
+      "normalized": 0.3480392156862745,
+      "raw": 88.75
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.2119532314184818
+     },
+     "standard_deviation": {
+      "normalized": 0.180691522576557,
+      "raw": 46.07633825702203
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.848548536639726
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": 1.966860709750451
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.21727789266748365,
+      "raw": 55.40586263020833
+     },
+     "median": {
+      "normalized": 0.11372549019607843,
+      "raw": 29.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.6870197400511624
+     },
+     "standard_deviation": {
+      "normalized": 0.24525784812401294,
+      "raw": 62.5407512716233
+     }
+    }
+   },
+   "colors": 116951,
+   "opaque": "True",
+   "type": "TrueColorAlpha"
+  },
+  "grad16-a.png": {
+   "channels": {
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9661827364693666
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -0.6897160035539559
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 65535.0
+     },
+     "mean": {
+      "normalized": 0.49999237297261645,
+      "raw": 32767.000162760418
+     },
+     "median": {
+      "normalized": 0.49999237048905165,
+      "raw": 32767.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.635037018233977e-07
+     },
+     "standard_deviation": {
+      "normalized": 0.210802591115526,
+      "raw": 13814.947808755996
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.201171305524382
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 65535.0
+     },
+     "mean": {
+      "normalized": 0.4999928473334859,
+      "raw": 32767.03125
+     },
+     "median": {
+      "normalized": 0.4920576791027695,
+      "raw": 32247.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 3.0015265665876558e-06
+     },
+     "standard_deviation": {
+      "normalized": 0.29324540930569654,
+      "raw": 19217.837898848822
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9887275788231218
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.0305771707259728
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 65535.0
+     },
+     "mean": {
+      "normalized": 0.4999926892131961,
+      "raw": 32767.02088758681
+     },
+     "median": {
+      "normalized": 0.49559268584217087,
+      "raw": 32478.666666666668
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.6615597909836735e-06
+     },
+     "standard_deviation": {
+      "normalized": 0.26525662138967193,
+      "raw": 17383.59268277215
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9999999999999986
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2008442030995798
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 65535.0
+     },
+     "mean": {
+      "normalized": 0.4999928473334859,
+      "raw": 32767.03125
+     },
+     "median": {
+      "normalized": 0.4947280079346914,
+      "raw": 32422.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 1.819649104539968e-06
+     },
+     "standard_deviation": {
+      "normalized": 0.2917218637477932,
+      "raw": 19117.992340711626
+     }
+    }
+   },
+   "colors": 6144,
+   "opaque": "True",
+   "type": "TrueColor"
+  },
+  "gray8.png": {
+   "channels": {
+    "gray": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9614324339514122
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.2072171752309193
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.48227124183006537,
+      "raw": 122.97916666666666
+     },
+     "median": {
+      "normalized": 0.4745098039215686,
+      "raw": 121.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.07040531304748755
+     },
+     "standard_deviation": {
+      "normalized": 0.2925226080226507,
+      "raw": 74.59326504577592
+     }
+    }
+   },
+   "colors": 256,
+   "opaque": "True",
+   "type": "Grayscale"
+  },
+  "mosaic.png": {
+   "channels": {
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9843137771845943
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.3629246165929463
+     },
+     "max": {
+      "normalized": 0.9490196078431372,
+      "raw": 242.0
+     },
+     "mean": {
+      "normalized": 0.5010416666666667,
+      "raw": 127.765625
+     },
+     "median": {
+      "normalized": 0.4666666666666667,
+      "raw": 119.0
+     },
+     "min": {
+      "normalized": 0.0196078431372549,
+      "raw": 5.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": -0.06241429035306749
+     },
+     "standard_deviation": {
+      "normalized": 0.3078102537085113,
+      "raw": 78.49161469567038
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9841845285807064
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.251945386241507
+     },
+     "max": {
+      "normalized": 0.984313725490196,
+      "raw": 251.0
+     },
+     "mean": {
+      "normalized": 0.530453431372549,
+      "raw": 135.265625
+     },
+     "median": {
+      "normalized": 0.4823529411764706,
+      "raw": 123.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": -0.12823860377842916
+     },
+     "standard_deviation": {
+      "normalized": 0.3008855579752768,
+      "raw": 76.72581728369558
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9800976142992824
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.1829932723619976
+     },
+     "max": {
+      "normalized": 0.984313725490196,
+      "raw": 251.0
+     },
+     "mean": {
+      "normalized": 0.5162377450980392,
+      "raw": 131.640625
+     },
+     "median": {
+      "normalized": 0.47320261437908495,
+      "raw": 120.66666666666666
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": -0.036779203137784496
+     },
+     "standard_deviation": {
+      "normalized": 0.29520167666945774,
+      "raw": 75.27642755071173
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 0.9717945371325467
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -0.9341098142515398
+     },
+     "max": {
+      "normalized": 0.984313725490196,
+      "raw": 251.0
+     },
+     "mean": {
+      "normalized": 0.517218137254902,
+      "raw": 131.890625
+     },
+     "median": {
+      "normalized": 0.47058823529411764,
+      "raw": 120.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.08031528471814317
+     },
+     "standard_deviation": {
+      "normalized": 0.2769092183245851,
+      "raw": 70.6118506727692
+     }
+    }
+   },
+   "colors": 37,
+   "opaque": "True",
+   "type": "Palette"
+  },
+  "tiny-a.png": {
+   "channels": {
+    "blue": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.5522821030831757
+     },
+     "max": {
+      "normalized": 0.9019607843137255,
+      "raw": 230.0
+     },
+     "mean": {
+      "normalized": 0.3924019607843137,
+      "raw": 100.0625
+     },
+     "median": {
+      "normalized": 0.3607843137254902,
+      "raw": 92.0
+     },
+     "min": {
+      "normalized": 0.00392156862745098,
+      "raw": 1.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.20028863286929538
+     },
+     "standard_deviation": {
+      "normalized": 0.31113462453023644,
+      "raw": 79.33932925521029
+     }
+    },
+    "green": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -0.6755821072690104
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.37941176470588234,
+      "raw": 96.75
+     },
+     "median": {
+      "normalized": 0.34509803921568627,
+      "raw": 88.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.7162065997405407
+     },
+     "standard_deviation": {
+      "normalized": 0.31026688333642166,
+      "raw": 79.11805525078752
+     }
+    },
+    "overall": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -1.0661310703338003
+     },
+     "max": {
+      "normalized": 1.0,
+      "raw": 255.0
+     },
+     "mean": {
+      "normalized": 0.36952614379084964,
+      "raw": 94.22916666666666
+     },
+     "median": {
+      "normalized": 0.30718954248366015,
+      "raw": 78.33333333333334
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.5814244675063778
+     },
+     "standard_deviation": {
+      "normalized": 0.3250728346623042,
+      "raw": 82.89357283888758
+     }
+    },
+    "red": {
+     "entropy": {
+      "normalized": null,
+      "raw": 1.0
+     },
+     "kurtosis": {
+      "normalized": null,
+      "raw": -0.9705290006492148
+     },
+     "max": {
+      "normalized": 0.996078431372549,
+      "raw": 254.0
+     },
+     "mean": {
+      "normalized": 0.33676470588235297,
+      "raw": 85.875
+     },
+     "median": {
+      "normalized": 0.21568627450980393,
+      "raw": 55.0
+     },
+     "min": {
+      "normalized": 0.0,
+      "raw": 0.0
+     },
+     "skewness": {
+      "normalized": null,
+      "raw": 0.8277781699092972
+     },
+     "standard_deviation": {
+      "normalized": 0.35381699612025447,
+      "raw": 90.22333401066489
+     }
+    }
+   },
+   "colors": 16,
+   "opaque": "True",
+   "type": "Palette"
+  }
+ },
+ "version": "Version: ImageMagick 7.1.1-32 Q16-HDRI x86_64 22207 https://imagemagick.org"
+}
