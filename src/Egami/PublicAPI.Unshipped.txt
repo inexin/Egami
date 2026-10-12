@@ -561,6 +561,81 @@ Egami.Formats.Pnm.PnmDetails.LittleEndian.set -> void
 Egami.Formats.Pnm.PnmDetails.Scale.get -> double?
 Egami.Formats.Pnm.PnmDetails.Scale.set -> void
 Egami.Formats.Pnm.PnmKind.FloatMap = 5 -> Egami.Formats.Pnm.PnmKind
+Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Bitmap = 0 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Cmyk = 4 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Duotone = 8 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Grayscale = 1 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Indexed = 2 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Lab = 9 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Multichannel = 7 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdColorMode.Rgb = 3 -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdCompression
+Egami.Formats.Psd.PsdCompression.Deflate = 2 -> Egami.Formats.Psd.PsdCompression
+Egami.Formats.Psd.PsdCompression.DeflatePredicted = 3 -> Egami.Formats.Psd.PsdCompression
+Egami.Formats.Psd.PsdCompression.PackBits = 1 -> Egami.Formats.Psd.PsdCompression
+Egami.Formats.Psd.PsdCompression.Raw = 0 -> Egami.Formats.Psd.PsdCompression
+Egami.Formats.Psd.PsdDetails
+Egami.Formats.Psd.PsdDetails.BitsPerChannel.get -> int
+Egami.Formats.Psd.PsdDetails.BitsPerChannel.set -> void
+Egami.Formats.Psd.PsdDetails.ChannelCount.get -> int
+Egami.Formats.Psd.PsdDetails.ChannelCount.set -> void
+Egami.Formats.Psd.PsdDetails.ColorMode.get -> Egami.Formats.Psd.PsdColorMode
+Egami.Formats.Psd.PsdDetails.ColorMode.set -> void
+Egami.Formats.Psd.PsdDetails.ColorModeData.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Psd.PsdDetails.ColorModeData.set -> void
+Egami.Formats.Psd.PsdDetails.Compression.get -> Egami.Formats.Psd.PsdCompression
+Egami.Formats.Psd.PsdDetails.Compression.set -> void
+Egami.Formats.Psd.PsdDetails.ExtraChannels.get -> System.Collections.Generic.IList<string!>!
+Egami.Formats.Psd.PsdDetails.ExtraChannels.set -> void
+Egami.Formats.Psd.PsdDetails.HasRealComposite.get -> bool
+Egami.Formats.Psd.PsdDetails.HasRealComposite.set -> void
+Egami.Formats.Psd.PsdDetails.Layers.get -> System.Collections.Generic.IList<Egami.Formats.Psd.PsdLayer!>!
+Egami.Formats.Psd.PsdDetails.Layers.set -> void
+Egami.Formats.Psd.PsdDetails.OtherResources.get -> System.Collections.Generic.IList<Egami.Formats.Psd.PsdResource!>!
+Egami.Formats.Psd.PsdDetails.PsdDetails() -> void
+Egami.Formats.Psd.PsdDetails.Version.get -> int
+Egami.Formats.Psd.PsdDetails.Version.set -> void
+Egami.Formats.Psd.PsdFormat
+Egami.Formats.Psd.PsdLayer
+Egami.Formats.Psd.PsdLayer.<Clone>$() -> Egami.Formats.Psd.PsdLayer!
+Egami.Formats.Psd.PsdLayer.BlendMode.get -> Egami.Operations.BlendMode?
+Egami.Formats.Psd.PsdLayer.BlendMode.init -> void
+Egami.Formats.Psd.PsdLayer.BlendModeKey.get -> string!
+Egami.Formats.Psd.PsdLayer.BlendModeKey.init -> void
+Egami.Formats.Psd.PsdLayer.Bounds.get -> Egami.Rect
+Egami.Formats.Psd.PsdLayer.Bounds.init -> void
+Egami.Formats.Psd.PsdLayer.Deconstruct(out string! Name, out Egami.Rect Bounds, out int Opacity, out string! BlendModeKey, out Egami.Operations.BlendMode? BlendMode, out bool IsVisible, out bool IsClipped, out Egami.Formats.Psd.PsdLayerKind Kind, out int Level) -> void
+Egami.Formats.Psd.PsdLayer.Equals(Egami.Formats.Psd.PsdLayer? other) -> bool
+Egami.Formats.Psd.PsdLayer.IsClipped.get -> bool
+Egami.Formats.Psd.PsdLayer.IsClipped.init -> void
+Egami.Formats.Psd.PsdLayer.IsVisible.get -> bool
+Egami.Formats.Psd.PsdLayer.IsVisible.init -> void
+Egami.Formats.Psd.PsdLayer.Kind.get -> Egami.Formats.Psd.PsdLayerKind
+Egami.Formats.Psd.PsdLayer.Kind.init -> void
+Egami.Formats.Psd.PsdLayer.Level.get -> int
+Egami.Formats.Psd.PsdLayer.Level.init -> void
+Egami.Formats.Psd.PsdLayer.Name.get -> string!
+Egami.Formats.Psd.PsdLayer.Name.init -> void
+Egami.Formats.Psd.PsdLayer.Opacity.get -> int
+Egami.Formats.Psd.PsdLayer.Opacity.init -> void
+Egami.Formats.Psd.PsdLayer.PsdLayer(string! Name, Egami.Rect Bounds, int Opacity, string! BlendModeKey, Egami.Operations.BlendMode? BlendMode, bool IsVisible, bool IsClipped, Egami.Formats.Psd.PsdLayerKind Kind, int Level) -> void
+Egami.Formats.Psd.PsdLayerKind
+Egami.Formats.Psd.PsdLayerKind.ClosedGroup = 2 -> Egami.Formats.Psd.PsdLayerKind
+Egami.Formats.Psd.PsdLayerKind.GroupEnd = 3 -> Egami.Formats.Psd.PsdLayerKind
+Egami.Formats.Psd.PsdLayerKind.Layer = 0 -> Egami.Formats.Psd.PsdLayerKind
+Egami.Formats.Psd.PsdLayerKind.OpenGroup = 1 -> Egami.Formats.Psd.PsdLayerKind
+Egami.Formats.Psd.PsdResource
+Egami.Formats.Psd.PsdResource.<Clone>$() -> Egami.Formats.Psd.PsdResource!
+Egami.Formats.Psd.PsdResource.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Psd.PsdResource.Data.init -> void
+Egami.Formats.Psd.PsdResource.Deconstruct(out int Id, out string! Name, out System.ReadOnlyMemory<byte> Data) -> void
+Egami.Formats.Psd.PsdResource.Equals(Egami.Formats.Psd.PsdResource? other) -> bool
+Egami.Formats.Psd.PsdResource.Id.get -> int
+Egami.Formats.Psd.PsdResource.Id.init -> void
+Egami.Formats.Psd.PsdResource.Name.get -> string!
+Egami.Formats.Psd.PsdResource.Name.init -> void
+Egami.Formats.Psd.PsdResource.PsdResource(int Id, string! Name, System.ReadOnlyMemory<byte> Data) -> void
 Egami.Formats.RasterAccess
 Egami.Formats.RasterAccess.Buffered = 0 -> Egami.Formats.RasterAccess
 Egami.Formats.RasterAccess.Streamed = 1 -> Egami.Formats.RasterAccess
@@ -1656,6 +1731,13 @@ override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.<Clone>$() -> Egami.Format
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.GetHashCode() -> int
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.ToString() -> string!
+override Egami.Formats.Psd.PsdDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Psd.PsdLayer.Equals(object? obj) -> bool
+override Egami.Formats.Psd.PsdLayer.GetHashCode() -> int
+override Egami.Formats.Psd.PsdLayer.ToString() -> string!
+override Egami.Formats.Psd.PsdResource.Equals(object? obj) -> bool
+override Egami.Formats.Psd.PsdResource.GetHashCode() -> int
+override Egami.Formats.Psd.PsdResource.ToString() -> string!
 override Egami.Formats.RowReader<TNatural>.Layout.get -> Egami.Pixels.PixelLayoutInfo
 override Egami.Formats.Tiff.TiffDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Tiff.TiffReaderOptions.<Clone>$() -> Egami.Formats.Tiff.TiffReaderOptions!
@@ -1905,6 +1987,11 @@ static Egami.Formats.Jpeg2000.Jpeg2000Component.operator ==(Egami.Formats.Jpeg20
 static Egami.Formats.Jpeg2000.Jpeg2000Format.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator !=(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator ==(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
+static Egami.Formats.Psd.PsdFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Psd.PsdLayer.operator !=(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
+static Egami.Formats.Psd.PsdLayer.operator ==(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
+static Egami.Formats.Psd.PsdResource.operator !=(Egami.Formats.Psd.PsdResource? left, Egami.Formats.Psd.PsdResource? right) -> bool
+static Egami.Formats.Psd.PsdResource.operator ==(Egami.Formats.Psd.PsdResource? left, Egami.Formats.Psd.PsdResource? right) -> bool
 static Egami.Formats.Tiff.TiffFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Tiff.TiffReaderOptions.operator !=(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool
 static Egami.Formats.Tiff.TiffReaderOptions.operator ==(Egami.Formats.Tiff.TiffReaderOptions? left, Egami.Formats.Tiff.TiffReaderOptions? right) -> bool

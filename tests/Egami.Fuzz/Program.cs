@@ -31,6 +31,9 @@ using DrawingPath = Egami.Drawing.Path;
 // code-block bytes in every code-block style. The svgpath target (Phase 2.6.2) reads SVG path data strictly, with TryParseSvg and
 // leniently, which must agree; writes it back every way, which must read again to the same path; and runs small paths through
 // measuring, dashing, stroke outlines and the boolean engine.
+// The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
+// best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
+// as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -127,7 +130,9 @@ static Action<Stream> Target(string name) => name switch
     "cff" => LoadCff,
     "subset" => SubsetFont,
     "svgpath" => ParseSvgPath,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath."),
+    "ico" => LoadIco,
+    "icoentry" => LoadIcoEntry,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath, ico, icoentry."),
 };
 
 static EgamiContext Context()
@@ -1170,6 +1175,82 @@ static void LoadJpeg2000(Stream stream)
             // Part 2 and High-Throughput coding tools say so.
         }
     }
+}
+
+// Phase 2.3.3: ICO and CUR, as icons and as cursors. Every entry LoadAll finds must write back exactly.
+static void LoadIco(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    IcoEvery(data);
+    if (data.Length > 4 && data[2] is 1 or 2)
+    {
+        data[2] ^= 3;
+        IcoEvery(data);
+    }
+}
+
+static void IcoEvery(byte[] data)
+{
+    EgamiContext context = Context();
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery };
+        try
+        {
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster best = Raster.Load(data, context, options);
+            using RasterList entries = Raster.LoadAll<Rgba8>(data, context, options);
+            if (info.Width != best.Width || info.Height != best.Height || info.ImageCount != entries.Count)
+            {
+                throw new InvalidOperationException("Probe, Load and LoadAll disagree.");
+            }
+
+            using Raster<Rgba8> reduced = Raster.Load<Rgba8>(data, context, options with { MinimumSize = new Size(Math.Max(1, info.Width / 3), 1) });
+            using (RasterDecoder decoder = RasterDecoder.Open(data, context, options))
+            using (Raster rows = decoder.ReadAll())
+            {
+            }
+
+            if (entries.Select(e => (e.Width, e.Height)).Distinct().Count() != entries.Count || entries.Any(e => e.Width > 256 || e.Height > 256))
+            {
+                // Two entries of a size cannot both be written, and entries over 256 are fitted to 256.
+                continue;
+            }
+
+            using MemoryStream written = new();
+            Raster.SaveAll(entries, written, data[2] == 2 ? Egami.Formats.Ico.CurFormat.Info : Egami.Formats.Ico.IcoFormat.Info);
+            using RasterList again = Raster.LoadAll<Rgba8>(written.ToArray(), context);
+            foreach (Raster<Rgba8> entry in entries.Cast<Raster<Rgba8>>())
+            {
+                Raster<Rgba8> back = (Raster<Rgba8>)again.First(r => r.Width == entry.Width && r.Height == entry.Height);
+                for (int y = 0; y < entry.Height; y++)
+                {
+                    if (!entry.Row(y).SequenceEqual(back.Row(y)))
+                    {
+                        throw new InvalidOperationException($"A {entry.Width}x{entry.Height} entry did not write back exactly.");
+                    }
+                }
+            }
+        }
+        catch (EgamiException)
+        {
+        }
+    }
+}
+
+// Phase 2.3.3: the input as the data of an icon's one entry, behind a directory the target writes.
+static void LoadIcoEntry(Stream stream)
+{
+    byte[] entry = ReadAll(stream);
+    byte[] data = new byte[22 + entry.Length];
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(2), 1);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(4), 1);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(10), 1);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(data.AsSpan(12), 32);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(14), (uint)entry.Length);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(18), 22);
+    entry.CopyTo(data, 22);
+    IcoEvery(data);
 }
 
 // Phase 2.3.4: JPEG 2000's tier 1 fed directly. The first eight bytes pick the code-block's size, its band's orientation, its

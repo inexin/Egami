@@ -1,0 +1,122 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Group",
+  "kind": "group",
+  "visible": true,
+  "opacity": 255,
+  "blend": "None",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Inner",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 128,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 1
+ },
+ {
+  "name": "Nested",
+  "kind": "group",
+  "visible": true,
+  "opacity": 255,
+  "blend": "None",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 1
+ },
+ {
+  "name": "Dyp æøå 深",
+  "kind": "pixel",
+  "visible": false,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 2
+ },
+ {
+  "name": "Clipped",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.SCREEN",
+  "clipping": true,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 2
+ },
+ {
+  "name": "Clipped",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.SCREEN",
+  "clipping": true,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 2
+ },
+ {
+  "name": "Top — ü",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.DIFFERENCE",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   9,
+   6
+  ],
+  "depth": 0
+ }
+]

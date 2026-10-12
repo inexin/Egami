@@ -1,0 +1,706 @@
+{
+ "files": {
+  "bad/depth7.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 7,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: improper image header `/w/tests/images/psd/bad//depth7.psd' @ error/psd.c/ReadPSDImage/2480.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//depth7.psd'"
+  },
+  "bad/huge.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 300000,
+    "mode": 3,
+    "version": 1,
+    "width": 300000
+   },
+   "magickError": "magick: width or height exceeds limit `/w/tests/images/psd/bad//huge.psd' @ error/psd.c/ReadPSDImage/2473.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//huge.psd'"
+  },
+  "bad/mode5.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 5,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//mode5.psd'"
+  },
+  "bad/no-channels.psd": {
+   "header": {
+    "channels": 0,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: missing image channel `/w/tests/images/psd/bad//no-channels.psd' @ error/psd.c/ReadPSDImage/2466.",
+   "pillowError": "not enough channels"
+  },
+  "bad/resources-too-long.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//resources-too-long.psd' @ error/psd.c/ReadPSDImage/2615.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//resources-too-long.psd'"
+  },
+  "bad/rle-counts.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//rle-counts.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "image file is truncated (0 bytes not processed)",
+   "pillowMode": "RGB"
+  },
+  "bad/signature.psd": {
+   "magickError": "magick: improper image header `/w/tests/images/psd/bad//signature.psd' @ error/psd.c/ReadPSDImage/2462.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//signature.psd'"
+  },
+  "bad/truncated.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//truncated.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "image file is truncated (59 bytes not processed)",
+   "pillowMode": "RGB"
+  },
+  "bad/version3.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 3,
+    "width": 64
+   },
+   "magickError": "magick: improper image header `/w/tests/images/psd/bad//version3.psd' @ error/psd.c/ReadPSDImage/2462.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/bad//version3.psd'"
+  },
+  "bitmap-raw.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 1,
+    "height": 48,
+    "mode": 0,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "1",
+   "truth": "Gray8"
+  },
+  "bitmap-rle.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 1,
+    "height": 48,
+    "mode": 0,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "1",
+   "truth": "Gray8"
+  },
+  "cmyk16.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 16,
+    "height": 48,
+    "mode": 4,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/cmyk16.psd'",
+   "truth": "Cmyk16"
+  },
+  "cmyk8-alpha.psd": {
+   "header": {
+    "channels": 5,
+    "depth": 8,
+    "height": 48,
+    "mode": 4,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "CMYK",
+   "truth": "Rgba8"
+  },
+  "cmyk8.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 4,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "CMYK",
+   "truth": "Cmyk8"
+  },
+  "duotone8.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 8,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L",
+   "truth": "Gray8"
+  },
+  "gray16-alpha.psb": {
+   "header": {
+    "channels": 2,
+    "depth": 16,
+    "height": 48,
+    "mode": 1,
+    "version": 2,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/gray16-alpha.psb'",
+   "truth": "GrayAlpha16"
+  },
+  "gray16-rle.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 16,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/gray16-rle.psd'",
+   "truth": "Gray16"
+  },
+  "gray16-zip.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 16,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray16-zip.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/gray16-zip.psd'",
+   "truth": "Gray16"
+  },
+  "gray16-zipp.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 16,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray16-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/gray16-zipp.psd'",
+   "truth": "Gray16"
+  },
+  "gray32-raw.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 32,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/gray32-raw.psd'",
+   "truth": "GrayF32"
+  },
+  "gray32-zipp.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 32,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray32-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/gray32-zipp.psd'",
+   "truth": "GrayF32"
+  },
+  "gray8-alpha.psd": {
+   "header": {
+    "channels": 2,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L",
+   "truth": "GrayAlpha8"
+  },
+  "gray8-raw.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L",
+   "truth": "Gray8"
+  },
+  "gray8-rle.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L",
+   "truth": "Gray8"
+  },
+  "gray8-zip.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray8-zip.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot load this image",
+   "pillowMode": "L",
+   "truth": "Gray8"
+  },
+  "gray8-zipp.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray8-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot load this image",
+   "pillowMode": "L",
+   "truth": "Gray8"
+  },
+  "indexed-transparent.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 2,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "P",
+   "truth": "Rgba8"
+  },
+  "indexed.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 2,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "P",
+   "truth": "Rgb8"
+  },
+  "lab16.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 16,
+    "height": 48,
+    "mode": 9,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/lab16.psd'",
+   "truth": "Rgb16",
+   "truthTolerance": 1
+  },
+  "lab8-alpha.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 9,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "LAB",
+   "truth": "Rgba8",
+   "truthTolerance": 1
+  },
+  "lab8.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 9,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "LAB",
+   "truth": "Rgb8",
+   "truthTolerance": 1
+  },
+  "layers.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "magick-cmyk.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 4,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "CMYK"
+  },
+  "magick-gray.psd": {
+   "header": {
+    "channels": 1,
+    "depth": 8,
+    "height": 48,
+    "mode": 1,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L"
+  },
+  "magick-none.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "magick-rgb.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB"
+  },
+  "magick-rgb16.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 16,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/magick-rgb16.psd'"
+  },
+  "magick-rgba.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGBA"
+  },
+  "magick-rgba16.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 16,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/magick-rgba16.psd'"
+  },
+  "magick-zip.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot load this image",
+   "pillowMode": "RGB"
+  },
+  "many-layers.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "metadata.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "multichannel16.psd": {
+   "header": {
+    "channels": 2,
+    "depth": 16,
+    "height": 48,
+    "mode": 7,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/multichannel16.psd'",
+   "truth": "Gray16"
+  },
+  "multichannel8.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 7,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "L",
+   "truth": "Gray8"
+  },
+  "no-composite.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "rgb16-alpha.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 16,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb16-alpha.psd'",
+   "truth": "Rgba16"
+  },
+  "rgb16-rle.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 16,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb16-rle.psd'",
+   "truth": "Rgb16"
+  },
+  "rgb16-zipp.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 16,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb16-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb16-zipp.psd'",
+   "truth": "Rgb16"
+  },
+  "rgb32-alpha.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 32,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb32-alpha.psd'"
+  },
+  "rgb32-raw.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 32,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb32-raw.psd'",
+   "truth": "RgbF32"
+  },
+  "rgb32-zipp.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 32,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb32-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb32-zipp.psd'",
+   "truth": "RgbF32"
+  },
+  "rgb8-alpha.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGBA",
+   "truth": "Rgba8"
+  },
+  "rgb8-extra.psd": {
+   "header": {
+    "channels": 4,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGBA",
+   "truth": "Rgb8"
+  },
+  "rgb8-raw.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "rgb8-rle.psb": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 2,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/rgb8-rle.psb'",
+   "truth": "Rgb8"
+  },
+  "rgb8-rle.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "rgb8-zip.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb8-zip.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot load this image",
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  },
+  "rgb8-zipp.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 3,
+    "version": 1,
+    "width": 64
+   },
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb8-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "pillowError": "cannot load this image",
+   "pillowMode": "RGB",
+   "truth": "Rgb8"
+  }
+ },
+ "tools": {
+  "exiftool": "13.55",
+  "imagemagick": "Version: ImageMagick 7.1.2-32 Q16-HDRI x86_64 24766 https://imagemagick.org",
+  "pillow": "12.3.0"
+ }
+}

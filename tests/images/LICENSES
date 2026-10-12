@@ -147,3 +147,10 @@ geometry/
 ico/, ../reference/ico/
   ICO and CUR files made by tools/make-ico-references.py from ops/duck.png and ops/egret.png above (hand-written entries, Pillow
   12.3 and ImageMagick 7.1.2), and the decodes of every entry by ImageMagick and Pillow. Public domain, as their sources.
+
+psd/, ../reference/psd/
+  PSD and PSB files made by tools/make-psd-references.py from ops/duck.png above (written byte by byte, and by ImageMagick
+  7.1.2), and their decodes by ImageMagick, Pillow, exiftool and psd-tools. Public domain, as their source.
+
+fuzz/icoentry-seeds/
+  Entry data cut from the ico/ files above. Public domain.
