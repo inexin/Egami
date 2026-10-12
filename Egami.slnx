@@ -20,12 +20,14 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Egami/Egami.csproj" />
+    <Project Path="src/Egami.Css/Egami.Css.csproj" />
     <Project Path="src/Egami.Drawing/Egami.Drawing.csproj" />
     <Project Path="src/Egami.Fonts/Egami.Fonts.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
+    <Project Path="tests/Egami.Css.Tests/Egami.Css.Tests.csproj" />
     <Project Path="tests/Egami.DocSamples/Egami.DocSamples.csproj" />
     <Project Path="tests/Egami.Drawing.Tests/Egami.Drawing.Tests.csproj" />
     <Project Path="tests/Egami.Fonts.Tests/Egami.Fonts.Tests.csproj" />

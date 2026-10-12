@@ -1,0 +1,760 @@
+#nullable enable
+abstract Egami.Css.CssComponentValue.<Clone>$() -> Egami.Css.CssComponentValue!
+abstract Egami.Css.CssComponentValue.Column.get -> int
+abstract Egami.Css.CssComponentValue.Line.get -> int
+abstract Egami.Css.CssTransformFunction.<Clone>$() -> Egami.Css.CssTransformFunction!
+abstract Egami.Css.CssTransformFunction.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+const Egami.Css.ICssElement.XmlNamespace = "http://www.w3.org/XML/1998/namespace" -> string!
+Egami.Css.CssAngle
+Egami.Css.CssAngle.CssAngle() -> void
+Egami.Css.CssAngle.CssAngle(double Degrees) -> void
+Egami.Css.CssAngle.Deconstruct(out double Degrees) -> void
+Egami.Css.CssAngle.Degrees.get -> double
+Egami.Css.CssAngle.Degrees.init -> void
+Egami.Css.CssAngle.Equals(Egami.Css.CssAngle other) -> bool
+Egami.Css.CssAngle.Radians.get -> double
+Egami.Css.CssAttribute
+Egami.Css.CssAttribute.CssAttribute() -> void
+Egami.Css.CssAttribute.CssAttribute(string? NamespaceUri, string! LocalName, string! Value) -> void
+Egami.Css.CssAttribute.Deconstruct(out string? NamespaceUri, out string! LocalName, out string! Value) -> void
+Egami.Css.CssAttribute.Equals(Egami.Css.CssAttribute other) -> bool
+Egami.Css.CssAttribute.LocalName.get -> string!
+Egami.Css.CssAttribute.LocalName.init -> void
+Egami.Css.CssAttribute.NamespaceUri.get -> string?
+Egami.Css.CssAttribute.NamespaceUri.init -> void
+Egami.Css.CssAttribute.Value.get -> string!
+Egami.Css.CssAttribute.Value.init -> void
+Egami.Css.CssCalc
+Egami.Css.CssCalc.HasPercentage.get -> bool
+Egami.Css.CssCalc.IsNumber.get -> bool
+Egami.Css.CssCalc.Resolve(System.Func<Egami.Css.CssUnit, double>! pixelsPerUnit) -> double
+Egami.Css.CssCascade
+Egami.Css.CssCascade.Cascade(Egami.Css.ICssElement! element, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>? presentationHints = null, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>? inlineStyle = null, string? pseudoElement = null) -> Egami.Css.CssCascadedStyle!
+Egami.Css.CssCascade.Compute(Egami.Css.CssCascadedStyle! cascaded, Egami.Css.CssComputedStyle? parent) -> Egami.Css.CssComputedStyle!
+Egami.Css.CssCascade.CssCascade(System.Collections.Generic.IEnumerable<(Egami.Css.CssStyleSheet! Sheet, Egami.Css.CssOrigin Origin)>! sheets, Egami.Css.CssCascadeOptions? options = null) -> void
+Egami.Css.CssCascade.Registry.get -> Egami.Css.CssPropertyRegistry!
+Egami.Css.CssCascadedStyle
+Egami.Css.CssCascadedStyle.Count.get -> int
+Egami.Css.CssCascadedStyle.CssCascadedStyle() -> void
+Egami.Css.CssCascadedStyle.GetValueText(string! name) -> string?
+Egami.Css.CssCascadedStyle.Properties.get -> System.Collections.Generic.IEnumerable<string!>!
+Egami.Css.CssCascadedStyle.TryGetDeclaration(string! name, out Egami.Css.CssDeclaration? declaration) -> bool
+Egami.Css.CssCascadedStyle.TryGetDeclaration(string! name, out Egami.Css.CssDeclaration? declaration, out Egami.Css.CssOrigin origin) -> bool
+Egami.Css.CssCascadeOptions
+Egami.Css.CssCascadeOptions.<Clone>$() -> Egami.Css.CssCascadeOptions!
+Egami.Css.CssCascadeOptions.CssCascadeOptions() -> void
+Egami.Css.CssCascadeOptions.Equals(Egami.Css.CssCascadeOptions? other) -> bool
+Egami.Css.CssCascadeOptions.Media.get -> Egami.Css.CssMediaContext!
+Egami.Css.CssCascadeOptions.Media.init -> void
+Egami.Css.CssCascadeOptions.Registry.get -> Egami.Css.CssPropertyRegistry?
+Egami.Css.CssCascadeOptions.Registry.init -> void
+Egami.Css.CssCascadeOptions.Supports.get -> System.Func<Egami.Css.CssDeclaration!, bool>?
+Egami.Css.CssCascadeOptions.Supports.init -> void
+Egami.Css.CssColor
+Egami.Css.CssColor.A.get -> float
+Egami.Css.CssColor.B.get -> float
+Egami.Css.CssColor.CssColor() -> void
+Egami.Css.CssColor.CssColor(float r, float g, float b, float a = 1) -> void
+Egami.Css.CssColor.Equals(Egami.Css.CssColor other) -> bool
+Egami.Css.CssColor.G.get -> float
+Egami.Css.CssColor.IsCurrentColor.get -> bool
+Egami.Css.CssColor.Level.get -> int
+Egami.Css.CssColor.R.get -> float
+Egami.Css.CssColor.ToRgba8() -> (byte R, byte G, byte B, byte A)
+Egami.Css.CssComponentValue
+Egami.Css.CssComponentValue.CssComponentValue(Egami.Css.CssComponentValue! original) -> void
+Egami.Css.CssComputedStyle
+Egami.Css.CssComputedStyle.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!>>!
+Egami.Css.CssComputedStyle.GetValueText(string! name) -> string?
+Egami.Css.CssComputedStyle.IsSetOnElement(string! name) -> bool
+Egami.Css.CssComputedStyle.Parent.get -> Egami.Css.CssComputedStyle?
+Egami.Css.CssComputedStyle.TryGetValue(string! name, out System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>? value) -> bool
+Egami.Css.CssDeclaration
+Egami.Css.CssDeclaration.Column.get -> int
+Egami.Css.CssDeclaration.Column.init -> void
+Egami.Css.CssDeclaration.CssDeclaration(string! name, System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! value, bool important = false) -> void
+Egami.Css.CssDeclaration.Important.get -> bool
+Egami.Css.CssDeclaration.IsCustomProperty.get -> bool
+Egami.Css.CssDeclaration.Line.get -> int
+Egami.Css.CssDeclaration.Line.init -> void
+Egami.Css.CssDeclaration.Name.get -> string!
+Egami.Css.CssDeclaration.Value.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+Egami.Css.CssDeclaration.ValueText.get -> string!
+Egami.Css.CssFont
+Egami.Css.CssFont.Families.get -> Egami.Css.CssFontFamilyList?
+Egami.Css.CssFont.LineHeight.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>?
+Egami.Css.CssFont.ObliqueAngle.get -> double?
+Egami.Css.CssFont.Size.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+Egami.Css.CssFont.Stretch.get -> string!
+Egami.Css.CssFont.Style.get -> string!
+Egami.Css.CssFont.SystemFont.get -> string?
+Egami.Css.CssFont.VariantCaps.get -> string!
+Egami.Css.CssFont.Weight.get -> Egami.Css.CssFontWeight
+Egami.Css.CssFontFace
+Egami.Css.CssFontFace.Display.get -> string!
+Egami.Css.CssFontFace.Family.get -> string?
+Egami.Css.CssFontFace.FeatureSettings.get -> string?
+Egami.Css.CssFontFace.ObliqueAngle.get -> Egami.Css.CssRange?
+Egami.Css.CssFontFace.Sources.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssFontSource!>!
+Egami.Css.CssFontFace.Stretch.get -> Egami.Css.CssRange?
+Egami.Css.CssFontFace.Style.get -> string?
+Egami.Css.CssFontFace.UnicodeRanges.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssUnicodeRange>!
+Egami.Css.CssFontFace.VariationSettings.get -> string?
+Egami.Css.CssFontFace.Weight.get -> Egami.Css.CssRange?
+Egami.Css.CssFontFaceRule
+Egami.Css.CssFontFaceRule.Declarations.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>!
+Egami.Css.CssFontFaceRule.FontFace.get -> Egami.Css.CssFontFace!
+Egami.Css.CssFontFamily
+Egami.Css.CssFontFamily.CssFontFamily() -> void
+Egami.Css.CssFontFamily.CssFontFamily(string! Name, bool IsGeneric) -> void
+Egami.Css.CssFontFamily.Deconstruct(out string! Name, out bool IsGeneric) -> void
+Egami.Css.CssFontFamily.Equals(Egami.Css.CssFontFamily other) -> bool
+Egami.Css.CssFontFamily.IsGeneric.get -> bool
+Egami.Css.CssFontFamily.IsGeneric.init -> void
+Egami.Css.CssFontFamily.Name.get -> string!
+Egami.Css.CssFontFamily.Name.init -> void
+Egami.Css.CssFontFamilyList
+Egami.Css.CssFontFamilyList.Families.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssFontFamily>!
+Egami.Css.CssFontSource
+Egami.Css.CssFontSource.<Clone>$() -> Egami.Css.CssFontSource!
+Egami.Css.CssFontSource.CssFontSource(string? Url, string? LocalName, string? Format, System.Collections.Generic.IReadOnlyList<string!>! Techs) -> void
+Egami.Css.CssFontSource.Deconstruct(out string? Url, out string? LocalName, out string? Format, out System.Collections.Generic.IReadOnlyList<string!>! Techs) -> void
+Egami.Css.CssFontSource.Equals(Egami.Css.CssFontSource? other) -> bool
+Egami.Css.CssFontSource.Format.get -> string?
+Egami.Css.CssFontSource.Format.init -> void
+Egami.Css.CssFontSource.LocalName.get -> string?
+Egami.Css.CssFontSource.LocalName.init -> void
+Egami.Css.CssFontSource.Techs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Css.CssFontSource.Techs.init -> void
+Egami.Css.CssFontSource.Url.get -> string?
+Egami.Css.CssFontSource.Url.init -> void
+Egami.Css.CssFontWeight
+Egami.Css.CssFontWeight.CssFontWeight() -> void
+Egami.Css.CssFontWeight.CssFontWeight(double Value, Egami.Css.CssFontWeightKind Kind = Egami.Css.CssFontWeightKind.Absolute) -> void
+Egami.Css.CssFontWeight.Deconstruct(out double Value, out Egami.Css.CssFontWeightKind Kind) -> void
+Egami.Css.CssFontWeight.Equals(Egami.Css.CssFontWeight other) -> bool
+Egami.Css.CssFontWeight.Kind.get -> Egami.Css.CssFontWeightKind
+Egami.Css.CssFontWeight.Kind.init -> void
+Egami.Css.CssFontWeight.Resolve(double parentWeight) -> double
+Egami.Css.CssFontWeight.Value.get -> double
+Egami.Css.CssFontWeight.Value.init -> void
+Egami.Css.CssFontWeightKind
+Egami.Css.CssFontWeightKind.Absolute = 0 -> Egami.Css.CssFontWeightKind
+Egami.Css.CssFontWeightKind.Bolder = 1 -> Egami.Css.CssFontWeightKind
+Egami.Css.CssFontWeightKind.Lighter = 2 -> Egami.Css.CssFontWeightKind
+Egami.Css.CssFunction
+Egami.Css.CssFunction.Arguments.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+Egami.Css.CssFunction.Arguments.init -> void
+Egami.Css.CssFunction.CssFunction(string! Name, System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! Arguments) -> void
+Egami.Css.CssFunction.Deconstruct(out string! Name, out System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! Arguments) -> void
+Egami.Css.CssFunction.Equals(Egami.Css.CssFunction? other) -> bool
+Egami.Css.CssFunction.Name.get -> string!
+Egami.Css.CssFunction.Name.init -> void
+Egami.Css.CssFunction.NameIs(string! lowercaseName) -> bool
+Egami.Css.CssImportRule
+Egami.Css.CssImportRule.Layer.get -> string?
+Egami.Css.CssImportRule.Media.get -> Egami.Css.CssMediaQueryList!
+Egami.Css.CssImportRule.SupportsText.get -> string?
+Egami.Css.CssImportRule.Url.get -> string!
+Egami.Css.CssLayerRule
+Egami.Css.CssLayerRule.Names.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Css.CssLayerRule.Rules.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssRule!>?
+Egami.Css.CssLength
+Egami.Css.CssLength.CssLength() -> void
+Egami.Css.CssLength.CssLength(double Value, Egami.Css.CssUnit Unit) -> void
+Egami.Css.CssLength.Deconstruct(out double Value, out Egami.Css.CssUnit Unit) -> void
+Egami.Css.CssLength.Equals(Egami.Css.CssLength other) -> bool
+Egami.Css.CssLength.IsAbsolute.get -> bool
+Egami.Css.CssLength.TryToPixels(out double pixels) -> bool
+Egami.Css.CssLength.Unit.get -> Egami.Css.CssUnit
+Egami.Css.CssLength.Unit.init -> void
+Egami.Css.CssLength.Value.get -> double
+Egami.Css.CssLength.Value.init -> void
+Egami.Css.CssMatrixTransform
+Egami.Css.CssMatrixTransform.A.get -> double
+Egami.Css.CssMatrixTransform.A.init -> void
+Egami.Css.CssMatrixTransform.B.get -> double
+Egami.Css.CssMatrixTransform.B.init -> void
+Egami.Css.CssMatrixTransform.C.get -> double
+Egami.Css.CssMatrixTransform.C.init -> void
+Egami.Css.CssMatrixTransform.CssMatrixTransform(double A, double B, double C, double D, double E, double F) -> void
+Egami.Css.CssMatrixTransform.D.get -> double
+Egami.Css.CssMatrixTransform.D.init -> void
+Egami.Css.CssMatrixTransform.Deconstruct(out double A, out double B, out double C, out double D, out double E, out double F) -> void
+Egami.Css.CssMatrixTransform.E.get -> double
+Egami.Css.CssMatrixTransform.E.init -> void
+Egami.Css.CssMatrixTransform.Equals(Egami.Css.CssMatrixTransform? other) -> bool
+Egami.Css.CssMatrixTransform.F.get -> double
+Egami.Css.CssMatrixTransform.F.init -> void
+Egami.Css.CssMediaContext
+Egami.Css.CssMediaContext.<Clone>$() -> Egami.Css.CssMediaContext!
+Egami.Css.CssMediaContext.Color.get -> int
+Egami.Css.CssMediaContext.Color.init -> void
+Egami.Css.CssMediaContext.CssMediaContext() -> void
+Egami.Css.CssMediaContext.Equals(Egami.Css.CssMediaContext? other) -> bool
+Egami.Css.CssMediaContext.Feature.get -> System.Func<string!, System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>?, bool?>?
+Egami.Css.CssMediaContext.Feature.init -> void
+Egami.Css.CssMediaContext.FontSize.get -> double
+Egami.Css.CssMediaContext.FontSize.init -> void
+Egami.Css.CssMediaContext.Height.get -> double
+Egami.Css.CssMediaContext.Height.init -> void
+Egami.Css.CssMediaContext.MediaType.get -> string!
+Egami.Css.CssMediaContext.MediaType.init -> void
+Egami.Css.CssMediaContext.PrefersColorScheme.get -> string!
+Egami.Css.CssMediaContext.PrefersColorScheme.init -> void
+Egami.Css.CssMediaContext.PrefersReducedMotion.get -> bool
+Egami.Css.CssMediaContext.PrefersReducedMotion.init -> void
+Egami.Css.CssMediaContext.Resolution.get -> double
+Egami.Css.CssMediaContext.Resolution.init -> void
+Egami.Css.CssMediaContext.Width.get -> double
+Egami.Css.CssMediaContext.Width.init -> void
+Egami.Css.CssMediaQueryList
+Egami.Css.CssMediaQueryList.Count.get -> int
+Egami.Css.CssMediaQueryList.Matches(Egami.Css.CssMediaContext! context) -> bool
+Egami.Css.CssMediaQueryList.MediaText.get -> string!
+Egami.Css.CssMediaRule
+Egami.Css.CssMediaRule.Media.get -> Egami.Css.CssMediaQueryList!
+Egami.Css.CssMediaRule.Rules.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssRule!>!
+Egami.Css.CssNamespaceRule
+Egami.Css.CssNamespaceRule.Prefix.get -> string?
+Egami.Css.CssNamespaceRule.Uri.get -> string!
+Egami.Css.CssNamespaces
+Egami.Css.CssNamespaces.CssNamespaces() -> void
+Egami.Css.CssNamespaces.DefaultNamespace.get -> string?
+Egami.Css.CssNamespaces.Prefixes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Egami.Css.CssNamespaces.Set(string? prefix, string! namespaceUri) -> void
+Egami.Css.CssNamespaces.TryGetNamespace(string! prefix, out string! namespaceUri) -> bool
+Egami.Css.CssOrigin
+Egami.Css.CssOrigin.Author = 2 -> Egami.Css.CssOrigin
+Egami.Css.CssOrigin.User = 1 -> Egami.Css.CssOrigin
+Egami.Css.CssOrigin.UserAgent = 0 -> Egami.Css.CssOrigin
+Egami.Css.CssParseError
+Egami.Css.CssParseError.<Clone>$() -> Egami.Css.CssParseError!
+Egami.Css.CssParseError.Column.get -> int
+Egami.Css.CssParseError.Column.init -> void
+Egami.Css.CssParseError.CssParseError(int Line, int Column, string! Message) -> void
+Egami.Css.CssParseError.Deconstruct(out int Line, out int Column, out string! Message) -> void
+Egami.Css.CssParseError.Equals(Egami.Css.CssParseError? other) -> bool
+Egami.Css.CssParseError.Line.get -> int
+Egami.Css.CssParseError.Line.init -> void
+Egami.Css.CssParseError.Message.get -> string!
+Egami.Css.CssParseError.Message.init -> void
+Egami.Css.CssParseOptions
+Egami.Css.CssParseOptions.<Clone>$() -> Egami.Css.CssParseOptions!
+Egami.Css.CssParseOptions.CssParseOptions() -> void
+Egami.Css.CssParseOptions.Equals(Egami.Css.CssParseOptions? other) -> bool
+Egami.Css.CssParseOptions.Errors.get -> System.Action<Egami.Css.CssParseError!>?
+Egami.Css.CssParseOptions.Errors.init -> void
+Egami.Css.CssParseOptions.MaxNestingDepth.get -> int
+Egami.Css.CssParseOptions.MaxNestingDepth.init -> void
+Egami.Css.CssPropertyDefinition
+Egami.Css.CssPropertyDefinition.<Clone>$() -> Egami.Css.CssPropertyDefinition!
+Egami.Css.CssPropertyDefinition.CssPropertyDefinition(string! Name, bool Inherited, string? InitialValue) -> void
+Egami.Css.CssPropertyDefinition.Deconstruct(out string! Name, out bool Inherited, out string? InitialValue) -> void
+Egami.Css.CssPropertyDefinition.Equals(Egami.Css.CssPropertyDefinition? other) -> bool
+Egami.Css.CssPropertyDefinition.Inherited.get -> bool
+Egami.Css.CssPropertyDefinition.Inherited.init -> void
+Egami.Css.CssPropertyDefinition.InitialValue.get -> string?
+Egami.Css.CssPropertyDefinition.InitialValue.init -> void
+Egami.Css.CssPropertyDefinition.Name.get -> string!
+Egami.Css.CssPropertyDefinition.Name.init -> void
+Egami.Css.CssPropertyDefinition.Validate.get -> System.Func<System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!, bool>?
+Egami.Css.CssPropertyDefinition.Validate.init -> void
+Egami.Css.CssPropertyRegistry
+Egami.Css.CssPropertyRegistry.CssPropertyRegistry() -> void
+Egami.Css.CssPropertyRegistry.Properties.get -> System.Collections.Generic.IEnumerable<Egami.Css.CssPropertyDefinition!>!
+Egami.Css.CssPropertyRegistry.Register(Egami.Css.CssPropertyDefinition! definition) -> void
+Egami.Css.CssPropertyRegistry.RegisterShorthand(Egami.Css.CssShorthandDefinition! definition) -> void
+Egami.Css.CssPropertyRegistry.Shorthands.get -> System.Collections.Generic.IEnumerable<Egami.Css.CssShorthandDefinition!>!
+Egami.Css.CssPropertyRegistry.TryGetProperty(string! name, out Egami.Css.CssPropertyDefinition? definition) -> bool
+Egami.Css.CssPropertyRegistry.TryGetShorthand(string! name, out Egami.Css.CssShorthandDefinition? definition) -> bool
+Egami.Css.CssRange
+Egami.Css.CssRange.CssRange() -> void
+Egami.Css.CssRange.CssRange(double Min, double Max) -> void
+Egami.Css.CssRange.Deconstruct(out double Min, out double Max) -> void
+Egami.Css.CssRange.Equals(Egami.Css.CssRange other) -> bool
+Egami.Css.CssRange.Max.get -> double
+Egami.Css.CssRange.Max.init -> void
+Egami.Css.CssRange.Min.get -> double
+Egami.Css.CssRange.Min.init -> void
+Egami.Css.CssRotateTransform
+Egami.Css.CssRotateTransform.CenterX.get -> double?
+Egami.Css.CssRotateTransform.CenterX.init -> void
+Egami.Css.CssRotateTransform.CenterY.get -> double?
+Egami.Css.CssRotateTransform.CenterY.init -> void
+Egami.Css.CssRotateTransform.CssRotateTransform(double Degrees, double? CenterX = null, double? CenterY = null) -> void
+Egami.Css.CssRotateTransform.Deconstruct(out double Degrees, out double? CenterX, out double? CenterY) -> void
+Egami.Css.CssRotateTransform.Degrees.get -> double
+Egami.Css.CssRotateTransform.Degrees.init -> void
+Egami.Css.CssRotateTransform.Equals(Egami.Css.CssRotateTransform? other) -> bool
+Egami.Css.CssRule
+Egami.Css.CssRule.Column.get -> int
+Egami.Css.CssRule.Line.get -> int
+Egami.Css.CssScaleTransform
+Egami.Css.CssScaleTransform.CssScaleTransform(double X, double Y) -> void
+Egami.Css.CssScaleTransform.Deconstruct(out double X, out double Y) -> void
+Egami.Css.CssScaleTransform.Equals(Egami.Css.CssScaleTransform? other) -> bool
+Egami.Css.CssScaleTransform.X.get -> double
+Egami.Css.CssScaleTransform.X.init -> void
+Egami.Css.CssScaleTransform.Y.get -> double
+Egami.Css.CssScaleTransform.Y.init -> void
+Egami.Css.CssSelector
+Egami.Css.CssSelector.Matches(Egami.Css.ICssElement! element, Egami.Css.ICssElement? scope = null) -> bool
+Egami.Css.CssSelector.MatchesPseudoElement(Egami.Css.ICssElement! element, string? pseudoElement) -> bool
+Egami.Css.CssSelector.PseudoElement.get -> string?
+Egami.Css.CssSelector.Specificity.get -> Egami.Css.CssSpecificity
+Egami.Css.CssSelector.Text.get -> string!
+Egami.Css.CssSelectorList
+Egami.Css.CssSelectorList.Matches(Egami.Css.ICssElement! element, Egami.Css.ICssElement? scope = null) -> bool
+Egami.Css.CssSelectorList.Selectors.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssSelector!>!
+Egami.Css.CssSelectorList.Text.get -> string!
+Egami.Css.CssShorthandDefinition
+Egami.Css.CssShorthandDefinition.<Clone>$() -> Egami.Css.CssShorthandDefinition!
+Egami.Css.CssShorthandDefinition.CssShorthandDefinition(string! Name, System.Collections.Generic.IReadOnlyList<string!>! Longhands, System.Func<System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>?>! Expand) -> void
+Egami.Css.CssShorthandDefinition.Deconstruct(out string! Name, out System.Collections.Generic.IReadOnlyList<string!>! Longhands, out System.Func<System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>?>! Expand) -> void
+Egami.Css.CssShorthandDefinition.Equals(Egami.Css.CssShorthandDefinition? other) -> bool
+Egami.Css.CssShorthandDefinition.Expand.get -> System.Func<System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>?>!
+Egami.Css.CssShorthandDefinition.Expand.init -> void
+Egami.Css.CssShorthandDefinition.Longhands.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Css.CssShorthandDefinition.Longhands.init -> void
+Egami.Css.CssShorthandDefinition.Name.get -> string!
+Egami.Css.CssShorthandDefinition.Name.init -> void
+Egami.Css.CssSimpleBlock
+Egami.Css.CssSimpleBlock.CloseToken.get -> char
+Egami.Css.CssSimpleBlock.Content.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+Egami.Css.CssSimpleBlock.Content.init -> void
+Egami.Css.CssSimpleBlock.CssSimpleBlock(char OpenToken, System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! Content) -> void
+Egami.Css.CssSimpleBlock.Deconstruct(out char OpenToken, out System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! Content) -> void
+Egami.Css.CssSimpleBlock.Equals(Egami.Css.CssSimpleBlock? other) -> bool
+Egami.Css.CssSimpleBlock.OpenToken.get -> char
+Egami.Css.CssSimpleBlock.OpenToken.init -> void
+Egami.Css.CssSkewTransform
+Egami.Css.CssSkewTransform.CssSkewTransform(double XDegrees, double YDegrees) -> void
+Egami.Css.CssSkewTransform.Deconstruct(out double XDegrees, out double YDegrees) -> void
+Egami.Css.CssSkewTransform.Equals(Egami.Css.CssSkewTransform? other) -> bool
+Egami.Css.CssSkewTransform.XDegrees.get -> double
+Egami.Css.CssSkewTransform.XDegrees.init -> void
+Egami.Css.CssSkewTransform.YDegrees.get -> double
+Egami.Css.CssSkewTransform.YDegrees.init -> void
+Egami.Css.CssSpecificity
+Egami.Css.CssSpecificity.A.get -> int
+Egami.Css.CssSpecificity.A.init -> void
+Egami.Css.CssSpecificity.B.get -> int
+Egami.Css.CssSpecificity.B.init -> void
+Egami.Css.CssSpecificity.C.get -> int
+Egami.Css.CssSpecificity.C.init -> void
+Egami.Css.CssSpecificity.CompareTo(Egami.Css.CssSpecificity other) -> int
+Egami.Css.CssSpecificity.CssSpecificity() -> void
+Egami.Css.CssSpecificity.CssSpecificity(int A, int B, int C) -> void
+Egami.Css.CssSpecificity.Deconstruct(out int A, out int B, out int C) -> void
+Egami.Css.CssSpecificity.Equals(Egami.Css.CssSpecificity other) -> bool
+Egami.Css.CssStyleRule
+Egami.Css.CssStyleRule.Declarations.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>!
+Egami.Css.CssStyleRule.Selectors.get -> Egami.Css.CssSelectorList!
+Egami.Css.CssStyleRule.SelectorText.get -> string!
+Egami.Css.CssStyleSheet
+Egami.Css.CssStyleSheet.GetAllStyleRules() -> System.Collections.Generic.IEnumerable<Egami.Css.CssStyleRule!>!
+Egami.Css.CssStyleSheet.Namespaces.get -> Egami.Css.CssNamespaces!
+Egami.Css.CssStyleSheet.Rules.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssRule!>!
+Egami.Css.CssSupportsRule
+Egami.Css.CssSupportsRule.ConditionText.get -> string!
+Egami.Css.CssSupportsRule.IsValid.get -> bool
+Egami.Css.CssSupportsRule.Matches(System.Func<Egami.Css.CssDeclaration!, bool>! supports) -> bool
+Egami.Css.CssSupportsRule.Rules.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssRule!>!
+Egami.Css.CssToken
+Egami.Css.CssToken.Column.get -> int
+Egami.Css.CssToken.CssToken() -> void
+Egami.Css.CssToken.CssToken(Egami.Css.CssTokenKind kind, string? value = null, double number = 0, string? unit = null, bool isInteger = false, bool isIdHash = false, int line = 0, int column = 0) -> void
+Egami.Css.CssToken.Equals(Egami.Css.CssToken other) -> bool
+Egami.Css.CssToken.IsDelim(char c) -> bool
+Egami.Css.CssToken.IsIdent(string! name) -> bool
+Egami.Css.CssToken.IsIdHash.get -> bool
+Egami.Css.CssToken.IsInteger.get -> bool
+Egami.Css.CssToken.Kind.get -> Egami.Css.CssTokenKind
+Egami.Css.CssToken.Line.get -> int
+Egami.Css.CssToken.Number.get -> double
+Egami.Css.CssToken.Unit.get -> string!
+Egami.Css.CssToken.Value.get -> string!
+Egami.Css.CssTokenizer
+Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.AtKeyword = 2 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.BadString = 5 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.BadUrl = 7 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Cdc = 14 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Cdo = 13 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Colon = 15 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Comma = 17 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Delim = 8 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Dimension = 11 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.EndOfFile = 24 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Function = 1 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Hash = 3 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Ident = 0 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.LeftCurly = 22 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.LeftParenthesis = 20 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.LeftSquare = 18 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Number = 9 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Percentage = 10 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.RightCurly = 23 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.RightParenthesis = 21 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.RightSquare = 19 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Semicolon = 16 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.String = 4 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Url = 6 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenKind.Whitespace = 12 -> Egami.Css.CssTokenKind
+Egami.Css.CssTokenValue
+Egami.Css.CssTokenValue.CssTokenValue(Egami.Css.CssToken Token) -> void
+Egami.Css.CssTokenValue.Deconstruct(out Egami.Css.CssToken Token) -> void
+Egami.Css.CssTokenValue.Equals(Egami.Css.CssTokenValue? other) -> bool
+Egami.Css.CssTokenValue.Token.get -> Egami.Css.CssToken
+Egami.Css.CssTokenValue.Token.init -> void
+Egami.Css.CssTransformFunction
+Egami.Css.CssTransformFunction.CssTransformFunction(Egami.Css.CssTransformFunction! original) -> void
+Egami.Css.CssTransformList
+Egami.Css.CssTransformList.Functions.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssTransformFunction!>!
+Egami.Css.CssTransformList.HasUnsupported.get -> bool
+Egami.Css.CssTransformList.IsNone.get -> bool
+Egami.Css.CssTransformList.ToMatrix() -> System.Numerics.Matrix3x2
+Egami.Css.CssTransformList.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+Egami.Css.CssTransformOrigin
+Egami.Css.CssTransformOrigin.CssTransformOrigin() -> void
+Egami.Css.CssTransformOrigin.CssTransformOrigin(Egami.Css.CssLength X, Egami.Css.CssLength Y, Egami.Css.CssLength Z) -> void
+Egami.Css.CssTransformOrigin.Deconstruct(out Egami.Css.CssLength X, out Egami.Css.CssLength Y, out Egami.Css.CssLength Z) -> void
+Egami.Css.CssTransformOrigin.Equals(Egami.Css.CssTransformOrigin other) -> bool
+Egami.Css.CssTransformOrigin.X.get -> Egami.Css.CssLength
+Egami.Css.CssTransformOrigin.X.init -> void
+Egami.Css.CssTransformOrigin.Y.get -> Egami.Css.CssLength
+Egami.Css.CssTransformOrigin.Y.init -> void
+Egami.Css.CssTransformOrigin.Z.get -> Egami.Css.CssLength
+Egami.Css.CssTransformOrigin.Z.init -> void
+Egami.Css.CssTranslateTransform
+Egami.Css.CssTranslateTransform.CssTranslateTransform(Egami.Css.CssLength X, Egami.Css.CssLength Y) -> void
+Egami.Css.CssTranslateTransform.Deconstruct(out Egami.Css.CssLength X, out Egami.Css.CssLength Y) -> void
+Egami.Css.CssTranslateTransform.Equals(Egami.Css.CssTranslateTransform? other) -> bool
+Egami.Css.CssTranslateTransform.X.get -> Egami.Css.CssLength
+Egami.Css.CssTranslateTransform.X.init -> void
+Egami.Css.CssTranslateTransform.Y.get -> Egami.Css.CssLength
+Egami.Css.CssTranslateTransform.Y.init -> void
+Egami.Css.CssUnicodeRange
+Egami.Css.CssUnicodeRange.Contains(int codePoint) -> bool
+Egami.Css.CssUnicodeRange.CssUnicodeRange() -> void
+Egami.Css.CssUnicodeRange.CssUnicodeRange(int Start, int End) -> void
+Egami.Css.CssUnicodeRange.Deconstruct(out int Start, out int End) -> void
+Egami.Css.CssUnicodeRange.End.get -> int
+Egami.Css.CssUnicodeRange.End.init -> void
+Egami.Css.CssUnicodeRange.Equals(Egami.Css.CssUnicodeRange other) -> bool
+Egami.Css.CssUnicodeRange.Start.get -> int
+Egami.Css.CssUnicodeRange.Start.init -> void
+Egami.Css.CssUnit
+Egami.Css.CssUnit.Cap = 13 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Ch = 15 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Cm = 3 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Dvh = 32 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Dvw = 31 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Em = 9 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Ex = 11 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Ic = 17 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.In = 6 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Lh = 19 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Lvh = 30 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Lvw = 29 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Mm = 4 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.None = 0 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Pc = 8 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Percent = 1 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Pt = 7 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Px = 2 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Q = 5 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Rcap = 14 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Rch = 16 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Rem = 10 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Rex = 12 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Ric = 18 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Rlh = 20 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Svh = 28 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Svw = 27 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Vb = 24 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Vh = 22 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Vi = 23 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Vmax = 26 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Vmin = 25 -> Egami.Css.CssUnit
+Egami.Css.CssUnit.Vw = 21 -> Egami.Css.CssUnit
+Egami.Css.CssUnknownAtRule
+Egami.Css.CssUnknownAtRule.Block.get -> Egami.Css.CssSimpleBlock?
+Egami.Css.CssUnknownAtRule.Name.get -> string!
+Egami.Css.CssUnknownAtRule.Prelude.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+Egami.Css.CssUnsupportedTransform
+Egami.Css.CssUnsupportedTransform.Arguments.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+Egami.Css.CssUnsupportedTransform.Arguments.init -> void
+Egami.Css.CssUnsupportedTransform.CssUnsupportedTransform(string! Name, System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! Arguments) -> void
+Egami.Css.CssUnsupportedTransform.Deconstruct(out string! Name, out System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! Arguments) -> void
+Egami.Css.CssUnsupportedTransform.Equals(Egami.Css.CssUnsupportedTransform? other) -> bool
+Egami.Css.CssUnsupportedTransform.Name.get -> string!
+Egami.Css.CssUnsupportedTransform.Name.init -> void
+Egami.Css.CssUrl
+Egami.Css.CssUrl.CssUrl() -> void
+Egami.Css.CssUrl.CssUrl(string! Url) -> void
+Egami.Css.CssUrl.Deconstruct(out string! Url) -> void
+Egami.Css.CssUrl.Equals(Egami.Css.CssUrl other) -> bool
+Egami.Css.CssUrl.Url.get -> string!
+Egami.Css.CssUrl.Url.init -> void
+Egami.Css.ICssElement
+Egami.Css.ICssElement.Attributes.get -> System.Collections.Generic.IEnumerable<Egami.Css.CssAttribute>!
+Egami.Css.ICssElement.ClassName.get -> string?
+Egami.Css.ICssElement.FirstChild.get -> Egami.Css.ICssElement?
+Egami.Css.ICssElement.GetAttribute(string! localName, string? namespaceUri) -> string?
+Egami.Css.ICssElement.HasClass(string! name) -> bool
+Egami.Css.ICssElement.Id.get -> string?
+Egami.Css.ICssElement.IsEmpty.get -> bool
+Egami.Css.ICssElement.IsHtml.get -> bool
+Egami.Css.ICssElement.IsRightToLeft.get -> bool
+Egami.Css.ICssElement.Language.get -> string?
+Egami.Css.ICssElement.LocalName.get -> string!
+Egami.Css.ICssElement.MatchesPseudoClass(string! name) -> bool
+Egami.Css.ICssElement.NamespaceUri.get -> string?
+Egami.Css.ICssElement.NextSibling.get -> Egami.Css.ICssElement?
+Egami.Css.ICssElement.Parent.get -> Egami.Css.ICssElement?
+Egami.Css.ICssElement.PreviousSibling.get -> Egami.Css.ICssElement?
+override Egami.Css.CssAngle.GetHashCode() -> int
+override Egami.Css.CssAngle.ToString() -> string!
+override Egami.Css.CssAttribute.GetHashCode() -> int
+override Egami.Css.CssCalc.ToString() -> string!
+override Egami.Css.CssCascadeOptions.Equals(object? obj) -> bool
+override Egami.Css.CssCascadeOptions.GetHashCode() -> int
+override Egami.Css.CssCascadeOptions.ToString() -> string!
+override Egami.Css.CssColor.Equals(object? obj) -> bool
+override Egami.Css.CssColor.GetHashCode() -> int
+override Egami.Css.CssColor.ToString() -> string!
+override Egami.Css.CssComponentValue.Equals(object? obj) -> bool
+override Egami.Css.CssComponentValue.GetHashCode() -> int
+override Egami.Css.CssDeclaration.ToString() -> string!
+override Egami.Css.CssFont.ToString() -> string!
+override Egami.Css.CssFontFamily.GetHashCode() -> int
+override Egami.Css.CssFontFamily.ToString() -> string!
+override Egami.Css.CssFontFamilyList.ToString() -> string!
+override Egami.Css.CssFontSource.Equals(object? obj) -> bool
+override Egami.Css.CssFontSource.GetHashCode() -> int
+override Egami.Css.CssFontSource.ToString() -> string!
+override Egami.Css.CssFontWeight.GetHashCode() -> int
+override Egami.Css.CssFontWeight.ToString() -> string!
+override Egami.Css.CssFunction.<Clone>$() -> Egami.Css.CssFunction!
+override Egami.Css.CssFunction.Column.get -> int
+override Egami.Css.CssFunction.Equals(object? obj) -> bool
+override Egami.Css.CssFunction.GetHashCode() -> int
+override Egami.Css.CssFunction.Line.get -> int
+override Egami.Css.CssLength.GetHashCode() -> int
+override Egami.Css.CssLength.ToString() -> string!
+override Egami.Css.CssMatrixTransform.<Clone>$() -> Egami.Css.CssMatrixTransform!
+override Egami.Css.CssMatrixTransform.Equals(object? obj) -> bool
+override Egami.Css.CssMatrixTransform.GetHashCode() -> int
+override Egami.Css.CssMatrixTransform.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+override Egami.Css.CssMatrixTransform.ToString() -> string!
+override Egami.Css.CssMediaContext.Equals(object? obj) -> bool
+override Egami.Css.CssMediaContext.GetHashCode() -> int
+override Egami.Css.CssMediaContext.ToString() -> string!
+override Egami.Css.CssMediaQueryList.ToString() -> string!
+override Egami.Css.CssParseError.Equals(object? obj) -> bool
+override Egami.Css.CssParseError.GetHashCode() -> int
+override Egami.Css.CssParseError.ToString() -> string!
+override Egami.Css.CssParseOptions.Equals(object? obj) -> bool
+override Egami.Css.CssParseOptions.GetHashCode() -> int
+override Egami.Css.CssParseOptions.ToString() -> string!
+override Egami.Css.CssPropertyDefinition.Equals(object? obj) -> bool
+override Egami.Css.CssPropertyDefinition.GetHashCode() -> int
+override Egami.Css.CssPropertyDefinition.ToString() -> string!
+override Egami.Css.CssRange.GetHashCode() -> int
+override Egami.Css.CssRotateTransform.<Clone>$() -> Egami.Css.CssRotateTransform!
+override Egami.Css.CssRotateTransform.Equals(object? obj) -> bool
+override Egami.Css.CssRotateTransform.GetHashCode() -> int
+override Egami.Css.CssRotateTransform.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+override Egami.Css.CssRotateTransform.ToString() -> string!
+override Egami.Css.CssScaleTransform.<Clone>$() -> Egami.Css.CssScaleTransform!
+override Egami.Css.CssScaleTransform.Equals(object? obj) -> bool
+override Egami.Css.CssScaleTransform.GetHashCode() -> int
+override Egami.Css.CssScaleTransform.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+override Egami.Css.CssScaleTransform.ToString() -> string!
+override Egami.Css.CssSelector.ToString() -> string!
+override Egami.Css.CssSelectorList.ToString() -> string!
+override Egami.Css.CssShorthandDefinition.Equals(object? obj) -> bool
+override Egami.Css.CssShorthandDefinition.GetHashCode() -> int
+override Egami.Css.CssShorthandDefinition.ToString() -> string!
+override Egami.Css.CssSimpleBlock.<Clone>$() -> Egami.Css.CssSimpleBlock!
+override Egami.Css.CssSimpleBlock.Column.get -> int
+override Egami.Css.CssSimpleBlock.Equals(object? obj) -> bool
+override Egami.Css.CssSimpleBlock.GetHashCode() -> int
+override Egami.Css.CssSimpleBlock.Line.get -> int
+override Egami.Css.CssSkewTransform.<Clone>$() -> Egami.Css.CssSkewTransform!
+override Egami.Css.CssSkewTransform.Equals(object? obj) -> bool
+override Egami.Css.CssSkewTransform.GetHashCode() -> int
+override Egami.Css.CssSkewTransform.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+override Egami.Css.CssSkewTransform.ToString() -> string!
+override Egami.Css.CssSpecificity.GetHashCode() -> int
+override Egami.Css.CssSpecificity.ToString() -> string!
+override Egami.Css.CssToken.Equals(object? obj) -> bool
+override Egami.Css.CssToken.GetHashCode() -> int
+override Egami.Css.CssToken.ToString() -> string!
+override Egami.Css.CssTokenValue.<Clone>$() -> Egami.Css.CssTokenValue!
+override Egami.Css.CssTokenValue.Column.get -> int
+override Egami.Css.CssTokenValue.Equals(object? obj) -> bool
+override Egami.Css.CssTokenValue.GetHashCode() -> int
+override Egami.Css.CssTokenValue.Line.get -> int
+override Egami.Css.CssTransformFunction.Equals(object? obj) -> bool
+override Egami.Css.CssTransformFunction.GetHashCode() -> int
+override Egami.Css.CssTransformFunction.ToString() -> string!
+override Egami.Css.CssTransformOrigin.GetHashCode() -> int
+override Egami.Css.CssTranslateTransform.<Clone>$() -> Egami.Css.CssTranslateTransform!
+override Egami.Css.CssTranslateTransform.Equals(object? obj) -> bool
+override Egami.Css.CssTranslateTransform.GetHashCode() -> int
+override Egami.Css.CssTranslateTransform.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+override Egami.Css.CssTranslateTransform.ToString() -> string!
+override Egami.Css.CssUnicodeRange.GetHashCode() -> int
+override Egami.Css.CssUnicodeRange.ToString() -> string!
+override Egami.Css.CssUnsupportedTransform.<Clone>$() -> Egami.Css.CssUnsupportedTransform!
+override Egami.Css.CssUnsupportedTransform.Equals(object? obj) -> bool
+override Egami.Css.CssUnsupportedTransform.GetHashCode() -> int
+override Egami.Css.CssUnsupportedTransform.ToMatrix(System.Func<Egami.Css.CssLength, bool, double>! resolve) -> System.Numerics.Matrix3x2
+override Egami.Css.CssUnsupportedTransform.ToString() -> string!
+override Egami.Css.CssUrl.GetHashCode() -> int
+override Egami.Css.CssUrl.ToString() -> string!
+override sealed Egami.Css.CssComponentValue.ToString() -> string!
+override sealed Egami.Css.CssFunction.Equals(Egami.Css.CssComponentValue? other) -> bool
+override sealed Egami.Css.CssMatrixTransform.Equals(Egami.Css.CssTransformFunction? other) -> bool
+override sealed Egami.Css.CssRotateTransform.Equals(Egami.Css.CssTransformFunction? other) -> bool
+override sealed Egami.Css.CssScaleTransform.Equals(Egami.Css.CssTransformFunction? other) -> bool
+override sealed Egami.Css.CssSimpleBlock.Equals(Egami.Css.CssComponentValue? other) -> bool
+override sealed Egami.Css.CssSkewTransform.Equals(Egami.Css.CssTransformFunction? other) -> bool
+override sealed Egami.Css.CssTokenValue.Equals(Egami.Css.CssComponentValue? other) -> bool
+override sealed Egami.Css.CssTranslateTransform.Equals(Egami.Css.CssTransformFunction? other) -> bool
+override sealed Egami.Css.CssUnsupportedTransform.Equals(Egami.Css.CssTransformFunction? other) -> bool
+static Egami.Css.CssAngle.operator !=(Egami.Css.CssAngle left, Egami.Css.CssAngle right) -> bool
+static Egami.Css.CssAngle.operator ==(Egami.Css.CssAngle left, Egami.Css.CssAngle right) -> bool
+static Egami.Css.CssAngle.TryParse(Egami.Css.CssComponentValue! value, bool allowNumber, out Egami.Css.CssAngle angle) -> bool
+static Egami.Css.CssAngle.TryParse(string! text, out Egami.Css.CssAngle angle) -> bool
+static Egami.Css.CssAttribute.operator !=(Egami.Css.CssAttribute left, Egami.Css.CssAttribute right) -> bool
+static Egami.Css.CssAttribute.operator ==(Egami.Css.CssAttribute left, Egami.Css.CssAttribute right) -> bool
+static Egami.Css.CssCalc.TryParse(Egami.Css.CssComponentValue! value, out Egami.Css.CssCalc? calc) -> bool
+static Egami.Css.CssCalc.TryParse(string! text, out Egami.Css.CssCalc? calc) -> bool
+static Egami.Css.CssCalc.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssCalc? calc) -> bool
+static Egami.Css.CssCascadeOptions.Default.get -> Egami.Css.CssCascadeOptions!
+static Egami.Css.CssCascadeOptions.operator !=(Egami.Css.CssCascadeOptions? left, Egami.Css.CssCascadeOptions? right) -> bool
+static Egami.Css.CssCascadeOptions.operator ==(Egami.Css.CssCascadeOptions? left, Egami.Css.CssCascadeOptions? right) -> bool
+static Egami.Css.CssColor.CurrentColor.get -> Egami.Css.CssColor
+static Egami.Css.CssColor.operator !=(Egami.Css.CssColor left, Egami.Css.CssColor right) -> bool
+static Egami.Css.CssColor.operator ==(Egami.Css.CssColor left, Egami.Css.CssColor right) -> bool
+static Egami.Css.CssColor.Transparent.get -> Egami.Css.CssColor
+static Egami.Css.CssColor.TryParse(Egami.Css.CssComponentValue! value, out Egami.Css.CssColor color) -> bool
+static Egami.Css.CssColor.TryParse(string! text, out Egami.Css.CssColor color) -> bool
+static Egami.Css.CssColor.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssColor color) -> bool
+static Egami.Css.CssComponentValue.operator !=(Egami.Css.CssComponentValue? left, Egami.Css.CssComponentValue? right) -> bool
+static Egami.Css.CssComponentValue.operator ==(Egami.Css.CssComponentValue? left, Egami.Css.CssComponentValue? right) -> bool
+static Egami.Css.CssComponentValue.ParseList(string! css, Egami.Css.CssParseOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>!
+static Egami.Css.CssComponentValue.Serialize(System.Collections.Generic.IEnumerable<Egami.Css.CssComponentValue!>! values) -> string!
+static Egami.Css.CssComputedStyle.Compute(Egami.Css.CssCascadedStyle! cascaded, Egami.Css.CssComputedStyle? parent, Egami.Css.CssPropertyRegistry! registry) -> Egami.Css.CssComputedStyle!
+static Egami.Css.CssComputedStyle.CreateInherited(Egami.Css.CssComputedStyle? parent, Egami.Css.CssPropertyRegistry! registry) -> Egami.Css.CssComputedStyle!
+static Egami.Css.CssDeclaration.Create(string! name, string! value, bool important = false) -> Egami.Css.CssDeclaration!
+static Egami.Css.CssDeclaration.ParseList(string! styleAttribute, Egami.Css.CssParseOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>!
+static Egami.Css.CssFont.TryParse(string! text, out Egami.Css.CssFont? font) -> bool
+static Egami.Css.CssFont.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssFont? font) -> bool
+static Egami.Css.CssFontFace.FromDeclarations(System.Collections.Generic.IEnumerable<Egami.Css.CssDeclaration!>! declarations) -> Egami.Css.CssFontFace!
+static Egami.Css.CssFontFamily.operator !=(Egami.Css.CssFontFamily left, Egami.Css.CssFontFamily right) -> bool
+static Egami.Css.CssFontFamily.operator ==(Egami.Css.CssFontFamily left, Egami.Css.CssFontFamily right) -> bool
+static Egami.Css.CssFontFamilyList.TryParse(string! text, out Egami.Css.CssFontFamilyList? list) -> bool
+static Egami.Css.CssFontFamilyList.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssFontFamilyList? list) -> bool
+static Egami.Css.CssFontSource.operator !=(Egami.Css.CssFontSource? left, Egami.Css.CssFontSource? right) -> bool
+static Egami.Css.CssFontSource.operator ==(Egami.Css.CssFontSource? left, Egami.Css.CssFontSource? right) -> bool
+static Egami.Css.CssFontWeight.Bold.get -> Egami.Css.CssFontWeight
+static Egami.Css.CssFontWeight.Normal.get -> Egami.Css.CssFontWeight
+static Egami.Css.CssFontWeight.operator !=(Egami.Css.CssFontWeight left, Egami.Css.CssFontWeight right) -> bool
+static Egami.Css.CssFontWeight.operator ==(Egami.Css.CssFontWeight left, Egami.Css.CssFontWeight right) -> bool
+static Egami.Css.CssFontWeight.TryParse(Egami.Css.CssComponentValue! value, out Egami.Css.CssFontWeight weight) -> bool
+static Egami.Css.CssFontWeight.TryParse(string! text, out Egami.Css.CssFontWeight weight) -> bool
+static Egami.Css.CssFontWeight.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssFontWeight weight) -> bool
+static Egami.Css.CssFunction.operator !=(Egami.Css.CssFunction? left, Egami.Css.CssFunction? right) -> bool
+static Egami.Css.CssFunction.operator ==(Egami.Css.CssFunction? left, Egami.Css.CssFunction? right) -> bool
+static Egami.Css.CssLength.operator !=(Egami.Css.CssLength left, Egami.Css.CssLength right) -> bool
+static Egami.Css.CssLength.operator ==(Egami.Css.CssLength left, Egami.Css.CssLength right) -> bool
+static Egami.Css.CssLength.TryParse(Egami.Css.CssComponentValue! value, out Egami.Css.CssLength length) -> bool
+static Egami.Css.CssLength.TryParse(string! text, out Egami.Css.CssLength length) -> bool
+static Egami.Css.CssLength.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssLength length) -> bool
+static Egami.Css.CssLength.Zero.get -> Egami.Css.CssLength
+static Egami.Css.CssMatrixTransform.operator !=(Egami.Css.CssMatrixTransform? left, Egami.Css.CssMatrixTransform? right) -> bool
+static Egami.Css.CssMatrixTransform.operator ==(Egami.Css.CssMatrixTransform? left, Egami.Css.CssMatrixTransform? right) -> bool
+static Egami.Css.CssMediaContext.Default.get -> Egami.Css.CssMediaContext!
+static Egami.Css.CssMediaContext.operator !=(Egami.Css.CssMediaContext? left, Egami.Css.CssMediaContext? right) -> bool
+static Egami.Css.CssMediaContext.operator ==(Egami.Css.CssMediaContext? left, Egami.Css.CssMediaContext? right) -> bool
+static Egami.Css.CssMediaQueryList.Parse(string! text) -> Egami.Css.CssMediaQueryList!
+static Egami.Css.CssParseError.operator !=(Egami.Css.CssParseError? left, Egami.Css.CssParseError? right) -> bool
+static Egami.Css.CssParseError.operator ==(Egami.Css.CssParseError? left, Egami.Css.CssParseError? right) -> bool
+static Egami.Css.CssParseOptions.Default.get -> Egami.Css.CssParseOptions!
+static Egami.Css.CssParseOptions.operator !=(Egami.Css.CssParseOptions? left, Egami.Css.CssParseOptions? right) -> bool
+static Egami.Css.CssParseOptions.operator ==(Egami.Css.CssParseOptions? left, Egami.Css.CssParseOptions? right) -> bool
+static Egami.Css.CssPropertyDefinition.operator !=(Egami.Css.CssPropertyDefinition? left, Egami.Css.CssPropertyDefinition? right) -> bool
+static Egami.Css.CssPropertyDefinition.operator ==(Egami.Css.CssPropertyDefinition? left, Egami.Css.CssPropertyDefinition? right) -> bool
+static Egami.Css.CssPropertyRegistry.CreateDefault() -> Egami.Css.CssPropertyRegistry!
+static Egami.Css.CssRange.operator !=(Egami.Css.CssRange left, Egami.Css.CssRange right) -> bool
+static Egami.Css.CssRange.operator ==(Egami.Css.CssRange left, Egami.Css.CssRange right) -> bool
+static Egami.Css.CssRotateTransform.operator !=(Egami.Css.CssRotateTransform? left, Egami.Css.CssRotateTransform? right) -> bool
+static Egami.Css.CssRotateTransform.operator ==(Egami.Css.CssRotateTransform? left, Egami.Css.CssRotateTransform? right) -> bool
+static Egami.Css.CssScaleTransform.operator !=(Egami.Css.CssScaleTransform? left, Egami.Css.CssScaleTransform? right) -> bool
+static Egami.Css.CssScaleTransform.operator ==(Egami.Css.CssScaleTransform? left, Egami.Css.CssScaleTransform? right) -> bool
+static Egami.Css.CssSelectorList.Parse(string! text, Egami.Css.CssNamespaces? namespaces = null) -> Egami.Css.CssSelectorList!
+static Egami.Css.CssSelectorList.TryParse(string! text, out Egami.Css.CssSelectorList? list, Egami.Css.CssNamespaces? namespaces = null) -> bool
+static Egami.Css.CssShorthandDefinition.operator !=(Egami.Css.CssShorthandDefinition? left, Egami.Css.CssShorthandDefinition? right) -> bool
+static Egami.Css.CssShorthandDefinition.operator ==(Egami.Css.CssShorthandDefinition? left, Egami.Css.CssShorthandDefinition? right) -> bool
+static Egami.Css.CssSimpleBlock.operator !=(Egami.Css.CssSimpleBlock? left, Egami.Css.CssSimpleBlock? right) -> bool
+static Egami.Css.CssSimpleBlock.operator ==(Egami.Css.CssSimpleBlock? left, Egami.Css.CssSimpleBlock? right) -> bool
+static Egami.Css.CssSkewTransform.operator !=(Egami.Css.CssSkewTransform? left, Egami.Css.CssSkewTransform? right) -> bool
+static Egami.Css.CssSkewTransform.operator ==(Egami.Css.CssSkewTransform? left, Egami.Css.CssSkewTransform? right) -> bool
+static Egami.Css.CssSpecificity.operator !=(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> bool
+static Egami.Css.CssSpecificity.operator +(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> Egami.Css.CssSpecificity
+static Egami.Css.CssSpecificity.operator <(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> bool
+static Egami.Css.CssSpecificity.operator <=(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> bool
+static Egami.Css.CssSpecificity.operator ==(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> bool
+static Egami.Css.CssSpecificity.operator >(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> bool
+static Egami.Css.CssSpecificity.operator >=(Egami.Css.CssSpecificity left, Egami.Css.CssSpecificity right) -> bool
+static Egami.Css.CssSpecificity.Zero.get -> Egami.Css.CssSpecificity
+static Egami.Css.CssStyleSheet.Parse(string! css, Egami.Css.CssParseOptions? options = null) -> Egami.Css.CssStyleSheet!
+static Egami.Css.CssToken.operator !=(Egami.Css.CssToken left, Egami.Css.CssToken right) -> bool
+static Egami.Css.CssToken.operator ==(Egami.Css.CssToken left, Egami.Css.CssToken right) -> bool
+static Egami.Css.CssTokenizer.Tokenize(string! css, Egami.Css.CssParseOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssToken>!
+static Egami.Css.CssTokenValue.operator !=(Egami.Css.CssTokenValue? left, Egami.Css.CssTokenValue? right) -> bool
+static Egami.Css.CssTokenValue.operator ==(Egami.Css.CssTokenValue? left, Egami.Css.CssTokenValue? right) -> bool
+static Egami.Css.CssTransformFunction.operator !=(Egami.Css.CssTransformFunction? left, Egami.Css.CssTransformFunction? right) -> bool
+static Egami.Css.CssTransformFunction.operator ==(Egami.Css.CssTransformFunction? left, Egami.Css.CssTransformFunction? right) -> bool
+static Egami.Css.CssTransformList.TryParse(string! text, out Egami.Css.CssTransformList? list) -> bool
+static Egami.Css.CssTransformList.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssTransformList? list) -> bool
+static Egami.Css.CssTransformList.TryParseSvg(string! text, out Egami.Css.CssTransformList? list) -> bool
+static Egami.Css.CssTransformOrigin.Center.get -> Egami.Css.CssTransformOrigin
+static Egami.Css.CssTransformOrigin.operator !=(Egami.Css.CssTransformOrigin left, Egami.Css.CssTransformOrigin right) -> bool
+static Egami.Css.CssTransformOrigin.operator ==(Egami.Css.CssTransformOrigin left, Egami.Css.CssTransformOrigin right) -> bool
+static Egami.Css.CssTransformOrigin.TryParse(string! text, out Egami.Css.CssTransformOrigin origin) -> bool
+static Egami.Css.CssTransformOrigin.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssTransformOrigin origin) -> bool
+static Egami.Css.CssTranslateTransform.operator !=(Egami.Css.CssTranslateTransform? left, Egami.Css.CssTranslateTransform? right) -> bool
+static Egami.Css.CssTranslateTransform.operator ==(Egami.Css.CssTranslateTransform? left, Egami.Css.CssTranslateTransform? right) -> bool
+static Egami.Css.CssUnicodeRange.operator !=(Egami.Css.CssUnicodeRange left, Egami.Css.CssUnicodeRange right) -> bool
+static Egami.Css.CssUnicodeRange.operator ==(Egami.Css.CssUnicodeRange left, Egami.Css.CssUnicodeRange right) -> bool
+static Egami.Css.CssUnsupportedTransform.operator !=(Egami.Css.CssUnsupportedTransform? left, Egami.Css.CssUnsupportedTransform? right) -> bool
+static Egami.Css.CssUnsupportedTransform.operator ==(Egami.Css.CssUnsupportedTransform? left, Egami.Css.CssUnsupportedTransform? right) -> bool
+static Egami.Css.CssUrl.operator !=(Egami.Css.CssUrl left, Egami.Css.CssUrl right) -> bool
+static Egami.Css.CssUrl.operator ==(Egami.Css.CssUrl left, Egami.Css.CssUrl right) -> bool
+static Egami.Css.CssUrl.TryParse(Egami.Css.CssComponentValue! value, out Egami.Css.CssUrl url) -> bool
+static Egami.Css.CssUrl.TryParse(string! text, out Egami.Css.CssUrl url) -> bool
+virtual Egami.Css.CssComponentValue.EqualityContract.get -> System.Type!
+virtual Egami.Css.CssComponentValue.Equals(Egami.Css.CssComponentValue? other) -> bool
+virtual Egami.Css.CssComponentValue.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Egami.Css.CssTransformFunction.EqualityContract.get -> System.Type!
+virtual Egami.Css.CssTransformFunction.Equals(Egami.Css.CssTransformFunction? other) -> bool
+virtual Egami.Css.CssTransformFunction.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~override Egami.Css.CssAngle.Equals(object obj) -> bool
+~override Egami.Css.CssAttribute.Equals(object obj) -> bool
+~override Egami.Css.CssAttribute.ToString() -> string
+~override Egami.Css.CssFontFamily.Equals(object obj) -> bool
+~override Egami.Css.CssFontWeight.Equals(object obj) -> bool
+~override Egami.Css.CssLength.Equals(object obj) -> bool
+~override Egami.Css.CssRange.Equals(object obj) -> bool
+~override Egami.Css.CssRange.ToString() -> string
+~override Egami.Css.CssSpecificity.Equals(object obj) -> bool
+~override Egami.Css.CssTransformOrigin.Equals(object obj) -> bool
+~override Egami.Css.CssTransformOrigin.ToString() -> string
+~override Egami.Css.CssUnicodeRange.Equals(object obj) -> bool
+~override Egami.Css.CssUrl.Equals(object obj) -> bool

@@ -1,0 +1,8 @@
+@media screen and (min-width: 600px), print and (orientation: landscape) { a { color: red } }
+@media (400px <= width < 1200px) and (prefers-color-scheme: dark), not all and (monochrome) { b { color: lime } }
+@media only screen and (resolution >= 2dppx) or (aspect-ratio: 16/9) { c { color: blue } }
+@media (hover) and (pointer: fine), (min-width: calc(30em + 10px)), (width > 5in) { d { color: navy } }
+@supports (display: grid) and (not (color: nope)) or selector(a > b) { e { display: grid } }
+@supports font-tech(color-COLRv1) or font-format(woff2) { f { color: red } }
+@layer base, theme; @layer { g { color: red } } @layer base { h { color: red } }
+@import url("other.css") layer(base) supports(display: flex) screen;

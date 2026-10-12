@@ -1,0 +1,1 @@
+:is(:is(:is(:is(:not(:has(> a ~ b:nth-last-child(-n+3 of :where(x, 1))))))))) { color: var(--a, var(--b, var(--c, red))) }

@@ -37,7 +37,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "egdr": "tests/images/fuzz/egdr-seeds/*",
          "shaping": "tests/images/fuzz/shaping-seeds/*", "bidi": "tests/images/fuzz/bidi-seeds/*",
          "radiance": "tests/images/radiance/*.hdr", "exr": "tests/images/exr/*.exr",
-         "gainmap": "tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg"}
+         "gainmap": "tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg",
+         "css": "tests/images/fuzz/css-seeds/*"}
 
 SCRIPT = """
 set -e
@@ -51,6 +52,7 @@ dotnet publish /build/tests/Egami.Fuzz -c Release -o /out -p:TreatWarningsAsErro
 sharpfuzz /out/Egami.dll
 [ -f /out/Egami.Fonts.dll ] && sharpfuzz /out/Egami.Fonts.dll
 if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
+if [ -f /out/Egami.Css.dll ]; then sharpfuzz /out/Egami.Css.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """

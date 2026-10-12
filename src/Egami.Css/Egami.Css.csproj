@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Css</RootNamespace>
+    <PackageId>Egami.Css</PackageId>
+    <Version>1.0.0-preview.1</Version>
+    <Description>CSS for Egami: the CSS Syntax 3 tokenizer and parser, Selectors 4 matching, the cascade with custom properties and var(), media queries and value parsers (colors, lengths, calc(), transforms, fonts), in managed code with no dependencies.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Standalone: no reference to any other Egami project, so Egami.Svg and an HTML reader can share it. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Css.Tests" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
+  </ItemGroup>
+
+</Project>

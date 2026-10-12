@@ -1,0 +1,5 @@
+:root { --main: #336699; --size: calc(10px + 2em); --a: var(--b); --b: var(--a); --c: var(--missing, var(--main)) }
+rect { fill: var(--main); stroke: var(--a, green); font: italic bold 12px/1.5 "Open Sans", sans-serif }
+#b { font-size: var(--size); color: revert; text-decoration: underline wavy red 2px; all: unset }
+.shape { font-weight: bolder; letter-spacing: inherit; display: initial; visibility: unset; font-variant: small-caps tabular-nums }
+* { color: currentcolor; line-height: normal !important }

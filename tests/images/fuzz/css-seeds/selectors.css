@@ -1,0 +1,6 @@
+@namespace svg url(http://www.w3.org/2000/svg);
+@namespace "http://www.w3.org/2000/svg";
+svg|g > rect.shape:first-child, *|circle[r="5" i] ~ rect:not(#b, .x) { fill: red }
+g:has(> rect + circle) :nth-child(2n+1 of .shape), :is(text, tspan):lang(fr, "*-CA"):dir(rtl) { color: blue !important }
+[data-x~="2"], [class|=group], [id^=r][id$=t][id*=oo], :root > :last-of-type:only-of-type:empty { opacity: 50% }
+:where(.a .b) ::before, p::first-line, div:hover::after, ::-webkit-scrollbar { content: "x" }
