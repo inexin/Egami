@@ -4,7 +4,7 @@ Egami.Svg reads SVG 1.1 and SVG 2 files into an editable element tree, saves the
 canvas, so the same document renders to a raster, to a PDF page or back out as SVG. It is fully managed and opens nothing
 outside the file unless you allow it.
 
-Phase 2.10 is landing: reading and the element tree are in; styles, units, the render tree, drawing, text, filters and SVG
+Phase 2.10 is landing: reading, saving and the element tree are in; styles, units, the render tree, drawing, text, filters and SVG
 output follow, and this guide grows with them.
 
 ## Loading
@@ -28,6 +28,13 @@ Illustrator's, are kept. `SvgNamespaces` names the SVG, XLink, XML and xmlns nam
 `id`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#edit)]
+
+`Save` writes the tree back as SVG, with everything read from the file (unknown elements, foreign namespaces, comments, the
+DOCTYPE), so a load and save without edits keeps the document's meaning; entities come out expanded, and attribute order and
+whitespace inside tags may change. `SvgSaveOptions` sets indentation (only where whitespace means nothing, never inside text),
+the decimals of numbers and paths set in code, and gzip for .svgz.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#save)]
 
 Every edit marks the document for re-resolving on its next draw. The tree is not safe for writes from several threads at once,
 like XDocument.

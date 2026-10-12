@@ -142,6 +142,35 @@ public sealed class SvgDocument
         return Load(stream, options);
     }
 
+    /// <summary>
+    /// Writes the document as SVG: the element tree with everything read from the file (unknown elements, foreign namespaces,
+    /// comments, the DOCTYPE), so a load and save without edits keeps the document's meaning; attribute order and whitespace
+    /// inside tags may change, and entities are written out.
+    /// </summary>
+    /// <param name="stream">The stream to write to; it is left open.</param>
+    /// <param name="options">How to write, or <see langword="null"/> for <see cref="SvgSaveOptions.Default"/>.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="save"/>
+    /// </example>
+    public void Save(Stream stream, SvgSaveOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        SvgXmlWriter.Write(this, stream, options ?? SvgSaveOptions.Default, _source);
+    }
+
+    /// <summary>Writes the document to a file, as <see cref="Save(Stream, SvgSaveOptions?)"/> does.</summary>
+    /// <param name="path">The file; it is replaced if it exists. Use <see cref="SvgSaveOptions.Gzip"/> for .svgz.</param>
+    /// <param name="options">How to write, or <see langword="null"/> for <see cref="SvgSaveOptions.Default"/>.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="save"/>
+    /// </example>
+    public void Save(string path, SvgSaveOptions? options = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        using FileStream stream = File.Create(path);
+        Save(stream, options);
+    }
+
     /// <summary>Finds the element with an <c>id</c>; the first in file order when several share it.</summary>
     /// <param name="id">The id, without a <c>#</c>.</param>
     /// <returns>The element, or <see langword="null"/>.</returns>

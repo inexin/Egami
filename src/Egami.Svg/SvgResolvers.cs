@@ -15,7 +15,7 @@ public static class SvgResolvers
     public static Func<Uri, Stream?> SameDirectory(string folder)
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
-        string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder)) + Path.DirectorySeparatorChar;
+        string root = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(folder)) + System.IO.Path.DirectorySeparatorChar;
         StringComparison comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         return uri =>
         {
@@ -24,14 +24,14 @@ public static class SvgResolvers
                 return null;
             }
 
-            string path = Path.GetFullPath(uri.LocalPath);
+            string path = System.IO.Path.GetFullPath(uri.LocalPath);
             if (!path.StartsWith(root, comparison) || !File.Exists(path))
             {
                 return null;
             }
 
             if (new FileInfo(path).ResolveLinkTarget(returnFinalTarget: true) is FileSystemInfo target &&
-                !Path.GetFullPath(target.FullName).StartsWith(root, comparison))
+                !System.IO.Path.GetFullPath(target.FullName).StartsWith(root, comparison))
             {
                 return null;
             }

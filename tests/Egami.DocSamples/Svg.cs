@@ -84,6 +84,29 @@ public class Svg
     }
 
     [Fact]
+    public void SaveADocument()
+    {
+        SvgDocument document = SvgDocument.Parse(Icon);
+        string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.svgz");
+        try
+        {
+            #region save
+            // Numbers and paths set in code are written with Precision decimals; what was read keeps its text.
+            document.FindById("body")!.Attributes.Set("width", 17.666666);
+            document.Save(path, new SvgSaveOptions { Precision = 2, Gzip = true });
+
+            using var stream = new MemoryStream();
+            document.Save(stream);
+            #endregion
+            Assert.Equal("17.67", SvgDocument.Load(path).FindById("body")!.Attributes["width"]);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public void LoadStrictly()
     {
         #region strict

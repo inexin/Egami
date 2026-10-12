@@ -1,4 +1,7 @@
 using System.Collections;
+using System.Globalization;
+
+using Egami.Drawing;
 
 namespace Egami.Svg;
 
@@ -35,6 +38,12 @@ public sealed class SvgAttribute
 
     /// <summary>Gets the value, with entities expanded.</summary>
     public string Value { get; }
+
+    /// <summary>Gets the number this attribute was set to in code, which a save writes at its precision.</summary>
+    internal double? Number { get; init; }
+
+    /// <summary>Gets the path this attribute was set to in code, which a save writes at its precision.</summary>
+    internal Path? PathData { get; init; }
 
     /// <inheritdoc/>
     public override string ToString() => $"{(Prefix is null ? "" : Prefix + ":")}{Name}=\"{Value}\"";
@@ -96,17 +105,34 @@ public sealed class SvgAttributeCollection : IReadOnlyList<SvgAttribute>
             return;
         }
 
-        int i = IndexOf(name, namespaceUri);
-        if (i >= 0)
-        {
-            _items[i] = new SvgAttribute(name, value, namespaceUri, prefix ?? _items[i].Prefix);
-        }
-        else
-        {
-            _items.Add(new SvgAttribute(name, value, namespaceUri, prefix));
-        }
+        Store(new SvgAttribute(name, value, namespaceUri, prefix));
+    }
 
-        _owner.AttributesChanged();
+    /// <summary>
+    /// Sets an attribute to a number. It reads back in full precision; a save writes it with
+    /// <see cref="SvgSaveOptions.Precision"/> decimals.
+    /// </summary>
+    /// <param name="name">The local name, such as <c>x</c>.</param>
+    /// <param name="value">The number; it must be finite.</param>
+    /// <param name="namespaceUri">The namespace, or <see langword="null"/> for none.</param>
+    /// <param name="prefix">The prefix a save writes for an attribute in a namespace, or <see langword="null"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not finite.</exception>
+    public void Set(string name, double value, string? namespaceUri = null, string? prefix = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNotEqual(double.IsFinite(value), true, nameof(value));
+        Store(new SvgAttribute(name, value.ToString("R", CultureInfo.InvariantCulture), namespaceUri, prefix) { Number = value });
+    }
+
+    /// <summary>
+    /// Sets an attribute, usually <c>d</c>, to path data. It reads back as SVG path data; a save writes it with
+    /// <see cref="SvgSaveOptions.Precision"/> decimals.
+    /// </summary>
+    /// <param name="name">The local name, such as <c>d</c>.</param>
+    /// <param name="path">The path.</param>
+    public void SetPath(string name, Path path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        Store(new SvgAttribute(name, path.ToSvg(SvgPathFormat.Default with { Precision = 9 }), null, null) { PathData = path });
     }
 
     /// <summary>Removes an attribute.</summary>
@@ -139,6 +165,23 @@ public sealed class SvgAttributeCollection : IReadOnlyList<SvgAttribute>
 
     /// <summary>Adds an attribute read from a file (XML allows no duplicates, so the reader has already refused them).</summary>
     internal void AddRead(SvgAttribute attribute) => _items.Add(attribute);
+
+    private void Store(SvgAttribute attribute)
+    {
+        int i = IndexOf(attribute.Name, attribute.Namespace);
+        if (i >= 0)
+        {
+            _items[i] = attribute.Prefix is null && _items[i].Prefix is string kept
+                ? new SvgAttribute(attribute.Name, attribute.Value, attribute.Namespace, kept) { Number = attribute.Number, PathData = attribute.PathData }
+                : attribute;
+        }
+        else
+        {
+            _items.Add(attribute);
+        }
+
+        _owner.AttributesChanged();
+    }
 
     private int IndexOf(string name, string? namespaceUri)
     {
