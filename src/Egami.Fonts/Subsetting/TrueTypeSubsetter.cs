@@ -32,7 +32,10 @@ internal static class TrueTypeSubsetter
 
         (ushort[] oldIds, Dictionary<ushort, ushort> map) = FontSubsetter.Number(kept, options.RetainGlyphIds);
 
-        // glyf and loca.
+        // glyf and loca; at a variation position each glyph is written varied, with its rounded metrics.
+        Variations.VariationInstance? instance = face.Instance;
+        int[]? advances = instance is null ? null : new int[oldIds.Length];
+        int[]? bearings = instance is null ? null : new int[oldIds.Length];
         var glyphs = new ByteWriter();
         var offsets = new uint[oldIds.Length + 1];
         for (int i = 0; i < oldIds.Length; i++)
@@ -41,6 +44,16 @@ internal static class TrueTypeSubsetter
             ushort old = oldIds[i];
             if (options.RetainGlyphIds && !map.ContainsKey(old))
             {
+                continue;
+            }
+
+            if (instance is not null)
+            {
+                Instancer.StaticGlyph varied = Instancer.Glyph(face, instance, old, map);
+                advances![i] = varied.Advance;
+                bearings![i] = varied.LeftBearing;
+                glyphs.Bytes(varied.Data);
+                glyphs.PadTo(4);
                 continue;
             }
 
@@ -63,6 +76,12 @@ internal static class TrueTypeSubsetter
         }
 
         offsets[oldIds.Length] = (uint)glyphs.Length;
+        byte[] glyfBytes = glyphs.ToArray();
+        if (instance is not null)
+        {
+            Instancer.FinishComposites(glyfBytes, offsets);
+        }
+
         bool shortLoca = glyphs.Length <= 0x1FFFE;
         var loca = new ByteWriter(offsets.Length * (shortLoca ? 2 : 4));
         foreach (uint offset in offsets)
@@ -79,14 +98,14 @@ internal static class TrueTypeSubsetter
 
         var tables = new SortedDictionary<uint, byte[]>
         {
-            [Tags.Glyf.Value] = glyphs.ToArray(),
+            [Tags.Glyf.Value] = glyfBytes,
             [Tags.Loca.Value] = loca.ToArray(),
             [Tags.Head.Value] = SfntWriter.Head(face, shortLoca ? 0 : 1),
             [Tags.Maxp.Value] = SfntWriter.Maxp(face, oldIds.Length, trueType: true),
-            [Tags.Post.Value] = SfntWriter.Post(face),
+            [Tags.Post.Value] = instance is null ? SfntWriter.Post(face) : Instancer.Post(face, instance),
             [Tags.Name.Value] = SfntWriter.Name(face, options.FontNamePrefix),
         };
-        (byte[] hmtx, byte[] hhea) = SfntWriter.Metrics(face, oldIds, map, options.RetainGlyphIds);
+        (byte[] hmtx, byte[] hhea) = SfntWriter.Metrics(face, oldIds, map, options.RetainGlyphIds, advances, bearings);
         tables[Tags.Hmtx.Value] = hmtx;
         tables[Tags.Hhea.Value] = hhea;
         if (options.KeepCmap)
@@ -100,13 +119,12 @@ internal static class TrueTypeSubsetter
             SfntWriter.CopyTable(face, tag, tables);
         }
 
-        foreach (FontTag tag in options.KeepTables)
+        if (instance is not null && Instancer.Os2(face, instance) is byte[] os2)
         {
-            if (!tables.ContainsKey(tag.Value))
-            {
-                SfntWriter.CopyTable(face, tag, tables);
-            }
+            tables[Tags.OS2.Value] = os2;
         }
+
+        SfntWriter.KeepTables(face, options, tables);
 
         byte[] font = SfntWriter.Write(SfntDirectory.TrueTypeVersion, tables);
         return new FontSubset(font, SubsetFormat.TrueType, oldIds, map);

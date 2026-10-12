@@ -92,7 +92,7 @@ public sealed partial class Typeface
     internal VariationInstance? Instance => _instance;
 
     /// <summary>Gets a CFF2 face's region scalars at this position, or null at the default.</summary>
-    private float[]? Cff2Scalars => _instance is null || _cff?.VariationStore is not ItemVariationStore store ? null : _cff2Scalars ??= store.ComputeScalars(_instance.Coords);
+    internal float[]? Cff2Scalars => _instance is null || _cff?.VariationStore is not ItemVariationStore store ? null : _cff2Scalars ??= store.ComputeScalars(_instance.Coords);
 
     internal VariationData? VariationData
     {

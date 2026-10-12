@@ -254,6 +254,8 @@ Egami.Fonts.SubsetOptions.KeepTables.init -> void
 Egami.Fonts.SubsetOptions.RetainGlyphIds.get -> bool
 Egami.Fonts.SubsetOptions.RetainGlyphIds.init -> void
 Egami.Fonts.SubsetOptions.SubsetOptions() -> void
+Egami.Fonts.SubsetOptions.Variations.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontVariation>?
+Egami.Fonts.SubsetOptions.Variations.init -> void
 Egami.Fonts.TextBounds
 Egami.Fonts.TextBounds.Bottom.get -> float
 Egami.Fonts.TextBounds.Bottom.init -> void

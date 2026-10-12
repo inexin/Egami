@@ -172,7 +172,7 @@ internal static class SfntWriter
     public static byte[] Name(Typeface face, string? prefix)
     {
         string family = face.Name.GetEnglish(1) ?? face.FamilyName;
-        string subfamily = face.Name.GetEnglish(2) ?? face.SubfamilyName;
+        string subfamily = face.Instance is null ? face.Name.GetEnglish(2) ?? face.SubfamilyName : face.SubfamilyName;
         string[] values =
         [
             face.Name.GetEnglish(0) ?? string.Empty,
@@ -361,8 +361,11 @@ internal static class SfntWriter
         return map;
     }
 
-    /// <summary>hmtx for the new glyphs, with every glyph's advance written, and the matching hhea.</summary>
-    public static (byte[] Hmtx, byte[] Hhea) Metrics(Typeface face, ushort[] oldIds, Dictionary<ushort, ushort> map, bool retain)
+    /// <summary>
+    /// hmtx for the new glyphs, with every glyph's advance written, and the matching hhea; an instance passes its rounded
+    /// <paramref name="advances"/> and <paramref name="bearings"/> by new glyph id.
+    /// </summary>
+    public static (byte[] Hmtx, byte[] Hhea) Metrics(Typeface face, ushort[] oldIds, Dictionary<ushort, ushort> map, bool retain, int[]? advances = null, int[]? bearings = null)
     {
         var w = new ByteWriter(oldIds.Length * 4);
         int advanceMax = 0;
@@ -370,8 +373,8 @@ internal static class SfntWriter
         {
             ushort old = oldIds[i];
             bool kept = !retain || map.ContainsKey(old);
-            int advance = kept ? (int)Math.Round(face.GetAdvance(old)) : 0;
-            int lsb = kept ? (int)Math.Round(face.GetLeftSideBearing(old)) : 0;
+            int advance = !kept ? 0 : advances is not null ? advances[i] : (int)Math.Round(face.GetAdvance(old));
+            int lsb = !kept ? 0 : bearings is not null ? bearings[i] : (int)Math.Round(face.GetLeftSideBearing(old));
             w.U16(advance);
             w.U16(lsb);
             advanceMax = Math.Max(advanceMax, advance);
@@ -464,6 +467,18 @@ internal static class SfntWriter
         }
 
         return w.ToArray();
+    }
+
+    /// <summary>Copies the tables the options keep, except the variation tables a variable face's subset drops.</summary>
+    public static void KeepTables(Typeface face, SubsetOptions options, SortedDictionary<uint, byte[]> tables)
+    {
+        foreach (FontTag tag in options.KeepTables)
+        {
+            if (!tables.ContainsKey(tag.Value) && !(face.IsVariable && Instancer.VariationTables.Contains(tag)))
+            {
+                CopyTable(face, tag, tables);
+            }
+        }
     }
 
     public static void CopyTable(Typeface face, FontTag tag, SortedDictionary<uint, byte[]> into)

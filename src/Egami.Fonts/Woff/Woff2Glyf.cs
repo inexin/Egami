@@ -283,7 +283,8 @@ internal static class Woff2Glyf
         static int Sign(int flag, int value) => (flag & 1) != 0 ? value : -value;
     }
 
-    private static void WriteSimple(ByteWriter w, int contours, short x0, short y0, short x1, short y1, List<int> ends, ReadOnlySpan<byte> code, List<(int X, int Y, bool On)> points, bool overlap)
+    /// <summary>Writes a simple glyph in the compact form: repeated flags, then x and y as bytes where they fit.</summary>
+    internal static void WriteSimple(ByteWriter w, int contours, short x0, short y0, short x1, short y1, IReadOnlyList<int> ends, ReadOnlySpan<byte> code, List<(int X, int Y, bool On)> points, bool overlap)
     {
         w.U16(contours);
         w.U16(x0);

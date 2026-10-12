@@ -47,6 +47,14 @@ public sealed record SubsetOptions
 
     /// <summary>Gets the prefix put before the PostScript and CFF font names, such as the six-letter PDF subset tag "ABCDEF+".</summary>
     public string? FontNamePrefix { get; init; }
+
+    /// <summary>
+    /// Gets the position a variable face's subset is written at, applied over the face's own position, or <see langword="null"/>
+    /// (the default) for the face's position. A variable face's subset is always a static font: glyf with gvar's deltas applied and
+    /// rounded, hmtx from the varied metrics, OS/2 and post with MVAR's values, CFF2 written as CFF with blends resolved, and the
+    /// variation tables left out, so PDF viewers draw the position rather than the default instance.
+    /// </summary>
+    public IReadOnlyList<FontVariation>? Variations { get; init; }
 }
 
 /// <summary>A font holding only some glyphs of another, from <see cref="FontSubsetter"/>.</summary>
@@ -112,6 +120,11 @@ public static class FontSubsetter
         ArgumentNullException.ThrowIfNull(face);
         ArgumentNullException.ThrowIfNull(glyphs);
         options ??= SubsetOptions.Default;
+        if (options.Variations is { } variations && face.IsVariable)
+        {
+            face = face.WithVariations([.. variations]);
+        }
+
         SubsetFormat format = options.Format;
         if (format == SubsetFormat.Auto)
         {

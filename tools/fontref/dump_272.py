@@ -7,13 +7,16 @@ egami-fontref:2.7.2).
   var/<font>.json.gz       a variable font at 25 locations: the normalized coordinates, every glyph's advance and outline from
                            fontTools' glyph set at that location, and fontTools' instancer's OS/2, hhea and post values and
                            pair kerning there
+  var/<font>.instances.json.gz  fontTools' instancer output (saved and read back) at three positions of each glyf font: every
+                           glyph's integer outline, advance and bearing, and OS/2's weight and width classes
   color/<font>.json.gz     palettes and every color glyph's paint tree, varied at the default and two other locations
 
-Usage (from the repo root): docker run --rm -v "$PWD:/w" egami-fontref:2.7.2 python /w/tools/fontref/dump_272.py /w [web|var|color]
+Usage (from the repo root): docker run --rm -v "$PWD:/w" egami-fontref:2.7.2 python /w/tools/fontref/dump_272.py /w [web|var|instances|color]
 """
 import glob
 import gzip
 import hashlib
+import io
 import json
 import math
 import os
@@ -26,7 +29,7 @@ from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTCollection, TTFont
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else "/w"
-WHAT = sys.argv[2:] or ["web", "var", "color"]
+WHAT = sys.argv[2:] or ["web", "var", "instances", "color"]
 OUT = os.path.join(ROOT, "tests/reference/fonts")
 DERIVED = os.path.join(ROOT, "tests/fonts/derived")
 sys.path.insert(0, os.path.dirname(__file__))
@@ -161,11 +164,50 @@ def dump_var():
         print("dumped", name)
 
 
+def dump_instances():
+    """fontTools' instancer output for the glyf fonts at three positions each: integer outlines, advances and bearings."""
+    from fontTools.varLib import instancer
+
+    for name in ["RobotoFlex-subset.ttf", "NotoSans-VF-subset.ttf", "NotoSerif-VF-subset.ttf"]:
+        path = os.path.join(DERIVED, name)
+        font = TTFont(path)
+        axes = font["fvar"].axes
+        picks = [
+            {a.axisTag: font["fvar"].instances[-1].coordinates.get(a.axisTag, a.defaultValue) for a in axes},
+            {a.axisTag: a.minValue for a in axes},
+            {a.axisTag: round(a.minValue + (a.maxValue - a.minValue) * 0.37, 2) for a in axes},
+        ]
+        data = {"locations": []}
+        for loc in picks:
+            static = instancer.instantiateVariableFont(TTFont(path), loc, inplace=False)
+            # Saved and read back, as a file holds it: glyf coordinates are integers only once compiled.
+            buffer = io.BytesIO()
+            static.save(buffer)
+            buffer.seek(0)
+            static = TTFont(buffer)
+            order = static.getGlyphOrder()
+            glyph_set = static.getGlyphSet()
+            glyphs = []
+            for gname in order:
+                pen = DecomposingRecordingPen(glyph_set)
+                glyph_set[gname].draw(pen)
+                advance, lsb = static["hmtx"][gname]
+                glyphs.append({"advance": advance, "lsb": lsb, "outline": normalize(pen.value)})
+            os2 = static["OS/2"]
+            data["locations"].append({"user": {k: r4(v) for k, v in loc.items()}, "glyphs": glyphs,
+                                      "weightClass": os2.usWeightClass, "widthClass": os2.usWidthClass,
+                                      "typoAscender": os2.sTypoAscender, "xHeight": os2.sxHeight})
+        write(os.path.join(OUT, "var", os.path.splitext(name)[0] + ".instances.json.gz"), data)
+        print("dumped instances of", name)
+
+
 def main():
     if "web" in WHAT:
         dump_web()
     if "var" in WHAT:
         dump_var()
+    if "instances" in WHAT:
+        dump_instances()
 
 
 if __name__ == "__main__":

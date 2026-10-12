@@ -21,6 +21,11 @@ internal static class CffSubsetter
     public static FontSubset Subset(Typeface face, SortedSet<ushort> wanted, SubsetOptions options, SubsetFormat format)
     {
         CffFont cff = face.Cff!;
+        if (cff.IsCff2)
+        {
+            return SubsetCff2(face, wanted, options, format);
+        }
+
         var usage = new SubrUsage(cff.Privates.Length);
         CharStringInterpreter interpreter = CharStringInterpreter.For(cff);
         var kept = new SortedSet<ushort>();
@@ -68,14 +73,56 @@ internal static class CffSubsetter
         }
 
         SfntWriter.CopyTable(face, Tags.OS2, tables);
-        foreach (FontTag tag in options.KeepTables)
+        SfntWriter.KeepTables(face, options, tables);
+        return new FontSubset(SfntWriter.Write(SfntDirectory.OpenTypeVersion, tables), format, oldIds, map);
+    }
+
+    // CFF2 has no seac and subroutines are dropped, so the kept glyphs are the wanted ones; the CFF is written at the face's position.
+    private static FontSubset SubsetCff2(Typeface face, SortedSet<ushort> wanted, SubsetOptions options, SubsetFormat format)
+    {
+        (ushort[] oldIds, Dictionary<ushort, ushort> map) = FontSubsetter.Number(wanted, options.RetainGlyphIds);
+        byte[] cffData = Instancer.CffFromCff2(face, oldIds, map, options, face.Cff2Scalars);
+        if (format == SubsetFormat.BareCff)
         {
-            if (!tables.ContainsKey(tag.Value))
+            return new FontSubset(cffData, format, oldIds, map);
+        }
+
+        Variations.VariationInstance? instance = face.Instance;
+        int[] advances = new int[oldIds.Length], bearings = new int[oldIds.Length];
+        for (int i = 0; i < oldIds.Length; i++)
+        {
+            ushort old = oldIds[i];
+            if (!options.RetainGlyphIds || map.ContainsKey(old))
             {
-                SfntWriter.CopyTable(face, tag, tables);
+                advances[i] = Instancer.Round(face.GetAdvance(old));
+                GlyphExtents box = face.GetGlyphExtents(old);
+                bearings[i] = box.IsEmpty ? 0 : (int)MathF.Floor(box.XMin);
             }
         }
 
+        var tables = new SortedDictionary<uint, byte[]>
+        {
+            [Tags.Cff.Value] = cffData,
+            [Tags.Head.Value] = SfntWriter.Head(face, 0),
+            [Tags.Maxp.Value] = SfntWriter.Maxp(face, oldIds.Length, trueType: false),
+            [Tags.Post.Value] = instance is null ? SfntWriter.Post(face) : Instancer.Post(face, instance),
+            [Tags.Name.Value] = SfntWriter.Name(face, options.FontNamePrefix),
+        };
+        (byte[] hmtx, byte[] hhea) = SfntWriter.Metrics(face, oldIds, map, options.RetainGlyphIds, advances, bearings);
+        tables[Tags.Hmtx.Value] = hmtx;
+        tables[Tags.Hhea.Value] = hhea;
+        if (options.KeepCmap)
+        {
+            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map));
+        }
+
+        SfntWriter.CopyTable(face, Tags.OS2, tables);
+        if (instance is not null && Instancer.Os2(face, instance) is byte[] os2)
+        {
+            tables[Tags.OS2.Value] = os2;
+        }
+
+        SfntWriter.KeepTables(face, options, tables);
         return new FontSubset(SfntWriter.Write(SfntDirectory.OpenTypeVersion, tables), format, oldIds, map);
     }
 
