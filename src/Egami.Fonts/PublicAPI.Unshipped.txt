@@ -292,6 +292,269 @@ Egami.Fonts.Typeface.TryGetTable(Egami.Fonts.FontTag tag, out System.ReadOnlyMem
 Egami.Fonts.Typeface.TypoMetrics.get -> Egami.Fonts.VerticalMetrics
 Egami.Fonts.Typeface.UnitsPerEm.get -> int
 Egami.Fonts.Typeface.WinMetrics.get -> Egami.Fonts.VerticalMetrics
+Egami.Fonts.Unicode.Bidi
+Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.ArabicLetter = 1 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.ArabicNumber = 2 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.BoundaryNeutral = 4 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.CommonSeparator = 5 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.EuropeanNumber = 6 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.EuropeanSeparator = 7 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.EuropeanTerminator = 8 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.FirstStrongIsolate = 9 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.LeftToRight = 0 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.LeftToRightEmbedding = 10 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.LeftToRightIsolate = 11 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.LeftToRightOverride = 12 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.NonspacingMark = 13 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.OtherNeutral = 14 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.ParagraphSeparator = 3 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.PopDirectionalFormat = 15 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.PopDirectionalIsolate = 16 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.RightToLeft = 17 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.RightToLeftEmbedding = 18 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.RightToLeftIsolate = 19 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.RightToLeftOverride = 20 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.SegmentSeparator = 21 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiClass.WhiteSpace = 22 -> Egami.Fonts.Unicode.BidiClass
+Egami.Fonts.Unicode.BidiPairedBracketType
+Egami.Fonts.Unicode.BidiPairedBracketType.Close = 2 -> Egami.Fonts.Unicode.BidiPairedBracketType
+Egami.Fonts.Unicode.BidiPairedBracketType.None = 0 -> Egami.Fonts.Unicode.BidiPairedBracketType
+Egami.Fonts.Unicode.BidiPairedBracketType.Open = 1 -> Egami.Fonts.Unicode.BidiPairedBracketType
+Egami.Fonts.Unicode.BidiResult
+Egami.Fonts.Unicode.BidiResult.Dispose() -> void
+Egami.Fonts.Unicode.BidiResult.Length.get -> int
+Egami.Fonts.Unicode.BidiResult.Levels.get -> System.ReadOnlySpan<byte>
+Egami.Fonts.Unicode.BidiResult.ParagraphLevel.get -> int
+Egami.Fonts.Unicode.BidiResult.Reorder(int start, int length) -> Egami.Fonts.Unicode.BidiRun[]!
+Egami.Fonts.Unicode.BidiResult.Runs.get -> System.ReadOnlySpan<Egami.Fonts.Unicode.BidiRun>
+Egami.Fonts.Unicode.BidiRun
+Egami.Fonts.Unicode.BidiRun.BidiRun() -> void
+Egami.Fonts.Unicode.BidiRun.BidiRun(int Start, int Length, int Level) -> void
+Egami.Fonts.Unicode.BidiRun.Deconstruct(out int Start, out int Length, out int Level) -> void
+Egami.Fonts.Unicode.BidiRun.Equals(Egami.Fonts.Unicode.BidiRun other) -> bool
+Egami.Fonts.Unicode.BidiRun.IsRightToLeft.get -> bool
+Egami.Fonts.Unicode.BidiRun.Length.get -> int
+Egami.Fonts.Unicode.BidiRun.Length.init -> void
+Egami.Fonts.Unicode.BidiRun.Level.get -> int
+Egami.Fonts.Unicode.BidiRun.Level.init -> void
+Egami.Fonts.Unicode.BidiRun.Start.get -> int
+Egami.Fonts.Unicode.BidiRun.Start.init -> void
+Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.EastAsianWidth.Ambiguous = 1 -> Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.EastAsianWidth.Fullwidth = 2 -> Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.EastAsianWidth.Halfwidth = 3 -> Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.EastAsianWidth.Narrow = 4 -> Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.EastAsianWidth.Neutral = 0 -> Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.EastAsianWidth.Wide = 5 -> Egami.Fonts.Unicode.EastAsianWidth
+Egami.Fonts.Unicode.GraphemeEnumerator
+Egami.Fonts.Unicode.GraphemeEnumerator.Current.get -> Egami.Fonts.Unicode.TextSegment
+Egami.Fonts.Unicode.GraphemeEnumerator.GetEnumerator() -> Egami.Fonts.Unicode.GraphemeEnumerator
+Egami.Fonts.Unicode.GraphemeEnumerator.GraphemeEnumerator() -> void
+Egami.Fonts.Unicode.GraphemeEnumerator.MoveNext() -> bool
+Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.Bottom = 1 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.BottomAndLeft = 2 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.BottomAndRight = 3 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.Left = 4 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.LeftAndRight = 5 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.NotApplicable = 0 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.Overstruck = 6 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.Right = 7 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.Top = 8 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.TopAndBottom = 9 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.TopAndBottomAndLeft = 10 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.TopAndBottomAndRight = 11 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.TopAndLeft = 12 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.TopAndLeftAndRight = 13 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.TopAndRight = 14 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicPositionalCategory.VisualOrderLeft = 15 -> Egami.Fonts.Unicode.IndicPositionalCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Avagraha = 1 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Bindu = 2 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.BrahmiJoiningNumber = 3 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.CantillationMark = 4 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Consonant = 5 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantDead = 6 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantFinal = 7 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantHeadLetter = 8 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantInitialPostfixed = 9 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantKiller = 10 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantMedial = 11 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantPlaceholder = 12 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantPrecedingRepha = 13 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantPrefixed = 14 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantSubjoined = 15 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantSucceedingRepha = 16 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ConsonantWithStacker = 17 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.GeminationMark = 18 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.InvisibleStacker = 19 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Joiner = 20 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ModifyingLetter = 21 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.NonJoiner = 22 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Nukta = 23 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Number = 24 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.NumberJoiner = 25 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Other = 0 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.PureKiller = 26 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.RegisterShifter = 27 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ReorderingKiller = 28 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.SyllableModifier = 29 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ToneLetter = 30 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.ToneMark = 31 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Virama = 32 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Visarga = 33 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.Vowel = 34 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.VowelDependent = 35 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.IndicSyllabicCategory.VowelIndependent = 36 -> Egami.Fonts.Unicode.IndicSyllabicCategory
+Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.AfricanFeh = 1 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.AfricanNoon = 2 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.AfricanQaf = 3 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Ain = 4 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Alaph = 5 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Alef = 6 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Beh = 7 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Beth = 8 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.BurushaskiYehBarree = 9 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Dal = 10 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.DalathRish = 11 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.E = 12 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.FarsiYeh = 13 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Fe = 14 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Feh = 15 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.FinalSemkath = 16 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Gaf = 17 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Gamal = 18 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Hah = 19 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.HanifiRohingyaKinnaYa = 20 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.HanifiRohingyaPa = 21 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.He = 22 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Heh = 23 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.HehGoal = 24 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Heth = 25 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Kaf = 26 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Kaph = 27 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.KashmiriYeh = 28 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Khaph = 29 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.KnottedHeh = 30 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Lam = 31 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Lamadh = 32 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamBha = 33 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamJa = 34 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamLla = 35 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamLlla = 36 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamNga = 37 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamNna = 38 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamNnna = 39 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamNya = 40 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamRa = 41 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamSsa = 42 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.MalayalamTta = 43 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanAleph = 44 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanAyin = 45 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanBeth = 46 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanDaleth = 47 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanDhamedh = 48 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanFive = 49 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanGimel = 50 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanHeth = 51 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanHundred = 52 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanKaph = 53 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanLamedh = 54 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanMem = 55 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanNun = 56 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanOne = 57 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanPe = 58 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanQoph = 59 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanResh = 60 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanSadhe = 61 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanSamekh = 62 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanTaw = 63 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanTen = 64 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanTeth = 65 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanThamedh = 66 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanTwenty = 67 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanWaw = 68 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanYodh = 69 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ManichaeanZayin = 70 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Meem = 71 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Mim = 72 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.NoJoiningGroup = 0 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Noon = 73 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Nun = 74 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Nya = 75 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Pe = 76 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Qaf = 77 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Qaph = 78 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Reh = 79 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ReversedPe = 80 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.RohingyaYeh = 81 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Sad = 82 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Sadhe = 83 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Seen = 84 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Semkath = 85 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Shin = 86 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.StraightWaw = 87 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.SwashKaf = 88 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.SyriacWaw = 89 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Tah = 90 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Taw = 91 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.TehMarbuta = 92 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.TehMarbutaGoal = 93 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Teth = 94 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ThinNoon = 95 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.ThinYeh = 96 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.VerticalTail = 97 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Waw = 98 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Yeh = 99 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.YehBarree = 100 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.YehWithTail = 101 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Yudh = 102 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.YudhHe = 103 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Zain = 104 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningGroup.Zhain = 105 -> Egami.Fonts.Unicode.JoiningGroup
+Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.JoiningType.DualJoining = 2 -> Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.JoiningType.JoinCausing = 1 -> Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.JoiningType.LeftJoining = 3 -> Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.JoiningType.NonJoining = 0 -> Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.JoiningType.RightJoining = 4 -> Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.JoiningType.Transparent = 5 -> Egami.Fonts.Unicode.JoiningType
+Egami.Fonts.Unicode.Script
+Egami.Fonts.Unicode.Script.Code.get -> string!
+Egami.Fonts.Unicode.Script.Equals(Egami.Fonts.Unicode.Script other) -> bool
+Egami.Fonts.Unicode.Script.IsShared.get -> bool
+Egami.Fonts.Unicode.Script.Name.get -> string!
+Egami.Fonts.Unicode.Script.OpenTypeTags.get -> System.ReadOnlySpan<Egami.Fonts.FontTag>
+Egami.Fonts.Unicode.Script.Script() -> void
+Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Unicode.TextDirection.Auto = 0 -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Unicode.TextDirection.LeftToRight = 1 -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Unicode.TextDirection.RightToLeft = 2 -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Unicode.TextDirection.TopToBottom = 3 -> Egami.Fonts.Unicode.TextDirection
+Egami.Fonts.Unicode.TextSegment
+Egami.Fonts.Unicode.TextSegment.Deconstruct(out int Start, out int Length) -> void
+Egami.Fonts.Unicode.TextSegment.End.get -> int
+Egami.Fonts.Unicode.TextSegment.Equals(Egami.Fonts.Unicode.TextSegment other) -> bool
+Egami.Fonts.Unicode.TextSegment.Length.get -> int
+Egami.Fonts.Unicode.TextSegment.Length.init -> void
+Egami.Fonts.Unicode.TextSegment.Start.get -> int
+Egami.Fonts.Unicode.TextSegment.Start.init -> void
+Egami.Fonts.Unicode.TextSegment.TextSegment() -> void
+Egami.Fonts.Unicode.TextSegment.TextSegment(int Start, int Length) -> void
+Egami.Fonts.Unicode.TextSegmenter
+Egami.Fonts.Unicode.UnicodeData
+Egami.Fonts.Unicode.VerticalOrientation
+Egami.Fonts.Unicode.VerticalOrientation.Rotated = 0 -> Egami.Fonts.Unicode.VerticalOrientation
+Egami.Fonts.Unicode.VerticalOrientation.TransformedRotated = 1 -> Egami.Fonts.Unicode.VerticalOrientation
+Egami.Fonts.Unicode.VerticalOrientation.TransformedUpright = 2 -> Egami.Fonts.Unicode.VerticalOrientation
+Egami.Fonts.Unicode.VerticalOrientation.Upright = 3 -> Egami.Fonts.Unicode.VerticalOrientation
+Egami.Fonts.Unicode.WordEnumerator
+Egami.Fonts.Unicode.WordEnumerator.Current.get -> Egami.Fonts.Unicode.TextSegment
+Egami.Fonts.Unicode.WordEnumerator.GetEnumerator() -> Egami.Fonts.Unicode.WordEnumerator
+Egami.Fonts.Unicode.WordEnumerator.MoveNext() -> bool
+Egami.Fonts.Unicode.WordEnumerator.WordEnumerator() -> void
 Egami.Fonts.VerticalMetrics
 Egami.Fonts.VerticalMetrics.Ascent.get -> int
 Egami.Fonts.VerticalMetrics.Ascent.init -> void
@@ -325,6 +588,10 @@ override Egami.Fonts.SubsetOptions.ToString() -> string!
 override Egami.Fonts.TextBounds.GetHashCode() -> int
 override Egami.Fonts.TextMeasure.GetHashCode() -> int
 override Egami.Fonts.Typeface.ToString() -> string!
+override Egami.Fonts.Unicode.BidiRun.GetHashCode() -> int
+override Egami.Fonts.Unicode.Script.GetHashCode() -> int
+override Egami.Fonts.Unicode.Script.ToString() -> string!
+override Egami.Fonts.Unicode.TextSegment.GetHashCode() -> int
 override Egami.Fonts.VerticalMetrics.GetHashCode() -> int
 static Egami.Fonts.CffOptions.Default.get -> Egami.Fonts.CffOptions!
 static Egami.Fonts.CffOptions.operator !=(Egami.Fonts.CffOptions? left, Egami.Fonts.CffOptions? right) -> bool
@@ -372,6 +639,215 @@ static Egami.Fonts.Typeface.FromCff(System.ReadOnlyMemory<byte> data, Egami.Font
 static Egami.Fonts.Typeface.FromFile(string! path, int index = 0, Egami.Fonts.FontLoadOptions? options = null) -> Egami.Fonts.Typeface!
 static Egami.Fonts.Typeface.FromMemory(System.ReadOnlyMemory<byte> data, int index = 0, Egami.Fonts.FontLoadOptions? options = null) -> Egami.Fonts.Typeface!
 static Egami.Fonts.Typeface.FromStream(System.IO.Stream! stream, int index = 0, Egami.Fonts.FontLoadOptions? options = null) -> Egami.Fonts.Typeface!
+static Egami.Fonts.Unicode.Bidi.Resolve(System.ReadOnlySpan<char> text, Egami.Fonts.Unicode.TextDirection direction = Egami.Fonts.Unicode.TextDirection.Auto) -> Egami.Fonts.Unicode.BidiResult!
+static Egami.Fonts.Unicode.BidiRun.operator !=(Egami.Fonts.Unicode.BidiRun left, Egami.Fonts.Unicode.BidiRun right) -> bool
+static Egami.Fonts.Unicode.BidiRun.operator ==(Egami.Fonts.Unicode.BidiRun left, Egami.Fonts.Unicode.BidiRun right) -> bool
+static Egami.Fonts.Unicode.Script.Adlam.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Ahom.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.AnatolianHieroglyphs.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Arabic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Armenian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Avestan.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Balinese.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Bamum.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.BassaVah.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Batak.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Bengali.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.BeriaErfe.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Bhaiksuki.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Bopomofo.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Brahmi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Braille.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Buginese.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Buhid.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.CanadianAboriginal.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Carian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.CaucasianAlbanian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Chakma.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Cham.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Cherokee.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Chorasmian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Common.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Coptic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Cuneiform.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Cypriot.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.CyproMinoan.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Cyrillic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Deseret.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Devanagari.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.DivesAkuru.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Dogra.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Duployan.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.EgyptianHieroglyphs.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Elbasan.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Elymaic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Ethiopic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Garay.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Georgian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Glagolitic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Gothic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Grantha.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Greek.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Gujarati.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.GunjalaGondi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Gurmukhi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.GurungKhema.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Han.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Hangul.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.HanifiRohingya.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Hanunoo.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Hatran.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Hebrew.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Hiragana.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.ImperialAramaic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Inherited.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.InscriptionalPahlavi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.InscriptionalParthian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Javanese.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Kaithi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Kannada.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Katakana.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.KatakanaOrHiragana.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Kawi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.KayahLi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Kharoshthi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.KhitanSmallScript.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Khmer.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Khojki.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Khudawadi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.KiratRai.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Lao.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Latin.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Lepcha.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Limbu.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.LinearA.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.LinearB.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Lisu.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Lycian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Lydian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Mahajani.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Makasar.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Malayalam.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Mandaic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Manichaean.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Marchen.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.MasaramGondi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Medefaidrin.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.MeeteiMayek.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.MendeKikakui.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.MeroiticCursive.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.MeroiticHieroglyphs.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Miao.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Modi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Mongolian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Mro.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Multani.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Myanmar.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Nabataean.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.NagMundari.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Nandinagari.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Newa.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.NewTaiLue.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Nko.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Nushu.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.NyiakengPuachueHmong.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Ogham.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OlChiki.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldHungarian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldItalic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldNorthArabian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldPermic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldPersian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldSogdian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldSouthArabian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldTurkic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OldUyghur.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.OlOnal.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.operator !=(Egami.Fonts.Unicode.Script left, Egami.Fonts.Unicode.Script right) -> bool
+static Egami.Fonts.Unicode.Script.operator ==(Egami.Fonts.Unicode.Script left, Egami.Fonts.Unicode.Script right) -> bool
+static Egami.Fonts.Unicode.Script.Oriya.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Osage.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Osmanya.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.PahawhHmong.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Palmyrene.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.PauCinHau.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.PhagsPa.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Phoenician.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.PsalterPahlavi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Rejang.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Runic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Samaritan.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Saurashtra.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Sharada.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Shavian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Siddham.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Sidetic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.SignWriting.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Sinhala.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Sogdian.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.SoraSompeng.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Soyombo.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Sundanese.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Sunuwar.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.SylotiNagri.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Syriac.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tagalog.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tagbanwa.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.TaiLe.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.TaiTham.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.TaiViet.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.TaiYo.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Takri.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tamil.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tangsa.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tangut.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Telugu.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Thaana.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Thai.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tibetan.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tifinagh.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Tirhuta.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Todhri.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.TolongSiki.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Toto.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.TryFromCode(string! code, out Egami.Fonts.Unicode.Script script) -> bool
+static Egami.Fonts.Unicode.Script.TuluTigalari.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Ugaritic.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Unknown.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Vai.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Vithkuqi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Wancho.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.WarangCiti.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Yezidi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.Yi.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.Script.ZanabazarSquare.get -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.TextSegment.operator !=(Egami.Fonts.Unicode.TextSegment left, Egami.Fonts.Unicode.TextSegment right) -> bool
+static Egami.Fonts.Unicode.TextSegment.operator ==(Egami.Fonts.Unicode.TextSegment left, Egami.Fonts.Unicode.TextSegment right) -> bool
+static Egami.Fonts.Unicode.TextSegmenter.Graphemes(System.ReadOnlySpan<char> text) -> Egami.Fonts.Unicode.GraphemeEnumerator
+static Egami.Fonts.Unicode.TextSegmenter.IsGraphemeBoundary(System.ReadOnlySpan<char> text, int index) -> bool
+static Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan<char> text) -> Egami.Fonts.Unicode.WordEnumerator
+static Egami.Fonts.Unicode.UnicodeData.GetBidiClass(int codePoint) -> Egami.Fonts.Unicode.BidiClass
+static Egami.Fonts.Unicode.UnicodeData.GetBidiPairedBracket(int codePoint) -> int
+static Egami.Fonts.Unicode.UnicodeData.GetBidiPairedBracketType(int codePoint) -> Egami.Fonts.Unicode.BidiPairedBracketType
+static Egami.Fonts.Unicode.UnicodeData.GetCanonicalCombiningClass(int codePoint) -> int
+static Egami.Fonts.Unicode.UnicodeData.GetEastAsianWidth(int codePoint) -> Egami.Fonts.Unicode.EastAsianWidth
+static Egami.Fonts.Unicode.UnicodeData.GetGeneralCategory(int codePoint) -> System.Globalization.UnicodeCategory
+static Egami.Fonts.Unicode.UnicodeData.GetIndicPositionalCategory(int codePoint) -> Egami.Fonts.Unicode.IndicPositionalCategory
+static Egami.Fonts.Unicode.UnicodeData.GetIndicSyllabicCategory(int codePoint) -> Egami.Fonts.Unicode.IndicSyllabicCategory
+static Egami.Fonts.Unicode.UnicodeData.GetJoiningGroup(int codePoint) -> Egami.Fonts.Unicode.JoiningGroup
+static Egami.Fonts.Unicode.UnicodeData.GetJoiningType(int codePoint) -> Egami.Fonts.Unicode.JoiningType
+static Egami.Fonts.Unicode.UnicodeData.GetScript(int codePoint) -> Egami.Fonts.Unicode.Script
+static Egami.Fonts.Unicode.UnicodeData.GetScriptExtensions(int codePoint) -> System.ReadOnlySpan<Egami.Fonts.Unicode.Script>
+static Egami.Fonts.Unicode.UnicodeData.GetVerticalOrientation(int codePoint) -> Egami.Fonts.Unicode.VerticalOrientation
+static Egami.Fonts.Unicode.UnicodeData.IsDefaultIgnorable(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.IsEmoji(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.IsEmojiComponent(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.IsEmojiModifier(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.IsEmojiModifierBase(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.IsEmojiPresentation(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.IsExtendedPictographic(int codePoint) -> bool
+static Egami.Fonts.Unicode.UnicodeData.TryGetBidiMirroringGlyph(int codePoint, out int mirror) -> bool
+static Egami.Fonts.Unicode.UnicodeData.UnicodeVersion.get -> System.Version!
 static Egami.Fonts.VerticalMetrics.operator !=(Egami.Fonts.VerticalMetrics left, Egami.Fonts.VerticalMetrics right) -> bool
 static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left, Egami.Fonts.VerticalMetrics right) -> bool
 ~override Egami.Fonts.Font.Equals(object obj) -> bool
@@ -393,5 +869,10 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.TextBounds.ToString() -> string
 ~override Egami.Fonts.TextMeasure.Equals(object obj) -> bool
 ~override Egami.Fonts.TextMeasure.ToString() -> string
+~override Egami.Fonts.Unicode.BidiRun.Equals(object obj) -> bool
+~override Egami.Fonts.Unicode.BidiRun.ToString() -> string
+~override Egami.Fonts.Unicode.Script.Equals(object obj) -> bool
+~override Egami.Fonts.Unicode.TextSegment.Equals(object obj) -> bool
+~override Egami.Fonts.Unicode.TextSegment.ToString() -> string
 ~override Egami.Fonts.VerticalMetrics.Equals(object obj) -> bool
 ~override Egami.Fonts.VerticalMetrics.ToString() -> string

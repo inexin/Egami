@@ -28,6 +28,8 @@
       href: guides/drawing.md
     - name: Fonts and text
       href: guides/text.md
+    - name: Unicode text
+      href: guides/unicode-text.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic

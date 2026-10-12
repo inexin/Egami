@@ -1,0 +1,125 @@
+{
+  "comment": "Corpus runs for tools/shaperef/shape.py: a font and a text under tests/reference/shaping/texts; hb-shape's output goes to corpus/<name>.json.gz.",
+  "runs": [
+    {
+      "name": "NotoSans-Regular.english",
+      "font": "tests/fonts/NotoSans-Regular.ttf",
+      "text": "english"
+    },
+    {
+      "name": "SourceSans3-Regular.english",
+      "font": "tests/fonts/SourceSans3-Regular.otf",
+      "text": "english"
+    },
+    {
+      "name": "Roboto-Regular.english",
+      "font": "tests/fonts/Roboto-Regular.ttf",
+      "text": "english"
+    },
+    {
+      "name": "NotoSans-Regular.greek",
+      "font": "tests/fonts/NotoSans-Regular.ttf",
+      "text": "greek"
+    },
+    {
+      "name": "NotoSans-Regular.russian",
+      "font": "tests/fonts/NotoSans-Regular.ttf",
+      "text": "russian"
+    },
+    {
+      "name": "NotoSansArabic-Regular.arabic",
+      "font": "tests/fonts/shaping/NotoSansArabic-Regular.ttf",
+      "text": "arabic"
+    },
+    {
+      "name": "NotoSansArabic-Regular.persian",
+      "font": "tests/fonts/shaping/NotoSansArabic-Regular.ttf",
+      "text": "persian"
+    },
+    {
+      "name": "NotoSansArabic-Regular.urdu",
+      "font": "tests/fonts/shaping/NotoSansArabic-Regular.ttf",
+      "text": "urdu"
+    },
+    {
+      "name": "Amiri-Regular.arabic",
+      "font": "tests/fonts/shaping/Amiri-Regular.ttf",
+      "text": "arabic"
+    },
+    {
+      "name": "Amiri-Regular.persian",
+      "font": "tests/fonts/shaping/Amiri-Regular.ttf",
+      "text": "persian"
+    },
+    {
+      "name": "Amiri-Regular.urdu",
+      "font": "tests/fonts/shaping/Amiri-Regular.ttf",
+      "text": "urdu"
+    },
+    {
+      "name": "ScheherazadeNew-Regular.arabic",
+      "font": "tests/fonts/shaping/ScheherazadeNew-Regular.ttf",
+      "text": "arabic"
+    },
+    {
+      "name": "ScheherazadeNew-Regular.persian",
+      "font": "tests/fonts/shaping/ScheherazadeNew-Regular.ttf",
+      "text": "persian"
+    },
+    {
+      "name": "ScheherazadeNew-Regular.urdu",
+      "font": "tests/fonts/shaping/ScheherazadeNew-Regular.ttf",
+      "text": "urdu"
+    },
+    {
+      "name": "NotoSansHebrew-Regular.hebrew",
+      "font": "tests/fonts/shaping/NotoSansHebrew-Regular.ttf",
+      "text": "hebrew"
+    },
+    {
+      "name": "NotoSansDevanagari-Regular.hindi",
+      "font": "tests/fonts/shaping/NotoSansDevanagari-Regular.ttf",
+      "text": "hindi"
+    },
+    {
+      "name": "Mukta-Regular.hindi",
+      "font": "tests/fonts/shaping/Mukta-Regular.ttf",
+      "text": "hindi"
+    },
+    {
+      "name": "NotoSansBengali-Regular.bengali",
+      "font": "tests/fonts/shaping/NotoSansBengali-Regular.ttf",
+      "text": "bengali"
+    },
+    {
+      "name": "NotoSansTamil-Regular.tamil",
+      "font": "tests/fonts/shaping/NotoSansTamil-Regular.ttf",
+      "text": "tamil"
+    },
+    {
+      "name": "NotoSansThai-Regular.thai",
+      "font": "tests/fonts/shaping/NotoSansThai-Regular.ttf",
+      "text": "thai"
+    },
+    {
+      "name": "NotoSansLao-Regular.lao",
+      "font": "tests/fonts/shaping/NotoSansLao-Regular.ttf",
+      "text": "lao"
+    },
+    {
+      "name": "NotoSansKhmer-Regular.khmer",
+      "font": "tests/fonts/shaping/NotoSansKhmer-Regular.ttf",
+      "text": "khmer"
+    },
+    {
+      "name": "NotoSansMyanmar-Regular.burmese",
+      "font": "tests/fonts/shaping/NotoSansMyanmar-Regular.ttf",
+      "text": "burmese"
+    },
+    {
+      "name": "NotoSansSinhala-Regular.sinhala",
+      "font": "tests/fonts/shaping/NotoSansSinhala-Regular.ttf",
+      "text": "sinhala"
+    }
+  ]
+}
