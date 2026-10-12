@@ -215,6 +215,34 @@ public class Advanced
     }
 
     [Fact]
+    public void Documents()
+    {
+        using Raster<Rgba8> photo = Raster.Create(64, 48, new Rgba8(90, 140, 200, 255));
+        using (FileStream file = File.Create("photo.jpg"))
+        {
+            photo.Save(file, "jpeg");
+        }
+
+        PictureRecorder canvas = new(new RectF(0, 0, 300, 200));
+
+        #region encoded-image
+        // A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
+        EncodedImage jpeg = EncodedImage.FromFile("photo.jpg");
+        canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));
+        #endregion
+
+        #region annotations
+        // A layout engine marks links, destinations and structure while it draws; pixels show none of it.
+        canvas.BeginMarkedContent(new MarkedContent("P") { NodeId = 12 });
+        canvas.DrawAnnotation(new RectF(20, 130, 120, 16), Annotation.Url("https://example.com"));
+        canvas.DrawAnnotation(new RectF(20, 150, 0, 0), Annotation.NamedDestination("chapter-2"));
+        canvas.EndMarkedContent();
+        #endregion
+
+        Assert.Equal(5, canvas.Finish().CallCount);
+    }
+
+    [Fact]
     public void Cookbook()
     {
         using Raster<Rgba8> skin = Raster.Create(30, 30, new Rgba8(40, 120, 220, 255));

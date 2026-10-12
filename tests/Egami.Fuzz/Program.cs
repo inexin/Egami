@@ -1747,7 +1747,11 @@ static void LoadDrawing(Stream stream)
 
         using Raster<Rgba8> target = Raster.Create<Rgba8>(32, 32, context);
         using Egami.Drawing.RasterCanvas<Rgba8> canvas = new(target);
-        canvas.Scale(32 / MathF.Max(picture.Bounds.Width, picture.Bounds.Height));
+        float fit = 32 / MathF.Max(picture.Bounds.Width, picture.Bounds.Height);
+        if (float.IsFinite(fit))
+        {
+            canvas.Scale(fit);
+        }
         canvas.DrawPicture(picture);
     }
     catch (EgamiException)

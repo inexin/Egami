@@ -50,6 +50,7 @@ public sealed class PictureRecorder : Canvas
             throw new InvalidOperationException("The recording has already finished.");
         }
 
+        EndOpenMarkedContent();
         RestoreToCount(1);
         _finished = true;
         Picture picture = new(_bounds, [.. _calls]);
@@ -101,6 +102,18 @@ public sealed class PictureRecorder : Canvas
 
     /// <inheritdoc/>
     protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawImageCall(image, source, destination, sampling, paint));
+
+    /// <inheritdoc/>
+    protected override void OnDrawEncodedImage(EncodedImage image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawEncodedImageCall(image, source, destination, sampling, paint));
+
+    /// <inheritdoc/>
+    protected override void OnDrawAnnotation(RectF area, Annotation annotation) => _calls.Add(new DrawAnnotationCall(area, annotation));
+
+    /// <inheritdoc/>
+    protected override void OnBeginMarkedContent(MarkedContent content) => _calls.Add(new BeginMarkedContentCall(content));
+
+    /// <inheritdoc/>
+    protected override void OnEndMarkedContent() => _calls.Add(EndMarkedContentCall.Instance);
 
     /// <inheritdoc/>
     protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint) => _calls.Add(new DrawGlyphRunCall(run, origin, paint));

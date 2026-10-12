@@ -19,6 +19,7 @@ internal sealed class EgdrReader
 
     private readonly EgamiContext _context;
     private readonly List<Raster> _images = [];
+    private readonly List<EncodedImage> _encoded = [];
     private readonly List<Path> _paths = [];
     private readonly List<(Picture Picture, int Depth, long Expanded)> _pictures = [];
     private long _budget;
@@ -89,6 +90,11 @@ internal sealed class EgdrReader
                 Raster image = Raster.Load(payload, PngFormat.Info, _context);
                 _images.Add(image);
                 Spend(length + (image.Width * (long)image.Height * 16));
+            }
+            else if (type == Egdr.EncodedImageChunk)
+            {
+                Spend(length);
+                _encoded.Add(EncodedImage.FromBytes(payload.Span, _context));
             }
             else if (type == Egdr.PathChunk)
             {
@@ -172,6 +178,11 @@ internal sealed class EgdrReader
             }
 
             End();
+            if (_marked != 0)
+            {
+                throw Problem("a picture's marked content does not end.");
+            }
+
             if (_expanded > Egdr.MaxExpandedCalls)
             {
                 throw new LimitExceededException("ExpandedDrawingCalls", Egdr.MaxExpandedCalls, _expanded);
@@ -297,6 +308,49 @@ internal sealed class EgdrReader
                         return new DrawPictureCall(picture, matrix, ReadOptionalPaint(), Bool());
                     }
 
+                case Egdr.Op.DrawEncodedImage:
+                    {
+                        uint index = U32();
+                        EncodedImage image = index < (uint)reader._encoded.Count ? reader._encoded[(int)index] : throw Problem($"encoded image {index} is not defined before it is used.");
+                        RectF source = ReadRect(), destination = ReadRect();
+                        if (!source.IsFinite || source.X < 0 || source.Y < 0 || source.Right > image.Width || source.Bottom > image.Height)
+                        {
+                            throw Problem("an encoded image's source rectangle lies outside it.");
+                        }
+
+                        return new DrawEncodedImageCall(image, source, destination, ReadSampling(), ReadOptionalPaint());
+                    }
+
+                case Egdr.Op.DrawAnnotation:
+                    {
+                        RectF area = ReadRect();
+                        AnnotationKind kind = Enum<AnnotationKind>();
+                        return new DrawAnnotationCall(area, new Annotation(kind, ReadString()));
+                    }
+
+                case Egdr.Op.BeginMarkedContent:
+                    {
+                        string tag = ReadString();
+                        byte flags = U8();
+                        if (flags > 7)
+                        {
+                            throw Problem("marked content has unknown flags.");
+                        }
+
+                        int? node = (flags & 1) != 0 ? I32() : null;
+                        string? actual = (flags & 2) != 0 ? ReadString() : null;
+                        string? alt = (flags & 4) != 0 ? ReadString() : null;
+                        _marked++;
+                        return new BeginMarkedContentCall(new MarkedContent(tag) { NodeId = node, ActualText = actual, AlternateText = alt });
+                    }
+
+                case Egdr.Op.EndMarkedContent:
+                    if (--_marked < 0)
+                    {
+                        throw Problem("marked content ends that never began.");
+                    }
+
+                    return EndMarkedContentCall.Instance;
                 default:
                     throw Problem($"unknown call {(byte)op}.");
             }
@@ -578,6 +632,13 @@ internal sealed class EgdrReader
         }
 
         private int _paintDepth;
+        private int _marked;
+
+        private string ReadString()
+        {
+            int length = Count(1);
+            return new System.Text.UTF8Encoding(false, true).GetString(Take(length));
+        }
 
         private Gradient ReadGradient(Gradient g)
         {

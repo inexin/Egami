@@ -129,6 +129,28 @@ internal sealed record class DrawImageCall(Raster Image, RectF Source, RectF Des
     internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawImage(Image, Source, Destination, Sampling, Paint);
 }
 
+internal sealed record class DrawEncodedImageCall(EncodedImage Image, RectF Source, RectF Destination, SamplingOptions Sampling, Paint? Paint) : DrawingCall
+{
+    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawImage(Image, Source, Destination, Sampling, Paint);
+}
+
+internal sealed record class DrawAnnotationCall(RectF Area, Annotation Annotation) : DrawingCall
+{
+    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawAnnotation(Area, Annotation);
+}
+
+internal sealed record class BeginMarkedContentCall(MarkedContent Content) : DrawingCall
+{
+    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.BeginMarkedContent(Content);
+}
+
+internal sealed record class EndMarkedContentCall : DrawingCall
+{
+    internal static EndMarkedContentCall Instance { get; } = new();
+
+    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.EndMarkedContent();
+}
+
 internal sealed record class DrawGlyphRunCall(GlyphRun Run, Vector2 Origin, Paint Paint) : DrawingCall
 {
     internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawGlyphRun(Run, Origin, Paint);

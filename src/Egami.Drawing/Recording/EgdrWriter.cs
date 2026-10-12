@@ -28,6 +28,7 @@ internal static class Egdr
     internal static readonly uint PathChunk = Tag("PATH");
     internal static readonly uint DrawingChunk = Tag("DRAW");
     internal static readonly uint End = Tag("DEND");
+    internal static readonly uint EncodedImageChunk = Tag("ENCI");
 
     internal enum Op : byte
     {
@@ -50,6 +51,10 @@ internal static class Egdr
         DrawMesh = 17,
         DrawPatch = 18,
         DrawPicture = 19,
+        DrawEncodedImage = 20,
+        DrawAnnotation = 21,
+        BeginMarkedContent = 22,
+        EndMarkedContent = 23,
     }
 
     internal enum PaintKind : byte
@@ -76,6 +81,7 @@ internal sealed class EgdrWriter
     private readonly Stream _stream;
     private readonly Dictionary<Raster, int> _images = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<Path, int> _paths = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<EncodedImage, int> _encoded = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<Picture, int> _pictures = new(ReferenceEqualityComparer.Instance);
 
     private EgdrWriter(Stream stream)
@@ -102,6 +108,18 @@ internal sealed class EgdrWriter
         BinaryPrimitives.WriteUInt32LittleEndian(header[4..], checked((uint)payload.Length));
         _stream.Write(header);
         _stream.Write(payload);
+    }
+
+    private int EncodedIndex(EncodedImage image)
+    {
+        if (!_encoded.TryGetValue(image, out int index))
+        {
+            Chunk(Egdr.EncodedImageChunk, image.Data.Span);
+            index = _encoded.Count;
+            _encoded[image] = index;
+        }
+
+        return index;
     }
 
     private int ImageIndex(Raster image)
@@ -455,6 +473,52 @@ internal sealed class EgdrWriter
                     break;
                 }
 
+            case DrawEncodedImageCall c:
+                {
+                    int image = EncodedIndex(c.Image);
+                    Buffer? paint = c.Paint is null ? null : PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawEncodedImage);
+                    b.U32((uint)image);
+                    b.Rect(c.Source);
+                    b.Rect(c.Destination);
+                    b.Sampling(c.Sampling);
+                    b.OptionalPaint(paint);
+                    break;
+                }
+
+            case DrawAnnotationCall c:
+                b.Op(Egdr.Op.DrawAnnotation);
+                b.Rect(c.Area);
+                b.U8((byte)c.Annotation.Kind);
+                b.String(c.Annotation.Value);
+                break;
+            case BeginMarkedContentCall c:
+                {
+                    MarkedContent m = c.Content;
+                    b.Op(Egdr.Op.BeginMarkedContent);
+                    b.String(m.Tag);
+                    b.U8((byte)((m.NodeId is null ? 0 : 1) | (m.ActualText is null ? 0 : 2) | (m.AlternateText is null ? 0 : 4)));
+                    if (m.NodeId is int node)
+                    {
+                        b.I32(node);
+                    }
+
+                    if (m.ActualText is string actual)
+                    {
+                        b.String(actual);
+                    }
+
+                    if (m.AlternateText is string alt)
+                    {
+                        b.String(alt);
+                    }
+
+                    break;
+                }
+
+            case EndMarkedContentCall:
+                b.Op(Egdr.Op.EndMarkedContent);
+                break;
             default:
                 throw new NotSupportedException($"{call.GetType().Name} has no .egdr form.");
         }
@@ -712,6 +776,13 @@ internal sealed class EgdrWriter
             U8(s.Background.G);
             U8(s.Background.B);
             U8(s.Background.A);
+        }
+
+        internal void String(string s)
+        {
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(s);
+            U32((uint)bytes.Length);
+            bytes.CopyTo(Take(bytes.Length));
         }
 
         internal void OptionalPaint(Buffer? paint)

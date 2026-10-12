@@ -25,6 +25,7 @@ not know, which is how later minor versions add to the format. The chunk types o
 | `IMAG` | A PNG file | The next image, numbered from 0 |
 | `PATH` | A path, below | The next path, numbered from 0 |
 | `DRAW` | A drawing, below | The next drawing, numbered from 0 |
+| `ENCI` | An encoded image file (a JPEG, a PNG, any format Egami reads), its bytes as they were given | The next encoded image, numbered from 0 |
 | `DEND` | Empty | The end. The file's drawing is the last `DRAW` chunk before it. |
 
 A chunk refers to images, paths and drawings by number, and only to ones defined by earlier chunks, so a file is read in one pass
@@ -56,7 +57,7 @@ The payload must end exactly after the last call.
 
 A rectangle is four `f32`: x, y, width and height. A matrix is six `f32`: M11, M12, M21, M22, M31, M32, as .NET's `Matrix3x2`,
 which maps a row vector (x, y, 1). A color is four `f32`: red, green, blue and straight alpha, encoded (sRGB) values from 0 to 1.
-A point is two `f32`. A round rectangle is a rectangle and the x and y radii of its corners: top-left, top-right, bottom-right,
+A point is two `f32`. A string is a `u32` byte count and that many bytes of UTF-8. A round rectangle is a rectangle and the x and y radii of its corners: top-left, top-right, bottom-right,
 bottom-left. An enum is a `u8` with the value Egami's enum of that name has. Every number must be finite.
 
 | Opcode | Call | Operands |
@@ -79,7 +80,11 @@ bottom-left. An enum is a `u8` with the value Egami's enum of that name has. Eve
 | 16 | DrawAtlas | Image number, count `u32`, that many sprite transforms (four `f32`: ScaleCos, ScaleSin, Tx, Ty), that many source rectangles, has-colors `bool`, that many colors if it has them, BlendMode, sampling, has-paint `bool`, paint |
 | 17 | DrawMesh | Mesh, paint, BlendMode, stops |
 | 18 | DrawPatch | Patch, paint, BlendMode, stops |
-| 19 | DrawPicture | Drawing number `u32`, matrix, has-paint `bool`, paint, cache-as-image `bool` |
+| 19 | DrawPicture | Picture number `u32`, matrix, has-paint `bool`, paint, cache-as-image `bool` |
+| 20 | DrawEncodedImage | Encoded image number `u32`, source rectangle (inside the image), destination rectangle, sampling, has-paint `bool`, paint |
+| 21 | DrawAnnotation | Area rectangle, AnnotationKind, the URL or name as a string |
+| 22 | BeginMarkedContent | Tag as a string, a flags `u8` (1 node id, 2 actual text, 4 alternate text), then the node id `i32` and the two strings for the flags set |
+| 23 | EndMarkedContent | None; every BeginMarkedContent in a drawing has its EndMarkedContent in the same drawing |
 
 Coordinates are those the recorder's hooks received: local coordinates under the matrix last set. Replaying a drawing sets each
 recorded matrix after the matrix the drawing is replayed under. Text is written as `DrawPath` of its outlines, filled, since a
@@ -128,7 +133,7 @@ A paint is its kind `u8`, the fields every paint has, then its own:
 | 7 | NoisePaint | NoiseType, base frequency x and y `f32`, octaves `i32`, seed `i32`, has-tile `bool`, tile width and height `i32` |
 | 8 | BlendPaint | Destination paint, source paint, BlendMode |
 | 9 | ColorMatrixPaint | Source paint, the 20 matrix values `f32`, row by row |
-| 10 | PicturePaint | Drawing number `u32`, TileMode x, TileMode y, tile rectangle |
+| 10 | PicturePaint | Picture number `u32`, TileMode x, TileMode y, tile rectangle |
 
 The gradient fields are the stops (at least one), TileMode, a flags `u8` (1 extend start, 2 extend end, 4 premultiplied),
 InterpolationSpace and HueMethod. A simplex noise uses its x frequency.

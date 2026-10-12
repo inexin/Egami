@@ -188,6 +188,15 @@ public class EgdrTests
         patterns.DrawMesh(new Mesh(MeshMode.Strip, [new(0, 0), new(0, 10), new(10, 0), new(10, 10)], texCoords: [new(0, 0), new(0, 12), new(16, 0), new(16, 12)], values: [0, 1, 0.5f, 0.2f]), new ImagePaint(image), Operations.BlendMode.Multiply, [new(0, Rgba8.Red), new(1, Rgba8.White)]);
         patterns.DrawPatch(Patch.Tensor([.. Enumerable.Range(0, 16).Select(i => new Vector2((i % 4) * 10, (i / 4) * 10))], cornerTexCoords: [new(0, 0), new(16, 0), new(16, 12), new(0, 12)]), new ImagePaint(image));
         yield return patterns.Finish();
+
+        using MemoryStream jpeg = new();
+        image.Save(jpeg, "jpeg");
+        PictureRecorder document = new(new RectF(0, 0, 128, 100));
+        document.BeginMarkedContent(new MarkedContent("Figure") { NodeId = 1, AlternateText = "A photo" });
+        document.DrawImage(EncodedImage.FromBytes(jpeg.ToArray()), new RectF(4, 4, 64, 48));
+        document.EndMarkedContent();
+        document.DrawAnnotation(new RectF(4, 4, 64, 48), Annotation.Url("https://example.com/egami"));
+        yield return document.Finish();
     }
 
     private static byte[] Bytes(Picture picture)

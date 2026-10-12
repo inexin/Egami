@@ -246,6 +246,11 @@ and [the .egdr format](docs/articles/guides/egdr-format.md).
   drawing as a pattern rendered at the device scale. Within a mean level of SkiaSharp's drawPicture and picture shaders.
 - `Picture.Save` and `Picture.Load`: Egami's own documented binary format, .egdr, versioned and chunked, with images as PNG;
   loading checks every count and number, honors `SafetyLimits` and bounds nesting and replay, and has a fuzz target (`egdr`).
+- For document backends: `DrawImage` with an `EncodedImage` (a file's bytes, probed and decoded only when needed, so a PDF page
+  can embed a JPEG as it is), `DrawAnnotation` with `Annotation` links and destinations as Skia's drawAnnotation, and
+  `BeginMarkedContent` and `EndMarkedContent` with `MarkedContent` tags for tagged PDF; hooks `OnDrawEncodedImage` (decodes by
+  default), `OnDrawAnnotation`, `OnBeginMarkedContent` and `OnEndMarkedContent` (nothing by default). Pictures and .egdr keep
+  them.
 - Backends get `OnDrawLattice`, `OnDrawAtlas`, `OnDrawMesh`, `OnDrawPatch` and `OnDrawPicture`, with defaults: images per cell or
   sprite, meshes through the raster fallback, patches as meshes, drawings replayed.
 - Fixed: `DrawImage` under a transform that collapses the image threw; it draws nothing. Scaling overlapping `RoundRect` radii

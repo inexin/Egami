@@ -647,6 +647,7 @@ public abstract partial class Canvas : IDisposable
             return;
         }
 
+        EndOpenMarkedContent();
         while (_saved.Count > 0)
         {
             Restore();

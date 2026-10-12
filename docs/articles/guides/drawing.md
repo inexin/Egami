@@ -207,6 +207,19 @@ sharp.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#pattern)]
 
+### Documents
+
+A canvas also carries what a document backend needs and pixels never show. `DrawImage` takes an `EncodedImage`, a file's bytes
+probed but not decoded, so a PDF page can embed a JPEG as it is while a raster canvas draws the decoded pixels.
+`DrawAnnotation` marks a link to a URL, a named destination or a link to one (`Annotation`, as Skia's drawAnnotation), and
+`BeginMarkedContent` and `EndMarkedContent` bracket drawing with a `MarkedContent` tag for tagged PDF, with a structure node id,
+replacement text and alternate text. Backends get `OnDrawEncodedImage`, `OnDrawAnnotation`, `OnBeginMarkedContent` and
+`OnEndMarkedContent`; by default the image is decoded and the others do nothing.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#encoded-image)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#annotations)]
+
 ### Saving drawings
 
 `Picture.Save` writes Egami's own documented binary format, [.egdr](egdr-format.md), and `Picture.Load` reads it back as
