@@ -547,32 +547,8 @@ public sealed partial class Typeface
             string postScript = name.GetEnglish(6) ?? cffName ?? family.Replace(" ", string.Empty, StringComparison.Ordinal);
             string full = name.GetEnglish(4) ?? (subfamily == "Regular" ? family : $"{family} {subfamily}");
 
-            Os2Table os2 = face.Os2;
-            int weight = os2.WeightClass;
-            if (weight is >= 1 and <= 9)
-            {
-                // Some old fonts give the class as 1 to 9.
-                weight *= 100;
-            }
-
-            bool noOs2 = face.Os2Missing;
-            if (noOs2 || weight == 0)
-            {
-                weight = (face._head.MacStyle & 1) != 0 ? 700 : 400;
-            }
-
-            int width = noOs2 || os2.WidthClass == 0 ? 5 : Math.Clamp((int)os2.WidthClass, 1, 9);
-            FontSlant slant = FontSlant.Upright;
-            if (!noOs2 && (os2.FsSelection & 0x0200) != 0)
-            {
-                slant = FontSlant.Oblique;
-            }
-            else if ((!noOs2 && (os2.FsSelection & 0x0001) != 0) || (face._head.MacStyle & 2) != 0)
-            {
-                slant = FontSlant.Italic;
-            }
-
-            return new StyleAndNames(family, subfamily, full, postScript, new FontStyle(Math.Clamp(weight, 1, 1000), width, slant));
+            FontStyle style = Matching.FaceIndexer.StyleOf(face.Os2Missing ? null : face.Os2, face._head.MacStyle);
+            return new StyleAndNames(family, subfamily, full, postScript, style);
         }
 
         // A PDF subset name such as ABCDEF+Garamond has a six-letter tag before the plus.

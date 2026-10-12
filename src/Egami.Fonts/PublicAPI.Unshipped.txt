@@ -26,6 +26,20 @@ Egami.Fonts.Font.Size.get -> float
 Egami.Fonts.Font.Synthesis.get -> Egami.Fonts.FontSynthesis
 Egami.Fonts.Font.Synthesis.init -> void
 Egami.Fonts.Font.Typeface.get -> Egami.Fonts.Typeface!
+Egami.Fonts.FontCollection
+Egami.Fonts.FontCollection.Add(Egami.Fonts.Typeface! typeface) -> void
+Egami.Fonts.FontCollection.AddDirectory(string! path, bool recursive = true) -> int
+Egami.Fonts.FontCollection.AddFile(string! path) -> int
+Egami.Fonts.FontCollection.Count.get -> int
+Egami.Fonts.FontCollection.Families.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontFamily!>!
+Egami.Fonts.FontCollection.FontCollection(Egami.Fonts.FontLoadOptions? options = null) -> void
+Egami.Fonts.FontCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Fonts.FontFamily!>!
+Egami.Fonts.FontCollection.Match(Egami.Fonts.GenericFamily generic, Egami.Fonts.FontStyle style) -> Egami.Fonts.FontMatch?
+Egami.Fonts.FontCollection.Match(string! familyName, Egami.Fonts.FontStyle style) -> Egami.Fonts.FontMatch?
+Egami.Fonts.FontCollection.MatchTypeface(string! familyName, Egami.Fonts.FontStyle style) -> Egami.Fonts.Typeface?
+Egami.Fonts.FontCollection.Options.get -> Egami.Fonts.FontLoadOptions!
+Egami.Fonts.FontCollection.Refresh() -> void
+Egami.Fonts.FontCollection.TryGetFamily(string! name, out Egami.Fonts.FontFamily! family) -> bool
 Egami.Fonts.FontEmbedding
 Egami.Fonts.FontEmbedding.BitmapOnly = 512 -> Egami.Fonts.FontEmbedding
 Egami.Fonts.FontEmbedding.Editable = 8 -> Egami.Fonts.FontEmbedding
@@ -62,6 +76,11 @@ Egami.Fonts.FontExtents.UnderlineThickness.get -> float
 Egami.Fonts.FontExtents.UnderlineThickness.init -> void
 Egami.Fonts.FontExtents.XHeight.get -> float
 Egami.Fonts.FontExtents.XHeight.init -> void
+Egami.Fonts.FontFamily
+Egami.Fonts.FontFamily.Faces.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Typeface!>!
+Egami.Fonts.FontFamily.Match(Egami.Fonts.FontStyle style) -> Egami.Fonts.FontMatch
+Egami.Fonts.FontFamily.Name.get -> string!
+Egami.Fonts.FontFamily.Styles.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontStyle>!
 Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Cff = 3 -> Egami.Fonts.FontFileKind
 Egami.Fonts.FontFileKind.Collection = 2 -> Egami.Fonts.FontFileKind
@@ -78,6 +97,16 @@ Egami.Fonts.FontLoadOptions.Equals(Egami.Fonts.FontLoadOptions? other) -> bool
 Egami.Fonts.FontLoadOptions.FontLoadOptions() -> void
 Egami.Fonts.FontLoadOptions.Strict.get -> bool
 Egami.Fonts.FontLoadOptions.Strict.init -> void
+Egami.Fonts.FontMatch
+Egami.Fonts.FontMatch.Deconstruct(out Egami.Fonts.Typeface! Typeface, out Egami.Fonts.FontSynthesis Synthesis) -> void
+Egami.Fonts.FontMatch.Equals(Egami.Fonts.FontMatch other) -> bool
+Egami.Fonts.FontMatch.FontMatch() -> void
+Egami.Fonts.FontMatch.FontMatch(Egami.Fonts.Typeface! Typeface, Egami.Fonts.FontSynthesis Synthesis) -> void
+Egami.Fonts.FontMatch.Synthesis.get -> Egami.Fonts.FontSynthesis
+Egami.Fonts.FontMatch.Synthesis.init -> void
+Egami.Fonts.FontMatch.ToFont(float size) -> Egami.Fonts.Font
+Egami.Fonts.FontMatch.Typeface.get -> Egami.Fonts.Typeface!
+Egami.Fonts.FontMatch.Typeface.init -> void
 Egami.Fonts.FontNameRecord
 Egami.Fonts.FontNameRecord.Deconstruct(out int NameId, out int PlatformId, out int EncodingId, out int LanguageId, out string! Value) -> void
 Egami.Fonts.FontNameRecord.EncodingId.get -> int
@@ -134,6 +163,12 @@ Egami.Fonts.FontTag.FontTag(string! tag) -> void
 Egami.Fonts.FontTag.FontTag(uint Value) -> void
 Egami.Fonts.FontTag.Value.get -> uint
 Egami.Fonts.FontTag.Value.init -> void
+Egami.Fonts.GenericFamily
+Egami.Fonts.GenericFamily.Cursive = 3 -> Egami.Fonts.GenericFamily
+Egami.Fonts.GenericFamily.Fantasy = 4 -> Egami.Fonts.GenericFamily
+Egami.Fonts.GenericFamily.Monospace = 2 -> Egami.Fonts.GenericFamily
+Egami.Fonts.GenericFamily.SansSerif = 0 -> Egami.Fonts.GenericFamily
+Egami.Fonts.GenericFamily.Serif = 1 -> Egami.Fonts.GenericFamily
 Egami.Fonts.GlyphExtents
 Egami.Fonts.GlyphExtents.Deconstruct(out float XMin, out float YMin, out float XMax, out float YMax) -> void
 Egami.Fonts.GlyphExtents.Equals(Egami.Fonts.GlyphExtents other) -> bool
@@ -247,9 +282,11 @@ override Egami.Fonts.CffOptions.GetHashCode() -> int
 override Egami.Fonts.CffOptions.ToString() -> string!
 override Egami.Fonts.Font.GetHashCode() -> int
 override Egami.Fonts.FontExtents.GetHashCode() -> int
+override Egami.Fonts.FontFamily.ToString() -> string!
 override Egami.Fonts.FontLoadOptions.Equals(object? obj) -> bool
 override Egami.Fonts.FontLoadOptions.GetHashCode() -> int
 override Egami.Fonts.FontLoadOptions.ToString() -> string!
+override Egami.Fonts.FontMatch.GetHashCode() -> int
 override Egami.Fonts.FontNameRecord.GetHashCode() -> int
 override Egami.Fonts.FontProbe.GetHashCode() -> int
 override Egami.Fonts.FontStyle.GetHashCode() -> int
@@ -266,6 +303,7 @@ static Egami.Fonts.CffOptions.operator ==(Egami.Fonts.CffOptions? left, Egami.Fo
 static Egami.Fonts.Font.FromPoints(Egami.Fonts.Typeface! typeface, float points, float dpi) -> Egami.Fonts.Font
 static Egami.Fonts.Font.operator !=(Egami.Fonts.Font left, Egami.Fonts.Font right) -> bool
 static Egami.Fonts.Font.operator ==(Egami.Fonts.Font left, Egami.Fonts.Font right) -> bool
+static Egami.Fonts.FontCollection.System.get -> Egami.Fonts.FontCollection!
 static Egami.Fonts.FontExtents.operator !=(Egami.Fonts.FontExtents left, Egami.Fonts.FontExtents right) -> bool
 static Egami.Fonts.FontExtents.operator ==(Egami.Fonts.FontExtents left, Egami.Fonts.FontExtents right) -> bool
 static Egami.Fonts.FontLoader.LoadAll(string! path, Egami.Fonts.FontLoadOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Typeface!>!
@@ -274,6 +312,8 @@ static Egami.Fonts.FontLoader.Probe(System.ReadOnlySpan<byte> data) -> Egami.Fon
 static Egami.Fonts.FontLoadOptions.Default.get -> Egami.Fonts.FontLoadOptions!
 static Egami.Fonts.FontLoadOptions.operator !=(Egami.Fonts.FontLoadOptions? left, Egami.Fonts.FontLoadOptions? right) -> bool
 static Egami.Fonts.FontLoadOptions.operator ==(Egami.Fonts.FontLoadOptions? left, Egami.Fonts.FontLoadOptions? right) -> bool
+static Egami.Fonts.FontMatch.operator !=(Egami.Fonts.FontMatch left, Egami.Fonts.FontMatch right) -> bool
+static Egami.Fonts.FontMatch.operator ==(Egami.Fonts.FontMatch left, Egami.Fonts.FontMatch right) -> bool
 static Egami.Fonts.FontNameRecord.operator !=(Egami.Fonts.FontNameRecord left, Egami.Fonts.FontNameRecord right) -> bool
 static Egami.Fonts.FontNameRecord.operator ==(Egami.Fonts.FontNameRecord left, Egami.Fonts.FontNameRecord right) -> bool
 static Egami.Fonts.FontProbe.operator !=(Egami.Fonts.FontProbe left, Egami.Fonts.FontProbe right) -> bool
@@ -305,6 +345,8 @@ static Egami.Fonts.VerticalMetrics.operator ==(Egami.Fonts.VerticalMetrics left,
 ~override Egami.Fonts.Font.ToString() -> string
 ~override Egami.Fonts.FontExtents.Equals(object obj) -> bool
 ~override Egami.Fonts.FontExtents.ToString() -> string
+~override Egami.Fonts.FontMatch.Equals(object obj) -> bool
+~override Egami.Fonts.FontMatch.ToString() -> string
 ~override Egami.Fonts.FontNameRecord.Equals(object obj) -> bool
 ~override Egami.Fonts.FontNameRecord.ToString() -> string
 ~override Egami.Fonts.FontProbe.Equals(object obj) -> bool
