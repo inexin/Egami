@@ -17,6 +17,8 @@ public class Text
 
     private static string VariableFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "RobotoFlex-subset.ttf");
 
+    private static string EmojiFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoColorEmoji-COLRv1-subset.ttf");
+
     private static string WebFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.woff2");
 
     [Fact]
@@ -146,6 +148,33 @@ public class Text
         }
 
         Assert.True(inked > 5);
+    }
+
+    [Fact]
+    public void ColorEmoji()
+    {
+        Typeface text = Typeface.FromFile(FontFile);
+        Typeface emoji = Typeface.FromFile(EmojiFile);
+        using Raster<Rgba8> image = Raster.Create(300, 60, Rgba8.White);
+
+        #region color
+        // Color glyphs draw in color by themselves: COLR (layers and gradients), sbix and CBDT (images), per glyph.
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawText("Ship it", new Vector2(8, 40), new Font(text, 24), Rgba8.Black);
+            canvas.DrawText("\U0001F680\U0001F389", new Vector2(100, 42), new Font(emoji, 32), Rgba8.Black);
+        }
+
+        // The palette is a font setting; the paint's color fills a glyph's foreground parts and its alpha the whole glyph.
+        var darkMode = new Font(emoji, 32) { Palette = FontPalette.Dark };
+        ColorGlyphFormats formats = emoji.ColorFormats;
+
+        // The paint graph is there to walk, for writers that draw color glyphs their own way.
+        emoji.TryGetColorGlyph(emoji.GetGlyph(0x1F680), darkMode.Palette, out ColorGlyph? rocket);
+        #endregion
+
+        Assert.True(formats.HasFlag(ColorGlyphFormats.ColrV1));
+        Assert.IsType<PaintColorGlyph>(rocket);
     }
 
     [Fact]

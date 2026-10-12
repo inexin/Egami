@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 
 using Egami.Fonts;
+using Egami.Pixels;
 
 namespace Egami.Drawing;
 
@@ -108,7 +109,7 @@ public static class GlyphCache
 
         public void Add(in GlyphKey key, GlyphMask mask, long limit)
         {
-            long size = mask.Coverage.Length + EntryOverhead;
+            long size = mask.ByteSize + EntryOverhead;
             if (size > limit)
             {
                 return;
@@ -141,7 +142,7 @@ public static class GlyphCache
             {
                 _order.RemoveLast();
                 _map.Remove(last.Value.Key);
-                Bytes -= last.Value.Mask.Coverage.Length + EntryOverhead;
+                Bytes -= last.Value.Mask.ByteSize + EntryOverhead;
             }
         }
     }
@@ -169,4 +170,10 @@ internal sealed class GlyphMask(Rect bounds, byte[] coverage, int channels)
     public byte[] Coverage { get; } = coverage;
 
     public int Channels { get; } = channels;
+
+    /// <summary>Gets a color glyph's premultiplied pixels over <see cref="Bounds"/>, or <see langword="null"/> for a coverage mask.</summary>
+    public PremulRgba8[]? Pixels { get; init; }
+
+    /// <summary>Gets the bytes the mask holds, for the cache's budget.</summary>
+    public long ByteSize => Coverage.Length + ((Pixels?.Length ?? 0) * 4L);
 }

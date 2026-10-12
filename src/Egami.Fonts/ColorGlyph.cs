@@ -201,6 +201,9 @@ public abstract record class ColorPaint
 
 /// <summary>Paints drawn one over another, in order.</summary>
 /// <param name="Layers">The layers, bottom first.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorLayersPaint(IReadOnlyList<ColorPaint> Layers) : ColorPaint
 {
     /// <inheritdoc/>
@@ -215,6 +218,9 @@ public sealed record class ColorLayersPaint(IReadOnlyList<ColorPaint> Layers) : 
 
 /// <summary>One color filling the clip.</summary>
 /// <param name="Color">The color.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorSolidPaint(GlyphColor Color) : ColorPaint
 {
     /// <inheritdoc/>
@@ -229,6 +235,9 @@ public sealed record class ColorSolidPaint(GlyphColor Color) : ColorPaint
 /// <param name="P1">The end point.</param>
 /// <param name="P2">The point giving the direction of the lines of equal color.</param>
 /// <param name="Line">The color line.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorLinearGradientPaint(Vector2 P0, Vector2 P1, Vector2 P2, ColorLine Line) : ColorPaint
 {
     /// <inheritdoc/>
@@ -241,6 +250,9 @@ public sealed record class ColorLinearGradientPaint(Vector2 P0, Vector2 P1, Vect
 /// <param name="Center1">The end circle's center.</param>
 /// <param name="Radius1">The end circle's radius.</param>
 /// <param name="Line">The color line.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorRadialGradientPaint(Vector2 Center0, float Radius0, Vector2 Center1, float Radius1, ColorLine Line) : ColorPaint
 {
     /// <inheritdoc/>
@@ -252,6 +264,9 @@ public sealed record class ColorRadialGradientPaint(Vector2 Center0, float Radiu
 /// <param name="StartAngle">Where the color line starts.</param>
 /// <param name="EndAngle">Where the color line ends.</param>
 /// <param name="Line">The color line.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorSweepGradientPaint(Vector2 Center, float StartAngle, float EndAngle, ColorLine Line) : ColorPaint
 {
     /// <inheritdoc/>
@@ -261,6 +276,9 @@ public sealed record class ColorSweepGradientPaint(Vector2 Center, float StartAn
 /// <summary>A paint clipped to a glyph's outline.</summary>
 /// <param name="Glyph">The glyph whose outline clips.</param>
 /// <param name="Paint">The paint drawn inside it.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorGlyphPaint(ushort Glyph, ColorPaint Paint) : ColorPaint
 {
     /// <inheritdoc/>
@@ -270,6 +288,9 @@ public sealed record class ColorGlyphPaint(ushort Glyph, ColorPaint Paint) : Col
 /// <summary>Another color glyph's paint graph drawn here, as COLR's PaintColrGlyph reuses it.</summary>
 /// <param name="Glyph">The color glyph reused.</param>
 /// <param name="Paint">Its paint graph.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorGlyphReferencePaint(ushort Glyph, ColorPaint Paint) : ColorPaint
 {
     /// <inheritdoc/>
@@ -282,6 +303,9 @@ public sealed record class ColorGlyphReferencePaint(ushort Glyph, ColorPaint Pai
 /// </summary>
 /// <param name="Matrix">The transform.</param>
 /// <param name="Paint">The paint transformed.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorTransformPaint(Matrix3x2 Matrix, ColorPaint Paint) : ColorPaint
 {
     /// <inheritdoc/>
@@ -292,6 +316,9 @@ public sealed record class ColorTransformPaint(Matrix3x2 Matrix, ColorPaint Pain
 /// <param name="Mode">The mode; COLR's 28 modes map onto Egami's.</param>
 /// <param name="Source">The source.</param>
 /// <param name="Backdrop">The backdrop.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="color"/>
+/// </example>
 public sealed record class ColorCompositePaint(BlendMode Mode, ColorPaint Source, ColorPaint Backdrop) : ColorPaint
 {
     /// <inheritdoc/>

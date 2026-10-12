@@ -108,6 +108,28 @@ are.
   advances unchanged, and italic slants 14 degrees, CSS's default oblique. Glyph paths and ink bounds include it;
   `Font.AllowSynthesis = false` turns it off.
 
+## Color fonts
+
+Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a
+graph of layers, gradients, transforms and compositing), COLR version 0 (layers of solid outlines), sbix, then CBDT and CBLC
+(images); anything else draws its outline in the paint. `Typeface.ColorFormats` says what a face holds.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#color)]
+
+- `Font.Palette` picks a CPAL palette by index or by `FontPaletteBackground` (`FontPalette.Light`, `FontPalette.Dark`), with
+  `FontPaletteEntry` overrides; `Typeface.Palettes` lists each `FontPaletteInfo`. `Font.ColorGlyphs = false` draws outlines.
+- The paint's color fills the glyph's foreground parts and its alpha and blend mode apply to the whole glyph, drawn as one group.
+- `Typeface.TryGetColorGlyph` returns a `ColorGlyph`: a `PaintColorGlyph` whose `ColorPaint` graph an `IColorPaintVisitor`
+  walks, with variable values taken at the face's position: `ColorLayersPaint`, `ColorSolidPaint` (a `GlyphColor`),
+  `ColorLinearGradientPaint`, `ColorRadialGradientPaint` and `ColorSweepGradientPaint` (over a `ColorLine` of `ColorStop`s with a
+  `ColorExtend`), `ColorGlyphPaint` (a glyph-outline clip), `ColorGlyphReferencePaint`, `ColorTransformPaint` and
+  `ColorCompositePaint`; or a `BitmapColorGlyph` with its image (`BitmapGlyphEncoding`) and placement, from the strike nearest
+  above the size.
+- Every canvas draws color glyphs: the default glyph hook turns them into clips, fills, gradients, layers and images, so a PDF page
+  gets vector color. A raster caches them, up to 256 pixels per em, as color images keyed by palette.
+- OpenType SVG glyphs are not drawn: `Typeface.TryGetSvgDocument` returns the document for callers with an SVG renderer, and such
+  glyphs fall back to their COLR, bitmap or outline data. Drawing them arrives with Egami.Svg.
+
 ## Text on a path
 
 `Canvas.DrawTextOnPath` lays a line of text along a `Path` by SVG's textPath rules, through `Font.ShapeOnPath`: each glyph's

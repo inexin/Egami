@@ -96,11 +96,73 @@ public abstract partial class Canvas
     /// <param name="paint">The paint.</param>
     protected virtual void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)
     {
+        Font font = run.Font;
+        Typeface face = font.EffectiveTypeface;
+        if (font.ColorGlyphs && (face.ColorFormats & ~ColorGlyphFormats.Svg) != 0)
+        {
+            run = DrawColorGlyphs(run, origin, paint);
+            if (run.Count == 0)
+            {
+                return;
+            }
+        }
+
         Path path = run.ToPath(origin);
         if (!path.IsEmpty)
         {
-            OnDrawPath(path, null, run.Font.Edging == FontEdging.Alias && paint.Antialias ? paint with { Antialias = false } : paint);
+            OnDrawPath(path, null, font.Edging == FontEdging.Alias && paint.Antialias ? paint with { Antialias = false } : paint);
         }
+    }
+
+    /// <summary>
+    /// Draws a run's color glyphs (COLR, sbix, CBDT) with canvas calls (clips, fills, gradients, layers and images) and returns the
+    /// run of the glyphs left to draw as outlines.
+    /// </summary>
+    private protected GlyphRun DrawColorGlyphs(GlyphRun run, Vector2 origin, Paint paint)
+    {
+        Font font = run.Font;
+        Typeface face = font.EffectiveTypeface;
+        Matrix3x2 m = Matrix;
+        float pixelsPerEm = font.Size * MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
+        ReadOnlySpan<ushort> glyphs = run.Glyphs;
+        ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
+        List<int>? plain = null;
+        for (int i = 0; i < glyphs.Length; i++)
+        {
+            if (face.HasColorGlyph(glyphs[i]) && face.TryGetColorGlyph(glyphs[i], font.Palette, out ColorGlyph? color, pixelsPerEm))
+            {
+                plain ??= [.. Enumerable.Range(0, i)];
+                if (transforms.IsEmpty)
+                {
+                    ColorGlyphDrawing.Draw(this, font, face, color, origin + run.Positions[i], paint);
+                }
+                else
+                {
+                    ColorGlyphDrawing.Draw(this, font, face, color, origin, paint, transforms[i].ToMatrix());
+                }
+            }
+            else
+            {
+                plain?.Add(i);
+            }
+        }
+
+        return plain is null ? run : Subrun(run, plain);
+    }
+
+    /// <summary>The glyphs of a run at the given indices, with their positions or transforms, text and clusters.</summary>
+    private protected static GlyphRun Subrun(GlyphRun run, List<int> indices)
+    {
+        ushort[] glyphs = [.. indices.Select(i => run.Glyphs[i])];
+        int[] clusters = run.Clusters.IsEmpty ? [] : [.. indices.Select(i => run.Clusters[i])];
+        if (!run.Transforms.IsEmpty)
+        {
+            GlyphTransform[] transforms = [.. indices.Select(i => run.Transforms[i])];
+            return GlyphRun.CreateTransformed(run.Font, glyphs, transforms, run.Text, clusters);
+        }
+
+        Vector2[] positions = [.. indices.Select(i => run.Positions[i])];
+        return GlyphRun.Create(run.Font, glyphs, positions, run.Text, clusters);
     }
 
     private static void CheckFont(Font font)

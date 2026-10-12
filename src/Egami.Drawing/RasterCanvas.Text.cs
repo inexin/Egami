@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Egami.Drawing.Rasterization;
 using Egami.Fonts;
+using Egami.Operations;
 using Egami.Pixels;
 
 namespace Egami.Drawing;
@@ -62,14 +63,17 @@ public sealed partial class RasterCanvas<TPixel>
             return;
         }
 
-        // Turned or scaled glyphs of a transformed run fill as one path; the rest take the mask route below.
+        // Turned or scaled glyphs of a transformed run take the canvas route; the rest the mask route below.
         ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
         if (!transforms.IsEmpty)
         {
-            DrawTurnedGlyphs(run, origin, paint, edging);
+            DrawTurnedGlyphs(run, origin, paint);
         }
 
         Typeface face = font.EffectiveTypeface;
+        bool color = font.ColorGlyphs && (face.ColorFormats & ~ColorGlyphFormats.Svg) != 0;
+        ColorKey? colorKey = color && paint is SolidPaint solid ? new ColorKey(font.Palette, solid.Color with { A = 1 }) : null;
+        List<int>? uncachedColor = null;
         var style = new GlyphStyle(
             edging,
             font.Hinting == FontHinting.Light && MathF.Abs(emY) <= MaxHintedEm,
@@ -96,6 +100,30 @@ public sealed partial class RasterCanvas<TPixel>
             (int ox, int phase) = Snap(device.X, font.Subpixel);
             int oy = (int)MathF.Floor(device.Y + 0.5f);
             ushort glyph = glyphs[i];
+            if (color && face.HasColorGlyph(glyph))
+            {
+                // Color glyphs are cached as premultiplied RGBA for a solid paint; any other paint draws them through canvas calls.
+                if (colorKey is null)
+                {
+                    (uncachedColor ??= []).Add(i);
+                    continue;
+                }
+
+                var colorStyle = new GlyphStyle(FontEdging.Antialias, false, font.AppliedSynthesis & FontSynthesis.Italic, PixelGeometry.Unknown) { Color = colorKey };
+                GlyphMask image = GlyphCache.GetOrAdd(new GlyphKey(face, glyph, emX, emY, colorStyle, phase), () => RenderColorMask(font, face, glyph, emX, emY, phase, colorKey.Foreground));
+                if (image.Pixels is not null)
+                {
+                    DrawColorMask(image, ox, oy, paint);
+                }
+                else if (image.Coverage.Length == 0 && image.Bounds.IsEmpty && image.Channels == 0)
+                {
+                    // No color data after all, or it could not be read: the outline.
+                    (uncachedColor ??= []).Add(i);
+                }
+
+                continue;
+            }
+
             GlyphMask mask = GlyphCache.GetOrAdd(new GlyphKey(face, glyph, emX, emY, style, phase), () => RenderMask(face, glyph, sx, sy, phase, style, emY));
             if (mask.Coverage.Length == 0)
             {
@@ -133,10 +161,66 @@ public sealed partial class RasterCanvas<TPixel>
                 sink!.Blend(y, visible.X, row);
             }
         }
+
+        if (uncachedColor is not null)
+        {
+            base.OnDrawGlyphRun(Subrun(run, uncachedColor), origin, paint);
+        }
     }
 
-    // The run's turned or scaled glyphs as one path, filled through the canvas like any path.
-    private void DrawTurnedGlyphs(GlyphRun run, Vector2 origin, Paint paint, FontEdging edging)
+    private static readonly SamplingOptions NearestSampling = new() { Filter = ResampleFilter.Nearest };
+
+    // A color glyph rendered once at its device size and phase into premultiplied RGBA, with an opaque foreground; the paint's
+    // alpha and blend mode apply when it is drawn. A glyph that turns out to have no color data gives an empty mask of 0 channels.
+    private GlyphMask RenderColorMask(Font font, Typeface face, ushort glyph, float emX, float emY, int phase, RgbaF32 foreground)
+    {
+        float ppem = MathF.Max(MathF.Abs(emX), MathF.Abs(emY));
+        if (!face.TryGetColorGlyph(glyph, font.Palette, out ColorGlyph? color, ppem))
+        {
+            return new GlyphMask(default, [], 0);
+        }
+
+        GlyphExtents units = ColorGlyphDrawing.Bounds(face, color) ?? new GlyphExtents(face.Head.XMin, face.Head.YMin, face.Head.XMax, face.Head.YMax);
+        if ((font.AppliedSynthesis & FontSynthesis.Italic) != 0)
+        {
+            float k = Synthesis.Skew;
+            units = new GlyphExtents(units.XMin + (k * MathF.Min(0, units.YMin)), units.YMin, units.XMax + (k * MathF.Max(0, units.YMax)), units.YMax);
+        }
+
+        float sx = emX / face.UnitsPerEm, sy = emY / face.UnitsPerEm, dx = phase / 4f;
+        float x0 = (units.XMin * sx) + dx, x1 = (units.XMax * sx) + dx, y0 = -units.YMax * sy, y1 = -units.YMin * sy;
+        Rect bounds = RectF.FromEdges(MathF.Min(x0, x1), MathF.Min(y0, y1), MathF.Max(x0, x1), MathF.Max(y0, y1)).RoundOut();
+        bounds = new Rect(bounds.X - 1, bounds.Y - 1, bounds.Width + 2, bounds.Height + 2);
+        if (bounds.Width <= 0 || bounds.Height <= 0 || (long)bounds.Width * bounds.Height > 4 * MaxCachedEm * MaxCachedEm)
+        {
+            return GlyphMask.Empty;
+        }
+
+        var pixels = new PremulRgba8[bounds.Width * bounds.Height];
+        using (Raster<PremulRgba8> image = Raster.Wrap<PremulRgba8>(pixels, bounds.Width, bounds.Height))
+        using (RasterCanvas<PremulRgba8> canvas = image.CreateCanvas(Options))
+        {
+            canvas.Translate(dx - bounds.X, -bounds.Y);
+            canvas.Scale(emX / font.Size, emY / font.Size);
+            ColorGlyphDrawing.Draw(canvas, font, face, color, Vector2.Zero, new SolidPaint(foreground));
+        }
+
+        return new GlyphMask(bounds, [], 4) { Pixels = pixels };
+    }
+
+    // Draws a cached color glyph at whole device pixels, through the canvas's image route with the paint's alpha and blend mode.
+    private void DrawColorMask(GlyphMask mask, int ox, int oy, Paint paint)
+    {
+        float alpha = paint is SolidPaint solid ? solid.Color.A * solid.Opacity : paint.Opacity;
+        using Raster<PremulRgba8> image = Raster.Wrap<PremulRgba8>(mask.Pixels!, mask.Bounds.Width, mask.Bounds.Height);
+        int count = Save();
+        ResetMatrix();
+        DrawImage(image, new RectF(mask.Bounds.X + ox, mask.Bounds.Y + oy, mask.Bounds.Width, mask.Bounds.Height), NearestSampling, new SolidPaint(new RgbaF32(0, 0, 0, 1)) { Opacity = Math.Clamp(alpha, 0, 1), BlendMode = paint.BlendMode });
+        RestoreToCount(count);
+    }
+
+    // The run's turned or scaled glyphs through the canvas route: color glyphs as canvas calls, the rest as one path.
+    private void DrawTurnedGlyphs(GlyphRun run, Vector2 origin, Paint paint)
     {
         var turned = new List<int>();
         ReadOnlySpan<GlyphTransform> transforms = run.Transforms;
@@ -148,17 +232,9 @@ public sealed partial class RasterCanvas<TPixel>
             }
         }
 
-        if (turned.Count == 0)
+        if (turned.Count > 0)
         {
-            return;
-        }
-
-        ushort[] glyphs = [.. turned.Select(i => run.Glyphs[i])];
-        GlyphTransform[] placed = [.. turned.Select(i => run.Transforms[i])];
-        Path path = GlyphRun.CreateTransformed(run.Font, glyphs, placed).ToPath(origin);
-        if (!path.IsEmpty)
-        {
-            OnDrawPath(path, null, edging == FontEdging.Alias && paint.Antialias ? paint with { Antialias = false } : paint);
+            base.OnDrawGlyphRun(Subrun(run, turned), origin, paint);
         }
     }
 
@@ -312,8 +388,14 @@ public sealed partial class RasterCanvas<TPixel>
     }
 }
 
-/// <summary>What a glyph mask is drawn with besides the face, glyph, size and phase.</summary>
-internal readonly record struct GlyphStyle(FontEdging Edging, bool Hint, FontSynthesis Synthesis, PixelGeometry Geometry);
+/// <summary>What a glyph mask is drawn with besides the face, glyph, size and phase; for a color glyph, its palette and foreground too.</summary>
+internal readonly record struct GlyphStyle(FontEdging Edging, bool Hint, FontSynthesis Synthesis, PixelGeometry Geometry)
+{
+    public ColorKey? Color { get; init; }
+}
+
+/// <summary>What a cached color glyph depends on besides its shape: the palette and the opaque foreground color.</summary>
+internal sealed record class ColorKey(FontPalette Palette, RgbaF32 Foreground);
 
 /// <summary>A solid color and alpha that LCD edging blends per channel, in encoded or linear values.</summary>
 internal sealed class LcdPaint(Rgba8 color, float alpha, bool linear)

@@ -45,6 +45,7 @@
     <None Include="../fonts/shaping/NotoSansHebrew-Regular.ttf" Link="fonts/NotoSansHebrew-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/derived/RobotoFlex-subset.ttf" Link="fonts/RobotoFlex-subset.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/derived/NotoSans-Regular.woff2" Link="fonts/NotoSans-Regular.woff2" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/derived/NotoColorEmoji-COLRv1-subset.ttf" Link="fonts/NotoColorEmoji-COLRv1-subset.ttf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
