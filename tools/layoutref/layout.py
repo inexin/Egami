@@ -96,7 +96,10 @@ def text_css(fonts, style, base_size=None):
 def block_css(fonts, c, width):
     s = c["style"]
     vertical = s.get("writingMode", "HorizontalTb") != "HorizontalTb"
+    # Egami has no CSS Text 4 punctuation trimming, so text-spacing-trim is off (Chromium 129's normal halves adjacent
+    # fullwidth punctuation).
     css = ["position: absolute", "left: 20px", "top: 20px", "margin: 0", "padding: 0", "white-space: pre-wrap", "hyphens: manual",
+           "text-spacing-trim: space-all",
            "font-kerning: normal", "font-synthesis: none", f"font-family: {fonts.family(c['fonts'])}", f"font-size: {c['size']}px",
            f"line-height: {line_height(s.get('lineHeight'))}"]
     css.append(f"inline-size: {'max-content' if width is None else f'{width}px'}")
@@ -113,6 +116,7 @@ def block_css(fonts, c, width):
         css.append("unicode-bidi: plaintext")
     if "hyphen" in s:
         css.append(f"hyphenate-character: {json.dumps(s['hyphen'])}")
+        css.append(f"-webkit-hyphenate-character: {json.dumps(s['hyphen'])}")
     if "maxLines" in s:
         css += ["display: -webkit-box", "-webkit-box-orient: vertical" if not vertical else "-webkit-box-orient: horizontal",
                 f"-webkit-line-clamp: {s['maxLines']}", "overflow: hidden"]
@@ -460,9 +464,31 @@ def write(path, data):
             f.write(text.encode("utf-8"))
 
 
+SEGMENT = r"""
+(args) => {
+  // A zero width space at every word boundary between two letters of the language's script, from ICU's dictionary.
+  const seg = new Intl.Segmenter(args.language, { granularity: 'word' });
+  let out = '';
+  let prev = '';
+  for (const s of seg.segment(args.text)) {
+    const first = s.segment[0];
+    if (out.length > 0 && /\p{L}|\p{M}/u.test(prev) && /\p{L}/u.test(first) && s.isWordLike) out += String.fromCharCode(0x200B);
+    out += s.segment;
+    prev = s.segment[s.segment.length - 1];
+  }
+  return out;
+}
+"""
+
+
 def run_group(page, cases):
     results = []
     for c in cases:
+        if "segment" in c:
+            # Words found by Chromium's own dictionary, marked with zero width spaces, so a breaker without a dictionary
+            # can match its breaks.
+            page.set_content("<!doctype html><html></html>")
+            c = {**c, "text": page.evaluate(SEGMENT, {"language": c["segment"], "text": c["text"]})}
         fonts = Fonts()
         blocks = []
         for k, width in enumerate(c["widths"]):

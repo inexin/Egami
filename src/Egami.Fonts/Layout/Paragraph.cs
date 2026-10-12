@@ -23,6 +23,7 @@ public sealed class Paragraph
 
     private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi)
     {
+        Measures = new AdvanceTable(text, styles, runs);
         RichText = text;
         Style = style;
         Styles = styles;
@@ -51,6 +52,64 @@ public sealed class Paragraph
 
     /// <summary>The bidi levels and paragraphs, for reordering each line.</summary>
     internal BidiData Bidi { get; }
+
+    /// <summary>The advance and spacing of every character, for measuring lines.</summary>
+    internal AdvanceTable Measures { get; }
+
+    /// <summary>Lays the paragraph out at a width.</summary>
+    /// <param name="width">The layout box's width in canvas units; <see cref="float.PositiveInfinity"/> for no wrapping, in
+    /// which case the box is as wide as the longest line.</param>
+    /// <returns>The layout.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> is negative or not a number.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="layout"/>
+    /// </example>
+    public TextLayout Layout(float width)
+    {
+        if (float.IsNaN(width) || width < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), width, "A width is 0 or more.");
+        }
+
+        LineFlow flow = new(this);
+        List<int>? balanced = Style.LineFill == LineFill.Balanced && float.IsFinite(width) ? flow.Builder.BalancedEnds(width) : null;
+        List<LineDraft> drafts = [];
+        if (balanced is not null)
+        {
+            int start = 0;
+            foreach (int end in balanced)
+            {
+                drafts.Add(flow.Builder.FillTo(start, end));
+                start = end;
+            }
+        }
+        else
+        {
+            while (flow.NextDraft(width) is LineDraft draft)
+            {
+                drafts.Add(draft);
+            }
+        }
+
+        float boxWidth = float.IsFinite(width) ? width : drafts.Count == 0 ? 0 : drafts.Max(d => d.ContentWidth);
+        List<TextLine> lines = new(drafts.Count);
+        float top = 0;
+        foreach (LineDraft draft in drafts)
+        {
+            TextLine line = flow.Builder.Finish(draft, boxWidth, top);
+            lines.Add(line);
+            top = line.Bottom;
+        }
+
+        return new TextLayout(this, boxWidth, lines);
+    }
+
+    /// <summary>Starts laying the paragraph out one line at a time, each at its own width.</summary>
+    /// <returns>A flow positioned at the first line.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="flow"/>
+    /// </example>
+    public LineFlow CreateFlow() => new(this);
 
     /// <summary>Prepares a plain-text paragraph in the paragraph's default style.</summary>
     /// <param name="text">The text.</param>
@@ -148,7 +207,7 @@ internal enum RunKind : byte
 }
 
 /// <summary>A run of a paragraph: one bidi level, script, shaping group and font, shaped as one piece.</summary>
-internal sealed class ParagraphRun(int start, int length, RunKind kind, int level, Script script, int style, Font font, GlyphBuffer? glyphs, int placeholder)
+internal sealed class ParagraphRun(int start, int length, RunKind kind, int level, Script script, int style, Font font, GlyphBuffer? glyphs, int placeholder, RunProperties properties)
 {
     public int Start { get; } = start;
 
@@ -172,6 +231,9 @@ internal sealed class ParagraphRun(int start, int length, RunKind kind, int leve
 
     /// <summary>The placeholder's index, for <see cref="RunKind.Placeholder"/> runs.</summary>
     public int Placeholder { get; } = placeholder;
+
+    /// <summary>What the run was shaped with, to shape a piece of it again.</summary>
+    public RunProperties Properties { get; } = properties;
 }
 
 /// <summary>Bidi levels and paragraphs copied out of a <see cref="BidiResult"/>, owned by the paragraph.</summary>
@@ -406,6 +468,7 @@ internal static class Itemizer
         {
             Pending p = pending[i];
             GlyphBuffer? glyphs = null;
+            RunProperties properties = default;
             if (p.Kind == RunKind.Text)
             {
                 ResolvedStyle style = styles[p.Style];
@@ -415,7 +478,7 @@ internal static class Itemizer
                     features.AddRange(NoOptionalLigatures);
                 }
 
-                RunProperties properties = new()
+                properties = new()
                 {
                     Script = p.Script.IsShared ? null : p.Script,
                     Language = style.Language,
@@ -426,7 +489,7 @@ internal static class Itemizer
                 TextShaper.ShapeRun(text, p.Start, p.Length, p.Font, properties, glyphs);
             }
 
-            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder);
+            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder, properties);
         }
 
         return runs;

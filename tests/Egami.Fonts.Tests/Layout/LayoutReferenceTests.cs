@@ -27,7 +27,7 @@ public sealed class LayoutReferenceTests
             Assert.Equal("129.0.6668.29", LayoutReferences.Load(group).Chromium);
         }
 
-        Assert.Equal(11, LayoutReferences.Load("corpus").Cases.Count);
+        Assert.Equal(12, LayoutReferences.Load("corpus").Cases.Count);
         Assert.All(LayoutReferences.Load("corpus").Cases, c => Assert.Equal(5, c.Layouts.Count));
     }
 

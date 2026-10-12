@@ -6,8 +6,8 @@ alignment and justification, line height, spacing, tabs, max lines and ellipsis,
 decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of `GlyphRun`s and
 decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.
 
-Phase 2.8.2 is landing: line breaking and rich text are in; line layout, hit testing and drawing follow, and this guide
-grows with them.
+Phase 2.8.2 is landing: line breaking, rich text and line filling are in; line boxes, alignment, hit testing and drawing
+follow, and this guide grows with them.
 
 ## Line breaking
 
@@ -63,3 +63,32 @@ the `LineBreakOptions` in `LineBreaking`, `LineFill` (greedy or balanced), the `
 `Paragraph.Create` prepares the text once: it resolves the styles, finds the bidi levels and break opportunities, splits the text
 into runs where the bidi level, script, font or a shaping field changes, and shapes each run. Paint fields never split a run, so
 a color change inside a ligature keeps the ligature. A paragraph is immutable and safe to share between threads.
+
+## Laying out lines
+
+`Paragraph.Layout` lays a paragraph out at a width and returns a `TextLayout`: its `Width` and `Height`, the `LongestLine`, and
+its `Lines`. Each `TextLine` has its text range (`Start`, `Length`), its line box (`Top`, `Ascent`, `Descent`, `Baseline`), its
+content's `Left` and `Width` (trailing spaces hang outside it), whether it ends at a `HardBreak`, and its `LayoutRun`s in visual
+order. A run is glyphs (`Glyphs`, a `GlyphRun` already at its layout position), a placeholder's box, a tab or a break, by its
+`LayoutRunKind`, with its `BidiLevel` and `StyleIndex`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#layout)]
+
+- Lines fill greedily, as browsers do: each takes the text up to the last break opportunity that fits. A taken soft hyphen
+  shows the `Hyphen` string, counted in the line's width. A piece too wide for any line overflows, or with `OverflowWrap`
+  breaks between grapheme clusters.
+- Where a line breaks inside a shaped run at a point the shaper marks unsafe (an Arabic join, a contextual substitution),
+  the pieces on each side are shaped again, so a line has the glyphs it would have on its own.
+- Each line reorders its own bidi runs (UAX #9 rules L1 and L2): trailing spaces take the paragraph's direction.
+- `LineFill.Balanced` evens the lines of a short paragraph (up to 6 lines): of the breaks that fit, the ones that leave the
+  least squared space on every line, the last included, as Chromium's `text-wrap: balance` does.
+- `float.PositiveInfinity` lays the paragraph out without wrapping; the box is then as wide as the longest line.
+
+`LineFlow` lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
+images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line's top is 0; place it where it goes.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#flow)]
+
+Line breaks equal headless Chromium's on a corpus of eleven scripts at five widths each, and on the feature cases; the few
+differences are Chromium's own (its older quotation mark rule, no break at U+2028, no break after a slash in URLs, letter
+spacing in Arabic).

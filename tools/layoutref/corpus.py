@@ -7,7 +7,8 @@ Placeholder fields (each at a U+FFFC in the text) and "queries" what to record b
 Egami's member names; tools/layoutref/layout.py maps them to CSS, and the tests map them to ParagraphStyle.
 
 Groups:
-  corpus    one paragraph per script at five widths: line breaks, line boxes and glyph positions
+  corpus    one paragraph per script at five widths: line breaks, line boxes and glyph positions; "thai" breaks with
+            Chromium's dictionary, "thai-words" has a zero width space at each of its word boundaries
   features  one or more samples per layout feature (question 23's "each have cases")
 """
 import os
@@ -29,6 +30,7 @@ MIXED_BIDI = "The word שלום means peace (and so does سلام) in 2024, said
 EMOJI_TEXT = "Launch day 🚀 went well 🎉! The team 👩‍💻 shipped it, 👍🏽 from Oslo 🇳🇴 and ❤️ from everyone 😀."
 JAPANESE_KINSOKU = "ちょっと待ってください。ジャーナルのテストは々ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶ〜ーー「ここ」です。"
 LONG_URL = "See https://example.com/a/very/long/path/without/any/spaces/at/all?query=value&other=thing for details."
+LONG_WORD = "See Pneumonoultramicroscopicsilicovolcanoconiosisandotherverylongwords for details, then more text."
 SOFT_HYPHENS = "Hy\u00adphen\u00adation is in\u00adcom\u00adpre\u00adhen\u00adsi\u00adbil\u00adi\u00adties of ex\u00adtra\u00ador\u00addi\u00adnary words."
 LIGATURES = "The office affords fine fluffy waffles, first and final."
 TABS = "Name\tQty\tPrice\nApples\t12\t3.50\nPears\t7\t12.25\nFigs\t140\t0.75"
@@ -50,11 +52,15 @@ def udhr(root, name, line=None):
     raise FileNotFoundError(name)
 
 
-def case(name, fonts, text, widths=None, size=16, style=None, spans=None, placeholders=None, queries=None):
+def case(name, fonts, text, widths=None, size=16, style=None, spans=None, placeholders=None, queries=None, segment=None):
     # Spans are clipped to the text, so a span can say "the whole text" of a cut UDHR line.
     spans = [{**s, "length": min(s["length"], len(text) - s["start"])} for s in spans or []]
-    return {"name": name, "fonts": fonts, "size": size, "text": text, "widths": widths or WIDTHS, "style": style or {},
-            "spans": spans, "placeholders": placeholders or [], "queries": queries or {}}
+    result = {"name": name, "fonts": fonts, "size": size, "text": text, "widths": widths or WIDTHS, "style": style or {},
+              "spans": spans, "placeholders": placeholders or [], "queries": queries or {}}
+    if segment:
+        # layout.py puts a zero width space at each word boundary Chromium's dictionary finds, for this language.
+        result["segment"] = segment
+    return result
 
 
 def corpus(root):
@@ -65,9 +71,10 @@ def corpus(root):
         case("hebrew", HEBREW, udhr(root, "hebrew")),
         case("devanagari", DEVANAGARI, udhr(root, "hindi")),
         case("thai", THAI, udhr(root, "thai")),
+        case("thai-words", THAI, udhr(root, "thai"), segment="th"),
         case("chinese", CJK, udhr(root, "chinese")),
         case("japanese", CJK, udhr(root, "japanese")),
-        case("korean", CJK, udhr(root, "korean")),
+        case("korean", CJK, udhr(root, "korean"), style={"language": "ko"}),
         case("mixed-bidi", BIDI, MIXED_BIDI),
         case("emoji", EMOJI, EMOJI_TEXT),
     ]
@@ -81,9 +88,10 @@ def features(root):
         case("word-break-break-all", LATIN, english, widths=[90, 170], style={"wordBreak": "BreakAll"}),
         case("word-break-keep-all", CJK, KOREAN, widths=[90, 170], style={"wordBreak": "KeepAll"}),
         case("word-break-keep-all-chinese", CJK, CHINESE, widths=[90, 170], style={"wordBreak": "KeepAll"}),
-        case("overflow-wrap-normal", LATIN, LONG_URL, widths=[120, 200]),
-        case("overflow-wrap-anywhere", LATIN, LONG_URL, widths=[120, 200], style={"overflowWrap": "Anywhere"}),
-        case("overflow-wrap-break-word", LATIN, LONG_URL, widths=[120, 200], style={"overflowWrap": "BreakWord"}),
+        case("overflow-wrap-normal", LATIN, LONG_WORD, widths=[120, 200]),
+        case("overflow-wrap-anywhere", LATIN, LONG_WORD, widths=[120, 200], style={"overflowWrap": "Anywhere"}),
+        case("overflow-wrap-break-word", LATIN, LONG_WORD, widths=[120, 200], style={"overflowWrap": "BreakWord"}),
+        case("url", LATIN, LONG_URL, widths=[120, 200]),
         case("line-break-loose", CJK, JAPANESE_KINSOKU, widths=[70, 110, 150], style={"lineBreak": "Loose", "language": "ja"}),
         case("line-break-normal", CJK, JAPANESE_KINSOKU, widths=[70, 110, 150], style={"lineBreak": "Normal", "language": "ja"}),
         case("line-break-strict", CJK, JAPANESE_KINSOKU, widths=[70, 110, 150], style={"lineBreak": "Strict", "language": "ja"}),
@@ -163,7 +171,7 @@ def features(root):
         case("interaction-clamp", LATIN, english, widths=[200], style={"maxLines": 2, "ellipsis": "\u2026"}, queries=interaction),
         case("interaction-vertical", CJK, VERTICAL_MIXED, widths=[120], style={"writingMode": "VerticalRl"}, queries=interaction),
         # Intrinsic widths with Anywhere lowering min-content (question 5).
-        case("intrinsic-anywhere", LATIN, LONG_URL, widths=[None], style={"overflowWrap": "Anywhere"}),
+        case("intrinsic-anywhere", LATIN, LONG_WORD, widths=[None], style={"overflowWrap": "Anywhere"}),
     ]
     return cases
 

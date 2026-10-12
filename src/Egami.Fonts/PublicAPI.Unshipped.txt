@@ -1923,3 +1923,47 @@ static Egami.Fonts.Layout.TextStyle.operator ==(Egami.Fonts.Layout.TextStyle? le
 ~override Egami.Fonts.Layout.TabStop.ToString() -> string
 ~override Egami.Fonts.Layout.TextShadow.Equals(object obj) -> bool
 ~override Egami.Fonts.Layout.TextShadow.ToString() -> string
+Egami.Fonts.Layout.LayoutRun
+Egami.Fonts.Layout.LayoutRun.Advance.get -> float
+Egami.Fonts.Layout.LayoutRun.BidiLevel.get -> int
+Egami.Fonts.Layout.LayoutRun.Glyphs.get -> Egami.Fonts.GlyphRun?
+Egami.Fonts.Layout.LayoutRun.Kind.get -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.LayoutRun.Length.get -> int
+Egami.Fonts.Layout.LayoutRun.Placeholder.get -> int
+Egami.Fonts.Layout.LayoutRun.Start.get -> int
+Egami.Fonts.Layout.LayoutRun.StyleIndex.get -> int
+Egami.Fonts.Layout.LayoutRun.X.get -> float
+Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.LayoutRunKind.Control = 3 -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.LayoutRunKind.Placeholder = 1 -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.LayoutRunKind.Tab = 2 -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.LayoutRunKind.Text = 0 -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.LineFlow
+Egami.Fonts.Layout.LineFlow.IsComplete.get -> bool
+Egami.Fonts.Layout.LineFlow.NextLine(float availableWidth) -> Egami.Fonts.Layout.TextLine?
+Egami.Fonts.Layout.LineFlow.Paragraph.get -> Egami.Fonts.Layout.Paragraph!
+Egami.Fonts.Layout.LineFlow.Position.get -> int
+Egami.Fonts.Layout.LineFlow.Reset() -> void
+Egami.Fonts.Layout.Paragraph.CreateFlow() -> Egami.Fonts.Layout.LineFlow!
+Egami.Fonts.Layout.Paragraph.Layout(float width) -> Egami.Fonts.Layout.TextLayout!
+Egami.Fonts.Layout.TextLayout
+Egami.Fonts.Layout.TextLayout.Height.get -> float
+Egami.Fonts.Layout.TextLayout.Lines.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.TextLine!>!
+Egami.Fonts.Layout.TextLayout.LongestLine.get -> float
+Egami.Fonts.Layout.TextLayout.Paragraph.get -> Egami.Fonts.Layout.Paragraph!
+Egami.Fonts.Layout.TextLayout.Width.get -> float
+Egami.Fonts.Layout.TextLine
+Egami.Fonts.Layout.TextLine.Ascent.get -> float
+Egami.Fonts.Layout.TextLine.Baseline.get -> float
+Egami.Fonts.Layout.TextLine.Bottom.get -> float
+Egami.Fonts.Layout.TextLine.Descent.get -> float
+Egami.Fonts.Layout.TextLine.Ellipsized.get -> bool
+Egami.Fonts.Layout.TextLine.End.get -> int
+Egami.Fonts.Layout.TextLine.HardBreak.get -> bool
+Egami.Fonts.Layout.TextLine.Height.get -> float
+Egami.Fonts.Layout.TextLine.Left.get -> float
+Egami.Fonts.Layout.TextLine.Length.get -> int
+Egami.Fonts.Layout.TextLine.Runs.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.LayoutRun!>!
+Egami.Fonts.Layout.TextLine.Start.get -> int
+Egami.Fonts.Layout.TextLine.Top.get -> float
+Egami.Fonts.Layout.TextLine.Width.get -> float
