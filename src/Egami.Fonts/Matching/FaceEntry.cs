@@ -20,6 +20,12 @@ internal sealed class FaceEntry
         Names = NameSet.From(face.Name, face.FamilyName, face.PostScriptName);
     }
 
+    public FaceEntry(Typeface face, string path)
+        : this(face)
+    {
+        _source = new FontFileSource(path);
+    }
+
     public FaceEntry(FontFileSource source, int index, string family, FontStyle style, NameSet names)
     {
         _source = source;
@@ -151,7 +157,7 @@ internal static class FaceIndexer
 {
     private const int MaxNameTable = 1 << 20;
 
-    public static void Index(string path, List<FaceEntry> into)
+    public static void Index(string path, List<FaceEntry> into, FontLoadOptions options)
     {
         using SafeFileHandle handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.RandomAccess);
         long length = RandomAccess.GetLength(handle);
@@ -163,6 +169,17 @@ internal static class FaceIndexer
 
         var source = new FontFileSource(path);
         uint magic = BigEndian.UInt32(header, 0);
+        if (magic is SfntDirectory.WoffTag or SfntDirectory.Woff2Tag)
+        {
+            // Web fonts are compressed: their names are only reachable by decoding, so the faces load now.
+            foreach (Typeface face in FontLoader.LoadAll(path, options))
+            {
+                into.Add(new FaceEntry(face, path));
+            }
+
+            return;
+        }
+
         if (magic == SfntDirectory.CollectionTag)
         {
             int count = (int)Math.Min(BigEndian.UInt32(header, 8), 1024);

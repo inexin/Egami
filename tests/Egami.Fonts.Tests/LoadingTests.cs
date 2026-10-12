@@ -70,7 +70,7 @@ public class LoadingTests
     [Fact]
     public void UnsupportedDataThrowsUnsupportedFormat()
     {
-        Assert.Throws<UnsupportedFormatException>(() => Typeface.FromMemory("wOFF\0\0\0\0\0\0\0\0"u8.ToArray()));
+        Assert.Throws<CorruptDataException>(() => Typeface.FromMemory("wOFF\0\0\0\0\0\0\0\0"u8.ToArray()));
         Assert.Throws<UnsupportedFormatException>(() => Typeface.FromMemory(new byte[64]));
         Assert.Throws<UnsupportedFormatException>(() => Typeface.FromMemory("typ1\0\0\0\0\0\0\0\0"u8.ToArray()));
     }

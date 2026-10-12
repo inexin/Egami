@@ -267,10 +267,20 @@ def write(target, data):
         json.dump(data, f, separators=(",", ":"), ensure_ascii=False)
 
 
+# Phase 2.7.2's fonts have their own references (dump_272.py).
+PHASE_272 = {
+    "RobotoFlex-subset.ttf", "NotoSans-VF-subset.ttf", "NotoSerif-VF-subset.ttf", "SourceSerif4-VF-subset.otf", "SourceSans3-VF-subset.otf",
+    "NotoSans-avar2.ttf", "NotoColorEmoji-COLRv1-subset.ttf", "NotoColorEmoji-CBDT-subset.ttf", "Twemoji-COLRv0-subset.ttf",
+    "Twemoji-sbix.ttf", "Svg-test.ttf", "test_glyphs-glyf_colr_1.ttf", "test_glyphs-glyf_colr_1_variable.ttf",
+}
+
+
 def main():
     write(os.path.join(OUT, "cff-standard-strings.json.gz"), {"strings": list(cffStandardStrings)})
     fonts = sorted(glob.glob(os.path.join(ROOT, "tests/fonts/*.*")) + glob.glob(os.path.join(ROOT, "tests/fonts/derived/*.*")))
     for path in fonts:
+        if os.path.basename(path) in PHASE_272:
+            continue
         stem, ext = os.path.splitext(os.path.basename(path))
         ext = ext.lower()
         if ext in (".ttf", ".otf"):

@@ -264,6 +264,7 @@ Egami.Fonts.TextMeasure.LineHeight.init -> void
 Egami.Fonts.TextMeasure.TextMeasure() -> void
 Egami.Fonts.TextMeasure.TextMeasure(float Advance, Egami.Fonts.TextBounds InkBounds, int LineCount, float Ascent, float Descent, float LineHeight) -> void
 Egami.Fonts.Typeface
+Egami.Fonts.Typeface.Container.get -> Egami.Fonts.FontFileKind
 Egami.Fonts.Typeface.Embedding.get -> Egami.Fonts.FontEmbedding
 Egami.Fonts.Typeface.Extents.get -> Egami.Fonts.FontExtents
 Egami.Fonts.Typeface.FaceIndex.get -> int
@@ -277,6 +278,8 @@ Egami.Fonts.Typeface.GetGlyphOutline(ushort glyph, Egami.Fonts.IGlyphOutlineSink
 Egami.Fonts.Typeface.GetKerning(ushort left, ushort right) -> float
 Egami.Fonts.Typeface.GetLeftSideBearing(ushort glyph) -> float
 Egami.Fonts.Typeface.GetNames() -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontNameRecord>!
+Egami.Fonts.Typeface.GetWoffMetadata() -> string?
+Egami.Fonts.Typeface.GetWoffPrivateData() -> System.ReadOnlyMemory<byte>
 Egami.Fonts.Typeface.GlyphCount.get -> int
 Egami.Fonts.Typeface.HasCharacterMap.get -> bool
 Egami.Fonts.Typeface.HasKerning.get -> bool

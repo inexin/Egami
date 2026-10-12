@@ -9,10 +9,11 @@ namespace Egami.Fonts;
 public static class FontLoader
 {
     /// <summary>
-    /// Says whether the bytes are a single TrueType or OpenType font, a collection (and how many faces) or a bare CFF stream, from
-    /// the headers alone, without parsing glyphs.
+    /// Says whether the bytes are a single TrueType or OpenType font, a collection (and how many faces), a WOFF or WOFF2 file (and,
+    /// for a WOFF2 collection, how many faces) or a bare CFF stream, from the headers alone, without parsing glyphs or decompressing.
     /// </summary>
-    /// <param name="data">The start of the data; the first 4 KiB are enough for every header Egami reads.</param>
+    /// <param name="data">The start of the data; the first 4 KiB are enough for every header Egami reads, except a WOFF2 file with
+    /// a long table directory, whose face count and outlines need the whole directory (0 and null without it).</param>
     /// <returns>What the data is.</returns>
     public static FontProbe Probe(ReadOnlySpan<byte> data) => SfntDirectory.Probe(data);
 
@@ -46,6 +47,19 @@ public static class FontLoader
     public static IReadOnlyList<Typeface> LoadAll(ReadOnlyMemory<byte> data, FontLoadOptions? options = null)
     {
         FontProbe probe = Probe(data.Span);
+        if (probe.Kind is FontFileKind.Woff or FontFileKind.Woff2)
+        {
+            options ??= FontLoadOptions.Default;
+            Woff.DecodedFont web = Woff.WebFontDecoder.Decode(data, options);
+            var decoded = new Typeface[web.FaceCount];
+            for (int i = 0; i < decoded.Length; i++)
+            {
+                decoded[i] = Typeface.FromDecoded(web, i, options);
+            }
+
+            return decoded;
+        }
+
         int count = probe.Kind == FontFileKind.Collection ? probe.FaceCount : 1;
         var faces = new Typeface[count];
         for (int i = 0; i < count; i++)

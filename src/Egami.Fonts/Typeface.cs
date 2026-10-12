@@ -2,6 +2,7 @@ using Egami.Fonts.Cff;
 using Egami.Fonts.Layout;
 using Egami.Fonts.Parsing;
 using Egami.Fonts.Tables;
+using Egami.Fonts.Woff;
 
 namespace Egami.Fonts;
 
@@ -37,6 +38,7 @@ public sealed partial class Typeface
     private Box<HheaTable?>? _hhea;
     private PostTable? _post;
     private StyleAndNames? _style;
+    private DecodedFont? _web;
 
     private Typeface(ReadOnlyMemory<byte> data, int faceIndex, int faceOffset, TableRecord[] tables, uint sfntVersion, FontLoadOptions options)
     {
@@ -116,10 +118,19 @@ public sealed partial class Typeface
     /// <summary>Gets the embedding permissions the face declares (OS/2 fsType). Egami never enforces them.</summary>
     public FontEmbedding Embedding => (FontEmbedding)(Os2.FsType & 0x030E);
 
+    /// <summary>
+    /// Gets the container the face was read from: <see cref="FontFileKind.Sfnt"/>, <see cref="FontFileKind.Collection"/>,
+    /// <see cref="FontFileKind.Cff"/>, or <see cref="FontFileKind.Woff"/> and <see cref="FontFileKind.Woff2"/> for a web font, whose
+    /// tables <see cref="TryGetTable(FontTag, out ReadOnlyMemory{byte})"/> returns decoded.
+    /// </summary>
+    public FontFileKind Container => _web?.Container ?? (IsBareCff ? FontFileKind.Cff : FaceOffset > 0 || IsInCollection ? FontFileKind.Collection : FontFileKind.Sfnt);
+
     /// <summary>Gets whether every glyph has the same advance (post isFixedPitch, or the CFF isFixedPitch entry).</summary>
     public bool IsFixedPitch => IsBareCff ? _cff!.Top.GetNumber(1201, 0) != 0 : Post.IsFixedPitch != 0;
 
     internal bool IsBareCff { get; }
+
+    private bool IsInCollection => _data.Length >= 4 && BigEndian.UInt32(_data.Span, 0) == SfntDirectory.CollectionTag;
 
     internal int FaceOffset { get; }
 
@@ -134,7 +145,7 @@ public sealed partial class Typeface
     internal IReadOnlyList<TableRecord> Tables => _tables;
 
     /// <summary>Loads one face from a font file, reading the whole file into memory and closing it.</summary>
-    /// <param name="path">The file: .ttf, .otf, .ttc, .otc or a bare CFF stream.</param>
+    /// <param name="path">The file: .ttf, .otf, .ttc, .otc, .woff, .woff2 or a bare CFF stream.</param>
     /// <param name="index">The face to load from a collection; 0 for a single font.</param>
     /// <param name="options">How to load, or <see langword="null"/> for <see cref="FontLoadOptions.Default"/>.</param>
     /// <returns>The face.</returns>
@@ -171,8 +182,11 @@ public sealed partial class Typeface
         return FromMemory(ReadStream(stream, options), index, options);
     }
 
-    /// <summary>Loads one face from memory, which is kept, not copied, and must not change afterwards.</summary>
-    /// <param name="data">The font data: an sfnt, a collection or a bare CFF stream.</param>
+    /// <summary>
+    /// Loads one face from memory, which is kept, not copied, and must not change afterwards. A WOFF or WOFF2 file is unwrapped
+    /// into an sfnt in new memory once, and the compressed input is not kept.
+    /// </summary>
+    /// <param name="data">The font data: an sfnt, a collection, a WOFF or WOFF2 file, or a bare CFF stream.</param>
     /// <param name="index">The face to load from a collection; 0 for a single font.</param>
     /// <param name="options">How to load, or <see langword="null"/> for <see cref="FontLoadOptions.Default"/>.</param>
     /// <returns>The face.</returns>
@@ -200,11 +214,25 @@ public sealed partial class Typeface
                 return FromCff(data, CffOptions.Default with { LoadOptions = options });
             case FontFileKind.Woff:
             case FontFileKind.Woff2:
-                throw new UnsupportedFormatException("WOFF and WOFF2 fonts are read from Egami.Fonts 2.7.2 on.");
+                return FromDecoded(WebFontDecoder.Decode(data, options), index, options);
             case FontFileKind.Unknown:
                 throw new UnsupportedFormatException("The data is not a TrueType, OpenType or CFF font.");
         }
 
+        return FromSfnt(data, index, options);
+    }
+
+    /// <summary>Loads one face of a decoded web font, sharing its sfnt memory with the file's other faces.</summary>
+    internal static Typeface FromDecoded(DecodedFont web, int index, FontLoadOptions options)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        Typeface face = FromSfnt(web.Data, index, options);
+        face._web = web;
+        return face;
+    }
+
+    private static Typeface FromSfnt(ReadOnlyMemory<byte> data, int index, FontLoadOptions options)
+    {
         ReadOnlySpan<byte> span = data.Span;
         int faceOffset = SfntDirectory.FaceOffset(span, index, out _);
         List<string>? problems = null;
@@ -216,6 +244,16 @@ public sealed partial class Typeface
 
         return new Typeface(data, index, faceOffset, tables, version, options);
     }
+
+    /// <summary>
+    /// Gets the extended metadata block of a WOFF or WOFF2 file, decompressed: XML in UTF-8, as the W3C WOFF specifications define it.
+    /// </summary>
+    /// <returns>The XML text, or <see langword="null"/> when the face is not from a web font or the file has no metadata.</returns>
+    public string? GetWoffMetadata() => _web?.Metadata is byte[] xml ? System.Text.Encoding.UTF8.GetString(xml) : null;
+
+    /// <summary>Gets the private data block of a WOFF or WOFF2 file, whose meaning only its vendor knows.</summary>
+    /// <returns>The bytes; empty when the face is not from a web font or the file has none.</returns>
+    public ReadOnlyMemory<byte> GetWoffPrivateData() => _web?.PrivateData ?? ReadOnlyMemory<byte>.Empty;
 
     /// <summary>
     /// Loads a bare CFF stream as PDF embeds it (FontFile3 with subtype Type1C or CIDFontType0C). The face has no character map:

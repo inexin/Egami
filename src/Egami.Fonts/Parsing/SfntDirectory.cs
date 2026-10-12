@@ -37,9 +37,14 @@ internal static class SfntDirectory
                 }
 
             case WoffTag:
-                return new FontProbe(FontFileKind.Woff, 1, null);
+                {
+                    uint flavor = data.Length >= 8 ? BigEndian.UInt32(data, 4) : 0;
+                    FontOutlines? outlines = flavor == OpenTypeVersion ? FontOutlines.Cff : flavor is TrueTypeVersion or AppleTrueVersion ? FontOutlines.TrueType : null;
+                    return new FontProbe(FontFileKind.Woff, 1, outlines);
+                }
+
             case Woff2Tag:
-                return new FontProbe(FontFileKind.Woff2, 1, null);
+                return Woff.Woff2Decoder.Probe(data);
         }
 
         // Bare CFF: major 1, a header size of at least 4 and an offset size of 1 to 4.
