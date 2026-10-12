@@ -55,6 +55,7 @@
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
     <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
     <ProjectReference Include="..\..\src\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
     <ProjectReference Include="..\..\samples\Color\Color.csproj" />
     <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />

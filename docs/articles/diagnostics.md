@@ -201,6 +201,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
+| `Svg.NoNamespace` | Warning | The root svg element has no namespace; its elements are read as SVG anyway (Egami.Svg) |
 | `Text.LcdFallback` | Warning | LCD text edging could not be drawn (no pixel geometry, a canvas without 8-bit RGB, a layer, or a paint other than solid source-over); the text was drawn with grayscale antialiasing, reported once per canvas (Egami.Drawing) |
 | `Tga.IndexOutOfRange` | Warning | Pixels use indices outside the color map; they are drawn black |
 | `Tga.RowsMissing` | Warning | The pixel data ends or is damaged; the rows not decoded are black |

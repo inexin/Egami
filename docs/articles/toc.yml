@@ -34,6 +34,8 @@
       href: guides/unicode-text.md
     - name: Paragraph layout
       href: guides/paragraph-layout.md
+    - name: SVG
+      href: guides/svg.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic
