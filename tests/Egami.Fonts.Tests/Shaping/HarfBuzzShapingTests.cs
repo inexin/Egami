@@ -13,63 +13,16 @@ public sealed class HarfBuzzShapingTests
     }
 
     /// <summary>
-    /// HarfBuzz's in-house test files that wait for a later 2.8.1 task (script shapers 9 to 11, vertical runs 13, variable fonts 14),
-    /// or test what Egami leaves out (a dfont collection, an sbix-only font, other shapers, synthetic emboldening, extents output).
+    /// HarfBuzz's in-house test files that wait for a later 2.8.1 task (vertical runs 13, variable fonts 14), or test what Egami leaves
+    /// out (fonts without outlines, the Zawgyi script, a dfont collection, an sbix-only font, other shapers, synthetic emboldening,
+    /// extents output).
     /// </summary>
     private static readonly Dictionary<string, string> s_waiting = new()
     {
-        ["arabic-fallback-shaping.tests"] = "task 9",
-        ["arabic-feature-order.tests"] = "task 9",
-        ["arabic-like-joining.tests"] = "task 9",
-        ["arabic-mark-order.tests"] = "task 9",
-        ["arabic-normalization.tests"] = "task 9",
-        ["arabic-phags-pa.tests"] = "task 9",
-        ["arabic-stch.tests"] = "task 9",
-        ["cursive-positioning.tests"] = "task 9",
-        ["default-ignorables.tests"] = "task 9",
-        ["item-context.tests"] = "task 9",
-        ["mark-filtering-sets.tests"] = "task 9",
-        ["nested-mark-filtering-sets.tests"] = "task 9",
-        ["mongolian-variation-selector.tests"] = "task 9",
-        ["reverse-sub.tests"] = "task 9",
-        ["unsafe-to-concat.tests"] = "task 9",
-        ["cluster.tests"] = "task 10",
-        ["ligature-id.tests"] = "task 10",
-        ["per-script-kern-fallback.tests"] = "task 10",
-        ["indic-consonant-with-stacker.tests"] = "task 10",
-        ["indic-decompose.tests"] = "task 10",
-        ["indic-init.tests"] = "task 10",
-        ["indic-joiner-candrabindu.tests"] = "task 10",
-        ["indic-joiners.tests"] = "task 10",
-        ["indic-malayalam-dot-reph.tests"] = "task 10",
-        ["indic-misc.tests"] = "task 10",
-        ["indic-old-spec.tests"] = "task 10",
-        ["indic-pref-blocking.tests"] = "task 10",
-        ["indic-script-extensions.tests"] = "task 10",
-        ["indic-special-cases.tests"] = "task 10",
-        ["indic-syllable.tests"] = "task 10",
-        ["indic-vowel-letter-spoofing.tests"] = "task 10",
-        ["khmer-mark-order.tests"] = "task 10",
-        ["khmer-misc.tests"] = "task 10",
-        ["mark-attachment.tests"] = "task 10",
-        ["myanmar-misc.tests"] = "task 10",
-        ["myanmar-syllable.tests"] = "task 10",
-        ["myanmar-zawgyi.tests"] = "task 10",
-        ["context-matching.tests"] = "task 11",
-        ["glyph-props-no-gdef.tests"] = "task 11",
-        ["hangul-calt.tests"] = "task 11",
-        ["hangul-jamo.tests"] = "task 11",
-        ["sara-am.tests"] = "task 11",
-        ["sinhala.tests"] = "task 11",
-        ["tibetan-contractions-1.tests"] = "task 11",
-        ["tibetan-contractions-2.tests"] = "task 11",
-        ["tibetan-vowels.tests"] = "task 11",
-        ["use-indic3.tests"] = "task 11",
-        ["use-javanese.tests"] = "task 11",
-        ["use-marchen.tests"] = "task 11",
-        ["use-syllable.tests"] = "task 11",
-        ["use-vowel-letter-spoofing.tests"] = "task 11",
-        ["use.tests"] = "task 11",
+        ["indic-decompose.tests"] = "a font without outlines, which Typeface does not load",
+        ["indic-misc.tests"] = "a font without outlines, which Typeface does not load",
+        ["myanmar-zawgyi.tests"] = "the Qaag (Zawgyi) script, which Script does not have",
+        ["context-matching.tests"] = "a font without outlines, which Typeface does not load",
         ["spaces.tests"] = "task 13",
         ["vertical.tests"] = "task 13",
         ["variations.tests"] = "task 14",
@@ -91,11 +44,24 @@ public sealed class HarfBuzzShapingTests
         Assert.True(results.Count(r => r.Passed) > 4000);
     }
 
-    /// <summary>Corpus runs whose scripts the engine shapes completely so far; the others wait for their script shapers.</summary>
-    public static TheoryData<string> DefaultShaperCorpus() => ["NotoSans-Regular.english", "SourceSans3-Regular.english", "Roboto-Regular.english", "NotoSans-Regular.greek", "NotoSans-Regular.russian"];
+    /// <summary>The corpus runs: a font and a text in its script.</summary>
+    public static TheoryData<string> Corpus() =>
+    [
+        "NotoSans-Regular.english", "SourceSans3-Regular.english", "Roboto-Regular.english", "NotoSans-Regular.greek", "NotoSans-Regular.russian",
+        "NotoSansArabic-Regular.arabic", "NotoSansArabic-Regular.persian", "NotoSansArabic-Regular.urdu", "Amiri-Regular.arabic",
+        "Amiri-Regular.persian", "Amiri-Regular.urdu", "ScheherazadeNew-Regular.arabic", "ScheherazadeNew-Regular.persian",
+        "ScheherazadeNew-Regular.urdu", "NotoSansHebrew-Regular.hebrew", "NotoSansDevanagari-Regular.hindi", "Mukta-Regular.hindi",
+        "NotoSansBengali-Regular.bengali", "NotoSansTamil-Regular.tamil", "NotoSansThai-Regular.thai", "NotoSansLao-Regular.lao",
+        "NotoSansKhmer-Regular.khmer", "NotoSansMyanmar-Regular.burmese", "NotoSansSinhala-Regular.sinhala",
+    ];
+
+    /// <summary>Corpus runs whose script shapers come in a later 2.8.1 task.</summary>
+    private static readonly Dictionary<string, string> s_corpusWaiting = new()
+    {
+    };
 
     [Theory]
-    [MemberData(nameof(DefaultShaperCorpus))]
+    [MemberData(nameof(Corpus))]
     public void CorpusEqualsHbShape(string name)
     {
         System.Text.Json.JsonElement root = ShapingReferences.Load(Path.Combine("corpus", name + ".json.gz"));
@@ -111,7 +77,15 @@ public sealed class HarfBuzzShapingTests
             }
         }
 
-        Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures.Take(5)));
+        if (Environment.GetEnvironmentVariable("EGAMI_SHAPING_REPORT") is string folder)
+        {
+            File.WriteAllLines(Path.Combine(folder, "corpus." + name + ".txt"), [$"{failures.Count} failing lines", .. failures]);
+        }
+
+        if (!s_corpusWaiting.ContainsKey(name))
+        {
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures.Take(5)));
+        }
     }
 
     internal static string Describe(HarfBuzzCases.Result r) =>

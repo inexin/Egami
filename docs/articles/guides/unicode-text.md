@@ -2,9 +2,10 @@
 
 Egami.Fonts carries its own Unicode 17.0 data and the Unicode algorithms text shaping builds on: character properties, the
 bidirectional algorithm and text boundaries, in the `Egami.Fonts.Unicode` namespace. On top of them, `Egami.Fonts.Shaping`
-shapes text with a font's OpenType tables, as HarfBuzz does. Phase 2.8.1 is still landing: the layout engine and the default
-shaper (Latin, Greek, Cyrillic and every script without its own rules) are here; the Arabic, Indic, Southeast Asian and Hangul
-shapers, itemization, font fallback and canvas drawing follow.
+shapes text with a font's OpenType tables, as HarfBuzz does. Phase 2.8.1 is still landing: the layout engine and HarfBuzz's
+script shapers are here (Arabic, Syriac, N'Ko and Mongolian joining, Hebrew, the nine Indic scripts, Khmer, Myanmar, Thai, Lao,
+Hangul, and the Universal Shaping Engine for Tibetan, Sinhala, Javanese and the other complex scripts); itemization, font
+fallback and canvas drawing follow.
 
 The tables are generated from the Unicode Character Database by `tools/make-unicode-tables.py` and never come from the .NET runtime,
 so the same text gives the same answer on every runtime and machine. `UnicodeData.UnicodeVersion` says which version they follow.

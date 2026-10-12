@@ -129,6 +129,13 @@ internal static class HarfBuzzCases
                 case "--show-flags":
                     showFlags = true;
                     break;
+                case "--unicodes-before":
+                    // Context runs nearest first, at most five characters, as hb_buffer_add_codepoints keeps it.
+                    request.PreContext = [.. ParseUnicodes(value).Reverse().Take(5)];
+                    break;
+                case "--unicodes-after":
+                    request.PostContext = [.. ParseUnicodes(value).Take(5)];
+                    break;
                 case "--shapers" or "--shaper" when value != "ot":
                     return new Result(c, false, "shaper " + value, null);
                 case "--no-glyph-names":
@@ -159,7 +166,7 @@ internal static class HarfBuzzCases
             return new Result(c, false, "font " + e.Message, null);
         }
 
-        int[] codePoints = [.. c.Unicodes.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(u => int.Parse(u.Trim().TrimStart('U', 'u', '+'), NumberStyles.HexNumber, CultureInfo.InvariantCulture))];
+        int[] codePoints = ParseUnicodes(c.Unicodes);
         int[] clusters = [.. Enumerable.Range(0, codePoints.Length)];
         LayoutBuffer buffer = new();
         RunShaper.Shape(face, codePoints, clusters, request, buffer);
@@ -186,6 +193,9 @@ internal static class HarfBuzzCases
 
         return new Result(c, false, null, $"got [{string.Join('|', actual)}] expected [{string.Join('|', wanted)}]");
     }
+
+    private static int[] ParseUnicodes(string text) =>
+        [.. text.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(u => int.Parse(u.Trim().TrimStart('U', 'u', '+'), NumberStyles.HexNumber, CultureInfo.InvariantCulture))];
 
     private static string Format(int g, int cl, int fl, int ax, int ay, int dx, int dy, bool noPositions, bool noClusters, bool showFlags)
     {

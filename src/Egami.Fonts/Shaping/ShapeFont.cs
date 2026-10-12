@@ -47,7 +47,7 @@ internal sealed class ShapeFont
     public bool TryGetNominalGlyph(int codePoint, out uint glyph)
     {
         // As HarfBuzz, a mapped glyph id is used as the font gives it, even past the glyph count.
-        int g = _face.Cmap.Map(codePoint);
+        int g = Layout.Cmap.Map(codePoint);
         if (g > 0)
         {
             glyph = (uint)g;
@@ -63,7 +63,7 @@ internal sealed class ShapeFont
     /// <summary>The cmap format 14 glyph of a variation sequence; false when the font does not list the sequence.</summary>
     public bool TryGetVariationGlyph(int codePoint, int selector, out uint glyph)
     {
-        int g = _face.Cmap.MapVariation(codePoint, selector);
+        int g = Layout.Cmap.MapVariation(codePoint, selector);
         if (g > 0)
         {
             glyph = (uint)g;

@@ -3,12 +3,6 @@ using Egami.Fonts.Unicode;
 
 namespace Egami.Fonts.Shaping;
 
-/// <summary>Picks the script shaper for a run.</summary>
-internal static class ShaperSelector
-{
-    public static ComplexShaper Select(Script script, LayoutDirection direction, uint chosenGsubScript) => DefaultShaper.Instance;
-}
-
 /// <summary>
 /// The OpenType shaping pipeline over one run in one font, as HarfBuzz's hb_ot_shape_internal: Unicode properties, clusters,
 /// normalization, masks, GSUB, positioning and GPOS, and the fallbacks for fonts that lack them.
