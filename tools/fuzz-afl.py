@@ -27,7 +27,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jbig2": "tests/images/jbig2/*", "jbig2codec": "tests/images/fuzz/jbig2codec-seeds/*",
          "cube": "tests/images/fuzz/cube-seeds/*",
          "jpeg2000": "tests/images/fuzz/jpeg2000-seeds/*", "jpeg2000codec": "tests/images/fuzz/jpeg2000codec-seeds/*",
-         "font": "tests/images/fuzz/font-seeds/*", "cff": "tests/images/fuzz/cff-seeds/*", "subset": "tests/images/fuzz/font-seeds/*"}
+         "font": "tests/images/fuzz/font-seeds/*", "cff": "tests/images/fuzz/cff-seeds/*", "subset": "tests/images/fuzz/font-seeds/*",
+         "svgpath": "tests/images/fuzz/svgpath-seeds/*"}
 
 SCRIPT = """
 set -e
@@ -40,6 +41,7 @@ find /build -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {{}} +
 dotnet publish /build/tests/Egami.Fuzz -c Release -o /out -p:TreatWarningsAsErrors=false > /tmp/publish.log
 sharpfuzz /out/Egami.dll
 [ -f /out/Egami.Fonts.dll ] && sharpfuzz /out/Egami.Fonts.dll
+if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """

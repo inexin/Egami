@@ -7,6 +7,8 @@ using Egami.Pixels;
 
 using SharpFuzz;
 
+using DrawingPath = Egami.Drawing.Path;
+
 // Instrumented Egami code must not run before Fuzzer.OutOfProcess.Run sets up AFL++'s shared coverage map, so everything
 // that touches Egami, including EgamiContext, is created inside the fuzzed delegate.
 //
@@ -26,7 +28,9 @@ using SharpFuzz;
 // target (Phase 2.5.3) reads .cube LUT files, which must load or fail with an EgamiException; a table that loads must write back
 // and read again to the same values and run as a filter. The jpeg2000 and jpeg2000codec targets (Phase 2.3.4) load JP2, JPX and
 // codestreams every way (color and raw components, quality layers, rows, regions, reductions, YUV planes) and feed tier 1 raw
-// code-block bytes in every code-block style.
+// code-block bytes in every code-block style. The svgpath target (Phase 2.6.2) reads SVG path data strictly, with TryParseSvg and
+// leniently, which must agree; writes it back every way, which must read again to the same path; and runs small paths through
+// measuring, dashing, stroke outlines and the boolean engine.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -122,7 +126,8 @@ static Action<Stream> Target(string name) => name switch
     "font" => LoadFont,
     "cff" => LoadCff,
     "subset" => SubsetFont,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset."),
+    "svgpath" => ParseSvgPath,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: png, jpeg, jpeg-depth, jpeg-write, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, svgpath."),
 };
 
 static EgamiContext Context()
@@ -1371,6 +1376,83 @@ static void DecodeJbig2Codec(Stream stream)
     catch (LimitExceededException)
     {
     }
+}
+
+static void ParseSvgPath(Stream stream)
+{
+    byte[] bytes = ReadAll(stream);
+    string text = System.Text.Encoding.UTF8.GetString(bytes);
+
+    // Strict, Try and lenient must agree: what Try accepts parses strictly to the same path, and what it refuses throws an
+    // SvgPathException at a position inside the text, while lenient reading never throws.
+    bool accepted = DrawingPath.TryParseSvg(text, out DrawingPath? tried);
+    DrawingPath lenient = DrawingPath.ParseSvg(text, lenient: true);
+    try
+    {
+        DrawingPath strict = DrawingPath.ParseSvg(text);
+        if (!accepted || !Same(strict, tried!) || !Same(strict, lenient))
+        {
+            throw new InvalidOperationException("ParseSvg, TryParseSvg and lenient reading disagree on valid data.");
+        }
+    }
+    catch (Egami.Drawing.SvgPathException e)
+    {
+        if (accepted || e.Position < 0 || e.Position > text.Length)
+        {
+            throw new InvalidOperationException($"A bad position or a refusal of accepted data: {e.Message}");
+        }
+    }
+
+    // Whatever was read writes back and reads again to the same commands and points, within the written precision; relative
+    // offsets between coordinates near the float range cannot be written, so those paths are written absolute only.
+    float largest = 0;
+    foreach (System.Numerics.Vector2 p in lenient.Points)
+    {
+        largest = MathF.Max(largest, MathF.Max(MathF.Abs(p.X), MathF.Abs(p.Y)));
+    }
+
+    foreach (Egami.Drawing.SvgPathFormat format in (Egami.Drawing.SvgPathFormat[])[new(), new() { Compact = true }, new() { Relative = true }, new() { Relative = true, Compact = true, Precision = 6 }])
+    {
+        if (format.Relative && largest > 1e30f)
+        {
+            continue;
+        }
+
+        DrawingPath back = DrawingPath.ParseSvg(lenient.ToSvg(format));
+        if (!back.Verbs.SequenceEqual(lenient.Verbs) || back.Points.Length != lenient.Points.Length)
+        {
+            throw new InvalidOperationException("A written path read back with other commands.");
+        }
+
+        for (int i = 0; i < back.Points.Length; i++)
+        {
+            System.Numerics.Vector2 a = lenient.Points[i], b = back.Points[i];
+            // A relative offset from a far point lands only as close as floats near that point allow.
+            float slack = (0.6f * MathF.Pow(10, -format.Precision)) + (MathF.Max(1, format.Relative ? largest : MathF.Max(MathF.Abs(a.X), MathF.Abs(a.Y))) * 1e-6f * (format.Relative ? 4 : 1));
+            if (MathF.Abs(a.X - b.X) > slack || MathF.Abs(a.Y - b.Y) > slack)
+            {
+                throw new InvalidOperationException($"Point {i} moved from {a} to {b} in a round trip as {format}.");
+            }
+        }
+    }
+
+    // Small paths go on through the geometry: measuring, dashing, stroking and the boolean engine must not fail.
+    if (lenient.Verbs.Length <= 64 && largest < 1e6f)
+    {
+        Egami.Drawing.PathMeasure measure = new(lenient);
+        foreach (Egami.Drawing.ContourMeasure contour in measure.Contours)
+        {
+            contour.GetSegment(contour.Length / 3, contour.Length * 2 / 3);
+            contour.GetMatrix(contour.Length / 2);
+        }
+
+        lenient.Apply(Egami.Drawing.PathEffect.Dash(new Egami.Drawing.DashPattern([3, 2])));
+        new Egami.Drawing.Stroke(2) { Join = Egami.Drawing.LineJoin.Round }.ToPath(lenient, simplify: true);
+        lenient.Simplify();
+        lenient.WithFillRule(Egami.Drawing.FillRule.EvenOdd).Simplify();
+    }
+
+    static bool Same(DrawingPath a, DrawingPath b) => a.Verbs.SequenceEqual(b.Verbs) && a.Points.SequenceEqual(b.Points);
 }
 
 static byte[] ReadAll(Stream stream)

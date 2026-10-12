@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
     <ProjectReference Include="..\..\src\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
