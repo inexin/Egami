@@ -135,6 +135,26 @@ Hairlines on half-pixel coordinates fill exactly one column or row of pixels.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#clipped-photo)]
 
+## Cut a frame out of a shape
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#booleans)]
+
+Boolean operations keep curves, so the frame exports to PDF or SVG exactly. See [Path geometry](../guides/drawing.md#path-geometry).
+
+## Draw a dashed route
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#dashes)]
+
+## Animate a line drawing itself
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#draw-itself)]
+
+`PathEffect.Trim` keeps a fraction of the path's length; stepping it from 0 to 1 gives the frames.
+
+## Draw an SVG icon
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#svg)]
+
 ## Watermark with Multiply
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#watermark-multiply)]

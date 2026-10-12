@@ -1,7 +1,7 @@
 # Drawing
 
 Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a `Canvas`. It is a
-preview (1.0.0-preview.1): its API may still change before 1.0. Text is drawn with Egami.Fonts; see
+preview (1.0.0-preview.2): its API may still change before 1.0. Text is drawn with Egami.Fonts; see
 [Fonts and text](text.md).
 
 ## A canvas
@@ -73,6 +73,63 @@ of one byte per pixel of its bounds, and drawing through it costs about 1.2 time
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#images)]
 
+## Path geometry
+
+Paths can be combined, outlined, dashed, measured, reshaped by effects, and read from and written as SVG path data. Every
+result is a new `Path` that keeps lines, quadratics and cubics where the input had them, so a vector backend writes it exactly.
+
+### Boolean operations
+
+`Op` combines two areas with a `PathOp`: `Union`, `Intersect`, `Difference`, `Xor` or `ReverseDifference` (with shortcuts
+for the first four). `PathOps.Combine` takes any number of paths in one pass, applied left to right. `Simplify` returns the
+same area without overlaps or self-intersections.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#booleans)]
+
+- Each input keeps its fill rule; open contours count as closed. Results use `NonZero`, with outer contours clockwise on screen
+  and holes counterclockwise, and no contours cross.
+- Crossings are found on the curves themselves and cut exactly. The `tolerance` (0.05 units by default) is how close points
+  must be to count as the same: ends and crossings within a tenth of it merge, and edges that run within it of each other
+  merge, so nearly coincident outlines leave no slivers. Pass a smaller tolerance for geometry that will be drawn larger.
+- `Offset` grows an area by a distance, or shrinks it for a negative one, with a `LineJoin` at the corners.
+
+### Outlines and dashes
+
+`Stroke.ToPath` returns the outline a pen draws, as a path to fill: filled at the given scale it gives exactly the stroke's
+pixels, and `simplify: true` removes its overlaps for export or hit testing. `Stroke.Dash` takes a `DashPattern` of absolute
+on and off lengths and a phase, as PDF, SVG and Skia define them; `Scaled` turns lengths given in widths into units.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#dashes)]
+
+A backend receives the pattern as data, so PDF can write `d` and SVG `stroke-dasharray`; the raster backend cuts the path
+into dashes along its curves before outlining it.
+
+### Measuring
+
+`PathMeasure` lists each contour as a `ContourMeasure`: its `Length`, and the position, tangent and placing matrix at any
+distance. `GetSegment` returns a piece of the contour that keeps its curves; `AddSegment` chains pieces into one contour.
+Lengths are integrated, not taken from a flattened outline, and are exact to about 1e-4 units.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#measure)]
+
+### Path effects
+
+A `PathEffect` turns one path into another: `Dash`, `Corner` (rounded corners), `Trim`, `Jitter`, `Stamp` (a shape repeated
+along the path, placed by a `StampStyle`), `Hatch` and `HatchPath` (lines or shapes on a lattice inside an area). `Then` and
+`Plus` combine them. `path.Apply(effect)` applies one; `Stroke.Effect` has the canvas apply it before dashing and stroking.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#effects)]
+
+`Jitter` hashes its seed with the contour and the point, so a path jitters the same way on every thread and machine.
+
+### SVG path data
+
+`Path.ParseSvg` reads the `d` attribute grammar of SVG 1.1 and 2; `TryParseSvg` returns false instead of throwing
+`SvgPathException`, and `lenient: true` keeps every complete command before the first error. `ToSvg` writes path data, absolute
+or relative, compact or spaced, to a precision (`SvgPathFormat`).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#svg)]
+
 ## In an operation chain
 
 `Draw` adds a step that draws on each frame with a canvas over the step's pixels (`DrawingExtensions`).
@@ -91,4 +148,6 @@ call (a blend mode its format lacks) can draw it into pixels with `RasterizeFall
 ## Accuracy and speed
 
 Fills are within a mean level of SkiaSharp's and closer than SkiaSharp's to the exact covered area; drawing is faster than
-the reference drawing library in every scenario timed, at one thread and all cores. The figures are in the 2.6.1 release notes.
+the reference drawing library in every scenario timed, at one thread and all cores. Boolean operations, outlines, dashes, effects and SVG
+parsing give paths within a mean level of SkiaSharp's, and measured lengths agree within 1e-3. The figures are in the 2.6.1
+and 2.6.2 release notes.

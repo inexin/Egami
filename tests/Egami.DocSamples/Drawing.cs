@@ -276,6 +276,145 @@ public class Drawing
     #endregion
 
     [Fact]
+    public void Booleans()
+    {
+        #region booleans
+        // A frame: one round rectangle cut out of another, kept as curves, so a PDF or SVG backend writes it exactly.
+        Path frame = Path.RoundRect(new RoundRect(new RectF(0, 0, 200, 140), 24))
+            .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
+
+        // Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
+        Path dots = PathOps.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+        Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
+        Path halo = dots.Offset(4, LineJoin.Round);
+        #endregion
+
+        Assert.Equal(2, frame.Contours.Count);
+        Assert.Single(dots.Contours);
+        Assert.True(halo.TightBounds.Width > dots.TightBounds.Width + 7);
+        Assert.False(clean.IsEmpty);
+    }
+
+    [Fact]
+    public void Dashes()
+    {
+        #region dashes
+        // A dashed route: the pattern travels with the stroke, so a PDF backend writes [8 4] 0 d instead of hundreds of pieces.
+        Path route = new PathBuilder().MoveTo(10, 90).CubicTo(60, 0, 140, 160, 190, 60).ToPath();
+        Stroke dashed = new(3) { Cap = LineCap.Round, Dash = new DashPattern([8, 4]) };
+        using Raster<Rgba8> map = Raster.Create(200, 120, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = map.CreateCanvas())
+        {
+            canvas.StrokePath(route, dashed, new Rgba8(200, 60, 30, 255));
+        }
+
+        // The outline the stroke fills, as a path: for hit testing, or to export without strokes.
+        Path outline = dashed.ToPath(route, simplify: true);
+        #endregion
+
+        Assert.True(outline.Contours.Count > 10);
+    }
+
+    [Fact]
+    public void Measure()
+    {
+        #region measure
+        // Measure a path: its length, and a point and direction at any distance, curves included.
+        Path route = new PathBuilder().MoveTo(10, 90).CubicTo(60, 0, 140, 160, 190, 60).ToPath();
+        PathMeasure measure = new(route);
+        ContourMeasure contour = measure.Contours[0];
+        Vector2 halfway = contour.GetPosition(contour.Length / 2);
+        Vector2 heading = contour.GetTangent(contour.Length / 2);
+
+        // An arrowhead placed at the end, turned along the path, and the middle third as a path of its own (still a cubic).
+        Path arrow = Path.Polygon([new(-6, -4), new(0, 0), new(-6, 4)]).Transform(contour.GetMatrix(contour.Length));
+        Path middle = contour.GetSegment(contour.Length / 3, 2 * contour.Length / 3);
+        #endregion
+
+        Assert.Equal(1, heading.Length(), 1e-3);
+        Assert.True(halfway.X is > 60 and < 140);
+        Assert.Equal(PathVerb.Cubic, middle.Verbs[1]);
+        Assert.False(arrow.IsEmpty);
+    }
+
+    [Fact]
+    public void Effects()
+    {
+        #region effects
+        // A hand-drawn chart line: jittered the same way on every run, then its corners rounded.
+        Path data = Path.Polygon([new(10, 80), new(50, 30), new(90, 60), new(130, 20), new(170, 50)], close: false);
+        PathEffect sketchy = PathEffect.Jitter(segmentLength: 6, deviation: 1.5f, seed: 7).Then(PathEffect.Corner(3));
+        using Raster<Rgba8> chart = Raster.Create(180, 100, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = chart.CreateCanvas())
+        {
+            canvas.StrokePath(data, new Stroke(2) { Effect = sketchy }, new Rgba8(40, 40, 40, 255));
+
+            // Dots along the line, and hatching inside a circle.
+            canvas.FillPath(data.Apply(PathEffect.Stamp(Path.Circle(Vector2.Zero, 2), advance: 12, style: StampStyle.Translate)), Rgba8.Black);
+            canvas.FillPath(Path.Circle(new Vector2(150, 75), 20).Apply(PathEffect.Hatch(Matrix3x2.CreateScale(1, 5) * Matrix3x2.CreateRotation(0.6f), width: 1)), Rgba8.Black);
+        }
+
+        // A line that draws itself: trim it to a growing fraction of its length, frame by frame.
+        Path frame30 = data.Apply(PathEffect.Trim(0, 0.3f));
+        #endregion
+
+        Assert.Equal(0.3f * new PathMeasure(data).TotalLength, new PathMeasure(frame30).TotalLength, 1e-3f);
+    }
+
+    [Fact]
+    public void Svg()
+    {
+        #region svg
+        // An icon from SVG path data, drawn four times larger, and written back as compact relative data.
+        Path heart = Path.ParseSvg("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09" +
+                                   "C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
+        string d = heart.Transform(Matrix3x2.CreateScale(4)).ToSvg(new SvgPathFormat { Relative = true, Compact = true });
+
+        // Untrusted data: TryParseSvg says whether it is valid; lenient keeps what comes before an error, as browsers draw it.
+        bool valid = Path.TryParseSvg("M0 0 L10 10 L20", out Path? strict);
+        Path drawn = Path.ParseSvg("M0 0 L10 10 L20", lenient: true);
+        try
+        {
+            Path.ParseSvg("M0 0 X");
+        }
+        catch (SvgPathException e)
+        {
+            Console.WriteLine($"{e.Problem} at character {e.Position}");
+        }
+        #endregion
+
+        Assert.StartsWith("m48 85.4", d, StringComparison.Ordinal);
+        Assert.False(valid);
+        Assert.Null(strict);
+        Assert.Equal(2, drawn.Points.Length);
+    }
+
+    [Fact]
+    public void DrawItself()
+    {
+        #region draw-itself
+        // Frames of a signature drawing itself: each frame strokes a longer part of the path.
+        Path signature = Path.ParseSvg("M10 60 C30 10 50 110 70 60 S110 10 130 60 S170 110 190 40");
+        List<Raster<Rgba8>> frames = [];
+        for (int i = 1; i <= 24; i++)
+        {
+            Raster<Rgba8> frame = Raster.Create(200, 100, Rgba8.White);
+            using (RasterCanvas<Rgba8> canvas = frame.CreateCanvas())
+            {
+                Stroke pen = new(3) { Cap = LineCap.Round, Effect = PathEffect.Trim(0, i / 24f) };
+                canvas.StrokePath(signature, pen, new Rgba8(20, 40, 120, 255));
+            }
+
+            frames.Add(frame);
+        }
+        #endregion
+
+        Assert.Equal(Rgba8.White, frames[0].GetPixel(190, 40));
+        Assert.NotEqual(Rgba8.White, frames[^1].GetPixel(190, 40));
+        frames.ForEach(f => f.Dispose());
+    }
+
+    [Fact]
     public void Badge()
     {
         #region badge

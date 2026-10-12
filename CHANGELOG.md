@@ -153,6 +153,30 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   sums now start at fixed rows and columns, so the pixels are the same at any thread count. `Blur` above σ 100 runs its three
   boxes in one pass, without rounding between them: about three times faster on many cores, and a third faster on one.
 
+### Egami.Drawing 1.0.0-preview.2
+
+Path geometry, in the same preview package. See [Path geometry](docs/articles/guides/drawing.md#path-geometry).
+
+- Boolean operations on the curves themselves: `Path.Op` with `PathOp` (`Union`, `Intersect`, `Difference`, `Xor`,
+  `ReverseDifference`) and shortcuts, `Path.Simplify`, and `PathOps.Combine` for many paths in one pass. Results keep the inputs'
+  lines, quadratics and cubics, cut exactly where outlines cross, with outer contours clockwise and holes counterclockwise. Each
+  input keeps its fill rule. Area identities hold on 100,000 random cases and 10,000 nearly parallel ones, and results are within
+  a mean level of SkiaSharp's PathOps on the 2.6.2 corpus.
+- `Stroke.ToPath`: the outline a pen draws, which fills to exactly the stroke's pixels; `simplify: true` removes its overlaps.
+  `Path.Offset` grows or shrinks an area with a join.
+- `Stroke.Dash` with `DashPattern` (absolute lengths and a phase, as PDF, SVG and Skia; `Scaled` for width-relative patterns),
+  received by backends as data and cut along the curves by the raster backend.
+- `PathMeasure` and `ContourMeasure`: lengths by adaptive Gauss–Legendre quadrature (within 1e-4 units, and 1e-3 of SkiaSharp's
+  PathMeasure), positions, tangents, placing matrices and curve-keeping pieces.
+- `PathEffect`: `Dash`, `Corner`, `Trim`, `Jitter` (seeded, the same on every thread and machine), `Stamp` with `StampStyle`,
+  `Hatch` and `HatchPath`, combined with `Then` and `Plus`; `path.Apply` or `Stroke.Effect`. Within a mean level of SkiaSharp's
+  matching effects.
+- SVG path data: `Path.ParseSvg` (every command of SVG 1.1 and 2, compact numbers, arc flags without separators; throws
+  `SvgPathException` with the character position, or keeps what comes before an error with `lenient: true`), `TryParseSvg`, and
+  `ToSvg` with `SvgPathFormat` (absolute or relative, compact, a precision; relative offsets never drift). Fuzzed for 20 minutes.
+- Boolean speed (ms, 1 thread, best of 7): 100 random 12-gon pairs under four operations 28 against SkiaSharp 39 and
+  the reference drawing library 11; 50 curved pairs 12.5 against 4.7 and 5.4; 200 letters unioned 24 against 503 and 26.
+
 ### Egami.Drawing 1.0.0-preview.1
 
 A new package, over Egami's public API only, that draws antialiased paths, shapes, strokes, clips and images on a canvas. A
