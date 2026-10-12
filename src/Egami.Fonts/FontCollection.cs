@@ -65,6 +65,7 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     private readonly Lock _lock = new();
     private readonly bool _isSystem;
     private List<FaceEntry> _entries = [];
+    private NameIndex? _index;
     private bool _indexed;
 
     /// <summary>Initializes an empty collection.</summary>
@@ -198,18 +199,14 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     {
         ArgumentNullException.ThrowIfNull(name);
         List<FaceEntry> entries = Entries;
-        foreach (Func<NameSet, string[]> names in s_nameOrder)
+        NameIndex? index = Volatile.Read(ref _index);
+        if (index is null || !ReferenceEquals(index.Entries, entries))
         {
-            List<FaceEntry> hits = entries.FindAll(e => NameSet.Contains(names(e.Names), name));
-            if (hits.Count > 0)
-            {
-                family = new FontFamily(hits[0].Family, [.. hits], Options);
-                return true;
-            }
+            index = new NameIndex(entries, Options);
+            Volatile.Write(ref _index, index);
         }
 
-        family = null!;
-        return false;
+        return index.TryGet(name, out family);
     }
 
     /// <summary>Finds a family by name and matches a style in it.</summary>
@@ -241,7 +238,53 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     /// <returns>The face, or <see langword="null"/> when no face has the name.</returns>
     public Typeface? MatchTypeface(string familyName, FontStyle style) => Match(familyName, style)?.Typeface;
 
-    private static readonly Func<NameSet, string[]>[] s_nameOrder = [n => n.Typographic, n => n.Legacy, n => n.Full, n => n.PostScript];
+    /// <summary>The families of one snapshot of the faces, by every name in lookup order, built on first lookup.</summary>
+    private sealed class NameIndex
+    {
+        private readonly Dictionary<string, FontFamily>[] _byKind;
+
+        public NameIndex(List<FaceEntry> entries, FontLoadOptions options)
+        {
+            Entries = entries;
+            Func<NameSet, string[]>[] kinds = [n => n.Typographic, n => n.Legacy, n => n.Full, n => n.PostScript];
+            _byKind = new Dictionary<string, FontFamily>[kinds.Length];
+            for (int k = 0; k < kinds.Length; k++)
+            {
+                var groups = new Dictionary<string, List<FaceEntry>>(StringComparer.OrdinalIgnoreCase);
+                foreach (FaceEntry entry in entries)
+                {
+                    foreach (string name in kinds[k](entry.Names).Distinct(StringComparer.OrdinalIgnoreCase))
+                    {
+                        if (!groups.TryGetValue(name, out List<FaceEntry>? list))
+                        {
+                            groups[name] = list = [];
+                        }
+
+                        list.Add(entry);
+                    }
+                }
+
+                _byKind[k] = groups.ToDictionary(g => g.Key, g => new FontFamily(g.Value[0].Family, [.. g.Value], options), StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        public List<FaceEntry> Entries { get; }
+
+        public bool TryGet(string name, out FontFamily family)
+        {
+            foreach (Dictionary<string, FontFamily> kind in _byKind)
+            {
+                if (kind.TryGetValue(name, out FontFamily? found))
+                {
+                    family = found;
+                    return true;
+                }
+            }
+
+            family = null!;
+            return false;
+        }
+    }
 
     internal static IEnumerable<string> GenericNames(GenericFamily generic)
     {

@@ -4,26 +4,36 @@ namespace Egami.Fonts.Matching;
 internal static class StyleMatcher
 {
     /// <summary>Returns the index of the best face for <paramref name="wanted"/>, or -1 when there are none.</summary>
-    public static int Match(IReadOnlyList<FontStyle> styles, FontStyle wanted)
+    public static int Match(ReadOnlySpan<FontStyle> styles, FontStyle wanted)
     {
-        if (styles.Count == 0)
+        int n = styles.Length;
+        if (n == 0)
         {
             return -1;
         }
 
-        var candidates = new List<int>(styles.Count);
-        for (int i = 0; i < styles.Count; i++)
-        {
-            candidates.Add(i);
-        }
+        Span<bool> alive = n <= 256 ? stackalloc bool[n] : new bool[n];
+        alive.Fill(true);
 
         // Width: the nearest at or below normal-or-narrower requests, else above; the other side after.
-        int width = wanted.ClampedWidth;
-        int bestWidth = Best(candidates, i => styles[i].ClampedWidth, width, preferLower: width <= 5);
-        candidates.RemoveAll(i => styles[i].ClampedWidth != bestWidth);
+        int width = wanted.ClampedWidth, best = -1;
+        bool preferLower = width <= 5;
+        for (int i = 0; i < n; i++)
+        {
+            int w = styles[i].ClampedWidth;
+            if (best < 0 || Better(w, best, width, preferLower))
+            {
+                best = w;
+            }
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            alive[i] = styles[i].ClampedWidth == best;
+        }
 
         // Slant: italic falls back to oblique then upright; oblique to italic then upright; upright to oblique then italic.
-        FontSlant[] order = wanted.Slant switch
+        ReadOnlySpan<FontSlant> order = wanted.Slant switch
         {
             FontSlant.Italic => [FontSlant.Italic, FontSlant.Oblique, FontSlant.Upright],
             FontSlant.Oblique => [FontSlant.Oblique, FontSlant.Italic, FontSlant.Upright],
@@ -31,17 +41,52 @@ internal static class StyleMatcher
         };
         foreach (FontSlant slant in order)
         {
-            if (candidates.Exists(i => styles[i].Slant == slant))
+            bool any = false;
+            for (int i = 0; i < n && !any; i++)
             {
-                candidates.RemoveAll(i => styles[i].Slant != slant);
+                any = alive[i] && styles[i].Slant == slant;
+            }
+
+            if (any)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    alive[i] &= styles[i].Slant == slant;
+                }
+
                 break;
             }
         }
 
         // Weight.
-        int weight = wanted.ClampedWeight;
-        int bestWeight = BestWeight(candidates.ConvertAll(i => styles[i].ClampedWeight), weight);
-        return candidates.Find(i => styles[i].ClampedWeight == bestWeight);
+        Span<int> weights = n <= 256 ? stackalloc int[n] : new int[n];
+        int count = 0;
+        for (int i = 0; i < n; i++)
+        {
+            if (alive[i])
+            {
+                weights[count++] = styles[i].ClampedWeight;
+            }
+        }
+
+        int bestWeight = BestWeight(weights[..count], wanted.ClampedWeight);
+        for (int i = 0; i < n; i++)
+        {
+            if (alive[i] && styles[i].ClampedWeight == bestWeight)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // Whether width a beats width b for the wanted width: exact first, then the preferred side nearest first, then the other side.
+    private static bool Better(int a, int b, int wanted, bool preferLower)
+    {
+        int Rank(int v) => v == wanted ? 0 : (v < wanted) == preferLower ? 1 : 2;
+        int ra = Rank(a), rb = Rank(b);
+        return ra != rb ? ra < rb : Math.Abs(a - wanted) < Math.Abs(b - wanted);
     }
 
     /// <summary>Says which synthesis a matched style needs to look like the wanted one.</summary>
@@ -61,7 +106,7 @@ internal static class StyleMatcher
         return synthesis;
     }
 
-    internal static int BestWeight(IReadOnlyList<int> weights, int wanted)
+    internal static int BestWeight(ReadOnlySpan<int> weights, int wanted)
     {
         if (weights.Contains(wanted))
         {
@@ -94,21 +139,8 @@ internal static class StyleMatcher
         return Nearest(weights, w => w > wanted, ascending: true) ?? Nearest(weights, w => w < wanted, ascending: false) ?? weights[0];
     }
 
-    private static int Best(List<int> candidates, Func<int, int> value, int wanted, bool preferLower)
-    {
-        var values = candidates.ConvertAll(i => value(i));
-        if (values.Contains(wanted))
-        {
-            return wanted;
-        }
-
-        int? lower = Nearest(values, v => v < wanted, ascending: false);
-        int? higher = Nearest(values, v => v > wanted, ascending: true);
-        return preferLower ? lower ?? higher!.Value : higher ?? lower!.Value;
-    }
-
     // The value nearest to the wanted one among those passing the filter: the smallest when ascending, else the largest.
-    private static int? Nearest(IReadOnlyList<int> values, Func<int, bool> filter, bool ascending)
+    private static int? Nearest(ReadOnlySpan<int> values, Func<int, bool> filter, bool ascending)
     {
         int? best = null;
         foreach (int v in values)

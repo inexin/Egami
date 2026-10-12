@@ -10,19 +10,21 @@ public sealed class FontFamily
 {
     private readonly FaceEntry[] _entries;
     private readonly FontLoadOptions _options;
+    private readonly FontStyle[] _styles;
 
     internal FontFamily(string name, FaceEntry[] entries, FontLoadOptions options)
     {
         Name = name;
         _entries = entries;
         _options = options;
+        _styles = [.. entries.Select(e => e.Style)];
     }
 
     /// <summary>Gets the family's English name.</summary>
     public string Name { get; }
 
     /// <summary>Gets the styles of the family's faces, without loading them.</summary>
-    public IReadOnlyList<FontStyle> Styles => [.. _entries.Select(e => e.Style)];
+    public IReadOnlyList<FontStyle> Styles => _styles.AsReadOnly();
 
     /// <summary>Gets the faces, loading every one that is not loaded yet.</summary>
     public IReadOnlyList<Typeface> Faces => [.. _entries.Select(e => e.GetTypeface(_options))];
@@ -35,7 +37,7 @@ public sealed class FontFamily
     /// <returns>The face and its synthesis.</returns>
     public FontMatch Match(FontStyle style)
     {
-        int best = StyleMatcher.Match(_entries.Select(e => e.Style).ToArray(), style);
+        int best = StyleMatcher.Match(_styles, style);
         FaceEntry entry = _entries[Math.Max(0, best)];
         return new FontMatch(entry.GetTypeface(_options), StyleMatcher.SynthesisFor(style, entry.Style));
     }

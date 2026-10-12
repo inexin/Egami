@@ -130,12 +130,14 @@ public class TextTests
             canvas.DrawGlyphRun(run, origin, Rgba8.Black);
         }
 
-        using (RasterCanvas<Rgba8> canvas = path.CreateCanvas())
+        // Masks flatten curves finer than the canvas default; the path is filled at the same tolerance.
+        bool cached = size <= RasterCanvas<Rgba8>.MaxCachedEm;
+        using (RasterCanvas<Rgba8> canvas = path.CreateCanvas(cached ? new CanvasOptions { Tolerance = RasterCanvas<Rgba8>.GlyphTolerance } : null))
         {
             canvas.FillPath(run.ToPath(origin), Rgba8.Black);
         }
 
-        AssertSame(path, text, size > RasterCanvas<Rgba8>.MaxCachedEm ? 0 : 1);
+        AssertSame(path, text, cached ? 1 : 0);
     }
 
     [Fact]

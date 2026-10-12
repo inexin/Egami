@@ -10,10 +10,14 @@ public sealed partial class RasterCanvas<TPixel>
     /// <summary>The largest device em size drawn through the glyph cache; bigger glyphs fill as paths.</summary>
     internal const float MaxCachedEm = 256;
 
+    /// <summary>The flattening tolerance of glyph masks, finer than the canvas default: glyphs are mostly curves, and a mask is made once.</summary>
+    internal const float GlyphTolerance = 0.01f;
+
     /// <inheritdoc/>
     /// <remarks>
     /// Under a scale-and-translate transform, glyphs up to 256 device pixels per em are drawn from <see cref="GlyphCache"/> masks
-    /// with their origins snapped to whole device pixels; any other glyph run fills as one path.
+    /// with their origins snapped to whole device pixels, their curves flattened to 0.01 pixel (or the canvas tolerance when finer);
+    /// any other glyph run fills as one path at the canvas tolerance.
     /// </remarks>
     protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)
     {
@@ -94,7 +98,7 @@ public sealed partial class RasterCanvas<TPixel>
         }
 
         var edges = new EdgeList();
-        Flattener.Flatten(path, Matrix3x2.Identity, Options.Tolerance, edges);
+        Flattener.Flatten(path, Matrix3x2.Identity, MathF.Min(Options.Tolerance, GlyphTolerance), edges);
         Rect bounds = edges.Bounds.RoundOut();
         if (bounds.IsEmpty)
         {
