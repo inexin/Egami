@@ -312,9 +312,12 @@ public class RegionAndReductionTests
     public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
 
     // A TIFF pyramid's levels serve reduced decodes, so its reductions are its smaller pages, not box averages.
-    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f) && f != "tiff/pyramid-exact.tif")];
+    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif")];
 
     public static TheoryData<string> Jpeg() => [.. StreamingCorpus.Files.Where(IsJpeg)];
+
+    /// <summary>JPEG 2000 files whose image starts at the grid's origin, so every wavelet level can be dropped.</summary>
+    public static TheoryData<string> Jpeg2000() => [.. StreamingCorpus.Files.Where(f => IsJpeg2000(f) && !f.Contains("offsets", StringComparison.Ordinal))];
 
     [Theory]
     [MemberData(nameof(Files))]
@@ -389,6 +392,46 @@ public class RegionAndReductionTests
                 int k = scale == 8 ? ExpectedFactor(cropped.Size, minimum) : 1;
                 using Raster<Rgb8> expected = Reference<Rgb8>(floats, cropped, k);
                 using Raster<Rgb8> actual = Raster.Load<Rgb8>(data, options: new ReaderOptions { MinimumSize = minimum, Region = region });
+                StreamingCorpus.Equal(expected, 0, actual, $"{file} {minimum} {region} scale {scale} box {k}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// JPEG 2000 reduces by dropping wavelet levels, as JPEG scales its IDCT: a reduced load with a region is the load at that
+    /// scale, cropped, then box-averaged only at the largest scale the file allows.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Jpeg2000))]
+    public void Jpeg2000RegionAndReductionEqualAReducedLoadCropped(string file)
+    {
+        byte[] data = StreamingCorpus.Read(file);
+        RasterInfo info = Raster.Probe(data);
+        using Raster probe = Raster.Load(data);
+        int maxScale = 1 << Math.Min(16, ((Egami.Formats.Jpeg2000.Jpeg2000Details)probe.Metadata.FormatDetails!).DecompositionLevels);
+        Random random = new(file.Length);
+        foreach (Size minimum in (Size[])[new(info.Width / 3, info.Height / 3), new(info.Width / 8, info.Height / 8), new(2, 2)])
+        {
+            foreach (Rect? region in (Rect?[])[null, RandomRect(random, info.Width, info.Height)])
+            {
+                Rect r = region is Rect given ? Clip(given, info.Width, info.Height) : new Rect(0, 0, info.Width, info.Height);
+                int n = ExpectedFactor(r.Size, minimum);
+                int scale = 1;
+                while (scale * 2 <= Math.Min(n, maxScale))
+                {
+                    scale *= 2;
+                }
+
+                using Raster scaled = Raster.Load(data, options: new ReaderOptions
+                {
+                    MinimumSize = new Size((info.Width + scale - 1) / scale, (info.Height + scale - 1) / scale),
+                });
+                Rect cropped = StreamingCorpus.Bounds(r.X / scale, r.Y / scale, Math.Min(scaled.Width, (r.Right + scale - 1) / scale), Math.Min(scaled.Height, (r.Bottom + scale - 1) / scale));
+                using Raster<RgbaF32> floats = scaled.As<RgbaF32>();
+                int k = scale == maxScale ? ExpectedFactor(cropped.Size, minimum) : 1;
+                using Raster<Rgba16> wide = scaled.As<Rgba16>();
+                using Raster<Rgba16> expected = k == 1 ? wide.Derive(ops => ops.Crop(cropped), TestContext.Current.CancellationToken) : Reference<Rgba16>(floats, cropped, k);
+                using Raster<Rgba16> actual = Raster.Load<Rgba16>(data, options: new ReaderOptions { MinimumSize = minimum, Region = region });
                 StreamingCorpus.Equal(expected, 0, actual, $"{file} {minimum} {region} scale {scale} box {k}");
             }
         }
@@ -547,6 +590,8 @@ public class RegionAndReductionTests
     }
 
     /// <summary>Returns whether a file is a JPEG the IDCT can reduce: any but a lossless one, which has no DCT.</summary>
+    private static bool IsJpeg2000(string file) => file.StartsWith("jpeg2000/", StringComparison.Ordinal);
+
     private static bool IsJpeg(string file)
     {
         if (!file.StartsWith("jpeg/", StringComparison.Ordinal) && !file.EndsWith(".jpg", StringComparison.Ordinal))

@@ -34,8 +34,8 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             ImageCount = 1,
             HasMetadata = !file.Xmp.IsEmpty || !file.Icc.IsEmpty || file.Capture is not null || file.Display is not null,
             EstimatedBytes = (long)width * height * pixels.Layout.BytesPerPixel,
-            Access = Streams(stream, pixels) ? RasterAccess.Streamed : RasterAccess.Buffered,
-            WorkingBytes = WorkingBytes(stream, 0, pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1)),
+            Access = Holding(stream, pixels, options).Access,
+            WorkingBytes = Holding(stream, pixels, options).Bytes,
         };
     }
 
@@ -71,11 +71,35 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
         Upsampling = options is Jpeg2000ReaderOptions { FastUpsampling: true } ? ChromaUpsampling.Nearest : ChromaUpsampling.Bilinear,
     };
 
-    /// <summary>Gets whether rows stream a row of tiles at a time, which <see cref="Open"/> does unless chroma is interpolated or the image has one row of tiles.</summary>
-    private static bool Streams(J2kCodestream stream, J2kPixels pixels)
+    /// <summary>Returns the reduction <see cref="Open"/> applies: what the plan asks for, as dropped wavelet levels.</summary>
+    internal static int Reduction(J2kCodestream stream, ReaderOptions options)
     {
+        int width = stream.Width - stream.OffsetX;
+        int height = stream.Height - stream.OffsetY;
+        int max = MaxNativeScale(stream);
+        int scale = options.NativeScale is { } choose
+            ? choose(width, height)
+            : Streaming.ReadPlan.Create(width, height, options.Region, options.MinimumSize, max).NativeScale;
+        return System.Numerics.BitOperations.Log2((uint)Math.Clamp(scale, 1, max));
+    }
+
+    /// <summary>
+    /// Returns how <see cref="Open"/> serves rows and what it holds: streamed from one row of tiles' samples at a time, or,
+    /// for subsampled sYCC whose chroma is interpolated across rows, buffered as the whole image in its natural type.
+    /// </summary>
+    internal static (RasterAccess Access, long Bytes) Holding(J2kCodestream stream, J2kPixels pixels, ReaderOptions options)
+    {
+        int reduce = Reduction(stream, options);
         bool yuv = pixels.Model == J2kModel.Sycc && PlaneFormat(stream, pixels) is (ChromaFormat format, _) && format != ChromaFormat.Yuv444;
-        return !yuv && Banded(stream) && stream.TilesY > 1;
+        if (yuv)
+        {
+            long width = J2kTier2.CeilShift(stream.Width, reduce) - J2kTier2.CeilShift(stream.OffsetX, reduce);
+            long height = J2kTier2.CeilShift(stream.Height, reduce) - J2kTier2.CeilShift(stream.OffsetY, reduce);
+            return (RasterAccess.Buffered, width * height * pixels.Layout.BytesPerPixel);
+        }
+
+        (int[] starts, _) = Bands(stream, reduce, Banded(stream));
+        return (RasterAccess.Streamed, WorkingBytesOf(stream, reduce, starts, pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1)));
     }
 
     private static Jpeg2000Components Mode(ReaderOptions options) => options is Jpeg2000ReaderOptions j ? j.Components : Jpeg2000Components.Color;
@@ -112,15 +136,16 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             if (pixels.Model == J2kModel.Sycc && PlaneFormat(stream, pixels) is (ChromaFormat format, int depth) && format != ChromaFormat.Yuv444)
             {
                 // Subsampled sYCC: chroma upsampled with the YUV kernels, as JPEG's is (design question 9).
+                // Into the natural type first, so any other type is the natural pixels converted, as streaming gives them.
                 if (depth == 8)
                 {
                     using YuvRaster<byte> planes = Planes<byte>(image, format, depth, input.Context);
-                    YuvConvert.ToRgb(planes, raster, Upsampling(options), input.CancellationToken);
+                    Natural<byte, Rgb8, TPixel>(planes, raster, input, options);
                 }
                 else
                 {
                     using YuvRaster<ushort> planes = Planes<ushort>(image, format, depth, input.Context);
-                    YuvConvert.ToRgb(planes, raster, Upsampling(options), input.CancellationToken);
+                    Natural<ushort, Rgb16, TPixel>(planes, raster, input, options);
                 }
             }
             else
@@ -160,6 +185,26 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
         }
 
         return image;
+    }
+
+    /// <summary>Converts YUV planes to RGB in <typeparamref name="TNatural"/>, then to <typeparamref name="TPixel"/> when that is another type.</summary>
+    private static void Natural<TSample, TNatural, TPixel>(YuvRaster<TSample> planes, Raster<TPixel> raster, EgamiInput input, ReaderOptions options)
+        where TSample : unmanaged
+        where TNatural : unmanaged, IPixelType<TNatural>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        if (typeof(TPixel) == typeof(TNatural))
+        {
+            YuvConvert.ToRgb(planes, raster, Upsampling(options), input.CancellationToken);
+            return;
+        }
+
+        using Raster<TNatural> natural = input.CreateRaster<TNatural>(raster.Width, raster.Height);
+        YuvConvert.ToRgb(planes, natural, Upsampling(options), input.CancellationToken);
+        for (int y = 0; y < raster.Height; y++)
+        {
+            PixelConvert.Convert<TNatural, TPixel>(natural.Row(y), raster.Row(y));
+        }
     }
 
     /// <summary>Converts the decoded samples to pixels, row by row, in bands on several threads for a large image.</summary>

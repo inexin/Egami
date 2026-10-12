@@ -139,11 +139,8 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
             StoredWidth = stream.Width - stream.OffsetX;
             StoredHeight = stream.Height - stream.OffsetY;
             MaxNativeScale = Jpeg2000Reader.MaxNativeScale(stream);
-            int scale = options.NativeScale is { } choose
-                ? choose(StoredWidth, StoredHeight)
-                : ReadPlan.Create(StoredWidth, StoredHeight, options.Region, options.MinimumSize, MaxNativeScale).NativeScale;
-            NativeScale = Math.Clamp(scale, 1, MaxNativeScale);
-            _reduce = System.Numerics.BitOperations.Log2((uint)NativeScale);
+            _reduce = Reduction(stream, options);
+            NativeScale = 1 << _reduce;
             input.Limits.CheckFrameSize(Math.Max(1, StoredWidth), Math.Max(1, StoredHeight));
             bool[] needed = _pixels.Needed(stream.Components.Length, stream.MainCod.Mct == 1);
             _grid = J2kGrid.Create(stream, _reduce, needed);
@@ -163,7 +160,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
 
             _yuv = _pixels.Model == J2kModel.Sycc && PlaneFormat(stream, _pixels) is (ChromaFormat format, _) && format != ChromaFormat.Yuv444;
             (_bandStarts, _bandRows) = Bands(stream, _reduce, !_yuv && Banded(stream));
-            long working = WorkingBytesOf(stream, _reduce, _bandStarts, _yuv, needed);
+            (Access, long working) = Holding(stream, _pixels, options);
             if (working > input.Limits.MaxTotalBytes)
             {
                 throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), input.Limits.MaxTotalBytes, working);
@@ -189,7 +186,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
 
         public override int? FrameCount => 1;
 
-        public override RasterAccess Access => _bandStarts.Length > 2 ? RasterAccess.Streamed : RasterAccess.Buffered;
+        public override RasterAccess Access { get; }
 
         public override long WorkingBytes { get; }
 
@@ -407,7 +404,7 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
     }
 
     /// <summary>Returns what streaming holds: one band's samples of every component and one tile's coefficients.</summary>
-    private static long WorkingBytesOf(J2kCodestream stream, int reduce, int[] bands, bool whole, bool[] needed)
+    private static long WorkingBytesOf(J2kCodestream stream, int reduce, int[] bands, bool[] needed)
     {
         int tallest = 0;
         for (int b = 0; b + 1 < bands.Length; b++)
@@ -430,12 +427,6 @@ internal sealed partial class Jpeg2000Reader : IRowSourceReader
         long tileWidth = J2kTier2.CeilShift(Math.Min(stream.TileWidth, stream.Width), reduce);
         long tileHeight = J2kTier2.CeilShift(Math.Min(stream.TileHeight, stream.Height), reduce);
         long tile = Math.Min(samples, tileWidth * tileHeight * stream.Components.Length);
-        long held = (samples + tile) * 4;
-        if (whole)
-        {
-            held += (long)J2kTier2.CeilShift(stream.Width, reduce) * J2kTier2.CeilShift(stream.Height, reduce) * 6;
-        }
-
-        return held;
+        return (samples + tile) * 4;
     }
 }
