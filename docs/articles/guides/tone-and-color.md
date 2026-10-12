@@ -78,7 +78,8 @@ one correction to many images.
 
 `WhiteBalance(temperature, tint)` corrects for a light of a known color temperature with the Bradford transform, as a raw
 editor's sliders do; `WhiteBalance(neutral)` makes a picked color gray; `AutoWhiteBalance` finds the cast itself
-(`WhiteBalanceMethod.GrayWorld`, ImageMagick's `-white-balance`, or `WhitePatch`).
+(`WhiteBalanceMethod.GrayWorld`, ImageMagick's `-white-balance`, or `WhitePatch`). Both fixed corrections are also filters,
+`ColorFilter.WhiteBalance(neutral)` and `ColorFilter.WhiteBalance(temperature, tint)`, so they can join a chain or a paint.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#white-balance)]
 

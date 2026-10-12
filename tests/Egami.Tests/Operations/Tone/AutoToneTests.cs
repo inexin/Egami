@@ -201,6 +201,23 @@ public class AutoToneTests
     }
 
     [Fact]
+    public void WhiteBalanceFiltersMatchTheSteps()
+    {
+        Rgba8 neutral = new(180, 150, 120, 255);
+        using Raster<Rgba8> stepped = Dull(40, 40), filtered = Dull(40, 40);
+        stepped.Apply(o => o.WhiteBalance(neutral).WhiteBalance(3200, 0.2f), Ct);
+        filtered.Apply(o => o.ApplyFilter(ColorFilter.WhiteBalance(neutral).Then(ColorFilter.WhiteBalance(3200, 0.2f))), Ct);
+        for (int y = 0; y < 40; y++)
+        {
+            Assert.True(stepped.Row(y).SequenceEqual(filtered.Row(y)), $"row {y}");
+        }
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => ColorFilter.WhiteBalance(new Rgba8(10, 0, 10, 255)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ColorFilter.WhiteBalance(1000));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ColorFilter.WhiteBalance(5000, 2));
+    }
+
+    [Fact]
     public void AutoWhiteBalanceRemovesACast()
     {
         foreach (WhiteBalanceMethod method in Enum.GetValues<WhiteBalanceMethod>())

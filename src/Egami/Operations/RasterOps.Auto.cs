@@ -82,10 +82,7 @@ public sealed partial class RasterOps
         return Add(new AutoGammaStep(linked, perFrame));
     }
 
-    /// <summary>
-    /// Makes <paramref name="neutral"/> a neutral gray of its own luminance by scaling red, green and blue in linear light, as a
-    /// photo editor's white-balance picker does.
-    /// </summary>
+    /// <summary>Applies <see cref="ColorFilter.WhiteBalance(Rgba8)"/>: makes <paramref name="neutral"/> a neutral gray of its own luminance.</summary>
     /// <param name="neutral">A color that should be gray, such as a gray card's pixels.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A channel of <paramref name="neutral"/> is 0, so no gain can make it gray.</exception>
@@ -94,24 +91,12 @@ public sealed partial class RasterOps
     /// </example>
     public RasterOps WhiteBalance(Rgba8 neutral)
     {
-        if (neutral.R == 0 || neutral.G == 0 || neutral.B == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(neutral), neutral, "Every channel of the neutral color must be above 0.");
-        }
-
-        return ApplyFilter(ToneMeasures.Gains(Srgb.ToLinear(neutral.R / 255.0), Srgb.ToLinear(neutral.G / 255.0), Srgb.ToLinear(neutral.B / 255.0)));
+        return ApplyFilter(ColorFilter.WhiteBalance(neutral));
     }
 
-    /// <summary>
-    /// Corrects for a light of <paramref name="temperature"/> kelvin, as a raw editor's temperature and tint sliders: the light's
-    /// white is adapted to D65 with the Bradford transform, in linear light. Use the light the photo was taken under: 3200 for
-    /// tungsten makes a tungsten-lit photo neutral.
-    /// </summary>
+    /// <summary>Applies <see cref="ColorFilter.WhiteBalance(float, float)"/>: corrects for a light of <paramref name="temperature"/> kelvin.</summary>
     /// <param name="temperature">The light's correlated color temperature, from 1,500 to 15,000 kelvin; 6504 changes almost nothing.</param>
-    /// <param name="tint">
-    /// The light's offset from a black body's color, from −1 to 1 (Δuv of ±0.05): positive for a greener light, which the correction
-    /// turns magenta, as Lightroom's positive tint.
-    /// </param>
+    /// <param name="tint">The light's offset from a black body's color, from −1 to 1; positive for a greener light.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An argument is out of range.</exception>
     /// <example>
@@ -119,17 +104,7 @@ public sealed partial class RasterOps
     /// </example>
     public RasterOps WhiteBalance(float temperature, float tint = 0)
     {
-        if (!(temperature >= 1500 && temperature <= 15000))
-        {
-            throw new ArgumentOutOfRangeException(nameof(temperature), temperature, "The temperature must be from 1,500 to 15,000 kelvin.");
-        }
-
-        if (!(tint >= -1 && tint <= 1))
-        {
-            throw new ArgumentOutOfRangeException(nameof(tint), tint, "The tint must be from -1 to 1.");
-        }
-
-        return ApplyFilter(ToneMeasures.Temperature(temperature, tint));
+        return ApplyFilter(ColorFilter.WhiteBalance(temperature, tint));
     }
 
     /// <summary>

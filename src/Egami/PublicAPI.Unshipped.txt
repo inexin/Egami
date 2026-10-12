@@ -2200,3 +2200,5 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Operations.Mask.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
 ~override Egami.Pixels.YuvColor.ToString() -> string
+static Egami.Operations.ColorFilter.WhiteBalance(Egami.Pixels.Rgba8 neutral) -> Egami.Operations.ColorFilter!
+static Egami.Operations.ColorFilter.WhiteBalance(float temperature, float tint = 0) -> Egami.Operations.ColorFilter!

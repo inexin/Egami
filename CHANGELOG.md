@@ -26,7 +26,8 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   `Within` and `OnChannels`, only the scope; across an animation, all frames at once unless `perFrame`. Their black and white
   points, gammas and levels equal ImageMagick's. `Raster.MeasureAutoLevel`, `MeasureContrastStretch`, `MeasureAutoGamma`,
   `MeasureWhiteBalance`, `MeasureEqualize` and `FindThreshold` return the filter or level without changing anything.
-- `WhiteBalance` by a picked neutral color or by color temperature and tint (Bradford adaptation to D65); `Clahe` (Zuiderveld's
+- `WhiteBalance` by a picked neutral color or by color temperature and tint (Bradford adaptation to D65), also as
+  `ColorFilter.WhiteBalance`; `Clahe` (Zuiderveld's
   CLAHE on L*, within the closeness gate of ImageMagick's `-clahe`); `LocalContrast` (ImageMagick's `-local-contrast`, within a
   level); and `AdaptiveThreshold` (Bradley and Roth) for unevenly lit pages.
 
