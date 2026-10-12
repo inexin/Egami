@@ -4,8 +4,8 @@ Egami.Svg reads SVG 1.1 and SVG 2 files into an editable element tree, saves the
 canvas, so the same document renders to a raster, to a PDF page or back out as SVG. It is fully managed and opens nothing
 outside the file unless you allow it.
 
-Phase 2.10 is landing: reading, saving, styles, drawing, filters and SVG output are in; text is arriving, and this guide
-grows with them.
+Egami.Svg is a preview package (1.0.0-preview.2): reading, saving, styles, drawing, filters, text, color fonts, SVG output and
+`Raster.Load` support are in, and its API may still change before 1.0.
 
 ## Loading
 

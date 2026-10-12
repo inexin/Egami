@@ -259,7 +259,7 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
-### Egami.Svg 1.0.0-preview.1 and Egami.Css 1.0.0-preview.1
+### Egami.Svg 1.0.0-preview.2 and Egami.Css 1.0.0-preview.2
 
 Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/articles/guides/css.md).
 
