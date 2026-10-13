@@ -100,11 +100,41 @@ public class DocumentHookTests
         Assert.True(replayed.Last!.Data.Span.SequenceEqual(jpeg.Data.Span));
     }
 
+    [Fact]
+    public void TheFallbackScalesMaskBlursWithTheRaster()
+    {
+        // A blurred rectangle through the fallback at 4 raster pixels per unit equals the same rectangle drawn at 4 times the size.
+        SolidPaint blurred = new(Rgba8.Black) { Blur = new MaskBlur(2) };
+        using FallbackCanvas page = new();
+        FallbackImage image = page.Fallback(c => c.FillRect(new RectF(10, 10, 20, 10), blurred), 4)!;
+        using Raster<Rgba8> direct = Pixels.Draw(160, 120, c => c.FillRect(new RectF(40, 40, 80, 40), blurred with { Blur = new MaskBlur(8) }), default(Rgba8));
+        using Raster<Rgba8> fallback = image.Image.As<Rgba8>();
+        Assert.Equal(160, fallback.Width);
+        Assert.True(Pixels.MaxDifference(direct, fallback) <= 1, $"{Pixels.MaxDifference(direct, fallback)}");
+    }
+
     private static byte[] Jpeg(Raster<Rgba8> raster)
     {
         using MemoryStream stream = new();
         raster.Save(stream, "jpeg");
         return stream.ToArray();
+    }
+
+    private sealed class FallbackCanvas() : Egami.Drawing.Canvas(40, 30)
+    {
+        public FallbackImage? Fallback(Action<Egami.Drawing.Canvas> draw, float scale) => RasterizeFallback(draw, scale);
+
+        protected override void OnClipPath(Path path, ClipOp op, bool antialias)
+        {
+        }
+
+        protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+        {
+        }
+
+        protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+        {
+        }
     }
 
     /// <summary>A document backend: it logs encoded images, annotations and marked content, and draws nothing else.</summary>

@@ -782,6 +782,9 @@ public abstract partial class Canvas : IDisposable
     /// Draws one call into a temporary raster instead, for a backend that cannot express it (a blend mode or paint its format lacks):
     /// the result covers the device clip bounds at <paramref name="scale"/> device pixels per unit and holds what the call draws,
     /// clipped to those bounds, over transparency; the backend then draws it as an image. Skia's PDF backend falls back the same way.
+    /// A paint's <see cref="Paint.Blur"/>, whose sigma is in device units, is scaled with the raster, so it keeps its size. A layer's
+    /// filter and backdrop chains run on the raster's pixels as they are: a chain with sizes in pixels (a blur radius, an offset)
+    /// should be built for the scale.
     /// </summary>
     /// <param name="draw">The call, made on a raster canvas set up with this canvas's transform.</param>
     /// <param name="scale">Raster pixels per device unit, such as 300 / 72 for a PDF page at 300 dpi.</param>
@@ -803,7 +806,7 @@ public abstract partial class Canvas : IDisposable
         }
 
         Raster<RgbaF32> image = Raster.Create<RgbaF32>(pixels.Width, pixels.Height);
-        using (RasterCanvas<RgbaF32> canvas = new(image))
+        using (RasterCanvas<RgbaF32> canvas = new(image) { BlurScale = scale })
         {
             canvas.SetMatrix(_state.Matrix * Matrix3x2.CreateScale(scale) * Matrix3x2.CreateTranslation(-pixels.X, -pixels.Y));
             draw(canvas);

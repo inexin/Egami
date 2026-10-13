@@ -394,7 +394,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
 
         if (paint.Blur is { Sigma: > 0 } blur)
         {
-            MaskBlurs.Fill(_tools, _edges, rule, antialias, blur, _clip.Bounds, sink);
+            MaskBlurs.Fill(_tools, _edges, rule, antialias, Scaled(blur), _clip.Bounds, sink);
         }
         else
         {
@@ -402,11 +402,19 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         }
     }
 
+    /// <summary>
+    /// Gets or sets how many of this canvas's pixels make one device pixel of the canvas it draws for: a fallback raster at 300 dpi
+    /// for a PDF page at 72 sets 300 / 72, so mask blurs, whose sigma is in device pixels, keep their size. 1 otherwise.
+    /// </summary>
+    internal float BlurScale { get; set; } = 1;
+
+    private MaskBlur Scaled(MaskBlur blur) => BlurScale == 1 || blur.Sigma <= 0 ? blur : new MaskBlur(MathF.Min(blur.Sigma * BlurScale, MaskBlur.MaxSigma), blur.Style);
+
     /// <summary>Whether a fill can take the exact blur: a normal blur, antialiased, under a scale and translation.</summary>
     private bool TryAnalyticBlur(Paint paint, out MaskBlur blur, out Matrix3x2 m)
     {
         m = Matrix;
-        blur = paint.Blur ?? default;
+        blur = Scaled(paint.Blur ?? default);
         return paint.Blur is { Sigma: > 0, Style: BlurStyle.Normal } && paint.Antialias && m.M12 == 0 && m.M21 == 0 && !_clip.Bounds.IsEmpty;
     }
 
