@@ -308,6 +308,11 @@ Two new preview packages at 0.1; their API may still change before 1.0. See [SVG
   custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts. It stays a preview
   until Egap's HTML reader has used it.
 
+### Egami.Fonts 0.1.0
+
+Egami.Fonts' first release, beside Egami.Drawing 0.1.0: everything in the 1.0.0 previews below, from reading faces to shaping
+and paragraph layout. Its API may still change while it is 0.x.
+
 ### Egami.Fonts 1.0.0-preview.4: paragraph layout
 
 Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same preview package. See
@@ -329,6 +334,12 @@ Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same previ
   Chromium's own, listed in the tests). Breaking 1 MB of mixed text takes 17 ms against the reference font library 2.1.3's 2.6 s;
   a 2,000-word page at three widths 7.8 ms against 118 ms; 10,000 hit tests 19 ms against 196 ms.
 - Fuzz target `paragraph`, and a robustness suite on the same harness.
+
+### Egami.Drawing 0.1.0
+
+Egami.Drawing's first release: everything in the 1.0.0 previews below, from the canvas and paths of 2.6.1 to the meshes,
+patches, pictures and document hooks of 2.6.4 and the text drawing since. Its API may still change while it is 0.x; 1.0 freezes
+it once Egap's PDF canvas has drawn real pages through the canvas hooks.
 
 ### Egami.Drawing 1.0.0-preview.7
 
