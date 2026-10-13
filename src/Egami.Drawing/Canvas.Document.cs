@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Operations;
+using Egami.Pixels;
 
 namespace Egami.Drawing;
 
@@ -164,6 +165,30 @@ public abstract partial class Canvas
     }
 
     /// <summary>
+    /// Paints through an image used as a mask, as PDF's stencil masks (/ImageMask): the mask, scaled to fill a local rectangle,
+    /// gives each pixel's coverage, and the paint fills what it covers. A mask with alpha covers by its alpha; one without, a 1-bit
+    /// or gray image, covers by its gray level, so white paints and black does not. Scanned text and icons are drawn this way.
+    /// </summary>
+    /// <param name="mask">The mask image.</param>
+    /// <param name="destination">Where the mask goes, in local coordinates.</param>
+    /// <param name="paint">What fills the covered pixels, with its blend mode, opacity and antialiasing of the rectangle's edges.</param>
+    /// <param name="sampling">How the mask is sampled; Egami's default sampling when <see langword="null"/>. Nearest keeps a 1-bit mask hard.</param>
+    /// <exception cref="ArgumentException"><paramref name="destination"/> is not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="image-mask"/>
+    /// </example>
+    public void DrawImageMask(Raster mask, RectF destination, Paint paint, SamplingOptions? sampling = null)
+    {
+        ArgumentNullException.ThrowIfNull(mask);
+        Check(paint);
+        CheckRect(destination, nameof(destination));
+        if (!destination.IsEmpty)
+        {
+            OnDrawImageMask(mask, destination, sampling ?? DefaultSampling, paint);
+        }
+    }
+
+    /// <summary>
     /// Marks an area with a link or a destination, as Skia's drawAnnotation: a PDF page writes a link annotation or a named
     /// destination; pixels show nothing. The area is in local coordinates, under the current transform.
     /// </summary>
@@ -225,6 +250,53 @@ public abstract partial class Canvas
     /// </example>
     protected virtual void OnDrawEncodedImage(EncodedImage image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
         => OnDrawImage(image.Decode(), source, destination, sampling, paint);
+
+    /// <summary>
+    /// Paints through an image mask. A PDF backend writes it as a stencil mask. By default the paint fills the rectangle in a layer
+    /// and the mask's coverage, as an image drawn with <see cref="BlendMode.DestinationIn"/>, cuts it out.
+    /// </summary>
+    /// <param name="mask">The mask image.</param>
+    /// <param name="destination">Where the mask goes, in local coordinates; not empty.</param>
+    /// <param name="sampling">How the mask is sampled.</param>
+    /// <param name="paint">What fills the covered pixels.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="image-mask"/>
+    /// </example>
+    protected virtual void OnDrawImageMask(Raster mask, RectF destination, SamplingOptions sampling, Paint paint)
+    {
+        using Raster<Rgba8> coverage = MaskCoverage(mask);
+        int count = SaveLayer(new LayerOptions { Bounds = destination, Opacity = paint.Opacity, BlendMode = paint.BlendMode });
+        try
+        {
+            FillRect(destination, paint with { BlendMode = BlendMode.SourceOver, Opacity = 1 });
+            DrawImage(coverage, destination, sampling, new SolidPaint(new RgbaF32(1, 1, 1, 1)) { BlendMode = BlendMode.DestinationIn, Antialias = paint.Antialias });
+        }
+        finally
+        {
+            RestoreToCount(count);
+        }
+    }
+
+    /// <summary>A mask's coverage as white with alpha: its own alpha when it has one, else its gray level.</summary>
+    private protected static Raster<Rgba8> MaskCoverage(Raster mask)
+    {
+        bool alpha = mask.Layout.HasAlpha;
+        using Raster<Rgba8> pixels = mask.As<Rgba8>();
+        Raster<Rgba8> coverage = Raster.Create<Rgba8>(mask.Width, mask.Height);
+        for (int y = 0; y < mask.Height; y++)
+        {
+            ReadOnlySpan<Rgba8> from = pixels.Row(y);
+            Span<Rgba8> to = coverage.Row(y);
+            for (int x = 0; x < from.Length; x++)
+            {
+                Rgba8 p = from[x];
+                byte a = alpha ? p.A : (byte)(((p.R * 54) + (p.G * 183) + (p.B * 19) + 128) >> 8);
+                to[x] = new Rgba8(255, 255, 255, a);
+            }
+        }
+
+        return coverage;
+    }
 
     /// <summary>Marks an area with a link or a destination. By default nothing happens: pixels show no annotations.</summary>
     /// <param name="area">The area, in local coordinates under <see cref="Matrix"/>.</param>

@@ -16,6 +16,12 @@ internal abstract class RasterTarget(Rect area) : IDisposable
     /// <summary>Gets the device rectangle the pixels cover.</summary>
     internal Rect Area { get; } = area;
 
+    /// <summary>
+    /// Gets or sets, for a knockout layer, a copy of what the layer started as: each call composites with it and replaces the layer
+    /// by its coverage. <see langword="null"/> for every other target.
+    /// </summary>
+    internal RasterTarget? KnockoutBackdrop { get; set; }
+
     /// <summary>Gets the size of one pixel, which decides when a fill bands across cores.</summary>
     internal abstract int BytesPerPixel { get; }
 
@@ -94,6 +100,19 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
     internal Span<TPixel> Row(int y, int x, int length) => _plane.Row(y - Area.Y).Slice(x - Area.X, length);
 
     internal override ISpanSink? CreateSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
+    {
+        // In a knockout layer the paint composites fully with the layer's first content, and the coverage only chooses how much of
+        // that result replaces what is there.
+        if (KnockoutBackdrop is RasterTarget backdrop)
+        {
+            ISpanSink? inner = CreatePaintSink(paint, matrix, colorSpace, null, 255);
+            return inner is null ? null : new KnockoutSink<TPixel>(this, backdrop, inner, mask, scale);
+        }
+
+        return CreatePaintSink(paint, matrix, colorSpace, mask, scale);
+    }
+
+    private ISpanSink? CreatePaintSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
     {
         if (paint is SolidPaint solid)
         {
@@ -204,6 +223,12 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
 
     internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
     {
+        if (KnockoutBackdrop is not null)
+        {
+            DrawImageAsPaint(tools, image, source, destination, matrix, sampling, paint, clip, mask);
+            return;
+        }
+
         BlendMode mode = paint?.BlendMode ?? BlendMode.SourceOver;
         float opacity = paint?.Opacity ?? 1;
         bool antialias = paint?.Antialias ?? true;
@@ -280,7 +305,31 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
         }
     }
 
-    public override void Dispose() => _owned?.Dispose();
+    public override void Dispose()
+    {
+        _owned?.Dispose();
+        KnockoutBackdrop?.Dispose();
+    }
+
+    /// <summary>Draws an image as an image paint filling its destination, so it goes through <see cref="CreateSink"/>: a knockout layer's way.</summary>
+    private void DrawImageAsPaint(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    {
+        Matrix3x2 imageToLocal = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height)
+            * Matrix3x2.CreateTranslation(destination.X, destination.Y);
+        ImagePaint fill = new(image, TileMode.Clamp, TileMode.Clamp, sampling)
+        {
+            LocalMatrix = imageToLocal,
+            BlendMode = paint?.BlendMode ?? BlendMode.SourceOver,
+            Opacity = paint?.Opacity ?? 1,
+        };
+        EdgeList edges = tools.Edges;
+        edges.Clear();
+        Flattener.Flatten(Path.Rect(destination), matrix, tools.Options.Tolerance, edges);
+        if (CreateSink(fill, matrix, tools.Options.ColorSpace, mask, 255) is ISpanSink sink)
+        {
+            tools.Rasterizer.Fill(edges, clip, FillRule.NonZero, paint?.Antialias ?? true, sink, BytesPerPixel);
+        }
+    }
 
     private static RasterTarget<TPixel> Layer(Rect area, EgamiContext context) => new(Raster.Create<TPixel>(area.Width, area.Height, context), area);
 

@@ -64,7 +64,7 @@ bottom-left. An enum is a `u8` with the value Egami's enum of that name has. Eve
 | --- | --- | --- |
 | 1 | Save | None |
 | 2 | Restore (also ends a layer) | None |
-| 3 | SaveLayer | Opacity `f32`, BlendMode, isolated `bool`, has-bounds `bool`, bounds rectangle if it has them |
+| 3 | SaveLayer | Opacity `f32`, BlendMode, a flags `u8` (1 isolated, 2 knockout), has-bounds `bool`, bounds rectangle if it has them |
 | 4 | SetMatrix | Matrix |
 | 5 | ClipRect | Rectangle, ClipOp, antialias `bool` |
 | 6 | ClipRoundRect | Round rectangle, ClipOp, antialias `bool` |
@@ -85,6 +85,7 @@ bottom-left. An enum is a `u8` with the value Egami's enum of that name has. Eve
 | 21 | DrawAnnotation | Area rectangle, AnnotationKind, the URL or name as a string |
 | 22 | BeginMarkedContent | Tag as a string, a flags `u8` (1 node id, 2 actual text, 4 alternate text), then the node id `i32` and the two strings for the flags set |
 | 23 | EndMarkedContent | None; every BeginMarkedContent in a drawing has its EndMarkedContent in the same drawing |
+| 24 | DrawImageMask | Image number `u32`, destination rectangle, sampling, paint |
 
 Coordinates are those the recorder's hooks received: local coordinates under the matrix last set. Replaying a drawing sets each
 recorded matrix after the matrix the drawing is replayed under. Text is written as `DrawPath` of its outlines, filled, since a

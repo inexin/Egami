@@ -134,6 +134,11 @@ internal sealed record class DrawEncodedImageCall(EncodedImage Image, RectF Sour
     internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawImage(Image, Source, Destination, Sampling, Paint);
 }
 
+internal sealed record class DrawImageMaskCall(Raster Mask, RectF Destination, SamplingOptions Sampling, Paint Paint) : DrawingCall
+{
+    internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawImageMask(Mask, Destination, Paint, Sampling);
+}
+
 internal sealed record class DrawAnnotationCall(RectF Area, Annotation Annotation) : DrawingCall
 {
     internal override void Replay(Canvas canvas, Matrix3x2 under) => canvas.DrawAnnotation(Area, Annotation);

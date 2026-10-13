@@ -107,6 +107,9 @@ public sealed class PictureRecorder : Canvas
     protected override void OnDrawEncodedImage(EncodedImage image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawEncodedImageCall(image, source, destination, sampling, paint));
 
     /// <inheritdoc/>
+    protected override void OnDrawImageMask(Raster mask, RectF destination, SamplingOptions sampling, Paint paint) => _calls.Add(new DrawImageMaskCall(mask, destination, sampling, paint));
+
+    /// <inheritdoc/>
     protected override void OnDrawAnnotation(RectF area, Annotation annotation) => _calls.Add(new DrawAnnotationCall(area, annotation));
 
     /// <inheritdoc/>

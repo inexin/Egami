@@ -144,6 +144,13 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             throw;
         }
 
+        if (options.Knockout)
+        {
+            RasterTarget first = parent.CreateLayer(area, _context);
+            first.CopyFrom(layer, area);
+            layer.KnockoutBackdrop = first;
+        }
+
         _layers.Push(new Layer(parent, layer, options, merge));
         _target = layer;
         _clip = new ClipState(area, null);

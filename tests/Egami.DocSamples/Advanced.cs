@@ -231,6 +231,18 @@ public class Advanced
         canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));
         #endregion
 
+        #region image-mask
+        // A 1-bit scan as a stencil: its white pixels paint in ink, its black ones leave the page as it is.
+        using Raster<Gray8> scan = Raster.Create(32, 16, new Gray8(255));
+        canvas.DrawImageMask(scan, new RectF(160, 20, 64, 32), new Rgba8(20, 40, 120, 255), new SamplingOptions { Filter = ResampleFilter.Nearest });
+
+        // A knockout group: each shape composites with what the group started as, so overlapping translucent shapes do not darken.
+        canvas.SaveLayer(new LayerOptions { Knockout = true });
+        canvas.FillCircle(new Vector2(180, 100), 20, new RgbaF32(1, 0, 0, 0.5f));
+        canvas.FillCircle(new Vector2(200, 100), 20, new RgbaF32(0, 0, 1, 0.5f));
+        canvas.Restore();
+        #endregion
+
         #region annotations
         // A layout engine marks links, destinations and structure while it draws; pixels show none of it.
         canvas.BeginMarkedContent(new MarkedContent("P") { NodeId = 12 });
@@ -239,7 +251,7 @@ public class Advanced
         canvas.EndMarkedContent();
         #endregion
 
-        Assert.Equal(5, canvas.Finish().CallCount);
+        Assert.Equal(10, canvas.Finish().CallCount);
     }
 
     [Fact]

@@ -210,9 +210,14 @@ internal sealed class EgdrReader
                     {
                         float opacity = F32();
                         BlendMode mode = Enum<BlendMode>();
-                        bool isolated = Bool();
+                        byte group = U8();
+                        if (group > 3)
+                        {
+                            throw Problem("a layer has unknown flags.");
+                        }
+
                         RectF? bounds = Bool() ? ReadRect() : null;
-                        return new SaveLayerCall(new LayerOptions { Opacity = opacity, BlendMode = mode, Isolated = isolated, Bounds = bounds });
+                        return new SaveLayerCall(new LayerOptions { Opacity = opacity, BlendMode = mode, Isolated = (group & 1) != 0, Knockout = (group & 2) != 0, Bounds = bounds });
                     }
 
                 case Egdr.Op.SetMatrix:
@@ -319,6 +324,14 @@ internal sealed class EgdrReader
                         }
 
                         return new DrawEncodedImageCall(image, source, destination, ReadSampling(), ReadOptionalPaint());
+                    }
+
+                case Egdr.Op.DrawImageMask:
+                    {
+                        Raster mask = ImageRef();
+                        RectF destination = ReadRect();
+                        SamplingOptions sampling = ReadSampling();
+                        return new DrawImageMaskCall(mask, destination, sampling, ReadPaint());
                     }
 
                 case Egdr.Op.DrawAnnotation:

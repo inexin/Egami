@@ -196,6 +196,10 @@ public class EgdrTests
         document.DrawImage(EncodedImage.FromBytes(jpeg.ToArray()), new RectF(4, 4, 64, 48));
         document.EndMarkedContent();
         document.DrawAnnotation(new RectF(4, 4, 64, 48), Annotation.Url("https://example.com/egami"));
+        document.SaveLayer(new LayerOptions { Knockout = true, Opacity = 0.9f });
+        document.FillRect(new RectF(70, 4, 40, 30), new RgbaF32(1, 0, 0, 0.5f));
+        document.DrawImageMask(image, new RectF(80, 10, 40, 30), new RgbaF32(0, 0, 1, 0.5f));
+        document.Restore();
         yield return document.Finish();
     }
 

@@ -128,6 +128,32 @@ public sealed partial class RasterCanvas<TPixel>
         }
     }
 
+    /// <inheritdoc/>
+    /// <remarks>The rectangle's coverage is multiplied by the mask's, sampled at each pixel, and the paint fills through it: no layer.</remarks>
+    protected override void OnDrawImageMask(Raster mask, RectF destination, SamplingOptions sampling, Paint paint)
+    {
+        if (_clip.Bounds.IsEmpty)
+        {
+            return;
+        }
+
+        using Raster<Rgba8> coverage = MaskCoverage(mask);
+        Matrix3x2 m = Matrix;
+        ImagePaint maskPaint = new(coverage, TileMode.Decal, TileMode.Decal, sampling)
+        {
+            LocalMatrix = Matrix3x2.CreateScale(destination.Width / mask.Width, destination.Height / mask.Height) * Matrix3x2.CreateTranslation(destination.X, destination.Y),
+        };
+        if (maskPaint.CreateShader(m, ColorSpace.Encoded) is not Shader shader
+            || _target.CreateSink(paint with { Blur = null }, m, Options.ColorSpace, _clip.Mask, 255) is not ISpanSink sink)
+        {
+            return;
+        }
+
+        _edges.Clear();
+        Flattener.Flatten(Path.Rect(destination), m, Options.Tolerance, _edges);
+        _rasterizer.Fill(_edges, _clip.Bounds, FillRule.NonZero, paint.Antialias, new MaskedSink(sink, shader), _target.BytesPerPixel);
+    }
+
     private void DrawMesh(Mesh mesh, Paint paint, BlendMode colorBlend, ReadOnlySpan<GradientStop> valueStops, ref ImageShader? images, Paint[]? trianglePaints = null)
     {
         if (_clip.Bounds.IsEmpty)

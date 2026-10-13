@@ -341,6 +341,8 @@ Egami.Drawing's first release: everything in the 1.0.0 previews below, from the 
 patches, pictures and document hooks of 2.6.4 and the text drawing since. Its API may still change while it is 0.x; 1.0 freezes
 it once Egap's PDF canvas has drawn real pages through the canvas hooks.
 
+- `LayerOptions.Knockout` for PDF's knockout groups and `DrawImageMask` (hook `OnDrawImageMask`) for its stencil masks, drawn
+  exactly by the raster backend; pictures and .egdr keep them (for Egap's PDF renderer).
 - `Canvas.RasterizeFallback` scales a paint's mask blur with the raster, so a blur drawn through a PDF page's fallback at
   300 dpi keeps its size; layer filter and backdrop chains run on the raster's pixels as they are (found by Egap's PDF canvas).
 

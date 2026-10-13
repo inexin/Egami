@@ -55,6 +55,7 @@ internal static class Egdr
         DrawAnnotation = 21,
         BeginMarkedContent = 22,
         EndMarkedContent = 23,
+        DrawImageMask = 24,
     }
 
     internal enum PaintKind : byte
@@ -232,7 +233,7 @@ internal sealed class EgdrWriter
 
                 b.F32(o.Opacity);
                 b.U8((byte)o.BlendMode);
-                b.Bool(o.Isolated);
+                b.U8((byte)((o.Isolated ? 1 : 0) | (o.Knockout ? 2 : 0)));
                 b.Bool(o.Bounds is not null);
                 if (o.Bounds is RectF bounds)
                 {
@@ -512,6 +513,18 @@ internal sealed class EgdrWriter
                     b.Rect(c.Destination);
                     b.Sampling(c.Sampling);
                     b.OptionalPaint(paint);
+                    break;
+                }
+
+            case DrawImageMaskCall c:
+                {
+                    int image = ImageIndex(c.Mask);
+                    Buffer paint = PaintBytes(c.Paint);
+                    b.Op(Egdr.Op.DrawImageMask);
+                    b.U32((uint)image);
+                    b.Rect(c.Destination);
+                    b.Sampling(c.Sampling);
+                    b.Append(paint);
                     break;
                 }
 

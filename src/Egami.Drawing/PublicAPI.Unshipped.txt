@@ -54,6 +54,7 @@ Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF destinat
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawImage(Egami.Raster! image, System.Numerics.Vector2 position, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawImageLattice(Egami.Raster! image, Egami.Drawing.Lattice! lattice, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
+Egami.Drawing.Canvas.DrawImageMask(Egami.Raster! mask, Egami.Drawing.RectF destination, Egami.Drawing.Paint! paint, Egami.Operations.SamplingOptions? sampling = null) -> void
 Egami.Drawing.Canvas.DrawImageNinePatch(Egami.Raster! image, Egami.Rect center, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.Canvas.DrawLine(System.Numerics.Vector2 start, System.Numerics.Vector2 end, Egami.Drawing.Stroke! stroke, Egami.Drawing.Paint! paint) -> void
 Egami.Drawing.Canvas.DrawMesh(Egami.Drawing.Mesh! mesh, Egami.Drawing.Paint! paint, Egami.Operations.BlendMode colorBlend = Egami.Operations.BlendMode.Modulate, System.ReadOnlySpan<Egami.Drawing.GradientStop> valueStops = default(System.ReadOnlySpan<Egami.Drawing.GradientStop>)) -> void
@@ -272,6 +273,8 @@ Egami.Drawing.LayerOptions.Filter.get -> System.Action<Egami.Operations.RasterOp
 Egami.Drawing.LayerOptions.Filter.init -> void
 Egami.Drawing.LayerOptions.Isolated.get -> bool
 Egami.Drawing.LayerOptions.Isolated.init -> void
+Egami.Drawing.LayerOptions.Knockout.get -> bool
+Egami.Drawing.LayerOptions.Knockout.init -> void
 Egami.Drawing.LayerOptions.LayerOptions() -> void
 Egami.Drawing.LayerOptions.Mask.get -> Egami.Drawing.SoftMask?
 Egami.Drawing.LayerOptions.Mask.init -> void
@@ -930,6 +933,7 @@ virtual Egami.Drawing.Canvas.OnDrawAnnotation(Egami.Drawing.RectF area, Egami.Dr
 virtual Egami.Drawing.Canvas.OnDrawAtlas(Egami.Raster! image, System.ReadOnlySpan<Egami.Drawing.SpriteTransform> transforms, System.ReadOnlySpan<Egami.Drawing.RectF> sources, System.ReadOnlySpan<Egami.Pixels.RgbaF32> colors, Egami.Operations.BlendMode colorBlend, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint? paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawEncodedImage(Egami.Drawing.EncodedImage! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint? paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun! run, System.Numerics.Vector2 origin, Egami.Drawing.Paint! paint) -> void
+virtual Egami.Drawing.Canvas.OnDrawImageMask(Egami.Raster! mask, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint! paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawLattice(Egami.Raster! image, Egami.Drawing.Lattice! lattice, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions! sampling, Egami.Drawing.Paint? paint) -> void
 virtual Egami.Drawing.Canvas.OnDrawMesh(Egami.Drawing.Mesh! mesh, Egami.Drawing.Paint! paint, Egami.Operations.BlendMode colorBlend, System.ReadOnlySpan<Egami.Drawing.GradientStop> valueStops) -> void
 virtual Egami.Drawing.Canvas.OnDrawOval(Egami.Drawing.RectF oval, Egami.Drawing.Stroke? stroke, Egami.Drawing.Paint! paint) -> void

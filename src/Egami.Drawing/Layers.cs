@@ -72,6 +72,14 @@ public sealed record class LayerOptions
     /// backdrop as Skia's InitWithPrevious does.
     /// </summary>
     public bool Isolated { get; init; } = true;
+
+    /// <summary>
+    /// Gets a value indicating whether the layer is a knockout group, as PDF's: each call drawn inside it composites with what the
+    /// layer started as, not with the calls before it, and replaces them where it covers, by its coverage. Overlapping translucent
+    /// shapes in a knockout group do not darken each other. Layers nested inside it merge as ordinary calls. Defaults to
+    /// <see langword="false"/>.
+    /// </summary>
+    public bool Knockout { get; init; }
 }
 
 /// <summary>Which value of a soft mask's drawing becomes the mask, as PDF's soft mask subtypes.</summary>

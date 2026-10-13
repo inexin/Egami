@@ -277,3 +277,89 @@ internal sealed class BufferSink(Memory<byte> buffer, Rect bounds) : ISpanSink
 
     private Span<byte> Row(int y) => buffer.Span.Slice((y - bounds.Y) * bounds.Width, bounds.Width);
 }
+
+/// <summary>
+/// Draws into a knockout layer: the inner sink composites each run fully onto a copy of the layer's first content, and the run's
+/// coverage (with the clip's) then mixes that result with what the layer holds, as PDF's knockout groups do.
+/// </summary>
+internal sealed class KnockoutSink<TPixel>(RasterTarget<TPixel> target, RasterTarget backdrop, ISpanSink inner, ClipMask? mask, byte scale) : ISpanSink
+    where TPixel : unmanaged, IPixelType<TPixel>
+{
+    public bool FillsDirectly => false;
+
+    public void Fill(int y, int x, int length, byte coverage, Span<byte> scratch)
+    {
+        Span<byte> row = scratch[..length];
+        row.Fill(coverage);
+        Blend(y, x, row);
+    }
+
+    public void Blend(int y, int x, Span<byte> coverage)
+    {
+        int n = coverage.Length;
+        if (mask is not null)
+        {
+            CoverageMath.Multiply(coverage, mask.Row(y).Slice(x - mask.Bounds.X, n));
+        }
+
+        if (scale != 255)
+        {
+            CoverageMath.Scale(coverage, scale);
+        }
+
+        Span<TPixel> row = target.Row(y, x, n);
+        PremulRgbaF32[] before = System.Buffers.ArrayPool<PremulRgbaF32>.Shared.Rent(n), after = System.Buffers.ArrayPool<PremulRgbaF32>.Shared.Rent(n);
+        byte[] full = System.Buffers.ArrayPool<byte>.Shared.Rent(n);
+        try
+        {
+            PixelConvert.Convert<TPixel, PremulRgbaF32>(row, before.AsSpan(0, n));
+            backdrop.ReadRow(y, x, row);
+            full.AsSpan(0, n).Fill(255);
+            inner.Blend(y, x, full.AsSpan(0, n));
+            PixelConvert.Convert<TPixel, PremulRgbaF32>(row, after.AsSpan(0, n));
+            for (int i = 0; i < n; i++)
+            {
+                float c = coverage[i] / 255f;
+                PremulRgbaF32 a = before[i], b = after[i];
+                after[i] = new PremulRgbaF32(a.R + ((b.R - a.R) * c), a.G + ((b.G - a.G) * c), a.B + ((b.B - a.B) * c), a.A + ((b.A - a.A) * c));
+            }
+
+            PixelConvert.Convert<PremulRgbaF32, TPixel>(after.AsSpan(0, n), row);
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<PremulRgbaF32>.Shared.Return(before);
+            System.Buffers.ArrayPool<PremulRgbaF32>.Shared.Return(after);
+            System.Buffers.ArrayPool<byte>.Shared.Return(full);
+        }
+    }
+}
+
+/// <summary>Multiplies each run's coverage by an image mask's alpha before passing it on: <see cref="Canvas.DrawImageMask"/>'s sink.</summary>
+internal sealed class MaskedSink(ISpanSink inner, Shader mask) : ISpanSink
+{
+    public bool FillsDirectly => false;
+
+    public void Fill(int y, int x, int length, byte coverage, Span<byte> scratch)
+    {
+        Span<byte> row = scratch[..length];
+        row.Fill(coverage);
+        Blend(y, x, row);
+    }
+
+    public void Blend(int y, int x, Span<byte> coverage)
+    {
+        Span<PremulRgbaF32> alpha = stackalloc PremulRgbaF32[Shader.Chunk];
+        for (int i = 0; i < coverage.Length; i += Shader.Chunk)
+        {
+            int n = Math.Min(Shader.Chunk, coverage.Length - i);
+            mask.Shade(y, x + i, alpha[..n]);
+            for (int k = 0; k < n; k++)
+            {
+                coverage[i + k] = (byte)MathF.Round(coverage[i + k] * Math.Clamp(alpha[k].A, 0, 1));
+            }
+        }
+
+        inner.Blend(y, x, coverage);
+    }
+}
