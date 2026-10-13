@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Egami.Svg</RootNamespace>
     <PackageId>Egami.Svg</PackageId>
-    <Version>1.0.0-preview.2</Version>
+    <Version>0.1.0-preview.1</Version>
     <Description>SVG for Egami: reads SVG 1.1 and SVG 2 files into an editable element tree, saves them back, and draws them through Egami.Drawing's canvas onto rasters, PDF pages or SVG, in managed code.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>

@@ -6,7 +6,7 @@ parser, Selectors 4 matching, the cascade with custom properties and `var()`, me
 `calc()`, transforms and fonts. Layout and the computed values of each property stay with the consumer: Egami.Css hands back
 component values, and the consumer reads them with the value parsers.
 
-Egami.Css is a preview package (1.0.0-preview.2); its API may still change.
+Egami.Css is a preview package (0.1.0-preview.1); its API may still change before 1.0.
 
 ## Parsing style sheets
 

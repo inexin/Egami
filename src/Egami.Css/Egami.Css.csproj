@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Egami.Css</RootNamespace>
     <PackageId>Egami.Css</PackageId>
-    <Version>1.0.0-preview.2</Version>
+    <Version>0.1.0-preview.1</Version>
     <Description>CSS for Egami: the CSS Syntax 3 tokenizer and parser, Selectors 4 matching, the cascade with custom properties and var(), media queries and value parsers (colors, lengths, calc(), transforms, fonts), in managed code with no dependencies.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>

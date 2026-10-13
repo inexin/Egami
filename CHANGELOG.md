@@ -259,9 +259,9 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
-### Egami.Svg 1.0.0-preview.2 and Egami.Css 1.0.0-preview.2
+### Egami.Svg 0.1.0-preview.1 and Egami.Css 0.1.0-preview.1
 
-Two new preview packages. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/articles/guides/css.md).
+Two new preview packages at 0.1; their API may still change before 1.0. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/articles/guides/css.md).
 
 - `SvgDocument` loads SVG and SVGZ into an editable tree of `SvgElement`, `SvgAttribute` and text, with a locked-down XML reader:
   internal DTD entities are capped, nothing outside the file is opened unless an `SvgLoadOptions.Resolver` allows it
