@@ -110,8 +110,9 @@ Drawing works from the render tree, `SvgDocument.RenderTree`: the elements with 
 copies expanded, paint servers, clip paths, masks and markers linked, and shapes turned into Egami.Drawing paths. It is built
 when the document is read and again after an edit, and it is immutable, so a document can be drawn on many threads at once.
 Its nodes are `SvgNode`s: `SvgGroup` for containers, `SvgPath` for shapes (fill, stroke and markers, in `SvgPaintOrder`),
-`SvgImage` for images, each with its transform, opacity, blend mode, `SvgClip`, `SvgMask` and `SvgFilter`, and a link back to
-its `SvgElement`.
+`SvgImage` for images and `SvgTextRun` for text, each with its transform, opacity, blend mode, `SvgClip`, `SvgMask` and
+`SvgFilter`, and a link back to its `SvgElement`. A later 1.x release may add node kinds, so a `switch` over nodes should keep a
+default case.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#render-tree)]
 

@@ -106,7 +106,7 @@ or 4 syntax, for consumers that follow an older specification.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#lengths)]
 
-`CssTransformList` reads the CSS `transform` property and SVG's `transform` attribute into `CssTransformFunction`s:
+`CssTransformList` reads the CSS `transform` property into `CssTransformFunction`s:
 `CssMatrixTransform`, `CssTranslateTransform`, `CssScaleTransform`, `CssRotateTransform` and `CssSkewTransform`. 3D functions
 become `CssUnsupportedTransform` and the matrix ignores them. `CssTransformOrigin` reads `transform-origin`.
 

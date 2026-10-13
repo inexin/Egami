@@ -723,7 +723,6 @@ static Egami.Css.CssTransformFunction.operator !=(Egami.Css.CssTransformFunction
 static Egami.Css.CssTransformFunction.operator ==(Egami.Css.CssTransformFunction? left, Egami.Css.CssTransformFunction? right) -> bool
 static Egami.Css.CssTransformList.TryParse(string! text, out Egami.Css.CssTransformList? list) -> bool
 static Egami.Css.CssTransformList.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssTransformList? list) -> bool
-static Egami.Css.CssTransformList.TryParseSvg(string! text, out Egami.Css.CssTransformList? list) -> bool
 static Egami.Css.CssTransformOrigin.Center.get -> Egami.Css.CssTransformOrigin
 static Egami.Css.CssTransformOrigin.operator !=(Egami.Css.CssTransformOrigin left, Egami.Css.CssTransformOrigin right) -> bool
 static Egami.Css.CssTransformOrigin.operator ==(Egami.Css.CssTransformOrigin left, Egami.Css.CssTransformOrigin right) -> bool

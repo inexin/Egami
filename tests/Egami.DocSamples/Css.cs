@@ -319,12 +319,11 @@ public class Css
     public void Transforms()
     {
         #region transforms
-        // CSS transforms, and SVG's transform attribute (unitless numbers, rotate about a center).
+        // A CSS transform list, its matrix, and the functions it holds.
         bool isTransform = CssTransformList.TryParse("translate(10px, 50%) rotate(45deg) scale(2)", out CssTransformList? css);
         Matrix3x2 matrix = css!.ToMatrix((length, isX) => length.Unit == CssUnit.Percent ? length.Value * (isX ? 2 : 1) : length.Value);
 
-        bool isSvgTransform = CssTransformList.TryParseSvg("translate(5 5) rotate(90 10 10) skewX(30)", out CssTransformList? svg);
-        foreach (CssTransformFunction function in svg!.Functions)
+        foreach (CssTransformFunction function in css.Functions)
         {
             string kind = function switch
             {
@@ -341,10 +340,10 @@ public class Css
         bool isOrigin = CssTransformOrigin.TryParse("left bottom", out CssTransformOrigin origin); // (0%, 100%, 0)
         #endregion
 
-        Assert.True(isTransform && isSvgTransform && isOrigin);
+        Assert.True(isTransform && isOrigin);
 
         Assert.Equal(10, matrix.M31, 1e-4f);
-        Assert.Equal(3, svg.Functions.Count);
+        Assert.Equal(3, css.Functions.Count);
         Assert.Equal(new CssLength(100, CssUnit.Percent), origin.Y);
     }
 

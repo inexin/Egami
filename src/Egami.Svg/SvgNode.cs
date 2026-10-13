@@ -13,7 +13,7 @@ namespace Egami.Svg;
 /// <remarks>
 /// <see cref="SvgDocument.RenderTree"/> builds the tree on first use after a load or an edit and caches it. Drawing walks it and
 /// calls only the public canvas API, so a raster canvas, a PDF page, <c>SvgCanvas</c> and a <see cref="PictureRecorder"/> receive
-/// the same calls.
+/// the same calls. A later 1.x release may add node kinds, so a <c>switch</c> over nodes should keep a default case.
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="render-tree"/>

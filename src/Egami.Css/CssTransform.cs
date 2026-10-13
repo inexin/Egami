@@ -163,7 +163,7 @@ public sealed class CssTransformList
     /// <param name="text">The attribute value, such as <c>translate(10 20) rotate(45 5 5)</c>.</param>
     /// <param name="list">The transform list.</param>
     /// <returns>True when valid; an invalid attribute means no transform.</returns>
-    public static bool TryParseSvg(string text, [NotNullWhen(true)] out CssTransformList? list)
+    internal static bool TryParseSvg(string text, [NotNullWhen(true)] out CssTransformList? list)
     {
         ArgumentNullException.ThrowIfNull(text);
         return TryParse(CssSyntax.ParseComponentValues(text, CssParseOptions.Default), svg: true, out list);
