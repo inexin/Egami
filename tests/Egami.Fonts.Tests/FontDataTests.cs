@@ -76,6 +76,94 @@ public class FontDataTests
         }
     }
 
+    [Fact]
+    public void ReservedDictOperatorsAreSkipped()
+    {
+        // pdf.js's bug1308536.pdf has a Type1C font whose DICT uses the reserved operator 25; FreeType, PDFium and pdf.js skip it.
+        byte[] original = TestFonts.Bytes("derived/SourceSans3-custom.cff");
+        byte[] patched = (byte[])original.Clone();
+        int at = TopDictStart(patched, out int end);
+        int op = -1;
+        for (int i = at; i < end;)
+        {
+            int b0 = patched[i];
+            if (b0 <= 21)
+            {
+                if (b0 is 0 or 1)
+                {
+                    op = i;
+                    break;
+                }
+
+                i += b0 == 12 ? 2 : 1;
+            }
+            else
+            {
+                i += b0 switch { 28 => 3, 29 => 5, 30 => RealLength(patched, i), >= 247 => 2, _ => 1 };
+            }
+        }
+
+        Assert.True(op > 0);
+        patched[op] = 25;
+        Typeface face = Typeface.FromCff(patched);
+        Typeface reference = Typeface.FromCff(original);
+        Assert.Equal(reference.GlyphCount, face.GlyphCount);
+        Assert.Equal(reference.GetGlyphExtents(5), face.GetGlyphExtents(5));
+
+        Cff.CffDict dict = Cff.CffDict.Read([139, 140, 31, 141, 255, 142, 17], 0);
+        Assert.Equal([3.0], dict.Get(17)!);
+    }
+
+    private static int TopDictStart(byte[] cff, out int end)
+    {
+        int at = SkipIndex(cff, cff[2]);
+        int count = (cff[at] << 8) | cff[at + 1];
+        int offSize = cff[at + 2];
+        int Offset(int k)
+        {
+            int value = 0;
+            for (int b = 0; b < offSize; b++)
+            {
+                value = (value << 8) | cff[at + 3 + (k * offSize) + b];
+            }
+
+            return value;
+        }
+
+        int dataStart = at + 3 + ((count + 1) * offSize) - 1;
+        end = dataStart + Offset(1);
+        return dataStart + Offset(0);
+    }
+
+    private static int SkipIndex(byte[] cff, int at)
+    {
+        int count = (cff[at] << 8) | cff[at + 1];
+        if (count == 0)
+        {
+            return at + 2;
+        }
+
+        int offSize = cff[at + 2];
+        int last = 0;
+        for (int b = 0; b < offSize; b++)
+        {
+            last = (last << 8) | cff[at + 3 + (count * offSize) + b];
+        }
+
+        return at + 3 + ((count + 1) * offSize) - 1 + last;
+    }
+
+    private static int RealLength(byte[] data, int at)
+    {
+        int i = at + 1;
+        while ((data[i] & 0xF) != 0xF && (data[i] >> 4) != 0xF)
+        {
+            i++;
+        }
+
+        return i - at + 1;
+    }
+
     internal static JsonElement Reference(string file)
     {
         string path = Path.Combine(TestFonts.Root, "tests", "reference", "fonts", "fontdata", file.Replace('/', '_') + ".json.gz");

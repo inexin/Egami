@@ -125,6 +125,7 @@ internal sealed class CffDict
     /// <summary>
     /// Reads a DICT. In CFF2 (<paramref name="regionCount"/> given) the operators vsindex (22), blend (23) and vstore (24) exist; a
     /// blend keeps its default values, and <paramref name="regionCount"/> says how many deltas each value has for a vsindex.
+    /// Reserved one-byte operators (22 to 27 in CFF, 25 to 27 in CFF2, 31 and 255) are skipped with their operands.
     /// </summary>
     public static CffDict Read(ReadOnlySpan<byte> data, long offset, Func<int, int>? regionCount = null)
     {
@@ -135,6 +136,14 @@ internal sealed class CffDict
         while (i < data.Length)
         {
             int b0 = data[i];
+            if (b0 is (>= 22 and <= 27) or 31 or 255 && !(regionCount is not null && b0 is 22 or 23 or 24))
+            {
+                // A reserved operator: dropped with its operands, as FreeType, PDFium and pdf.js read such fonts.
+                i++;
+                operands.Clear();
+                continue;
+            }
+
             if (b0 <= 21 || (regionCount is not null && b0 is 22 or 23 or 24))
             {
                 int op = b0;
