@@ -124,6 +124,8 @@ internal sealed class JxlVarDct
     /// <summary>Gets the dequantization matrices (for JPEG reconstruction).</summary>
     internal JxlHfGlobal? HfGlobal => _hf;
 
+    internal JxlVarDctGlobal Global => _global;
+
     /// <summary>Decodes the VarDCT part of LF group <paramref name="index"/>: the LF coefficients, then the HF metadata.</summary>
     internal void DecodeLfGroupCoefficients(JxlBitReader r, int index, JxlTree? tree, int numLf)
     {

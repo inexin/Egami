@@ -70,9 +70,9 @@ internal static class JxlColor
             case 1:
                 for (int i = 0; i < count; i++)
                 {
+                    // Negative values stay on the linear segment, as libjxl and jxl-oxide encode them.
                     float v = plane[i];
-                    float a = MathF.Abs(v);
-                    plane[i] = MathF.CopySign(a < 0.018053968510807f ? 4.5f * a : (1.09929682680944f * MathF.Pow(a, 0.45f)) - 0.09929682680944f, v);
+                    plane[i] = v <= 0.018f ? 4.5f * v : (1.099f * MathF.Pow(v, 0.45f)) - 0.099f;
                 }
 
                 return;

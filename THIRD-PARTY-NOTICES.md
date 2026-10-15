@@ -346,7 +346,9 @@ channels into global, LF group and pass group streams) from its jxl-modular and 
 (`JxlVarDctHeaders.cs`, `JxlDequantMatrices.cs`, `JxlVarDct.cs`, `JxlDct.cs`: block contexts, coefficient orders, the default
 and coded dequantization matrices, HF coefficient contexts, chroma from luma, adaptive LF smoothing, the DCTs and the DCT2, DCT4,
 Hornuss, DCT4x8 and AFV transforms with the AFV basis), the restoration filters and upsampling (`JxlFilters.cs`, with the default
-upsampling weights) and the XYB conversion (`JxlColor.cs`) from its jxl-vardct, jxl-render, jxl-image and jxl-color crates. It is distributed under the MIT license (or Apache-2.0); the MIT
+upsampling weights) the XYB conversion (`JxlColor.cs`) and the patches, splines and noise (`JxlFeatures.cs`: the patch dictionary and patch
+blending, spline dequantization, Catmull-Rom sampling and drawing with its error function approximation, and the noise
+generator, filter and strength table) from its jxl-vardct, jxl-frame, jxl-render, jxl-image and jxl-color crates. It is distributed under the MIT license (or Apache-2.0); the MIT
 terms:
 
     Copyright (c) Wonwoo Choi and the jxl-oxide contributors

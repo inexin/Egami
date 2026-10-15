@@ -139,19 +139,29 @@ internal static class JxlImageDecoder
     {
         JxlImageHeader h = file.Header;
         float[][]?[] lfFrames = new float[4][][];
+        JxlPlanes?[] references = new JxlPlanes?[4];
         int displayed = file.Frames.Count(f => f.IsNormal);
+        int visible = 0;
+        int invisible = 0;
         for (int i = 0; i < file.Frames.Count; i++)
         {
             input.CancellationToken.ThrowIfCancellationRequested();
             JxlFrameHeader f = file.Frames[i];
-            if (f.Type == JxlFrameType.Lf)
+
+            // The frame's place in the sequence seeds its noise.
+            if (f.IsKeyFrame)
             {
-                JxlFrameChannels lf = new JxlFrameDecoder(codestream, h, f, file.Tocs[i], file.SectionOffsets[i], input.Limits).Decode(lfFrames[f.LfLevel]);
-                lfFrames[f.LfLevel - 1] = XybPlanes(lf, h);
-                continue;
+                visible++;
+                invisible = 0;
+            }
+            else
+            {
+                invisible++;
             }
 
-            if (f.Type == JxlFrameType.ReferenceOnly || displayed != 1 || f.HaveCrop || f.Blending.Mode != JxlBlendMode.Replace)
+            bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
+            if ((f.IsNormal && (displayed != 1 || f.HaveCrop || f.Blending.Mode != JxlBlendMode.Replace))
+                || (referenced && !f.SaveBeforeColorTransform))
             {
                 throw new UnsupportedFormatException("Egami does not decode JPEG XL animations, layers or crops yet.");
             }
@@ -162,22 +172,34 @@ internal static class JxlImageDecoder
             }
 
             JxlFrameChannels frame = new JxlFrameDecoder(codestream, h, f, file.Tocs[i], file.SectionOffsets[i], input.Limits).Decode(lfFrames[f.LfLevel]);
-            return Finish(file, f, frame, h);
+            if (file.Frames.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
+                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1))
+            {
+                // Lossless Modular: keep the integers, so 8 and 16-bit output is exact.
+                return new JxlDecoded(file, f.Width, f.Height, frame);
+            }
+
+            JxlPlanes planes = Render(f, frame, h, references, visible, invisible);
+            if (f.Type == JxlFrameType.Lf)
+            {
+                lfFrames[f.LfLevel - 1] = planes.Planes[..3];
+                continue;
+            }
+
+            if (referenced)
+            {
+                references[f.SaveAsReference] = f.IsNormal ? planes.Copy() : planes;
+            }
+
+            if (f.IsNormal)
+            {
+                float[][] color = planes.Planes[..3];
+                ToColorSpace(color, planes.Width * planes.Height, h);
+                return new JxlDecoded(file, planes.Width, planes.Height, color, planes.Planes[3..]);
+            }
         }
 
         throw new CorruptDataException(JxlFormat.Info.Name, -1, "The codestream has no frame to show.");
-    }
-
-    /// <summary>Gets an LF frame's X, Y and B at its coded size.</summary>
-    private static float[][] XybPlanes(JxlFrameChannels lf, JxlImageHeader h)
-    {
-        int count = lf.Width * lf.Height;
-        if (lf.ColorPlanes is float[][] planes)
-        {
-            return [.. planes.Select((p, c) => Crop(p, lf.ColorStrides[c], lf.Width, lf.Height))];
-        }
-
-        return ModularXyb(lf, count);
     }
 
     /// <summary>Converts a Modular XYB frame's integer Y, X and B into X, Y and B floats (B coded as B - Y).</summary>
@@ -216,19 +238,15 @@ internal static class JxlImageDecoder
         return output;
     }
 
-    /// <summary>Runs the filters and upsampling, and converts color, on a decoded frame.</summary>
-    private static JxlDecoded Finish(JxlFile file, JxlFrameHeader f, JxlFrameChannels frame, JxlImageHeader h)
+    /// <summary>
+    /// Renders a decoded frame up to its color transform, in libjxl's order: the restoration filters, extra channel upsampling,
+    /// patches, splines, color upsampling, then noise. LF frames stay at their coded size.
+    /// </summary>
+    private static JxlPlanes Render(JxlFrameHeader f, JxlFrameChannels frame, JxlImageHeader h, JxlPlanes?[] references, int visible, int invisible)
     {
         int width = frame.Width;
         int height = frame.Height;
-        bool filters = f.Gaborish || f.EpfIterations > 0;
         bool xyb = h.XybEncoded;
-        if (frame.ColorPlanes is null && !xyb && !filters && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1))
-        {
-            // Lossless Modular: keep the integers, so 8 and 16-bit output is exact.
-            return new JxlDecoded(file, f.Width, f.Height, frame);
-        }
-
         float[][] color;
         int count = width * height;
         if (frame.ColorPlanes is float[][] planes)
@@ -268,48 +286,13 @@ internal static class JxlImageDecoder
             JxlFilters.Epf(color, width, height, width, f.LoopFilter, sigma is null ? (_, _) => modularSigma : (bx, by) => sigma[(by * blocksX) + bx]);
         }
 
-        int outWidth = f.Width;
-        int outHeight = f.Height;
-        if (f.Upsampling > 1)
-        {
-            for (int c = 0; c < 3; c++)
-            {
-                color[c] = Crop(JxlFilters.Upsample(color[c], width, height, width, f.Upsampling, h), width * f.Upsampling, outWidth, outHeight);
-            }
-        }
+        (int outWidth, int outHeight) = f.Type == JxlFrameType.Lf ? (width, height) : (f.Width, f.Height);
 
-        int outCount = outWidth * outHeight;
-        if (xyb)
-        {
-            JxlColor.XybToLinear(color, outCount, h);
-            if (!JxlColor.TransferOnly(h.Color))
-            {
-                throw new UnsupportedFormatException("Egami does not convert JPEG XL XYB to this color space yet.");
-            }
-
-            if (h.ColorChannels == 1)
-            {
-                // Gray: the luminance of linear sRGB.
-                for (int i = 0; i < outCount; i++)
-                {
-                    color[1][i] = (0.2126f * color[0][i]) + (0.7152f * color[1][i]) + (0.0722f * color[2][i]);
-                }
-
-                color = [color[1], color[1], color[1]];
-                JxlColor.Encode(color[0], outCount, h.Color);
-            }
-            else
-            {
-                for (int c = 0; c < 3; c++)
-                {
-                    JxlColor.Encode(color[c], outCount, h.Color);
-                }
-            }
-        }
-
-        // Extra channels: as floats, upsampled to the frame's full size where they were coded smaller.
-        List<float[]> extras = [];
-        for (int e = 0; e < h.ExtraChannels.Count; e++)
+        // Extra channels: as floats, upsampled to the frame's full size where they were coded smaller; with the color channels when
+        // they all share its factor, before the patches otherwise.
+        bool late = f.Upsampling != 1 && f.ExtraChannelUpsampling.All(u => u == f.Upsampling);
+        float[][] extras = new float[h.ExtraChannels.Count][];
+        for (int e = 0; e < extras.Length; e++)
         {
             JxlChannel c = frame.Channels[frame.ExtraStart + e];
             float[] plane = new float[c.Width * c.Height];
@@ -319,15 +302,88 @@ internal static class JxlImageDecoder
             }
 
             int factor = f.ExtraChannelUpsampling[e];
-            if (factor > 1)
+            if (factor > 1 && !late)
             {
                 plane = Crop(JxlFilters.Upsample(plane, c.Width, c.Height, c.Width, factor, h), c.Width * factor, outWidth, outHeight);
             }
 
-            extras.Add(plane);
+            extras[e] = plane;
         }
 
-        return new JxlDecoded(file, outWidth, outHeight, color, extras);
+        bool colorFeatures = xyb || h.ColorChannels == 3;
+        if (frame.Patches is not null || frame.Splines is not null)
+        {
+            if (f.Upsampling != 1 && !late)
+            {
+                throw new CorruptDataException(JxlFormat.Info.Name, -1, "A frame with patches or splines upsamples its extra channels differently from its color.");
+            }
+
+            JxlPlanes coded = new(width, height, [.. color, .. extras]);
+            if (frame.Patches is JxlPatch[] patches)
+            {
+                JxlFeatures.ApplyPatches(coded, patches, references, h);
+            }
+
+            if (frame.Splines is JxlSplines splines && colorFeatures)
+            {
+                JxlFeatures.RenderSplines(coded, splines, frame.Correlation.X, frame.Correlation.B);
+            }
+        }
+
+        if (f.Upsampling > 1)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                color[c] = Crop(JxlFilters.Upsample(color[c], width, height, width, f.Upsampling, h), width * f.Upsampling, outWidth, outHeight);
+            }
+
+            for (int e = 0; e < extras.Length && late; e++)
+            {
+                extras[e] = Crop(JxlFilters.Upsample(extras[e], width, height, width, f.Upsampling, h), width * f.Upsampling, outWidth, outHeight);
+            }
+        }
+
+        JxlPlanes result = new(outWidth, outHeight, [.. color, .. extras]);
+        if (frame.Noise is float[] noise && colorFeatures)
+        {
+            JxlFeatures.RenderNoise(result, noise, f.GroupDim, visible, invisible, frame.Correlation.X, frame.Correlation.B);
+        }
+
+        return result;
+    }
+
+    /// <summary>Converts XYB to the file's color space in place; other color is already there.</summary>
+    private static void ToColorSpace(float[][] color, int count, JxlImageHeader h)
+    {
+        if (!h.XybEncoded)
+        {
+            return;
+        }
+
+        JxlColor.XybToLinear(color, count, h);
+        if (!JxlColor.TransferOnly(h.Color))
+        {
+            throw new UnsupportedFormatException("Egami does not convert JPEG XL XYB to this color space yet.");
+        }
+
+        if (h.ColorChannels == 1)
+        {
+            // Gray: the luminance of linear sRGB.
+            for (int i = 0; i < count; i++)
+            {
+                color[1][i] = (0.2126f * color[0][i]) + (0.7152f * color[1][i]) + (0.0722f * color[2][i]);
+            }
+
+            JxlColor.Encode(color[1], count, h.Color);
+            color[0] = color[1];
+            color[2] = color[1];
+            return;
+        }
+
+        for (int c = 0; c < 3; c++)
+        {
+            JxlColor.Encode(color[c], count, h.Color);
+        }
     }
 
     private static Raster<TPixel> Fill<TPixel>(EgamiInput input, JxlDecoded d)
@@ -459,7 +515,7 @@ internal static class JxlImageDecoder
             Ints = ints;
         }
 
-        internal JxlDecoded(JxlFile file, int width, int height, float[][] color, List<float[]> extras)
+        internal JxlDecoded(JxlFile file, int width, int height, float[][] color, float[][] extras)
         {
             File = file;
             Width = width;
@@ -478,7 +534,7 @@ internal static class JxlImageDecoder
 
         internal float[][]? Color { get; private set; }
 
-        internal List<float[]>? Extras { get; private set; }
+        internal float[][]? Extras { get; private set; }
 
         /// <summary>Turns the integer form into floats, unclamped.</summary>
         internal void ForceFloat()
@@ -503,7 +559,7 @@ internal static class JxlImageDecoder
                 Color[c] = plane;
             }
 
-            Extras = [];
+            Extras = new float[h.ExtraChannels.Count][];
             for (int e = 0; e < h.ExtraChannels.Count; e++)
             {
                 int[] data = ints.Channels[ints.ExtraStart + e].Data;
@@ -513,7 +569,7 @@ internal static class JxlImageDecoder
                     plane[i] = Float(data[i], h.ExtraChannels[e].BitDepth);
                 }
 
-                Extras.Add(plane);
+                Extras[e] = plane;
             }
 
             Ints = null;

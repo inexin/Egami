@@ -36,6 +36,17 @@ internal sealed class JxlFrameChannels
 
     /// <summary>Gets the VarDCT state, for the EPF sigmas and JPEG reconstruction.</summary>
     internal JxlVarDct? VarDct { get; init; }
+
+    /// <summary>Gets the frame's patches, or <see langword="null"/>.</summary>
+    internal JxlPatch[]? Patches { get; init; }
+
+    internal JxlSplines? Splines { get; init; }
+
+    /// <summary>Gets the noise intensity table, or <see langword="null"/> when the frame has no noise.</summary>
+    internal float[]? Noise { get; init; }
+
+    /// <summary>Gets the X and B correlation with Y that splines and noise use: the VarDCT one, or 0 and 1.</summary>
+    internal (float X, float B) Correlation => (VarDct?.Global.BaseCorrelationX ?? 0, VarDct?.Global.BaseCorrelationB ?? 1);
 }
 
 /// <summary>
@@ -68,17 +79,15 @@ internal sealed class JxlFrameDecoder
     /// <summary>Decodes the whole frame; <paramref name="lfFrame"/> is the LF frame's X, Y and B when the frame uses one.</summary>
     internal JxlFrameChannels Decode(float[][]? lfFrame)
     {
-        if ((_frame.Flags & 0x13) != 0)
-        {
-            throw new UnsupportedFormatException("Egami does not decode JPEG XL patches, splines or noise yet.");
-        }
-
         (long w, long h) = _frame.CodedSize;
         int width = (int)w;
         int height = (int)h;
 
         // LF global: dequantization multipliers, the VarDCT globals, the global tree and the global Modular stream.
         JxlBitReader r = Section(0);
+        JxlPatch[]? patches = (_frame.Flags & 0x02) != 0 ? JxlFeatures.ReadPatches(r, _image, _frame) : null;
+        JxlSplines? splines = (_frame.Flags & 0x10) != 0 ? JxlFeatures.ReadSplines(r, _frame) : null;
+        float[]? noise = (_frame.Flags & 0x01) != 0 ? JxlFeatures.ReadNoise(r) : null;
         float[] lfDequant = [1f / 32, 1f / 4, 1f / 2];
         if (!r.ReadBool())
         {
@@ -89,6 +98,11 @@ internal sealed class JxlFrameDecoder
         if (!_frame.Modular)
         {
             varDct = new JxlVarDct(_image, _frame, JxlVarDctGlobal.Read(r), lfDequant, _limits);
+        }
+
+        if (splines is not null)
+        {
+            JxlFeatures.CheckSplineArea(splines, varDct?.Global.BaseCorrelationX ?? 0, varDct?.Global.BaseCorrelationB ?? 1, (long)_frame.Width * _frame.Height);
         }
 
         int colorChannels = !_image.XybEncoded && !_frame.YCbCr && _image.ColorChannels == 1 ? 1 : 3;
@@ -198,7 +212,7 @@ internal sealed class JxlFrameDecoder
         global.Inverse(r);
         if (varDct is null)
         {
-            return new JxlFrameChannels(width, height, global.Channels, colorChannels, extraStart) { LfDequant = lfDequant };
+            return new JxlFrameChannels(width, height, global.Channels, colorChannels, extraStart) { LfDequant = lfDequant, Patches = patches, Splines = splines, Noise = noise };
         }
 
         float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null);
@@ -208,6 +222,9 @@ internal sealed class JxlFrameDecoder
             ColorStrides = [varDct.PlaneBlocksX(0) * 8, varDct.PlaneBlocksX(1) * 8, varDct.PlaneBlocksX(2) * 8],
             LfDequant = lfDequant,
             VarDct = varDct,
+            Patches = patches,
+            Splines = splines,
+            Noise = noise,
         };
     }
 
