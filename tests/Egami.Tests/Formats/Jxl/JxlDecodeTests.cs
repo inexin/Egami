@@ -61,6 +61,12 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
             {
                 float[] a = Orient(Floats(egami, null, frame), egami.Width, egami.Height, egami.Layout.ChannelCount, orientation);
                 float[] b = Floats(djxl, egami.Layout.ChannelCount, frame);
+                if (((Egami.Formats.Jxl.JxlDetails)egami.Metadata.FormatDetails!).ExtraChannels.Any(e => e.AlphaPremultiplied))
+                {
+                    // djxl writes premultiplied color as coded; Load gives it straight (design question 7), so compare the coded channels.
+                    a = Coded(Path.Combine(Corpus, file), frame, egami.Layout.ChannelCount);
+                }
+
                 Assert.Equal(b.Length, a.Length);
                 for (int i = 0; i < a.Length; i++)
                 {
@@ -92,13 +98,14 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
 
         string folder = Path.Combine(cache, "conformance", "testcases", name[12..]);
         using JsonDocument spec = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(folder, "test.json")));
-        Raster egami;
+        byte[] data = File.ReadAllBytes(Path.Combine(folder, "input.jxl"));
+        List<Egami.Formats.Jxl.JxlPlanes> frames;
         try
         {
-            // Float output keeps samples outside 0 to 1, as the reference images do.
-            using FileStream stream = File.OpenRead(Path.Combine(folder, "input.jxl"));
+            // Raw float channels, unclamped, as the reference images are.
+            using MemoryStream stream = new(data);
             EgamiInput input = new(stream, EgamiContext.Default, TestContext.Current.CancellationToken);
-            egami = Egami.Formats.Jxl.JxlImageDecoder.DecodeFloat(input);
+            frames = Egami.Formats.Jxl.JxlImageDecoder.DecodeChannels(input);
             input.Dispose();
         }
         catch (UnsupportedFormatException e)
@@ -107,35 +114,63 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
             return;
         }
 
-        using (egami)
+        // The references are upright.
+        int orientation = JxlInfoText.Read(data).Header.Orientation;
+        JxlReferenceTests.Npy reference = JxlReferenceTests.Npy.Read(Path.Combine(folder, "reference_image.npy"));
+        int width = frames[0].Width;
+        int height = frames[0].Height;
+        (int ow, int oh) = orientation > 4 ? (height, width) : (width, height);
+        int channels = reference.Shape[3];
+        Assert.Equal((reference.Shape[0], reference.Shape[2], reference.Shape[1], channels), (frames.Count, ow, oh, frames[0].Planes.Length));
+        int pixels = width * height;
+        for (int f = 0; f < frames.Count; f++)
         {
-            JxlReferenceTests.Npy reference = JxlReferenceTests.Npy.Read(Path.Combine(folder, "reference_image.npy"));
-            // The references are upright.
-            int orientation = (int)(egami.Metadata.Exif?.Orientation ?? Egami.Metadata.ImageOrientation.Normal);
-            (int ow, int oh) = orientation > 4 ? (egami.Height, egami.Width) : (egami.Width, egami.Height);
-            Assert.Equal((reference.Shape[0], reference.Shape[2], reference.Shape[1]), (egami.FrameCount, ow, oh));
-            int channels = reference.Shape[3];
-            int pixels = egami.Width * egami.Height;
-            for (int f = 0; f < egami.FrameCount; f++)
+            JsonElement frame = spec.RootElement.GetProperty("frames")[f];
+            float[] interleaved = new float[pixels * channels];
+            for (int i = 0; i < pixels; i++)
             {
-                JsonElement frame = spec.RootElement.GetProperty("frames")[f];
-                float[] ours = Orient(Floats(egami, channels, f), egami.Width, egami.Height, channels, orientation);
-                double peak = 0;
-                double[] squares = new double[channels];
-                int start = f * pixels * channels;
-                for (int i = 0; i < pixels * channels; i++)
+                for (int c = 0; c < channels; c++)
                 {
-                    double d = Math.Abs(ours[i] - reference.Data[start + i]);
-                    peak = Math.Max(peak, d);
-                    squares[i % channels] += d * d;
+                    interleaved[(i * channels) + c] = frames[f].Planes[c][i];
                 }
+            }
 
-                double rms = squares.Max(s => Math.Sqrt(s / pixels));
-                output.WriteLine($"{name} frame {f}: peak {peak}, RMS {rms}");
-                Assert.True(peak <= frame.GetProperty("peak_error").GetDouble(), $"frame {f} peak {peak}");
-                Assert.True(rms <= frame.GetProperty("rms_error").GetDouble(), $"frame {f} RMS {rms}");
+            float[] ours = Orient(interleaved, width, height, channels, orientation);
+            double peak = 0;
+            double[] squares = new double[channels];
+            int start = f * pixels * channels;
+            for (int i = 0; i < pixels * channels; i++)
+            {
+                double d = Math.Abs(ours[i] - reference.Data[start + i]);
+                peak = Math.Max(peak, d);
+                squares[i % channels] += d * d;
+            }
+
+            double rms = squares.Max(s => Math.Sqrt(s / pixels));
+            output.WriteLine($"{name} frame {f}: peak {peak}, RMS {rms}");
+            Assert.True(peak <= frame.GetProperty("peak_error").GetDouble(), $"frame {f} peak {peak}");
+            Assert.True(rms <= frame.GetProperty("rms_error").GetDouble(), $"frame {f} RMS {rms}");
+        }
+    }
+
+    /// <summary>Gets one frame's coded channels, interleaved and rounded to 8 bits as a PNG would hold them.</summary>
+    private static float[] Coded(string path, int frame, int channels)
+    {
+        using FileStream stream = File.OpenRead(path);
+        EgamiInput input = new(stream, EgamiContext.Default, TestContext.Current.CancellationToken);
+        Egami.Formats.Jxl.JxlPlanes planes = Egami.Formats.Jxl.JxlImageDecoder.DecodeChannels(input)[frame];
+        input.Dispose();
+        int pixels = planes.Width * planes.Height;
+        float[] values = new float[pixels * channels];
+        for (int i = 0; i < pixels; i++)
+        {
+            for (int c = 0; c < channels; c++)
+            {
+                values[(i * channels) + c] = MathF.Round(Math.Clamp(planes.Planes[c][i], 0, 1) * 255) / 255;
             }
         }
+
+        return values;
     }
 
     /// <summary>Turns samples the way an EXIF orientation says (djxl's references are upright).</summary>

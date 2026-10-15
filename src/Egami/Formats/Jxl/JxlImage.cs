@@ -1,3 +1,5 @@
+using Egami.Pixels;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>Reads what JPEG XL holds besides the image Load gives: the layers before blending, and the preview.</summary>
@@ -70,6 +72,45 @@ public static class JxlImage
         ReaderOptions read = (options ?? ReaderOptions.Default) with { Format = JxlFormat.Info };
         return FormatPipeline.Run(stream, context ?? EgamiContext.Default, read, (_, input) => JxlImageDecoder.DecodePreview(input, read), CancellationToken.None);
     }
+
+    /// <summary>
+    /// Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image
+    /// size: as stored, scaled to 0 to 1 for integer samples, with a frame for each frame Load shows.
+    /// </summary>
+    /// <param name="path">The file.</param>
+    /// <param name="index">The channel's index in <see cref="JxlDetails.ExtraChannels"/>.</param>
+    /// <param name="options">The general options, with the frame range.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <returns>The channel's samples. The caller must dispose it.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">The image has no extra channel <paramref name="index"/>.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules, including data of another format.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="extra-channels"/>
+    /// </example>
+    public static Raster<GrayF32> ReadExtraChannel(string path, int index, ReaderOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        using FileStream stream = File.OpenRead(path);
+        return ReadExtraChannel(stream, index, options, context);
+    }
+
+    /// <summary>Reads one extra channel from a stream; see <see cref="ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)"/>.</summary>
+    /// <param name="stream">The file's data, from its start.</param>
+    /// <param name="index">The channel's index in <see cref="JxlDetails.ExtraChannels"/>.</param>
+    /// <param name="options">The general options, with the frame range.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <returns>The channel's samples. The caller must dispose it.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">The image has no extra channel <paramref name="index"/>.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules, including data of another format.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="extra-channels"/>
+    /// </example>
+    public static Raster<GrayF32> ReadExtraChannel(Stream stream, int index, ReaderOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ReaderOptions read = (options ?? ReaderOptions.Default) with { Format = JxlFormat.Info };
+        return FormatPipeline.Run(stream, context ?? EgamiContext.Default, read, (_, input) => JxlImageDecoder.DecodeExtraChannel(input, read, index), CancellationToken.None);
+    }
 }
 
 /// <summary>How a JPEG XL layer combines with the canvas below it (F.2).</summary>
@@ -140,6 +181,12 @@ public sealed record JxlReaderOptions : ReaderOptions
 {
     /// <summary>Gets the default options.</summary>
     public static new JxlReaderOptions Default { get; } = new();
+
+    /// <summary>
+    /// Gets a value indicating whether spot color channels are mixed into the color, as djxl does. On by default; off leaves the
+    /// color as coded, and the spot channels can be read with <see cref="JxlImage.ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)"/>.
+    /// </summary>
+    public bool RenderSpotColors { get; init; } = true;
 
     /// <summary>
     /// Gets how much smaller than the image the decode may be. 8 or more decodes only the LF image of a lossy still, an eighth of

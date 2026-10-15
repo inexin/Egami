@@ -47,6 +47,12 @@ public sealed class JxlDetails : FormatDetails
     /// <summary>Gets or sets the contents of each jumb (JUMBF) box, such as C2PA manifests, kept as stored.</summary>
     public IReadOnlyList<ReadOnlyMemory<byte>> Jumbf { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the extra channels, in the file's order: alpha and black join the pixels, spot colors are rendered into them,
+    /// and every one can be read alone with <see cref="JxlImage.ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)"/>.
+    /// </summary>
+    public IReadOnlyList<JxlExtraChannel> ExtraChannels { get; set; } = [];
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
@@ -59,6 +65,7 @@ public sealed class JxlDetails : FormatDetails
             IsXybEncoded = IsXybEncoded,
             HasJpegReconstruction = HasJpegReconstruction,
             Jumbf = Jumbf,
+            ExtraChannels = ExtraChannels,
         };
     }
 
@@ -74,6 +81,78 @@ public sealed class JxlDetails : FormatDetails
             IsXybEncoded = file.Header.XybEncoded,
             HasJpegReconstruction = file.Container.JpegReconstruction is not null,
             Jumbf = [.. file.Container.Jumbf.Select(b => (ReadOnlyMemory<byte>)b)],
+            ExtraChannels = [.. file.Header.ExtraChannels.Select(e => new JxlExtraChannel
+            {
+                Kind = (JxlExtraChannelKind)e.Type,
+                Name = e.Name,
+                BitsPerSample = e.BitDepth.BitsPerSample,
+                ExponentBits = e.BitDepth.ExponentBits,
+                Subsampling = e.DimShift,
+                AlphaPremultiplied = e.AlphaAssociated,
+                SpotColor = e.SpotColor,
+            })],
         };
     }
+}
+
+/// <summary>What a JPEG XL extra channel holds (B.3, ExtraChannelInfo).</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="extra-channels"/>
+/// </example>
+public enum JxlExtraChannelKind
+{
+    /// <summary>Alpha (opacity).</summary>
+    Alpha = 0,
+
+    /// <summary>Depth.</summary>
+    Depth = 1,
+
+    /// <summary>A spot color: ink coverage of the color in <see cref="JxlExtraChannel.SpotColor"/>.</summary>
+    SpotColor = 2,
+
+    /// <summary>A selection mask.</summary>
+    SelectionMask = 3,
+
+    /// <summary>The black (K) of a CMYK image.</summary>
+    Black = 4,
+
+    /// <summary>A color filter array (Bayer) channel.</summary>
+    ColorFilterArray = 5,
+
+    /// <summary>Thermal (infrared) intensity.</summary>
+    Thermal = 6,
+
+    /// <summary>Data an application needs to show the image correctly.</summary>
+    NonOptional = 15,
+
+    /// <summary>Data an application may ignore.</summary>
+    Optional = 16,
+}
+
+/// <summary>One extra channel of a JPEG XL image, listed in <see cref="JxlDetails.ExtraChannels"/>.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="extra-channels"/>
+/// </example>
+public sealed class JxlExtraChannel
+{
+    /// <summary>Gets what the channel holds.</summary>
+    public JxlExtraChannelKind Kind { get; init; }
+
+    /// <summary>Gets the channel's name, or an empty string.</summary>
+    public string Name { get; init; } = string.Empty;
+
+    /// <summary>Gets the bits of a sample.</summary>
+    public int BitsPerSample { get; init; } = 8;
+
+    /// <summary>Gets the exponent bits of floating-point samples, or 0 for integer samples.</summary>
+    public int ExponentBits { get; init; }
+
+    /// <summary>Gets how many times the channel is halved each way against the image (0 for full size).</summary>
+    public int Subsampling { get; init; }
+
+    /// <summary>Gets whether the color is premultiplied by this alpha channel in the file (Load gives it straight).</summary>
+    public bool AlphaPremultiplied { get; init; }
+
+    /// <summary>Gets a spot color's red, green, blue and solidity, or <see langword="null"/> for other channels.</summary>
+    public IReadOnlyList<float>? SpotColor { get; init; }
 }

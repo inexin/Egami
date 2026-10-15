@@ -1,5 +1,6 @@
 using Egami.Formats;
 using Egami.Formats.Jxl;
+using Egami.Pixels;
 
 namespace Egami.DocSamples;
 
@@ -52,5 +53,30 @@ public class Jxl
         Assert.Equal(6, layers.Count);
         Assert.Null(preview);
         Assert.Equal((80, 60), (thumbnail.Width, thumbnail.Height));
+    }
+
+    [Fact]
+    public void ExtraChannels()
+    {
+        using SampleFiles files = new();
+
+        #region extra-channels
+        // Alpha joins the pixels (straight, even when the file premultiplies); other extra channels are listed in the details.
+        using Raster image = Raster.Load("sprite.jxl");
+        JxlDetails details = (JxlDetails)image.Metadata.FormatDetails!;
+        foreach (JxlExtraChannel channel in details.ExtraChannels)
+        {
+            Console.WriteLine($"{channel.Kind} '{channel.Name}', {channel.BitsPerSample} bits");
+        }
+
+        // Any one of them alone, such as depth or a selection mask, as gray floats.
+        using Raster<GrayF32> alpha = JxlImage.ReadExtraChannel("sprite.jxl", 0);
+
+        // Spot colors are mixed into the color as djxl does, unless turned off.
+        using Raster plain = Raster.Load("sprite.jxl", options: new JxlReaderOptions { RenderSpotColors = false });
+        #endregion
+
+        Assert.Equal(JxlExtraChannelKind.Alpha, details.ExtraChannels[0].Kind);
+        Assert.Equal((image.Width, image.Height), (alpha.Width, alpha.Height));
     }
 }

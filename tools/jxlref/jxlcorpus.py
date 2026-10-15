@@ -360,6 +360,9 @@ def decode_case(path, out, spec):
     if spec and "preview" in spec:
         args += ["--preview_out", f"{out}/djxl-preview.npy"]
     result = {"djxl": sh(*args, check=False).returncode == 0}
+    if spec and "SpotColor" in spec.get("extra_channel_type", []):
+        # Spot colors rendered into the color, as Load gives them by default.
+        result["djxl_spot"] = sh("djxl", path, f"{out}/djxl-spot.npy", "--quiet", check=False).returncode == 0
     if spec and "reconstructed_jpeg" in spec:
         result["djxl_jpeg"] = sh("djxl", path, f"{out}/djxl.jpg", "--quiet", check=False).returncode == 0
     r = oxide(path, f"{out}/oxide.npy", "--icc-output", f"{out}/oxide.icc")

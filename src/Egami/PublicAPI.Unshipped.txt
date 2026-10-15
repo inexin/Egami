@@ -3070,3 +3070,35 @@ static Egami.Formats.Jxl.JxlImage.ReadPreview(string! path, Egami.Formats.Reader
 static Egami.Formats.Jxl.JxlReaderOptions.Default.get -> Egami.Formats.Jxl.JxlReaderOptions!
 static Egami.Formats.Jxl.JxlReaderOptions.operator !=(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
 static Egami.Formats.Jxl.JxlReaderOptions.operator ==(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
+Egami.Formats.Jxl.JxlDetails.ExtraChannels.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlExtraChannel!>!
+Egami.Formats.Jxl.JxlDetails.ExtraChannels.set -> void
+Egami.Formats.Jxl.JxlExtraChannel
+Egami.Formats.Jxl.JxlExtraChannel.AlphaPremultiplied.get -> bool
+Egami.Formats.Jxl.JxlExtraChannel.AlphaPremultiplied.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.BitsPerSample.get -> int
+Egami.Formats.Jxl.JxlExtraChannel.BitsPerSample.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.ExponentBits.get -> int
+Egami.Formats.Jxl.JxlExtraChannel.ExponentBits.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.JxlExtraChannel() -> void
+Egami.Formats.Jxl.JxlExtraChannel.Kind.get -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannel.Kind.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.Name.get -> string!
+Egami.Formats.Jxl.JxlExtraChannel.Name.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.SpotColor.get -> System.Collections.Generic.IReadOnlyList<float>?
+Egami.Formats.Jxl.JxlExtraChannel.SpotColor.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.Subsampling.get -> int
+Egami.Formats.Jxl.JxlExtraChannel.Subsampling.init -> void
+Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Alpha = 0 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Black = 4 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.ColorFilterArray = 5 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Depth = 1 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.NonOptional = 15 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Optional = 16 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.SelectionMask = 3 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.SpotColor = 2 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Thermal = 6 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.get -> bool
+Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.init -> void
+static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream! stream, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
+static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(string! path, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!

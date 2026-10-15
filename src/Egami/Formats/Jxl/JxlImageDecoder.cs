@@ -28,16 +28,34 @@ internal static class JxlImageDecoder
         return Convert<TPixel>(input, natural);
     }
 
-    /// <summary>Decodes to RgbaF32 or GrayF32 without clamping, as the conformance references are; Load goes through the natural type.</summary>
-    internal static Raster DecodeFloat(EgamiInput input)
+    /// <summary>
+    /// Decodes the frames shown as raw float planes, as the conformance references are: the color channels (one for gray) then
+    /// every extra channel, unclamped, with no spot color mixed in, alpha as coded and CMYK as stored (0 is full ink).
+    /// </summary>
+    internal static List<JxlPlanes> DecodeChannels(EgamiInput input)
     {
         (JxlFile file, byte[] codestream) = Open(input);
-        Check(file);
-        bool gray = file.Header.ColorChannels == 1;
-        bool alpha = file.Header.AlphaIndex >= 0;
-        return gray && !alpha
-            ? Shown<GrayF32>(input, ReaderOptions.Default, file, codestream, forceFloat: true)
-            : Shown<RgbaF32>(input, ReaderOptions.Default, file, codestream, forceFloat: true);
+        List<JxlPlanes> frames = [];
+        int color = file.Header.ColorChannels == 1 ? 1 : 3;
+        Run(file, codestream, input, Sequence(file), lfOnly: false, layers: false, (decoded, f) =>
+        {
+            decoded.ForceFloat();
+            frames.Add(new JxlPlanes(decoded.Width, decoded.Height, [.. decoded.Color![..color], .. decoded.Extras!]));
+            return true;
+        });
+        return frames;
+    }
+
+    /// <summary>Decodes one extra channel of each frame shown into gray floats.</summary>
+    internal static Raster<GrayF32> DecodeExtraChannel(EgamiInput input, ReaderOptions options, int index)
+    {
+        (JxlFile file, byte[] codestream) = Open(input);
+        if (index >= file.Header.ExtraChannels.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"The image has {file.Header.ExtraChannels.Count} extra channels.");
+        }
+
+        return Shown<GrayF32>(input, options, file, codestream, forceFloat: true, extra: index);
     }
 
     /// <summary>Decodes every regular frame as it is before blending, in the natural pixel type, with where and how it blends.</summary>
@@ -163,25 +181,7 @@ internal static class JxlImageDecoder
     }
 
     /// <summary>Calls <paramref name="decode"/> with the natural pixel type of the file.</summary>
-    private static Raster Natural(EgamiInput input, JxlFile file, Func<PixelLayoutInfo, Raster> decode)
-    {
-        Check(file);
-        return decode(JxlReader.NaturalLayout(file.Header));
-    }
-
-    /// <summary>Refuses what the decoder does not render yet.</summary>
-    private static void Check(JxlFile file)
-    {
-        if (file.Header.ExtraChannels.Any(c => c.Type == JxlExtraChannelType.Black))
-        {
-            throw new UnsupportedFormatException("Egami does not decode JPEG XL CMYK images yet.");
-        }
-
-        if (file.Header.ExtraChannels.Any(c => c.Type == JxlExtraChannelType.SpotColor))
-        {
-            throw new UnsupportedFormatException("Egami does not render JPEG XL spot colors yet.");
-        }
-    }
+    private static Raster Natural(EgamiInput input, JxlFile file, Func<PixelLayoutInfo, Raster> decode) => decode(JxlReader.NaturalLayout(file.Header));
 
     /// <summary>Gets the frames of the codestream with their TOCs and section offsets.</summary>
     private static List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> Sequence(JxlFile file)
@@ -208,6 +208,8 @@ internal static class JxlImageDecoder
         _ when layout == RgbaF16.Layout => Shown<RgbaF16>(input, options, file, codestream, forceFloat),
         _ when layout == GrayF32.Layout => Shown<GrayF32>(input, options, file, codestream, forceFloat),
         _ when layout == RgbF32.Layout => Shown<RgbF32>(input, options, file, codestream, forceFloat),
+        _ when layout == Cmyk8.Layout => Shown<Cmyk8>(input, options, file, codestream, forceFloat),
+        _ when layout == Cmyk16.Layout => Shown<Cmyk16>(input, options, file, codestream, forceFloat),
         _ => Shown<RgbaF32>(input, options, file, codestream, forceFloat),
     };
 
@@ -224,13 +226,15 @@ internal static class JxlImageDecoder
         _ when layout == RgbaF16.Layout => Single<RgbaF16>(input, file, decoded, f),
         _ when layout == GrayF32.Layout => Single<GrayF32>(input, file, decoded, f),
         _ when layout == RgbF32.Layout => Single<RgbF32>(input, file, decoded, f),
+        _ when layout == Cmyk8.Layout => Single<Cmyk8>(input, file, decoded, f),
+        _ when layout == Cmyk16.Layout => Single<Cmyk16>(input, file, decoded, f),
         _ => Single<RgbaF32>(input, file, decoded, f),
     };
 
     private static Raster<TPixel> Single<TPixel>(EgamiInput input, JxlFile file, JxlDecoded decoded, JxlFrameHeader f)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        PixelPlane<TPixel> plane = Plane<TPixel>(input, decoded);
+        PixelPlane<TPixel> plane = Plane<TPixel>(input, decoded, spots: true, extra: -1);
         return new Raster<TPixel>([new Frame<TPixel>(plane, new FrameMetadata { Delay = Delay(f, file.Header) })], Metadata(input, file), input.Context);
     }
 
@@ -238,9 +242,10 @@ internal static class JxlImageDecoder
     /// Decodes the frames shown: the coalesced canvas after each key frame, those in <see cref="ReaderOptions.Frames"/> kept.
     /// Frames after the range are not decoded.
     /// </summary>
-    private static Raster<TPixel> Shown<TPixel>(EgamiInput input, ReaderOptions options, JxlFile file, byte[] codestream, bool forceFloat)
+    private static Raster<TPixel> Shown<TPixel>(EgamiInput input, ReaderOptions options, JxlFile file, byte[] codestream, bool forceFloat, int extra = -1)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        bool spots = options is not JxlReaderOptions { RenderSpotColors: false };
         Range range = options.Frames;
         bool fromEnd = range.Start.IsFromEnd || range.End.IsFromEnd;
         int first = fromEnd ? 0 : range.Start.Value;
@@ -260,7 +265,7 @@ internal static class JxlImageDecoder
                         decoded.ForceFloat();
                     }
 
-                    frames.Add(new Frame<TPixel>(Plane<TPixel>(input, decoded), new FrameMetadata { Delay = Delay(f, file.Header) }));
+                    frames.Add(new Frame<TPixel>(Plane<TPixel>(input, decoded, spots, extra), new FrameMetadata { Delay = Delay(f, file.Header) }));
                 }
 
                 return seen < end;
@@ -367,7 +372,8 @@ internal static class JxlImageDecoder
 
             JxlFrameChannels frame = decoder.Decode(lfFrames[f.LfLevel]);
             if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
-                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop)
+                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop
+                && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated))
             {
                 // Lossless Modular: keep the integers, so 8 and 16-bit output is exact.
                 emit(new JxlDecoded(file, f.Width, f.Height, frame), f);
@@ -651,11 +657,70 @@ internal static class JxlImageDecoder
         return metadata;
     }
 
-    /// <summary>Puts a decoded frame's samples into a plane of <typeparamref name="TPixel"/>.</summary>
-    private static PixelPlane<TPixel> Plane<TPixel>(EgamiInput input, JxlDecoded d)
+    /// <summary>
+    /// Gets the color as Load gives it: each spot color mixed in by its coverage and solidity (as libjxl renders them, in the
+    /// output color space after blending), then divided by a premultiplied alpha. Copies only when something changes.
+    /// </summary>
+    private static float[][] Straight(JxlImageHeader h, JxlDecoded d, bool spots)
+    {
+        float[][] color = d.Color!;
+        int alpha = h.AlphaIndex;
+        bool premultiplied = alpha >= 0 && h.ExtraChannels[alpha].AlphaAssociated;
+        List<int> spotChannels = spots ? [.. Enumerable.Range(0, h.ExtraChannels.Count).Where(e => h.ExtraChannels[e].Type == JxlExtraChannelType.SpotColor)] : [];
+        if (!premultiplied && spotChannels.Count == 0)
+        {
+            return color;
+        }
+
+        color = [.. color.Select(p => (float[])p.Clone())];
+        int count = d.Width * d.Height;
+        foreach (int e in spotChannels)
+        {
+            float[] spot = h.ExtraChannels[e].SpotColor!;
+            float[] coverage = d.Extras![e];
+            for (int c = 0; c < 3; c++)
+            {
+                float[] plane = color[c];
+                for (int i = 0; i < count; i++)
+                {
+                    float mix = spot[3] * coverage[i];
+                    plane[i] = (mix * spot[c]) + ((1 - mix) * plane[i]);
+                }
+            }
+        }
+
+        if (premultiplied)
+        {
+            // As libjxl: alpha below 2^-26 counts as 2^-26.
+            float[] a = d.Extras![alpha];
+            for (int c = 0; c < 3; c++)
+            {
+                float[] plane = color[c];
+                for (int i = 0; i < count; i++)
+                {
+                    plane[i] /= MathF.Max(1f / (1 << 26), a[i]);
+                }
+            }
+        }
+
+        return color;
+    }
+
+    /// <summary>
+    /// Puts a decoded frame's samples into a plane of <typeparamref name="TPixel"/>: spot colors mixed in (with
+    /// <paramref name="spots"/>), premultiplied color made straight, CMYK as ink amounts; or, with <paramref name="extra"/> 0 or
+    /// more, that extra channel alone.
+    /// </summary>
+    private static PixelPlane<TPixel> Plane<TPixel>(EgamiInput input, JxlDecoded d, bool spots, int extra)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         JxlImageHeader h = d.File.Header;
+        if (extra >= 0 || TPixel.Layout == Cmyk8.Layout || TPixel.Layout == Cmyk16.Layout)
+        {
+            d.ForceFloat();
+        }
+
+        float[][]? color = d.Color is null ? null : Straight(h, d, spots);
         input.CheckMemory((long)d.Width * d.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
         PixelPlane<TPixel> raster = PixelPlane.Allocate<TPixel>(d.Width, d.Height, input.Memory);
         try
@@ -665,6 +730,9 @@ internal static class JxlImageDecoder
             bool alpha = layout.HasAlpha;
             int colorSamples = alpha ? samples - 1 : samples;
             int alphaIndex = h.AlphaIndex;
+            bool cmyk = layout == Cmyk8.Layout || layout == Cmyk16.Layout;
+            int blackIndex = h.ExtraChannels.ToList().FindIndex(e => e.Type == JxlExtraChannelType.Black);
+            float[]? black = cmyk ? d.Extras![blackIndex] : null;
             for (int y = 0; y < d.Height; y++)
             {
                 Span<byte> row = MemoryMarshal.AsBytes(raster.Row(y));
@@ -699,7 +767,9 @@ internal static class JxlImageDecoder
                             continue;
                         }
 
-                        float f = isAlpha ? (alphaIndex >= 0 ? d.Extras![alphaIndex][at + x] : 1f) : d.Color![Math.Min(s, colorSamples - 1) % 3][at + x];
+                        float f = extra >= 0 ? d.Extras![extra][at + x]
+                            : cmyk ? 1 - (s < 3 ? color![s][at + x] : black![at + x])
+                            : isAlpha ? (alphaIndex >= 0 ? d.Extras![alphaIndex][at + x] : 1f) : color![Math.Min(s, colorSamples - 1) % 3][at + x];
                         switch (layout.ChannelType)
                         {
                             case PixelChannelType.Unorm8:
