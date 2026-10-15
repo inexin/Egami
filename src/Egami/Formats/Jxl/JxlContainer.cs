@@ -45,6 +45,9 @@ internal sealed class JxlContainer : IJxlByteSource
     /// <summary>Gets the boxes walked so far, in file order.</summary>
     internal List<JxlBox> Boxes { get; } = [];
 
+    /// <summary>Gets where each codestream part lies in the file: its offset and length (-1 for a part that runs to the end).</summary>
+    internal List<(long Offset, long Length)> CodestreamParts { get; } = [];
+
     /// <summary>Gets the problems recovered from so far.</summary>
     internal List<JxlProblem> Problems { get; } = [];
 
@@ -89,6 +92,32 @@ internal sealed class JxlContainer : IJxlByteSource
         box.Boxes.Add(new JxlBox("JXL ", 0, 12, 4));
         box.ReadFileType();
         return box;
+    }
+
+    /// <summary>Joins the codestream parts out of a whole file held in memory.</summary>
+    internal byte[] Codestream(ReadOnlySpan<byte> file)
+    {
+        if (!IsContainer)
+        {
+            return file.ToArray();
+        }
+
+        long total = 0;
+        foreach ((long offset, long length) in CodestreamParts)
+        {
+            total += length < 0 ? file.Length - offset : length;
+        }
+
+        byte[] codestream = new byte[total];
+        int at = 0;
+        foreach ((long offset, long length) in CodestreamParts)
+        {
+            int n = (int)(length < 0 ? file.Length - offset : length);
+            file.Slice((int)offset, n).CopyTo(codestream.AsSpan(at));
+            at += n;
+        }
+
+        return codestream;
     }
 
     /// <summary>Gets whether the data starts like JPEG XL: a bare codestream or the container's signature box.</summary>
@@ -164,8 +193,18 @@ internal sealed class JxlContainer : IJxlByteSource
 
         if (IsContainer)
         {
-            while (NextBox())
+            long at = _input.Position;
+            try
             {
+                while (NextBox())
+                {
+                    at = _input.Position;
+                }
+            }
+            catch (CorruptDataException)
+            {
+                // Bytes after the codestream that do not make a whole box are ignored, as other readers ignore trailing data.
+                Problems.Add(new JxlProblem("Jxl.TrailingData", "The file ends with bytes that are not a whole box; they were ignored.", at));
             }
         }
     }
@@ -303,6 +342,7 @@ internal sealed class JxlContainer : IJxlByteSource
             _sawJxlc = true;
             _lastPart = true;
             _remaining = content;
+            CodestreamParts.Add((offset + headerSize, content == long.MaxValue ? -1 : content));
             return;
         }
 
@@ -320,7 +360,7 @@ internal sealed class JxlContainer : IJxlByteSource
         _nextPart++;
         _lastPart = (index & 0x80000000) != 0;
         _remaining = content == long.MaxValue ? long.MaxValue : content - 4;
-        _ = headerSize;
+        CodestreamParts.Add((offset + headerSize + 4, content == long.MaxValue ? -1 : content - 4));
     }
 
     private byte[] ReadContent(long offset, int length)

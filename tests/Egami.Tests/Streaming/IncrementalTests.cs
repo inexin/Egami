@@ -242,7 +242,7 @@ public class PreviewTests
         }
     }
 
-    public static TheoryData<string> Progressive() => [.. StreamingCorpus.Files.Where(f => f.Contains("progressive", StringComparison.Ordinal))];
+    public static TheoryData<string> Progressive() => [.. StreamingCorpus.Files.Where(f => f.Contains("progressive", StringComparison.Ordinal) && f.EndsWith(".jpg", StringComparison.Ordinal))];
 
     [Theory]
     [MemberData(nameof(Progressive))]

@@ -28,6 +28,12 @@ internal sealed class JxlFile
     /// <summary>Gets each frame's TOC, matching <see cref="Frames"/>.</summary>
     internal List<JxlToc> Tocs { get; } = [];
 
+    /// <summary>Gets where each frame's sections start in the codestream, matching <see cref="Frames"/>.</summary>
+    internal List<long> SectionOffsets { get; } = [];
+
+    /// <summary>Gets the preview frame's TOC and where its sections start, when there is a preview.</summary>
+    internal (JxlToc Toc, long Offset)? PreviewSections { get; private set; }
+
     /// <summary>Gets whether <see cref="Frames"/> holds every frame up to the last.</summary>
     internal bool FramesKnown { get; private set; }
 
@@ -62,6 +68,7 @@ internal sealed class JxlFile
             JxlFrameHeader preview = JxlFrameHeader.Read(r, Header, preview: true);
             JxlToc toc = JxlToc.Read(r, preview);
             PreviewFrame = preview;
+            PreviewSections = (toc, r.BitPosition / 8);
             r.SkipBytes(toc.TotalSize);
         }
 
@@ -73,6 +80,7 @@ internal sealed class JxlFile
             Frames.Add(frame);
             input.CheckFrameCount(Frames.Count);
             Tocs.Add(toc);
+            SectionOffsets.Add(r.BitPosition / 8);
             r.SkipBytes(toc.TotalSize);
             if (frame.IsLast)
             {

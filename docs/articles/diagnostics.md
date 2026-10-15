@@ -152,6 +152,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jxl.BrobDropped` | Warning | A JPEG XL brob box is too small, compresses a box that must not be compressed, or holds broken Brotli data; it was dropped |
 | `Jxl.ExifDropped` | Warning | A JPEG XL Exif box's TIFF header offset is missing or points past the box; the box was dropped |
 | `Jxl.LevelInvalid` | Warning | A JPEG XL jxll box holds a level other than 5 or 10; it is ignored |
+| `Jxl.TrailingData` | Warning | A JPEG XL file ends with bytes after its last box that do not make a whole box; they were ignored |
 | `Limits.Exceeded` | Debug | A safety limit is about to fail the load: its name, the limit and the value found |
 | `Operation.ChainPlanned` | Info | The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped |
 | `Operation.GainMapDropped` | Warning | A step changed pixel values, or moved them in a way the gain map cannot follow; the gain map was dropped and the image saves as SDR only |

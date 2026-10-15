@@ -339,7 +339,10 @@ license:
 jxl-oxide 0.12.6, a JPEG XL decoder in Rust, was read beside libjxl for the same header layouts and its bit reader's U32, U64
 and F16 fields (`src/Egami/Formats/Jxl/JxlBitReader.cs`); Egami's entropy decoder (`JxlEntropy.cs`: ANS with its alias
 tables, prefix codes, context maps, hybrid integers, LZ77 and permutations) and compressed ICC decoding (`JxlIcc.cs`) are
-translated from its jxl-coding and jxl-color crates. It is distributed under the MIT license (or Apache-2.0); the MIT
+translated from its jxl-coding and jxl-color crates, and the Modular decoder (`JxlModular.cs`, `JxlModularImage.cs`,
+`JxlModularDecoder.cs`, `JxlTransforms.cs`, `JxlFrameDecoder.cs`: MA trees, the predictors and the self-correcting predictor's
+error bookkeeping, RCT, palette with its delta palette and implicit colours, squeeze and its tendency term, and the split of
+channels into global, LF group and pass group streams) from its jxl-modular and jxl-frame crates. It is distributed under the MIT license (or Apache-2.0); the MIT
 terms:
 
     Copyright (c) Wonwoo Choi and the jxl-oxide contributors

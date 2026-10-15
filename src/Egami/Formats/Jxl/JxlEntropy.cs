@@ -53,6 +53,9 @@ internal sealed class JxlEntropyDecoder
         _lengthConfig = lengthConfig;
     }
 
+    /// <summary>Gets a decoder with the same distributions and a fresh state, for another stream.</summary>
+    internal JxlEntropyDecoder Clone() => new(_clusters, _configs, _ans, _prefix, _lz77, _minSymbol, _minLength, _lengthConfig);
+
     /// <summary>Gets the cluster of each context.</summary>
     internal ReadOnlySpan<byte> Clusters => _clusters;
 

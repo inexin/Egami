@@ -43,12 +43,12 @@ internal sealed class JxlReader : IFormatReader
         };
     }
 
-    public Raster Read(EgamiInput input, ReaderOptions options) => throw NotYet(input);
+    public Raster Read(EgamiInput input, ReaderOptions options) => JxlImageDecoder.Decode(input, options);
 
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        throw NotYet(input);
+        return JxlImageDecoder.Decode<TPixel>(input, options);
     }
 
     /// <summary>
@@ -76,12 +76,5 @@ internal sealed class JxlReader : IFormatReader
         return depth.BitsPerSample <= 8
             ? (gray ? (alpha ? GrayAlpha8.Layout : Gray8.Layout) : alpha ? Rgba8.Layout : Rgb8.Layout)
             : (gray ? (alpha ? GrayAlpha16.Layout : Gray16.Layout) : alpha ? Rgba16.Layout : Rgb16.Layout);
-    }
-
-    private static UnsupportedFormatException NotYet(EgamiInput input)
-    {
-        // The headers are read first, so data that is not JPEG XL, or is broken, fails as it would in a full decode.
-        JxlFile.Read(input, allBoxes: false);
-        return new UnsupportedFormatException("Egami reads JPEG XL headers (Raster.Probe) but does not decode JPEG XL pixels yet.");
     }
 }
