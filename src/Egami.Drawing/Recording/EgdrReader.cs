@@ -94,7 +94,7 @@ internal sealed class EgdrReader
             else if (type == Egdr.EncodedImageChunk)
             {
                 Spend(length);
-                _encoded.Add(EncodedImage.FromBytes(payload.Span, _context));
+                _encoded.Add(EncodedImage.Load(payload.ToArray(), _context));
             }
             else if (type == Egdr.PathChunk)
             {
@@ -513,7 +513,7 @@ internal sealed class EgdrReader
             RgbaF32[] colors = (flags & 1) != 0 ? [ReadColor(), ReadColor(), ReadColor(), ReadColor()] : [];
             Vector2[] tex = (flags & 2) != 0 ? [ReadPoint(), ReadPoint(), ReadPoint(), ReadPoint()] : [];
             float[] values = (flags & 4) != 0 ? [F32(), F32(), F32(), F32()] : [];
-            return kind == PatchKind.Coons ? Egami.Drawing.Patch.Coons(points, colors, values, tex) : Egami.Drawing.Patch.Tensor(points, colors, values, tex);
+            return kind == PatchKind.Coons ? Egami.Drawing.Patch.Coons(points, colors, tex, values) : Egami.Drawing.Patch.Tensor(points, colors, tex, values);
         }
 
         private Paint ReadPaint()
@@ -578,7 +578,7 @@ internal sealed class EgdrReader
 
                 case Egdr.PaintKind.Noise:
                     {
-                        NoiseType type = Enum<NoiseType>();
+                        NoisePaintKind type = Enum<NoisePaintKind>();
                         float fx = F32(), fy = F32();
                         int octaves = I32(), seed = I32();
                         Size? tile = Bool() ? new Size(I32(), I32()) : null;
@@ -589,8 +589,8 @@ internal sealed class EgdrReader
 
                         paint = type switch
                         {
-                            NoiseType.FractalNoise => NoisePaint.Fractal(fx, fy, octaves, seed, tile),
-                            NoiseType.Turbulence => NoisePaint.Turbulence(fx, fy, octaves, seed, tile),
+                            NoisePaintKind.Fractal => NoisePaint.Fractal(fx, fy, octaves, seed, tile),
+                            NoisePaintKind.Turbulence => NoisePaint.Turbulence(fx, fy, octaves, seed, tile),
                             _ => NoisePaint.Simplex(fx, octaves, seed, tile),
                         };
                         break;

@@ -71,7 +71,7 @@ public class TextOnPathTests
         var font = new Font(Noto, 16);
         Path line = new PathBuilder().MoveTo(0, 100).LineTo(400, 100).ToPath();
         float width = font.MeasureText("Middle").Advance;
-        GlyphRun middle = font.ShapeOnPath("Middle", line, new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Middle });
+        GlyphRun middle = font.ShapeOnPath("Middle", line, new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Center });
         Assert.Equal(200 - (width / 2), middle.Transforms[0].Tx, 3);
         Assert.Equal(100, middle.Transforms[0].Ty, 3);
 

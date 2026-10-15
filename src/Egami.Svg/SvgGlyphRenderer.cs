@@ -11,7 +11,7 @@ namespace Egami.Svg;
 /// <summary>
 /// Draws the glyphs of an OpenType SVG table (question 20): each glyph's document is read once per font and kept, and the
 /// element <c>glyph</c><i>id</i> is drawn in the font's units, its origin on the baseline. Set it on
-/// <see cref="CanvasOptions.ColorGlyphs"/>; <see cref="SvgDocument.Rasterize{TPixel}(SvgRenderOptions?)"/> uses it already.
+/// <see cref="CanvasOptions.ColorGlyphRenderer"/>; <see cref="SvgDocument.Rasterize{TPixel}(SvgRenderOptions?)"/> uses it already.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="svg-glyphs"/>

@@ -564,7 +564,12 @@ public abstract partial class Canvas : IDisposable
 
     /// <summary>Replaces every pixel inside the clip with a color: <see cref="DrawPaint"/> with <see cref="BlendMode.Source"/>.</summary>
     /// <param name="color">The color.</param>
-    public void Clear(RgbaF32 color) => DrawPaint(new SolidPaint(color) { BlendMode = BlendMode.Source });
+    public void Clear(RgbaF32 color)
+    {
+        CheckLive();
+        CheckColor(color, nameof(color));
+        OnClear(color);
+    }
 
     /// <summary>Replaces every pixel inside the clip with a color.</summary>
     /// <param name="color">The color.</param>
@@ -697,6 +702,13 @@ public abstract partial class Canvas : IDisposable
     /// <param name="op">Whether to keep the inside or the outside.</param>
     /// <param name="antialias">Whether the edges are antialiased.</param>
     protected abstract void OnClipPath(Path path, ClipOp op, bool antialias);
+
+    /// <summary>
+    /// Replaces everything inside the clip with a color. A PDF page can write it as a filled rectangle over a white or transparent
+    /// page; by default it is <see cref="OnDrawPaint"/> with a solid paint in <see cref="BlendMode.Source"/>.
+    /// </summary>
+    /// <param name="color">The color.</param>
+    protected virtual void OnClear(RgbaF32 color) => OnDrawPaint(new SolidPaint(color) { BlendMode = BlendMode.Source });
 
     /// <summary>Fills the clip. By default it fills the device clip bounds mapped back to local coordinates.</summary>
     /// <param name="paint">The paint.</param>

@@ -76,7 +76,7 @@ internal sealed partial class SvgResolver
         {
             try
             {
-                raster = EncodedImage.FromBytes(data, _options.EffectiveContext);
+                raster = EncodedImage.Load(data, _options.EffectiveContext);
 
                 // Decoded now (and kept for drawing), so damaged data is reported here and drawing never meets it.
                 _ = raster.Decode();

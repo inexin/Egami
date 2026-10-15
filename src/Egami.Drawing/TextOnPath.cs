@@ -14,7 +14,7 @@ public enum TextAnchor
     Start,
 
     /// <summary>The text is centred on the start point.</summary>
-    Middle,
+    Center,
 
     /// <summary>The text ends at the start point.</summary>
     End,
@@ -115,7 +115,7 @@ public static partial class FontExtensions
         float start = (options.StartFraction * total) + options.StartOffset;
         start -= options.Anchor switch
         {
-            TextAnchor.Middle => width / 2,
+            TextAnchor.Center => width / 2,
             TextAnchor.End => width,
             _ => 0,
         };

@@ -132,7 +132,7 @@ public class Text
         using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
         {
             canvas.DrawTextOnPath("Text that follows the curve", curve, font, Rgba8.Black,
-                new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Middle, BaselineShift = 4 });
+                new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Center, BaselineShift = 4 });
         }
 
         // Or place glyphs yourself, each with its own turn and scale.
@@ -535,7 +535,7 @@ public class Text
         Path ring = new PathBuilder().AddOval(new RectF(20, 20, 160, 160)).ToPath();
         Path top = new PathBuilder().MoveTo(40, 100).ArcTo(new Vector2(60, 60), 0, false, true, new Vector2(160, 100)).ToPath();
         Path bottom = new PathBuilder().MoveTo(40, 100).ArcTo(new Vector2(60, 60), 0, false, false, new Vector2(160, 100)).ToPath();
-        var centred = new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Middle };
+        var centred = new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Center };
         using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
         {
             canvas.StrokePath(ring, new Stroke(2), new SolidPaint(Rgba8.Black));

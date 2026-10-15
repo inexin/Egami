@@ -65,16 +65,16 @@ public class OutlineTests
             LineJoin.Miter => 16,
             _ => 8,
         };
-        Assert.Equal(100 + (40 * 2) + corners, PathEffectTests.Area(square.Offset(2, join)), join == LineJoin.Round ? 0.2 : 1e-3);
-        Assert.Equal(36, PathEffectTests.Area(square.Offset(-2, join)), 1e-3);
-        Assert.True(square.Offset(-6, join).IsEmpty);
-        Assert.Equal(100, PathEffectTests.Area(square.Offset(0)), 1e-9);
+        Assert.Equal(100 + (40 * 2) + corners, PathEffectTests.Area(square.Inflate(2, join)), join == LineJoin.Round ? 0.2 : 1e-3);
+        Assert.Equal(36, PathEffectTests.Area(square.Inflate(-2, join)), 1e-3);
+        Assert.True(square.Inflate(-6, join).IsEmpty);
+        Assert.Equal(100, PathEffectTests.Area(square.Inflate(0)), 1e-9);
 
         Path circle = Path.Circle(new Vector2(50, 50), 20);
-        double grown = PathEffectTests.Area(circle.Offset(3, LineJoin.Round));
+        double grown = PathEffectTests.Area(circle.Inflate(3, LineJoin.Round));
         Assert.Equal(PathEffectTests.Area(Path.Circle(new Vector2(50, 50), 23)), grown, 3.0);
-        Assert.Throws<ArgumentOutOfRangeException>(() => circle.Offset(float.NaN));
-        Assert.Throws<ArgumentOutOfRangeException>(() => circle.Offset(1, LineJoin.Miter, 0.5f));
+        Assert.Throws<ArgumentOutOfRangeException>(() => circle.Inflate(float.NaN));
+        Assert.Throws<ArgumentOutOfRangeException>(() => circle.Inflate(1, LineJoin.Miter, 0.5f));
     }
 
     private static byte[] Draw(Action<Egami.Drawing.Canvas> draw, float scale)

@@ -11,7 +11,7 @@ public class DocumentHookTests
     public void AnEncodedImageDrawsItsDecodedPixels()
     {
         using Raster<Rgba8> photo = Pixels.Photo(40, 30);
-        EncodedImage jpeg = EncodedImage.FromBytes(Jpeg(photo));
+        EncodedImage jpeg = EncodedImage.Load(Jpeg(photo));
         Assert.Equal(40, jpeg.Width);
         Assert.Equal("JPEG", jpeg.Info.Format.Name);
         SamplingOptions nearest = new() { Filter = ResampleFilter.Nearest };
@@ -19,7 +19,7 @@ public class DocumentHookTests
         using Raster<Rgba8> decoded = Pixels.Draw(64, 48, c => c.DrawImage(jpeg.Decode(), new RectF(10, 10, 15, 12), new RectF(5, 5, 30, 24), nearest));
         Pixels.Equal(encoded, decoded);
         Assert.Same(jpeg.Decode(), jpeg.Decode());
-        Assert.Throws<UnsupportedFormatException>(() => EncodedImage.FromBytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]));
+        Assert.Throws<UnsupportedFormatException>(() => EncodedImage.Load(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }));
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public class DocumentHookTests
     {
         using Raster<Rgba8> photo = Pixels.Photo(20, 10);
         byte[] bytes = Jpeg(photo);
-        EncodedImage jpeg = EncodedImage.FromBytes(bytes);
+        EncodedImage jpeg = EncodedImage.Load(bytes);
         using DocumentCanvas document = new();
         document.DrawImage(jpeg, new RectF(0, 0, 40, 20));
         Assert.Equal(["encoded 20x10 [0 0 20 10] [0 0 40 20]"], document.Calls);
@@ -74,7 +74,7 @@ public class DocumentHookTests
     public void PicturesRecordAndSaveTheNewCalls()
     {
         using Raster<Rgba8> photo = Pixels.Photo(20, 10);
-        EncodedImage jpeg = EncodedImage.FromBytes(Jpeg(photo));
+        EncodedImage jpeg = EncodedImage.Load(Jpeg(photo));
         PictureRecorder recorder = new(new RectF(0, 0, 100, 60));
         recorder.BeginMarkedContent(new MarkedContent("Figure") { NodeId = 3, ActualText = "logo", AlternateText = "Egami's logo" });
         recorder.DrawImage(jpeg, new RectF(10, 10, 40, 20));

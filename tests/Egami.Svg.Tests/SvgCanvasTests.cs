@@ -425,7 +425,7 @@ public class SvgCanvasTests
         using Raster<Rgba8> image = Raster.Create(3, 3, new Rgba8(1, 2, 3, 255));
         using MemoryStream png = new();
         image.Save(png, "png");
-        EncodedImage encoded = EncodedImage.FromBytes(png.ToArray());
+        EncodedImage encoded = EncodedImage.Load(png.ToArray());
         (_, SvgDocument doc) = Write(c => c.DrawImage(encoded, new RectF(0, 0, 30, 30)));
         string href = Href(Assert.Single(Elements(doc, "image")));
         Assert.Equal("data:image/png;base64," + Convert.ToBase64String(png.ToArray()), href);

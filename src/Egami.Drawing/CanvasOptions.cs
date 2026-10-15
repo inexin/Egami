@@ -99,7 +99,7 @@ public sealed record class CanvasOptions
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="svg-glyphs"/>
     /// </example>
-    public IColorGlyphRenderer? ColorGlyphs { get; init; }
+    public IColorGlyphRenderer? ColorGlyphRenderer { get; init; }
 
     /// <summary>
     /// Gets how far, in device pixels, a curve's straight-line approximation may stray from it. Defaults to 0.1; smaller values cost

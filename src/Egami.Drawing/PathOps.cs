@@ -2,7 +2,7 @@ using Egami.Drawing.Geometry;
 
 namespace Egami.Drawing;
 
-/// <summary>How <see cref="Path.Op"/> and <see cref="PathOps.Combine"/> combine the areas of two paths: Skia's five operations.</summary>
+/// <summary>How <see cref="Path.Op"/> and <see cref="Path.Combine"/> combine the areas of two paths: Skia's five operations.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="booleans"/>
 /// </example>
@@ -24,11 +24,8 @@ public enum PathOp
     ReverseDifference = 4,
 }
 
-/// <summary>Boolean operations on many paths at once.</summary>
-/// <example>
-/// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="booleans"/>
-/// </example>
-public static class PathOps
+/// <summary>The constants and checks of boolean operations.</summary>
+internal static class PathOps
 {
     /// <summary>The default tolerance of boolean operations, in path units: a twentieth of a pixel.</summary>
     internal const float DefaultTolerance = 0.05f;
@@ -43,7 +40,7 @@ public static class PathOps
     /// <param name="tolerance">How close, in path units, points must be to count as the same, as <see cref="Path.Op"/> describes.</param>
     /// <returns>The combined path; empty when there are no paths.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="op"/> is not defined, or <paramref name="tolerance"/> is not positive and finite.</exception>
-    public static Path Combine(IEnumerable<Path> paths, PathOp op, float tolerance = DefaultTolerance)
+    internal static Path Combine(IEnumerable<Path> paths, PathOp op, float tolerance)
     {
         ArgumentNullException.ThrowIfNull(paths);
         Check(op, tolerance);
@@ -72,6 +69,21 @@ public static class PathOps
 
 public sealed partial class Path
 {
+
+    /// <summary>
+    /// Combines any number of paths with one operation in a single pass, as if it were applied in order, left to right:
+    /// ((a op b) op c) and so on. Far faster than chaining <see cref="Op"/> for many paths, since every outline is cut and
+    /// sorted once. The result is as <see cref="Op"/> describes.
+    /// </summary>
+    /// <param name="paths">The paths; each keeps its own fill rule.</param>
+    /// <param name="op">The operation.</param>
+    /// <param name="tolerance">How close, in path units, points must be to count as the same, as <see cref="Op"/> describes.</param>
+    /// <returns>The combined path; empty when there are no paths.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="op"/> is not defined, or <paramref name="tolerance"/> is not positive and finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="booleans"/>
+    /// </example>
+    public static Path Combine(IEnumerable<Path> paths, PathOp op, float tolerance = PathOps.DefaultTolerance) => PathOps.Combine(paths, op, tolerance);
     /// <summary>
     /// Combines this path's area with another's. Each keeps its own fill rule; open contours count as closed, as fills close them.
     /// The result keeps the inputs' lines, quadratics and cubics, split exactly where outlines cross, so it is exact for PDF and SVG
@@ -135,7 +147,7 @@ public sealed partial class Path
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="booleans"/>
     /// </example>
-    public Path Offset(float distance, LineJoin join = LineJoin.Round, float miterLimit = 4)
+    public Path Inflate(float distance, LineJoin join = LineJoin.Round, float miterLimit = 4)
     {
         if (!float.IsFinite(distance))
         {

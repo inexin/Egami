@@ -193,7 +193,7 @@ public class EgdrTests
         image.Save(jpeg, "jpeg");
         PictureRecorder document = new(new RectF(0, 0, 128, 100));
         document.BeginMarkedContent(new MarkedContent("Figure") { NodeId = 1, AlternateText = "A photo" });
-        document.DrawImage(EncodedImage.FromBytes(jpeg.ToArray()), new RectF(4, 4, 64, 48));
+        document.DrawImage(EncodedImage.Load(jpeg.ToArray()), new RectF(4, 4, 64, 48));
         document.EndMarkedContent();
         document.DrawAnnotation(new RectF(4, 4, 64, 48), Annotation.Url("https://example.com/egami"));
         document.SaveLayer(new LayerOptions { Knockout = true, Opacity = 0.9f });

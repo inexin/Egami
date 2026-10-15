@@ -21,7 +21,7 @@ public sealed partial class RasterCanvas<TPixel>
     private bool _lcdFallbackReported;
 
     /// <inheritdoc/>
-    private protected override IColorGlyphRenderer? ColorGlyphRenderer => Options.ColorGlyphs;
+    protected override IColorGlyphRenderer? ColorGlyphRenderer => Options.ColorGlyphRenderer;
 
     /// <inheritdoc/>
     /// <remarks>
@@ -322,7 +322,7 @@ public sealed partial class RasterCanvas<TPixel>
         if ((style.Synthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty)
         {
             // The outset merges the contours too.
-            path = path.Offset(Synthesis.BoldOutset(emY));
+            path = path.Inflate(Synthesis.BoldOutset(emY));
         }
         else if (!path.IsEmpty && face.MayOverlap(glyph))
         {

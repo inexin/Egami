@@ -94,7 +94,7 @@ public static partial class FontExtensions
 
     // Synthetic bold outsets the whole outline with round joins, by em/24 at 9 units per em down to em/32 at 36 and above.
     private static Path Synthesize(Path path, Font font)
-        => (font.AppliedSynthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty ? path.Offset(Synthesis.BoldOutset(font.Size)) : path;
+        => (font.AppliedSynthesis & FontSynthesis.Bold) != 0 && !path.IsEmpty ? path.Inflate(Synthesis.BoldOutset(font.Size)) : path;
 
     /// <summary>Converts text bounds to a rectangle.</summary>
     /// <param name="bounds">The bounds.</param>

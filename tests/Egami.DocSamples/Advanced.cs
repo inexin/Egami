@@ -120,7 +120,7 @@ public class Advanced
             canvas.DrawPatch(patch);
 
             // PDF's function-based shadings give each corner a value instead, mapped through a gradient's stops.
-            Patch shaded = Patch.Tensor(patch.ToTensorNet(), cornerValues: [0, 0.3f, 1, 0.6f]);
+            Patch shaded = Patch.Tensor(patch.ToTensorNet().Span, cornerValues: [0, 0.3f, 1, 0.6f]);
             canvas.Translate(10, 10);
             canvas.Scale(0.3f);
             canvas.DrawPatch(shaded, valueStops: [new GradientStop(0, Rgba8.Black), new GradientStop(1, Rgba8.White)]);
@@ -227,7 +227,7 @@ public class Advanced
 
         #region encoded-image
         // A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
-        EncodedImage jpeg = EncodedImage.FromFile("photo.jpg");
+        EncodedImage jpeg = EncodedImage.Load("photo.jpg");
         canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));
         #endregion
 

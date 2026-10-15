@@ -6,7 +6,7 @@ namespace Egami.Drawing;
 
 /// <summary>
 /// Draws color glyphs of a format Egami.Drawing does not draw itself, such as the SVG documents of an OpenType SVG table
-/// (Egami.Svg's <c>SvgGlyphRenderer</c>). Set on <see cref="CanvasOptions.ColorGlyphs"/>, it is asked first for every glyph
+/// (Egami.Svg's <c>SvgGlyphRenderer</c>). Set on <see cref="CanvasOptions.ColorGlyphRenderer"/>, it is asked first for every glyph
 /// whose font has that format, except where the font has a COLR version 1 glyph, so the order is COLR v1, the renderer, COLR v0,
 /// sbix, CBDT, then the outline.
 /// </summary>

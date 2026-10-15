@@ -284,9 +284,9 @@ public class Drawing
             .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
 
         // Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
-        Path dots = PathOps.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+        Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
         Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
-        Path halo = dots.Offset(4, LineJoin.Round);
+        Path halo = dots.Inflate(4, LineJoin.Round);
         #endregion
 
         Assert.Equal(2, frame.Contours.Count);

@@ -49,7 +49,7 @@ public abstract partial class Canvas
         lattice.Check(image, nameof(lattice));
         if (!destination.IsEmpty)
         {
-            OnDrawLattice(image, lattice, destination, sampling ?? DefaultSampling, paint);
+            OnDrawImageLattice(image, lattice, destination, sampling ?? DefaultSampling, paint);
         }
     }
 
@@ -137,17 +137,18 @@ public abstract partial class Canvas
     /// color space, premultiplied; values interpolate and then look up <paramref name="valueStops"/>.
     /// </summary>
     /// <param name="mesh">The mesh, in local coordinates.</param>
-    /// <param name="paint">The paint, with the blend mode, opacity and antialiasing of the whole mesh.</param>
+    /// <param name="paint">The paint, with the blend mode, opacity and antialiasing of the whole mesh; an opaque white solid paint when <see langword="null"/>, which draws the vertex colors as they are.</param>
     /// <param name="colorBlend">How the vertex colors combine with the paint.</param>
     /// <param name="valueStops">The stops vertex values map through, as a gradient's, clamped to 0 to 1; needed when the mesh has values.</param>
     /// <exception cref="ArgumentException">The mesh has values and no stops are given.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="mesh"/>
     /// </example>
-    public void DrawMesh(Mesh mesh, Paint paint, BlendMode colorBlend = BlendMode.Modulate, ReadOnlySpan<GradientStop> valueStops = default)
+    public void DrawMesh(Mesh mesh, Paint? paint = null, BlendMode colorBlend = BlendMode.Modulate, ReadOnlySpan<GradientStop> valueStops = default)
     {
         ArgumentNullException.ThrowIfNull(mesh);
-        Check(paint);
+        CheckLive();
+        paint ??= WhitePaint;
         CheckBlend(colorBlend, nameof(colorBlend));
         if (!mesh.Values.IsEmpty && valueStops.IsEmpty)
         {
@@ -226,7 +227,7 @@ public abstract partial class Canvas
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="lattice"/>
     /// </example>
-    protected virtual void OnDrawLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint)
+    protected virtual void OnDrawImageLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint)
     {
         foreach (LatticeCell cell in LatticeCells(image, lattice, destination))
         {

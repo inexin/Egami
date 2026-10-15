@@ -17,7 +17,7 @@ public enum VerticalAlign
     Top = 0,
 
     /// <summary>In the middle.</summary>
-    Middle = 1,
+    Center = 1,
 
     /// <summary>At the end of the block: the bottom, or the far side for vertical lines.</summary>
     Bottom = 2,
@@ -27,6 +27,9 @@ public enum VerticalAlign
 /// <param name="canvas">The canvas being drawn on.</param>
 /// <param name="index">The placeholder's index in the rich text.</param>
 /// <param name="box">The placeholder's box, in the canvas's local coordinates.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/ParagraphLayout.cs" region="draw"/>
+/// </example>
 public delegate void PlaceholderPainter(Canvas canvas, int index, RectF box);
 
 public abstract partial class Canvas
@@ -113,7 +116,7 @@ public abstract partial class Canvas
         TextLayout layout = Paragraph.Create(text, style).Layout(vertical ? rect.Height : rect.Width);
         float factor = verticalAlign switch
         {
-            VerticalAlign.Middle => 0.5f,
+            VerticalAlign.Center => 0.5f,
             VerticalAlign.Bottom => 1,
             _ => 0,
         };

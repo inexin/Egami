@@ -6,7 +6,7 @@ using Egami.Pixels;
 
 namespace Egami.Svg.Tests;
 
-/// <summary>Task 15: OpenType SVG glyphs drawn through CanvasOptions.ColorGlyphs.</summary>
+/// <summary>Task 15: OpenType SVG glyphs drawn through CanvasOptions.ColorGlyphRenderer.</summary>
 public class SvgGlyphTests
 {
     private static Font Emoji(float size)
@@ -27,7 +27,7 @@ public class SvgGlyphTests
     [Fact]
     public void TheRendererDrawsTheGlyphsDocumentInColor()
     {
-        using Raster<Rgba8> color = Draw(new CanvasOptions { ColorGlyphs = SvgGlyphRenderer.Instance });
+        using Raster<Rgba8> color = Draw(new CanvasOptions { ColorGlyphRenderer = SvgGlyphRenderer.Instance });
         using Raster<Rgba8> plain = Draw(CanvasOptions.Default);
 
         // Twemoji's face is #FFCC4D; without the renderer the glyph is the font's black outline.

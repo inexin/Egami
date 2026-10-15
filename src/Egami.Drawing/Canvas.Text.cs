@@ -179,7 +179,11 @@ public abstract partial class Canvas
     /// Draws a run's color glyphs (COLR, sbix, CBDT) with canvas calls (clips, fills, gradients, layers and images) and returns the
     /// run of the glyphs left to draw as outlines.
     /// </summary>
-    private protected GlyphRun DrawColorGlyphs(GlyphRun run, Vector2 origin, Paint paint)
+    /// <param name="run">The glyphs.</param>
+    /// <param name="origin">Where the run's origin goes, in local coordinates.</param>
+    /// <param name="paint">The paint, whose alpha color glyphs use.</param>
+    /// <returns>The run's other glyphs, or the run itself when it has no color glyphs.</returns>
+    protected GlyphRun DrawColorGlyphs(GlyphRun run, Vector2 origin, Paint paint)
     {
         Font font = run.Font;
         Typeface face = font.EffectiveTypeface;
@@ -211,14 +215,21 @@ public abstract partial class Canvas
         return plain is null ? run : Subrun(run, plain);
     }
 
-    /// <summary>Gets the renderer for color glyph formats this canvas does not draw itself; none on a canvas without options.</summary>
-    private protected virtual IColorGlyphRenderer? ColorGlyphRenderer => null;
+    /// <summary>
+    /// Gets the renderer for color glyph formats the canvas does not draw itself, such as OpenType SVG glyphs; none by default. A
+    /// backend overrides it to draw those glyphs, as the raster backend returns <see cref="CanvasOptions.ColorGlyphRenderer"/>.
+    /// </summary>
+    protected virtual IColorGlyphRenderer? ColorGlyphRenderer => null;
 
     /// <summary>
     /// Draws the glyphs of a run that <see cref="ColorGlyphRenderer"/> draws (those without a COLR version 1 glyph, which comes
     /// first) and returns the run of the rest.
     /// </summary>
-    private protected GlyphRun DrawRendererGlyphs(GlyphRun run, Vector2 origin, Paint paint)
+    /// <param name="run">The glyphs.</param>
+    /// <param name="origin">Where the run's origin goes, in local coordinates.</param>
+    /// <param name="paint">The paint.</param>
+    /// <returns>The run's other glyphs, or the run itself when the renderer draws none of them.</returns>
+    protected GlyphRun DrawRendererGlyphs(GlyphRun run, Vector2 origin, Paint paint)
     {
         Font font = run.Font;
         Typeface face = font.EffectiveTypeface;

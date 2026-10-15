@@ -142,7 +142,7 @@ public class BooleanTests
             circles.Add(Path.Circle(new Vector2(10 + (i * 5), 50), 8));
         }
 
-        Path union = PathOps.Combine(circles, PathOp.Union);
+        Path union = Path.Combine(circles, PathOp.Union);
         Path chained = circles[0];
         foreach (Path c in circles.Skip(1))
         {
@@ -154,9 +154,9 @@ public class BooleanTests
 
         // In order, left to right: ((a − b) − c).
         Path[] three = [Path.Rect(new RectF(0, 0, 30, 10)), Path.Rect(new RectF(0, 0, 10, 10)), Path.Rect(new RectF(20, 0, 10, 10))];
-        Assert.Equal(100, Area(PathOps.Combine(three, PathOp.Difference)), 1e-9);
-        Assert.Equal(100, Area(PathOps.Combine(three, PathOp.Xor)), 1e-9);
-        Assert.True(PathOps.Combine([], PathOp.Union).IsEmpty);
+        Assert.Equal(100, Area(Path.Combine(three, PathOp.Difference)), 1e-9);
+        Assert.Equal(100, Area(Path.Combine(three, PathOp.Xor)), 1e-9);
+        Assert.True(Path.Combine([], PathOp.Union).IsEmpty);
     }
 
     [Fact]

@@ -83,7 +83,7 @@ public class AtlasAndPatchTests
         ];
         RgbaF32[] colors = [new(1, 0, 0, 1), new(0, 1, 0, 1), new(0, 0, 1, 1), new(1, 1, 0, 1)];
         Patch coons = Patch.Coons(boundary, colors);
-        Patch tensor = Patch.Tensor(coons.ToTensorNet(), colors);
+        Patch tensor = Patch.Tensor(coons.ToTensorNet().Span, colors);
         for (float u = 0; u <= 1; u += 0.125f)
         {
             for (float v = 0; v <= 1; v += 0.125f)

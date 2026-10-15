@@ -35,7 +35,7 @@ internal sealed class TurbulenceShader : Shader
     internal TurbulenceShader(NoisePaint paint, Matrix3x2 inverse)
     {
         _inverse = inverse;
-        _fractal = paint.Type == NoiseType.FractalNoise;
+        _fractal = paint.Kind == NoisePaintKind.Fractal;
         _octaves = paint.Octaves;
         Init(paint.Seed);
 

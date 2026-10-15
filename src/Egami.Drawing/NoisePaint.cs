@@ -9,10 +9,10 @@ namespace Egami.Drawing;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Paints.cs" region="noise"/>
 /// </example>
-public enum NoiseType
+public enum NoisePaintKind
 {
     /// <summary>SVG's fractalNoise: smooth clouds, each channel half the sum of the octaves' noise plus a half.</summary>
-    FractalNoise,
+    Fractal,
 
     /// <summary>SVG's turbulence: the sum of the octaves' absolute noise, with sharp creases where it crosses zero.</summary>
     Turbulence,
@@ -35,7 +35,7 @@ public sealed record class NoisePaint : Paint
     /// <summary>The most octaves a noise paint sums.</summary>
     public const int MaxOctaves = 32;
 
-    private NoisePaint(NoiseType type, float baseFrequencyX, float baseFrequencyY, int octaves, int seed, Size? tileSize)
+    private NoisePaint(NoisePaintKind kind, float baseFrequencyX, float baseFrequencyY, int octaves, int seed, Size? tileSize)
     {
         if (!(baseFrequencyX >= 0 && float.IsFinite(baseFrequencyX)))
         {
@@ -54,7 +54,7 @@ public sealed record class NoisePaint : Paint
             throw new ArgumentOutOfRangeException(nameof(tileSize), size, "A tile must be at least 1 × 1.");
         }
 
-        Type = type;
+        Kind = kind;
         BaseFrequencyX = baseFrequencyX;
         BaseFrequencyY = baseFrequencyY;
         Octaves = octaves;
@@ -63,7 +63,7 @@ public sealed record class NoisePaint : Paint
     }
 
     /// <summary>Gets the kind of noise.</summary>
-    public NoiseType Type { get; }
+    public NoisePaintKind Kind { get; }
 
     /// <summary>Gets the horizontal frequency of the first octave, in cycles per paint unit.</summary>
     public float BaseFrequencyX { get; }
@@ -89,22 +89,22 @@ public sealed record class NoisePaint : Paint
     /// <param name="baseFrequencyY">The vertical frequency.</param>
     /// <param name="octaves">The number of octaves, as SVG's numOctaves, from 0 to 32.</param>
     /// <param name="seed">The seed.</param>
-    /// <param name="stitchSize">The tile to stitch to, as SVG's stitchTiles over a tile of this size; <see langword="null"/> for none.</param>
+    /// <param name="tileSize">The tile to stitch to, as SVG's stitchTiles over a tile of this size; <see langword="null"/> for none.</param>
     /// <returns>The paint.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A frequency is negative or not finite, the octaves are outside 0 to 32, or the tile is empty.</exception>
-    public static NoisePaint Fractal(float baseFrequencyX, float baseFrequencyY, int octaves = 1, int seed = 0, Size? stitchSize = null)
-        => new(NoiseType.FractalNoise, baseFrequencyX, baseFrequencyY, octaves, seed, stitchSize);
+    public static NoisePaint Fractal(float baseFrequencyX, float baseFrequencyY, int octaves = 1, int seed = 0, Size? tileSize = null)
+        => new(NoisePaintKind.Fractal, baseFrequencyX, baseFrequencyY, octaves, seed, tileSize);
 
     /// <summary>Returns SVG feTurbulence's turbulence.</summary>
     /// <param name="baseFrequencyX">The horizontal frequency.</param>
     /// <param name="baseFrequencyY">The vertical frequency.</param>
     /// <param name="octaves">The number of octaves, from 0 to 32.</param>
     /// <param name="seed">The seed.</param>
-    /// <param name="stitchSize">The tile to stitch to; <see langword="null"/> for none.</param>
+    /// <param name="tileSize">The tile to stitch to; <see langword="null"/> for none.</param>
     /// <returns>The paint.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A frequency is negative or not finite, the octaves are outside 0 to 32, or the tile is empty.</exception>
-    public static NoisePaint Turbulence(float baseFrequencyX, float baseFrequencyY, int octaves = 1, int seed = 0, Size? stitchSize = null)
-        => new(NoiseType.Turbulence, baseFrequencyX, baseFrequencyY, octaves, seed, stitchSize);
+    public static NoisePaint Turbulence(float baseFrequencyX, float baseFrequencyY, int octaves = 1, int seed = 0, Size? tileSize = null)
+        => new(NoisePaintKind.Turbulence, baseFrequencyX, baseFrequencyY, octaves, seed, tileSize);
 
     /// <summary>
     /// Returns simplex noise: each channel a half plus half the octaves' sum, scaled so it stays within 0 to 1. With a tile size it
@@ -117,7 +117,7 @@ public sealed record class NoisePaint : Paint
     /// <returns>The paint.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The frequency is negative or not finite, the octaves are outside 0 to 32, or the tile is empty.</exception>
     public static NoisePaint Simplex(float frequency, int octaves = 1, int seed = 0, Size? tileSize = null)
-        => new(NoiseType.Simplex, frequency, frequency, octaves, seed, tileSize);
+        => new(NoisePaintKind.Simplex, frequency, frequency, octaves, seed, tileSize);
 
     /// <inheritdoc/>
     internal override Shader? CreateShader(Matrix3x2 toDevice, ColorSpace colorSpace)
@@ -127,6 +127,6 @@ public sealed record class NoisePaint : Paint
             return null;
         }
 
-        return Type == NoiseType.Simplex ? new SimplexShader(this, inverse) : new TurbulenceShader(this, inverse);
+        return Kind == NoisePaintKind.Simplex ? new SimplexShader(this, inverse) : new TurbulenceShader(this, inverse);
     }
 }

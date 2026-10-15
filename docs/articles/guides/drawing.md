@@ -73,7 +73,7 @@ space), as CSS Color 4 defines them, and premultiplied so a fade to a transparen
 ### Images, noise and your own paints
 
 `ImagePaint` fills with an image under its local matrix, tiled per axis, sampled by Egami's filters and from a `MipChain` level
-when shrunk. `NoisePaint.Fractal` and `NoisePaint.Turbulence` (its `NoiseType`) are SVG's feTurbulence (matching SkiaSharp's noise
+when shrunk. `NoisePaint.Fractal` and `NoisePaint.Turbulence` (its `NoisePaintKind`) are SVG's feTurbulence (matching SkiaSharp's noise
 shaders), and `NoisePaint.Simplex` is smoother and tiles exactly. `BlendPaint` combines two paints with a blend mode,
 `WithColorMatrix` runs a color matrix on a paint (a `ColorMatrixPaint`), and a `CustomPaint` record fills rows of premultiplied
 colors from C#.
@@ -240,7 +240,7 @@ result is a new `Path` that keeps lines, quadratics and cubics where the input h
 ### Boolean operations
 
 `Op` combines two areas with a `PathOp`: `Union`, `Intersect`, `Difference`, `Xor` or `ReverseDifference` (with shortcuts
-for the first four). `PathOps.Combine` takes any number of paths in one pass, applied left to right. `Simplify` returns the
+for the first four). `Path.Combine` takes any number of paths in one pass, applied left to right. `Simplify` returns the
 same area without overlaps or self-intersections.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#booleans)]
@@ -250,7 +250,7 @@ same area without overlaps or self-intersections.
 - Crossings are found on the curves themselves and cut exactly. The `tolerance` (0.05 units by default) is how close points
   must be to count as the same: ends and crossings within a tenth of it merge, and edges that run within it of each other
   merge, so nearly coincident outlines leave no slivers. Pass a smaller tolerance for geometry that will be drawn larger.
-- `Offset` grows an area by a distance, or shrinks it for a negative one, with a `LineJoin` at the corners.
+- `Inflate` grows an area by a distance, or shrinks it for a negative one, with a `LineJoin` at the corners.
 
 ### Outlines and dashes
 
@@ -303,7 +303,7 @@ Hooks a backend leaves alone have defaults: rectangles, round rectangles and ova
 call (a blend mode its format lacks, a `CustomPaint`, a filtered layer) can draw it into pixels with `RasterizeFallback`, which
 returns a `FallbackImage`. Layers reach a backend through `OnSaveLayer` and `OnRestoreLayer`; a PDF page would write a
 transparency group with its opacity, blend mode and soft mask. `OnDrawMesh` and `OnDrawPatch` let a PDF page write shading
-types 4 to 7, `OnDrawPicture` a form XObject drawn once and referenced each time, and `OnDrawLattice` and `OnDrawAtlas` images
+types 4 to 7, `OnDrawPicture` a form XObject drawn once and referenced each time, and `OnDrawImageLattice` and `OnDrawAtlas` images
 per cell or sprite; by default meshes go through the raster fallback, patches become meshes, and the others become images and
 meshes.
 

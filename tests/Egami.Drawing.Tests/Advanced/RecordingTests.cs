@@ -286,7 +286,7 @@ public class RecordingTests
 
         protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint) => target.DrawImage(image, source, destination, sampling, paint);
 
-        protected override void OnDrawLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint) => target.DrawImageLattice(image, lattice, destination, sampling, paint);
+        protected override void OnDrawImageLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint) => target.DrawImageLattice(image, lattice, destination, sampling, paint);
 
         protected override void OnDrawAtlas(Raster image, ReadOnlySpan<SpriteTransform> transforms, ReadOnlySpan<RectF> sources, ReadOnlySpan<RgbaF32> colors, BlendMode colorBlend, SamplingOptions sampling, Paint? paint)
             => target.DrawAtlas(image, transforms, sources, colors, colorBlend, sampling, null, paint);

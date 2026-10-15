@@ -335,6 +335,22 @@ Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same previ
   a 2,000-word page at three widths 7.8 ms against 118 ms; 10,000 hit tests 19 ms against 196 ms.
 - Fuzz target `paragraph`, and a robustness suite on the same harness.
 
+### Egami.Drawing 1.0.0
+
+The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Settled in the 1.0 API review, changes from 0.1.0:
+
+- `CanvasOptions.ColorGlyphs` is `ColorGlyphRenderer`; `Canvas.ColorGlyphRenderer`, `DrawColorGlyphs` and `DrawRendererGlyphs`
+  are `protected`, so other backends draw color glyphs as the raster backend does.
+- `OnDrawLattice` is `OnDrawImageLattice`; `OnDrawImageMask` takes its arguments in `DrawImageMask`'s order.
+- `EncodedImage.FromBytes` and `FromFile` are `EncodedImage.Load`, from a path, a stream or bytes, as `Raster.Load`.
+- `PathOps.Combine` is `Path.Combine`; `Path.Offset` is `Path.Inflate`.
+- `Patch.Coons` and `Patch.Tensor` take corner texture coordinates before values, as `Mesh` does; `Patch.ToTensorNet` returns
+  read-only memory; `DrawMesh`'s paint is optional, as `DrawPatch`'s.
+- `NoiseType` is `NoisePaintKind` (`Fractal`, `Turbulence`, `Simplex`), `NoisePaint.Type` is `Kind`, and the tile parameter is
+  `tileSize` everywhere.
+- `TextAnchor.Middle` and `VerticalAlign.Middle` are `Center`.
+- New hook `OnClear`, so a document backend can write a clear; `GlyphCache.ByteLimit` is documented as process-wide.
+
 ### Egami.Drawing 0.1.0
 
 Egami.Drawing's first release: everything in the 1.0.0 previews below, from the canvas and paths of 2.6.1 to the meshes,

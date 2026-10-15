@@ -219,7 +219,7 @@ public class TextQualityTests
 
         // Bold outsets with round joins, by em/32 at 36 units and above.
         Path bold = (font with { Synthesis = FontSynthesis.Bold }).GetGlyphPath(glyph);
-        Path outset = plain.Offset(40 / 32f);
+        Path outset = plain.Inflate(40 / 32f);
         Assert.Equal(outset.Points.ToArray(), bold.Points.ToArray());
         Assert.Equal(plain.Points.ToArray(), (font with { Synthesis = FontSynthesis.Bold, AllowSynthesis = false }).GetGlyphPath(glyph).Points.ToArray());
 

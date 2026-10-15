@@ -107,7 +107,7 @@ public sealed class PictureRecorder : Canvas
     protected override void OnDrawEncodedImage(EncodedImage image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawEncodedImageCall(image, source, destination, sampling, paint));
 
     /// <inheritdoc/>
-    protected override void OnDrawImageMask(Raster mask, RectF destination, SamplingOptions sampling, Paint paint) => _calls.Add(new DrawImageMaskCall(mask, destination, sampling, paint));
+    protected override void OnDrawImageMask(Raster mask, RectF destination, Paint paint, SamplingOptions sampling) => _calls.Add(new DrawImageMaskCall(mask, destination, sampling, paint));
 
     /// <inheritdoc/>
     protected override void OnDrawAnnotation(RectF area, Annotation annotation) => _calls.Add(new DrawAnnotationCall(area, annotation));
@@ -137,7 +137,7 @@ public sealed class PictureRecorder : Canvas
     internal bool ExpandText { get; set; }
 
     /// <inheritdoc/>
-    protected override void OnDrawLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawLatticeCall(image, lattice, destination, sampling, paint));
+    protected override void OnDrawImageLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint) => _calls.Add(new DrawLatticeCall(image, lattice, destination, sampling, paint));
 
     /// <inheritdoc/>
     protected override void OnDrawAtlas(Raster image, ReadOnlySpan<SpriteTransform> transforms, ReadOnlySpan<RectF> sources, ReadOnlySpan<RgbaF32> colors, BlendMode colorBlend, SamplingOptions sampling, Paint? paint)

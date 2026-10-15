@@ -391,7 +391,7 @@ public class Svg
         using Raster<Rgba8> raster = Raster.Create<Rgba8>(200, 50);
         #region svg-glyphs
         // Emoji and other glyphs from an OpenType SVG table draw in color on a canvas given the renderer.
-        using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas(new CanvasOptions { ColorGlyphs = SvgGlyphRenderer.Instance }))
+        using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas(new CanvasOptions { ColorGlyphRenderer = SvgGlyphRenderer.Instance }))
         {
             canvas.DrawText("Hello", new System.Numerics.Vector2(10, 35), font, new SolidPaint(new RgbaF32(0, 0, 0, 1)));
         }

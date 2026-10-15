@@ -109,14 +109,14 @@ public sealed class Patch
     /// <summary>Creates a Coons patch from its four boundary curves.</summary>
     /// <param name="points">The 12 boundary points, clockwise from the top-left corner.</param>
     /// <param name="cornerColors">Four straight-alpha corner colors, or empty.</param>
-    /// <param name="cornerValues">Four corner values, mapped through the stops given to <see cref="Canvas.DrawPatch"/>, or empty.</param>
     /// <param name="cornerTexCoords">Four corner points in the paint's coordinates, or empty.</param>
+    /// <param name="cornerValues">Four corner values, mapped through the stops given to <see cref="Canvas.DrawPatch"/>, or empty.</param>
     /// <returns>The patch.</returns>
     /// <exception cref="ArgumentException">There are not 12 points or four of each corner list, both colors and values are given, or a number is not finite.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="patch"/>
     /// </example>
-    public static Patch Coons(ReadOnlySpan<Vector2> points, ReadOnlySpan<RgbaF32> cornerColors = default, ReadOnlySpan<float> cornerValues = default, ReadOnlySpan<Vector2> cornerTexCoords = default)
+    public static Patch Coons(ReadOnlySpan<Vector2> points, ReadOnlySpan<RgbaF32> cornerColors = default, ReadOnlySpan<Vector2> cornerTexCoords = default, ReadOnlySpan<float> cornerValues = default)
     {
         if (points.Length != 12)
         {
@@ -129,11 +129,11 @@ public sealed class Patch
     /// <summary>Creates a tensor-product patch from its 4×4 net.</summary>
     /// <param name="points">The 16 points, row by row from the top, each row left to right.</param>
     /// <param name="cornerColors">Four straight-alpha corner colors, or empty.</param>
-    /// <param name="cornerValues">Four corner values, or empty.</param>
     /// <param name="cornerTexCoords">Four corner points in the paint's coordinates, or empty.</param>
+    /// <param name="cornerValues">Four corner values, or empty.</param>
     /// <returns>The patch.</returns>
     /// <exception cref="ArgumentException">There are not 16 points or four of each corner list, both colors and values are given, or a number is not finite.</exception>
-    public static Patch Tensor(ReadOnlySpan<Vector2> points, ReadOnlySpan<RgbaF32> cornerColors = default, ReadOnlySpan<float> cornerValues = default, ReadOnlySpan<Vector2> cornerTexCoords = default)
+    public static Patch Tensor(ReadOnlySpan<Vector2> points, ReadOnlySpan<RgbaF32> cornerColors = default, ReadOnlySpan<Vector2> cornerTexCoords = default, ReadOnlySpan<float> cornerValues = default)
     {
         if (points.Length != 16)
         {
@@ -179,7 +179,10 @@ public sealed class Patch
     /// so the tensor patch of that net is the same surface.
     /// </summary>
     /// <returns>The 16 points, row by row from the top.</returns>
-    public Vector2[] ToTensorNet()
+    public ReadOnlyMemory<Vector2> ToTensorNet() => TensorNet();
+
+    /// <summary>The tensor net as a new array the caller may change.</summary>
+    internal Vector2[] TensorNet()
     {
         if (Kind == PatchKind.Tensor)
         {
@@ -281,7 +284,7 @@ public sealed class Patch
     /// <summary>The grid size: from the net's second differences along each direction and its twist, in device pixels, and the corner data's twist.</summary>
     internal (int U, int V) Divisions(Matrix3x2 toDevice)
     {
-        Vector2[] net = ToTensorNet();
+        Vector2[] net = TensorNet();
         for (int i = 0; i < 16; i++)
         {
             net[i] = Vector2.Transform(net[i], toDevice);

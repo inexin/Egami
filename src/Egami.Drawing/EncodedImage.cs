@@ -38,7 +38,7 @@ public sealed class EncodedImage
     /// <summary>Gets the height of the decoded image in pixels.</summary>
     public int Height => Info.Height;
 
-    /// <summary>Makes an encoded image from a file's bytes, which are copied and probed but not decoded.</summary>
+    /// <summary>Makes an encoded image from a file's bytes, which are kept as they are (not copied) and probed but not decoded; they must not change while the image is in use.</summary>
     /// <param name="data">The file's bytes, in any format Egami reads.</param>
     /// <param name="context">The context whose formats and limits apply when probing and decoding, or <see langword="null"/> for the default.</param>
     /// <returns>The image.</returns>
@@ -47,22 +47,36 @@ public sealed class EncodedImage
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="encoded-image"/>
     /// </example>
-    public static EncodedImage FromBytes(ReadOnlySpan<byte> data, EgamiContext? context = null)
+    public static EncodedImage Load(ReadOnlyMemory<byte> data, EgamiContext? context = null) => new(data, Raster.Probe(data, context), context);
+
+    /// <summary>Reads a stream to its end into an encoded image.</summary>
+    /// <param name="stream">The stream.</param>
+    /// <param name="context">The context whose formats and limits apply, or <see langword="null"/> for the default.</param>
+    /// <returns>The image.</returns>
+    /// <exception cref="UnsupportedFormatException">The data is not an image Egami reads.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="encoded-image"/>
+    /// </example>
+    public static EncodedImage Load(Stream stream, EgamiContext? context = null)
     {
-        byte[] copy = data.ToArray();
-        return new EncodedImage(copy, Raster.Probe(copy, context), context);
+        ArgumentNullException.ThrowIfNull(stream);
+        using MemoryStream copy = new();
+        stream.CopyTo(copy);
+        return Load(copy.ToArray(), context);
     }
 
-    /// <summary>Reads a file's bytes into an encoded image.</summary>
+    /// <summary>Reads a file into an encoded image.</summary>
     /// <param name="path">The file.</param>
     /// <param name="context">The context whose formats and limits apply, or <see langword="null"/> for the default.</param>
     /// <returns>The image.</returns>
     /// <exception cref="UnsupportedFormatException">The file is not an image Egami reads.</exception>
-    public static EncodedImage FromFile(string path, EgamiContext? context = null)
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="encoded-image"/>
+    /// </example>
+    public static EncodedImage Load(string path, EgamiContext? context = null)
     {
         ArgumentNullException.ThrowIfNull(path);
-        byte[] data = File.ReadAllBytes(path);
-        return new EncodedImage(data, Raster.Probe(data, context), context);
+        return Load(File.ReadAllBytes(path), context);
     }
 
     /// <summary>Returns the decoded image, decoding it on the first call; later calls return the same raster, which must not be changed or disposed.</summary>

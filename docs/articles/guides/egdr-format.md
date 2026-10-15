@@ -131,7 +131,7 @@ A paint is its kind `u8`, the fields every paint has, then its own:
 | 4 | ConicalGradient | Start point, start radius `f32`, end point, end radius `f32`, gradient fields |
 | 5 | SweepGradient | Center point, start angle `f32`, end angle `f32`, gradient fields |
 | 6 | ImagePaint | Image number `u32`, TileMode x, TileMode y, sampling |
-| 7 | NoisePaint | NoiseType, base frequency x and y `f32`, octaves `i32`, seed `i32`, has-tile `bool`, tile width and height `i32` |
+| 7 | NoisePaint | NoisePaintKind, base frequency x and y `f32`, octaves `i32`, seed `i32`, has-tile `bool`, tile width and height `i32` |
 | 8 | BlendPaint | Destination paint, source paint, BlendMode |
 | 9 | ColorMatrixPaint | Source paint, the 20 matrix values `f32`, row by row |
 | 10 | PicturePaint | Picture number `u32`, TileMode x, TileMode y, tile rectangle |

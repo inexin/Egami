@@ -637,7 +637,7 @@ internal sealed class EgdrWriter
             case NoisePaint n:
                 b.U8((byte)Egdr.PaintKind.Noise);
                 Common(b, paint);
-                b.U8((byte)n.Type);
+                b.U8((byte)n.Kind);
                 b.F32(n.BaseFrequencyX);
                 b.F32(n.BaseFrequencyY);
                 b.I32(n.Octaves);

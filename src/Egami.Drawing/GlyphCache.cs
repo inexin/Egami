@@ -23,7 +23,11 @@ public static class GlyphCache
     private static readonly Stripe[] s_stripes = CreateStripes();
     private static long s_byteLimit = 4L * 1024 * 1024;
 
-    /// <summary>Gets or sets the most bytes the masks may hold, 4 MiB by default; 0 turns caching off. Lowering it evicts at once.</summary>
+    /// <summary>
+    /// Gets or sets the most bytes the masks may hold, 4 MiB by default; 0 turns caching off. Lowering it evicts at once. The
+    /// cache is one for the whole process, shared by every canvas and context, as Skia's font cache is; setting the limit is safe
+    /// from any thread.
+    /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
     public static long ByteLimit
     {

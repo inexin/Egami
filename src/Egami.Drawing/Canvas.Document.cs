@@ -184,7 +184,7 @@ public abstract partial class Canvas
         CheckRect(destination, nameof(destination));
         if (!destination.IsEmpty)
         {
-            OnDrawImageMask(mask, destination, sampling ?? DefaultSampling, paint);
+            OnDrawImageMask(mask, destination, paint, sampling ?? DefaultSampling);
         }
     }
 
@@ -257,12 +257,12 @@ public abstract partial class Canvas
     /// </summary>
     /// <param name="mask">The mask image.</param>
     /// <param name="destination">Where the mask goes, in local coordinates; not empty.</param>
-    /// <param name="sampling">How the mask is sampled.</param>
     /// <param name="paint">What fills the covered pixels.</param>
+    /// <param name="sampling">How the mask is sampled.</param>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Advanced.cs" region="image-mask"/>
     /// </example>
-    protected virtual void OnDrawImageMask(Raster mask, RectF destination, SamplingOptions sampling, Paint paint)
+    protected virtual void OnDrawImageMask(Raster mask, RectF destination, Paint paint, SamplingOptions sampling)
     {
         using Raster<Rgba8> coverage = MaskCoverage(mask);
         int count = SaveLayer(new LayerOptions { Bounds = destination, Opacity = paint.Opacity, BlendMode = paint.BlendMode });

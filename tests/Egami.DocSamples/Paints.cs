@@ -109,7 +109,7 @@ public class Paints
         using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas())
         {
             // SVG's feTurbulence fractal noise, stitched so a 128-pixel tile repeats without a seam, made gray by a color matrix.
-            Paint stone = NoisePaint.Fractal(0.03f, 0.03f, octaves: 5, seed: 7, stitchSize: new Size(128, 128))
+            Paint stone = NoisePaint.Fractal(0.03f, 0.03f, octaves: 5, seed: 7, tileSize: new Size(128, 128))
                 .WithColorMatrix(new ColorMatrix([0.3f, 0.6f, 0.1f, 0, 0, 0.3f, 0.6f, 0.1f, 0, 0, 0.3f, 0.6f, 0.1f, 0, 0, 0, 0, 0, 0, 1]));
             canvas.DrawPaint(stone);
 

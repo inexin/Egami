@@ -74,7 +74,7 @@ public sealed partial class RasterCanvas<TPixel>
     /// The cells are one mesh, each cell's triangles textured from a copy of its part of the image, so samples stay inside the cell
     /// as in Skia and neighboring cells still meet without seams; fixed-color cells are part of the same mesh.
     /// </remarks>
-    protected override void OnDrawLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint)
+    protected override void OnDrawImageLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint)
     {
         Rect bounds = lattice.Bounds ?? new Rect(0, 0, image.Width, image.Height);
         if (lattice.CellKinds is null && destination.Width == bounds.Width && destination.Height == bounds.Height)
@@ -130,7 +130,7 @@ public sealed partial class RasterCanvas<TPixel>
 
     /// <inheritdoc/>
     /// <remarks>The rectangle's coverage is multiplied by the mask's, sampled at each pixel, and the paint fills through it: no layer.</remarks>
-    protected override void OnDrawImageMask(Raster mask, RectF destination, SamplingOptions sampling, Paint paint)
+    protected override void OnDrawImageMask(Raster mask, RectF destination, Paint paint, SamplingOptions sampling)
     {
         if (_clip.Bounds.IsEmpty)
         {
