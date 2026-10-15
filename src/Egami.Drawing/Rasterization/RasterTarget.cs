@@ -22,6 +22,68 @@ internal abstract class RasterTarget(Rect area) : IDisposable
     /// </summary>
     internal RasterTarget? KnockoutBackdrop { get; set; }
 
+    /// <summary>
+    /// Gets or sets, for a non-isolated layer merged with a blend mode, a copy of the backdrop the layer started as, and
+    /// <see cref="GroupAlpha"/> the alpha of what was drawn into it alone; the merge removes the backdrop's part first, as PDF's
+    /// non-isolated groups require (ISO 32000 11.4.8). <see langword="null"/> for every other target.
+    /// </summary>
+    internal RasterTarget? GroupBackdrop { get; set; }
+
+    /// <summary>Gets or sets the group alpha, one value per pixel of <see cref="Area"/>, when <see cref="GroupBackdrop"/> is set.</summary>
+    internal float[]? GroupAlpha { get; set; }
+
+    /// <summary>Unions alpha values into <see cref="GroupAlpha"/> from device (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    internal void AddGroupAlpha(int y, int x, ReadOnlySpan<float> alpha)
+    {
+        float[] g = GroupAlpha!;
+        int at = ((y - Area.Y) * Area.Width) + (x - Area.X);
+        for (int i = 0; i < alpha.Length; i++)
+        {
+            float a = Math.Clamp(alpha[i], 0, 1);
+            g[at + i] += a * (1 - g[at + i]);
+        }
+    }
+
+    /// <summary>
+    /// Turns a non-isolated layer into the group result PDF composites: the backdrop's contribution removed by
+    /// C = Cn + (Cn − C0)·(α0 / αg − α0), with the group alpha αg.
+    /// </summary>
+    internal void RemoveGroupBackdrop()
+    {
+        if (GroupBackdrop is not RasterTarget backdrop || GroupAlpha is not float[] g)
+        {
+            return;
+        }
+
+        PremulRgbaF32[] row = new PremulRgbaF32[Area.Width], first = new PremulRgbaF32[Area.Width];
+        for (int y = Area.Y; y < Area.Bottom; y++)
+        {
+            ReadRow<PremulRgbaF32>(y, Area.X, row);
+            backdrop.ReadRow<PremulRgbaF32>(y, Area.X, first);
+            int at = (y - Area.Y) * Area.Width;
+            for (int i = 0; i < row.Length; i++)
+            {
+                float ag = g[at + i];
+                if (ag <= 0)
+                {
+                    row[i] = default;
+                    continue;
+                }
+
+                PremulRgbaF32 n = row[i], b = first[i];
+                float an = n.A, a0 = b.A;
+                float k = an > 0 ? 1 / an : 0, k0 = a0 > 0 ? 1 / a0 : 0;
+                float f = (a0 / ag) - a0;
+                float r = Math.Clamp((n.R * k) + (((n.R * k) - (b.R * k0)) * f), 0, 1);
+                float gr = Math.Clamp((n.G * k) + (((n.G * k) - (b.G * k0)) * f), 0, 1);
+                float bl = Math.Clamp((n.B * k) + (((n.B * k) - (b.B * k0)) * f), 0, 1);
+                row[i] = new PremulRgbaF32(r * ag, gr * ag, bl * ag, ag);
+            }
+
+            WriteRow<PremulRgbaF32>(y, Area.X, row);
+        }
+    }
+
     /// <summary>Gets the size of one pixel, which decides when a fill bands across cores.</summary>
     internal abstract int BytesPerPixel { get; }
 
@@ -107,6 +169,12 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
         {
             ISpanSink? inner = CreatePaintSink(paint, matrix, colorSpace, null, 255);
             return inner is null ? null : new KnockoutSink<TPixel>(this, backdrop, inner, mask, scale);
+        }
+
+        if (GroupAlpha is not null)
+        {
+            ISpanSink? inner = CreatePaintSink(paint, matrix, colorSpace, mask, scale);
+            return inner is null ? null : new GroupAlphaSink<TPixel>(this, inner);
         }
 
         return CreatePaintSink(paint, matrix, colorSpace, mask, scale);
@@ -223,7 +291,7 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
 
     internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
     {
-        if (KnockoutBackdrop is not null)
+        if (KnockoutBackdrop is not null || GroupAlpha is not null)
         {
             DrawImageAsPaint(tools, image, source, destination, matrix, sampling, paint, clip, mask);
             return;
@@ -309,6 +377,7 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
     {
         _owned?.Dispose();
         KnockoutBackdrop?.Dispose();
+        GroupBackdrop?.Dispose();
     }
 
     /// <summary>Draws an image as an image paint filling its destination, so it goes through <see cref="CreateSink"/>: a knockout layer's way.</summary>

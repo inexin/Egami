@@ -55,6 +55,43 @@ public class KnockoutAndMaskTests
     }
 
     [Fact]
+    public void ANonIsolatedGroupBlendsOnlyWhatWasDrawnInIt()
+    {
+        // PDF 11.4.8: the backdrop a non-isolated group starts from is removed before the group blends, so Difference turns only
+        // the cyan square red, not the whole layer black.
+        using Raster<Rgba8> drawn = Pixels.Draw(40, 40, c =>
+        {
+            c.SaveLayer(new LayerOptions { Isolated = false, BlendMode = BlendMode.Difference });
+            c.FillRect(new RectF(10, 10, 10, 10), new Rgba8(0, 255, 255, 255));
+            c.Restore();
+        });
+        Assert.Equal(new Rgba8(255, 0, 0, 255), drawn.GetPixel(15, 15));
+        Assert.Equal(Rgba8.White, drawn.GetPixel(30, 30));
+
+        // Inside the group, blend modes still see the backdrop: Multiply by gray over a red backdrop stays red-tinted, then the
+        // group as a whole blends by Screen.
+        using Raster<Rgba8> isolated = Pixels.Draw(40, 40, c =>
+        {
+            c.FillRect(new RectF(0, 0, 40, 40), new Rgba8(200, 40, 40, 255));
+            c.SaveLayer(new LayerOptions { Isolated = true, BlendMode = BlendMode.Screen });
+            c.FillRect(new RectF(10, 10, 20, 20), new SolidPaint(new Rgba8(128, 128, 128, 255)) { BlendMode = BlendMode.Multiply });
+            c.Restore();
+        });
+        using Raster<Rgba8> nonIsolated = Pixels.Draw(40, 40, c =>
+        {
+            c.FillRect(new RectF(0, 0, 40, 40), new Rgba8(200, 40, 40, 255));
+            c.SaveLayer(new LayerOptions { Isolated = false, BlendMode = BlendMode.Screen });
+            c.FillRect(new RectF(10, 10, 20, 20), new SolidPaint(new Rgba8(128, 128, 128, 255)) { BlendMode = BlendMode.Multiply });
+            c.Restore();
+        });
+
+        // Outside the shape nothing changes; inside, the non-isolated multiply saw the red backdrop (an isolated one saw nothing).
+        Assert.Equal(new Rgba8(200, 40, 40, 255), nonIsolated.GetPixel(5, 5));
+        Rgba8 p = nonIsolated.GetPixel(20, 20), q = isolated.GetPixel(20, 20);
+        Assert.True(p.R > p.G + 50 && p != q, $"{p} against {q}");
+    }
+
+    [Fact]
     public void ImagesKnockOutToo()
     {
         using Raster<Rgba8> image = Raster.Create(20, 20, new Rgba8(0, 0, 255, 128));

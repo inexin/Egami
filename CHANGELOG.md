@@ -335,6 +335,11 @@ Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same previ
   a 2,000-word page at three widths 7.8 ms against 118 ms; 10,000 hit tests 19 ms against 196 ms.
 - Fuzz target `paragraph`, and a robustness suite on the same harness.
 
+### Egami.Drawing 1.0.1
+
+- Fixed: a non-isolated layer merged with a blend mode other than source-over blended the backdrop it started from with itself;
+  the backdrop's part is now removed first, as PDF's non-isolated groups require (ISO 32000 11.4.8). Found by Egap's renderer.
+
 ### Egami.Drawing 1.0.0
 
 The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Settled in the 1.0 API review, changes from 0.1.0:

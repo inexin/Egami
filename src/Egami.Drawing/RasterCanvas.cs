@@ -136,6 +136,15 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
                 {
                     layer.CopyFrom(parent, shared);
                 }
+
+                // Merged with a blend mode, the group's own content must be told apart from the backdrop it started as.
+                if (options.BlendMode != BlendMode.SourceOver && !options.Knockout)
+                {
+                    RasterTarget first = parent.CreateLayer(area, _context);
+                    first.CopyFrom(layer, area);
+                    layer.GroupBackdrop = first;
+                    layer.GroupAlpha = new float[area.Width * area.Height];
+                }
             }
         }
         catch
@@ -171,6 +180,7 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
         try
         {
             LayerOptions options = layer.Options;
+            pixels.RemoveGroupBackdrop();
             if (options.Filter is not null)
             {
                 pixels.Filter(options.Filter);
@@ -184,6 +194,11 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             Rect merge = layer.Merge.Intersect(_clip.Bounds);
             if (!merge.IsEmpty)
             {
+                if (_target.GroupAlpha is not null)
+                {
+                    AddLayerToGroupAlpha(pixels, merge, options.Opacity);
+                }
+
                 _target.Merge(pixels, merge, _clip.Mask, options.BlendMode, options.Opacity, Options.ColorSpace);
             }
         }
@@ -505,6 +520,24 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             }
 
             layer.Multiply(area.Y + y, area.X, values);
+        }
+    }
+
+    /// <summary>Adds a layer merged into a non-isolated parent to the parent's group alpha: its alpha times the opacity and the clip.</summary>
+    private void AddLayerToGroupAlpha(RasterTarget layer, Rect merge, float opacity)
+    {
+        PremulRgbaF32[] row = new PremulRgbaF32[merge.Width];
+        float[] alpha = new float[merge.Width];
+        for (int y = merge.Y; y < merge.Bottom; y++)
+        {
+            layer.ReadRow<PremulRgbaF32>(y, merge.X, row);
+            ReadOnlySpan<byte> clip = _clip.Mask is ClipMask mask ? mask.Row(y).Slice(merge.X - mask.Bounds.X, merge.Width) : default;
+            for (int i = 0; i < row.Length; i++)
+            {
+                alpha[i] = row[i].A * opacity * (clip.IsEmpty ? 1 : clip[i] / 255f);
+            }
+
+            _target.AddGroupAlpha(y, merge.X, alpha);
         }
     }
 

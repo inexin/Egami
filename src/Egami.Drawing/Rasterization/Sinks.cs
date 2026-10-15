@@ -363,3 +363,53 @@ internal sealed class MaskedSink(ISpanSink inner, Shader mask) : ISpanSink
         inner.Blend(y, x, coverage);
     }
 }
+
+/// <summary>
+/// Draws into a non-isolated layer that merges with a blend mode: each run is blended as usual, and the alpha it would have on its
+/// own, found by blending it once onto transparency first, is added to the layer's group alpha.
+/// </summary>
+internal sealed class GroupAlphaSink<TPixel>(RasterTarget<TPixel> target, ISpanSink inner) : ISpanSink
+    where TPixel : unmanaged, IPixelType<TPixel>
+{
+    public bool FillsDirectly => false;
+
+    public void Fill(int y, int x, int length, byte coverage, Span<byte> scratch)
+    {
+        Span<byte> row = scratch[..length];
+        row.Fill(coverage);
+        Blend(y, x, row);
+    }
+
+    public void Blend(int y, int x, Span<byte> coverage)
+    {
+        int n = coverage.Length;
+        Span<TPixel> row = target.Row(y, x, n);
+        TPixel[] saved = System.Buffers.ArrayPool<TPixel>.Shared.Rent(n);
+        byte[] alone = System.Buffers.ArrayPool<byte>.Shared.Rent(n);
+        PremulRgbaF32[] own = System.Buffers.ArrayPool<PremulRgbaF32>.Shared.Rent(n);
+        float[] alpha = System.Buffers.ArrayPool<float>.Shared.Rent(n);
+        try
+        {
+            row.CopyTo(saved);
+            coverage.CopyTo(alone);
+            row.Clear();
+            inner.Blend(y, x, alone.AsSpan(0, n));
+            PixelConvert.Convert<TPixel, PremulRgbaF32>(row, own.AsSpan(0, n));
+            for (int i = 0; i < n; i++)
+            {
+                alpha[i] = own[i].A;
+            }
+
+            saved.AsSpan(0, n).CopyTo(row);
+            inner.Blend(y, x, coverage);
+            target.AddGroupAlpha(y, x, alpha.AsSpan(0, n));
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<TPixel>.Shared.Return(saved);
+            System.Buffers.ArrayPool<byte>.Shared.Return(alone);
+            System.Buffers.ArrayPool<PremulRgbaF32>.Shared.Return(own);
+            System.Buffers.ArrayPool<float>.Shared.Return(alpha);
+        }
+    }
+}
