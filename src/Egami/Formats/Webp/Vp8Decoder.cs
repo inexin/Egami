@@ -452,6 +452,7 @@ internal sealed partial class Vp8Decoder : IDisposable
         Vp8VideoDecoder video = _video!;
         _macroblocks = new Macroblock[MbWidth * MbHeight];
         Damaged = new bool[MbWidth * MbHeight];
+        Vp8StageTimes.Lap(Vp8Stage.Setup);
         for (int mby = 0; mby < MbHeight; mby++)
         {
             Array.Clear(_modesLeft);
@@ -463,6 +464,8 @@ internal sealed partial class Vp8Decoder : IDisposable
                 Damaged[(mby * MbWidth) + mbx] = _modes.PastEnd;
             }
         }
+
+        Vp8StageTimes.Lap(Vp8Stage.Modes);
 
         // Rows that share a partition must go in order, so each thread takes every n-th row, n a power of two no more than the
         // partitions.
@@ -555,6 +558,8 @@ internal sealed partial class Vp8Decoder : IDisposable
         {
             RowsDone = Height;
         }
+
+        Vp8StageTimes.Lap(Vp8Stage.Output);
 
         return true;
     }
@@ -683,12 +688,16 @@ internal sealed partial class Vp8Decoder : IDisposable
 
     private void DecodeMacroblockRow(int mby, Row c)
     {
+        Vp8StageTimes.Lap(Vp8Stage.Setup);
         ref Vp8BoolDecoder tokens = ref _partitions[mby & _partitionMask];
         Array.Clear(_modesLeft);
         StartRow(mby, c);
         for (int mbx = 0; mbx < MbWidth; mbx++)
         {
-            DecodeMacroblock(mbx, mby, ParseModes(mbx, mby), c, ref tokens);
+            Macroblock mb = ParseModes(mbx, mby);
+            Vp8StageTimes.Lap(Vp8Stage.Modes);
+            DecodeMacroblock(mbx, mby, mb, c, ref tokens);
+            Vp8StageTimes.Lap(Vp8Stage.Reconstruct);
         }
 
         if (_filterType > 0)
@@ -697,6 +706,8 @@ internal sealed partial class Vp8Decoder : IDisposable
             {
                 FilterMacroblock(mbx, mby, c);
             }
+
+            Vp8StageTimes.Lap(Vp8Stage.Filter);
         }
     }
 
@@ -721,9 +732,11 @@ internal sealed partial class Vp8Decoder : IDisposable
             }
 
             DecodeMacroblock(mbx, mby, _macroblocks![first + mbx], c, ref tokens);
+            Vp8StageTimes.Lap(Vp8Stage.Reconstruct);
             if (_filterType > 0)
             {
                 FilterMacroblock(mbx, mby, c);
+                Vp8StageTimes.Lap(Vp8Stage.Filter);
             }
 
             if (progress is not null)
@@ -790,6 +803,7 @@ internal sealed partial class Vp8Decoder : IDisposable
             }
         }
 
+        Vp8StageTimes.Lap(Vp8Stage.Tokens);
         c.AnyCoefficients = anyNonZero;
 
         if (_video is not null)
@@ -1225,7 +1239,9 @@ internal sealed partial class Vp8Decoder : IDisposable
         const int C0 = S + 8;
         int dy = c.RowY + (mbx * 16);
         int dc = c.RowC + (mbx * 8);
+        Vp8StageTimes.Lap(Vp8Stage.Reconstruct);
         PredictInter(mbx, mby, c, dy, dc);
+        Vp8StageTimes.Lap(Vp8Stage.Inter);
         if (c.AnyCoefficients)
         {
             ReadOnlySpan<short> coefficients = c.Coefficients;

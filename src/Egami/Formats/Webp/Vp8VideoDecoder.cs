@@ -164,7 +164,9 @@ internal sealed class Vp8VideoDecoder : IDisposable
             Concealed = true;
         }
 
+        Vp8StageTimes.Lap(Vp8Stage.Setup);
         _buffers[_new]!.ExtendBorders();
+        Vp8StageTimes.Lap(Vp8Stage.Borders);
         if (!decoder.RefreshEntropy)
         {
             State.RestoreEntropy();

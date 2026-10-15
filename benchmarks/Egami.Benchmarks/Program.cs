@@ -56,6 +56,21 @@ if (args is ["--encode-jxl", string effort, .. string[] pairs])
     return;
 }
 
+// Profile one thread's VP8 decode stage by stage (Phase 2.4.5), IVF clips and lossy WebP stills; the stages need a build with
+// -p:Vp8StageTimers=true: -- --vp8-stages <file.ivf|file.webp>...
+if (args is ["--vp8-stages", .. string[] vp8Files])
+{
+    Vp8Timing.RunStages(vp8Files);
+    return;
+}
+
+// Write the 2.3.1 WebP benchmark pictures (photo 2048 × 1536, screenshot 1920 × 1080) as PNG: -- --write-webp-pictures <dir>
+if (args is ["--write-webp-pictures", string pictureDirectory])
+{
+    Vp8Timing.WritePictures(pictureDirectory);
+    return;
+}
+
 // Write the benchmark photo as PNG, for tools/make-jpeg-bench-files.py: -- --write-photo <path>
 if (args is ["--write-photo", string path])
 {

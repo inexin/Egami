@@ -6,6 +6,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- The VP8 stage timers (src/Egami/Formats/Webp/Vp8StageTimes.cs), for the stage profile (Vp8Timing.RunStages); build with -p:Vp8StageTimers=true. -->
+  <PropertyGroup Condition="'$(Vp8StageTimers)' == 'true'">
+    <DefineConstants>$(DefineConstants);VP8_STAGE_TIMERS</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
     <!-- Builds interlaced PNGs independently of Egami's writer, which writes only non-interlaced files. -->

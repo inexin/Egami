@@ -189,7 +189,9 @@ internal sealed partial class WebpReader : IFormatReader
             (YuvRaster<byte> planes, EgamiDiagnostic? lossyWarning) = DecodePlanes(input, options, parser);
             using (planes)
             {
+                Vp8StageTimes.Lap(Vp8Stage.Setup);
                 WebpYuvToRgb.ToRaster(planes, raster, options is WebpReaderOptions { FastUpsampling: true }, input.CancellationToken);
+                Vp8StageTimes.Lap(Vp8Stage.Output);
             }
 
             return (parser.ImageSize, lossyWarning);

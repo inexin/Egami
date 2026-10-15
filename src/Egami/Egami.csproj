@@ -11,6 +11,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- The Phase 2.4.5 VP8 stage timers (Formats/Webp/Vp8StageTimes.cs), for the stage profile in benchmarks/Egami.Benchmarks only:
+       build with -p:Vp8StageTimers=true. Never set for a shipped build. -->
+  <PropertyGroup Condition="'$(Vp8StageTimers)' == 'true'">
+    <DefineConstants>$(DefineConstants);VP8_STAGE_TIMERS</DefineConstants>
+  </PropertyGroup>
+
   <!-- Build-time analyzer only; ships nothing. The only package reference allowed in src/ (checked in ci.yml). -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
