@@ -12,3 +12,7 @@ tests/svg/** -text
 *.gz binary
 *.jxl binary
 *.pfm binary
+*.avif binary
+*.y4m binary
+*.ivf binary
+*.obu binary

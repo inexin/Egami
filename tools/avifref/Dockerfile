@@ -1,0 +1,23 @@
+# Reference tools for Phase 2.9.2 (AVIF): dav1d 1.5.4 (BSD-2), libaom 3.15.2 (BSD-2, AOM patent license) and libavif 1.4.2
+# (BSD-2) built from source, with SVT-AV1 and rav1e from Debian as extra encoders for corpus variety; ExifTool. libavif is built
+# without libyuv, so avifdec converts YUV to RGB with its own exact code. Built by tools/make-avif-references.py; the tools run as
+# oracles only.
+FROM debian@sha256:913f6706df59a68922d1dd08f78c2476560a8d367897200a6005b00e5f67c2d5
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential cmake meson ninja-build nasm git ca-certificates pkg-config python3 python3-numpy \
+        libpng-dev libjpeg62-turbo-dev zlib1g-dev libxml2-dev libsvtav1enc-dev librav1e-dev libimage-exiftool-perl \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 --branch 1.5.4 https://code.videolan.org/videolan/dav1d.git /src/dav1d \
+    && meson setup /src/dav1d/build /src/dav1d --buildtype=release -Denable_tools=true -Denable_tests=false \
+    && ninja -C /src/dav1d/build install && rm -rf /src/dav1d/build
+RUN git clone --depth 1 --branch v3.15.2 https://aomedia.googlesource.com/aom /src/aom \
+    && cmake -S /src/aom -B /src/aom/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 -DENABLE_TESTS=0 \
+        -DENABLE_DOCS=0 -DENABLE_EXAMPLES=1 -DENABLE_TOOLS=0 \
+    && ninja -C /src/aom/build install && rm -rf /src/aom/build
+RUN git clone --depth 1 --branch v1.4.2 https://github.com/AOMediaCodec/libavif /src/libavif \
+    && cmake -S /src/libavif -B /src/libavif/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DAVIF_BUILD_APPS=ON \
+        -DAVIF_CODEC_DAV1D=SYSTEM -DAVIF_CODEC_AOM=SYSTEM -DAVIF_CODEC_SVT=SYSTEM -DAVIF_CODEC_RAV1E=SYSTEM \
+        -DAVIF_LIBYUV=OFF -DAVIF_JPEG=SYSTEM -DAVIF_ZLIBPNG=SYSTEM -DAVIF_LIBXML2=SYSTEM -DAVIF_LIBSHARPYUV=OFF \
+    && ninja -C /src/libavif/build install && rm -rf /src/libavif/build && ldconfig
+RUN dav1d --version && aomenc --help > /dev/null; avifdec --version && avifenc --version && exiftool -ver
+WORKDIR /work
