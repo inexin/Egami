@@ -19,6 +19,8 @@ public class Text
 
     private static string EmojiFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoColorEmoji-COLRv1-subset.ttf");
 
+    private static string CjkFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansCJK-layout-subset.otf");
+
     private static string WebFile => System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.woff2");
 
     [Fact]
@@ -321,6 +323,56 @@ public class Text
 
         Assert.Equal(3, embedded.GlyphCount);
         Assert.True(width > 0);
+    }
+
+    [Fact]
+    public void FontDataForPdf()
+    {
+        Typeface face = Typeface.FromFile(CffFile);
+
+        #region names
+        // A PDF simple font's /Differences array names glyphs: find each by name, and get names back for a ToUnicode guess.
+        ushort aacute = face.TryGetGlyphByName("aacute", out ushort g) ? g : (ushort)0;
+        string? name = face.GetGlyphName(aacute);
+        #endregion
+
+        Assert.Equal("aacute", name);
+
+        Typeface cjk = Typeface.FromFile(CjkFile);
+
+        #region cids
+        // A CIDFontType0 font with /CIDToGIDMap absent reaches glyphs by CID through the CFF charset.
+        CidSystemInfo? collection = cjk.CidSystemInfo;            // Adobe-Identity-0 for this font
+        ushort glyph = cjk.TryGetGlyphByCid(1, out ushort byCid) ? byCid : (ushort)0;
+        int cid = cjk.GetCid(glyph);
+        #endregion
+
+        Assert.Equal("Identity", collection!.Ordering);
+        Assert.Equal(1, cid);
+
+        Typeface trueType = Typeface.FromFile(FontFile);
+
+        #region cmaps
+        // A symbolic TrueType font in PDF looks a code up in (3,0) first, then (1,0); a non-symbolic one uses (3,1).
+        CharacterMap? map = trueType.FindCharacterMap(3, 0) ?? trueType.FindCharacterMap(1, 0) ?? trueType.FindCharacterMap(3, 1);
+        ushort forA = map?.GetGlyph('A') ?? 0;
+
+        // A Type1C font without /Encoding uses the CFF program's own encoding.
+        CharacterMap? own = face.BuiltInEncoding;                  // platform 7, encoding 0: the Standard Encoding
+        ushort forB = own?.GetGlyph('B') ?? 0;
+        #endregion
+
+        Assert.Equal(trueType.GetGlyph('A'), forA);
+        Assert.Equal(face.GetGlyph('B'), forB);
+
+        #region cffstrings
+        // Converting a Type 1 font to CFF: standard glyph names take their standard SIDs, others go in the String INDEX.
+        int sid = CffStandardStrings.TryGetSid("Aacute", out int standard) ? standard : -1;
+        string atCode65 = CffStandardStrings.StandardEncoding[65];   // "A"
+        #endregion
+
+        Assert.Equal(171, sid);
+        Assert.Equal("A", atCode65);
     }
 
     [Fact]

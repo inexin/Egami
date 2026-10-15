@@ -17,6 +17,115 @@ public class FontDataTests
         "derived/NotoSansCJK-fd2048.cff",
         "derived/NotoSansCJK-fdmatrix.cff");
 
+    public static TheoryData<string> AllFiles
+    {
+        get
+        {
+            var data = new TheoryData<string>();
+            foreach (string path in Directory.EnumerateFiles(Path.Combine(TestFonts.Root, "tests", "reference", "fonts", "fontdata")).Order(StringComparer.Ordinal))
+            {
+                string name = Path.GetFileName(path)[..^".json.gz".Length];
+                if (name == "cff-standard")
+                {
+                    continue;
+                }
+
+                data.Add(name.StartsWith("derived_", StringComparison.Ordinal) ? "derived/" + name["derived_".Length..] : name);
+            }
+
+            return data;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(AllFiles))]
+    public void FontDataEqualsFreeTypeAndFontTools(string file)
+    {
+        JsonElement faces = Reference(file);
+        for (int index = 0; index < faces.GetArrayLength(); index++)
+        {
+            JsonElement expected = faces[index];
+            Typeface face = file.EndsWith(".cff", StringComparison.Ordinal) ? Typeface.FromCff(TestFonts.Bytes(file)) : TestFonts.Load(file, index);
+
+            // Names, both ways: FreeType's, or none.
+            JsonElement names = expected.GetProperty("names");
+            if (names.ValueKind == JsonValueKind.Null)
+            {
+                Assert.Null(face.GetGlyphName(0));
+            }
+            else
+            {
+                Assert.Equal(names.GetArrayLength(), face.GlyphCount);
+                var firstByName = new Dictionary<string, ushort>(StringComparer.Ordinal);
+                for (ushort g = 0; g < face.GlyphCount; g++)
+                {
+                    string name = names[g].GetString()!;
+                    Assert.True(name == face.GetGlyphName(g), $"{file} glyph {g}: {face.GetGlyphName(g)}, FreeType {name}");
+                    firstByName.TryAdd(name, g);
+                }
+
+                foreach ((string name, ushort g) in firstByName)
+                {
+                    Assert.True(face.TryGetGlyphByName(name, out ushort found) && found == g, $"{file} name {name}: {found}, expected {g}");
+                }
+            }
+
+            Assert.Null(face.GetGlyphName((ushort)face.GlyphCount));
+            Assert.False(face.TryGetGlyphByName("no such glyph", out _));
+
+            // CIDs and the character collection.
+            if (expected.TryGetProperty("cid", out JsonElement cid) && cid.ValueKind != JsonValueKind.Null)
+            {
+                Assert.Equal(new CidSystemInfo(cid.GetProperty("registry").GetString()!, cid.GetProperty("ordering").GetString()!, cid.GetProperty("supplement").GetInt32()), face.CidSystemInfo);
+                JsonElement cids = cid.GetProperty("cids");
+                Assert.Equal(cids.GetArrayLength(), face.GlyphCount);
+                for (ushort g = 0; g < face.GlyphCount; g++)
+                {
+                    int expectedCid = cids[g].GetInt32();
+                    Assert.Equal(expectedCid, face.GetCid(g));
+                    Assert.True(face.TryGetGlyphByCid(expectedCid, out ushort back) && face.GetCid(back) == expectedCid);
+                }
+            }
+            else
+            {
+                Assert.Null(face.CidSystemInfo);
+                Assert.Equal(-1, face.GetCid(0));
+                Assert.False(face.TryGetGlyphByCid(0, out _));
+            }
+
+            // Every cmap subtable but format 14, as stored.
+            JsonElement cmaps = expected.GetProperty("cmaps");
+            Assert.Equal(cmaps.GetArrayLength(), face.CharacterMaps.Count);
+            for (int i = 0; i < cmaps.GetArrayLength(); i++)
+            {
+                JsonElement c = cmaps[i];
+                CharacterMap map = face.CharacterMaps[i];
+                Assert.Equal((c.GetProperty("platform").GetInt32(), c.GetProperty("encoding").GetInt32(), c.GetProperty("format").GetInt32(), c.GetProperty("language").GetInt32()), (map.PlatformId, map.EncodingId, map.Format, map.Language));
+                AssertMappings(file, map, c.GetProperty("map"));
+                Assert.Same(map, face.FindCharacterMap(map.PlatformId, map.EncodingId) == map ? map : face.CharacterMaps.First(m => m.PlatformId == map.PlatformId && m.EncodingId == map.EncodingId));
+            }
+
+            // A CFF font's own encoding, as FreeType's platform 7 charmap.
+            JsonElement builtin = expected.GetProperty("builtin");
+            if (builtin.GetArrayLength() == 0)
+            {
+                Assert.Null(face.BuiltInEncoding);
+            }
+            else
+            {
+                CharacterMap own = face.BuiltInEncoding!;
+                Assert.Equal((CharacterMap.AdobePlatform, builtin[0].GetProperty("encoding").GetInt32()), (own.PlatformId, own.EncodingId));
+                Assert.Same(own, face.FindCharacterMap(CharacterMap.AdobePlatform, own.EncodingId));
+                // FreeType's Expert Encoding gives code 175 Dotaccentsmall, as 172; Egami gives it Macronsmall, as pdf.js does.
+                AssertMappings(file, own, builtin[0].GetProperty("map"), own.EncodingId == 1 ? 175 : -1);
+                if (own.EncodingId == 1 && face.TryGetGlyphByName("Macronsmall", out ushort macronGlyph))
+                {
+                    Assert.Equal(macronGlyph, own.GetGlyph(175));
+                }
+            }
+        }
+    }
+
     [Theory]
     [MemberData(nameof(BareCffFiles))]
     public void CffOutlinesAndAdvancesEqualFreeType(string file)
@@ -77,6 +186,130 @@ public class FontDataTests
     }
 
     [Fact]
+    public void CffStandardStringsEqualFontTools()
+    {
+        JsonElement r = Reference("cff-standard");
+        JsonElement strings = r.GetProperty("strings");
+        Assert.Equal(CffStandardStrings.Count, strings.GetArrayLength());
+        for (int sid = 0; sid < CffStandardStrings.Count; sid++)
+        {
+            string name = strings[sid].GetString()!;
+            Assert.Equal(name, CffStandardStrings.Get(sid));
+            Assert.True(CffStandardStrings.TryGetSid(name, out int back) && back == sid);
+        }
+
+        Assert.Equal(r.GetProperty("standardEncoding").EnumerateArray().Select(e => e.GetString()), CffStandardStrings.StandardEncoding);
+        Assert.Equal(256, CffStandardStrings.ExpertEncoding.Count);
+        Assert.Equal("Macronsmall", CffStandardStrings.ExpertEncoding[175]);
+        Assert.Equal("Ydieresissmall", CffStandardStrings.ExpertEncoding[255]);
+        Assert.False(CffStandardStrings.TryGetSid("Macron", out int none));
+        Assert.Equal(-1, none);
+        Assert.Throws<ArgumentOutOfRangeException>(() => CffStandardStrings.Get(391));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CffStandardStrings.Get(-1));
+
+        static string[] Names(ushort[] sids) => [.. sids.Select(sid => CffStandardStrings.Get(sid))];
+        Assert.Equal(r.GetProperty("expertCharset").EnumerateArray().Select(e => e.GetString()), Names(Cff.CffStandard.PredefinedCharset(1)));
+        Assert.Equal(r.GetProperty("expertSubsetCharset").EnumerateArray().Select(e => e.GetString()), Names(Cff.CffStandard.PredefinedCharset(2)));
+    }
+
+    [Fact]
+    public void InstancesShareTheirFontsData()
+    {
+        Typeface font = TestFonts.Load("derived/SourceSans3-VF-subset.otf");
+        Typeface bold = font.WithVariations([new FontVariation(new FontTag("wght"), 700)]);
+        Assert.Same(font.CharacterMaps, bold.CharacterMaps);
+        Assert.Equal(font.GetGlyphName(5), bold.GetGlyphName(5));
+        Assert.Equal(font.FindCharacterMap(3, 1)!.GetGlyph('A'), bold.FindCharacterMap(3, 1)!.GetGlyph('A'));
+        Assert.Equal(font.BuiltInEncoding, bold.BuiltInEncoding);
+    }
+
+    [Fact]
+    public void LookupsAreThreadSafe()
+    {
+        byte[] data = TestFonts.Bytes("DejaVuSans.ttf");
+        for (int round = 0; round < 4; round++)
+        {
+            Typeface face = Typeface.FromMemory(data);
+            var found = new int[8];
+            Parallel.For(0, 8, i =>
+            {
+                found[i] = face.TryGetGlyphByName("Aacute", out ushort g) ? g : -1;
+                found[i] += face.FindCharacterMap(3, 1)!.GetGlyph(0xC1) - g;
+            });
+            Assert.All(found, f => Assert.Equal(found[0], f));
+            Assert.True(found[0] > 0);
+        }
+    }
+
+    [Fact]
+    public void DamagedDataGivesWarningsNotExceptions()
+    {
+        // A post table version 2 whose name indices run past its strings, and a cmap with a format 8 subtable (which Egami does
+        // not read) and a cut-off format 0 one.
+        byte[] data = TestFonts.Bytes("derived/NotoSans-mac.ttf");
+        byte[] font = WithTable(data, "post", PostVersion2(glyphCount: 3, indices: [0, 300, 3], strings: []));
+        font = WithTable(font, "cmap", [0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 20, 0, 3, 0, 1, 0, 0, 0, 28, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        var diagnostics = new List<string>();
+        var options = new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = d => diagnostics.Add(d.Message) } };
+        Typeface face = Typeface.FromMemory(font, 0, options);
+        Assert.Equal(".notdef", face.GetGlyphName(0));
+        Assert.Null(face.GetGlyphName(1));
+        Assert.Equal("space", face.GetGlyphName(2));
+        Assert.Null(face.GetGlyphName(3));
+        Assert.Equal(2, face.CharacterMaps.Count);
+        Assert.Equal((1, 0, 8), (face.CharacterMaps[0].PlatformId, face.CharacterMaps[0].EncodingId, face.CharacterMaps[0].Format));
+        Assert.Equal(0, face.CharacterMaps[0].GetGlyph(32));
+        Assert.Equal((3, 1, 0), (face.CharacterMaps[1].PlatformId, face.CharacterMaps[1].EncodingId, face.CharacterMaps[1].Format));
+        Assert.Empty(face.CharacterMaps[1].GetMappings());
+        Assert.Contains(diagnostics, m => m.Contains("post", StringComparison.Ordinal));
+        Assert.Contains(diagnostics, m => m.Contains("(1,0) cmap subtable", StringComparison.Ordinal));
+        Assert.Contains(diagnostics, m => m.Contains("(3,1) cmap subtable", StringComparison.Ordinal));
+
+        Assert.Throws<CorruptDataException>(() => Typeface.FromMemory(font, 0, new FontLoadOptions { Strict = true }).GetGlyphName(1));
+    }
+
+    private static byte[] PostVersion2(int glyphCount, ushort[] indices, string[] strings)
+    {
+        var bytes = new List<byte> { 0, 2, 0, 0 };
+        bytes.AddRange(new byte[28]);
+        bytes.Add((byte)(glyphCount >> 8));
+        bytes.Add((byte)glyphCount);
+        foreach (ushort index in indices)
+        {
+            bytes.Add((byte)(index >> 8));
+            bytes.Add((byte)index);
+        }
+
+        foreach (string s in strings)
+        {
+            bytes.Add((byte)s.Length);
+            bytes.AddRange(System.Text.Encoding.Latin1.GetBytes(s));
+        }
+
+        return [.. bytes];
+    }
+
+    /// <summary>Replaces one table of an sfnt (checksums are not checked by Egami), appending the new bytes at the end.</summary>
+    private static byte[] WithTable(byte[] font, string tag, byte[] table)
+    {
+        int count = (font[4] << 8) | font[5];
+        byte[] result = [.. font, .. new byte[(4 - (font.Length % 4)) % 4], .. table];
+        int start = font.Length + ((4 - (font.Length % 4)) % 4);
+        for (int i = 0; i < count; i++)
+        {
+            int record = 12 + (16 * i);
+            if (System.Text.Encoding.ASCII.GetString(font, record, 4) == tag)
+            {
+                System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(result.AsSpan(record + 8), start);
+                System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(result.AsSpan(record + 12), table.Length);
+                return result;
+            }
+        }
+
+        throw new InvalidOperationException($"The font has no {tag} table.");
+    }
+
+    [Fact]
     public void ReservedDictOperatorsAreSkipped()
     {
         // pdf.js's bug1308536.pdf has a Type1C font whose DICT uses the reserved operator 25; FreeType, PDFium and pdf.js skip it.
@@ -109,6 +342,7 @@ public class FontDataTests
         Typeface reference = Typeface.FromCff(original);
         Assert.Equal(reference.GlyphCount, face.GlyphCount);
         Assert.Equal(reference.GetGlyphExtents(5), face.GetGlyphExtents(5));
+        Assert.Equal(reference.GetGlyphName(5), face.GetGlyphName(5));
 
         Cff.CffDict dict = Cff.CffDict.Read([139, 140, 31, 141, 255, 142, 17], 0);
         Assert.Equal([3.0], dict.Get(17)!);
@@ -162,6 +396,18 @@ public class FontDataTests
         }
 
         return i - at + 1;
+    }
+
+    private static void AssertMappings(string file, CharacterMap map, JsonElement expected, int skipCode = -1)
+    {
+        CharacterMapping[] actual = [.. map.GetMappings().Where(m => m.Code != skipCode)];
+        CharacterMapping[] reference = [.. expected.EnumerateArray().Select(p => new CharacterMapping(p[0].GetInt32(), (ushort)p[1].GetInt32())).Where(m => m.Code != skipCode)];
+        Assert.True(reference.Length == actual.Length, $"{file} {map}: {actual.Length} mappings, reference {reference.Length}");
+        for (int i = 0; i < actual.Length; i++)
+        {
+            Assert.True(reference[i] == actual[i], $"{file} {map}: {actual[i]}, reference {reference[i]}");
+            Assert.Equal(reference[i].Glyph, map.GetGlyph(reference[i].Code));
+        }
     }
 
     internal static JsonElement Reference(string file)

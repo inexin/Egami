@@ -322,6 +322,26 @@ Two new packages, first released at 0.1; their API may still change while they a
   custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts. It stays a preview
   until Egap's HTML reader has used it.
 
+### Egami.Fonts 0.2.0: font data for PDF
+
+What a PDF font needs to reach its glyphs, public before Egami.Fonts 1.0. See [Font data for PDF](docs/articles/guides/text.md#font-data-for-pdf).
+
+- `Typeface.GetGlyphName` and `TryGetGlyphByName`: names from a name-keyed CFF font's charset (the Expert and ExpertSubset
+  charsets included) or the post table, versions 1, 2 and 2.5.
+- `Typeface.CidSystemInfo` (`CidSystemInfo`), `GetCid` and `TryGetGlyphByCid` for CID-keyed CFF, bare or in OpenType.
+- `Typeface.CharacterMaps` and `FindCharacterMap`: every cmap subtable as stored (`CharacterMap`, `CharacterMapping`), with
+  format 2 newly read; `Typeface.BuiltInEncoding`, a CFF font's own encoding as a platform 7 map, as FreeType gives it.
+- `CffStandardStrings`: the 391 CFF standard strings and the Standard and Expert encodings.
+- On the 1,723 font programs embedded in Egap's PDF corpus, names, CIDs, subtables and built-in encodings equal FreeType's and
+  fontTools' (FreeType's where they differ: the first of overlapping format 4 segments wins, and a code past the font's glyphs
+  maps to 0). The Expert Encoding gives code 175 Macronsmall, as pdf.js does, where FreeType repeats Dotaccentsmall.
+- Fixes: a CID-keyed CFF font's Font DICT FontMatrix now applies before the Top DICT's, so a font whose Font DICTs scale by
+  1/2048 (pdf.js's text_clip_cff_cid.pdf) draws its glyphs at their size rather than about twice it; outlines and advances
+  equal FreeType's on every CID-keyed CFF in the corpus. A CFF DICT with a reserved operator (pdf.js's bug1308536.pdf) loads,
+  the operator skipped as FreeType, PDFium and pdf.js skip it. A cmap format 6 subtable whose count runs past the table keeps
+  the entries there are.
+- A `fontdata` fuzz target reads every name, CID, subtable and encoding of what loads; the font targets do too.
+
 ### Egami.Fonts 0.1.0
 
 Egami.Fonts' first release, beside Egami.Drawing 0.1.0: everything in the 1.0.0 previews below, from reading faces to shaping

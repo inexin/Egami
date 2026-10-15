@@ -21,6 +21,7 @@ Targets:
 | `stream` | Any format through `RasterDecoder`, whole and incremental, with a region, a reduction, a band height and the sizes the bytes arrive in all picked from the input's hash, and previews drawn on the way; a strict incremental decode must give the whole decode's rows | `tests/images/fuzz/stream-seeds/*` |
 | `font` | TrueType, OpenType and collection data (Egami.Fonts): probed, every face loaded leniently and strictly, names, metrics, the first glyphs' outlines, bounds and kerning read, text shaped and measured | `tests/images/fuzz/font-seeds/*` |
 | `cff` | Bare CFF streams as PDF embeds them: loaded, then read as `font` does | `tests/images/fuzz/cff-seeds/*` |
+| `fontdata` | What `font` or `cff` loads has every glyph name, CID, cmap subtable and CFF encoding read (Phase 2.7.3); each name and CID must find a glyph no later than its own, and each listed mapping must look up the same glyph | `tests/images/fuzz/fontdata-seeds/*` |
 | `subset` | What `font` or `cff` loads is subsetted (numbering, cmap and prefix picked by the last byte), re-loaded, and every kept glyph's outline must be unchanged | `tests/images/fuzz/font-seeds/*` |
 | `woff2` | WOFF and WOFF2 files (the glyf, loca and hmtx transforms, Brotli and zlib streams): read as `font` does | `tests/images/fuzz/woff2-seeds/*` |
 | `gvar` | Variable TrueType fonts: every face at its default, its first named instances and three positions the bytes pick, read as `font` does there (gvar, avar 1 and 2, HVAR, MVAR, GDEF deltas) | `tests/images/fuzz/gvar-seeds/*` |

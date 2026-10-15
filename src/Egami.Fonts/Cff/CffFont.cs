@@ -193,6 +193,24 @@ internal sealed class CffFont
         return (uint)index < (uint)Strings.Count ? System.Text.Encoding.Latin1.GetString(Strings[index]) : string.Empty;
     }
 
+    /// <summary>Gets a string by SID like <see cref="GetString"/>, or null when the SID is past the strings or its item is damaged.</summary>
+    public string? TryGetString(int sid)
+    {
+        if (sid < 0 || sid - CffStandard.StandardStringCount >= Strings.Count)
+        {
+            return null;
+        }
+
+        try
+        {
+            return GetString(sid);
+        }
+        catch (CorruptDataException)
+        {
+            return null;
+        }
+    }
+
     public static CffFont Read(ReadOnlyMemory<byte> data, long fileOffset)
     {
         ReadOnlySpan<byte> span = data.Span;
@@ -372,14 +390,22 @@ internal sealed class CffFont
     private static ushort[] ReadCharset(ReadOnlySpan<byte> data, int offset, int glyphCount, long fileOffset)
     {
         var charset = new ushort[glyphCount];
-        if (offset is 0 or 1 or 2)
+        if (offset == 0)
         {
-            // Predefined: ISOAdobe maps glyph i to SID i; the expert sets are treated the same, which only affects seac lookups.
+            // ISOAdobe maps glyph i to SID i.
             for (int i = 0; i < glyphCount; i++)
             {
                 charset[i] = (ushort)Math.Min(i, CffStandard.IsoAdobeLastSid);
             }
 
+            return charset;
+        }
+
+        if (offset is 1 or 2)
+        {
+            // Expert and ExpertSubset; glyphs past the set's end get .notdef.
+            ushort[] predefined = CffStandard.PredefinedCharset(offset);
+            predefined.AsSpan(0, Math.Min(predefined.Length, glyphCount)).CopyTo(charset);
             return charset;
         }
 
@@ -484,6 +510,85 @@ internal sealed class CffFont
         }
 
         return select;
+    }
+
+    /// <summary>
+    /// Reads a name-keyed font's own encoding: which predefined one it is (0 Standard, 1 Expert, 2 custom) and the glyph of each
+    /// of the 256 codes, 0 where a code names no glyph. Custom encodings give codes to glyphs 1 on in order, then their
+    /// supplements; a later assignment of a code wins. Null for a CID-keyed or CFF2 font.
+    /// </summary>
+    /// <exception cref="CorruptDataException">The encoding data cannot be read.</exception>
+    public (int Kind, ushort[] Glyphs)? ReadEncoding()
+    {
+        if (IsCff2 || IsCidKeyed)
+        {
+            return null;
+        }
+
+        var glyphs = new ushort[256];
+        int offset = Top.GetInt(OpEncoding, 0);
+        if (offset is 0 or 1)
+        {
+            for (int code = 0; code < 256; code++)
+            {
+                int sid = offset == 0 ? CffStandard.StandardEncodingSid(code) : CffStandard.ExpertEncodingSid(code);
+                int glyph = sid == 0 ? 0 : GlyphOfSid(sid);
+                glyphs[code] = (ushort)Math.Max(glyph, 0);
+            }
+
+            return (offset, glyphs);
+        }
+
+        ReadOnlySpan<byte> span = _data.Span;
+        if (offset < 0 || offset >= span.Length)
+        {
+            throw FontErrors.Corrupt(offset, "The CFF encoding offset is outside the data.");
+        }
+
+        var r = new FontReader(span[offset..], offset);
+        int format = r.ReadByte();
+        int glyphIndex = 1;
+        switch (format & 0x7F)
+        {
+            case 0:
+                for (int n = r.ReadByte(); n > 0; n--, glyphIndex++)
+                {
+                    int code = r.ReadByte();
+                    if (glyphIndex < GlyphCount)
+                    {
+                        glyphs[code] = (ushort)glyphIndex;
+                    }
+                }
+
+                break;
+            case 1:
+                for (int ranges = r.ReadByte(); ranges > 0; ranges--)
+                {
+                    int first = r.ReadByte(), left = r.ReadByte();
+                    for (int k = 0; k <= left; k++, glyphIndex++)
+                    {
+                        if (first + k < 256 && glyphIndex < GlyphCount)
+                        {
+                            glyphs[first + k] = (ushort)glyphIndex;
+                        }
+                    }
+                }
+
+                break;
+            default:
+                throw FontErrors.Corrupt(offset, $"The CFF encoding has format {format & 0x7F}.");
+        }
+
+        if ((format & 0x80) != 0)
+        {
+            for (int n = r.ReadByte(); n > 0; n--)
+            {
+                int code = r.ReadByte(), sid = r.ReadUInt16();
+                glyphs[code] = (ushort)Math.Max(GlyphOfSid(sid), 0);
+            }
+        }
+
+        return (2, glyphs);
     }
 
     private Dictionary<int, int> BuildSidMap()

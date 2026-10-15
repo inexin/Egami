@@ -5,6 +5,7 @@ For every test font file (each face of a collection), FreeType and fontTools giv
   cid       for a CID-keyed CFF: fontTools' ROS and the CID of each glyph (its charset)
   cmaps     every cmap subtable but format 14, as fontTools reads it: platform, encoding, format, language and code -> glyph
   builtin   FreeType's platform 7 charmaps (a CFF font's own encoding): encoding id and code -> glyph
+  cff-standard.json.gz holds fontTools' CFF standard strings, Standard Encoding and Expert charsets.
   outlines  for bare CFF files: FreeType's unhinted outline of each glyph (loaded by CID for a CID-keyed font, as FreeType
             numbers them) and its advance (which FreeType runs through the Font DICT matrix, unlike its linear advance) at 1000
             pixels per em, so in thousandths of an em whatever the font's units; Egami's are scaled by 1000 / UnitsPerEm
@@ -76,7 +77,11 @@ def cff_cid(cff):
 
 
 def sfnt_data(font):
-    data = {"post": font["post"].formatType if "post" in font else None, "cmaps": []}
+    # The version as stored (fontTools cannot read 2.5).
+    post = font.reader["post"] if "post" in font.reader else None
+    data = {"post": None if post is None else "%08x" % int.from_bytes(post[:4], "big"), "cmaps": []}
+    # Glyphs by id, never by post name: duplicate or damaged names would move mappings.
+    font.setGlyphOrder(["glyph%05d" % g for g in range(font["maxp"].numGlyphs)])
     if "cmap" in font:
         order = font.getGlyphOrder()
         ids = {n: i for i, n in enumerate(order)}
@@ -85,7 +90,7 @@ def sfnt_data(font):
                 continue
             data["cmaps"].append({
                 "platform": t.platformID, "encoding": t.platEncID, "format": t.format, "language": t.language,
-                "map": sorted((code, ids.get(name, 0)) for code, name in t.cmap.items()),
+                "map": sorted((code, ids[name]) for code, name in t.cmap.items() if ids.get(name, 0) != 0),
             })
     for tag in ("CFF ",):
         if tag in font:
@@ -119,7 +124,18 @@ def dump(path, rel):
         f.write(json.dumps(faces, separators=(",", ":")).encode())
 
 
+def standard():
+    """fontTools' CFF standard strings, Standard Encoding and Expert charsets (the Expert Encoding is checked through FreeType)."""
+    from fontTools.cffLib import cffExpertSubsetStrings, cffIExpertStrings, cffStandardStrings
+    from fontTools.encodings.StandardEncoding import StandardEncoding
+    data = {"strings": cffStandardStrings, "standardEncoding": StandardEncoding, "expertCharset": cffIExpertStrings,
+            "expertSubsetCharset": cffExpertSubsetStrings}
+    with gzip.GzipFile(os.path.join(OUT, "cff-standard.json.gz"), "wb", mtime=0) as f:
+        f.write(json.dumps(data, separators=(",", ":")).encode())
+
+
 def main():
+    standard()
     files = sorted(glob.glob(os.path.join(FONTS, "*.*")) + glob.glob(os.path.join(FONTS, "derived", "*.*")))
     for path in files:
         if not path.endswith((".ttf", ".otf", ".cff", ".ttc")):

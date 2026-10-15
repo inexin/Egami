@@ -189,3 +189,35 @@ default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tabl
 `RetainGlyphIds`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]
+
+## Font data for PDF
+
+A PDF font reaches its glyphs in ways a text layout never does: by glyph name, by CID, through one particular cmap subtable or
+through the font program's own encoding. `Typeface` gives each as FreeType does, so a PDF reader built on Egami finds the glyphs
+PDFium finds.
+
+- `GetGlyphName` and `TryGetGlyphByName` read a name-keyed CFF font's charset, else the post table (versions 1, 2 and 2.5). A
+  simple font's `/Differences` array names glyphs this way. When two glyphs share a name the lower id wins.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#names)]
+
+- `CidSystemInfo`, `GetCid` and `TryGetGlyphByCid` read a CID-keyed CFF font's ROS and charset, for CIDFontType0 fonts.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cids)]
+
+- `CharacterMaps` lists every cmap subtable as stored and `FindCharacterMap` picks one by platform and encoding; a
+  `CharacterMap` maps the subtable's own codes (bytes for (1,0) and (3,0)), never translated. `BuiltInEncoding` is a name-keyed
+  CFF font's own encoding as a platform 7 map (0 Standard, 1 Expert, 2 custom). `GetGlyph(codePoint)` keeps choosing its one
+  Unicode subtable as before.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cmaps)]
+
+- `CffStandardStrings` has the 391 standard strings and the Standard and Expert encodings, for writing CFF (a Type 1 font
+  converted for embedding, say).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cffstrings)]
+
+Everything is read on first use, once per face, and is safe from several threads. Damaged data never throws: a name the post
+table cannot give is null, a subtable that cannot be read maps nothing, and each reports a warning (`Font.BadTable`) through the
+context's diagnostics, unless `FontLoadOptions.Strict` asks for an exception. On the 1,723 font programs embedded in Egap's
+corpus, names, CIDs, subtables and built-in encodings equal FreeType's and fontTools' (FreeType's where the two differ).

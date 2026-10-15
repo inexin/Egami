@@ -147,6 +147,7 @@ static Action<Stream> Target(string name) => name switch
     "jpeg2000codec" => DecodeJpeg2000Codec,
     "font" => LoadFont,
     "cff" => LoadCff,
+    "fontdata" => FontData,
     "subset" => SubsetFont,
     "woff2" => LoadFont,
     "gvar" => LoadVariable,
@@ -1894,6 +1895,70 @@ static void LoadCff(Stream stream)
     ExerciseFace(face);
 }
 
+// Font data for PDF (Phase 2.7.3): glyph names both ways, CIDs, every cmap subtable and a CFF font's own encoding of a font or
+// bare CFF stream that loads. Nothing may throw once it has loaded, and every lookup must agree with its reverse.
+static void FontData(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    Egami.Fonts.Typeface face;
+    try
+    {
+        face = Egami.Fonts.FontLoader.Probe(data).Kind == Egami.Fonts.FontFileKind.Cff
+            ? Egami.Fonts.Typeface.FromCff(data, new Egami.Fonts.CffOptions { LoadOptions = new Egami.Fonts.FontLoadOptions { Context = Context() } })
+            : Egami.Fonts.Typeface.FromMemory(data, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    ExerciseFontData(face);
+}
+
+static void ExerciseFontData(Egami.Fonts.Typeface face)
+{
+    int count = Math.Min(face.GlyphCount, 512);
+    for (int g = 0; g < count; g++)
+    {
+        if (face.GetGlyphName((ushort)g) is string name && (!face.TryGetGlyphByName(name, out ushort back) || back > g))
+        {
+            throw new InvalidOperationException($"Glyph {g} is named {name}, which finds glyph {back}.");
+        }
+
+        int cid = face.GetCid((ushort)g);
+        if (cid >= 0 && (!face.TryGetGlyphByCid(cid, out ushort byCid) || byCid > g))
+        {
+            throw new InvalidOperationException($"Glyph {g} has CID {cid}, which finds glyph {byCid}.");
+        }
+    }
+
+    _ = face.CidSystemInfo;
+    var maps = new List<Egami.Fonts.CharacterMap>(face.CharacterMaps);
+    if (face.BuiltInEncoding is Egami.Fonts.CharacterMap own)
+    {
+        maps.Add(own);
+    }
+
+    foreach (Egami.Fonts.CharacterMap map in maps)
+    {
+        int seen = 0;
+        foreach (Egami.Fonts.CharacterMapping mapping in map.GetMappings())
+        {
+            if (map.GetGlyph(mapping.Code) != mapping.Glyph || mapping.Glyph == 0)
+            {
+                throw new InvalidOperationException($"{map} lists {mapping} but maps the code to {map.GetGlyph(mapping.Code)}.");
+            }
+
+            if (++seen > 70000)
+            {
+                break;
+            }
+        }
+
+        _ = face.FindCharacterMap(map.PlatformId, map.EncodingId);
+    }
+}
+
 // Subsets of whatever loads: written, re-loaded, and every kept glyph's outline unchanged.
 static void SubsetFont(Stream stream)
 {
@@ -2091,6 +2156,7 @@ static void ExerciseFace(Egami.Fonts.Typeface face)
     Egami.Fonts.GlyphRun run = font.Shape("Fuzz AV\u00C5\r\nfi \U0001F600\uFE0F");
     _ = run.Bounds;
     _ = font.MeasureText("To Wa");
+    ExerciseFontData(face);
 }
 
 // Shaping (Phase 2.8.1): a font that loads shapes a fixed set of texts in many scripts, run by run with features and directions

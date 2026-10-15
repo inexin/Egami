@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 using Egami.Fonts.Parsing;
 
 namespace Egami.Fonts.Tables;
@@ -213,7 +215,9 @@ internal abstract class CmapSubtable
                 {
                     r.Skip(4);
                     int first = r.ReadUInt16();
-                    int count = r.ReadUInt16();
+
+                    // A count past the table's end (some subsetters keep the old one) is cut to the entries there are.
+                    int count = Math.Min(r.ReadUInt16(), r.Remaining / 2);
                     return TrimmedSubtable.Read(ref r, first, count);
                 }
 
@@ -225,14 +229,186 @@ internal abstract class CmapSubtable
                     return TrimmedSubtable.Read(ref r, first, count);
                 }
 
-            default:
+            case 2:
+                return HighByteSubtable.Read(data[offset..], tableOffset + offset);
+            case 12:
+            case 13:
                 {
-                    // Formats 12 and 13: sequential or constant groups.
+                    // Sequential or constant groups.
                     r.Skip(10);
                     int count = (int)Math.Min(r.ReadUInt32(), (uint)r.Remaining / 12);
                     return GroupSubtable.Read(ref r, count, format == 13);
                 }
+
+            default:
+                throw FontErrors.Corrupt(tableOffset + offset, $"The cmap subtable has format {format}, which Egami does not read.");
         }
+    }
+}
+
+/// <summary>An encoding record of the cmap table, with its subtable's format and language.</summary>
+internal readonly record struct CmapRecord(int PlatformId, int EncodingId, int Offset, int Format, int Language);
+
+/// <summary>Lists a cmap table's encoding records, for every subtable as stored.</summary>
+internal static class CmapRecords
+{
+    /// <summary>
+    /// Reads every encoding record but format 14's (variation sequences), in table order. A record whose subtable lies outside the
+    /// table keeps format -1, so it maps nothing.
+    /// </summary>
+    public static List<CmapRecord> Read(ReadOnlySpan<byte> data, long offset)
+    {
+        var r = new FontReader(data, offset);
+        r.Skip(2);
+        int count = Math.Min(r.ReadUInt16(), r.Remaining / 8);
+        var records = new List<CmapRecord>(count);
+        for (int i = 0; i < count; i++)
+        {
+            int platform = r.ReadUInt16();
+            int encoding = r.ReadUInt16();
+            uint at = r.ReadUInt32();
+            int format = -1, language = 0;
+            if (at + 2 <= (uint)data.Length)
+            {
+                format = BigEndian.UInt16(data, (int)at);
+                if (format == 14)
+                {
+                    continue;
+                }
+
+                if (format is 0 or 2 or 4 or 6 && at + 6 <= (uint)data.Length)
+                {
+                    language = BigEndian.UInt16(data, (int)at + 4);
+                }
+                else if (format is 8 or 10 or 12 or 13 && at + 12 <= (uint)data.Length)
+                {
+                    language = (int)Math.Min(BinaryPrimitives.ReadUInt32BigEndian(data[((int)at + 8)..]), int.MaxValue);
+                }
+            }
+
+            records.Add(new CmapRecord(platform, encoding, format < 0 ? -1 : (int)at, format, language));
+        }
+
+        return records;
+    }
+}
+
+/// <summary>
+/// Format 2, high-byte mapping through a table: a byte whose sub-header key is 0 is a one-byte code mapped through sub-header 0;
+/// any other byte starts a two-byte code whose second byte its sub-header maps.
+/// </summary>
+internal sealed class HighByteSubtable : CmapSubtable
+{
+    private readonly ushort[] _keys;
+    private readonly (int First, int Count, int Delta, int Start)[] _headers;
+    private readonly ushort[] _glyphs;
+
+    private HighByteSubtable(ushort[] keys, (int, int, int, int)[] headers, ushort[] glyphs)
+    {
+        _keys = keys;
+        _headers = headers;
+        _glyphs = glyphs;
+    }
+
+    public static HighByteSubtable Read(ReadOnlySpan<byte> data, long offset)
+    {
+        var r = new FontReader(data, offset);
+        r.Skip(2);
+        int length = r.ReadUInt16();
+        r.Skip(2);
+        var keys = new ushort[256];
+        int headerCount = 0;
+        for (int i = 0; i < 256; i++)
+        {
+            keys[i] = (ushort)(r.ReadUInt16() / 8);
+            headerCount = Math.Max(headerCount, keys[i] + 1);
+        }
+
+        int headersAt = r.Position;
+        if (headerCount * 8 > r.Remaining)
+        {
+            throw FontErrors.Corrupt(offset + headersAt, "The format 2 cmap sub-headers run past the table.");
+        }
+
+        // Each idRangeOffset counts bytes from its own field; glyph indices are kept as one array of the bytes after the headers.
+        int arrayAt = headersAt + (headerCount * 8);
+        int end = length >= arrayAt && length <= data.Length ? length : data.Length;
+        var glyphs = new ushort[(end - arrayAt) / 2];
+        for (int i = 0; i < glyphs.Length; i++)
+        {
+            glyphs[i] = BigEndian.UInt16(data, arrayAt + (2 * i));
+        }
+
+        var headers = new (int, int, int, int)[headerCount];
+        for (int k = 0; k < headerCount; k++)
+        {
+            int first = r.ReadUInt16(), count = r.ReadUInt16(), delta = r.ReadInt16(), rangeOffset = r.ReadUInt16();
+            int rangeField = headersAt + (k * 8) + 6;
+            headers[k] = (first, count, delta, (rangeField + rangeOffset - arrayAt) / 2);
+        }
+
+        return new HighByteSubtable(keys, headers, glyphs);
+    }
+
+    public override int Map(int code)
+    {
+        if ((uint)code > 0xFFFF)
+        {
+            return 0;
+        }
+
+        if (code < 256)
+        {
+            return _keys[code] == 0 ? Lookup(0, code) : 0;
+        }
+
+        int key = _keys[code >> 8];
+        return key == 0 ? 0 : Lookup(key, code & 0xFF);
+    }
+
+    public override void Enumerate(Action<int, int> action)
+    {
+        // One-byte codes come before every two-byte one, so the codes are listed in ascending order.
+        for (int high = 0; high < 256; high++)
+        {
+            int glyph = _keys[high] == 0 ? Lookup(0, high) : 0;
+            if (glyph != 0)
+            {
+                action(high, glyph);
+            }
+        }
+
+        for (int high = 1; high < 256; high++)
+        {
+            int key = _keys[high];
+            if (key == 0)
+            {
+                continue;
+            }
+
+            (int first, int count, _, _) = _headers[key];
+            for (int low = Math.Max(first, 0); low < first + count && low < 256; low++)
+            {
+                int glyph = Lookup(key, low);
+                if (glyph != 0)
+                {
+                    action((high << 8) | low, glyph);
+                }
+            }
+        }
+    }
+
+    private int Lookup(int key, int low)
+    {
+        (int first, int count, int delta, int start) = _headers[key];
+        int index = low - first;
+        if ((uint)index >= (uint)count || (uint)(start + index) >= (uint)_glyphs.Length)
+        {
+            return 0;
+        }
+
+        int glyph = _glyphs[start + index];
+        return glyph == 0 ? 0 : (glyph + delta) & 0xFFFF;
     }
 }
 
@@ -254,6 +430,9 @@ internal sealed class ByteSubtable(byte[] glyphs) : CmapSubtable
 
 internal sealed class TrimmedSubtable(int first, ushort[] glyphs) : CmapSubtable
 {
+    /// <summary>Gets whether any code maps to a glyph other than 0.</summary>
+    public bool Any() => glyphs.AsSpan().IndexOfAnyExcept((ushort)0) >= 0;
+
     public static TrimmedSubtable Read(ref FontReader r, int first, int count)
     {
         var glyphs = new ushort[count];
@@ -292,6 +471,8 @@ internal sealed class SegmentSubtable : CmapSubtable
     private readonly ushort[] _rangeOffsets;
     private readonly ushort[] _glyphArray;
 
+    private readonly bool _sorted;
+
     private SegmentSubtable(ushort[] ends, ushort[] starts, ushort[] deltas, ushort[] rangeOffsets, ushort[] glyphArray)
     {
         _ends = ends;
@@ -299,6 +480,11 @@ internal sealed class SegmentSubtable : CmapSubtable
         _deltas = deltas;
         _rangeOffsets = rangeOffsets;
         _glyphArray = glyphArray;
+        _sorted = true;
+        for (int i = 0; i < ends.Length; i++)
+        {
+            _sorted &= starts[i] <= ends[i] && (i == 0 || starts[i] > ends[i - 1]);
+        }
     }
 
     public static SegmentSubtable Read(ref FontReader r)
@@ -380,7 +566,9 @@ internal sealed class SegmentSubtable : CmapSubtable
             for (int code = Math.Max(_starts[s], previous + 1); code <= _ends[s] && code < 0xFFFF; code++)
             {
                 int glyph = MapInSegment(s, code);
-                if (glyph != 0)
+
+                // Segments out of order or overlapping (damaged data) list only what the binary search finds.
+                if (glyph != 0 && (_sorted || Map(code) == glyph))
                 {
                     action(code, glyph);
                 }
@@ -423,12 +611,19 @@ internal sealed class GroupSubtable : CmapSubtable
     private readonly uint[] _glyphs;
     private readonly bool _constant;
 
+    private readonly bool _sorted;
+
     private GroupSubtable(uint[] starts, uint[] ends, uint[] glyphs, bool constant)
     {
         _starts = starts;
         _ends = ends;
         _glyphs = glyphs;
         _constant = constant;
+        _sorted = true;
+        for (int i = 0; i < starts.Length; i++)
+        {
+            _sorted &= starts[i] <= ends[i] && (i == 0 || starts[i] > ends[i - 1]);
+        }
     }
 
     public static GroupSubtable Read(ref FontReader r, int count, bool constant)
@@ -479,7 +674,9 @@ internal sealed class GroupSubtable : CmapSubtable
             for (long c = Math.Max(_starts[g], previous + 1); c <= _ends[g]; c++)
             {
                 long glyph = _constant ? _glyphs[g] : _glyphs[g] + (c - _starts[g]);
-                if (glyph is > 0 and <= 0xFFFF)
+
+                // Groups out of order (damaged data) list only what the binary search finds.
+                if (glyph is > 0 and <= 0xFFFF && (_sorted || Map((int)c) == glyph))
                 {
                     action((int)c, (int)glyph);
                 }

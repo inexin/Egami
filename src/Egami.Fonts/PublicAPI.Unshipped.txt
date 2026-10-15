@@ -2073,3 +2073,56 @@ static Egami.Fonts.Layout.DecorationSegment.operator ==(Egami.Fonts.Layout.Decor
 ~override Egami.Fonts.Layout.DecorationSegment.ToString() -> string
 Egami.Fonts.Layout.Paragraph.GetStyle(int styleIndex) -> Egami.Fonts.Layout.TextStyle!
 Egami.Fonts.Layout.LineFlow.Rewind(int position) -> void
+Egami.Fonts.CffStandardStrings
+Egami.Fonts.CharacterMap
+Egami.Fonts.CharacterMap.EncodingId.get -> int
+Egami.Fonts.CharacterMap.Format.get -> int
+Egami.Fonts.CharacterMap.GetGlyph(int code) -> ushort
+Egami.Fonts.CharacterMap.GetMappings() -> System.Collections.Generic.IEnumerable<Egami.Fonts.CharacterMapping>!
+Egami.Fonts.CharacterMap.Language.get -> int
+Egami.Fonts.CharacterMap.PlatformId.get -> int
+Egami.Fonts.CharacterMapping
+Egami.Fonts.CharacterMapping.CharacterMapping() -> void
+Egami.Fonts.CharacterMapping.CharacterMapping(int Code, ushort Glyph) -> void
+Egami.Fonts.CharacterMapping.Code.get -> int
+Egami.Fonts.CharacterMapping.Code.init -> void
+Egami.Fonts.CharacterMapping.Deconstruct(out int Code, out ushort Glyph) -> void
+Egami.Fonts.CharacterMapping.Equals(Egami.Fonts.CharacterMapping other) -> bool
+Egami.Fonts.CharacterMapping.Glyph.get -> ushort
+Egami.Fonts.CharacterMapping.Glyph.init -> void
+Egami.Fonts.CidSystemInfo
+Egami.Fonts.CidSystemInfo.<Clone>$() -> Egami.Fonts.CidSystemInfo!
+Egami.Fonts.CidSystemInfo.CidSystemInfo(string! Registry, string! Ordering, int Supplement) -> void
+Egami.Fonts.CidSystemInfo.Deconstruct(out string! Registry, out string! Ordering, out int Supplement) -> void
+Egami.Fonts.CidSystemInfo.Equals(Egami.Fonts.CidSystemInfo? other) -> bool
+Egami.Fonts.CidSystemInfo.Ordering.get -> string!
+Egami.Fonts.CidSystemInfo.Ordering.init -> void
+Egami.Fonts.CidSystemInfo.Registry.get -> string!
+Egami.Fonts.CidSystemInfo.Registry.init -> void
+Egami.Fonts.CidSystemInfo.Supplement.get -> int
+Egami.Fonts.CidSystemInfo.Supplement.init -> void
+Egami.Fonts.Typeface.BuiltInEncoding.get -> Egami.Fonts.CharacterMap?
+Egami.Fonts.Typeface.CharacterMaps.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.CharacterMap!>!
+Egami.Fonts.Typeface.CidSystemInfo.get -> Egami.Fonts.CidSystemInfo?
+Egami.Fonts.Typeface.FindCharacterMap(int platformId, int encodingId) -> Egami.Fonts.CharacterMap?
+Egami.Fonts.Typeface.GetCid(ushort glyph) -> int
+Egami.Fonts.Typeface.GetGlyphName(ushort glyph) -> string?
+Egami.Fonts.Typeface.TryGetGlyphByCid(int cid, out ushort glyph) -> bool
+Egami.Fonts.Typeface.TryGetGlyphByName(string! name, out ushort glyph) -> bool
+const Egami.Fonts.CffStandardStrings.Count = 391 -> int
+const Egami.Fonts.CharacterMap.AdobePlatform = 7 -> int
+override Egami.Fonts.CharacterMap.ToString() -> string!
+override Egami.Fonts.CharacterMapping.GetHashCode() -> int
+override Egami.Fonts.CidSystemInfo.Equals(object? obj) -> bool
+override Egami.Fonts.CidSystemInfo.GetHashCode() -> int
+override Egami.Fonts.CidSystemInfo.ToString() -> string!
+static Egami.Fonts.CffStandardStrings.ExpertEncoding.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Egami.Fonts.CffStandardStrings.Get(int sid) -> string!
+static Egami.Fonts.CffStandardStrings.StandardEncoding.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Egami.Fonts.CffStandardStrings.TryGetSid(string! name, out int sid) -> bool
+static Egami.Fonts.CharacterMapping.operator !=(Egami.Fonts.CharacterMapping left, Egami.Fonts.CharacterMapping right) -> bool
+static Egami.Fonts.CharacterMapping.operator ==(Egami.Fonts.CharacterMapping left, Egami.Fonts.CharacterMapping right) -> bool
+static Egami.Fonts.CidSystemInfo.operator !=(Egami.Fonts.CidSystemInfo? left, Egami.Fonts.CidSystemInfo? right) -> bool
+static Egami.Fonts.CidSystemInfo.operator ==(Egami.Fonts.CidSystemInfo? left, Egami.Fonts.CidSystemInfo? right) -> bool
+~override Egami.Fonts.CharacterMapping.Equals(object obj) -> bool
+~override Egami.Fonts.CharacterMapping.ToString() -> string

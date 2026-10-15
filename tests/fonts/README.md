@@ -31,6 +31,8 @@ package. fontTools' reading of each is in tests/reference/fonts, written by `pyt
 | derived/NotoSansCJK-fd2048.cff, -fdmatrix.cff | NotoSansCJK-subset.cff with Font DICT FontMatrix values: 1/2048 in all, or none, 1/2048 and a slant | SIL OFL 1.1 (LICENSES/NotoCJK-OFL.txt) |
 | derived/NotoSans-format2.ttf | NotoSans-mac.ttf with a (1,1) format 2 cmap subtable added | SIL OFL 1.1 |
 | derived/SourceSans3-custom.cff | Source Sans 3 cut to ASCII as a bare CFF with a custom encoding | SIL OFL 1.1 |
+| derived/SourceSans3-expert.cff, -expertsubset.cff | Bare CFF Source Sans 3 cuts pointed at the predefined Expert and ExpertSubset charsets and encodings | SIL OFL 1.1 |
+| derived/NotoSans-post1.ttf, -post25.ttf | NotoSans-mac.ttf with a version 1 or version 2.5 post table | SIL OFL 1.1 |
 | derived/Svg-test.ttf | A three-glyph OpenType SVG font built with fontTools: one gzipped and one plain document | Test data written for Egami |
 | derived/*.woff, *.woff2 | 2.7.1 fonts and RobotoFlex-subset as WOFF (fontTools, one with metadata and private blocks) and WOFF2 (fontTools; the collection with Debian's woff2_compress), with each transform | As their sources |
 

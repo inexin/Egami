@@ -1,6 +1,9 @@
 namespace Egami.Fonts.Cff;
 
-/// <summary>The CFF standard strings and the Standard Encoding, from Adobe Technical Note #5176, appendices A and B.</summary>
+/// <summary>
+/// The CFF standard strings, the Standard and Expert encodings and the Expert charsets, from Adobe Technical Note #5176,
+/// appendices A to C.
+/// </summary>
 internal static class CffStandard
 {
     public const int StandardStringCount = 391;
@@ -62,7 +65,100 @@ internal static class CffStandard
         (248, 146), (249, 147), (250, 148), (251, 149),
     ];
 
+    // Expert Encoding (appendix B) as (code, SID) runs: each run gives consecutive codes consecutive SIDs. Code 175 is
+    // Macronsmall (SID 313), as pdf.js has it; FreeType's table repeats Dotaccentsmall (312) there, which leaves Macronsmall
+    // without a code.
+    private static readonly (byte Code, ushort Sid, byte Length)[] s_expertEncoding =
+    [
+        (32, 1, 1), (33, 229, 2), (36, 231, 8), (44, 13, 3), (47, 99, 1), (48, 239, 10), (58, 27, 2), (60, 249, 4), (65, 253, 5),
+        (73, 258, 1), (76, 259, 4), (82, 263, 3), (86, 266, 1), (87, 109, 2), (89, 267, 3), (93, 270, 34), (161, 304, 3),
+        (166, 307, 5), (172, 312, 1), (175, 313, 1), (178, 314, 2), (182, 316, 3), (188, 158, 1), (189, 155, 1), (190, 163, 1),
+        (191, 319, 7), (200, 326, 1), (201, 150, 1), (202, 164, 1), (203, 169, 1), (204, 327, 52),
+    ];
+
+    // The Expert and ExpertSubset charsets (appendix C) as (first SID, count) runs from glyph 1.
+    private static readonly (ushort Sid, byte Count)[] s_expertCharset =
+    [
+        (1, 1), (229, 10), (13, 3), (99, 1), (239, 10), (27, 2), (249, 18), (109, 2), (267, 37), (304, 15), (158, 1), (155, 1),
+        (163, 1), (319, 7), (326, 1), (150, 1), (164, 1), (169, 1), (327, 52),
+    ];
+
+    private static readonly (ushort Sid, byte Count)[] s_expertSubsetCharset =
+    [
+        (1, 1), (231, 2), (235, 4), (13, 3), (99, 1), (239, 10), (27, 2), (249, 3), (253, 14), (109, 2), (267, 4), (272, 1),
+        (300, 3), (305, 1), (314, 2), (158, 1), (155, 1), (163, 1), (320, 6), (326, 1), (150, 1), (164, 1), (169, 1), (327, 20),
+    ];
+
+    private static string[]? s_standardEncodingNames;
+    private static string[]? s_expertEncodingNames;
+    private static Dictionary<string, int>? s_sids;
+
     internal static int StringTableLength => s_strings.Length;
+
+    /// <summary>Gets the SID the Expert Encoding gives a character code, or 0 (.notdef).</summary>
+    public static int ExpertEncodingSid(int code)
+    {
+        foreach ((byte first, ushort sid, byte length) in s_expertEncoding)
+        {
+            if (code >= first && code < first + length)
+            {
+                return sid + code - first;
+            }
+        }
+
+        return 0;
+    }
+
+    /// <summary>Gets the SIDs of a predefined charset: 1 Expert, 2 ExpertSubset; glyph 0 is .notdef.</summary>
+    public static ushort[] PredefinedCharset(int which)
+    {
+        var sids = new List<ushort> { 0 };
+        foreach ((ushort first, byte count) in which == 1 ? s_expertCharset : s_expertSubsetCharset)
+        {
+            for (int k = 0; k < count; k++)
+            {
+                sids.Add((ushort)(first + k));
+            }
+        }
+
+        return [.. sids];
+    }
+
+    /// <summary>Gets the 256 glyph names of the Standard Encoding.</summary>
+    public static string[] StandardEncodingNames => s_standardEncodingNames ??= EncodingNames(StandardEncodingSid);
+
+    /// <summary>Gets the 256 glyph names of the Expert Encoding.</summary>
+    public static string[] ExpertEncodingNames => s_expertEncodingNames ??= EncodingNames(ExpertEncodingSid);
+
+    /// <summary>Gets the SID of a standard string, or -1.</summary>
+    public static int SidOf(string name)
+    {
+        Dictionary<string, int> map = Volatile.Read(ref s_sids) ?? BuildSids();
+        return map.TryGetValue(name, out int sid) ? sid : -1;
+    }
+
+    private static Dictionary<string, int> BuildSids()
+    {
+        var map = new Dictionary<string, int>(s_strings.Length, StringComparer.Ordinal);
+        for (int sid = s_strings.Length - 1; sid >= 0; sid--)
+        {
+            map[s_strings[sid]] = sid;
+        }
+
+        Volatile.Write(ref s_sids, map);
+        return map;
+    }
+
+    private static string[] EncodingNames(Func<int, int> sidOf)
+    {
+        var names = new string[256];
+        for (int code = 0; code < 256; code++)
+        {
+            names[code] = s_strings[sidOf(code)];
+        }
+
+        return names;
+    }
 
     public static string GetStandardString(int sid) => (uint)sid < (uint)s_strings.Length ? s_strings[sid] : string.Empty;
 
