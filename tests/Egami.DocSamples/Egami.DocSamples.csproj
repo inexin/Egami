@@ -29,6 +29,7 @@
     <None Include="../images/mpf/uhdr-default.jpg" Link="images/ultrahdr.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/exr/layers.exr" Link="images/render.exr" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/exr/aov-zip.exr" Link="images/aov.exr" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jxl/duck-d1.jxl" Link="images/duck.jxl" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/exif-orientation-6.jpg" Link="images/sideways.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg/duck-420.jpg" Link="images/duck.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/gif/pan-local.gif" Link="images/pan.gif" CopyToOutputDirectory="PreserveNewest" />

@@ -148,6 +148,10 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jpeg2000.MissingTiles` | Warning | Tiles have no data in the codestream; they were left black |
 | `Jpeg2000.SignedSamples` | Warning | Signed samples were offset by half their range to load as unsigned |
 | `Jpeg2000.Truncated` | Warning | The codestream ends before its last packet; what it holds was decoded |
+| `Jxl.BoxDropped` | Warning | A JPEG XL metadata box (Exif, xml, jumb, jhgm, jbrd, jxli or brob) is over SafetyLimits.MaxMetadataBytes, or opens to more; it was skipped |
+| `Jxl.BrobDropped` | Warning | A JPEG XL brob box is too small, compresses a box that must not be compressed, or holds broken Brotli data; it was dropped |
+| `Jxl.ExifDropped` | Warning | A JPEG XL Exif box's TIFF header offset is missing or points past the box; the box was dropped |
+| `Jxl.LevelInvalid` | Warning | A JPEG XL jxll box holds a level other than 5 or 10; it is ignored |
 | `Limits.Exceeded` | Debug | A safety limit is about to fail the load: its name, the limit and the value found |
 | `Operation.ChainPlanned` | Info | The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped |
 | `Operation.GainMapDropped` | Warning | A step changed pixel values, or moved them in a way the gain map cannot follow; the gain map was dropped and the image saves as SDR only |

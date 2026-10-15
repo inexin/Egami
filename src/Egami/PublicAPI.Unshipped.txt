@@ -940,6 +940,23 @@ Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.FastUpsampling.init -> void
 Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Jpeg2000ReaderOptions() -> void
 Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.MaxQualityLayers.get -> int?
 Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.MaxQualityLayers.init -> void
+Egami.Formats.Jxl.JxlDetails
+Egami.Formats.Jxl.JxlDetails.BitsPerSample.get -> int
+Egami.Formats.Jxl.JxlDetails.BitsPerSample.set -> void
+Egami.Formats.Jxl.JxlDetails.ExponentBits.get -> int
+Egami.Formats.Jxl.JxlDetails.ExponentBits.set -> void
+Egami.Formats.Jxl.JxlDetails.HasJpegReconstruction.get -> bool
+Egami.Formats.Jxl.JxlDetails.HasJpegReconstruction.set -> void
+Egami.Formats.Jxl.JxlDetails.IsContainer.get -> bool
+Egami.Formats.Jxl.JxlDetails.IsContainer.set -> void
+Egami.Formats.Jxl.JxlDetails.IsXybEncoded.get -> bool
+Egami.Formats.Jxl.JxlDetails.IsXybEncoded.set -> void
+Egami.Formats.Jxl.JxlDetails.Jumbf.get -> System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<byte>>!
+Egami.Formats.Jxl.JxlDetails.Jumbf.set -> void
+Egami.Formats.Jxl.JxlDetails.JxlDetails() -> void
+Egami.Formats.Jxl.JxlDetails.Level.get -> int?
+Egami.Formats.Jxl.JxlDetails.Level.set -> void
+Egami.Formats.Jxl.JxlFormat
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Png.PngWriterOptions.Interlace.get -> bool
@@ -2309,6 +2326,7 @@ override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.<Clone>$() -> Egami.Format
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.GetHashCode() -> int
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.ToString() -> string!
+override Egami.Formats.Jxl.JxlDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Psd.PsdDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Psd.PsdLayer.Equals(object? obj) -> bool
 override Egami.Formats.Psd.PsdLayer.GetHashCode() -> int
@@ -2620,6 +2638,7 @@ static Egami.Formats.Jpeg2000.Jpeg2000Component.operator ==(Egami.Formats.Jpeg20
 static Egami.Formats.Jpeg2000.Jpeg2000Format.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator !=(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator ==(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
+static Egami.Formats.Jxl.JxlFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Psd.PsdFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Psd.PsdLayer.operator !=(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
 static Egami.Formats.Psd.PsdLayer.operator ==(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
