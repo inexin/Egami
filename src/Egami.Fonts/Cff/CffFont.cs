@@ -102,15 +102,24 @@ internal sealed class CffFont
     /// <summary>Gets the charset: the SID (name-keyed) or CID (CID-keyed) of each glyph.</summary>
     public ReadOnlySpan<ushort> Charset => _charset;
 
-    /// <summary>Gets the units per em the FontMatrix implies, or 1000 when it has none.</summary>
+    /// <summary>
+    /// Gets the units per em the FontMatrix implies, or 1000 when it has none. For a CID-keyed font whose Font DICTs all give
+    /// their glyphs the same matrix, that matrix decides.
+    /// </summary>
     public int UnitsPerEm
     {
         get
         {
-            double[]? matrix = Top.Get(OpFontMatrix);
-            if (matrix is { Length: 6 } && matrix[0] > 0)
+            CffMatrix? matrix = SharedGlyphMatrix();
+            if (matrix is null)
             {
-                double units = Math.Round(1 / matrix[0]);
+                double[]? top = Top.Get(OpFontMatrix);
+                matrix = top is { Length: 6 } ? new CffMatrix(top[0], 0, 0, top[0], 0, 0) : null;
+            }
+
+            if (matrix is CffMatrix m && m.A > 0)
+            {
+                double units = Math.Round(1 / m.A);
                 if (units is >= 16 and <= 16384)
                 {
                     return (int)units;
@@ -121,8 +130,48 @@ internal sealed class CffFont
         }
     }
 
+    /// <summary>Gets the glyph matrix every font dict shares, or null when they differ.</summary>
+    public CffMatrix? SharedGlyphMatrix()
+    {
+        CffMatrix first = GlyphMatrix(0);
+        for (int fd = 1; fd < Privates.Length; fd++)
+        {
+            CffMatrix other = GlyphMatrix(fd);
+            if (!first.Then(other.Invert()).IsIdentity)
+            {
+                return null;
+            }
+        }
+
+        return first;
+    }
+
     /// <summary>Gets the font dict index of a glyph: 0 for a name-keyed font.</summary>
     public int FontDictOf(int glyph) => _fdSelect is null || (uint)glyph >= (uint)_fdSelect.Length ? 0 : _fdSelect[glyph];
+
+    /// <summary>
+    /// Gets the matrix from glyph space to text space of the glyphs of font dict <paramref name="fd"/>. A CID-keyed font's Font
+    /// DICT FontMatrix applies first and the Top DICT's after it (Adobe Technical Note #5176, section 18); a Font DICT without
+    /// one takes the Top DICT's, and a Top DICT without one gives the default 1/1000 scale only when no Font DICT scales. When
+    /// both scale down, as fonts that repeat the em scale in both do, the smaller scale counts once, as FreeType reads them.
+    /// </summary>
+    public CffMatrix GlyphMatrix(int fd)
+    {
+        CffMatrix? top = CffMatrix.From(Top.Get(OpFontMatrix));
+        CffMatrix? own = IsCff2 || (uint)fd >= (uint)Privates.Length ? null : CffMatrix.From(Privates[fd].FontDict?.Get(OpFontMatrix));
+        if (own is not CffMatrix sub)
+        {
+            return top ?? CffMatrix.Default;
+        }
+
+        if (top is not CffMatrix outer)
+        {
+            return sub;
+        }
+
+        CffMatrix both = sub.Then(outer);
+        return sub.Scale < 1 && outer.Scale < 1 ? both.Times(1 / Math.Max(sub.Scale, outer.Scale)) : both;
+    }
 
 
     /// <summary>Gets the glyph whose charset SID is <paramref name="sid"/> (name-keyed fonts), or -1.</summary>

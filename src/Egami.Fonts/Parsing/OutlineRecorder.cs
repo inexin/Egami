@@ -139,6 +139,17 @@ internal sealed class OutlineRecorder : IGlyphOutlineSink
         }
     }
 
+    /// <summary>Maps each recorded point through x' = a x + c y + e, y' = b x + d y + f.</summary>
+    public void Transform(float a, float b, float c, float d, float e, float f)
+    {
+        for (int i = 0; i + 1 < _coordinateCount; i += 2)
+        {
+            float x = _coordinates[i], y = _coordinates[i + 1];
+            _coordinates[i] = (a * x) + (c * y) + e;
+            _coordinates[i + 1] = (b * x) + (d * y) + f;
+        }
+    }
+
     public void ReplayTo(IGlyphOutlineSink sink)
     {
         int c = 0;

@@ -19,7 +19,7 @@ public sealed partial class Typeface
     private HintZone[] ComputeHintZones()
     {
         var zones = new List<HintZone>();
-        if (_cff is not null && !_cff.IsCff2 && _instance is null && _cff.Privates.Length > 0)
+        if (_cff is not null && !_cff.IsCff2 && _instance is null && _cff.Privates.Length > 0 && CffTransform(0) is null)
         {
             CffDict dict = _cff.Privates[0].Dict;
             AddBlues(dict.Get(OpBlueValues), zones, top: true);

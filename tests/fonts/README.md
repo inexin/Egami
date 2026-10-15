@@ -28,6 +28,9 @@ package. fontTools' reading of each is in tests/reference/fonts, written by `pyt
 | derived/NotoColorEmoji-COLRv1-subset.ttf, -CBDT-subset.ttf | Noto Color Emoji (google/fonts ofl/notocoloremoji, COLR v1; googlefonts/noto-emoji v2.047, CBDT) cut to 25 emoji | SIL OFL 1.1 (LICENSES/NotoColorEmoji-OFL.txt) |
 | derived/Twemoji-COLRv0-subset.ttf | Twemoji Mozilla 0.7.0 (COLR v0) cut to 25 emoji | CC-BY 4.0 graphics (LICENSES/Twemoji-CC-BY-4.0.txt, Twemoji-Mozilla-LICENSE.md) |
 | derived/Twemoji-sbix.ttf | An sbix font built with fontTools from eight Twemoji 72-pixel PNGs (jdecked/twemoji) | CC-BY 4.0 graphics (LICENSES/Twemoji-CC-BY-4.0.txt) |
+| derived/NotoSansCJK-fd2048.cff, -fdmatrix.cff | NotoSansCJK-subset.cff with Font DICT FontMatrix values: 1/2048 in all, or none, 1/2048 and a slant | SIL OFL 1.1 (LICENSES/NotoCJK-OFL.txt) |
+| derived/NotoSans-format2.ttf | NotoSans-mac.ttf with a (1,1) format 2 cmap subtable added | SIL OFL 1.1 |
+| derived/SourceSans3-custom.cff | Source Sans 3 cut to ASCII as a bare CFF with a custom encoding | SIL OFL 1.1 |
 | derived/Svg-test.ttf | A three-glyph OpenType SVG font built with fontTools: one gzipped and one plain document | Test data written for Egami |
 | derived/*.woff, *.woff2 | 2.7.1 fonts and RobotoFlex-subset as WOFF (fontTools, one with metadata and private blocks) and WOFF2 (fontTools; the collection with Debian's woff2_compress), with each transform | As their sources |
 

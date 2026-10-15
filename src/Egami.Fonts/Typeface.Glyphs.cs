@@ -18,6 +18,7 @@ public sealed partial class Typeface
     private float[]? _cffBounds;
     private int[]? _cffBoundsReady;
     private float[]? _cffWidths;
+    private Box<CffMatrix?[]?>? _cffTransforms;
 
     /// <summary>Gets the face's vertical metrics and decoration positions in font units; see <see cref="FontExtents"/> for the rule.</summary>
     public FontExtents Extents => (Volatile.Read(ref _extents) ?? Publish(ref _extents, new Box<FontExtents>(ComputeExtents()))).Value;
@@ -308,6 +309,10 @@ public sealed partial class Typeface
             else if (_cff is not null)
             {
                 CharStringInterpreter.For(_cff).Draw(glyph, recorder);
+                if (CffTransform(glyph) is CffMatrix m)
+                {
+                    recorder.Transform((float)m.A, (float)m.B, (float)m.C, (float)m.D, (float)m.E, (float)m.F);
+                }
             }
 
             return true;
@@ -358,10 +363,49 @@ public sealed partial class Typeface
                 width = (float)_cff!.Privates[_cff.FontDictOf(glyph)].DefaultWidthX;
             }
 
+            if (CffTransform(glyph) is CffMatrix m)
+            {
+                width = (float)(width * m.A);
+            }
+
             Volatile.Write(ref widths[glyph], width);
         }
 
         return width;
+    }
+
+    /// <summary>
+    /// Gets what a CFF glyph's charstring coordinates must go through to be in the face's font units, or null when they already
+    /// are. Only a CID-keyed font whose Font DICTs give different FontMatrix values (or one that is not a plain scale) needs it:
+    /// the face's units per em follow the matrix the glyphs share, else the Top DICT's (or the head table's in an sfnt).
+    /// </summary>
+    internal CffMatrix? CffTransform(int glyph)
+    {
+        if (_cff is null || _cff.IsCff2)
+        {
+            return null;
+        }
+
+        CffMatrix?[]? transforms = (Volatile.Read(ref _cffTransforms) ?? Publish(ref _cffTransforms, new Box<CffMatrix?[]?>(ComputeCffTransforms(_cff)))).Value;
+        return transforms?[_cff.FontDictOf(glyph)];
+    }
+
+    private CffMatrix?[]? ComputeCffTransforms(CffFont cff)
+    {
+        double unit = cff.SharedGlyphMatrix() is CffMatrix shared && shared.A > 0 ? shared.A : 1.0 / UnitsPerEm;
+        var transforms = new CffMatrix?[cff.Privates.Length];
+        bool any = false;
+        for (int fd = 0; fd < transforms.Length; fd++)
+        {
+            CffMatrix m = cff.GlyphMatrix(fd).Times(1 / unit);
+            if (!m.IsIdentity)
+            {
+                transforms[fd] = m;
+                any = true;
+            }
+        }
+
+        return any ? transforms : null;
     }
 
     private GlyphExtents CffBounds(int glyph)
