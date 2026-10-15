@@ -6,33 +6,18 @@ using Egami.Pixels;
 namespace Egami.Formats.Jxl;
 
 /// <summary>
-/// Decodes a JPEG XL image into a raster: the whole file read into memory, its frames decoded (LF frames kept for the frames
-/// that use them), the restoration filters and upsampling run, XYB converted to the file's color space, then the samples put
-/// into the natural pixel type (design question 5) and from there the type asked for.
+/// Decodes a JPEG XL image into a raster: the whole file read into memory, its frames decoded in order (LF frames kept for the
+/// frames that use them, reference frames kept in their four slots), each rendered (restoration filters, patches, splines,
+/// upsampling, noise), converted from XYB to the file's color space and blended onto the canvas; the frames shown are put into
+/// the natural pixel type (design question 5) and from there the type asked for.
 /// </summary>
 internal static class JxlImageDecoder
 {
-    /// <summary>Decodes into the natural pixel type.</summary>
+    /// <summary>Decodes into the natural pixel type: one frame for a still, the coalesced frames for an animation.</summary>
     internal static Raster Decode(EgamiInput input, ReaderOptions options)
     {
-        JxlDecoded decoded = DecodeImage(input);
-        PixelLayoutInfo layout = JxlReader.NaturalLayout(decoded.File.Header);
-        return layout switch
-        {
-            _ when layout == Gray8.Layout => Fill<Gray8>(input, decoded),
-            _ when layout == GrayAlpha8.Layout => Fill<GrayAlpha8>(input, decoded),
-            _ when layout == Rgb8.Layout => Fill<Rgb8>(input, decoded),
-            _ when layout == Rgba8.Layout => Fill<Rgba8>(input, decoded),
-            _ when layout == Gray16.Layout => Fill<Gray16>(input, decoded),
-            _ when layout == GrayAlpha16.Layout => Fill<GrayAlpha16>(input, decoded),
-            _ when layout == Rgb16.Layout => Fill<Rgb16>(input, decoded),
-            _ when layout == Rgba16.Layout => Fill<Rgba16>(input, decoded),
-            _ when layout == RgbaF16.Layout => Fill<RgbaF16>(input, decoded),
-            _ when layout == GrayF32.Layout => Fill<GrayF32>(input, decoded),
-            _ when layout == RgbF32.Layout => Fill<RgbF32>(input, decoded),
-            _ when layout == RgbaF32.Layout => Fill<RgbaF32>(input, decoded),
-            _ => throw new UnsupportedFormatException("Egami does not decode JPEG XL CMYK images yet."),
-        };
+        (JxlFile file, byte[] codestream) = Open(input);
+        return Natural(input, file, layout => Shown(layout, input, options, file, codestream, forceFloat: false));
     }
 
     /// <summary>Decodes into <typeparamref name="TPixel"/>, through the natural type.</summary>
@@ -40,6 +25,69 @@ internal static class JxlImageDecoder
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         Raster natural = Decode(input, options);
+        return Convert<TPixel>(input, natural);
+    }
+
+    /// <summary>Decodes to RgbaF32 or GrayF32 without clamping, as the conformance references are; Load goes through the natural type.</summary>
+    internal static Raster DecodeFloat(EgamiInput input)
+    {
+        (JxlFile file, byte[] codestream) = Open(input);
+        Check(file);
+        bool gray = file.Header.ColorChannels == 1;
+        bool alpha = file.Header.AlphaIndex >= 0;
+        return gray && !alpha
+            ? Shown<GrayF32>(input, ReaderOptions.Default, file, codestream, forceFloat: true)
+            : Shown<RgbaF32>(input, ReaderOptions.Default, file, codestream, forceFloat: true);
+    }
+
+    /// <summary>Decodes every regular frame as it is before blending, in the natural pixel type, with where and how it blends.</summary>
+    internal static List<JxlLayer> DecodeLayers(EgamiInput input, ReaderOptions options)
+    {
+        (JxlFile file, byte[] codestream) = Open(input);
+        List<JxlLayer> layers = [];
+        try
+        {
+            Run(file, codestream, input, Sequence(file), lfOnly: false, layers: true, (decoded, f) =>
+            {
+                Raster raster = Natural(input, file, layout => Single(layout, input, file, decoded, f));
+                layers.Add(new JxlLayer(raster, f.X0, f.Y0, (JxlLayerBlend)f.Blending.Mode, Delay(f, file.Header), f.Name));
+                return true;
+            });
+            return layers;
+        }
+        catch
+        {
+            foreach (JxlLayer layer in layers)
+            {
+                layer.Dispose();
+            }
+
+            throw;
+        }
+    }
+
+    /// <summary>Decodes the preview frame, or returns <see langword="null"/> when the file has none.</summary>
+    internal static Raster? DecodePreview(EgamiInput input, ReaderOptions options)
+    {
+        (JxlFile file, byte[] codestream) = Open(input);
+        if (file.PreviewFrame is not JxlFrameHeader preview || file.PreviewSections is not (JxlToc toc, long offset))
+        {
+            return null;
+        }
+
+        Raster? result = null;
+        Run(file, codestream, input, [(preview, toc, offset)], lfOnly: false, layers: false, (decoded, f) =>
+        {
+            result = Natural(input, file, layout => Single(layout, input, file, decoded, f));
+            return false;
+        });
+        return result;
+    }
+
+    /// <summary>Converts a decoded raster, every frame, to <typeparamref name="TPixel"/>.</summary>
+    internal static Raster<TPixel> Convert<TPixel>(EgamiInput input, Raster natural)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         if (natural is Raster<TPixel> same)
         {
             return same;
@@ -47,29 +95,8 @@ internal static class JxlImageDecoder
 
         using (natural)
         {
-            Raster<TPixel> raster = input.CreateRaster<TPixel>(natural.Width, natural.Height);
-            try
-            {
-                raster.Metadata.ReplaceWith(natural.Metadata.Copy());
-                natural.Accept(new Converter<TPixel>(raster));
-                return raster;
-            }
-            catch
-            {
-                raster.Dispose();
-                throw;
-            }
+            return natural.Accept(new Converter<TPixel>(input));
         }
-    }
-
-    /// <summary>Decodes to RgbaF32 or GrayF32 without clamping, as the conformance references are; Load goes through the natural type.</summary>
-    internal static Raster DecodeFloat(EgamiInput input)
-    {
-        JxlDecoded decoded = DecodeImage(input);
-        bool gray = decoded.File.Header.ColorChannels == 1;
-        bool alpha = decoded.File.Header.AlphaIndex >= 0;
-        decoded.ForceFloat();
-        return gray && !alpha ? Fill<GrayF32>(input, decoded) : Fill<RgbaF32>(input, decoded);
     }
 
     /// <summary>Gets a sample as a float: integers divided by their maximum, float bit patterns as they are (H.7).</summary>
@@ -108,7 +135,8 @@ internal static class JxlImageDecoder
         return negative ? -value : value;
     }
 
-    private static JxlDecoded DecodeImage(EgamiInput input)
+    /// <summary>Reads the whole file and its headers, and joins the codestream.</summary>
+    private static (JxlFile File, byte[] Codestream) Open(EgamiInput input)
     {
         (byte[] data, int length, bool pooled) = InputBytes.ReadAll(input);
         try
@@ -118,8 +146,7 @@ internal static class JxlImageDecoder
             try
             {
                 JxlFile file = JxlFile.Read(copy, allBoxes: true);
-                byte[] codestream = file.Container.Codestream(data.AsSpan(0, length));
-                return DecodeFrames(file, codestream, input);
+                return (file, file.Container.Codestream(data.AsSpan(0, length)));
             }
             finally
             {
@@ -135,18 +162,169 @@ internal static class JxlImageDecoder
         }
     }
 
-    private static JxlDecoded DecodeFrames(JxlFile file, byte[] codestream, EgamiInput input)
+    /// <summary>Calls <paramref name="decode"/> with the natural pixel type of the file.</summary>
+    private static Raster Natural(EgamiInput input, JxlFile file, Func<PixelLayoutInfo, Raster> decode)
+    {
+        Check(file);
+        return decode(JxlReader.NaturalLayout(file.Header));
+    }
+
+    /// <summary>Refuses what the decoder does not render yet.</summary>
+    private static void Check(JxlFile file)
+    {
+        if (file.Header.ExtraChannels.Any(c => c.Type == JxlExtraChannelType.Black))
+        {
+            throw new UnsupportedFormatException("Egami does not decode JPEG XL CMYK images yet.");
+        }
+
+        if (file.Header.ExtraChannels.Any(c => c.Type == JxlExtraChannelType.SpotColor))
+        {
+            throw new UnsupportedFormatException("Egami does not render JPEG XL spot colors yet.");
+        }
+    }
+
+    /// <summary>Gets the frames of the codestream with their TOCs and section offsets.</summary>
+    private static List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> Sequence(JxlFile file)
+    {
+        List<(JxlFrameHeader, JxlToc, long)> frames = [];
+        for (int i = 0; i < file.Frames.Count; i++)
+        {
+            frames.Add((file.Frames[i], file.Tocs[i], file.SectionOffsets[i]));
+        }
+
+        return frames;
+    }
+
+    private static Raster Shown(PixelLayoutInfo layout, EgamiInput input, ReaderOptions options, JxlFile file, byte[] codestream, bool forceFloat) => layout switch
+    {
+        _ when layout == Gray8.Layout => Shown<Gray8>(input, options, file, codestream, forceFloat),
+        _ when layout == GrayAlpha8.Layout => Shown<GrayAlpha8>(input, options, file, codestream, forceFloat),
+        _ when layout == Rgb8.Layout => Shown<Rgb8>(input, options, file, codestream, forceFloat),
+        _ when layout == Rgba8.Layout => Shown<Rgba8>(input, options, file, codestream, forceFloat),
+        _ when layout == Gray16.Layout => Shown<Gray16>(input, options, file, codestream, forceFloat),
+        _ when layout == GrayAlpha16.Layout => Shown<GrayAlpha16>(input, options, file, codestream, forceFloat),
+        _ when layout == Rgb16.Layout => Shown<Rgb16>(input, options, file, codestream, forceFloat),
+        _ when layout == Rgba16.Layout => Shown<Rgba16>(input, options, file, codestream, forceFloat),
+        _ when layout == RgbaF16.Layout => Shown<RgbaF16>(input, options, file, codestream, forceFloat),
+        _ when layout == GrayF32.Layout => Shown<GrayF32>(input, options, file, codestream, forceFloat),
+        _ when layout == RgbF32.Layout => Shown<RgbF32>(input, options, file, codestream, forceFloat),
+        _ => Shown<RgbaF32>(input, options, file, codestream, forceFloat),
+    };
+
+    private static Raster Single(PixelLayoutInfo layout, EgamiInput input, JxlFile file, JxlDecoded decoded, JxlFrameHeader f) => layout switch
+    {
+        _ when layout == Gray8.Layout => Single<Gray8>(input, file, decoded, f),
+        _ when layout == GrayAlpha8.Layout => Single<GrayAlpha8>(input, file, decoded, f),
+        _ when layout == Rgb8.Layout => Single<Rgb8>(input, file, decoded, f),
+        _ when layout == Rgba8.Layout => Single<Rgba8>(input, file, decoded, f),
+        _ when layout == Gray16.Layout => Single<Gray16>(input, file, decoded, f),
+        _ when layout == GrayAlpha16.Layout => Single<GrayAlpha16>(input, file, decoded, f),
+        _ when layout == Rgb16.Layout => Single<Rgb16>(input, file, decoded, f),
+        _ when layout == Rgba16.Layout => Single<Rgba16>(input, file, decoded, f),
+        _ when layout == RgbaF16.Layout => Single<RgbaF16>(input, file, decoded, f),
+        _ when layout == GrayF32.Layout => Single<GrayF32>(input, file, decoded, f),
+        _ when layout == RgbF32.Layout => Single<RgbF32>(input, file, decoded, f),
+        _ => Single<RgbaF32>(input, file, decoded, f),
+    };
+
+    private static Raster<TPixel> Single<TPixel>(EgamiInput input, JxlFile file, JxlDecoded decoded, JxlFrameHeader f)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        PixelPlane<TPixel> plane = Plane<TPixel>(input, decoded);
+        return new Raster<TPixel>([new Frame<TPixel>(plane, new FrameMetadata { Delay = Delay(f, file.Header) })], Metadata(input, file), input.Context);
+    }
+
+    /// <summary>
+    /// Decodes the frames shown: the coalesced canvas after each key frame, those in <see cref="ReaderOptions.Frames"/> kept.
+    /// Frames after the range are not decoded.
+    /// </summary>
+    private static Raster<TPixel> Shown<TPixel>(EgamiInput input, ReaderOptions options, JxlFile file, byte[] codestream, bool forceFloat)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Range range = options.Frames;
+        bool fromEnd = range.Start.IsFromEnd || range.End.IsFromEnd;
+        int first = fromEnd ? 0 : range.Start.Value;
+        int end = fromEnd ? int.MaxValue : range.End.Value;
+        bool lfOnly = options is JxlReaderOptions { MaxDownscale: >= 8 };
+        List<Frame<TPixel>> frames = [];
+        int seen = 0;
+        try
+        {
+            Run(file, codestream, input, Sequence(file), lfOnly, layers: false, (decoded, f) =>
+            {
+                int index = seen++;
+                if (index >= first && index < end)
+                {
+                    if (forceFloat)
+                    {
+                        decoded.ForceFloat();
+                    }
+
+                    frames.Add(new Frame<TPixel>(Plane<TPixel>(input, decoded), new FrameMetadata { Delay = Delay(f, file.Header) }));
+                }
+
+                return seen < end;
+            });
+
+            if (fromEnd)
+            {
+                // A range counted from the end is only known once every frame is read.
+                (int offset, int length) = AnimationCanvasRange.Clamp(range, frames.Count);
+                for (int i = 0; i < frames.Count; i++)
+                {
+                    if (i < offset || i >= offset + length)
+                    {
+                        frames[i].Plane.Dispose();
+                    }
+                }
+
+                frames = frames.GetRange(offset, length);
+            }
+
+            if (frames.Count == 0)
+            {
+                throw input.Corrupt(-1, "No frame is in the requested range.");
+            }
+
+            return new Raster<TPixel>(frames, Metadata(input, file), input.Context);
+        }
+        catch
+        {
+            foreach (Frame<TPixel> frame in frames)
+            {
+                frame.Plane.Dispose();
+            }
+
+            throw;
+        }
+    }
+
+    /// <summary>Gets how long a frame shows, from its duration in ticks.</summary>
+    private static TimeSpan Delay(JxlFrameHeader f, JxlImageHeader h)
+    {
+        return h.Animation is JxlAnimation a && a.TicksNumerator != 0 ? TimeSpan.FromSeconds((double)f.Duration * a.TicksDenominator / a.TicksNumerator) : TimeSpan.Zero;
+    }
+
+    /// <summary>
+    /// Decodes the frames in order and calls <paramref name="emit"/> with each frame shown (the canvas after each key frame) or,
+    /// with <paramref name="layers"/>, with each regular frame before blending; stops when it returns <see langword="false"/>.
+    /// </summary>
+    private static void Run(JxlFile file, byte[] codestream, EgamiInput input, List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence, bool lfOnly, bool layers, Func<JxlDecoded, JxlFrameHeader, bool> emit)
     {
         JxlImageHeader h = file.Header;
         float[][]?[] lfFrames = new float[4][][];
-        JxlPlanes?[] references = new JxlPlanes?[4];
-        int displayed = file.Frames.Count(f => f.IsNormal);
+        JxlReference?[] references = new JxlReference?[4];
         int visible = 0;
         int invisible = 0;
-        for (int i = 0; i < file.Frames.Count; i++)
+
+        // The LF image alone (1:8): for a single VarDCT frame with nothing drawn on it and no extra channels.
+        List<JxlFrameHeader> regular = [.. sequence.Select(s => s.Header).Where(f => f.Type != JxlFrameType.Lf)];
+        lfOnly = lfOnly && !layers && regular.Count == 1 && regular[0] is { Modular: false, YCbCr: false, HaveCrop: false, Upsampling: 1 } only
+            && (only.Flags & 0x13) == 0 && h.ExtraChannels.Count == 0;
+        for (int i = 0; i < sequence.Count; i++)
         {
             input.CancellationToken.ThrowIfCancellationRequested();
-            JxlFrameHeader f = file.Frames[i];
+            (JxlFrameHeader f, JxlToc toc, long offset) = sequence[i];
 
             // The frame's place in the sequence seeds its noise.
             if (f.IsKeyFrame)
@@ -159,24 +337,41 @@ internal static class JxlImageDecoder
                 invisible++;
             }
 
-            bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
-            if ((f.IsNormal && (displayed != 1 || f.HaveCrop || f.Blending.Mode != JxlBlendMode.Replace))
-                || (referenced && !f.SaveBeforeColorTransform))
-            {
-                throw new UnsupportedFormatException("Egami does not decode JPEG XL animations, layers or crops yet.");
-            }
-
             if (f.YCbCr)
             {
                 throw new UnsupportedFormatException("Egami does not decode recompressed JPEG frames yet.");
             }
 
-            JxlFrameChannels frame = new JxlFrameDecoder(codestream, h, f, file.Tocs[i], file.SectionOffsets[i], input.Limits).Decode(lfFrames[f.LfLevel]);
-            if (file.Frames.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
-                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1))
+            bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
+            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits);
+            if (lfOnly && f.Type != JxlFrameType.Lf)
+            {
+                // From the LF frame when the frame has one, from its own LF groups otherwise.
+                float[][] lf;
+                int lw = (int)((f.Width + 7L) / 8);
+                int lh = (int)((f.Height + 7L) / 8);
+                if ((f.Flags & 0x20) != 0 && lfFrames[0] is float[][] fromFrame)
+                {
+                    lf = [.. fromFrame.Select(p => (float[])p.Clone())];
+                }
+                else
+                {
+                    JxlFrameChannels channels = decoder.Decode(lfFrames[f.LfLevel], lfOnly: true);
+                    lf = channels.ColorPlanes!;
+                }
+
+                ToColorSpace(lf, lw * lh, h);
+                emit(new JxlDecoded(file, lw, lh, lf, []), f);
+                return;
+            }
+
+            JxlFrameChannels frame = decoder.Decode(lfFrames[f.LfLevel]);
+            if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
+                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop)
             {
                 // Lossless Modular: keep the integers, so 8 and 16-bit output is exact.
-                return new JxlDecoded(file, f.Width, f.Height, frame);
+                emit(new JxlDecoded(file, f.Width, f.Height, frame), f);
+                return;
             }
 
             JxlPlanes planes = Render(f, frame, h, references, visible, invisible);
@@ -186,20 +381,46 @@ internal static class JxlImageDecoder
                 continue;
             }
 
-            if (referenced)
+            if (referenced && f.SaveBeforeColorTransform)
             {
-                references[f.SaveAsReference] = f.IsNormal ? planes.Copy() : planes;
+                references[f.SaveAsReference] = new JxlReference(f.IsNormal ? planes.Copy() : planes, true, f.X0, f.Y0);
+                if (!f.IsNormal)
+                {
+                    continue;
+                }
             }
 
+            ToColorSpace(planes.Planes, planes.Width * planes.Height, h);
+            JxlPlanes canvas = planes;
             if (f.IsNormal)
             {
-                float[][] color = planes.Planes[..3];
-                ToColorSpace(color, planes.Width * planes.Height, h);
-                return new JxlDecoded(file, planes.Width, planes.Height, color, planes.Planes[3..]);
+                if (layers && !emit(new JxlDecoded(file, planes.Width, planes.Height, planes.Planes[..3], planes.Planes[3..]), f))
+                {
+                    return;
+                }
+
+                bool replaceAll = f.Blending.Mode == JxlBlendMode.Replace && f.ExtraChannelBlending.All(b => b.Mode == JxlBlendMode.Replace);
+                if (f.HaveCrop || !replaceAll)
+                {
+                    canvas = JxlBlend.Frame(f, planes, references, h);
+                }
+            }
+
+            if (referenced && !f.SaveBeforeColorTransform)
+            {
+                references[f.SaveAsReference] = new JxlReference(canvas, false, f.IsNormal ? 0 : f.X0, f.IsNormal ? 0 : f.Y0);
+            }
+
+            if (!layers && f.IsNormal && f.IsKeyFrame && !emit(new JxlDecoded(file, canvas.Width, canvas.Height, canvas.Planes[..3], canvas.Planes[3..]), f))
+            {
+                return;
             }
         }
 
-        throw new CorruptDataException(JxlFormat.Info.Name, -1, "The codestream has no frame to show.");
+        if (!layers && visible == 0)
+        {
+            throw new CorruptDataException(JxlFormat.Info.Name, -1, "The codestream has no frame to show.");
+        }
     }
 
     /// <summary>Converts a Modular XYB frame's integer Y, X and B into X, Y and B floats (B coded as B - Y).</summary>
@@ -242,7 +463,7 @@ internal static class JxlImageDecoder
     /// Renders a decoded frame up to its color transform, in libjxl's order: the restoration filters, extra channel upsampling,
     /// patches, splines, color upsampling, then noise. LF frames stay at their coded size.
     /// </summary>
-    private static JxlPlanes Render(JxlFrameHeader f, JxlFrameChannels frame, JxlImageHeader h, JxlPlanes?[] references, int visible, int invisible)
+    private static JxlPlanes Render(JxlFrameHeader f, JxlFrameChannels frame, JxlImageHeader h, JxlReference?[] references, int visible, int invisible)
     {
         int width = frame.Width;
         int height = frame.Height;
@@ -386,43 +607,59 @@ internal static class JxlImageDecoder
         }
     }
 
-    private static Raster<TPixel> Fill<TPixel>(EgamiInput input, JxlDecoded d)
+    /// <summary>Gets the raster metadata: ICC, Exif, XMP, orientation and the container's warnings.</summary>
+    private static RasterMetadata Metadata(EgamiInput input, JxlFile file)
+    {
+        JxlImageHeader h = file.Header;
+        RasterMetadata metadata = new()
+        {
+            FormatName = JxlFormat.Info.Name,
+            FormatDetails = JxlDetails.From(file),
+        };
+        if (h.Animation is JxlAnimation animation)
+        {
+            metadata.LoopCount = (int)Math.Min(animation.Loops, int.MaxValue);
+        }
+
+        if (file.Icc is byte[] icc)
+        {
+            metadata.IccProfile = icc;
+        }
+
+        if (file.Container.Exif is byte[] exif)
+        {
+            metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(exif, input.Limits.MaxMetadataBytes, metadata.WarningList);
+        }
+
+        if (file.Container.Xmp is byte[] xmp)
+        {
+            metadata.Xmp = xmp;
+        }
+
+        // The codestream's orientation is the one that counts (design question 11); AutoOrient reads it from EXIF.
+        if (h.Orientation != 1 || metadata.Exif is not null)
+        {
+            metadata.Exif ??= new ExifData();
+            metadata.Exif.Orientation = (ImageOrientation)h.Orientation;
+        }
+
+        foreach (JxlProblem problem in file.Container.Problems)
+        {
+            metadata.WarningList.Add(problem.Id, problem.Message, problem.Offset);
+        }
+
+        return metadata;
+    }
+
+    /// <summary>Puts a decoded frame's samples into a plane of <typeparamref name="TPixel"/>.</summary>
+    private static PixelPlane<TPixel> Plane<TPixel>(EgamiInput input, JxlDecoded d)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         JxlImageHeader h = d.File.Header;
-        Raster<TPixel> raster = input.CreateRaster<TPixel>(d.Width, d.Height);
+        input.CheckMemory((long)d.Width * d.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+        PixelPlane<TPixel> raster = PixelPlane.Allocate<TPixel>(d.Width, d.Height, input.Memory);
         try
         {
-            RasterMetadata metadata = raster.Metadata;
-            metadata.FormatName = JxlFormat.Info.Name;
-            metadata.FormatDetails = JxlDetails.From(d.File);
-            if (d.File.Icc is byte[] icc)
-            {
-                metadata.IccProfile = icc;
-            }
-
-            if (d.File.Container.Exif is byte[] exif)
-            {
-                metadata.Exif = Jpeg.JpegSegmentReader.ParseExif(exif, input.Limits.MaxMetadataBytes, metadata.WarningList);
-            }
-
-            if (d.File.Container.Xmp is byte[] xmp)
-            {
-                metadata.Xmp = xmp;
-            }
-
-            // The codestream's orientation is the one that counts (design question 11); AutoOrient reads it from EXIF.
-            if (h.Orientation != 1 || metadata.Exif is not null)
-            {
-                metadata.Exif ??= new ExifData();
-                metadata.Exif.Orientation = (ImageOrientation)h.Orientation;
-            }
-
-            foreach (JxlProblem problem in d.File.Container.Problems)
-            {
-                metadata.WarningList.Add(problem.Id, problem.Message, problem.Offset);
-            }
-
             PixelLayoutInfo layout = TPixel.Layout;
             int samples = layout.ChannelCount;
             bool alpha = layout.HasAlpha;
@@ -576,18 +813,38 @@ internal static class JxlImageDecoder
         }
     }
 
-    private sealed class Converter<TPixel>(Raster<TPixel> target) : IRasterVisitor<Raster>
+    /// <summary>Converts every frame of a raster.</summary>
+    private sealed class Converter<TPixel>(EgamiInput input) : IRasterVisitor<Raster<TPixel>>
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        public Raster Visit<TFrom>(Raster<TFrom> source)
+        public Raster<TPixel> Visit<TFrom>(Raster<TFrom> source)
             where TFrom : unmanaged, IPixelType<TFrom>
         {
-            for (int y = 0; y < source.Height; y++)
+            List<Frame<TPixel>> frames = [];
+            try
             {
-                PixelConvert.Convert<TFrom, TPixel>(source.Row(y), target.Row(y));
-            }
+                foreach (Frame<TFrom> frame in source.Frames)
+                {
+                    input.CheckMemory((long)source.Width * source.Height * System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>());
+                    PixelPlane<TPixel> plane = PixelPlane.Allocate<TPixel>(source.Width, source.Height, input.Memory);
+                    frames.Add(new Frame<TPixel>(plane, frame.Metadata.Copy()));
+                    for (int y = 0; y < source.Height; y++)
+                    {
+                        PixelConvert.Convert<TFrom, TPixel>(frame.Row(y), plane.Row(y));
+                    }
+                }
 
-            return target;
+                return new Raster<TPixel>(frames, source.Metadata.Copy(), input.Context);
+            }
+            catch
+            {
+                foreach (Frame<TPixel> frame in frames)
+                {
+                    frame.Plane.Dispose();
+                }
+
+                throw;
+            }
         }
     }
 }

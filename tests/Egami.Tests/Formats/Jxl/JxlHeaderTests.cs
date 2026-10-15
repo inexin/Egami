@@ -219,7 +219,7 @@ public class JxlHeaderTests(ITestOutputHelper output)
     [Fact]
     public void LoadSaysWhatItDoesNotDecodeYet()
     {
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(Path.Combine(Corpus, "pan-anim-lossless.jxl")));
+        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(Path.Combine(Corpus, "jpeg-duck-444.jxl")));
     }
 
     private static byte[] Box(string type, byte[] content)

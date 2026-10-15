@@ -3038,3 +3038,35 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Operations.OperationReach.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
 ~override Egami.Pixels.YuvColor.ToString() -> string
+Egami.Formats.Jxl.JxlImage
+Egami.Formats.Jxl.JxlLayer
+Egami.Formats.Jxl.JxlLayer.Blend.get -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayer.Dispose() -> void
+Egami.Formats.Jxl.JxlLayer.Duration.get -> System.TimeSpan
+Egami.Formats.Jxl.JxlLayer.Name.get -> string!
+Egami.Formats.Jxl.JxlLayer.Raster.get -> Egami.Raster!
+Egami.Formats.Jxl.JxlLayer.X.get -> int
+Egami.Formats.Jxl.JxlLayer.Y.get -> int
+Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Add = 1 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Blend = 2 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.MulAdd = 3 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Multiply = 4 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Replace = 0 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlReaderOptions
+Egami.Formats.Jxl.JxlReaderOptions.Equals(Egami.Formats.Jxl.JxlReaderOptions? other) -> bool
+Egami.Formats.Jxl.JxlReaderOptions.JxlReaderOptions() -> void
+Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.get -> int
+Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.init -> void
+override Egami.Formats.Jxl.JxlReaderOptions.<Clone>$() -> Egami.Formats.Jxl.JxlReaderOptions!
+override Egami.Formats.Jxl.JxlReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Jxl.JxlReaderOptions.GetHashCode() -> int
+override Egami.Formats.Jxl.JxlReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Jxl.JxlReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Jxl.JxlImage.ReadLayers(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>!
+static Egami.Formats.Jxl.JxlImage.ReadLayers(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>!
+static Egami.Formats.Jxl.JxlImage.ReadPreview(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster?
+static Egami.Formats.Jxl.JxlImage.ReadPreview(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster?
+static Egami.Formats.Jxl.JxlReaderOptions.Default.get -> Egami.Formats.Jxl.JxlReaderOptions!
+static Egami.Formats.Jxl.JxlReaderOptions.operator !=(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
+static Egami.Formats.Jxl.JxlReaderOptions.operator ==(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool

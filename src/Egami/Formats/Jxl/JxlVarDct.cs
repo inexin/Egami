@@ -461,49 +461,32 @@ internal sealed class JxlVarDct
         decoder.Finish(r);
     }
 
+    /// <summary>Gets the LF image alone (1:8, X, Y and B, cropped to the frame), after chroma from luma and smoothing.</summary>
+    internal float[][] LfImage()
+    {
+        PrepareLf(null);
+        int width = (int)Ceil(Width, 8);
+        int height = (int)Ceil(Height, 8);
+        float[][] planes = new float[3][];
+        for (int c = 0; c < 3; c++)
+        {
+            planes[c] = new float[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                _lf[c].AsSpan(y * PlaneBlocksX(c), width).CopyTo(planes[c].AsSpan(y * width));
+            }
+        }
+
+        return planes;
+    }
+
     /// <summary>
     /// Reconstructs the color planes: LF (from the LF groups, or <paramref name="lfFrame"/>), dequantized HF, chroma from luma
     /// and the inverse transforms. Returns the three planes at block-padded size, row stride <see cref="PlaneBlocksX"/> × 8.
     /// </summary>
     internal float[][] Reconstruct(float[][]? lfFrame)
     {
-        if (lfFrame is not null)
-        {
-            for (int c = 0; c < 3; c++)
-            {
-                int stride = PlaneBlocksX(c);
-                int lfw = (int)Ceil(Width, 8);
-                for (int y = 0; y < PlaneBlocksY(c); y++)
-                {
-                    for (int x = 0; x < stride; x++)
-                    {
-                        int sx = Math.Min(x, lfw - 1);
-                        int sy = Math.Min(y, (int)Ceil(Height, 8) - 1);
-                        _lf[c][(y * stride) + x] = lfFrame[c][(sy * lfw) + sx];
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (!Subsampled)
-            {
-                float kx = _global.BaseCorrelationX + ((_global.XFactorLf - 128) / (float)_global.ColourFactor);
-                float kb = _global.BaseCorrelationB + ((_global.BFactorLf - 128) / (float)_global.ColourFactor);
-                for (int i = 0; i < _lf[1].Length; i++)
-                {
-                    float yv = _lf[1][i];
-                    _lf[0][i] += kx * yv;
-                    _lf[2][i] += kb * yv;
-                }
-            }
-
-            if ((_frame.Flags & 0x80) == 0)
-            {
-                SmoothLf();
-            }
-        }
-
+        PrepareLf(lfFrame);
         float[][] planes = new float[3][];
         JxlHfGlobal? hf = _hf;
         float[]? oim = _image.OpsinInverse;
@@ -587,6 +570,47 @@ internal sealed class JxlVarDct
         }
 
         return planes;
+    }
+
+    /// <summary>Fills the LF coefficients from the LF frame, or applies chroma from luma and adaptive smoothing to the coded ones.</summary>
+    private void PrepareLf(float[][]? lfFrame)
+    {
+        if (lfFrame is not null)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                int stride = PlaneBlocksX(c);
+                int lfw = (int)Ceil(Width, 8);
+                for (int y = 0; y < PlaneBlocksY(c); y++)
+                {
+                    for (int x = 0; x < stride; x++)
+                    {
+                        int sx = Math.Min(x, lfw - 1);
+                        int sy = Math.Min(y, (int)Ceil(Height, 8) - 1);
+                        _lf[c][(y * stride) + x] = lfFrame[c][(sy * lfw) + sx];
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (!Subsampled)
+            {
+                float kx = _global.BaseCorrelationX + ((_global.XFactorLf - 128) / (float)_global.ColourFactor);
+                float kb = _global.BaseCorrelationB + ((_global.BFactorLf - 128) / (float)_global.ColourFactor);
+                for (int i = 0; i < _lf[1].Length; i++)
+                {
+                    float yv = _lf[1][i];
+                    _lf[0][i] += kx * yv;
+                    _lf[2][i] += kb * yv;
+                }
+            }
+
+            if ((_frame.Flags & 0x80) == 0)
+            {
+                SmoothLf();
+            }
+        }
     }
 
     private static int ShiftSize(int size, bool has, bool subsampled) => !has ? size : subsampled ? (size + 1) / 2 : ((size + 1) / 2) * 2;

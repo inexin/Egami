@@ -313,8 +313,10 @@ Egami uses it under the MIT license:
 Egami's JPEG XL reader is written from ISO/IEC 18181-1 and 18181-2, with libjxl 0.12.0 read so its headers match the reference
 decoder field for field: the order and conditions of the SizeHeader, ImageMetadata, ExtraChannelInfo, ColorEncoding,
 CustomTransformData, FrameHeader, BlendingInfo, Passes and LoopFilter fields, the frame and LF group counts behind the TOC
-(`src/Egami/Formats/Jxl/JxlHeaders.cs`), its box rules (`JxlContainer.cs`), and its ICC header prediction from the bytes
-already decoded (`JxlIcc.cs`). libjxl is distributed under the BSD 3-clause
+(`src/Egami/Formats/Jxl/JxlHeaders.cs`), its box rules (`JxlContainer.cs`), its ICC header prediction from the bytes
+already decoded (`JxlIcc.cs`), and its rendering order and blending: the stage order of its render pipeline (patches and
+splines before color upsampling, noise after, reference frames saved before or after the color transform) in
+`JxlImageDecoder.cs`, and its patch and frame blending and alpha compositing (`JxlBlend.cs`). libjxl is distributed under the BSD 3-clause
 license:
 
     Copyright (c) the JPEG XL Project Authors. All rights reserved.

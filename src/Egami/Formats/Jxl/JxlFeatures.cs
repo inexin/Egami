@@ -131,14 +131,21 @@ internal static class JxlFeatures
         return patches;
     }
 
-    /// <summary>Pastes the patches into <paramref name="frame"/> from the reference frames.</summary>
-    internal static void ApplyPatches(JxlPlanes frame, JxlPatch[] patches, JxlPlanes?[] references, JxlImageHeader image)
+    /// <summary>Pastes the patches into <paramref name="frame"/> from the reference frames, which must be saved before the color transform.</summary>
+    internal static void ApplyPatches(JxlPlanes frame, JxlPatch[] patches, JxlReference?[] references, JxlImageHeader image)
     {
+        float[][] tmp = JxlBlend.Scratch(frame.Planes.Length, patches.Length == 0 ? 0 : patches.Max(p => p.Width));
         foreach (JxlPatch patch in patches)
         {
-            JxlPlanes reference = references[patch.Reference]
+            JxlReference reference = references[patch.Reference]
                 ?? throw new CorruptDataException(JxlFormat.Info.Name, -1, "A patch uses a reference frame slot that holds no frame.");
-            if ((long)patch.X0 + patch.Width > reference.Width || (long)patch.Y0 + patch.Height > reference.Height)
+            JxlPlanes source = reference.Planes;
+            if (!reference.BeforeColorTransform)
+            {
+                throw new CorruptDataException(JxlFormat.Info.Name, -1, "A patch uses a reference frame saved after the color transform.");
+            }
+
+            if ((long)patch.X0 + patch.Width > source.Width || (long)patch.Y0 + patch.Height > source.Height)
             {
                 throw new CorruptDataException(JxlFormat.Info.Name, -1, "A patch reaches outside its reference frame.");
             }
@@ -150,96 +157,13 @@ internal static class JxlFeatures
                 int top = Math.Max(0, -target.Y);
                 int width = (int)Math.Min(patch.Width, (long)frame.Width - target.X) - left;
                 int height = (int)Math.Min(patch.Height, (long)frame.Height - target.Y) - top;
-                if (width <= 0 || height <= 0)
+                for (int dy = 0; dy < height && width > 0; dy++)
                 {
-                    continue;
-                }
-
-                for (int c = 0; c < frame.Planes.Length; c++)
-                {
-                    JxlPatchBlending b = target.Blending[Math.Max(0, c - 2)];
-                    if (b.Mode == JxlPatchBlendMode.None)
-                    {
-                        continue;
-                    }
-
-                    int alphaPlane = 3 + b.AlphaChannel;
-                    bool usesAlpha = b.Mode >= JxlPatchBlendMode.BlendAbove;
-                    bool isAlpha = usesAlpha && c == alphaPlane;
-                    bool premultiplied = usesAlpha && image.ExtraChannels[b.AlphaChannel].AlphaAssociated;
-                    float[] baseRow = frame.Planes[c];
-                    float[] newRow = reference.Planes[c];
-                    float[]? baseAlpha = usesAlpha && !isAlpha ? frame.Planes[alphaPlane] : null;
-                    float[]? newAlpha = usesAlpha && !isAlpha ? reference.Planes[alphaPlane] : null;
-                    for (int dy = 0; dy < height; dy++)
-                    {
-                        int bi = ((target.Y + top + dy) * frame.Width) + target.X + left;
-                        int ni = ((patch.Y0 + top + dy) * reference.Width) + patch.X0 + left;
-                        for (int dx = 0; dx < width; dx++, bi++, ni++)
-                        {
-                            baseRow[bi] = BlendSample(b.Mode, b.Clamp, isAlpha, premultiplied, baseRow[bi], newRow[ni], baseAlpha?[bi] ?? 0, newAlpha?[ni] ?? 0);
-                        }
-                    }
+                    int bi = ((target.Y + top + dy) * frame.Width) + target.X + left;
+                    int ni = ((patch.Y0 + top + dy) * source.Width) + patch.X0 + left;
+                    JxlBlend.Row(frame.Planes, bi, source.Planes, ni, width, target.Blending[0], target.Blending.AsSpan(1), image, tmp);
                 }
             }
-        }
-    }
-
-    /// <summary>Blends one sample of a patch over the frame's.</summary>
-    private static float BlendSample(JxlPatchBlendMode mode, bool clamp, bool isAlpha, bool premultiplied, float bs, float ns, float ba, float na)
-    {
-        switch (mode)
-        {
-            case JxlPatchBlendMode.Replace:
-                return ns;
-            case JxlPatchBlendMode.Add:
-                return bs + ns;
-            case JxlPatchBlendMode.Mul:
-                return bs * (clamp ? Math.Clamp(ns, 0, 1) : ns);
-            case JxlPatchBlendMode.BlendAbove or JxlPatchBlendMode.BlendBelow:
-                {
-                    if (mode == JxlPatchBlendMode.BlendBelow)
-                    {
-                        (bs, ns) = (ns, bs);
-                        (ba, na) = (na, ba);
-                    }
-
-                    if (isAlpha)
-                    {
-                        return bs + ((clamp ? Math.Clamp(ns, 0, 1) : ns) * (1 - bs));
-                    }
-
-                    if (clamp)
-                    {
-                        na = Math.Clamp(na, 0, 1);
-                    }
-
-                    if (premultiplied)
-                    {
-                        return ns + (bs * (1 - na));
-                    }
-
-                    float mixed = 1 - ((1 - na) * (1 - ba));
-                    float recip = mixed > 0 ? 1 / mixed : 0;
-                    return ((na * ns) + (ba * bs * (1 - na))) * recip;
-                }
-
-            default:
-                {
-                    bool below = mode == JxlPatchBlendMode.MulAddBelow;
-                    if (isAlpha)
-                    {
-                        return below ? ns : bs;
-                    }
-
-                    if (below)
-                    {
-                        (bs, ns) = (ns, bs);
-                        na = ba;
-                    }
-
-                    return bs + ((clamp ? Math.Clamp(na, 0, 1) : na) * ns);
-                }
         }
     }
 

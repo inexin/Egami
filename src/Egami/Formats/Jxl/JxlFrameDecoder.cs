@@ -77,7 +77,13 @@ internal sealed class JxlFrameDecoder
     internal JxlTree? GlobalTree { get; private set; }
 
     /// <summary>Decodes the whole frame; <paramref name="lfFrame"/> is the LF frame's X, Y and B when the frame uses one.</summary>
-    internal JxlFrameChannels Decode(float[][]? lfFrame)
+    internal JxlFrameChannels Decode(float[][]? lfFrame) => Decode(lfFrame, lfOnly: false);
+
+    /// <summary>
+    /// Decodes the frame; with <paramref name="lfOnly"/>, a VarDCT frame stops after its LF groups and gives its LF image (1:8)
+    /// as the color planes.
+    /// </summary>
+    internal JxlFrameChannels Decode(float[][]? lfFrame, bool lfOnly)
     {
         (long w, long h) = _frame.CodedSize;
         int width = (int)w;
@@ -175,6 +181,19 @@ internal sealed class JxlFrameDecoder
 
             DecodeGroup(lr, 1 + lfGroups + lf, global, rects, parts, bitDepth);
             varDct?.DecodeHfMetadata(lr, lf, GlobalTree, lfGroups);
+        }
+
+        if (lfOnly && varDct is not null)
+        {
+            int lw = (int)Ceil(width, 8);
+            int lh = (int)Ceil(height, 8);
+            return new JxlFrameChannels(lw, lh, global.Channels, 3, extraStart)
+            {
+                ColorPlanes = varDct.LfImage(),
+                ColorStrides = [lw, lw, lw],
+                LfDequant = lfDequant,
+                VarDct = varDct,
+            };
         }
 
         varDct?.ReadHfGlobal(Section(1 + lfGroups), GlobalTree, lfGroups, groups);

@@ -17,12 +17,14 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
     private static readonly Lazy<JsonElement> Manifest = new(() =>
         JsonDocument.Parse(File.ReadAllBytes(Path.Combine(References, "manifest.json"))).RootElement.GetProperty("files").Clone());
 
-    /// <summary>Gets the corpus files that must decode exactly like djxl at this stage: the lossless Modular ones without XYB.</summary>
+    /// <summary>Gets the corpus files that must decode exactly like djxl: the lossless ones, stills and animations.</summary>
     private static bool Expected(JsonElement entry)
     {
         string info = entry.GetProperty("jxlinfo").GetString()!;
+        // Splines are drawn in float, so a "lossless" file with splines rounds like a lossy one.
+        string covers = entry.TryGetProperty("covers", out JsonElement c) ? c.GetString()! : string.Empty;
         return info.Contains("(possibly) lossless", StringComparison.Ordinal) && !info.Contains("JPEG bitstream reconstruction", StringComparison.Ordinal)
-            && !info.Contains("animation", StringComparison.Ordinal);
+            && !covers.Contains("spline", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -53,13 +55,17 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
             int orientation = int.Parse(OrientationPattern().Match(entry.GetProperty("jxlinfo").GetString()!).Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
             (int ow, int oh) = orientation > 4 ? (egami.Height, egami.Width) : (egami.Width, egami.Height);
             Assert.Equal((djxl.Width, djxl.Height), (ow, oh));
-            float[] a = Orient(Floats(egami), egami.Width, egami.Height, egami.Layout.ChannelCount, orientation);
-            float[] b = Floats(djxl, egami.Layout.ChannelCount);
-            Assert.Equal(b.Length, a.Length);
+            Assert.Equal(djxl.FrameCount, egami.FrameCount);
             double peak = 0;
-            for (int i = 0; i < a.Length; i++)
+            for (int frame = 0; frame < egami.FrameCount; frame++)
             {
-                peak = Math.Max(peak, Math.Abs(a[i] - b[i]));
+                float[] a = Orient(Floats(egami, null, frame), egami.Width, egami.Height, egami.Layout.ChannelCount, orientation);
+                float[] b = Floats(djxl, egami.Layout.ChannelCount, frame);
+                Assert.Equal(b.Length, a.Length);
+                for (int i = 0; i < a.Length; i++)
+                {
+                    peak = Math.Max(peak, Math.Abs(a[i] - b[i]));
+                }
             }
 
             output.WriteLine($"{file}: peak difference {peak}");
@@ -104,24 +110,31 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
         using (egami)
         {
             JxlReferenceTests.Npy reference = JxlReferenceTests.Npy.Read(Path.Combine(folder, "reference_image.npy"));
-            JsonElement frame = spec.RootElement.GetProperty("frames")[0];
-            Assert.Equal((reference.Shape[2], reference.Shape[1]), (egami.Width, egami.Height));
+            // The references are upright.
+            int orientation = (int)(egami.Metadata.Exif?.Orientation ?? Egami.Metadata.ImageOrientation.Normal);
+            (int ow, int oh) = orientation > 4 ? (egami.Height, egami.Width) : (egami.Width, egami.Height);
+            Assert.Equal((reference.Shape[0], reference.Shape[2], reference.Shape[1]), (egami.FrameCount, ow, oh));
             int channels = reference.Shape[3];
-            float[] ours = Floats(egami, channels);
-            double peak = 0;
-            double[] squares = new double[channels];
             int pixels = egami.Width * egami.Height;
-            for (int i = 0; i < pixels * channels; i++)
+            for (int f = 0; f < egami.FrameCount; f++)
             {
-                double d = Math.Abs(ours[i] - reference.Data[i]);
-                peak = Math.Max(peak, d);
-                squares[i % channels] += d * d;
-            }
+                JsonElement frame = spec.RootElement.GetProperty("frames")[f];
+                float[] ours = Orient(Floats(egami, channels, f), egami.Width, egami.Height, channels, orientation);
+                double peak = 0;
+                double[] squares = new double[channels];
+                int start = f * pixels * channels;
+                for (int i = 0; i < pixels * channels; i++)
+                {
+                    double d = Math.Abs(ours[i] - reference.Data[start + i]);
+                    peak = Math.Max(peak, d);
+                    squares[i % channels] += d * d;
+                }
 
-            double rms = squares.Max(s => Math.Sqrt(s / pixels));
-            output.WriteLine($"{name}: peak {peak}, RMS {rms}");
-            Assert.True(peak <= frame.GetProperty("peak_error").GetDouble(), $"peak {peak}");
-            Assert.True(rms <= frame.GetProperty("rms_error").GetDouble(), $"RMS {rms}");
+                double rms = squares.Max(s => Math.Sqrt(s / pixels));
+                output.WriteLine($"{name} frame {f}: peak {peak}, RMS {rms}");
+                Assert.True(peak <= frame.GetProperty("peak_error").GetDouble(), $"frame {f} peak {peak}");
+                Assert.True(rms <= frame.GetProperty("rms_error").GetDouble(), $"frame {f} RMS {rms}");
+            }
         }
     }
 
@@ -160,7 +173,7 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
     private static partial System.Text.RegularExpressions.Regex OrientationPattern();
 
     /// <summary>Gets the samples as floats in the raster's channel count: gray as one, RGB as three, with alpha as four.</summary>
-    private static float[] Floats(Raster raster, int? channels = null)
+    private static float[] Floats(Raster raster, int? channels = null, int frame = 0)
     {
         int count = channels ?? raster.Layout.ChannelCount;
         using Raster<RgbaF32> f = raster.As<RgbaF32>();
@@ -168,7 +181,7 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
         int n = 0;
         for (int y = 0; y < f.Height; y++)
         {
-            foreach (RgbaF32 p in f.Row(y))
+            foreach (RgbaF32 p in f.Frames[frame].Row(y))
             {
                 ReadOnlySpan<float> v = [p.R, p.G, p.B, p.A];
                 if (count == 1)
