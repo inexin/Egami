@@ -636,3 +636,21 @@ the full HDR rendition.
 
 The SDR picture is the render tone mapped with BT.2390; the gain map, half the size here, brings the HDR render back.
 
+
+## Find a PDF font's glyph by name
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#names)]
+
+A simple font's `/Differences` names glyphs; `TryGetGlyphByName` finds them in a CFF charset or a TrueType post table. See
+[Font data for PDF](../guides/text.md#font-data-for-pdf).
+
+## Find a CIDFontType0 glyph by CID
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cids)]
+
+## Pick the cmap subtable a PDF font uses
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cmaps)]
+
+A symbolic TrueType font looks codes up in (3,0), then (1,0); a non-symbolic one in (3,1). A Type1C font without `/Encoding`
+uses the CFF program's own encoding, `BuiltInEncoding`.
