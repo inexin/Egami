@@ -1,0 +1,6 @@
+@page { size: A4 landscape; margin: 2cm 1in; border: 1pt solid; @top-center { content: "T" counter(page) } }
+@page :first { margin-top: 5cm !important; @bottom-center { content: none } }
+@page a:left, :blank:right { size: 8.5in 11in; marks: crop cross; bleed: 3mm; page-orientation: rotate-left }
+@media print { @page A { size: letter portrait; @left-middle { color: red; vertical-align: top } } }
+@page bad name { color: red }
+h1 { page: a; break-before: right; page-break-after: always; orphans: 3; widows: 2 }

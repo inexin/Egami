@@ -40,7 +40,7 @@ public sealed record class CssCascadeOptions
 
 /// <summary>
 /// The cascade (CSS Cascade 5, without animations, transitions and cascade layers): finds the declarations that apply to an
-/// element and picks the winner for each property.
+/// element (or, for <c>@page</c> rules, a page) and picks the winner for each property.
 /// </summary>
 /// <remarks>
 /// Rules are indexed by the ID, class or type of their rightmost compound selector, so each element is tested against few
@@ -61,6 +61,7 @@ public sealed class CssCascade
     private readonly Dictionary<string, List<RuleEntry>> _byClass = new(StringComparer.Ordinal);
     private readonly Dictionary<string, List<RuleEntry>> _byType = new(StringComparer.Ordinal);
     private readonly List<RuleEntry> _universal = [];
+    private readonly List<PageEntry> _pages = [];
     private readonly CssCascadeOptions _options;
     private int _order;
 
@@ -102,6 +103,9 @@ public sealed class CssCascade
                     break;
                 case CssLayerRule { Rules: { } layerRules }:
                     AddRules(layerRules, origin, depth + 1);
+                    break;
+                case CssPageRule page:
+                    _pages.Add(new PageEntry(page, origin, _order++, Expand(page.Declarations), [.. page.MarginRules.Select(m => (m.Box, Expand(m.Declarations)))]));
                     break;
             }
         }
@@ -421,6 +425,54 @@ public sealed class CssCascade
     /// <param name="parent">The parent element's computed style, or <see langword="null"/> for the root.</param>
     /// <returns>The computed style.</returns>
     public CssComputedStyle Compute(CssCascadedStyle cascaded, CssComputedStyle? parent) => CssComputedStyle.Compute(cascaded, parent, Registry);
+
+    /// <summary>
+    /// Cascades the <c>@page</c> rules for one page (CSS Paged Media 3 section 4): every rule whose selectors match the page
+    /// competes by origin and importance, then by page selector specificity and order. Page-margin rules cascade the same
+    /// way per margin box.
+    /// </summary>
+    /// <param name="page">The page: its page type name and whether it is the first, a left or a blank page.</param>
+    /// <returns>The page context's and the margin boxes' cascaded styles.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="page"/>
+    /// </example>
+    public CssPageStyle CascadePage(CssPage page)
+    {
+        CssCascadedStyle style = new();
+        Dictionary<CssMarginBox, CssCascadedStyle> boxes = [];
+        foreach (PageEntry entry in _pages)
+        {
+            if (entry.Rule.Match(page) is not { } specificity)
+            {
+                continue;
+            }
+
+            for (int i = 0; i < entry.Declarations.Length; i++)
+            {
+                CssDeclaration declaration = entry.Declarations[i];
+                style.Offer(declaration, entry.Origin, declaration.Important, styleAttribute: false, specificity, entry.Order, i);
+            }
+
+            int index = 0;
+            foreach ((CssMarginBox box, CssDeclaration[] declarations) in entry.MarginRules)
+            {
+                if (!boxes.TryGetValue(box, out CssCascadedStyle? boxStyle))
+                {
+                    boxStyle = new CssCascadedStyle();
+                    boxes[box] = boxStyle;
+                }
+
+                foreach (CssDeclaration declaration in declarations)
+                {
+                    boxStyle.Offer(declaration, entry.Origin, declaration.Important, styleAttribute: false, specificity, entry.Order, index++);
+                }
+            }
+        }
+
+        return new CssPageStyle(style, boxes);
+    }
+
+    private sealed record class PageEntry(CssPageRule Rule, CssOrigin Origin, int Order, CssDeclaration[] Declarations, (CssMarginBox Box, CssDeclaration[] Declarations)[] MarginRules);
 
     private sealed class RuleEntry(ComplexSelector selector, CssOrigin origin, int order, CssDeclaration[] declarations)
     {

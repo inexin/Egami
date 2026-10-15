@@ -185,7 +185,7 @@ public sealed class CssLayerRule : CssRule
     public IReadOnlyList<CssRule>? Rules { get; }
 }
 
-/// <summary>An at-rule Egami.Css does not interpret, such as <c>@keyframes</c> or <c>@page</c>, kept as component values.</summary>
+/// <summary>An at-rule Egami.Css does not interpret, such as <c>@keyframes</c> or <c>@counter-style</c>, kept as component values.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="parse"/>
 /// </example>

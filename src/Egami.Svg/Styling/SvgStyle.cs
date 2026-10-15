@@ -277,9 +277,11 @@ internal sealed class SvgStyle
             s.DisplayNone = display == "none";
         }
 
-        if (r.Keyword("overflow") is string overflow)
+        // overflow is Egami.Css's shorthand of overflow-x and overflow-y; SVG clips to the viewport unless both are visible.
+        string? overflowX = r.Keyword("overflow-x"), overflowY = r.Keyword("overflow-y");
+        if (overflowX is not null || overflowY is not null)
         {
-            s.OverflowVisible = overflow is "visible" or "auto";
+            s.OverflowVisible = overflowX is null or "visible" or "auto" && overflowY is null or "visible" or "auto";
         }
 
         if (r.Keyword("mask-type") is string maskType)

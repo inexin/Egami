@@ -192,10 +192,55 @@ public sealed class CssStyleSheet
                     }
 
                     return new CssFontFaceRule(CssDeclaration.ParseList(raw.Block.Content, options, "@font-face")) { Line = raw.Line, Column = raw.Column };
+                case "page":
+                    CloseWindows(topLevel);
+                    return BuildPage(raw, prelude);
                 default:
                     CloseWindows(topLevel);
                     return new CssUnknownAtRule(name, raw.Prelude, raw.Block) { Line = raw.Line, Column = raw.Column };
             }
+        }
+
+        private CssPageRule? BuildPage(RawAtRule raw, List<CssComponentValue> prelude)
+        {
+            if (raw.Block is null)
+            {
+                Drop(raw, "has no block");
+                return null;
+            }
+
+            List<CssPageSelector>? selectors = CssPageSelector.TryParseList(prelude);
+            if (selectors is null)
+            {
+                options.Report(raw.Line, raw.Column, $"The @page selector '{CssComponentValue.Serialize(prelude)}' is invalid; the rule was dropped.");
+                return null;
+            }
+
+            // Declarations for the page context and page-margin rules (CSS Paged Media 3 section 9.1).
+            List<CssDeclaration> declarations = [];
+            List<CssPageMarginRule> marginRules = [];
+            List<object> parsed = [];
+            new CssSyntax.Parser(raw.Block.Content, options).ConsumeBlockContents(parsed);
+            foreach (object item in parsed)
+            {
+                switch (item)
+                {
+                    case CssDeclaration declaration:
+                        declarations.Add(declaration);
+                        break;
+                    case RawAtRule margin when CssPageMarginRule.TryGetBox(CssText.ToAsciiLower(margin.Name), out CssMarginBox box) && margin.Block is not null && CssSyntax.Trim(margin.Prelude).Count == 0:
+                        marginRules.Add(new CssPageMarginRule(box, CssDeclaration.ParseList(margin.Block.Content, options, "a page-margin rule")) { Line = margin.Line, Column = margin.Column });
+                        break;
+                    case RawAtRule other:
+                        options.Report(other.Line, other.Column, $"The at-rule @{other.Name} is not allowed in @page; it was dropped.");
+                        break;
+                    case RawQualifiedRule qualified:
+                        options.Report(qualified.Line, qualified.Column, "A nested rule in @page was dropped.");
+                        break;
+                }
+            }
+
+            return new CssPageRule(selectors, declarations, marginRules) { Line = raw.Line, Column = raw.Column };
         }
 
         private void Drop(RawAtRule raw, string reason) => options.Report(raw.Line, raw.Column, $"The @{raw.Name} rule {reason}; it was dropped.");

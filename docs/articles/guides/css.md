@@ -2,11 +2,12 @@
 
 Egami.Css parses and applies CSS in managed code, with no dependencies. Egami.Svg uses it for SVG's style sheets, `style`
 attributes and presentation attributes; Egap's HTML reader will use it later. It covers the CSS Syntax 3 tokenizer and
-parser, Selectors 4 matching, the cascade with custom properties and `var()`, media queries, and parsers for colors, lengths,
-`calc()`, transforms and fonts. Layout and the computed values of each property stay with the consumer: Egami.Css hands back
-component values, and the consumer reads them with the value parsers.
+parser, Selectors 4 matching, the cascade with custom properties and `var()`, media queries, the box, background, list,
+table and page properties documents use, `@page` with its margin boxes, and parsers for colors, lengths, `calc()`,
+transforms, fonts and page sizes. Layout and the computed values of each property stay with the consumer: Egami.Css hands
+back component values, and the consumer reads them with the value parsers.
 
-Egami.Css is at 0.1 (0.1.0); its API may still change before 1.0.
+Egami.Css is at 0.2 (0.2.0); its API may still change before 1.0.
 
 ## Parsing style sheets
 
@@ -24,7 +25,8 @@ Every rule is a `CssRule`:
 - `CssImportRule`: a URL Egami.Css does not fetch. Load the sheet yourself and pass it to the cascade.
 - `CssNamespaceRule`: a prefix for selectors; the sheet collects them in `CssStyleSheet.Namespaces`.
 - `CssLayerRule`: cascade layers are not implemented, so the rules inside a layer block count as ordinary rules.
-- `CssUnknownAtRule`: anything else, such as `@keyframes` or `@page`, kept as component values.
+- `CssPageRule`: page selectors, the page context's declarations and its `CssPageMarginRule`s (see [Pages](#pages)).
+- `CssUnknownAtRule`: anything else, such as `@keyframes` or `@counter-style`, kept as component values.
 
 ## Declarations
 
@@ -82,6 +84,42 @@ common text properties of CSS. Consumers add their own with a `CssPropertyDefini
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#cascade)]
 
+## Box, list and table properties
+
+`CssPropertyRegistry.CreateDefault` also knows the properties a document's boxes need, each with its value grammar, so an
+invalid value is dropped and an earlier valid one wins:
+
+- Boxes: `margin`, `padding`, `border` and their sides, `border-width`, `border-style`, `border-color`, `border-radius`,
+  `width`, `height` with their `min-` and `max-` forms, and `box-sizing`.
+- Backgrounds: the `background-*` longhands, which hold one comma-separated item per layer, and the `background` shorthand.
+- Lists: `list-style` and its longhands. Tables: `border-collapse`, `border-spacing`, `caption-side`, `empty-cells`,
+  `table-layout` and `vertical-align`.
+- Flow: `float`, `clear`, and `overflow` with `overflow-x` and `overflow-y`.
+- Fragmentation: `break-before`, `break-after`, `break-inside`, `orphans`, `widows`, `box-decoration-break` and `page`.
+  The legacy `page-break-before`, `page-break-after` and `page-break-inside` are shorthands of the `break-*` properties, so
+  `always` becomes `page`.
+- Generated content: `content`, `counter-reset`, `counter-increment` and `counter-set`, kept as written.
+
+Shorthands expand into longhands; what a shorthand leaves out is reset to its initial value, as CSS says. The HTML default
+style sheet and what each property means for layout stay with the consumer.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#box)]
+
+## Pages
+
+`@page` rules style the pages of paged media (CSS Paged Media 3). A `CssPageRule` has `CssPageSelector`s, each a page type
+name and `CssPagePseudoClasses` (`:first`, `:left`, `:right`, `:blank`) with its specificity, the declarations for the page
+context, and `CssPageMarginRule`s for the sixteen `CssMarginBox`es around the page, such as `@top-center`.
+
+`CssCascade.CascadePage` takes a `CssPage` (the page type and whether the page is the first, a left or a blank one) and
+gives a `CssPageStyle`: the page context's cascaded style and one for each margin box a matching rule styles. Rules compete
+by origin and importance, then by page selector specificity and order. Compute the page context with the root element's
+computed style as its parent, and each margin box with the page context's. `CssPageSize` reads the `size` descriptor: `auto`,
+one or two lengths, or a name such as `A4` or `letter` with `portrait` or `landscape`. The registry also knows
+`page-orientation`, `marks` and `bleed`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#page)]
+
 ## Media queries
 
 `CssMediaQueryList` evaluates Media Queries 4 against a `CssMediaContext`: the media type, the viewport, the resolution and
@@ -123,7 +161,10 @@ resolves `bolder` and `lighter` against the parent's weight, as its `CssFontWeig
 - CSS Nesting: rules nested in a style rule are dropped and reported.
 - Cascade layers: layer blocks count as ordinary rules.
 - `@import` is not fetched, and animations and transitions are not part of the cascade.
-- `@property`, `@container`, `@scope`, `@keyframes`, `@page` and similar rules are kept as unknown at-rules.
+- `@property`, `@container`, `@scope`, `@keyframes`, `@counter-style` and similar rules are kept as unknown at-rules.
+- Logical properties such as `margin-inline-start` and `inset`, and positioning (`position`, `top`, `z-index`), are not in the
+  default registry: they cascade as unregistered properties, without a shorthand or a link to the physical sides.
+- Page selectors take `:first`, `:left`, `:right` and `:blank`, not `:nth()` or page groups.
 - Shadow DOM: `:host` is invalid, and `::part()` and `::slotted()` parse but never match. `:state()` and Selectors 5's
   `:heading` are invalid.
 - CSS Color 5: `color-mix()`, relative colors and `device-cmyk()`. Colors outside sRGB are clipped, not gamut-mapped.

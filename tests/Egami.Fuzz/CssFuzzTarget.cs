@@ -7,7 +7,8 @@ namespace Egami.Fuzz;
 /// <summary>
 /// The css fuzz target (Phase 2.10): the input, read as UTF-8, is parsed as a style sheet and as a declaration list; every
 /// selector is matched against a small fixed tree; the sheet is cascaded and computed over the tree with the declarations as
-/// presentation hints and inline style; and every declaration value goes through each value parser. Egami.Css never throws on
+/// presentation hints and inline style; the @page rules are cascaded and computed for a few pages with their margin boxes; and
+/// every declaration value goes through each value parser. Egami.Css never throws on
 /// input, so any exception is a crash. Egami.Css.Tests compiles this file too and feeds it the seeds and random mutations.
 /// </summary>
 internal static class CssFuzzTarget
@@ -81,6 +82,23 @@ internal static class CssFuzzTarget
             _ = cascade.Compute(cascade.Cascade(element, pseudoElement: "before"), style).GetValueText("color");
         }
 
+        // Pages: unnamed and named, first, left and blank, each margin box computed from the page context.
+        foreach (CssPage page in (CssPage[])[new(null, true, false), new(null, false, true, true), new("a", false, false), new("A", true, true)])
+        {
+            CssPageStyle pageStyle = cascade.CascadePage(page);
+            CssComputedStyle context = cascade.Compute(pageStyle.Page, computed[root]);
+            _ = CssPageSize.TryParse(context.TryGetValue("size", out IReadOnlyList<CssComponentValue>? size) ? size : [], out CssPageSize pageSize);
+            _ = pageSize.ToString();
+            foreach (KeyValuePair<CssMarginBox, CssCascadedStyle> box in pageStyle.MarginBoxes)
+            {
+                _ = CssPageMarginRule.GetName(box.Key);
+                foreach (KeyValuePair<string, IReadOnlyList<CssComponentValue>> pair in cascade.Compute(box.Value, context))
+                {
+                    ParseValue(pair.Value);
+                }
+            }
+        }
+
         foreach (CssDeclaration declaration in all)
         {
             _ = declaration.ToString();
@@ -117,6 +135,20 @@ internal static class CssFuzzTarget
                 case CssImportRule import:
                     _ = import.Media.Matches(CssMediaContext.Default);
                     break;
+                case CssPageRule page:
+                    _ = page.SelectorText;
+                    all.AddRange(page.Declarations);
+                    foreach (CssPageSelector selector in page.Selectors)
+                    {
+                        _ = selector.Matches(new CssPage(selector.Name, true, false, true));
+                    }
+
+                    foreach (CssPageMarginRule margin in page.MarginRules)
+                    {
+                        all.AddRange(margin.Declarations);
+                    }
+
+                    break;
             }
         }
     }
@@ -137,6 +169,11 @@ internal static class CssFuzzTarget
         }
 
         _ = CssTransformOrigin.TryParse(value, out _);
+        if (CssPageSize.TryParse(value, out CssPageSize size))
+        {
+            _ = size.ToString();
+        }
+
         if (CssFont.TryParse(value, out CssFont? font))
         {
             _ = font.ToString();

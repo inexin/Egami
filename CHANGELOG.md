@@ -259,6 +259,20 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
+### Egami.Css 0.2.0
+
+Additive to 0.1.0, for Egap's HTML reader (Egap Phase 6 Design Q15). See [CSS](docs/articles/guides/css.md).
+
+- `CssPropertyRegistry.CreateDefault` knows the box properties (`margin`, `padding`, `border` with its sides and
+  `border-radius`, `width` and `height` with their `min-` and `max-` forms, `box-sizing`), backgrounds (the `background-*`
+  layers and the `background` shorthand), `list-style`, the table properties, `float`, `clear`, `overflow`, the
+  fragmentation properties (`break-*`, `orphans`, `widows`, `page` and the legacy `page-break-*` as shorthands) and
+  `content` with the counters, each with its value grammar, so invalid declarations are dropped as browsers drop them.
+- `@page` is interpreted: `CssPageRule` with `CssPageSelector`s (page type names and `:first`, `:left`, `:right`,
+  `:blank`, with their specificity) and `CssPageMarginRule`s for the sixteen `CssMarginBox`es. `CssCascade.CascadePage`
+  cascades them for a `CssPage` into a `CssPageStyle`, and `CssPageSize` reads `size`, page size names included.
+- `overflow` is now a shorthand of `overflow-x` and `overflow-y`; Egami.Svg reads the two longhands and draws as before.
+
 ### Egami.Svg 0.1.0 and Egami.Css 0.1.0
 
 Two new packages, first released at 0.1; their API may still change while they are 0.x. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/articles/guides/css.md).

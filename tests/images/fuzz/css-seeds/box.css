@@ -1,0 +1,6 @@
+rect { margin: 1px auto -2% calc(1em + 2px); padding: 0 1px; border: thick double red; border-left: 0 none;
+  border-radius: 1px 2px 3px / 4px 50%; width: fit-content(10%); max-height: none; box-sizing: border-box }
+g { background: url(a.png) left 10px top 5px / 50% auto no-repeat fixed padding-box content-box, linear-gradient(red, blue) center, #fff;
+  list-style: none inside; list-style: square url(b.png); border-collapse: collapse; border-spacing: 1px 2px;
+  float: inline-start; clear: both; overflow: hidden auto; vertical-align: -1px; counter-reset: item 2 reversed(x);
+  background-position: right 5% bottom; --m: 1px 2px; margin: var(--m); background: var(--bg, red) }

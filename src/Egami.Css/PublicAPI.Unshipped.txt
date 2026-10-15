@@ -30,6 +30,7 @@ Egami.Css.CssCalc.IsNumber.get -> bool
 Egami.Css.CssCalc.Resolve(System.Func<Egami.Css.CssUnit, double>! pixelsPerUnit) -> double
 Egami.Css.CssCascade
 Egami.Css.CssCascade.Cascade(Egami.Css.ICssElement! element, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>? presentationHints = null, System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>? inlineStyle = null, string? pseudoElement = null) -> Egami.Css.CssCascadedStyle!
+Egami.Css.CssCascade.CascadePage(Egami.Css.CssPage page) -> Egami.Css.CssPageStyle!
 Egami.Css.CssCascade.Compute(Egami.Css.CssCascadedStyle! cascaded, Egami.Css.CssComputedStyle? parent) -> Egami.Css.CssComputedStyle!
 Egami.Css.CssCascade.CssCascade(System.Collections.Generic.IEnumerable<(Egami.Css.CssStyleSheet! Sheet, Egami.Css.CssOrigin Origin)>! sheets, Egami.Css.CssCascadeOptions? options = null) -> void
 Egami.Css.CssCascade.Registry.get -> Egami.Css.CssPropertyRegistry!
@@ -170,6 +171,23 @@ Egami.Css.CssLength.Unit.get -> Egami.Css.CssUnit
 Egami.Css.CssLength.Unit.init -> void
 Egami.Css.CssLength.Value.get -> double
 Egami.Css.CssLength.Value.init -> void
+Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.BottomCenter = 10 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.BottomLeft = 11 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.BottomLeftCorner = 12 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.BottomRight = 9 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.BottomRightCorner = 8 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.LeftBottom = 13 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.LeftMiddle = 14 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.LeftTop = 15 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.RightBottom = 7 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.RightMiddle = 6 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.RightTop = 5 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.TopCenter = 2 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.TopLeft = 1 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.TopLeftCorner = 0 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.TopRight = 3 -> Egami.Css.CssMarginBox
+Egami.Css.CssMarginBox.TopRightCorner = 4 -> Egami.Css.CssMarginBox
 Egami.Css.CssMatrixTransform
 Egami.Css.CssMatrixTransform.A.get -> double
 Egami.Css.CssMatrixTransform.A.init -> void
@@ -228,6 +246,57 @@ Egami.Css.CssOrigin
 Egami.Css.CssOrigin.Author = 2 -> Egami.Css.CssOrigin
 Egami.Css.CssOrigin.User = 1 -> Egami.Css.CssOrigin
 Egami.Css.CssOrigin.UserAgent = 0 -> Egami.Css.CssOrigin
+Egami.Css.CssPage
+Egami.Css.CssPage.CssPage() -> void
+Egami.Css.CssPage.CssPage(string? Name, bool IsFirst, bool IsLeft, bool IsBlank = false) -> void
+Egami.Css.CssPage.Deconstruct(out string? Name, out bool IsFirst, out bool IsLeft, out bool IsBlank) -> void
+Egami.Css.CssPage.Equals(Egami.Css.CssPage other) -> bool
+Egami.Css.CssPage.IsBlank.get -> bool
+Egami.Css.CssPage.IsBlank.init -> void
+Egami.Css.CssPage.IsFirst.get -> bool
+Egami.Css.CssPage.IsFirst.init -> void
+Egami.Css.CssPage.IsLeft.get -> bool
+Egami.Css.CssPage.IsLeft.init -> void
+Egami.Css.CssPage.Name.get -> string?
+Egami.Css.CssPage.Name.init -> void
+Egami.Css.CssPageMarginRule
+Egami.Css.CssPageMarginRule.Box.get -> Egami.Css.CssMarginBox
+Egami.Css.CssPageMarginRule.Declarations.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>!
+Egami.Css.CssPageOrientation
+Egami.Css.CssPageOrientation.Auto = 0 -> Egami.Css.CssPageOrientation
+Egami.Css.CssPageOrientation.Landscape = 2 -> Egami.Css.CssPageOrientation
+Egami.Css.CssPageOrientation.Portrait = 1 -> Egami.Css.CssPageOrientation
+Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPagePseudoClasses.Blank = 8 -> Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPagePseudoClasses.First = 1 -> Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPagePseudoClasses.Left = 2 -> Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPagePseudoClasses.None = 0 -> Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPagePseudoClasses.Right = 4 -> Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPageRule
+Egami.Css.CssPageRule.Declarations.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssDeclaration!>!
+Egami.Css.CssPageRule.MarginRules.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssPageMarginRule!>!
+Egami.Css.CssPageRule.Selectors.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssPageSelector!>!
+Egami.Css.CssPageRule.SelectorText.get -> string!
+Egami.Css.CssPageSelector
+Egami.Css.CssPageSelector.Matches(Egami.Css.CssPage page) -> bool
+Egami.Css.CssPageSelector.Name.get -> string?
+Egami.Css.CssPageSelector.PseudoClasses.get -> Egami.Css.CssPagePseudoClasses
+Egami.Css.CssPageSelector.Specificity.get -> Egami.Css.CssSpecificity
+Egami.Css.CssPageSize
+Egami.Css.CssPageSize.CssPageSize() -> void
+Egami.Css.CssPageSize.Equals(Egami.Css.CssPageSize other) -> bool
+Egami.Css.CssPageSize.Height.get -> Egami.Css.CssLength?
+Egami.Css.CssPageSize.Height.init -> void
+Egami.Css.CssPageSize.IsAuto.get -> bool
+Egami.Css.CssPageSize.Name.get -> string?
+Egami.Css.CssPageSize.Name.init -> void
+Egami.Css.CssPageSize.Orientation.get -> Egami.Css.CssPageOrientation
+Egami.Css.CssPageSize.Orientation.init -> void
+Egami.Css.CssPageSize.Width.get -> Egami.Css.CssLength?
+Egami.Css.CssPageSize.Width.init -> void
+Egami.Css.CssPageStyle
+Egami.Css.CssPageStyle.MarginBoxes.get -> System.Collections.Generic.IReadOnlyDictionary<Egami.Css.CssMarginBox, Egami.Css.CssCascadedStyle!>!
+Egami.Css.CssPageStyle.Page.get -> Egami.Css.CssCascadedStyle!
 Egami.Css.CssParseError
 Egami.Css.CssParseError.<Clone>$() -> Egami.Css.CssParseError!
 Egami.Css.CssParseError.Column.get -> int
@@ -553,6 +622,10 @@ override Egami.Css.CssMediaContext.Equals(object? obj) -> bool
 override Egami.Css.CssMediaContext.GetHashCode() -> int
 override Egami.Css.CssMediaContext.ToString() -> string!
 override Egami.Css.CssMediaQueryList.ToString() -> string!
+override Egami.Css.CssPage.GetHashCode() -> int
+override Egami.Css.CssPageSelector.ToString() -> string!
+override Egami.Css.CssPageSize.GetHashCode() -> int
+override Egami.Css.CssPageSize.ToString() -> string!
 override Egami.Css.CssParseError.Equals(object? obj) -> bool
 override Egami.Css.CssParseError.GetHashCode() -> int
 override Egami.Css.CssParseError.ToString() -> string!
@@ -683,6 +756,14 @@ static Egami.Css.CssMediaContext.Default.get -> Egami.Css.CssMediaContext!
 static Egami.Css.CssMediaContext.operator !=(Egami.Css.CssMediaContext? left, Egami.Css.CssMediaContext? right) -> bool
 static Egami.Css.CssMediaContext.operator ==(Egami.Css.CssMediaContext? left, Egami.Css.CssMediaContext? right) -> bool
 static Egami.Css.CssMediaQueryList.Parse(string! text) -> Egami.Css.CssMediaQueryList!
+static Egami.Css.CssPage.operator !=(Egami.Css.CssPage left, Egami.Css.CssPage right) -> bool
+static Egami.Css.CssPage.operator ==(Egami.Css.CssPage left, Egami.Css.CssPage right) -> bool
+static Egami.Css.CssPageMarginRule.GetName(Egami.Css.CssMarginBox box) -> string!
+static Egami.Css.CssPageSize.Names.get -> System.Collections.Generic.IEnumerable<string!>!
+static Egami.Css.CssPageSize.operator !=(Egami.Css.CssPageSize left, Egami.Css.CssPageSize right) -> bool
+static Egami.Css.CssPageSize.operator ==(Egami.Css.CssPageSize left, Egami.Css.CssPageSize right) -> bool
+static Egami.Css.CssPageSize.TryParse(string! text, out Egami.Css.CssPageSize size) -> bool
+static Egami.Css.CssPageSize.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssPageSize size) -> bool
 static Egami.Css.CssParseError.operator !=(Egami.Css.CssParseError? left, Egami.Css.CssParseError? right) -> bool
 static Egami.Css.CssParseError.operator ==(Egami.Css.CssParseError? left, Egami.Css.CssParseError? right) -> bool
 static Egami.Css.CssParseOptions.Default.get -> Egami.Css.CssParseOptions!
@@ -750,6 +831,9 @@ virtual Egami.Css.CssTransformFunction.PrintMembers(System.Text.StringBuilder! b
 ~override Egami.Css.CssFontFamily.Equals(object obj) -> bool
 ~override Egami.Css.CssFontWeight.Equals(object obj) -> bool
 ~override Egami.Css.CssLength.Equals(object obj) -> bool
+~override Egami.Css.CssPage.Equals(object obj) -> bool
+~override Egami.Css.CssPage.ToString() -> string
+~override Egami.Css.CssPageSize.Equals(object obj) -> bool
 ~override Egami.Css.CssRange.Equals(object obj) -> bool
 ~override Egami.Css.CssRange.ToString() -> string
 ~override Egami.Css.CssSpecificity.Equals(object obj) -> bool

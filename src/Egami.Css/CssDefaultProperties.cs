@@ -54,6 +54,8 @@ internal static class CssDefaultProperties
             "text-decoration",
             ["text-decoration-line", "text-decoration-style", "text-decoration-color", "text-decoration-thickness"],
             ExpandTextDecoration));
+
+        CssBoxProperties.AddTo(registry);
     }
 
     private static readonly string[] FontVariantLonghands =

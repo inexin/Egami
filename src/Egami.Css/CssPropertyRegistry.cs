@@ -89,11 +89,23 @@ public sealed class CssPropertyRegistry
     }
 
     /// <summary>
-    /// Creates a registry with the common CSS text properties SVG and HTML share: <c>color</c>, the <c>font-*</c> longhands and
-    /// the <c>font</c> and <c>font-variant</c> shorthands, <c>line-height</c>, <c>letter-spacing</c>, <c>word-spacing</c>,
-    /// <c>text-decoration</c> and its longhands, <c>text-align</c>, <c>text-indent</c>, <c>text-transform</c>,
-    /// <c>white-space</c>, <c>direction</c>, <c>unicode-bidi</c>, <c>writing-mode</c>, <c>text-orientation</c>,
-    /// <c>visibility</c>, <c>display</c> and <c>opacity</c>. The <c>all</c> shorthand is always understood.
+    /// Creates a registry with the CSS properties SVG and HTML documents share, each with its value grammar, so an invalid
+    /// declaration is dropped. Text: <c>color</c>, the <c>font-*</c> longhands and the <c>font</c> and <c>font-variant</c>
+    /// shorthands, <c>line-height</c>, <c>letter-spacing</c>, <c>word-spacing</c>, <c>text-decoration</c> and its longhands,
+    /// <c>text-align</c>, <c>text-indent</c>, <c>text-transform</c>, <c>white-space</c>, <c>direction</c>, <c>unicode-bidi</c>,
+    /// <c>writing-mode</c>, <c>text-orientation</c>, <c>visibility</c>, <c>display</c> and <c>opacity</c>. Boxes: the
+    /// <c>margin-*</c>, <c>padding-*</c> and <c>border-*</c> longhands with the <c>margin</c>, <c>padding</c>, <c>border</c>,
+    /// <c>border-width</c>, <c>border-style</c>, <c>border-color</c>, <c>border-top</c> (and the other sides) and
+    /// <c>border-radius</c> shorthands; <c>width</c>, <c>height</c>, their <c>min-</c> and <c>max-</c> forms and
+    /// <c>box-sizing</c>. Backgrounds: the <c>background-*</c> longhands, one comma-separated item per layer, and the
+    /// <c>background</c> shorthand. Lists: <c>list-style-type</c>, <c>list-style-position</c>, <c>list-style-image</c> and
+    /// <c>list-style</c>. Tables: <c>border-collapse</c>, <c>border-spacing</c>, <c>caption-side</c>, <c>empty-cells</c>,
+    /// <c>table-layout</c> and <c>vertical-align</c>. Flow: <c>float</c>, <c>clear</c>, <c>overflow-x</c>, <c>overflow-y</c>
+    /// and <c>overflow</c>. Fragmentation: <c>break-before</c>, <c>break-after</c>, <c>break-inside</c>, <c>orphans</c>,
+    /// <c>widows</c>, <c>box-decoration-break</c>, <c>page</c> and the legacy <c>page-break-*</c> shorthands. Pages (for
+    /// <see cref="CssCascade.CascadePage"/>): <c>size</c>, <c>page-orientation</c>, <c>marks</c> and <c>bleed</c>. Generated
+    /// content: <c>content</c>, <c>counter-reset</c>, <c>counter-increment</c> and <c>counter-set</c>. The <c>all</c>
+    /// shorthand is always understood.
     /// </summary>
     /// <returns>A new registry the caller may extend.</returns>
     public static CssPropertyRegistry CreateDefault()

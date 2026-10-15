@@ -92,7 +92,6 @@ internal static class SvgProperties
         ("opacity", false, "1", Opacity),
         ("background-color", false, "transparent", Color),
         ("display", false, "inline", null),
-        ("overflow", false, "visible", Keywords("visible", "hidden", "scroll", "auto", "clip")),
         ("clip-path", false, "none", null),
         ("clip", false, "auto", null),
         ("mask", false, "none", null),
