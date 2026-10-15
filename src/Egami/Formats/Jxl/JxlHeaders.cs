@@ -442,6 +442,35 @@ internal enum JxlBlendMode
     Mul = 4,
 }
 
+/// <summary>The restoration filters' parameters (G.1): Gaborish and the edge-preserving filter.</summary>
+internal sealed record JxlLoopFilter
+{
+    internal static readonly float[] DefaultGaborish = [1.1f * 0.104699568f, 1.1f * 0.055680538f, 1.1f * 0.104699568f, 1.1f * 0.055680538f, 1.1f * 0.104699568f, 1.1f * 0.055680538f];
+
+    internal static readonly float[] DefaultSharpLut = [0, 1f / 7, 2f / 7, 3f / 7, 4f / 7, 5f / 7, 6f / 7, 1];
+
+    internal bool Gaborish { get; init; } = true;
+
+    /// <summary>Gets the side and diagonal weights of X, Y and B.</summary>
+    internal float[] GaborishWeights { get; init; } = DefaultGaborish;
+
+    internal int EpfIterations { get; init; } = 2;
+
+    internal float[] SharpLut { get; init; } = DefaultSharpLut;
+
+    internal float[] ChannelScale { get; init; } = [40f, 5f, 3.5f];
+
+    internal float QuantMul { get; init; } = 0.46f;
+
+    internal float Pass0SigmaScale { get; init; } = 0.9f;
+
+    internal float Pass2SigmaScale { get; init; } = 6.5f;
+
+    internal float BorderSadMul { get; init; } = 2f / 3;
+
+    internal float SigmaForModular { get; init; } = 1;
+}
+
 /// <summary>A blending description (F.2, BlendingInfo).</summary>
 internal readonly record struct JxlBlending(JxlBlendMode Mode, uint AlphaChannel, bool Clamp, uint Source);
 
@@ -506,9 +535,11 @@ internal sealed record JxlFrameHeader
 
     internal string Name { get; init; } = string.Empty;
 
-    internal bool Gaborish { get; init; } = true;
+    internal JxlLoopFilter LoopFilter { get; init; } = new();
 
-    internal int EpfIterations { get; init; } = 1;
+    internal bool Gaborish => LoopFilter.Gaborish;
+
+    internal int EpfIterations => LoopFilter.EpfIterations;
 
     /// <summary>Gets whether the frame is shown: a regular or skip-progressive frame (not an LF or reference-only one).</summary>
     internal bool IsNormal => Type is JxlFrameType.Regular or JxlFrameType.SkipProgressive;
@@ -742,7 +773,7 @@ internal sealed record JxlFrameHeader
         }
 
         string name = JxlHeaders.ReadName(r);
-        (bool gaborish, int epf) = ReadLoopFilter(r, modular);
+        JxlLoopFilter loopFilter = ReadLoopFilter(r, modular);
         r.ReadExtensions();
         return new JxlFrameHeader
         {
@@ -774,8 +805,7 @@ internal sealed record JxlFrameHeader
             SaveAsReference = save,
             SaveBeforeColorTransform = saveBefore,
             Name = name,
-            Gaborish = gaborish,
-            EpfIterations = epf,
+            LoopFilter = loopFilter,
         };
     }
 
@@ -815,22 +845,23 @@ internal sealed record JxlFrameHeader
         return new JxlBlending(blend, alpha, clamp, source);
     }
 
-    /// <summary>Reads the restoration filter fields (G.1); returns whether Gaborish is on and the EPF iterations.</summary>
-    private static (bool Gaborish, int Epf) ReadLoopFilter(JxlBitReader r, bool modular)
+    /// <summary>Reads the restoration filter fields (G.1, LoopFilter).</summary>
+    private static JxlLoopFilter ReadLoopFilter(JxlBitReader r, bool modular)
     {
         if (r.ReadBool())
         {
-            return (true, 1);
+            return new JxlLoopFilter();
         }
 
         bool gaborish = r.ReadBool();
+        float[] gab = [.. JxlLoopFilter.DefaultGaborish];
         if (gaborish && r.ReadBool())
         {
             for (int c = 0; c < 3; c++)
             {
-                float w1 = r.ReadF16();
-                float w2 = r.ReadF16();
-                if (Math.Abs(1 + ((w1 + w2) * 4)) < 1e-8)
+                gab[2 * c] = r.ReadF16();
+                gab[(2 * c) + 1] = r.ReadF16();
+                if (Math.Abs(1 + ((gab[2 * c] + gab[(2 * c) + 1]) * 4)) < 1e-8)
                 {
                     throw r.Corrupt("The Gaborish weights make a kernel that sums to zero.");
                 }
@@ -838,39 +869,66 @@ internal sealed record JxlFrameHeader
         }
 
         int epf = (int)r.ReadBits(2);
+        float[] sharp = [.. JxlLoopFilter.DefaultSharpLut];
+        float[] channelScale = [40f, 5f, 3.5f];
+        float quantMul = 0.46f;
+        float pass0 = 0.9f;
+        float pass2 = 6.5f;
+        float border = 2f / 3;
+        float modularSigma = 1;
         if (epf > 0)
         {
             if (!modular && r.ReadBool())
             {
-                SkipF16(r, 8);
+                for (int k = 0; k < 8; k++)
+                {
+                    sharp[k] = r.ReadF16();
+                }
             }
 
             if (r.ReadBool())
             {
-                SkipF16(r, 5);
+                channelScale = [r.ReadF16(), r.ReadF16(), r.ReadF16()];
+                r.ReadF16();
+                r.ReadF16();
             }
 
             if (r.ReadBool())
             {
-                SkipF16(r, modular ? 3 : 4);
+                if (!modular)
+                {
+                    quantMul = r.ReadF16();
+                }
+
+                pass0 = r.ReadF16();
+                pass2 = r.ReadF16();
+                border = r.ReadF16();
             }
 
-            if (modular && r.ReadF16() < 1e-8)
+            if (modular)
             {
-                throw r.Corrupt("The edge-preserving filter's sigma for Modular is too small.");
+                modularSigma = r.ReadF16();
+                if (modularSigma < 1e-8)
+                {
+                    throw r.Corrupt("The edge-preserving filter's sigma for Modular is too small.");
+                }
             }
         }
 
         r.ReadExtensions();
-        return (gaborish, epf);
-    }
-
-    private static void SkipF16(JxlBitReader r, int count)
-    {
-        for (int i = 0; i < count; i++)
+        return new JxlLoopFilter
         {
-            r.ReadF16();
-        }
+            Gaborish = gaborish,
+            GaborishWeights = gab,
+            EpfIterations = epf,
+            SharpLut = sharp,
+            ChannelScale = channelScale,
+            QuantMul = quantMul,
+            Pass0SigmaScale = pass0,
+            Pass2SigmaScale = pass2,
+            BorderSadMul = border,
+            SigmaForModular = modularSigma,
+        };
     }
 
     private static long Ceil(long a, long b) => (a + b - 1) / b;

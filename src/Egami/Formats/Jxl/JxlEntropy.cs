@@ -314,6 +314,9 @@ internal sealed class JxlEntropyDecoder
         return (uint)((((high << n) | rest) << c.LsbInToken) | low);
     }
 
+    /// <summary>Reads a context map of <paramref name="contexts"/> entries on its own, as the HF block context does.</summary>
+    internal static byte[] ReadContextMap(JxlBitReader r, int contexts, out int count) => ReadClusters(r, contexts, out count);
+
     /// <summary>Reads the context map (C.2.2): which cluster each context uses.</summary>
     private static byte[] ReadClusters(JxlBitReader r, int contexts, out int count)
     {

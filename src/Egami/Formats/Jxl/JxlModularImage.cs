@@ -112,6 +112,12 @@ internal sealed class JxlModularImage
     /// </summary>
     internal static JxlModularImage Read(JxlBitReader r, IReadOnlyList<JxlChannel> original, JxlTree? globalTree, int bitDepth, SafetyLimits limits)
     {
+        if (original.Count == 0)
+        {
+            // A stream with no channels has no header either.
+            return new JxlModularImage(new JxlModularHeader(true, new JxlWpParams(), []), globalTree!, [], 0, [], bitDepth);
+        }
+
         JxlModularHeader header = JxlModularHeader.Read(r);
         List<JxlChannel> channels = [.. original];
         int meta = 0;

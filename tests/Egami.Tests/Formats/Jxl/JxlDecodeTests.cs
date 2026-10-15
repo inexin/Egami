@@ -10,7 +10,7 @@ namespace Egami.Tests.Formats.Jxl;
 /// reference images within their thresholds on the conformance suite. Files whose features later tasks bring are listed as
 /// not yet decoded; <see cref="Expected"/> names what must decode by now.
 /// </summary>
-public class JxlDecodeTests(ITestOutputHelper output)
+public partial class JxlDecodeTests(ITestOutputHelper output)
 {
     private static readonly string Corpus = Path.Combine(AppContext.BaseDirectory, "images", "jxl");
     private static readonly string References = Path.Combine(AppContext.BaseDirectory, "reference", "jxl");
@@ -50,8 +50,10 @@ public class JxlDecodeTests(ITestOutputHelper output)
         using (egami)
         {
             using Raster djxl = Raster.Load(Path.Combine(References, reference.GetString()!));
-            Assert.Equal((djxl.Width, djxl.Height), (egami.Width, egami.Height));
-            float[] a = Floats(egami);
+            int orientation = int.Parse(OrientationPattern().Match(entry.GetProperty("jxlinfo").GetString()!).Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+            (int ow, int oh) = orientation > 4 ? (egami.Height, egami.Width) : (egami.Width, egami.Height);
+            Assert.Equal((djxl.Width, djxl.Height), (ow, oh));
+            float[] a = Orient(Floats(egami), egami.Width, egami.Height, egami.Layout.ChannelCount, orientation);
             float[] b = Floats(djxl, egami.Layout.ChannelCount);
             Assert.Equal(b.Length, a.Length);
             double peak = 0;
@@ -64,6 +66,11 @@ public class JxlDecodeTests(ITestOutputHelper output)
             if (expected)
             {
                 Assert.Equal(0, peak);
+            }
+            else if (!reference.GetString()!.EndsWith(".pfm", StringComparison.Ordinal))
+            {
+                // Lossy: within one 8-bit level of djxl (design question 16).
+                Assert.InRange(peak, 0, 1.001 / 255);
             }
         }
     }
@@ -117,6 +124,40 @@ public class JxlDecodeTests(ITestOutputHelper output)
             Assert.True(rms <= frame.GetProperty("rms_error").GetDouble(), $"RMS {rms}");
         }
     }
+
+    /// <summary>Turns samples the way an EXIF orientation says (djxl's references are upright).</summary>
+    private static float[] Orient(float[] v, int w, int h, int channels, int orientation)
+    {
+        if (orientation == 1)
+        {
+            return v;
+        }
+
+        (int ow, int oh) = orientation > 4 ? (h, w) : (w, h);
+        float[] o = new float[v.Length];
+        for (int y = 0; y < oh; y++)
+        {
+            for (int x = 0; x < ow; x++)
+            {
+                (int sx, int sy) = orientation switch
+                {
+                    2 => (w - 1 - x, y),
+                    3 => (w - 1 - x, h - 1 - y),
+                    4 => (x, h - 1 - y),
+                    5 => (y, x),
+                    6 => (y, h - 1 - x),
+                    7 => (w - 1 - y, h - 1 - x),
+                    _ => (w - 1 - y, x),
+                };
+                Array.Copy(v, ((sy * w) + sx) * channels, o, ((y * ow) + x) * channels, channels);
+            }
+        }
+
+        return o;
+    }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"Orientation: (\d)")]
+    private static partial System.Text.RegularExpressions.Regex OrientationPattern();
 
     /// <summary>Gets the samples as floats in the raster's channel count: gray as one, RGB as three, with alpha as four.</summary>
     private static float[] Floats(Raster raster, int? channels = null)

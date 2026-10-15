@@ -342,7 +342,11 @@ tables, prefix codes, context maps, hybrid integers, LZ77 and permutations) and 
 translated from its jxl-coding and jxl-color crates, and the Modular decoder (`JxlModular.cs`, `JxlModularImage.cs`,
 `JxlModularDecoder.cs`, `JxlTransforms.cs`, `JxlFrameDecoder.cs`: MA trees, the predictors and the self-correcting predictor's
 error bookkeeping, RCT, palette with its delta palette and implicit colours, squeeze and its tendency term, and the split of
-channels into global, LF group and pass group streams) from its jxl-modular and jxl-frame crates. It is distributed under the MIT license (or Apache-2.0); the MIT
+channels into global, LF group and pass group streams) from its jxl-modular and jxl-frame crates, and the VarDCT decoder
+(`JxlVarDctHeaders.cs`, `JxlDequantMatrices.cs`, `JxlVarDct.cs`, `JxlDct.cs`: block contexts, coefficient orders, the default
+and coded dequantization matrices, HF coefficient contexts, chroma from luma, adaptive LF smoothing, the DCTs and the DCT2, DCT4,
+Hornuss, DCT4x8 and AFV transforms with the AFV basis), the restoration filters and upsampling (`JxlFilters.cs`, with the default
+upsampling weights) and the XYB conversion (`JxlColor.cs`) from its jxl-vardct, jxl-render, jxl-image and jxl-color crates. It is distributed under the MIT license (or Apache-2.0); the MIT
 terms:
 
     Copyright (c) Wonwoo Choi and the jxl-oxide contributors
