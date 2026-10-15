@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 using Egami.Formats;
 using Egami.Formats.Jxl;
@@ -149,7 +148,11 @@ internal sealed partial record JxlInfoText(List<string> Boxes, List<string> Info
         (int iw, int ih) = h.IntrinsicSize ?? (h.Width, h.Height);
         info.Add($"Intrinsic dimensions: {iw}x{ih}");
         info.Add($"Orientation: {h.Orientation} ({OrientationNames[h.Orientation - 1]})");
-        if (!h.Color.WantIcc)
+        if (file.Icc is byte[] icc)
+        {
+            info.Add($"{icc.Length}-byte ICC profile, CMM type: \"{Latin1(icc, 4)}\", Color space: \"{Latin1(icc, 16)}\", Rendering intent: {icc[67]}");
+        }
+        else
         {
             Color(h.Color, info);
         }
@@ -162,8 +165,7 @@ internal sealed partial record JxlInfoText(List<string> Boxes, List<string> Info
         return parts;
     }
 
-    /// <summary>Gets jxlinfo's info lines without the ICC profile line, which needs the decoded profile (task 3).</summary>
-    internal List<string> InfoWithoutIcc() => [.. Info.Where(l => !IccLine().IsMatch(l))];
+    private static string Latin1(byte[] bytes, int offset) => System.Text.Encoding.Latin1.GetString(bytes, offset, 4);
 
     private static void Color(JxlColorEncoding c, List<string> info)
     {
@@ -228,7 +230,4 @@ internal sealed partial record JxlInfoText(List<string> Boxes, List<string> Info
     }
 
     private static string F(double value) => value.ToString("F6", CultureInfo.InvariantCulture);
-
-    [GeneratedRegex(@"^\d+-byte ICC profile")]
-    private static partial Regex IccLine();
 }

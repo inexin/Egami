@@ -876,17 +876,17 @@ internal sealed record JxlFrameHeader
     private static long Ceil(long a, long b) => (a + b - 1) / b;
 }
 
-/// <summary>A frame's table of contents (F.3): the byte size of each section, in codestream order.</summary>
-internal sealed record JxlToc(uint[] Sizes, bool Permuted)
+/// <summary>
+/// A frame's table of contents (F.3): the byte size of each section in codestream order, and where each section (LF global,
+/// LF groups, HF global, then the pass groups) lies in the codestream when the TOC is permuted.
+/// </summary>
+internal sealed record JxlToc(uint[] Sizes, int[]? Permutation)
 {
     /// <summary>Gets the bytes of the frame's sections in total.</summary>
     internal long TotalSize => Sizes.Sum(s => (long)s);
 
-    /// <summary>
-    /// Reads the TOC of <paramref name="frame"/>, leaving the reader at the first section. A permuted TOC needs the entropy
-    /// decoder for its permutation, which comes later; <see langword="null"/> is returned then, with the reader past the flag.
-    /// </summary>
-    internal static JxlToc? Read(JxlBitReader r, JxlFrameHeader frame)
+    /// <summary>Reads the TOC of <paramref name="frame"/>, leaving the reader at the first section.</summary>
+    internal static JxlToc Read(JxlBitReader r, JxlFrameHeader frame)
     {
         long entries = frame.TocEntries;
         if (entries > 65536)
@@ -894,9 +894,13 @@ internal sealed record JxlToc(uint[] Sizes, bool Permuted)
             throw r.Corrupt($"The frame has {entries} sections; at most 65,536 are allowed.");
         }
 
+        int[]? permutation = null;
         if (r.ReadBool())
         {
-            return null;
+            JxlEntropyDecoder decoder = JxlEntropyDecoder.Read(r, 8);
+            decoder.Begin(r);
+            permutation = decoder.ReadPermutation(r, (int)entries, 0);
+            decoder.Finish(r);
         }
 
         r.ZeroPadToByte();
@@ -908,7 +912,20 @@ internal sealed record JxlToc(uint[] Sizes, bool Permuted)
         }
 
         r.ZeroPadToByte();
-        return new JxlToc(sizes, false);
+        return new JxlToc(sizes, permutation);
+    }
+
+    /// <summary>Gets the offset from the end of the TOC and the size of section <paramref name="index"/> (in LF global, LF groups, HF global, pass groups order).</summary>
+    internal (long Offset, uint Size) Section(int index)
+    {
+        int at = Permutation is null ? index : Permutation[index];
+        long offset = 0;
+        for (int i = 0; i < at; i++)
+        {
+            offset += Sizes[i];
+        }
+
+        return (offset, Sizes[at]);
     }
 }
 

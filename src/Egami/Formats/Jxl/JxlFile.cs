@@ -1,9 +1,8 @@
 namespace Egami.Formats.Jxl;
 
 /// <summary>
-/// A JPEG XL file's headers: the boxes, the image header and the frame headers with their TOCs, read without decoding any
-/// group. Frames after a compressed ICC profile or after a permuted TOC are reached only through the entropy decoder; until
-/// then <see cref="FramesKnown"/> is false and the frame list stops there.
+/// A JPEG XL file's headers: the boxes, the image header, the ICC profile and the frame headers with their TOCs, read
+/// without decoding any group.
 /// </summary>
 internal sealed class JxlFile
 {
@@ -16,6 +15,9 @@ internal sealed class JxlFile
     internal JxlContainer Container { get; }
 
     internal JxlImageHeader Header { get; }
+
+    /// <summary>Gets the ICC profile the codestream carries, or <see langword="null"/> when its color encoding is enumerated.</summary>
+    internal byte[]? Icc { get; private set; }
 
     /// <summary>Gets the preview frame's header, or <see langword="null"/>.</summary>
     internal JxlFrameHeader? PreviewFrame { get; private set; }
@@ -51,19 +53,14 @@ internal sealed class JxlFile
     {
         if (Header.Color.WantIcc)
         {
-            // The compressed ICC profile's length is known only by decoding it (task 3's entropy decoder).
-            return;
+            Icc = JxlIcc.Read(r, input.Limits);
         }
 
         r.ZeroPadToByte();
         if (Header.Preview is not null)
         {
             JxlFrameHeader preview = JxlFrameHeader.Read(r, Header, preview: true);
-            if (JxlToc.Read(r, preview) is not JxlToc toc)
-            {
-                return;
-            }
-
+            JxlToc toc = JxlToc.Read(r, preview);
             PreviewFrame = preview;
             r.SkipBytes(toc.TotalSize);
         }
@@ -72,14 +69,9 @@ internal sealed class JxlFile
         {
             input.CancellationToken.ThrowIfCancellationRequested();
             JxlFrameHeader frame = JxlFrameHeader.Read(r, Header, preview: false);
-            JxlToc? toc = JxlToc.Read(r, frame);
+            JxlToc toc = JxlToc.Read(r, frame);
             Frames.Add(frame);
             input.CheckFrameCount(Frames.Count);
-            if (toc is null)
-            {
-                return;
-            }
-
             Tocs.Add(toc);
             r.SkipBytes(toc.TotalSize);
             if (frame.IsLast)

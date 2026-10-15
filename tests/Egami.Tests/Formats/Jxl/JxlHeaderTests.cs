@@ -67,6 +67,32 @@ public class JxlHeaderTests(ITestOutputHelper output)
         Compare(name, File.ReadAllBytes(input), File.ReadAllText(Path.Combine(cache, "reference", parts[0], parts[1], "jxlinfo.txt")));
     }
 
+    [Theory]
+    [MemberData(nameof(CachedFiles))]
+    public void IccProfilesEqualTheConformanceSuiteAndDjxl(string name)
+    {
+        if (JxlReferenceTests.Cache() is not string cache || !name.StartsWith("conformance/", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        string folder = Path.Combine(cache, "conformance", "testcases", name[12..]);
+        JxlFile file = JxlInfoText.Read(File.ReadAllBytes(Path.Combine(folder, "input.jxl")));
+        if (!file.Header.Color.WantIcc)
+        {
+            Assert.Null(file.Icc);
+            return;
+        }
+
+        // original.icc is the profile the suite says the file carries; djxl-original.icc is djxl's --orig_icc_out.
+        if (File.Exists(Path.Combine(folder, "original.icc")))
+        {
+            Assert.Equal(File.ReadAllBytes(Path.Combine(folder, "original.icc")), file.Icc);
+        }
+
+        Assert.Equal(File.ReadAllBytes(Path.Combine(cache, "reference", "conformance", name[12..], "djxl-original.icc")), file.Icc);
+    }
+
     [Fact]
     public void ProbeReadsTheHeaders()
     {
@@ -211,14 +237,9 @@ public class JxlHeaderTests(ITestOutputHelper output)
         JxlInfoText ours = JxlInfoText.Of(file);
         JxlInfoText theirs = JxlInfoText.Parse(jxlinfo);
         Assert.Equal(theirs.Boxes, ours.Boxes);
-        Assert.Equal(theirs.InfoWithoutIcc(), ours.Info);
-        if (file.FramesKnown)
-        {
-            Assert.Equal(theirs.Frames, ours.Frames);
-        }
-        else
-        {
-            output.WriteLine($"{name}: frames left for the entropy decoder ({(file.Header.Color.WantIcc ? "compressed ICC profile" : "permuted TOC")})");
-        }
+        Assert.Equal(theirs.Info, ours.Info);
+        Assert.True(file.FramesKnown);
+        Assert.Equal(theirs.Frames, ours.Frames);
+        output.WriteLine($"{name}: {file.Frames.Count} frames{(file.Icc is null ? string.Empty : $", {file.Icc.Length}-byte ICC profile")}{(file.Tocs.Any(t => t.Permutation is not null) ? ", permuted TOC" : string.Empty)}");
     }
 }

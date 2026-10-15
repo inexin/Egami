@@ -41,8 +41,8 @@ internal readonly record struct JxlU32(uint Offset0, int Bits0, uint Offset1, in
 /// </summary>
 internal sealed class JxlBitReader
 {
-    private readonly IJxlByteSource _source;
-    private readonly byte[] _buffer = new byte[4096];
+    private readonly IJxlByteSource? _source;
+    private readonly byte[] _buffer;
     private int _pos;
     private int _len;
     private ulong _bits;
@@ -52,6 +52,38 @@ internal sealed class JxlBitReader
     internal JxlBitReader(IJxlByteSource source)
     {
         _source = source;
+        _buffer = new byte[4096];
+    }
+
+    /// <summary>Reads <paramref name="length"/> bytes of <paramref name="data"/> from <paramref name="offset"/>, without copying them.</summary>
+    internal JxlBitReader(byte[] data, int offset, int length)
+    {
+        _buffer = data;
+        _pos = offset;
+        _len = offset + length;
+    }
+
+    /// <summary>Gets up to 32 bits ahead without consuming them; bits past the end read as zero.</summary>
+    internal uint PeekBits(int n)
+    {
+        if (_count < n)
+        {
+            Refill();
+        }
+
+        return (uint)(_bits & ((1UL << n) - 1));
+    }
+
+    /// <summary>Consumes <paramref name="n"/> bits a <see cref="PeekBits"/> looked at.</summary>
+    internal void Consume(int n)
+    {
+        if (_count < n)
+        {
+            throw Truncated();
+        }
+
+        _bits >>= n;
+        _count -= n;
     }
 
     /// <summary>Gets the number of bits read from the start of the codestream.</summary>
@@ -204,7 +236,7 @@ internal sealed class JxlBitReader
         count -= buffered;
         if (count > 0)
         {
-            long skipped = _source.Skip(count);
+            long skipped = _source?.Skip(count) ?? 0;
             _bytesTaken += skipped;
             if (skipped < count)
             {
@@ -227,10 +259,27 @@ internal sealed class JxlBitReader
 
     private void Refill()
     {
+        if (_count <= 56 && _len - _pos >= 8)
+        {
+            // Whole bytes from a little-endian 64-bit load.
+            ulong word = System.Buffers.Binary.BinaryPrimitives.ReadUInt64LittleEndian(_buffer.AsSpan(_pos));
+            int take = (63 - _count) >> 3;
+            _bits |= (word << _count) & ((1UL << (_count + (take * 8))) - 1);
+            _pos += take;
+            _count += take * 8;
+            _bytesTaken += take;
+            return;
+        }
+
         while (_count <= 56)
         {
             if (_pos == _len)
             {
+                if (_source is null)
+                {
+                    return;
+                }
+
                 _len = _source.Read(_buffer);
                 _pos = 0;
                 if (_len == 0)

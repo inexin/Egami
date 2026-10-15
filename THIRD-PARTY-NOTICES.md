@@ -313,7 +313,8 @@ Egami uses it under the MIT license:
 Egami's JPEG XL reader is written from ISO/IEC 18181-1 and 18181-2, with libjxl 0.12.0 read so its headers match the reference
 decoder field for field: the order and conditions of the SizeHeader, ImageMetadata, ExtraChannelInfo, ColorEncoding,
 CustomTransformData, FrameHeader, BlendingInfo, Passes and LoopFilter fields, the frame and LF group counts behind the TOC
-(`src/Egami/Formats/Jxl/JxlHeaders.cs`), and its box rules (`JxlContainer.cs`). libjxl is distributed under the BSD 3-clause
+(`src/Egami/Formats/Jxl/JxlHeaders.cs`), its box rules (`JxlContainer.cs`), and its ICC header prediction from the bytes
+already decoded (`JxlIcc.cs`). libjxl is distributed under the BSD 3-clause
 license:
 
     Copyright (c) the JPEG XL Project Authors. All rights reserved.
@@ -336,7 +337,9 @@ license:
 ## jxl-oxide
 
 jxl-oxide 0.12.6, a JPEG XL decoder in Rust, was read beside libjxl for the same header layouts and its bit reader's U32, U64
-and F16 fields (`src/Egami/Formats/Jxl/JxlBitReader.cs`). It is distributed under the MIT license (or Apache-2.0); the MIT
+and F16 fields (`src/Egami/Formats/Jxl/JxlBitReader.cs`); Egami's entropy decoder (`JxlEntropy.cs`: ANS with its alias
+tables, prefix codes, context maps, hybrid integers, LZ77 and permutations) and compressed ICC decoding (`JxlIcc.cs`) are
+translated from its jxl-coding and jxl-color crates. It is distributed under the MIT license (or Apache-2.0); the MIT
 terms:
 
     Copyright (c) Wonwoo Choi and the jxl-oxide contributors
