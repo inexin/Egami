@@ -10,3 +10,5 @@ tests/svg/** -text
 *.hdr binary
 *.exr binary
 *.gz binary
+*.jxl binary
+*.pfm binary

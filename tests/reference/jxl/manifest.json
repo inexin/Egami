@@ -1,0 +1,2280 @@
+{
+ "files": {
+  "camera-dji-fc6310-srgb-d1.jxl": {
+   "covers": "camera, 8-bit sRGB, VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "64 64",
+    "Composite:Megapixels": 0.004096,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 64,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 64x64, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 64x64\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 8.672475814819336e-05,
+   "oxide_rms": 3.985588216880984e-05,
+   "reference": "camera-dji-fc6310-srgb-d1.png",
+   "shape": [
+    1,
+    64,
+    64,
+    3
+   ],
+   "source": "libjxl testdata external/raw.pixls/DJI-FC6310-16bit_srgb8_v4_krita.png"
+  },
+  "camera-huawei-eva-709-lossless.jxl": {
+   "covers": "camera, Rec. 709 linear ICC, lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:Aperture": 2.2,
+    "Composite:CFAPattern": "2 2 0 1 1 2",
+    "Composite:FocalLength35efl": 4.5,
+    "Composite:ImageSize": "64 64",
+    "Composite:LightValue": 3.16397573511113,
+    "Composite:Megapixels": 0.004096,
+    "Composite:ShutterSpeed": 0.06,
+    "ExifIFD:ColorSpace": 65535,
+    "ExifIFD:CreateDate": "2016:12:27 11:56:10",
+    "ExifIFD:DateTimeOriginal": "2016:12:27 11:56:10",
+    "ExifIFD:ExifImageHeight": 2960,
+    "ExifIFD:ExifImageWidth": 3952,
+    "File:ExifByteOrder": "II",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 64,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl",
+    "IFD0:ActiveArea": "0 0 2976 3968",
+    "IFD0:AsShotNeutral": "0.5252525253 1 0.449197861",
+    "IFD0:BlackLevel": "0 0 0 0",
+    "IFD0:BlackLevelRepeatDim": "2 2",
+    "IFD0:CFALayout": 1,
+    "IFD0:CFAPattern2": "0 1 1 2",
+    "IFD0:CFAPlaneColor": "0 1 2",
+    "IFD0:CFARepeatPatternDim": "2 2",
+    "IFD0:CameraCalibration1": "1 0 0 0 1 0 0 0 1",
+    "IFD0:CameraCalibration2": "1 0 0 0 1 0 0 0 1",
+    "IFD0:DateTimeOriginal": "2016:12:27 11:56:10",
+    "IFD0:DefaultCropOrigin": "8 8",
+    "IFD0:DefaultCropSize": "3952 2960",
+    "IFD0:DefaultScale": "1 1",
+    "IFD0:ExposureTime": 0.06,
+    "IFD0:FNumber": 2.2,
+    "IFD0:FocalLength": 4.5,
+    "IFD0:ISO": 900,
+    "IFD0:Make": "HUAWEI",
+    "IFD0:Model": "EVA-L09",
+    "IFD0:ModifyDate": "2018:07:18 16:50:07",
+    "IFD0:NoiseProfile": "0.00390520397 6.58836356554688e-05 0.00390520397 6.58836356554688e-05 0.00390520397 6.58836356554688e-05",
+    "IFD0:OpcodeList2": "(Binary data 564 bytes, use -b option to extract)",
+    "IFD0:OpcodeList3": "(Binary data 4 bytes, use -b option to extract)",
+    "IFD0:Orientation": 1,
+    "IFD0:Rating": 1,
+    "IFD0:RatingPercent": 20,
+    "IFD0:ResolutionUnit": 2,
+    "IFD0:Software": "darktable 2.4.0",
+    "IFD0:SubfileType": 0,
+    "IFD0:TIFF-EPStandardID": "1 0 0 0",
+    "IFD0:UniqueCameraModel": "EVA-L09-HUAWEI-HUAWEI",
+    "IFD0:WhiteLevel": 1023,
+    "IFD0:XResolution": 300,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxll\"\n  size: 9\n  contents size: 1\nBox:\n  type: \"jxlp\"\n  size: 220\n  contents size: 212\nJPEG XL image, 64x64, (possibly) lossless, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 64x64\nOrientation: 1 (Normal)\n824-byte ICC profile, CMM type: \"lcms\", Color space: \"RGB \", Rendering intent: 0\nBox:\n  type: \"brob\"\n  size: 506\n  contents size: 498\nBrotli-compressed Exif metadata: 506 compressed bytes\nBox:\n  type: \"jxlp\"\n  size: 17745\n  contents size: 17737\n",
+   "options": "-d 0 -e 3",
+   "oxide_peak": 1.4901161193847656e-08,
+   "oxide_rms": 1.1344273406415387e-09,
+   "reference": "camera-huawei-eva-709-lossless.png",
+   "shape": [
+    1,
+    64,
+    64,
+    3
+   ],
+   "source": "libjxl testdata external/raw.pixls/HUAWEI-EVA-L09-16bit_709_g1_dt.png"
+  },
+  "camera-nikon-d300-rec2020-d1.jxl": {
+   "covers": "camera, Rec. 2020 linear ICC, VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:Aperture": 7.1,
+    "Composite:AutoFocus": 0,
+    "Composite:BlueBalance": 1.34765625,
+    "Composite:CircleOfConfusion": 0.0200308404192444,
+    "Composite:ContrastDetectAF": 0,
+    "Composite:DOF": "0.948727711474174 1.05713073564967",
+    "Composite:FOV": "25.6877873913098 0.456",
+    "Composite:FocalLength35efl": 75,
+    "Composite:HyperfocalDistance": 17.5785273451657,
+    "Composite:ImageSize": "64 64",
+    "Composite:LensID": "7F 40 2D 5C 2C 34 84 06",
+    "Composite:LensSpec": "18 70 3.5 4.5 6",
+    "Composite:LightValue": 7.977566144122,
+    "Composite:Megapixels": 0.004096,
+    "Composite:PhaseDetectAF": 0,
+    "Composite:RedBalance": 1.66015625,
+    "Composite:ScaleFactor35efl": 1.5,
+    "Composite:ShutterSpeed": 0.1,
+    "Composite:SubSecCreateDate": "2017:01:17 21:27:20.68",
+    "Composite:SubSecDateTimeOriginal": "2017:01:17 21:27:20.68",
+    "Composite:SubSecModifyDate": "2018:07:18 16:50:42.68",
+    "ExifIFD:CFAPattern": "2 2 0 1 1 2",
+    "ExifIFD:ColorSpace": 65535,
+    "ExifIFD:Contrast": 0,
+    "ExifIFD:CreateDate": "2017:01:17 21:27:20",
+    "ExifIFD:CustomRendered": 0,
+    "ExifIFD:DateTimeOriginal": "2017:01:17 21:27:20",
+    "ExifIFD:DigitalZoomRatio": 1,
+    "ExifIFD:ExifImageHeight": 2868,
+    "ExifIFD:ExifImageWidth": 4320,
+    "ExifIFD:ExposureCompensation": 0,
+    "ExifIFD:ExposureMode": 1,
+    "ExifIFD:ExposureProgram": 1,
+    "ExifIFD:ExposureTime": 0.1,
+    "ExifIFD:FNumber": 7.1,
+    "ExifIFD:FileSource": 3,
+    "ExifIFD:Flash": 0,
+    "ExifIFD:FocalLength": 50,
+    "ExifIFD:FocalLengthIn35mmFormat": 75,
+    "ExifIFD:GainControl": 0,
+    "ExifIFD:ISO": 200,
+    "ExifIFD:LightSource": 0,
+    "ExifIFD:MaxApertureValue": 4.43827788827138,
+    "ExifIFD:MeteringMode": 2,
+    "ExifIFD:Saturation": 0,
+    "ExifIFD:SceneCaptureType": 0,
+    "ExifIFD:SceneType": 1,
+    "ExifIFD:SensingMethod": 2,
+    "ExifIFD:Sharpness": 0,
+    "ExifIFD:SubSecTime": 68,
+    "ExifIFD:SubSecTimeDigitized": 68,
+    "ExifIFD:SubSecTimeOriginal": 68,
+    "ExifIFD:SubjectDistanceRange": 0,
+    "ExifIFD:WhiteBalance": 0,
+    "File:ExifByteOrder": "II",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 64,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl",
+    "IFD0:DateTimeOriginal": "2017:01:17 21:27:20",
+    "IFD0:Make": "NIKON CORPORATION",
+    "IFD0:Model": "NIKON D300",
+    "IFD0:ModifyDate": "2018:07:18 16:50:42",
+    "IFD0:Orientation": 1,
+    "IFD0:Rating": 1,
+    "IFD0:RatingPercent": 20,
+    "IFD0:ReferenceBlackWhite": "0 255 0 255 0 255",
+    "IFD0:ResolutionUnit": 2,
+    "IFD0:Software": "darktable 2.4.0",
+    "IFD0:SubfileType": 1,
+    "IFD0:TIFF-EPStandardID": "1 0 0 0",
+    "IFD0:XResolution": 300,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0",
+    "Nikon:AFAperture": 4.48984819323749,
+    "Nikon:AFAreaMode": 0,
+    "Nikon:AFDetectionMethod": 0,
+    "Nikon:AFFineTune": 2,
+    "Nikon:AFFineTuneAdj": -2,
+    "Nikon:AFFineTuneAdjTele": 0,
+    "Nikon:AFFineTuneIndex": 255,
+    "Nikon:AFInfo2Version": "0100",
+    "Nikon:AFPointsUsed": 0,
+    "Nikon:ActiveD-Lighting": 0,
+    "Nikon:Brightness": 0,
+    "Nikon:ColorSpace": 1,
+    "Nikon:Contrast": 0,
+    "Nikon:ContrastCurve": "(Binary data 578 bytes, use -b option to extract)",
+    "Nikon:CropHiSpeed": "0 4352 2868 4352 2868 0 0",
+    "Nikon:DateDisplayFormat": 0,
+    "Nikon:DaylightSavings": 0,
+    "Nikon:DirectoryNumber": 101,
+    "Nikon:EffectiveMaxAperture": 4.48984819323749,
+    "Nikon:ExitPupilPosition": 89.0434782608696,
+    "Nikon:ExposureBracketValue": 0,
+    "Nikon:ExposureDifference": 0.75,
+    "Nikon:ExposureTuning": 0,
+    "Nikon:ExternalFlashExposureComp": 0,
+    "Nikon:ExternalFlashFirmware": "0 0",
+    "Nikon:ExternalFlashFlags": 0,
+    "Nikon:FileInfoVersion": "0100",
+    "Nikon:FileNumber": 2826,
+    "Nikon:FilterEffect": 255,
+    "Nikon:FirmwareVersion": "1.10B",
+    "Nikon:FlashColorFilter": 0,
+    "Nikon:FlashCommanderMode": 0,
+    "Nikon:FlashCompensation": 0,
+    "Nikon:FlashControlMode": 0,
+    "Nikon:FlashExposureBracketValue": 0,
+    "Nikon:FlashExposureComp": 0,
+    "Nikon:FlashGNDistance": 0,
+    "Nikon:FlashGroupACompensation": 0,
+    "Nikon:FlashGroupAControlMode": 0,
+    "Nikon:FlashGroupBCompensation": 0,
+    "Nikon:FlashGroupBControlMode": 0,
+    "Nikon:FlashGroupCCompensation": 0,
+    "Nikon:FlashGroupCControlMode": 0,
+    "Nikon:FlashInfoVersion": "0103",
+    "Nikon:FlashMode": 0,
+    "Nikon:FlashSetting": "NORMAL      ",
+    "Nikon:FlashSource": 0,
+    "Nikon:FlashType": "                   ",
+    "Nikon:FocalLength": 50.3968419957949,
+    "Nikon:FocusDistance": 1,
+    "Nikon:FocusMode": "MANUAL",
+    "Nikon:FocusPointSchema": 0,
+    "Nikon:FocusPosition": 49,
+    "Nikon:HighISONoiseReduction": 0,
+    "Nikon:HueAdjustment": 0,
+    "Nikon:ISO": "0 200",
+    "Nikon:ISO2": 200,
+    "Nikon:ISOExpansion": 0,
+    "Nikon:ISOExpansion2": 0,
+    "Nikon:ISOSetting": "0 200",
+    "Nikon:ImageAuthentication": 0,
+    "Nikon:Lens": "18 70 3.5 4.5",
+    "Nikon:LensDataVersion": "0203",
+    "Nikon:LensFStops": 5.33333333333333,
+    "Nikon:LensIDNumber": 127,
+    "Nikon:LensType": 6,
+    "Nikon:MCUVersion": 132,
+    "Nikon:MakerNoteVersion": "0210",
+    "Nikon:MaxApertureAtMaxFocal": 4.48984819323749,
+    "Nikon:MaxApertureAtMinFocal": 3.56359487256136,
+    "Nikon:MaxFocalLength": 71.2718974512271,
+    "Nikon:MemoryCardNumber": 0,
+    "Nikon:MinFocalLength": 18.3400808640934,
+    "Nikon:MultiExposureAutoGain": 0,
+    "Nikon:MultiExposureMode": 0,
+    "Nikon:MultiExposureShots": 0,
+    "Nikon:MultiExposureVersion": "0100",
+    "Nikon:NoiseReduction": "OFF ",
+    "Nikon:PictureControlAdjust": 0,
+    "Nikon:PictureControlBase": "STANDARD",
+    "Nikon:PictureControlName": "STANDARD",
+    "Nikon:PictureControlQuickAdjust": 0,
+    "Nikon:PictureControlVersion": "0100",
+    "Nikon:PowerUpTime": "2017:01:17 21:21:49",
+    "Nikon:PrimaryAFPoint": 0,
+    "Nikon:ProgramShift": 0,
+    "Nikon:Quality": "RAW    ",
+    "Nikon:RawImageCenter": "2176 1434",
+    "Nikon:RetouchHistory": 0,
+    "Nikon:Saturation": 0,
+    "Nikon:SerialNumber": 4138072,
+    "Nikon:Sharpness": 3,
+    "Nikon:ShootingMode": 2,
+    "Nikon:ShotInfoVersion": "0210",
+    "Nikon:ShutterCount": 42430,
+    "Nikon:TimeZone": 60,
+    "Nikon:ToningEffect": 255,
+    "Nikon:ToningSaturation": 127,
+    "Nikon:VRInfoVersion": "0100",
+    "Nikon:VRMode": 0,
+    "Nikon:VibrationReduction": 2,
+    "Nikon:WB_GRBGLevels": "256 425 345 256",
+    "Nikon:WB_RBLevels": "1.66015625 1.34765625 1 1",
+    "Nikon:WhiteBalance": "AUTO        ",
+    "Nikon:WhiteBalanceFineTune": "0 0",
+    "PreviewIFD:Compression": 6,
+    "PreviewIFD:PreviewImageLength": 89285,
+    "PreviewIFD:ResolutionUnit": 2,
+    "PreviewIFD:XResolution": 300,
+    "PreviewIFD:YCbCrPositioning": 2,
+    "PreviewIFD:YResolution": 300
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 20\n  contents size: 12\nJPEG XL image, 64x64, lossy, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 64x64\nOrientation: 1 (Normal)\nBox:\n  type: \"brob\"\n  size: 4228\n  contents size: 4220\nBrotli-compressed Exif metadata: 4228 compressed bytes\nBox:\n  type: \"jxlp\"\n  size: 282\n  contents size: 274\nColor space: RGB\nWhite point: D65\nPrimaries: Rec.2100\nTransfer function: Linear\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 1.8477439880371094e-06,
+   "oxide_rms": 3.023505903679818e-07,
+   "reference": "camera-nikon-d300-rec2020-d1.png",
+   "shape": [
+    1,
+    64,
+    64,
+    3
+   ],
+   "source": "libjxl testdata external/raw.pixls/Nikon-D300-12bit_2020_g1_dt.png"
+  },
+  "camera-pixel2xl-acescg-lossless.jxl": {
+   "covers": "camera, ACEScg ICC, lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "64 64",
+    "Composite:Megapixels": 0.004096,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 64,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxll\"\n  size: 9\n  contents size: 1\nBox:\n  type: \"jxlc\"\n  size: 17254\n  contents size: 17246\nJPEG XL image, 64x64, (possibly) lossless, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 64x64\nOrientation: 1 (Normal)\n1076-byte ICC profile, CMM type: \"lcms\", Color space: \"RGB \", Rendering intent: 0\n",
+   "options": "-d 0",
+   "oxide_peak": 1.4901161193847656e-08,
+   "oxide_rms": 1.1504912656090529e-09,
+   "reference": "camera-pixel2xl-acescg-lossless.png",
+   "shape": [
+    1,
+    64,
+    64,
+    3
+   ],
+   "source": "libjxl testdata external/raw.pixls/Google-Pixel2XL-16bit_acescg_g1_v4_krita.png"
+  },
+  "camera-sony-rx1rm2-709-d1.jxl": {
+   "covers": "camera, Rec. 709 ICC, VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "64 64",
+    "Composite:Megapixels": 0.004096,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 64,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 64x64, lossy, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 64x64\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: 709\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 1.0132789611816406e-06,
+   "oxide_rms": 1.2058342268096622e-07,
+   "reference": "camera-sony-rx1rm2-709-d1.png",
+   "shape": [
+    1,
+    64,
+    64,
+    3
+   ],
+   "source": "libjxl testdata external/raw.pixls/Sony-DSC-RX1RM2-14bit_709_v4_krita.png"
+  },
+  "duck-12bit-lossless.jxl": {
+   "covers": "12-bit lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 12-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-12bit-lossless.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-12bit"
+  },
+  "duck-16bit-d1.jxl": {
+   "covers": "16-bit input, VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.00016570091247558594,
+   "oxide_rms": 2.7927213328478352e-05,
+   "reference": "duck-16bit-d1.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-16bit"
+  },
+  "duck-16bit-lossless.jxl": {
+   "covers": "16-bit lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxll\"\n  size: 9\n  contents size: 1\nBox:\n  type: \"jxlc\"\n  size: 229811\n  contents size: 229803\nJPEG XL image, 256x192, (possibly) lossless, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 1.9596466612651955e-09,
+   "reference": "duck-16bit-lossless.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-16bit"
+  },
+  "duck-alpha-d1.jxl": {
+   "covers": "alpha, VarDCT color with Modular alpha",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.00016677379608154297,
+   "oxide_rms": 2.453579367272903e-05,
+   "reference": "duck-alpha-d1.png",
+   "shape": [
+    1,
+    192,
+    256,
+    4
+   ],
+   "source": "generated:duck-alpha"
+  },
+  "duck-alpha-lossless.jxl": {
+   "covers": "alpha, lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.4208518056731544e-08,
+   "reference": "duck-alpha-lossless.png",
+   "shape": [
+    1,
+    192,
+    256,
+    4
+   ],
+   "source": "generated:duck-alpha"
+  },
+  "duck-alpha-premultiplied.jxl": {
+   "covers": "premultiplied alpha",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 1 (Premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 --premultiply=1",
+   "oxide_peak": 0.0001666545867919922,
+   "oxide_rms": 2.459368557593628e-05,
+   "reference": "duck-alpha-premultiplied.png",
+   "shape": [
+    1,
+    192,
+    256,
+    4
+   ],
+   "source": "generated:duck-alpha"
+  },
+  "duck-d0.3.jxl": {
+   "covers": "VarDCT, near-visually-lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0.3",
+   "oxide_peak": 0.0001666545867919922,
+   "oxide_rms": 3.1536142692761196e-05,
+   "reference": "duck-d0.3.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-d1-e3.jxl": {
+   "covers": "VarDCT, effort 3 (DCT8 only)",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 -e 3",
+   "oxide_peak": 0.00016605854034423828,
+   "oxide_rms": 2.8736707725137033e-05,
+   "reference": "duck-d1-e3.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-d1-faster-decoding.jxl": {
+   "covers": "VarDCT, faster decoding",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 --faster_decoding=4",
+   "oxide_peak": 0.00016582012176513672,
+   "oxide_rms": 3.150554025784641e-05,
+   "reference": "duck-d1-faster-decoding.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-d1-progressive.jxl": {
+   "covers": "VarDCT, progressive passes and LF frame",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 -p",
+   "oxide_peak": 0.00016617774963378906,
+   "oxide_rms": 2.9584015821950168e-05,
+   "reference": "duck-d1-progressive.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-d1-resampling2.jxl": {
+   "covers": "VarDCT, upsampling by 2",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 --resampling=2",
+   "oxide_peak": 0.0001666545867919922,
+   "oxide_rms": 2.885729006915867e-05,
+   "reference": "duck-d1-resampling2.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-d1.jxl": {
+   "covers": "VarDCT at distance 1, default effort, multi-group",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "640 480",
+    "Composite:Megapixels": 0.3072,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 480,
+    "File:ImageWidth": 640,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 640x480, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 640x480\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.00016611814498901367,
+   "oxide_rms": 2.906442275735313e-05,
+   "reference": "duck-d1.png",
+   "shape": [
+    1,
+    480,
+    640,
+    3
+   ],
+   "source": "generated:duck"
+  },
+  "duck-d3-e9.jxl": {
+   "covers": "VarDCT, effort 9, large transforms",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 3 -e 9",
+   "oxide_peak": 0.00016582012176513672,
+   "oxide_rms": 3.021166044552094e-05,
+   "reference": "duck-d3-e9.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-float-d1.jxl": {
+   "covers": "float input, VarDCT, linear",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 32-bit float (8 exponent bits) RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.041716575622558594,
+   "oxide_rms": 0.002289860649092961,
+   "reference": "duck-float-d1.pfm",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-float"
+  },
+  "duck-float-lossless.jxl": {
+   "covers": "32-bit float lossless, values above 1",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxll\"\n  size: 9\n  contents size: 1\nBox:\n  type: \"jxlc\"\n  size: 426519\n  contents size: 426511\nJPEG XL image, 256x192, (possibly) lossless, 32-bit float (8 exponent bits) RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 0.0,
+   "oxide_rms": 0.0,
+   "reference": "duck-float-lossless.pfm",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-float"
+  },
+  "duck-gray-alpha-lossless.jxl": {
+   "covers": "gray with alpha",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit Grayscale+Alpha\nNumber of color channels: 1\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: Grayscale\nWhite point: D65\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.668771959202954e-08,
+   "reference": "duck-gray-alpha-lossless.png",
+   "shape": [
+    1,
+    192,
+    256,
+    2
+   ],
+   "source": "generated:duck-gray-alpha"
+  },
+  "duck-gray-d1.jxl": {
+   "covers": "gray VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 8-bit Grayscale\nNumber of color channels: 1\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: Grayscale\nWhite point: D65\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.04783761501312256,
+   "oxide_rms": 0.0006458121035365782,
+   "reference": "duck-gray-d1.png",
+   "shape": [
+    1,
+    192,
+    256,
+    1
+   ],
+   "source": "generated:duck-gray"
+  },
+  "duck-gray-lossless.jxl": {
+   "covers": "gray lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit Grayscale\nNumber of color channels: 1\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: Grayscale\nWhite point: D65\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.0573914911517898e-08,
+   "reference": "duck-gray-lossless.png",
+   "shape": [
+    1,
+    192,
+    256,
+    1
+   ],
+   "source": "generated:duck-gray"
+  },
+  "duck-lossless-e1.jxl": {
+   "covers": "lossless, fastest effort (fixed tree)",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 1",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 1.949719277901256e-08,
+   "reference": "duck-lossless-e1.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-lossless-e3.jxl": {
+   "covers": "lossless, weighted predictor only",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 3",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 1.949719277901256e-08,
+   "reference": "duck-lossless-e3.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
+  "duck-lossless-e7.jxl": {
+   "covers": "lossless, default effort, multi-group",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "640 480",
+    "Composite:Megapixels": 0.3072,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 480,
+    "File:ImageWidth": 640,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 640x480, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 640x480\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 7",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.0277282125293558e-08,
+   "reference": "duck-lossless-e7.png",
+   "shape": [
+    1,
+    480,
+    640,
+    3
+   ],
+   "source": "generated:duck"
+  },
+  "duck-posterized-lossless-palette.jxl": {
+   "covers": "lossless, palette of 216 colors",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 7",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.1911729135823557e-08,
+   "reference": "duck-posterized-lossless-palette.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-posterized"
+  },
+  "duck-small-lossless-e9.jxl": {
+   "covers": "lossless, tree learning at effort 9",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 9",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-small-lossless-e9.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-lossless-gradient.jxl": {
+   "covers": "lossless, gradient predictor only",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -P 5",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-small-lossless-gradient.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-lossless-group128.jxl": {
+   "covers": "lossless, 128-pixel groups",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 7 -g 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-small-lossless-group128.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-lossless-prev-channels.jxl": {
+   "covers": "lossless, previous channels in the MA tree",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 7 -E 3",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-small-lossless-prev-channels.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-lossless-ycocg.jxl": {
+   "covers": "lossless, a fixed reversible color transform",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -C 6",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-small-lossless-ycocg.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-lossy-palette.jxl": {
+   "covers": "lossy (delta) palette",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 --modular_lossy_palette --modular_palette_colors=0",
+   "oxide_peak": 1.1920928955078125e-07,
+   "oxide_rms": 2.1145504023643525e-08,
+   "reference": "duck-small-lossy-palette.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-modular-lossy.jxl": {
+   "covers": "lossy Modular (squeeze)",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-m 1 -d 1",
+   "oxide_peak": 0.00016570091247558594,
+   "oxide_rms": 2.8456581947086572e-05,
+   "reference": "duck-small-modular-lossy.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "duck-small-modular-progressive.jxl": {
+   "covers": "lossless, progressive (squeeze)",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -p",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.115834434884712e-08,
+   "reference": "duck-small-modular-progressive.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-small"
+  },
+  "egret-d1-level10.jxl": {
+   "covers": "container with a jxll box",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxll\"\n  size: 9\n  contents size: 1\nBox:\n  type: \"jxlc\"\n  size: 16355\n  contents size: 16347\nJPEG XL image, 240x320, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 --codestream_level=10 --container=1",
+   "oxide_peak": 0.00016647577285766602,
+   "oxide_rms": 3.007719287862543e-05,
+   "reference": "egret-d1-level10.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "generated:egret-mid"
+  },
+  "egret-d1-noise.jxl": {
+   "covers": "VarDCT, photon noise",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 240x320, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1 --photon_noise_iso=3200",
+   "oxide_peak": 0.00016617774963378906,
+   "oxide_rms": 2.998395214038077e-05,
+   "reference": "egret-d1-noise.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "generated:egret-mid"
+  },
+  "egret-d1.jxl": {
+   "covers": "VarDCT, portrait",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "480 640",
+    "Composite:Megapixels": 0.3072,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 640,
+    "File:ImageWidth": 480,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 480x640, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 480x640\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.00016605854034423828,
+   "oxide_rms": 2.2468941982892356e-05,
+   "reference": "egret-d1.png",
+   "shape": [
+    1,
+    640,
+    480,
+    3
+   ],
+   "source": "generated:egret"
+  },
+  "egret-d2-epf3.jxl": {
+   "covers": "VarDCT, strongest edge-preserving filter",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 240x320, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 2 --epf=3",
+   "oxide_peak": 0.00016617774963378906,
+   "oxide_rms": 2.9664392668305483e-05,
+   "reference": "egret-d2-epf3.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "generated:egret-mid"
+  },
+  "egret-d2-no-filters.jxl": {
+   "covers": "VarDCT, Gaborish and EPF off",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 240x320, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 2 --gaborish=0 --epf=0",
+   "oxide_peak": 0.00016605854034423828,
+   "oxide_rms": 2.996666392317145e-05,
+   "reference": "egret-d2-no-filters.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "generated:egret-mid"
+  },
+  "jpeg-duck-420.jxl": {
+   "covers": "recompressed JPEG, 4:2:0",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 19509\n  contents size: 19501\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4289228886495118e-07,
+   "reconstructed_jpeg_sha256": "33f7f8bab56d962b19389ffb6098682b4be98e8208beaf17218f5ae16ac95807",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-420.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-420.jpg"
+  },
+  "jpeg-duck-422.jxl": {
+   "covers": "recompressed JPEG, 4:2:2",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 21614\n  contents size: 21606\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4454624105624926e-07,
+   "reconstructed_jpeg_sha256": "f167bfa3af1977dff178dff2b809efa7fd0a4359ad9793204f427b6021d404cf",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-422.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-422.jpg"
+  },
+  "jpeg-duck-440.jxl": {
+   "covers": "recompressed JPEG, 4:4:0",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 21615\n  contents size: 21607\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 2.1457672119140625e-06,
+   "oxide_rms": 1.4494529513113993e-07,
+   "reconstructed_jpeg_sha256": "0a0720f7dc1b0a8d90c1948cfa5fa10d09a15e8755cc49af1da2bb5c092edab9",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-440.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-440.jpg"
+  },
+  "jpeg-duck-444.jxl": {
+   "covers": "recompressed JPEG, 4:4:4",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 25649\n  contents size: 25641\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 2.0265579223632812e-06,
+   "oxide_rms": 1.4851635575886362e-07,
+   "reconstructed_jpeg_sha256": "24b5431c765bf8d9db8dda0b025bae02209b39db9ccb2f682e78ca3b4e1fc930",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-444.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-444.jpg"
+  },
+  "jpeg-duck-gray.jxl": {
+   "covers": "recompressed JPEG, gray",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 19\n  contents size: 11\nJPEG XL image, 320x240, (possibly) lossless, 8-bit Grayscale\nNumber of color channels: 1\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: Grayscale\nWhite point: D65\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 260\n  contents size: 252\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 17125\n  contents size: 17117\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.6689300537109375e-06,
+   "oxide_rms": 1.2747543868033254e-07,
+   "reconstructed_jpeg_sha256": "2f55a9e81a09f21c05b6e23495d2fb2d9ff802f6d7865b979055b67e33071291",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-gray.png",
+   "shape": [
+    1,
+    240,
+    320,
+    1
+   ],
+   "source": "jpeg/duck-gray.jpg"
+  },
+  "jpeg-duck-optimized.jxl": {
+   "covers": "recompressed JPEG with optimized Huffman tables",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 184\n  contents size: 176\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 19509\n  contents size: 19501\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4289228886495118e-07,
+   "reconstructed_jpeg_sha256": "8090735ff3ae83b37fe3d074da75b2b9fc932345d62a1e3f13c51c10cd1beade",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-optimized.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-optimized.jpg"
+  },
+  "jpeg-duck-progressive.jxl": {
+   "covers": "recompressed progressive JPEG",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 408\n  contents size: 400\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 19509\n  contents size: 19501\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4289228886495118e-07,
+   "reconstructed_jpeg_sha256": "3b0ad2d368c5e06b82da476d7bad957f1cf57b213ac1395d973e16ebe32b4680",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-progressive.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-progressive.jpg"
+  },
+  "jpeg-duck-q100.jxl": {
+   "covers": "recompressed JPEG, quality 100",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 104103\n  contents size: 104095\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 4.172325134277344e-07,
+   "oxide_rms": 5.5930967162846444e-08,
+   "reconstructed_jpeg_sha256": "1c4542807a2fd3b9ff18ba8d0ebd1f4a4cb0cdd30745dfd91ceb08658b43bae9",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-q100.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-q100.jpg"
+  },
+  "jpeg-duck-restart-rows.jxl": {
+   "covers": "recompressed JPEG with restart markers",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 483\n  contents size: 475\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 19509\n  contents size: 19501\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4289228886495118e-07,
+   "reconstructed_jpeg_sha256": "f38c573da7723bc751f63d4afd246c0283c518748624c6d3b0137e1a9858bf8b",
+   "reconstructs_original": true,
+   "reference": "jpeg-duck-restart-rows.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/duck-restart-rows.jpg"
+  },
+  "jpeg-egret-420.jxl": {
+   "covers": "recompressed JPEG, portrait",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 19\n  contents size: 11\nJPEG XL image, 240x320, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 22844\n  contents size: 22836\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.8402934074401855e-06,
+   "oxide_rms": 2.1896546728500303e-07,
+   "reconstructed_jpeg_sha256": "ceef8e83c01ab495ecefb95d8318aa0559a54a10210c909ba6dd27e7d1a4fe7d",
+   "reconstructs_original": true,
+   "reference": "jpeg-egret-420.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "jpeg/egret-420.jpg"
+  },
+  "jpeg-exif-orientation-6-d1.jxl": {
+   "covers": "JPEG re-encoded lossy, Exif kept",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:ExifByteOrder": "MM",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "IFD0:Orientation": 6,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 20\n  contents size: 12\nJPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 6 (90 degrees clockwise)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\nBox:\n  type: \"Exif\"\n  size: 38\n  contents size: 30\nUncompressed Exif metadata: 38 bytes\nBox:\n  type: \"jxlp\"\n  size: 17527\n  contents size: 17519\n",
+   "options": "--lossless_jpeg=0 -d 1 --compress_boxes=0",
+   "oxide_peak": 0.00016582012176513672,
+   "oxide_rms": 2.6750201755954127e-05,
+   "reference": "jpeg-exif-orientation-6-d1.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "jpeg/exif-orientation-6.jpg"
+  },
+  "jpeg-exif-orientation-6.jxl": {
+   "covers": "recompressed JPEG with Exif orientation 6",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:ExifByteOrder": "MM",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "IFD0:Orientation": 6,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 18\n  contents size: 10\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 6 (90 degrees clockwise)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 483\n  contents size: 475\nJPEG bitstream reconstruction data available\nBox:\n  type: \"Exif\"\n  size: 38\n  contents size: 30\nUncompressed Exif metadata: 38 bytes\nBox:\n  type: \"jxlp\"\n  size: 19336\n  contents size: 19328\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4221965929707094e-07,
+   "reconstructed_jpeg_sha256": "c9136142334d9a97377ec9ad27576c14f5a6509030321346fa00159430f0a141",
+   "reconstructs_original": true,
+   "reference": "jpeg-exif-orientation-6.png",
+   "shape": [
+    1,
+    320,
+    240,
+    3
+   ],
+   "source": "jpeg/exif-orientation-6.jpg"
+  },
+  "jpeg-exif-tags-brob.jxl": {
+   "covers": "recompressed JPEG, Exif in a brob box",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:ExifByteOrder": "MM",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "IFD0:Make": "Egami Test Camera",
+    "IFD0:Model": "Model 1",
+    "IFD0:ModifyDate": "2026:10:08 12:34:56",
+    "IFD0:ResolutionUnit": 2,
+    "IFD0:Software": "Egami tests",
+    "IFD0:XResolution": 300,
+    "IFD0:YResolution": 300,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 483\n  contents size: 475\nJPEG bitstream reconstruction data available\nBox:\n  type: \"brob\"\n  size: 146\n  contents size: 138\nBrotli-compressed Exif metadata: 146 compressed bytes\nBox:\n  type: \"jxlp\"\n  size: 19336\n  contents size: 19328\n",
+   "options": "--compress_boxes=1",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4221965929707094e-07,
+   "reconstructed_jpeg_sha256": "cb2e7766c7ced385dfe35573fc52428157d6ed9ad1c8ecba3b2705222c621083",
+   "reconstructs_original": true,
+   "reference": "jpeg-exif-tags-brob.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/exif-tags.jpg"
+  },
+  "jpeg-exif-tags.jxl": {
+   "covers": "recompressed JPEG with Exif tags",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:ExifByteOrder": "MM",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl",
+    "IFD0:Make": "Egami Test Camera",
+    "IFD0:Model": "Model 1",
+    "IFD0:ModifyDate": "2026:10:08 12:34:56",
+    "IFD0:ResolutionUnit": 2,
+    "IFD0:Software": "Egami tests",
+    "IFD0:XResolution": 300,
+    "IFD0:YResolution": 300,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 17\n  contents size: 9\nJPEG XL image, 320x240, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 483\n  contents size: 475\nJPEG bitstream reconstruction data available\nBox:\n  type: \"Exif\"\n  size: 184\n  contents size: 176\nUncompressed Exif metadata: 184 bytes\nBox:\n  type: \"jxlp\"\n  size: 19336\n  contents size: 19328\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.9073486328125e-06,
+   "oxide_rms": 1.4221965929707094e-07,
+   "reconstructed_jpeg_sha256": "cb2e7766c7ced385dfe35573fc52428157d6ed9ad1c8ecba3b2705222c621083",
+   "reconstructs_original": true,
+   "reference": "jpeg-exif-tags.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "jpeg/exif-tags.jpg"
+  },
+  "jpeg-odd-17x9.jxl": {
+   "covers": "recompressed JPEG, odd size",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "17 9",
+    "Composite:Megapixels": 0.000153,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 9,
+    "File:ImageWidth": 17,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 19\n  contents size: 11\nJPEG XL image, 17x9, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 17x9\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 241\n  contents size: 233\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 2.980232238769531e-07,
+   "oxide_rms": 1.033881110388937e-07,
+   "reconstructed_jpeg_sha256": "3b2e566281190c2e1d502431176d771a3da4d3b6bef198d590ab94f207b5e48c",
+   "reconstructs_original": true,
+   "reference": "jpeg-odd-17x9.png",
+   "shape": [
+    1,
+    9,
+    17,
+    3
+   ],
+   "source": "jpeg/odd-17x9.jpg"
+  },
+  "jpeg-odd-1x1-progressive.jxl": {
+   "covers": "recompressed JPEG, one pixel, progressive",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "1 1",
+    "Composite:Megapixels": 1e-06,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 1,
+    "File:ImageWidth": 1,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 18\n  contents size: 10\nJPEG XL image, 1x1, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 1x1\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 169\n  contents size: 161\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 158\n  contents size: 150\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 0.0,
+   "oxide_rms": 0.0,
+   "reconstructed_jpeg_sha256": "a86f1783ed7a91f35b238a8decc76816f991373acdf32e6c04e39a83e4ee5bf0",
+   "reconstructs_original": true,
+   "reference": "jpeg-odd-1x1-progressive.png",
+   "shape": [
+    1,
+    1,
+    1,
+    3
+   ],
+   "source": "jpeg/odd-1x1-progressive.jpg"
+  },
+  "jpeg-testorig.jxl": {
+   "covers": "recompressed JPEG, libjpeg-turbo's test image (IJG)",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "227 149",
+    "Composite:Megapixels": 0.033823,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 149,
+    "File:ImageWidth": 227,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlp\"\n  size: 19\n  contents size: 11\nJPEG XL image, 227x149, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 227x149\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nBox:\n  type: \"jbrd\"\n  size: 480\n  contents size: 472\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlp\"\n  size: 4989\n  contents size: 4981\n",
+   "options": "--compress_boxes=0",
+   "oxide_peak": 1.2516975402832031e-06,
+   "oxide_rms": 1.4769194165030949e-07,
+   "reconstructed_jpeg_sha256": "acc6ec555d41d15b368320edaa3b20958ee6fa97cb6e4a18d1213d5ae8bec73b",
+   "reconstructs_original": true,
+   "reference": "jpeg-testorig.png",
+   "shape": [
+    1,
+    149,
+    227,
+    3
+   ],
+   "source": "jpeg/testorig.jpg"
+  },
+  "libjxl/1x1_exif_xmp.jxl": {
+   "covers": "recompressed JPEG with Exif and XMP",
+   "exiftool": {
+    "Composite:ImageSize": "1 1",
+    "Composite:Megapixels": 1e-06,
+    "ExifIFD:ColorSpace": 1,
+    "ExifIFD:UserComment": "Created with GIMP",
+    "File:ExifByteOrder": "II",
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 1,
+    "File:ImageWidth": 1,
+    "File:MIMEType": "image/jxl",
+    "GPS:GPSAltitude": 0,
+    "IFD0:ImageDescription": "Created with GIMP",
+    "IFD0:ModifyDate": "2021:10:27 18:59:15",
+    "IFD0:ResolutionUnit": 2,
+    "IFD0:Software": "GIMP 2.10.28",
+    "IFD0:XResolution": 300,
+    "IFD0:YResolution": 300,
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0",
+    "XMP-GIMP:Api": 2.0,
+    "XMP-GIMP:Platform": "Linux",
+    "XMP-GIMP:TimeStamp": "1635353959433667",
+    "XMP-GIMP:Version": "2.10.28",
+    "XMP-dc:Format": "image/jpeg",
+    "XMP-dc:Title": "test",
+    "XMP-x:XMPToolkit": "XMP Core 4.4.0-Exiv2",
+    "XMP-xmp:CreatorTool": "GIMP 2.10",
+    "XMP-xmpMM:DocumentID": "gimp:docid:gimp:10093e7e-33ea-4901-a7ce-a3c04b8b6480",
+    "XMP-xmpMM:HistoryAction": [
+     "saved",
+     "saved"
+    ],
+    "XMP-xmpMM:HistoryChanged": [
+     "/metadata",
+     "/"
+    ],
+    "XMP-xmpMM:HistoryInstanceID": [
+     "xmp.iid:735c4bc4-11be-4e71-8aad-0ddd90c9607d",
+     "xmp.iid:70d81176-171d-43b8-b687-1eb80d302337"
+    ],
+    "XMP-xmpMM:HistorySoftwareAgent": [
+     "Gimp 2.10 (Linux)",
+     "Gimp 2.10 (Linux)"
+    ],
+    "XMP-xmpMM:HistoryWhen": [
+     "2021:10:27 18:58:46+02:00",
+     "2021:10:27 18:59:19+02:00"
+    ],
+    "XMP-xmpMM:InstanceID": "xmp.iid:737430f3-5b4d-49cf-9873-c10684618917",
+    "XMP-xmpMM:OriginalDocumentID": "xmp.did:f7302aac-e69b-4ad8-ac19-58a76e2fc4f7"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"Exif\"\n  size: 272\n  contents size: 264\nUncompressed Exif metadata: 272 bytes\nBox:\n  type: \"xml \"\n  size: 3455\n  contents size: 3447\nUncompressed xml  metadata: 3455 bytes\nBox:\n  type: \"jbrd\"\n  size: 197\n  contents size: 189\nJPEG bitstream reconstruction data available\nBox:\n  type: \"jxlc\"\n  size: 148\n  contents size: 140\nJPEG XL image, 1x1, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 1x1\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "oxide_peak": 0.0,
+   "oxide_rms": 0.0,
+   "reconstructed_jpeg_sha256": "c6d30276e37711069950d50b8d8c94c037f5b7a1fdcc36235c6f3f066487bed8",
+   "reference": "libjxl-1x1_exif_xmp.png",
+   "shape": [
+    1,
+    1,
+    1,
+    3
+   ],
+   "source": "libjxl testdata jxl/jpeg_reconstruction/1x1_exif_xmp.jxl"
+  },
+  "libjxl/cropped_traffic_light.jxl": {
+   "covers": "animation with cropped frames",
+   "exiftool": {
+    "Composite:ImageSize": "50 80",
+    "Composite:Megapixels": 0.004,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 80,
+    "File:ImageWidth": 50,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL animation, 50x80, (possibly) lossless, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 1\nTicks per second (numerator / denominator): 100 / 1\nNum loops: 0\nHave timecodes: 0\nIntrinsic dimensions: 50x80\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nFrame: 60x105 at position (0,0), duration: 3000.0 ms\nFrame: 25x26 at position (18,40), duration: 1000.0 ms\nFrame: 25x84 at position (18,11), duration: 3000.0 ms\nFrame: 25x55 at position (18,40), duration: 1000.0 ms\nAnimation length: 8.000 seconds (looping)\n",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.209704857389547e-08,
+   "reference": "libjxl-cropped_traffic_light.png",
+   "shape": [
+    4,
+    80,
+    50,
+    4
+   ],
+   "source": "libjxl testdata jxl/blending/cropped_traffic_light.jxl"
+  },
+  "libjxl/pq_gradient.jxl": {
+   "covers": "PQ transfer function",
+   "exiftool": {
+    "Composite:ImageSize": "1088 64",
+    "Composite:Megapixels": 0.069632,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 64,
+    "File:ImageWidth": 1088,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 1088x64, (possibly) lossless, 16-bit Grayscale\nNumber of color channels: 1\nNumber of extra channels: 0\nIntensity target: 10000.000000 nits\nMin nits: 0.000000\nRelative to max display: 0\nLinear below: 0.000000\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 1088x64\nOrientation: 1 (Normal)\nColor space: Grayscale\nWhite point: D65\nTransfer function: PQ\nRendering intent: Relative\n",
+   "oxide_peak": 0.0,
+   "oxide_rms": 0.0,
+   "reference": "libjxl-pq_gradient.png",
+   "shape": [
+    1,
+    64,
+    1088,
+    1
+   ],
+   "source": "libjxl testdata jxl/pq_gradient.jxl"
+  },
+  "libjxl/spline_on_first_frame.jxl": {
+   "covers": "splines on the first of two frames",
+   "exiftool": {
+    "Composite:ImageSize": "32 32",
+    "Composite:Megapixels": 0.001024,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 32,
+    "File:ImageWidth": 32,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 32x32, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 32x32\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nLayer: Full image size\nLayer: Full image size\n",
+   "oxide_peak": 6.496906280517578e-06,
+   "oxide_rms": 1.1279862548787464e-06,
+   "reference": "libjxl-spline_on_first_frame.png",
+   "shape": [
+    1,
+    32,
+    32,
+    3
+   ],
+   "source": "libjxl testdata jxl/spline_on_first_frame.jxl"
+  },
+  "libjxl/splines.jxl": {
+   "covers": "splines",
+   "exiftool": {
+    "Composite:ImageSize": "2048 2048",
+    "Composite:Megapixels": 4.194304,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 2048,
+    "File:ImageWidth": 2048,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 2048x2048, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 2048x2048\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "oxide_peak": 0.00012627639694073878,
+   "oxide_rms": 7.109884328439249e-06,
+   "reference": "libjxl-splines.png",
+   "shape": [
+    1,
+    2048,
+    2048,
+    3
+   ],
+   "source": "libjxl testdata jxl/splines.jxl"
+  },
+  "libjxl/square-extended-size-container.jxl": {
+   "covers": "box with an extended (64-bit) size",
+   "exiftool": {
+    "Composite:ImageSize": "8 8",
+    "Composite:Megapixels": 6.4e-05,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 8,
+    "File:ImageWidth": 8,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxlc\"\n  size: 72\n  contents size: 56\nJPEG XL image, 8x8, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 8x8\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "oxide_peak": 2.220446049250313e-15,
+   "oxide_rms": 1.4043333874306805e-15,
+   "reference": "libjxl-square-extended-size-container.png",
+   "shape": [
+    1,
+    8,
+    8,
+    3
+   ],
+   "source": "libjxl testdata jxl/boxes/square-extended-size-container.jxl"
+  },
+  "odd-1x1-lossless.jxl": {
+   "covers": "one pixel",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "1 1",
+    "Composite:Megapixels": 1e-06,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 1,
+    "File:ImageWidth": 1,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 1x1, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 1x1\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 3.4412757706023796e-08,
+   "reference": "odd-1x1-lossless.png",
+   "shape": [
+    1,
+    1,
+    1,
+    3
+   ],
+   "source": "generated:odd-1x1"
+  },
+  "odd-31x17-d1.jxl": {
+   "covers": "odd size, VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "31 17",
+    "Composite:Megapixels": 0.000527,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 17,
+    "File:ImageWidth": 31,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 31x17, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 31x17\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 1",
+   "oxide_peak": 0.0001621246337890625,
+   "oxide_rms": 2.2792438961968955e-05,
+   "reference": "odd-31x17-d1.png",
+   "shape": [
+    1,
+    17,
+    31,
+    3
+   ],
+   "source": "generated:odd-31x17"
+  },
+  "odd-31x17-lossless.jxl": {
+   "covers": "odd size, lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "31 17",
+    "Composite:Megapixels": 0.000527,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 17,
+    "File:ImageWidth": 31,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 31x17, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 31x17\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 1.4316544585785719e-08,
+   "reference": "odd-31x17-lossless.png",
+   "shape": [
+    1,
+    17,
+    31,
+    3
+   ],
+   "source": "generated:odd-31x17"
+  },
+  "pan-anim-d1.jxl": {
+   "covers": "animation, VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "96 72",
+    "Composite:Megapixels": 0.006912,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 72,
+    "File:ImageWidth": 96,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL animation, 96x72, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 1\nTicks per second (numerator / denominator): 1000 / 1\nNum loops: 0\nHave timecodes: 0\nIntrinsic dimensions: 96x72\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nFrame: Full image size, duration: 40.0 ms\nFrame: Full image size, duration: 50.0 ms\nFrame: Full image size, duration: 60.0 ms\nFrame: Full image size, duration: 70.0 ms\nFrame: Full image size, duration: 80.0 ms\nFrame: Full image size, duration: 90.0 ms\nFrame: Full image size, duration: 100.0 ms\nFrame: Full image size, duration: 33.0 ms\nAnimation length: 0.523 seconds (looping)\n",
+   "options": "-d 1",
+   "oxide_peak": 0.00016677379608154297,
+   "oxide_rms": 2.9134579631360473e-05,
+   "reference": "pan-anim-d1.png",
+   "shape": [
+    8,
+    72,
+    96,
+    3
+   ],
+   "source": "apng/pan-rgb.png"
+  },
+  "pan-anim-lossless.jxl": {
+   "covers": "animation, lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "96 72",
+    "Composite:Megapixels": 0.006912,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 72,
+    "File:ImageWidth": 96,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL animation, 96x72, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 1\nTicks per second (numerator / denominator): 1000 / 1\nNum loops: 0\nHave timecodes: 0\nIntrinsic dimensions: 96x72\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nFrame: Full image size, duration: 40.0 ms\nFrame: Full image size, duration: 50.0 ms\nFrame: Full image size, duration: 60.0 ms\nFrame: Full image size, duration: 70.0 ms\nFrame: Full image size, duration: 80.0 ms\nFrame: Full image size, duration: 90.0 ms\nFrame: Full image size, duration: 100.0 ms\nFrame: Full image size, duration: 33.0 ms\nAnimation length: 0.523 seconds (looping)\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 2.0558474885375892e-08,
+   "reference": "pan-anim-lossless.png",
+   "shape": [
+    8,
+    72,
+    96,
+    3
+   ],
+   "source": "apng/pan-rgb.png"
+  },
+  "sprite-anim-lossless.jxl": {
+   "covers": "animation with alpha, crops and blending",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "64 48",
+    "Composite:Megapixels": 0.003072,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 48,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL animation, 64x48, (possibly) lossless, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 1\nTicks per second (numerator / denominator): 1000 / 1\nNum loops: 0\nHave timecodes: 0\nIntrinsic dimensions: 64x48\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\nFrame: Full image size, duration: 70.0 ms\nFrame: 26x21 at position (2,2), duration: 70.0 ms\nFrame: 32x22 at position (4,6), duration: 70.0 ms\nFrame: 32x22 at position (12,11), duration: 70.0 ms\nFrame: 32x22 at position (20,16), duration: 70.0 ms\nFrame: 32x22 at position (28,21), duration: 70.0 ms\nAnimation length: 0.420 seconds (looping)\n",
+   "options": "-d 0",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 8.535712389193177e-09,
+   "reference": "sprite-anim-lossless.png",
+   "shape": [
+    6,
+    48,
+    64,
+    4
+   ],
+   "source": "apng/sprite-over-previous.png"
+  },
+  "squoosh-duck-lossless.jxl": {
+   "covers": "Squoosh, lossless",
+   "encoder": "Squoosh CLI 0.7.3",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "{\"lossless\": true}",
+   "oxide_peak": 0.0001665353775024414,
+   "oxide_rms": 2.654386827979456e-05,
+   "reference": "squoosh-duck-lossless.png",
+   "shape": [
+    1,
+    240,
+    320,
+    4
+   ],
+   "source": "generated:duck-mid"
+  },
+  "squoosh-duck-q75.jxl": {
+   "covers": "Squoosh, quality 75",
+   "encoder": "Squoosh CLI 0.7.3",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "{\"quality\": 75}",
+   "oxide_peak": 0.0001665353775024414,
+   "oxide_rms": 2.654386827979456e-05,
+   "reference": "squoosh-duck-q75.png",
+   "shape": [
+    1,
+    240,
+    320,
+    4
+   ],
+   "source": "generated:duck-mid"
+  },
+  "squoosh-egret-full-q90-progressive.jxl": {
+   "covers": "Squoosh, full size, progressive: djxl 0.12.0 fails on it, jxl-oxide decodes it",
+   "djxl_error": "Failed to decode image\nDecompressJxlToPackedPixelFile failed",
+   "encoder": "Squoosh CLI 0.7.3",
+   "exiftool": {
+    "Composite:ImageSize": "480 640",
+    "Composite:Megapixels": 0.3072,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 640,
+    "File:ImageWidth": 480,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 480x640, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 480x640\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "{\"quality\": 90, \"progressive\": true}",
+   "source": "ops/egret.png"
+  },
+  "squoosh-egret-q50-effort3.jxl": {
+   "covers": "Squoosh, quality 50, effort 3",
+   "encoder": "Squoosh CLI 0.7.3",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 240x320, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "{\"quality\": 50, \"effort\": 3}",
+   "oxide_peak": 0.00016605854034423828,
+   "oxide_rms": 2.569389773241391e-05,
+   "reference": "squoosh-egret-q50-effort3.png",
+   "shape": [
+    1,
+    320,
+    240,
+    4
+   ],
+   "source": "generated:egret-mid"
+  },
+  "squoosh-egret-q90-progressive.jxl": {
+   "covers": "Squoosh, quality 90, progressive",
+   "encoder": "Squoosh CLI 0.7.3",
+   "exiftool": {
+    "Composite:ImageSize": "240 320",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 320,
+    "File:ImageWidth": 240,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 240x320, lossy, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 240x320\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "{\"quality\": 90, \"progressive\": true}",
+   "oxide_peak": 0.00016605854034423828,
+   "oxide_rms": 2.668387012604762e-05,
+   "reference": "squoosh-egret-q90-progressive.png",
+   "shape": [
+    1,
+    320,
+    240,
+    4
+   ],
+   "source": "generated:egret-mid"
+  }
+ },
+ "tools": {
+  "djxl": "djxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}\nCopyright (c) the JPEG XL Project",
+  "exiftool": "13.25",
+  "jxl-oxide": "jxl-oxide-cli 0.12.6"
+ }
+}

@@ -196,3 +196,17 @@ gainmap/, ../reference/gainmap/
   radiance/ above); adobe-xmp.jpg is uhdr-default.jpg with its ISO 21496-1 metadata swapped for Adobe's hdrgm XMP by
   tools/hdrref/hdrcorpus.py. The references are libultrahdr's metadata and linear half-float decodes at three display
   boosts, made by tools/make-hdr-references.py gainmap.
+
+jxl/, ../reference/jxl/
+  JPEG XL files made by tools/make-jxl-references.py (tools/jxlref/jxlcorpus.py) with libjxl 0.12.0's cjxl (BSD 3-clause) and
+  Squoosh's CLI 0.7.3 (Apache-2.0), run as tools only, from: ops/duck.png and ops/egret.png above and crops of them (public
+  domain); apng/pan-rgb.png and apng/sprite-over-previous.png above (public domain); the jpeg/ files above, recompressed
+  losslessly (public domain, and IJG for jpeg-testorig.jxl, as testorig.jpg); and, for camera-*.jxl, raw.pixls.us
+  developments from libjxl's testdata (external/raw.pixls at 73695d30), CC0 1.0. jxl/libjxl/ holds files copied unchanged
+  from libjxl's testdata (https://github.com/libjxl/testdata at 73695d30, jxl/), Copyright the JPEG XL Project Authors, CC BY
+  4.0 (https://creativecommons.org/licenses/by/4.0/). The references are djxl 0.12.0's decodes of each file, and
+  manifest.json with each file's source and options, jxlinfo's and ExifTool's readings and jxl-oxide 0.12.6's distance from
+  djxl. Same licenses as the files they come from.
+  The ISO/IEC 18181-3 conformance suite (https://github.com/libjxl/conformance, BSD 3-clause; its pictures' licenses are in
+  its testcases/README.md, one of them CC BY-SA 3.0) and Chromium's JPEG XL web test files stay in .cache/jxl and are never
+  committed.
