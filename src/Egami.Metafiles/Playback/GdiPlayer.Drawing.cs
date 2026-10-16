@@ -157,8 +157,8 @@ internal sealed partial class GdiPlayer
     /// <summary>
     /// A logical box's device rectangle for Rectangle (<paramref name="rectangle"/>) or Ellipse and the arcs, aliased the way
     /// GDI places them when it scales (measured against PlayEnhMetaFile): an ellipse's box rounds to whole pixels, halves down,
-    /// and loses its right and bottom pixel; a rectangle's left edge takes the first pixel at or after the edge moved by
-    /// (1 - scale) / 2, and its right edge the last pixel before. The result runs through the border pixels' centers.
+    /// and loses its right and bottom pixel; a rectangle's left edge takes the first pixel at or after the edge, and its right
+    /// edge the last pixel before the edge moved by (1 - scale) / 2. The result runs through the border pixels' centers.
     /// Antialiased, the box is the transformed one.
     /// </summary>
     private RectF DeviceRect(float left, float top, float right, float bottom, bool rectangle, float inset = 0)
@@ -176,7 +176,7 @@ internal sealed partial class GdiPlayer
             (first, last) = (Vector2.Min(first, last), Vector2.Max(first, last));
             if (rectangle)
             {
-                (l, t) = (MathF.Ceiling(first.X + o.X - 1e-4f), MathF.Ceiling(first.Y + o.Y - 1e-4f));
+                (l, t) = (MathF.Ceiling(first.X - 1e-4f), MathF.Ceiling(first.Y - 1e-4f));
                 (r, bt) = (MathF.Ceiling(last.X + o.X - 1e-4f) - 1, MathF.Ceiling(last.Y + o.Y - 1e-4f) - 1);
             }
             else

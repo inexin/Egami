@@ -56,10 +56,25 @@ internal sealed partial class GdiPlayer
         Matrix3x2 canvasMatrix = canvas.Matrix;
         if (_wmf)
         {
-            _pixelsPerMm = new Vector2(96 / 25.4f);
+            // The device is the canvas's own pixels when it only scales, as PlayMetaFile plays into a DC with the picture's
+            // box as the window and the output rectangle as the viewport; otherwise units of 1/96 inch.
             RectF frame = metafile.Frame;
-            _device = Matrix3x2.CreateScale(0.75f) * Matrix3x2.CreateTranslation(frame.X, frame.Y) * canvasMatrix;
-            Vector2 extent = new(frame.Width / 0.75f, frame.Height / 0.75f);
+            Vector2 units = new(frame.Width / 0.75f, frame.Height / 0.75f);
+            Vector2 extent;
+            if (canvasMatrix.M12 == 0 && canvasMatrix.M21 == 0 && canvasMatrix.M11 > 0 && canvasMatrix.M22 > 0)
+            {
+                Vector2 scale = new(canvasMatrix.M11, canvasMatrix.M22);
+                _pixelsPerMm = scale * (72 / 25.4f);
+                _device = Matrix3x2.CreateTranslation(Vector2.Transform(new Vector2(frame.X, frame.Y), canvasMatrix));
+                extent = new Vector2(frame.Width, frame.Height) * scale;
+            }
+            else
+            {
+                _pixelsPerMm = new Vector2(96 / 25.4f);
+                _device = Matrix3x2.CreateScale(0.75f) * Matrix3x2.CreateTranslation(frame.X, frame.Y) * canvasMatrix;
+                extent = units;
+            }
+
             if (_content.PlaceableBox is (short l, short t, short r, short b))
             {
                 _dc.WindowOrg = new Vector2(l, t);
@@ -67,7 +82,7 @@ internal sealed partial class GdiPlayer
             }
             else
             {
-                _dc.WindowExt = extent;
+                _dc.WindowExt = units;
             }
 
             _dc.MapMode = 8;
@@ -101,6 +116,8 @@ internal sealed partial class GdiPlayer
             {
                 player.PlayRecord(records[i]);
             }
+
+            player.FlushPending();
         }
         finally
         {
@@ -113,6 +130,12 @@ internal sealed partial class GdiPlayer
         ReadOnlySpan<byte> r = _data.AsSpan(record.Offset, record.Size);
         try
         {
+            // A blit that may start a transparent-bitmap idiom waits only for the next blit.
+            if (_pending is not null && record.Type is not (76 or 77 or 0x0940 or 0x0B41 or 0x0F43))
+            {
+                FlushPending();
+            }
+
             if (_wmf)
             {
                 PlayWmf(record.Type, r[6..], record.Offset);

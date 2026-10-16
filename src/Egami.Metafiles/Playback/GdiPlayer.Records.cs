@@ -131,20 +131,35 @@ internal sealed partial class GdiPlayer
                 AngleArc(new Vector2(I32(r, 8), I32(r, 12)), U32(r, 16), F32(r, 20), F32(r, 24));
                 break;
             case 42:
-                Ellipse(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20));
-                break;
+                {
+                    (float l, float t, float rt, float b) = Inclusive(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20));
+                    Ellipse(l, t, rt, b);
+                    break;
+                }
+
             case 43:
-                Rectangle(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20));
-                break;
+                {
+                    (float l, float t, float rt, float b) = Inclusive(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20));
+                    Rectangle(l, t, rt, b);
+                    break;
+                }
+
             case 44:
-                RoundRect(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20), I32(r, 24), I32(r, 28));
-                break;
+                {
+                    (float l, float t, float rt, float b) = Inclusive(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20));
+                    RoundRect(l, t, rt, b, I32(r, 24), I32(r, 28));
+                    break;
+                }
+
             case 45:
             case 46:
             case 47:
             case 55:
-                Arc(type == 55 ? 3 : type - 45, I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20), new Vector2(I32(r, 24), I32(r, 28)), new Vector2(I32(r, 32), I32(r, 36)));
-                break;
+                {
+                    (float l, float t, float rt, float b) = Inclusive(I32(r, 8), I32(r, 12), I32(r, 16), I32(r, 20));
+                    Arc(type == 55 ? 3 : type - 45, l, t, rt, b, new Vector2(I32(r, 24), I32(r, 28)), new Vector2(I32(r, 32), I32(r, 36)));
+                    break;
+                }
             case 48: // EMR_SELECTPALETTE
                 Select(U32(r, 8));
                 break;
@@ -236,7 +251,7 @@ internal sealed partial class GdiPlayer
             case 75: // EMR_EXTSELECTCLIPRGN
                 {
                     int size = I32(r, 8);
-                    CombineClip(size <= 0 ? null : RegionData(r.Slice(16, Math.Min(size, r.Length - 16)), DeviceRegion), I32(r, 12));
+                    CombineClip(size <= 0 ? null : RegionData(r.Slice(16, Math.Min(size, r.Length - 16)), DeviceRegion, clip: true), I32(r, 12));
                     break;
                 }
 
@@ -315,6 +330,41 @@ internal sealed partial class GdiPlayer
                 Skip($"EMF type {type}", offset);
                 break;
         }
+    }
+
+    /// <summary>
+    /// An EMF box (Rectangle, Ellipse, RoundRect, the arcs) is inclusive: GDI recorded the call's box less one device pixel on
+    /// the right and bottom (in compatible mode) or as given (in advanced mode, where it is drawn inclusive). Playback adds that
+    /// device pixel back, in logical units, on the side that maps to the larger device coordinate.
+    /// </summary>
+    private (float L, float T, float R, float B) Inclusive(float l, float t, float r, float b)
+    {
+        Matrix3x2 m = PageWorld;
+        if (m.M12 != 0 || m.M21 != 0 || m.M11 == 0 || m.M22 == 0)
+        {
+            return (l, t, r, b);
+        }
+
+        float ux = 1 / m.M11, uy = 1 / m.M22;
+        if (ux > 0)
+        {
+            (l, r) = l > r ? (l + ux, r) : (l, r + ux);
+        }
+        else
+        {
+            (l, r) = l < r ? (l + ux, r) : (l, r + ux);
+        }
+
+        if (uy > 0)
+        {
+            (t, b) = t > b ? (t + uy, b) : (t, b + uy);
+        }
+        else
+        {
+            (t, b) = t < b ? (t + uy, b) : (t, b + uy);
+        }
+
+        return (l, t, r, b);
     }
 
     private T? Object<T>(uint index)
@@ -707,7 +757,7 @@ internal sealed partial class GdiPlayer
     {
         PathBuilder builder = new();
         int scans = p.Length >= 12 ? U16(p, 10) : 0;
-        int at = 20;
+        int at = 22; // nextInChain, ObjectType, ObjectCount, RegionSize, ScanCount, MaxScan, then the bounding rectangle
         for (int s = 0; s < scans && at + 6 <= p.Length; s++)
         {
             int count = U16(p, at);

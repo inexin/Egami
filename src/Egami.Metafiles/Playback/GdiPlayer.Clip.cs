@@ -83,7 +83,7 @@ internal sealed partial class GdiPlayer
     private void SelectClipRegion(Path logical) => CombineClip(logical.Transform(Full), 5);
 
     /// <summary>An EMF RegionData (RGNDATAHEADER and rectangles) in reference device units, as a device-space path; null when empty or broken.</summary>
-    private Path? RegionData(ReadOnlySpan<byte> data, Matrix3x2 transform)
+    private Path? RegionData(ReadOnlySpan<byte> data, Matrix3x2 transform, bool clip = false)
     {
         if (data.Length < 32)
         {
@@ -109,12 +109,19 @@ internal sealed partial class GdiPlayer
         }
 
         Path rects = builder.ToPath(FillRule.NonZero).Transform(transform);
-        return _aliased ? SnapPath(rects) : rects;
+        return _aliased ? SnapPath(rects, clip ? Vector2.One : Vector2.Abs(new Vector2(transform.M11, transform.M22))) : rects;
     }
 
-    /// <summary>Snaps a path of straight edges to whole pixels.</summary>
-    private static Path SnapPath(Path path)
+    /// <summary>
+    /// Snaps a path of region rectangles to whole pixels: a scaled region edge goes to the first pixel boundary at or after the
+    /// edge moved by (1 - scale) / 2, as rectangles do when a region is drawn; clip regions round to the nearest boundary
+    /// (scale 1 here). Both measured against PlayEnhMetaFile.
+    /// </summary>
+    private static Path SnapPath(Path path, Vector2 scale)
     {
+        Vector2 o = (Vector2.One - scale) / 2;
+        Vector2 Snap(Vector2 p) => scale == Vector2.One ? GdiPlayer.Snap(p) : new(MathF.Ceiling(p.X + o.X - 1e-4f), MathF.Ceiling(p.Y + o.Y - 1e-4f));
+
         PathBuilder builder = new();
         ReadOnlySpan<Vector2> points = path.Points;
         int p = 0;
