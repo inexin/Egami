@@ -430,13 +430,14 @@ internal sealed class PngWriter : IFormatWriter, IRowFormatWriter
     {
         int depth = options.BitDepth ?? 8;
         Validate(PngColorType.Palette, depth);
-        if (options.Palette.FixedPalette is not null)
+        Scan scan = Scan.Of(raster, animated);
+        if (options.Palette.FixedPalette is Quantization.Palette fixedPalette)
         {
-            // A fixed palette maps every image, even one whose own colors would fit.
-            return true;
+            // A fixed palette maps every image, even one whose own colors would fit, unless all of them are already its colors
+            // (as after mapping, which must not map again).
+            return scan.Colors is null || !scan.Colors.All(fixedPalette.Colors.Contains);
         }
 
-        Scan scan = Scan.Of(raster, animated);
         return scan.Colors is null || scan.Colors.Count > Math.Min(1 << depth, options.Palette.MaxColors);
     }
 
