@@ -1,3 +1,6 @@
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Heif;
 
 /// <summary>
@@ -21,6 +24,10 @@ internal sealed class HeifRgbConverter
     private readonly int _rgbMax;
     private readonly bool _floatUnmultiply;
     private readonly bool _storedUnmultiply;
+    private readonly float _biasY;
+    private readonly float _rangeY;
+    private readonly float _biasUv;
+    private readonly float _rangeUv;
 
     /// <summary>Prepares the conversion of <paramref name="color"/> (and <paramref name="alpha"/>'s luma as alpha).</summary>
     /// <param name="color">The color planes.</param>
@@ -54,6 +61,7 @@ internal sealed class HeifRgbConverter
         float biasUv = 1 << (depth - 1);
         float rangeY = limited ? 219 << (depth - 8) : _yuvMax;
         float rangeUv = limited ? 224 << (depth - 8) : _yuvMax;
+        (_biasY, _rangeY, _biasUv, _rangeUv) = (biasY, rangeY, biasUv, rangeUv);
         _tableY = new float[_yuvMax + 1];
         for (int cp = 0; cp <= _yuvMax; cp++)
         {
@@ -195,6 +203,12 @@ internal sealed class HeifRgbConverter
 
         try
         {
+            if (aPlane is null && Vector256.IsHardwareAccelerated && width >= 8)
+            {
+                WriteVector(y, x, width, target, terms, first, count);
+                return;
+            }
+
             for (int i = 0, at = 0; i < width; i++, at += channels)
             {
                 int px = x + i;
@@ -257,6 +271,104 @@ internal sealed class HeifRgbConverter
                 System.Buffers.ArrayPool<float>.Shared.Return(terms);
             }
         }
+    }
+
+    /// <summary>
+    /// <see cref="WriteCoefficients"/> without alpha, eight pixels at a time: the lookups worked out as the tables were, then the
+    /// same single-precision operations in the same order, so every sample is the scalar one.
+    /// </summary>
+    private void WriteVector(int y, int x, int width, Span<byte> target, float[]? terms, int first, int count)
+    {
+        HeifPlanes c = _color;
+        int ssx = c.SubsamplingX;
+        ushort[] yPlane = c.Samples[0], uPlane = c.Samples[1], vPlane = c.Samples[2];
+        int yRow = (y * c.Strides[0]) + x, uvRow = ((y >> c.SubsamplingY) * c.Strides[1]) + x;
+        float[] cbs = System.Buffers.ArrayPool<float>.Shared.Rent(width), crs = System.Buffers.ArrayPool<float>.Shared.Rent(width);
+        try
+        {
+            if (terms is not null)
+            {
+                // The bilinear chroma of each pixel, summed as WriteCoefficients sums it.
+                for (int i = 0; i < width; i++)
+                {
+                    int px = x + i;
+                    int k = (px >> ssx) - first;
+                    int adj = px == 0 || (px == c.Width - 1 && (px & 1) != 0) || ssx == 0 ? 0 : (px & 1) != 0 ? 1 : -1;
+                    cbs[i] = ((terms[k] + terms[count + k + adj]) + terms[(2 * count) + k]) + terms[(3 * count) + k + adj];
+                    crs[i] = ((terms[(4 * count) + k] + terms[(5 * count) + k + adj]) + terms[(6 * count) + k]) + terms[(7 * count) + k + adj];
+                }
+            }
+
+            Vector256<int> max = Vector256.Create(_yuvMax);
+            Vector256<float> biasY = Vector256.Create(_biasY), rangeY = Vector256.Create(_rangeY);
+            Vector256<float> biasUv = Vector256.Create(_biasUv), rangeUv = Vector256.Create(_rangeUv);
+            Vector256<float> cR = Vector256.Create(2 * (1 - _kr)), cB = Vector256.Create(2 * (1 - _kb));
+            Vector256<float> kR = Vector256.Create(_kr * (1 - _kr)), kB = Vector256.Create(_kb * (1 - _kb)), kg = Vector256.Create(_kg);
+            Vector256<float> two = Vector256.Create(2f), half = Vector256.Create(0.5f), one = Vector256<float>.One;
+            Vector256<float> maxF = Vector256.Create((float)_rgbMax);
+            ref ushort ys = ref MemoryMarshal.GetArrayDataReference(yPlane);
+            ref ushort us = ref MemoryMarshal.GetArrayDataReference(uPlane);
+            ref ushort vs = ref MemoryMarshal.GetArrayDataReference(vPlane);
+            ref float cbRef = ref MemoryMarshal.GetArrayDataReference(cbs);
+            ref float crRef = ref MemoryMarshal.GetArrayDataReference(crs);
+            bool wide = OutputDepth > 8;
+            Span<ushort> words = wide ? MemoryMarshal.Cast<byte, ushort>(target) : default;
+            Span<int> rgb = stackalloc int[24];
+            ref int rgbRef = ref MemoryMarshal.GetReference(rgb);
+            for (int i = 0; ; i += 8)
+            {
+                // The last eight pixels overlap the ones before them rather than leave a remainder.
+                i = Math.Min(i, width - 8);
+                Vector256<float> yf = (Vector256.ConvertToSingle(Sample(ref ys, yRow + i, max)) - biasY) / rangeY;
+                Vector256<float> cb, cr;
+                if (terms is not null)
+                {
+                    cb = Vector256.LoadUnsafe(ref cbRef, (nuint)i);
+                    cr = Vector256.LoadUnsafe(ref crRef, (nuint)i);
+                }
+                else
+                {
+                    cb = (Vector256.ConvertToSingle(Sample(ref us, uvRow + i, max)) - biasUv) / rangeUv;
+                    cr = (Vector256.ConvertToSingle(Sample(ref vs, uvRow + i, max)) - biasUv) / rangeUv;
+                }
+
+                Vector256<float> r = Vector256.Min(Vector256.Max(yf + (cR * cr), Vector256<float>.Zero), one);
+                Vector256<float> b = Vector256.Min(Vector256.Max(yf + (cB * cb), Vector256<float>.Zero), one);
+                Vector256<float> g = Vector256.Min(Vector256.Max(yf - ((two * ((kR * cr) + (kB * cb))) / kg), Vector256<float>.Zero), one);
+                Vector256.ConvertToInt32(half + (r * maxF)).StoreUnsafe(ref rgbRef, 0);
+                Vector256.ConvertToInt32(half + (g * maxF)).StoreUnsafe(ref rgbRef, 8);
+                Vector256.ConvertToInt32(half + (b * maxF)).StoreUnsafe(ref rgbRef, 16);
+                for (int k = 0, at = i * 3; k < 8; k++, at += 3)
+                {
+                    if (wide)
+                    {
+                        words[at] = (ushort)rgb[k];
+                        words[at + 1] = (ushort)rgb[8 + k];
+                        words[at + 2] = (ushort)rgb[16 + k];
+                    }
+                    else
+                    {
+                        target[at] = (byte)rgb[k];
+                        target[at + 1] = (byte)rgb[8 + k];
+                        target[at + 2] = (byte)rgb[16 + k];
+                    }
+                }
+
+                if (i == width - 8)
+                {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<float>.Shared.Return(cbs);
+            System.Buffers.ArrayPool<float>.Shared.Return(crs);
+        }
+
+        // Eight samples widened to 32 bits, at most the largest code value (as the scalar path's lookups clamp them).
+        static Vector256<int> Sample(ref ushort plane, int at, Vector256<int> max) =>
+            Vector256.Min(Vector256.WidenLower(Vector128.LoadUnsafe(ref plane, (nuint)at).ToVector256()).AsInt32(), max);
     }
 
     /// <summary>Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into <paramref name="row"/> (<see cref="Channels"/> samples each).</summary>

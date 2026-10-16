@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -60,6 +64,11 @@ internal static partial class Av1InverseTransform
         bool rect2 = w == 2 * h || h == 2 * w;
         int rowClamp = bitDepth + 8, colClamp = Math.Max(bitDepth + 6, 16);
         int max = (1 << bitDepth) - 1;
+        if (Vector256.IsHardwareAccelerated && colType == 0 && rowType == 0 && w >= 8 && h >= 8 && bitDepth <= 10)
+        {
+            AddDct(coeffs, w, h, codedW, codedH, rect2, rowShift, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+            return;
+        }
 
         Span<int> buf = stackalloc int[w * h];
         Span<int> tempIn = stackalloc int[64];
@@ -102,6 +111,10 @@ internal static partial class Av1InverseTransform
             }
         }
 
+        // The columns, into the residual a row at a time. A column like the one before it (as every column of a block that codes
+        // only vertical frequencies, the DC alone among them) has the same transform, so it is copied instead.
+        Span<int> residuals = stackalloc int[w * h];
+        Span<int> previous = stackalloc int[64];
         for (int c = 0; c < w; c++)
         {
             int source = lrFlip ? w - 1 - c : c;
@@ -110,15 +123,133 @@ internal static partial class Av1InverseTransform
                 tempIn[r] = Clamp(buf[(r * w) + source], colClamp);
             }
 
-            Transform(colType, h, tempIn[..h], tempOut[..h], rangeCol);
+            if (c == 0 || !tempIn[..h].SequenceEqual(previous[..h]))
+            {
+                Transform(colType, h, tempIn[..h], tempOut[..h], rangeCol);
+                tempIn[..h].CopyTo(previous);
+            }
+
             for (int r = 0; r < h; r++)
             {
-                int residual = RoundShift(tempOut[udFlip ? h - 1 - r : r], 4);
-                int at = offset + (r * stride) + c;
-                dst[at] = (ushort)Math.Clamp(dst[at] + residual, 0, max);
+                residuals[(r * w) + c] = RoundShift(tempOut[udFlip ? h - 1 - r : r], 4);
+            }
+        }
+
+        for (int r = 0; r < h; r++)
+        {
+            Span<ushort> line = dst.AsSpan(offset + (r * stride), w);
+            ReadOnlySpan<int> residual = residuals.Slice(r * w, w);
+            for (int c = 0; c < line.Length; c++)
+            {
+                line[c] = (ushort)Math.Clamp(line[c] + residual[c], 0, max);
             }
         }
     }
+
+    /// <summary>
+    /// The DCT_DCT blocks of 8 and more samples a side at 8 and 10 bits, eight rows and then eight columns at a time. Every
+    /// butterfly's inputs are clamped to the stage's range (18 bits at most here) and its weights are 12 bits, so its products
+    /// and their sum fit 32 bits: the result is the scalar one, which sums in 64.
+    /// </summary>
+    private static void AddDct(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, (int Clamp, int Range) row,
+        (int Clamp, int Range) column, ushort[] dst, int offset, int stride, int max)
+    {
+        Span<int> buf = stackalloc int[w * h];
+        Span<Vector256<int>> input = stackalloc Vector256<int>[64];
+        Span<Vector256<int>> output = stackalloc Vector256<int>[64];
+        ref int c0 = ref MemoryMarshal.GetArrayDataReference(coeffs);
+
+        // Rows, a lane each: the coefficients are stored column by column, so a column's eight rows are adjacent.
+        (Vector256<int> lo, Vector256<int> hi) = Bounds(row.Clamp);
+        (Vector256<int> rangeLo, Vector256<int> rangeHi) = Bounds(row.Range);
+        buf[(codedH * w)..].Clear();
+        for (int r0 = 0; r0 < codedH; r0 += 8)
+        {
+            Vector256<int> any = Vector256<int>.Zero;
+            for (int c = 0; c < codedW; c++)
+            {
+                Vector256<int> v = Vector256.LoadUnsafe(ref c0, (nuint)((c * codedH) + r0));
+                if (rect2)
+                {
+                    v = Vector256.ShiftRightArithmetic((v * NewInvSqrt2) + Vector256.Create(1 << (NewSqrt2Bits - 1)), NewSqrt2Bits);
+                }
+
+                input[c] = Vector256.Min(Vector256.Max(v, lo), hi);
+                any |= v;
+            }
+
+            if (any == Vector256<int>.Zero)
+            {
+                for (int r = r0; r < r0 + 8; r++)
+                {
+                    buf.Slice(r * w, w).Clear();
+                }
+
+                continue;
+            }
+
+            input[codedW..w].Clear();
+            Dct(w, input[..w], output[..w], rangeLo, rangeHi);
+            for (int c = 0; c < w; c++)
+            {
+                Vector256<int> v = output[c];
+                if (rowShift > 0)
+                {
+                    v = Vector256.ShiftRightArithmetic(v + Vector256.Create(1 << (rowShift - 1)), rowShift);
+                }
+
+                for (int lane = 0; lane < 8; lane++)
+                {
+                    buf[((r0 + lane) * w) + c] = v.GetElement(lane);
+                }
+            }
+        }
+
+        // Columns, a lane each, then the residual added eight samples at a time.
+        (lo, hi) = Bounds(column.Clamp);
+        (rangeLo, rangeHi) = Bounds(column.Range);
+        ref int b0 = ref MemoryMarshal.GetReference(buf);
+        ref ushort d0 = ref MemoryMarshal.GetArrayDataReference(dst);
+        Vector256<int> round = Vector256.Create(8), top = Vector256.Create(max);
+        for (int col = 0; col < w; col += 8)
+        {
+            for (int r = 0; r < h; r++)
+            {
+                input[r] = Vector256.Min(Vector256.Max(Vector256.LoadUnsafe(ref b0, (nuint)((r * w) + col)), lo), hi);
+            }
+
+            Dct(h, input[..h], output[..h], rangeLo, rangeHi);
+            for (int r = 0; r < h; r++)
+            {
+                nuint at = (nuint)(offset + (r * stride) + col);
+                Vector256<int> prediction = Vector256.WidenLower(Vector128.LoadUnsafe(ref d0, at).AsUInt16().ToVector256()).AsInt32();
+                Vector256<int> sum = prediction + Vector256.ShiftRightArithmetic(output[r] + round, 4);
+                sum = Vector256.Min(Vector256.Max(sum, Vector256<int>.Zero), top);
+                Vector128<ushort> samples = Vector128.Narrow(sum.GetLower().AsUInt32(), sum.GetUpper().AsUInt32());
+                samples.StoreUnsafe(ref d0, at);
+            }
+        }
+
+        static (Vector256<int> Lo, Vector256<int> Hi) Bounds(int bits) => (Vector256.Create(-(1 << (bits - 1))), Vector256.Create((1 << (bits - 1)) - 1));
+    }
+
+    private static void Dct(int n, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, Vector256<int> lo, Vector256<int> hi)
+    {
+        switch (n)
+        {
+            case 8: Dct8(input, output, lo, hi); break;
+            case 16: Dct16(input, output, lo, hi); break;
+            case 32: Dct32(input, output, lo, hi); break;
+            default: Dct64(input, output, lo, hi); break;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit) =>
+        Vector256.ShiftRightArithmetic((in0 * w0) + (in1 * w1) + Vector256.Create(1 << (bit - 1)), bit);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> Clamp(Vector256<int> value, Vector256<int> lo, Vector256<int> hi) => Vector256.Min(Vector256.Max(value, lo), hi);
 
     private static void Transform(int type1d, int n, ReadOnlySpan<int> input, Span<int> output, int range)
     {

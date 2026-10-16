@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -250,6 +254,13 @@ internal static class Av1Cdef
             int p0 = (d[dirP] * stride) + d[dirP + 1], p1 = (d[dirP + 2] * stride) + d[dirP + 3];
             int a0 = (d[dirS1] * stride) + d[dirS1 + 1], a1 = (d[dirS1 + 2] * stride) + d[dirS1 + 3];
             int b0 = (d[dirS2] * stride) + d[dirS2 + 1], b1 = (d[dirS2 + 2] * stride) + d[dirS2 + 3];
+            if (Vector128.IsHardwareAccelerated && (bw == 8 || (bw == 4 && (bh & 1) == 0)))
+            {
+                FilterInterior(src, dst, stride, (y0 * stride) + x0, bw, bh, new Taps(p0, p1, a0, a1, b0, b1), priStrength, secStrength,
+                    priTap0, priTap1, priShift, secShift);
+                return;
+            }
+
             for (int i = 0; i < bh; i++)
             {
                 int row = ((y0 + i) * stride) + x0;
@@ -347,6 +358,94 @@ internal static class Av1Cdef
         }
 
         static int MaxAvailable(int sample, int max) => sample != VeryLarge && sample > max ? sample : max;
+    }
+
+    /// <summary>The offsets of a block's taps: primary p0 and p1, secondary a0, a1, b0 and b1.</summary>
+    private readonly record struct Taps(int P0, int P1, int A0, int A1, int B0, int B1);
+
+    /// <summary>
+    /// The inside of the frame, eight samples at a time: a row of an 8-wide block, or two rows of a 4-wide one. Samples are at
+    /// most 12 bits, so every difference, constrained tap and sum fits 16 bits and the result is the scalar one.
+    /// </summary>
+    private static void FilterInterior(ushort[] src, ushort[] dst, int stride, int origin, int bw, int bh, Taps t, int priStrength, int secStrength,
+        int priTap0, int priTap1, int priShift, int secShift)
+    {
+        bool primary = priStrength != 0, secondary = secStrength != 0, clipping = primary && secondary;
+        ref ushort s = ref MemoryMarshal.GetArrayDataReference(src);
+        ref ushort o = ref MemoryMarshal.GetArrayDataReference(dst);
+        Vector128<short> pri = Vector128.Create((short)priStrength), sec = Vector128.Create((short)secStrength);
+        Vector128<short> tap0 = Vector128.Create((short)priTap0), tap1 = Vector128.Create((short)priTap1);
+        int step = bw == 8 ? 1 : 2;
+        for (int i = 0; i < bh; i += step)
+        {
+            int at = origin + (i * stride);
+            int next = bw == 8 ? -1 : at + stride;
+            Vector128<short> value = Load(ref s, at, next, 0);
+            Vector128<short> sum = Vector128<short>.Zero, max = value, min = value;
+            if (primary)
+            {
+                Vector128<short> q0 = Load(ref s, at, next, t.P0), q1 = Load(ref s, at, next, -t.P0);
+                Vector128<short> q2 = Load(ref s, at, next, t.P1), q3 = Load(ref s, at, next, -t.P1);
+                sum += tap0 * (Constrain(q0 - value, pri, priShift) + Constrain(q1 - value, pri, priShift));
+                sum += tap1 * (Constrain(q2 - value, pri, priShift) + Constrain(q3 - value, pri, priShift));
+                if (clipping)
+                {
+                    max = Vector128.Max(Vector128.Max(Vector128.Max(q0, q1), Vector128.Max(q2, q3)), max);
+                    min = Vector128.Min(Vector128.Min(Vector128.Min(q0, q1), Vector128.Min(q2, q3)), min);
+                }
+            }
+
+            if (secondary)
+            {
+                Vector128<short> s0 = Load(ref s, at, next, t.A0), s1 = Load(ref s, at, next, -t.A0);
+                Vector128<short> s2 = Load(ref s, at, next, t.B0), s3 = Load(ref s, at, next, -t.B0);
+                Vector128<short> s4 = Load(ref s, at, next, t.A1), s5 = Load(ref s, at, next, -t.A1);
+                Vector128<short> s6 = Load(ref s, at, next, t.B1), s7 = Load(ref s, at, next, -t.B1);
+                Vector128<short> near = Constrain(s0 - value, sec, secShift) + Constrain(s1 - value, sec, secShift)
+                    + Constrain(s2 - value, sec, secShift) + Constrain(s3 - value, sec, secShift);
+                sum += near + near;
+                sum += Constrain(s4 - value, sec, secShift) + Constrain(s5 - value, sec, secShift)
+                    + Constrain(s6 - value, sec, secShift) + Constrain(s7 - value, sec, secShift);
+                if (clipping)
+                {
+                    max = Vector128.Max(Vector128.Max(Vector128.Max(Vector128.Max(s0, s1), Vector128.Max(s2, s3)),
+                        Vector128.Max(Vector128.Max(s4, s5), Vector128.Max(s6, s7))), max);
+                    min = Vector128.Min(Vector128.Min(Vector128.Min(Vector128.Min(s0, s1), Vector128.Min(s2, s3)),
+                        Vector128.Min(Vector128.Min(s4, s5), Vector128.Min(s6, s7))), min);
+                }
+            }
+
+            // value + ((8 + sum - (sum < 0)) >> 4): the comparison's all-ones lanes are -1.
+            Vector128<short> result = value + Vector128.ShiftRightArithmetic(Vector128.Create((short)8) + sum + Vector128.LessThan(sum, Vector128<short>.Zero), 4);
+            if (clipping)
+            {
+                result = Vector128.Min(Vector128.Max(result, min), max);
+            }
+
+            Vector128<ushort> samples = result.AsUInt16();
+            if (bw == 8)
+            {
+                samples.StoreUnsafe(ref o, (nuint)at);
+            }
+            else
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, at)), samples.GetLower());
+                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, next)), samples.GetUpper());
+            }
+        }
+
+        // Eight samples at an offset from a row, or four from each of two rows.
+        static Vector128<short> Load(ref ushort s, int at, int next, int offset) => next < 0
+            ? Vector128.LoadUnsafe(ref s, (nuint)(at + offset)).AsInt16()
+            : Vector128.Create(Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref s, at + offset))),
+                Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref s, next + offset)))).AsInt16();
+
+        static Vector128<short> Constrain(Vector128<short> diff, Vector128<short> threshold, int shift)
+        {
+            Vector128<short> abs = Vector128.Abs(diff);
+            Vector128<short> magnitude = Vector128.Min(Vector128.Max(threshold - Vector128.ShiftRightArithmetic(abs, shift), Vector128<short>.Zero), abs);
+            return Vector128.ConditionalSelect(Vector128.LessThan(diff, Vector128<short>.Zero), -magnitude, magnitude);
+        }
     }
 
     private static int Fetch(ushort[] src, int stride, int width, int height, int y, int x) =>
