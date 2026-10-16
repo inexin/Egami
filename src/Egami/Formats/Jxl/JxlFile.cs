@@ -19,6 +19,9 @@ internal sealed class JxlFile
     /// <summary>Gets the ICC profile the codestream carries, or <see langword="null"/> when its color encoding is enumerated.</summary>
     internal byte[]? Icc { get; private set; }
 
+    /// <summary>Gets or sets the color space decoded frames are put in; set before decoding.</summary>
+    internal JxlOutput? Output { get; set; }
+
     /// <summary>Gets the preview frame's header, or <see langword="null"/>.</summary>
     internal JxlFrameHeader? PreviewFrame { get; private set; }
 

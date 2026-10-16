@@ -1,3 +1,6 @@
+using Egami.Colors;
+using Egami.Pixels;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -42,6 +45,133 @@ internal static class JxlColor
         }
     }
 
+    /// <summary>
+    /// Gets the color space the file describes (design question 4): its ICC profile when it has one, else the enumerated
+    /// primaries, white point and transfer function.
+    /// </summary>
+    internal static ColorProfile Profile(JxlColorEncoding c, byte[]? icc)
+    {
+        if (icc is not null)
+        {
+            return ColorProfile.FromIcc(icc);
+        }
+
+        TransferFunction transfer = c.Gamma != 0 ? TransferFunction.Gamma(1e7 / c.Gamma) : c.TransferFunction switch
+        {
+            1 => TransferFunction.Rec709,
+            8 => TransferFunction.Linear,
+            16 => TransferFunction.Pq,
+            17 => TransferFunction.Gamma(2.6),
+            18 => TransferFunction.Hlg,
+            _ => TransferFunction.Srgb,
+        };
+        Chromaticity white = c.WhitePoint switch
+        {
+            2 => new Chromaticity(c.WhiteXy!.Value.X, c.WhiteXy.Value.Y),
+            10 => new Chromaticity(1.0 / 3, 1.0 / 3),
+            11 => new Chromaticity(0.314, 0.351),
+            _ => Chromaticity.D65,
+        };
+        if (c.ColorSpace == JxlColorSpace.Gray)
+        {
+            return ColorProfile.CreateGray(transfer, white);
+        }
+
+        ColorPrimaries primaries = c.Primaries switch
+        {
+            2 => new ColorPrimaries(Xy(c.PrimariesXy![0]), Xy(c.PrimariesXy[1]), Xy(c.PrimariesXy[2]), white),
+            9 => ColorPrimaries.Rec2020 with { White = white },
+            11 => ColorPrimaries.DisplayP3 with { White = white },
+            _ => ColorPrimaries.Rec709 with { White = white },
+        };
+        if (!primaries.IsValid)
+        {
+            throw new CorruptDataException(JxlFormat.Info.Name, -1, "The color encoding's primaries cannot form a color space.");
+        }
+
+        return primaries.IsCloseTo(ColorPrimaries.Rec709) && transfer == TransferFunction.Srgb ? ColorProfile.Srgb
+            : primaries.IsCloseTo(ColorPrimaries.Rec709) && transfer == TransferFunction.Linear ? ColorProfile.LinearSrgb
+            : ColorProfile.Create(primaries, transfer);
+
+        static Chromaticity Xy((double X, double Y) xy) => new(xy.X, xy.Y);
+    }
+
+    /// <summary>Gets the same space with linear light: the primaries kept (sRGB's when an ICC profile has none), gray kept.</summary>
+    internal static ColorProfile LinearOf(ColorProfile profile)
+    {
+        return profile.Model == ColorModel.Gray ? ColorProfile.GrayLinear
+            : profile.Primaries is ColorPrimaries p && !p.IsCloseTo(ColorPrimaries.Rec709) ? ColorProfile.Create(p, TransferFunction.Linear, "Linear")
+            : ColorProfile.LinearSrgb;
+    }
+
+    /// <summary>
+    /// Converts color planes with a transform: three planes in (one for a gray source), three out, the gray result put in all
+    /// three for a gray target.
+    /// </summary>
+    internal static void Apply(ColorTransform transform, float[][] color, int count)
+    {
+        const int Chunk = 1024;
+        bool grayIn = transform.Source.Model == ColorModel.Gray;
+        bool grayOut = transform.Target.Model == ColorModel.Gray;
+        RgbF32[] rgb = new RgbF32[Math.Min(Chunk, count)];
+        GrayF32[] gray = new GrayF32[rgb.Length];
+        for (int start = 0; start < count; start += Chunk)
+        {
+            int n = Math.Min(Chunk, count - start);
+            if (grayIn)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    gray[i] = new GrayF32(color[0][start + i]);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    rgb[i] = new RgbF32(color[0][start + i], color[1][start + i], color[2][start + i]);
+                }
+            }
+
+            switch (grayIn, grayOut)
+            {
+                case (false, false):
+                    transform.Apply<RgbF32>(rgb.AsSpan(0, n));
+                    break;
+                case (false, true):
+                    transform.Apply<RgbF32, GrayF32>(rgb.AsSpan(0, n), gray.AsSpan(0, n));
+                    break;
+                case (true, true):
+                    transform.Apply<GrayF32>(gray.AsSpan(0, n));
+                    break;
+                default:
+                    transform.Apply<GrayF32, RgbF32>(gray.AsSpan(0, n), rgb.AsSpan(0, n));
+                    break;
+            }
+
+            if (grayOut)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    color[0][start + i] = gray[i].L;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    (color[0][start + i], color[1][start + i], color[2][start + i]) = (rgb[i].R, rgb[i].G, rgb[i].B);
+                }
+            }
+        }
+
+        if (grayOut && color.Length >= 3)
+        {
+            color[1] = color[0];
+            color[2] = color[0];
+        }
+    }
+
     /// <summary>Gets whether linear sRGB converts to the color encoding by a transfer function alone (sRGB primaries, D65).</summary>
     internal static bool TransferOnly(JxlColorEncoding c)
     {
@@ -51,13 +181,14 @@ internal static class JxlColor
     /// <summary>Encodes linear light with the color encoding's transfer function.</summary>
     internal static void Encode(float[] plane, int count, JxlColorEncoding c)
     {
-        if (c.Gamma != 0)
+        if (c.Gamma != 0 || c.TransferFunction == 17)
         {
-            float g = c.Gamma / 1e7f;
+            // As libjxl: samples at or below 10^-5 become 0.
+            float g = c.Gamma != 0 ? c.Gamma / 1e7f : 1 / 2.6f;
             for (int i = 0; i < count; i++)
             {
                 float v = plane[i];
-                plane[i] = MathF.CopySign(MathF.Pow(MathF.Abs(v), g), v);
+                plane[i] = v <= 1e-5f ? 0 : MathF.Pow(v, g);
             }
 
             return;
@@ -76,14 +207,6 @@ internal static class JxlColor
                 }
 
                 return;
-            case 17:
-                for (int i = 0; i < count; i++)
-                {
-                    float v = plane[i];
-                    plane[i] = MathF.CopySign(MathF.Pow(MathF.Abs(v), 1 / 2.6f), v);
-                }
-
-                return;
             default:
                 for (int i = 0; i < count; i++)
                 {
@@ -94,5 +217,92 @@ internal static class JxlColor
 
                 return;
         }
+    }
+}
+
+/// <summary>
+/// The color space decoded frames are put in and how (design question 4). XYB goes to linear sRGB, then into an enumerated space
+/// as libjxl does (a matrix through XYZ D50 for other primaries or white points, the luminance for gray, then the transfer
+/// function), or into an ICC profile through the 2.1.2 pipeline; <see cref="JxlReaderOptions.LinearOutput"/> stops before the
+/// transfer function. Like djxl, the conformance decode gives linear sRGB where libjxl cannot reach the file's space (an ICC
+/// profile, or gray with another white than D65).
+/// </summary>
+internal sealed class JxlOutput
+{
+    private JxlOutput(ColorProfile profile, bool linear)
+    {
+        (Profile, Linear) = (profile, linear);
+    }
+
+    /// <summary>Gets the space of the output.</summary>
+    internal ColorProfile Profile { get; }
+
+    /// <summary>Gets whether the output is linear light.</summary>
+    internal bool Linear { get; }
+
+    /// <summary>Gets the conversion from the decoded color (linear sRGB for XYB, the file's space otherwise), or <see langword="null"/>.</summary>
+    internal ColorTransform? Transform { get; private init; }
+
+    /// <summary>Gets the linear sRGB to linear target matrix, row by row, or <see langword="null"/> for none.</summary>
+    internal float[]? Matrix { get; private init; }
+
+    /// <summary>Gets whether XYB output is gray: the luminance of linear sRGB.</summary>
+    internal bool Gray { get; private init; }
+
+    /// <summary>Gets the encoding whose transfer function XYB output takes, or <see langword="null"/> to stay linear.</summary>
+    internal JxlColorEncoding? Curve { get; private init; }
+
+    internal static JxlOutput For(JxlFile file, bool linear, EgamiContext context, bool likeDjxl = false)
+    {
+        JxlImageHeader h = file.Header;
+        if (h.ExtraChannels.Any(e => e.Type == JxlExtraChannelType.Black))
+        {
+            // CMYK stays ink: the ICC profile on the raster describes it.
+            return new JxlOutput(ColorProfile.Srgb, false);
+        }
+
+        JxlColorEncoding c = h.Color;
+        bool gray = h.ColorChannels == 1;
+        ColorProfile own = JxlColor.Profile(c, file.Icc);
+        ColorProfile target = linear ? JxlColor.LinearOf(own) : own;
+        ColorTransformOptions options = new()
+        {
+            Intent = (RenderingIntent)(file.Icc is null ? c.RenderingIntent : 1),
+            ToneMapping = ToneMapping.Clip,
+            ReferenceWhiteNits = h.ToneMapping.IntensityTarget,
+        };
+        if (!h.XybEncoded)
+        {
+            return new JxlOutput(target, linear) { Transform = linear && !own.IsEquivalentTo(target) ? ColorTransform.Create(own, target, options, context) : null };
+        }
+
+        if (likeDjxl && (file.Icc is not null || (gray && c.WhitePoint != 1)))
+        {
+            return new JxlOutput(gray ? ColorProfile.GrayLinear : ColorProfile.LinearSrgb, true) { Gray = gray };
+        }
+
+        if (file.Icc is not null)
+        {
+            return new JxlOutput(target, linear) { Transform = ColorTransform.Create(ColorProfile.LinearSrgb, target, options, context) };
+        }
+
+        if (!linear && c.Gamma == 0 && c.TransferFunction is 16 or 18)
+        {
+            throw new UnsupportedFormatException("Egami does not convert JPEG XL XYB to PQ or HLG yet.");
+        }
+
+        float[]? matrix = null;
+        if (!gray && (c.Primaries != 1 || c.WhitePoint != 1))
+        {
+            // As libjxl: linear sRGB to XYZ D50, then to the target's primaries adapted from D50 to its white (Bradford both ways).
+            Vector3d d50 = Chromaticity.D50.ToXyz();
+            ColorPrimaries p = own.Primaries!;
+            Matrix3d srgbToD50 = Matrix3d.Bradford(Chromaticity.D65.ToXyz(), d50) * ColorPrimaries.Rec709.ToXyz();
+            Matrix3d targetToD50 = Matrix3d.Bradford(p.White.ToXyz(), d50) * p.ToXyz();
+            Matrix3d m = targetToD50.Inverse() * srgbToD50;
+            matrix = [.. Enumerable.Range(0, 9).Select(i => (float)m[i / 3, i % 3])];
+        }
+
+        return new JxlOutput(target, linear) { Matrix = matrix, Gray = gray, Curve = linear ? null : c };
     }
 }

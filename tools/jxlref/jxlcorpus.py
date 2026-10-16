@@ -175,6 +175,13 @@ CJXL = {
     "pan-anim-lossless": ("apng/pan-rgb.png", "-d 0", "animation, lossless"),
     "pan-anim-d1": ("apng/pan-rgb.png", "-d 1", "animation, VarDCT"),
     "sprite-anim-lossless": ("apng/sprite-over-previous.png", "-d 0", "animation with alpha, crops and blending"),
+    # Color (task 12): the pixels are tagged with each space, so XYB decodes into it as djxl does.
+    "duck-p3-d1": ("duck-mid", "-d 1 -x color_space=RGB_D65_DCI_Rel_SRG", "color, Display P3 (enumerated), VarDCT"),
+    "duck-rec2020-perceptual-d1": ("duck-mid", "-d 1 -x color_space=RGB_D65_202_Per_709", "color, Rec. 2020 with the BT.709 curve, perceptual intent"),
+    "duck-dci-d1": ("duck-mid", "-d 1 -x color_space=RGB_DCI_DCI_Rel_DCI", "color, DCI-P3 white and the DCI curve"),
+    "duck-custom-primaries-d1": ("duck-mid", "-d 1 -x color_space=RGB_D65_0.64;0.33;0.21;0.71;0.15;0.06_Rel_g0.45455", "color, custom primaries and gamma"),
+    "duck-linear-d1": ("duck-mid", "-d 1 -x color_space=RGB_D65_SRG_Rel_Lin", "color, linear sRGB"),
+    "duck-gray-d50-d1": ("duck-gray", "-d 1 -x color_space=Gra_0.3457;0.3585_Rel_SRG", "color, gray with a D50 white"),
 }
 
 # raw.pixls.us camera developments (CC0) from libjxl's testdata: 16-bit PNGs with ICC profiles.

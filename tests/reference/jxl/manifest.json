@@ -517,6 +517,31 @@
    ],
    "source": "generated:duck-alpha"
   },
+  "duck-custom-primaries-d1.jxl": {
+   "covers": "color, custom primaries and gamma",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: Custom - red(x=0.640000,y=0.330000), green(x=0.210000,y=0.710000), blue(x=0.150000,y=0.060000)\nTransfer function: gamma(0.454550)\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=RGB_D65_0.64;0.33;0.21;0.71;0.15;0.06_Rel_g0.45455",
+   "oxide_peak": 0.3590315282344818,
+   "oxide_rms": 0.01223381953946828,
+   "reference": "duck-custom-primaries-d1.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
   "duck-d0.3.jxl": {
    "covers": "VarDCT, near-visually-lossless",
    "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
@@ -692,6 +717,31 @@
    ],
    "source": "generated:duck-mid"
   },
+  "duck-dci-d1.jxl": {
+   "covers": "color, DCI-P3 white and the DCI curve",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: P3\nPrimaries: P3\nTransfer function: DCI\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=RGB_DCI_DCI_Rel_DCI",
+   "oxide_peak": 0.287201464176178,
+   "oxide_rms": 0.02513696269692578,
+   "reference": "duck-dci-d1.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
   "duck-float-d1.jxl": {
    "covers": "float input, VarDCT, linear",
    "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
@@ -797,6 +847,31 @@
    ],
    "source": "generated:duck-gray"
   },
+  "duck-gray-d50-d1.jxl": {
+   "covers": "color, gray with a D50 white",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 8-bit Grayscale\nNumber of color channels: 1\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: Grayscale\nWhite point: Custom (x=0.345700,y=0.358500)\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=Gra_0.3457;0.3585_Rel_SRG",
+   "oxide_peak": 0.28718581795692444,
+   "oxide_rms": 0.23219599229579158,
+   "reference": "duck-gray-d50-d1.png",
+   "shape": [
+    1,
+    192,
+    256,
+    1
+   ],
+   "source": "generated:duck-gray"
+  },
   "duck-gray-lossless.jxl": {
    "covers": "gray lossless",
    "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
@@ -821,6 +896,31 @@
     1
    ],
    "source": "generated:duck-gray"
+  },
+  "duck-linear-d1.jxl": {
+   "covers": "color, linear sRGB",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: Linear\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=RGB_D65_SRG_Rel_Lin",
+   "oxide_peak": 8.165836334228516e-06,
+   "oxide_rms": 4.5389596819404227e-07,
+   "reference": "duck-linear-d1.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
   },
   "duck-lossless-e1.jxl": {
    "covers": "lossless, fastest effort (fixed tree)",
@@ -897,6 +997,31 @@
    ],
    "source": "generated:duck"
   },
+  "duck-p3-d1.jxl": {
+   "covers": "color, Display P3 (enumerated), VarDCT",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: P3\nTransfer function: sRGB\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=RGB_D65_DCI_Rel_SRG",
+   "oxide_peak": 0.557805061340332,
+   "oxide_rms": 0.01643437204717488,
+   "reference": "duck-p3-d1.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
+  },
   "duck-posterized-lossless-palette.jxl": {
    "covers": "lossless, palette of 216 colors",
    "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
@@ -921,6 +1046,31 @@
     3
    ],
    "source": "generated:duck-posterized"
+  },
+  "duck-rec2020-perceptual-d1.jxl": {
+   "covers": "color, Rec. 2020 with the BT.709 curve, perceptual intent",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "320 240",
+    "Composite:Megapixels": 0.0768,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 240,
+    "File:ImageWidth": 320,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 320x240, lossy, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 320x240\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: Rec.2100\nTransfer function: 709\nRendering intent: Perceptual\n",
+   "options": "-d 1 -x color_space=RGB_D65_202_Per_709",
+   "oxide_peak": 0.3005305528640747,
+   "oxide_rms": 0.0159672276123786,
+   "reference": "duck-rec2020-perceptual-d1.png",
+   "shape": [
+    1,
+    240,
+    320,
+    3
+   ],
+   "source": "generated:duck-mid"
   },
   "duck-small-lossless-e9.jxl": {
    "covers": "lossless, tree learning at effort 9",

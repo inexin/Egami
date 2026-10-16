@@ -316,7 +316,7 @@ CustomTransformData, FrameHeader, BlendingInfo, Passes and LoopFilter fields, th
 (`src/Egami/Formats/Jxl/JxlHeaders.cs`), its box rules (`JxlContainer.cs`), its ICC header prediction from the bytes
 already decoded (`JxlIcc.cs`), and its rendering order and blending: the stage order of its render pipeline (patches and
 splines before color upsampling, noise after, reference frames saved before or after the color transform) in
-`JxlImageDecoder.cs`, its patch and frame blending and alpha compositing (`JxlBlend.cs`), and its spot color mixing and alpha unpremultiplying with their smallest alpha (`JxlImageDecoder.cs`). libjxl is distributed under the BSD 3-clause
+`JxlImageDecoder.cs`, its patch and frame blending and alpha compositing (`JxlBlend.cs`), its spot color mixing and alpha unpremultiplying with their smallest alpha (`JxlImageDecoder.cs`), and its conversion of XYB output into an enumerated color space: linear sRGB to XYZ D50 and on to the target's primaries, the sRGB luminances for gray, and a gamma curve that sends samples at or below 10^-5 to 0 (`JxlColor.cs`). libjxl is distributed under the BSD 3-clause
 license:
 
     Copyright (c) the JPEG XL Project Authors. All rights reserved.

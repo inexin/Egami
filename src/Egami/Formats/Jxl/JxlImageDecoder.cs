@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 
+using Egami.Colors;
 using Egami.Metadata;
 using Egami.Pixels;
 
@@ -16,7 +17,7 @@ internal static class JxlImageDecoder
     /// <summary>Decodes into the natural pixel type: one frame for a still, the coalesced frames for an animation.</summary>
     internal static Raster Decode(EgamiInput input, ReaderOptions options)
     {
-        (JxlFile file, byte[] codestream) = Open(input);
+        (JxlFile file, byte[] codestream) = Open(input, options);
         return Natural(input, file, layout => Shown(layout, input, options, file, codestream, forceFloat: false));
     }
 
@@ -34,7 +35,7 @@ internal static class JxlImageDecoder
     /// </summary>
     internal static List<JxlPlanes> DecodeChannels(EgamiInput input)
     {
-        (JxlFile file, byte[] codestream) = Open(input);
+        (JxlFile file, byte[] codestream) = Open(input, ReaderOptions.Default, likeDjxl: true);
         List<JxlPlanes> frames = [];
         int color = file.Header.ColorChannels == 1 ? 1 : 3;
         Run(file, codestream, input, Sequence(file), lfOnly: false, layers: false, (decoded, f) =>
@@ -49,7 +50,7 @@ internal static class JxlImageDecoder
     /// <summary>Decodes one extra channel of each frame shown into gray floats.</summary>
     internal static Raster<GrayF32> DecodeExtraChannel(EgamiInput input, ReaderOptions options, int index)
     {
-        (JxlFile file, byte[] codestream) = Open(input);
+        (JxlFile file, byte[] codestream) = Open(input, options);
         if (index >= file.Header.ExtraChannels.Count)
         {
             throw new ArgumentOutOfRangeException(nameof(index), index, $"The image has {file.Header.ExtraChannels.Count} extra channels.");
@@ -61,7 +62,7 @@ internal static class JxlImageDecoder
     /// <summary>Decodes every regular frame as it is before blending, in the natural pixel type, with where and how it blends.</summary>
     internal static List<JxlLayer> DecodeLayers(EgamiInput input, ReaderOptions options)
     {
-        (JxlFile file, byte[] codestream) = Open(input);
+        (JxlFile file, byte[] codestream) = Open(input, options);
         List<JxlLayer> layers = [];
         try
         {
@@ -87,7 +88,7 @@ internal static class JxlImageDecoder
     /// <summary>Decodes the preview frame, or returns <see langword="null"/> when the file has none.</summary>
     internal static Raster? DecodePreview(EgamiInput input, ReaderOptions options)
     {
-        (JxlFile file, byte[] codestream) = Open(input);
+        (JxlFile file, byte[] codestream) = Open(input, options);
         if (file.PreviewFrame is not JxlFrameHeader preview || file.PreviewSections is not (JxlToc toc, long offset))
         {
             return null;
@@ -153,8 +154,8 @@ internal static class JxlImageDecoder
         return negative ? -value : value;
     }
 
-    /// <summary>Reads the whole file and its headers, and joins the codestream.</summary>
-    private static (JxlFile File, byte[] Codestream) Open(EgamiInput input)
+    /// <summary>Reads the whole file and its headers, joins the codestream, and sets the output color space.</summary>
+    private static (JxlFile File, byte[] Codestream) Open(EgamiInput input, ReaderOptions options, bool likeDjxl = false)
     {
         (byte[] data, int length, bool pooled) = InputBytes.ReadAll(input);
         try
@@ -164,6 +165,7 @@ internal static class JxlImageDecoder
             try
             {
                 JxlFile file = JxlFile.Read(copy, allBoxes: true);
+                file.Output = JxlOutput.For(file, options is JxlReaderOptions { LinearOutput: true }, input.Context, likeDjxl);
                 return (file, file.Container.Codestream(data.AsSpan(0, length)));
             }
             finally
@@ -181,7 +183,7 @@ internal static class JxlImageDecoder
     }
 
     /// <summary>Calls <paramref name="decode"/> with the natural pixel type of the file.</summary>
-    private static Raster Natural(EgamiInput input, JxlFile file, Func<PixelLayoutInfo, Raster> decode) => decode(JxlReader.NaturalLayout(file.Header));
+    private static Raster Natural(EgamiInput input, JxlFile file, Func<PixelLayoutInfo, Raster> decode) => decode(JxlReader.NaturalLayout(file.Header, file.Output!.Linear));
 
     /// <summary>Gets the frames of the codestream with their TOCs and section offsets.</summary>
     private static List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> Sequence(JxlFile file)
@@ -365,13 +367,13 @@ internal static class JxlImageDecoder
                     lf = channels.ColorPlanes!;
                 }
 
-                ToColorSpace(lf, lw * lh, h);
+                ToColorSpace(lf, lw * lh, file);
                 emit(new JxlDecoded(file, lw, lh, lf, []), f);
                 return;
             }
 
             JxlFrameChannels frame = decoder.Decode(lfFrames[f.LfLevel]);
-            if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
+            if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && file.Output!.Transform is null && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
                 && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop
                 && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated))
             {
@@ -396,7 +398,7 @@ internal static class JxlImageDecoder
                 }
             }
 
-            ToColorSpace(planes.Planes, planes.Width * planes.Height, h);
+            ToColorSpace(planes.Planes, planes.Width * planes.Height, file);
             JxlPlanes canvas = planes;
             if (f.IsNormal)
             {
@@ -579,21 +581,43 @@ internal static class JxlImageDecoder
         return result;
     }
 
-    /// <summary>Converts XYB to the file's color space in place; other color is already there.</summary>
-    private static void ToColorSpace(float[][] color, int count, JxlImageHeader h)
+    /// <summary>
+    /// Converts decoded color in place into the output space: XYB through linear sRGB, by the transfer function alone when the
+    /// space has sRGB primaries and a D65 white, else through the 2.1.2 color pipeline (design question 4); other color only
+    /// for linear output.
+    /// </summary>
+    private static void ToColorSpace(float[][] color, int count, JxlFile file)
     {
+        JxlImageHeader h = file.Header;
+        JxlOutput output = file.Output!;
+        if (h.XybEncoded)
+        {
+            JxlColor.XybToLinear(color, count, h);
+        }
+
+        if (output.Transform is ColorTransform transform)
+        {
+            JxlColor.Apply(transform, color, count);
+            return;
+        }
+
         if (!h.XybEncoded)
         {
             return;
         }
 
-        JxlColor.XybToLinear(color, count, h);
-        if (!JxlColor.TransferOnly(h.Color))
+        if (output.Matrix is float[] m)
         {
-            throw new UnsupportedFormatException("Egami does not convert JPEG XL XYB to this color space yet.");
+            float[] r = color[0];
+            float[] g = color[1];
+            float[] b = color[2];
+            for (int i = 0; i < count; i++)
+            {
+                (r[i], g[i], b[i]) = ((m[0] * r[i]) + (m[1] * g[i]) + (m[2] * b[i]), (m[3] * r[i]) + (m[4] * g[i]) + (m[5] * b[i]), (m[6] * r[i]) + (m[7] * g[i]) + (m[8] * b[i]));
+            }
         }
 
-        if (h.ColorChannels == 1)
+        if (output.Gray)
         {
             // Gray: the luminance of linear sRGB.
             for (int i = 0; i < count; i++)
@@ -601,15 +625,16 @@ internal static class JxlImageDecoder
                 color[1][i] = (0.2126f * color[0][i]) + (0.7152f * color[1][i]) + (0.0722f * color[2][i]);
             }
 
-            JxlColor.Encode(color[1], count, h.Color);
             color[0] = color[1];
             color[2] = color[1];
-            return;
         }
 
-        for (int c = 0; c < 3; c++)
+        if (output.Curve is JxlColorEncoding curve)
         {
-            JxlColor.Encode(color[c], count, h.Color);
+            for (int c = 0; c < (output.Gray ? 1 : 3); c++)
+            {
+                JxlColor.Encode(color[c], count, curve);
+            }
         }
     }
 
@@ -627,9 +652,25 @@ internal static class JxlImageDecoder
             metadata.LoopCount = (int)Math.Min(animation.Loops, int.MaxValue);
         }
 
-        if (file.Icc is byte[] icc)
+        // The space the pixels are in (design question 4): the file's ICC profile, sRGB or linear sRGB by hint, else a profile written for it.
+        JxlOutput output = file.Output!;
+        if (file.Icc is byte[] icc && !output.Linear)
         {
             metadata.IccProfile = icc;
+            metadata.ColorSpace = ColorSpaceHint.EmbeddedIcc;
+        }
+        else if (output.Profile == ColorProfile.Srgb)
+        {
+            metadata.ColorSpace = ColorSpaceHint.Srgb;
+        }
+        else if (output.Profile == ColorProfile.LinearSrgb)
+        {
+            metadata.ColorSpace = ColorSpaceHint.Linear;
+        }
+        else
+        {
+            metadata.IccProfile = output.Profile.ToIcc();
+            metadata.ColorSpace = ColorSpaceHint.EmbeddedIcc;
         }
 
         if (file.Container.Exif is byte[] exif)

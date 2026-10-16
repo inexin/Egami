@@ -194,4 +194,10 @@ public sealed record JxlReaderOptions : ReaderOptions
     /// 1, the default, always decodes in full.
     /// </summary>
     public int MaxDownscale { get; init; } = 1;
+
+    /// <summary>
+    /// Gets a value indicating whether to give linear light in single float, in the file's own primaries (sRGB's when its ICC
+    /// profile has none), instead of the file's encoded color space. Off by default. CMYK files are not affected.
+    /// </summary>
+    public bool LinearOutput { get; init; }
 }

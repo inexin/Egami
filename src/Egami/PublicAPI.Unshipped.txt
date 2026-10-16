@@ -3100,5 +3100,7 @@ Egami.Formats.Jxl.JxlExtraChannelKind.SpotColor = 2 -> Egami.Formats.Jxl.JxlExtr
 Egami.Formats.Jxl.JxlExtraChannelKind.Thermal = 6 -> Egami.Formats.Jxl.JxlExtraChannelKind
 Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.get -> bool
 Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.init -> void
+Egami.Formats.Jxl.JxlReaderOptions.LinearOutput.get -> bool
+Egami.Formats.Jxl.JxlReaderOptions.LinearOutput.init -> void
 static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream! stream, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
 static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(string! path, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!

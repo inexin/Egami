@@ -73,8 +73,10 @@ public partial class JxlReferenceTests
         Assert.Equal((displayWidth, displayHeight), (raster.Width, raster.Height));
         Assert.Equal(shape[0], raster.FrameCount);
 
-        // jxl-oxide agrees with djxl to float rounding, except where they convert color differently (gray and float lossy).
-        double limit = file is "duck-gray-d1.jxl" or "duck-float-d1.jxl" ? 0.05 : 1e-3;
+        // jxl-oxide agrees with djxl to float rounding, except where they convert color differently (gray, float lossy, and the
+        // color files, which jxl-oxide writes in another space).
+        string covers = entry.TryGetProperty("covers", out JsonElement c) ? c.GetString()! : string.Empty;
+        double limit = covers.StartsWith("color,", StringComparison.Ordinal) ? 1 : file is "duck-gray-d1.jxl" or "duck-float-d1.jxl" ? 0.05 : 1e-3;
         Assert.InRange(entry.GetProperty("oxide_peak").GetDouble(), 0, limit);
     }
 

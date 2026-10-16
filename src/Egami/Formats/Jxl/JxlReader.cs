@@ -26,7 +26,7 @@ internal sealed class JxlReader : IFormatReader
         }
 
         JxlImageHeader h = file.Header;
-        PixelLayoutInfo layout = NaturalLayout(h);
+        PixelLayoutInfo layout = NaturalLayout(h, options is JxlReaderOptions { LinearOutput: true });
         int? frames = file.DisplayedFrames;
         return new RasterInfo
         {
@@ -54,9 +54,9 @@ internal sealed class JxlReader : IFormatReader
     /// <summary>
     /// Gets the natural pixel layout (design question 5): 8-bit types up to 8 bits a sample, 16-bit ones up to 16, half float
     /// for 16-bit float samples and single float beyond; gray or color, with alpha when an alpha channel exists; CMYK when a
-    /// black channel exists.
+    /// black channel exists. Linear output is single float.
     /// </summary>
-    internal static PixelLayoutInfo NaturalLayout(JxlImageHeader h)
+    internal static PixelLayoutInfo NaturalLayout(JxlImageHeader h, bool linear = false)
     {
         bool alpha = h.AlphaIndex >= 0;
         bool gray = h.ColorChannels == 1;
@@ -64,6 +64,11 @@ internal sealed class JxlReader : IFormatReader
         if (h.ExtraChannels.Any(c => c.Type == JxlExtraChannelType.Black))
         {
             return depth.BitsPerSample <= 8 && !depth.IsFloat ? Cmyk8.Layout : Cmyk16.Layout;
+        }
+
+        if (linear)
+        {
+            return gray ? GrayF32.Layout : alpha ? RgbaF32.Layout : RgbF32.Layout;
         }
 
         if (depth.IsFloat || depth.BitsPerSample > 16)
