@@ -20,8 +20,14 @@
                .cache: AOM's av1-avif test files (Apple, Link-U, Microsoft, Netflix, Xiph) and libavif's files whose pictures
                have other licenses.
   headers      dav1d's AV1 headers again (tests/reference/avif/av1-headers.json and each stream summary's), nothing else.
+  modeinfo     libaom's mode info of each AV1 item's frames (aominspect, libaom's inspect example): block sizes, transform sizes,
+               modes, skip, CDEF, chroma from luma, quantizer index, segment, intra block copy and its vector, palette sizes and
+               the bits each superblock took, each layer as the MD5 of its 16-bit values row by row, in
+               tests/reference/avif/av1-modeinfo.json (corpus) and .cache/avif/reference/extra/av1-modeinfo.json; the whole
+               dumps, for finding a mismatch, in .cache/avif/reference/modeinfo.
 """
 import glob
+import gzip
 import hashlib
 import json
 import os
@@ -1060,6 +1066,89 @@ def headers():
         print(summary, len(data["streams"]), flush=True)
 
 
+MODE_LAYERS = ["blockSize", "transformSize", "mode", "uv_mode", "skip", "cdef_level", "cdef_strength", "cfl_alpha_idx",
+               "cfl_alpha_sign", "delta_q", "seg_id", "intrabc", "palette", "uv_palette", "sb_bits"]
+
+
+def ivf(payload, width, height):
+    """Wraps one temporal unit as an IVF file, which aominspect reads."""
+    head = b"DKIF" + struct.pack("<HHIHHIIII", 0, 32, 0x31305641, width, height, 30, 1, 1, 0)
+    return head + struct.pack("<IQ", len(payload), 0) + payload
+
+
+def rle_rows(rows):
+    """Expands aominspect's run-length rows (-x): a one-element list repeats the value before it that many more times."""
+    out = []
+    for row in rows:
+        values = []
+        for v in row:
+            if isinstance(v, list) and len(v) == 1:
+                values += [values[-1]] * v[0]
+            else:
+                values.append(v)
+        out.append(values)
+    return out
+
+
+def layer_md5(values):
+    return hashlib.md5(b"".join(struct.pack("<h", v) for row in values for v in row)).hexdigest()
+
+
+def mode_info(stream, dump):
+    """Runs aominspect on an AV1 item; returns each frame's size in 4x4 units and the MD5 of each mode info layer."""
+    with open(f"{TMP}/inspect.ivf", "wb") as f:
+        f.write(ivf(stream, 16, 16))
+    flags = ["-bs", "-ts", "-m", "-uvm", "-s", "-c", "-cfl", "-dq", "-si", "-ibc", "-plt", "-uvp", "-sb", "-mv", "-x"]
+    r = sh("aominspect", f"{TMP}/inspect.ivf", *flags, check=False, timeout=1800)
+    try:
+        frames = [f for f in json.loads(r.stdout) if f is not None]
+    except ValueError:
+        return {"error": (r.stderr or r.stdout).strip()[-300:] or f"exit {r.returncode}"}
+    with gzip.open(dump, "wt") as f:
+        json.dump(frames, f, separators=(",", ":"))
+    result = []
+    for frame in frames:
+        layers = {name: rle_rows(frame[name]) for name in MODE_LAYERS}
+        mvs = rle_rows(frame["motionVectors"])
+        layers["dv"] = [[v for mi, ibc in zip(mv_row, ibc_row) for v in ((mi[1], mi[0]) if ibc else (0, 0))]
+                        for mv_row, ibc_row in zip(mvs, layers["intrabc"])]
+        # inspection.c's ifd_init_mi_rc takes columns before rows and is called with rows first, so each JSON row holds
+        # mi_rows values: the values are in libaom's order, the shape is swapped.
+        result.append({"miRows": len(layers["blockSize"][0]), "miCols": len(layers["blockSize"]), "frameType": frame["frameType"],
+                       "showFrame": frame["showFrame"], "layers": {k: layer_md5(v) for k, v in layers.items()}})
+    return {"frames": result}
+
+
+def modeinfo():
+    """libaom's mode info of every AV1 item of the corpus and of the extra files (see the docstring)."""
+    os.makedirs(TMP, exist_ok=True)
+    dumps = f"{CACHE}/reference/modeinfo"
+    os.makedirs(dumps, exist_ok=True)
+    sets = [(f"{REF}/manifest.json", OUT, f"{REF}/av1-modeinfo.json"),
+            (f"{CACHE}/reference/extra/manifest.json", CACHE, f"{CACHE}/reference/extra/av1-modeinfo.json")]
+    for manifest, folder, out in sets:
+        if not os.path.isfile(manifest):
+            continue
+        with open(manifest) as f:
+            files = json.load(f)["files"]
+        result = {}
+        for file in sorted(files):
+            try:
+                listed = items(open(f"{folder}/{file}", "rb").read())
+            except Exception:
+                continue
+            for item in listed:
+                payload = item.get("payload", b"")
+                if item["type"] == "av01" and payload:
+                    stream = payload if payload[:1] == b"\x12" else b"\x12\x00" + payload
+                    dump = f"{dumps}/{file.replace('/', '_')}-{item['id']}.json.gz"
+                    result.setdefault(file, {})[str(item["id"])] = mode_info(stream, dump)
+            print(file, flush=True)
+        with open(out, "w") as f:
+            json.dump({"tools": tools(), "files": result}, f, indent=1, sort_keys=True)
+            f.write("\n")
+
+
 def extra():
     """The corpus treatment for AVIF files that stay in .cache (licenses that do not allow committing them)."""
     os.makedirs(TMP, exist_ok=True)
@@ -1083,4 +1172,4 @@ def extra():
 
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers, "modeinfo": modeinfo}[step]()

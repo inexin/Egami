@@ -24,6 +24,7 @@ Usage, from the repo root with Docker running:
   python tools/make-avif-references.py conformance  .cache/avif/reference/{aom,dav1d,argon} (first frames of every stream)
   python tools/make-avif-references.py extra        .cache/avif/reference/extra (the AVIF files that stay in .cache)
   python tools/make-avif-references.py headers      dav1d's AV1 headers again, for the corpus and every stream
+  python tools/make-avif-references.py modeinfo     libaom's mode info of every AV1 item (aominspect), for the corpus and extra
 """
 import hashlib
 import os
@@ -123,6 +124,6 @@ def run(*args):
 steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra"]
 if "fetch" in steps:
     fetch("argon" in steps)
-for step in ("corpus", "conformance", "extra", "headers"):
+for step in ("corpus", "conformance", "extra", "headers", "modeinfo"):
     if step in steps:
         run(step)

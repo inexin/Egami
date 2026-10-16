@@ -26,4 +26,7 @@ RUN cd /src/libavif/src && gcc -O1 -I/src/libavif/include -o /usr/local/bin/avif
 # av1headers prints dav1d's sequence and first frame headers (its public API) for comparing header readers.
 COPY av1headers.c /src/av1headers.c
 RUN gcc -O1 -o /usr/local/bin/av1headers /src/av1headers.c -ldav1d
+# aominspect is libaom's inspect example (CONFIG_INSPECTION): each frame's mode info (block sizes, modes, transforms, skip,
+# CDEF, segment ids, palette, intra block copy) as JSON, the block syntax trace the AV1 decoder is compared with.
+RUN cmake -S /src/aom -B /src/aom/inspect -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONFIG_INSPECTION=1 -DCONFIG_ACCOUNTING=1         -DCONFIG_AV1_ENCODER=0 -DENABLE_EXAMPLES=1 -DENABLE_TESTS=0 -DENABLE_DOCS=0 -DENABLE_TOOLS=0     && ninja -C /src/aom/inspect inspect && cp /src/aom/inspect/inspect /usr/local/bin/aominspect && rm -rf /src/aom/inspect
 WORKDIR /work
