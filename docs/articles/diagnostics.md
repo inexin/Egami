@@ -180,6 +180,8 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Metafile.BadHeader` | Warning | A header field cannot be used (0 units per inch, a description outside the header); a default is used or the field ignored (Egami.Metafiles) |
 | `Metafile.BadObject` | Warning | An EMF+ object split over several records is broken (no size, interrupted, larger than the file); it is skipped (Egami.Metafiles) |
 | `Metafile.BadRecord` | Warning | A record's fields do not fit its size, or describe geometry that cannot be drawn; that record is skipped and playback goes on (Egami.Metafiles) |
+| `Metafile.FontSubstituted` | Warning | A text record names a face that is not installed; a metric-compatible or generic face is used with the record's own advances, or, with no font at all, the text is not drawn (design question 8) (Egami.Metafiles) |
+| `Metafile.GlyphIndices` | Warning | Text given as glyph indices of a face that is not installed is skipped, since the indices would show wrong letters in another face (design question 9) (Egami.Metafiles) |
 | `Metafile.NoEndRecord` | Warning | The file ends without its end-of-file record; the records before the end are played (Egami.Metafiles) |
 | `Metafile.NoPlaceableHeader` | Warning | A WMF has no placeable header; it is sized by its window extent at 96 DPI (design question 10) (Egami.Metafiles) |
 | `Metafile.RasterOperation` | Warning | A mix mode or raster operation has no Egami equivalent; it is drawn as a copy (design question 7) (Egami.Metafiles) |
