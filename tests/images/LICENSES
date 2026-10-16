@@ -221,7 +221,8 @@ avif/, ../reference/avif/
   CC0 1.0. avif/libavif/ holds files copied unchanged from libavif's tests/data at v1.4.2
   (https://github.com/AOMediaCodec/libavif), whose README gives them libavif's license: Copyright 2019 Joe Drago, BSD
   2-clause. The references are avifdec 1.4.2's decodes of each file, and manifest.json with each file's source and options,
-  avifdec's and ExifTool's readings, its items, and the MD5s of dav1d 1.5.4's and aomdec's decodes. Same licenses as the files
+  avifdec's and ExifTool's readings, its items, and the MD5s of dav1d 1.5.4's and aomdec's decodes; av1-headers.json is dav1d's
+  reading of each AV1 item's headers. Same licenses as the files
   they come from.
   AOM's av1-avif test files (https://github.com/AOMediaCodec/av1-avif testFiles: Apple and Link-U CC BY-SA 4.0, Netflix CC
   BY-NC-ND 4.0, Xiph CC BY-SA 3.0 and CC BY 3.0, Microsoft with copyright in each file), libavif's test files whose pictures

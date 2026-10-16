@@ -10,15 +10,16 @@
                (avifitems.c), the MD5 of avifdec's YUV decode through dav1d (the planes YuvRaster.Load gives; the y4m itself
                stays in .cache/avif/reference/corpus), and every item (type, properties, references, extents) with the MD5 of
                dav1d's decode of each AV1 item: with film grain, without it, with every in-loop filter off, and whether libaom's
-               aomdec decodes it to the same planes.
+               aomdec decodes it to the same planes; and av1-headers.json, dav1d's headers of each AV1 item (av1headers.c).
   conformance  .cache/avif/reference/<set>/summary.json and <stream>.y4m (for Argon, .cache/avif/argon/reference): dav1d's first
                frame of every stream of libaom's test vectors, dav1d's test data and, when unpacked, the Argon streams; the MD5
-               of that frame with film grain, without it and with the in-loop filters off; whether aomdec agrees; and the
-               frame's type. For Argon also dav1d's MD5 of the whole stream against Argon's own, and whether every frame is
-               intra (the streams an intra decoder can pass).
+               of that frame with film grain, without it and with the in-loop filters off; whether aomdec agrees; the frame's
+               type; and dav1d's sequence and first frame headers (av1headers.c). For Argon also dav1d's MD5 of the whole stream
+               against Argon's own, and whether every frame is intra (the streams an intra decoder can pass).
   extra        .cache/avif/reference/extra/: the corpus treatment (manifest entries and decodes) for the AVIF files that stay in
                .cache: AOM's av1-avif test files (Apple, Link-U, Microsoft, Netflix, Xiph) and libavif's files whose pictures
                have other licenses.
+  headers      dav1d's AV1 headers again (tests/reference/avif/av1-headers.json and each stream summary's), nothing else.
 """
 import glob
 import hashlib
@@ -352,6 +353,71 @@ def decode_item(payload, out_y4m=None):
         result["aomdec_equal"] = md5(*planes) == result["dav1d_md5"]
     return result
 
+
+
+# ---------------------------------------------------------------- AV1 headers as dav1d reads them
+
+def leb128(value):
+    out = bytearray()
+    while True:
+        b = value & 0x7F
+        value >>= 7
+        out.append(b | (0x80 if value else 0))
+        if not value:
+            return bytes(out)
+
+
+def read_leb128(data, pos):
+    value, shift = 0, 0
+    while True:
+        b = data[pos]
+        pos += 1
+        value |= (b & 0x7F) << shift
+        shift += 7
+        if b < 0x80:
+            return value, pos
+
+
+def section5(path):
+    """Gives a stream as low-overhead (Section 5) OBUs with obu_size: IVF frames joined, Annex B rewritten, OBU files as they are."""
+    data = open(path, "rb").read()
+    frames = ivf_frames(path)
+    if frames is not None:
+        return b"".join(frames)
+    rel = os.path.relpath(path, CACHE)
+    if not (("argon" in rel and "not_annexb" not in rel) or rel.endswith("/annexb.obu")):
+        return data
+    out, pos = bytearray(), 0
+    while pos < len(data):
+        unit_size, pos = read_leb128(data, pos)
+        unit_end = pos + unit_size
+        while pos < unit_end:
+            frame_size, pos = read_leb128(data, pos)
+            frame_end = pos + frame_size
+            while pos < frame_end:
+                obu_length, pos = read_leb128(data, pos)
+                obu = data[pos:pos + obu_length]
+                pos += obu_length
+                header = obu[0]
+                head = 2 if header & 4 else 1
+                if header & 2:
+                    _, body = read_leb128(obu, head)
+                    payload = obu[body:]
+                else:
+                    payload = obu[head:]
+                out += bytes([header | 2]) + obu[1:head] + leb128(len(payload)) + payload
+    return bytes(out)
+
+
+def av1_headers(stream):
+    """Runs av1headers on a Section 5 stream; returns its sequence and first output frame headers, or the error."""
+    with open(f"{TMP}/headers.obu", "wb") as f:
+        f.write(stream)
+    r = sh("av1headers", f"{TMP}/headers.obu", check=False, timeout=300)
+    try:
+        return json.loads(r.stdout)
+    except ValueError:
+        return {"error": (r.stderr or r.stdout).strip()[-300:] or f"exit {r.returncode}"}
 
 # ---------------------------------------------------------------- corpus sources
 
@@ -789,6 +855,22 @@ def corpus():
     with open(f"{REF}/manifest.json", "w") as f:
         json.dump({"tools": tools(), "files": manifest}, f, indent=1, sort_keys=True)
         f.write("\n")
+    # dav1d's sequence and frame headers of each AV1 item, kept apart from the manifest.
+    headers = {}
+    for file in sorted(manifest):
+        data = open(f"{OUT}/{file}", "rb").read()
+        try:
+            listed = items(data)
+        except Exception:
+            continue
+        for item in listed:
+            payload = item.get("payload", b"")
+            if item["type"] == "av01" and payload:
+                stream = payload if payload[:1] == b"\x12" else b"\x12\x00" + payload
+                headers.setdefault(file, {})[str(item["id"])] = av1_headers(stream)
+    with open(f"{REF}/av1-headers.json", "w") as f:
+        json.dump({"tools": tools(), "files": headers}, f, separators=(",", ":"), sort_keys=True)
+        f.write("\n")
 
 
 def tools():
@@ -901,6 +983,8 @@ def conformance():
                         del entry[k]
                     argon_full(path, demux, entry)
                     print(key, "whole stream", entry.get("dav1d_full_md5", entry.get("dav1d_full_error")), flush=True)
+                if "headers" not in entry:
+                    entry["headers"] = av1_headers(section5(path))
                 summary[key] = entry
                 continue
             entry = {"stream": rel}
@@ -936,11 +1020,44 @@ def conformance():
                 entry["aomdec_equal"] = md5(*planes) == entry["dav1d_md5"]
             if name == "argon":
                 argon_full(path, demux, entry)
+            entry["headers"] = av1_headers(section5(path))
             summary[key] = entry
             print(key, entry.get("dav1d_md5", entry.get("dav1d_error")), flush=True)
         with open(f"{folder}/summary.json", "w") as f:
             json.dump({"tools": tools(), "streams": summary}, f, indent=1, sort_keys=True)
             f.write("\n")
+
+
+def headers():
+    """Records dav1d's headers again (av1-headers.json and each stream summary's), leaving every other reference as it is."""
+    os.makedirs(TMP, exist_ok=True)
+    with open(f"{REF}/manifest.json") as f:
+        files = json.load(f)["files"]
+    result = {}
+    for file in sorted(files):
+        try:
+            listed = items(open(f"{OUT}/{file}", "rb").read())
+        except Exception:
+            continue
+        for item in listed:
+            payload = item.get("payload", b"")
+            if item["type"] == "av01" and payload:
+                stream = payload if payload[:1] == b"\x12" else b"\x12\x00" + payload
+                result.setdefault(file, {})[str(item["id"])] = av1_headers(stream)
+    with open(f"{REF}/av1-headers.json", "w") as f:
+        json.dump({"tools": tools(), "files": result}, f, separators=(",", ":"), sort_keys=True)
+        f.write("\n")
+    for summary in (f"{CACHE}/reference/aom/summary.json", f"{CACHE}/reference/dav1d/summary.json", f"{CACHE}/argon/reference/summary.json"):
+        if not os.path.isfile(summary):
+            continue
+        with open(summary) as f:
+            data = json.load(f)
+        for key, entry in data["streams"].items():
+            entry["headers"] = av1_headers(section5(f"{CACHE}/{entry['stream']}"))
+        with open(summary, "w") as f:
+            json.dump(data, f, indent=1, sort_keys=True)
+            f.write("\n")
+        print(summary, len(data["streams"]), flush=True)
 
 
 def extra():
@@ -966,4 +1083,4 @@ def extra():
 
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers}[step]()

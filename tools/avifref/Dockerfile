@@ -23,4 +23,7 @@ RUN dav1d --version && aomenc --help > /dev/null; avifdec --version && avifenc -
 # avifitems prints libavif's item model (its read.c, compiled in) for comparing item lists.
 COPY avifitems.c /src/libavif/apps/avifitems.c
 RUN cd /src/libavif/src && gcc -O1 -I/src/libavif/include -o /usr/local/bin/avifitems /src/libavif/apps/avifitems.c         $(ls *.c | grep -v -e '^read.c$' -e '^codec_' -e '^scale.c$') -lavif -lm
+# av1headers prints dav1d's sequence and first frame headers (its public API) for comparing header readers.
+COPY av1headers.c /src/av1headers.c
+RUN gcc -O1 -o /usr/local/bin/av1headers /src/av1headers.c -ldav1d
 WORKDIR /work

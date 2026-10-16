@@ -23,6 +23,7 @@ Usage, from the repo root with Docker running:
   python tools/make-avif-references.py corpus       tests/images/avif and tests/reference/avif again
   python tools/make-avif-references.py conformance  .cache/avif/reference/{aom,dav1d,argon} (first frames of every stream)
   python tools/make-avif-references.py extra        .cache/avif/reference/extra (the AVIF files that stay in .cache)
+  python tools/make-avif-references.py headers      dav1d's AV1 headers again, for the corpus and every stream
 """
 import hashlib
 import os
@@ -122,6 +123,6 @@ def run(*args):
 steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra"]
 if "fetch" in steps:
     fetch("argon" in steps)
-for step in ("corpus", "conformance", "extra"):
+for step in ("corpus", "conformance", "extra", "headers"):
     if step in steps:
         run(step)

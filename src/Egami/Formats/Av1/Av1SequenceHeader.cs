@@ -77,7 +77,7 @@ internal readonly record struct Av1Obu(Av1ObuType Type, int TemporalId, int Spat
 }
 
 /// <summary>An operating point of a sequence header: which layers it decodes, and its level and tier.</summary>
-internal readonly record struct Av1OperatingPoint(int Idc, int Level, int Tier);
+internal readonly record struct Av1OperatingPoint(int Idc, int Level, int Tier, bool DecoderModelPresent = false);
 
 /// <summary>
 /// The sequence header OBU of the AV1 specification, section 5.5: profile, operating points, frame size bounds, the coding tools
@@ -99,6 +99,8 @@ internal sealed record Av1SequenceHeader
     internal bool DecoderModelInfoPresent { get; init; }
 
     internal int BufferDelayLength { get; init; }
+
+    internal int BufferRemovalTimeLength { get; init; }
 
     internal int FramePresentationTimeLength { get; init; }
 
@@ -184,6 +186,64 @@ internal sealed record Av1SequenceHeader
         : SubsamplingX == 1 && SubsamplingY == 1 ? Pixels.ChromaFormat.Yuv420
         : SubsamplingX == 1 ? Pixels.ChromaFormat.Yuv422 : Pixels.ChromaFormat.Yuv444;
 
+    /// <summary>Lists the header's fields under the specification's names, as <see cref="Av1FrameHeader.Describe"/> does.</summary>
+    internal List<(string Name, long Value)> Describe()
+    {
+        List<(string, long)> f =
+        [
+            ("seq_profile", Profile),
+            ("still_picture", StillPicture ? 1 : 0),
+            ("reduced_still_picture_header", ReducedStillPictureHeader ? 1 : 0),
+            ("timing_info_present_flag", TimingInfoPresent ? 1 : 0),
+            ("decoder_model_info_present_flag", DecoderModelInfoPresent ? 1 : 0),
+            ("operating_points_cnt_minus_1", OperatingPoints.Length - 1),
+        ];
+        for (int i = 0; i < OperatingPoints.Length; i++)
+        {
+            f.Add(($"operating_point_idc[{i}]", OperatingPoints[i].Idc));
+            f.Add(($"seq_level_idx[{i}]", OperatingPoints[i].Level));
+            f.Add(($"seq_tier[{i}]", OperatingPoints[i].Tier));
+        }
+
+        f.AddRange(
+        [
+            ("frame_width_bits_minus_1", FrameWidthBits - 1),
+            ("frame_height_bits_minus_1", FrameHeightBits - 1),
+            ("max_frame_width_minus_1", MaxFrameWidth - 1),
+            ("max_frame_height_minus_1", MaxFrameHeight - 1),
+            ("frame_id_numbers_present_flag", FrameIdNumbersPresent ? 1 : 0),
+            ("use_128x128_superblock", Use128x128Superblock ? 1 : 0),
+            ("enable_filter_intra", EnableFilterIntra ? 1 : 0),
+            ("enable_intra_edge_filter", EnableIntraEdgeFilter ? 1 : 0),
+            ("enable_interintra_compound", EnableInterintraCompound ? 1 : 0),
+            ("enable_masked_compound", EnableMaskedCompound ? 1 : 0),
+            ("enable_warped_motion", EnableWarpedMotion ? 1 : 0),
+            ("enable_dual_filter", EnableDualFilter ? 1 : 0),
+            ("enable_order_hint", EnableOrderHint ? 1 : 0),
+            ("enable_jnt_comp", EnableJntComp ? 1 : 0),
+            ("enable_ref_frame_mvs", EnableRefFrameMvs ? 1 : 0),
+            ("seq_force_screen_content_tools", ForceScreenContentTools),
+            ("seq_force_integer_mv", ForceIntegerMv),
+            ("OrderHintBits", OrderHintBits),
+            ("enable_superres", EnableSuperres ? 1 : 0),
+            ("enable_cdef", EnableCdef ? 1 : 0),
+            ("enable_restoration", EnableRestoration ? 1 : 0),
+            ("BitDepth", BitDepth),
+            ("mono_chrome", Monochrome ? 1 : 0),
+            ("color_description_present_flag", ColorDescriptionPresent ? 1 : 0),
+            ("color_primaries", ColorPrimaries),
+            ("transfer_characteristics", TransferCharacteristics),
+            ("matrix_coefficients", MatrixCoefficients),
+            ("color_range", FullRange ? 1 : 0),
+            ("subsampling_x", SubsamplingX),
+            ("subsampling_y", SubsamplingY),
+            ("chroma_sample_position", ChromaSamplePosition),
+            ("separate_uv_delta_q", SeparateUvDeltaQ ? 1 : 0),
+            ("film_grain_params_present", FilmGrainParamsPresent ? 1 : 0),
+        ]);
+        return f;
+    }
+
     /// <summary>Finds the first sequence header OBU in a low-overhead stream and reads it, or returns <see langword="null"/>.</summary>
     internal static Av1SequenceHeader? Find(ReadOnlySpan<byte> stream, string formatName)
     {
@@ -216,7 +276,7 @@ internal sealed record Av1SequenceHeader
         }
 
         bool timing = false, decoderModel = false, equalInterval = false;
-        int bufferDelayLength = 0, presentationTimeLength = 0;
+        int bufferDelayLength = 0, removalTimeLength = 0, presentationTimeLength = 0;
         Av1OperatingPoint[] points;
         if (reduced)
         {
@@ -240,7 +300,7 @@ internal sealed record Av1SequenceHeader
                 {
                     bufferDelayLength = (int)r.Bits(5) + 1;
                     r.Bits(32); // num_units_in_decoding_tick
-                    r.Bits(5); // buffer_removal_time_length_minus_1
+                    removalTimeLength = (int)r.Bits(5) + 1;
                     presentationTimeLength = (int)r.Bits(5) + 1;
                 }
             }
@@ -252,7 +312,8 @@ internal sealed record Av1SequenceHeader
                 int idc = (int)r.Bits(12);
                 int level = (int)r.Bits(5);
                 int tier = level > 7 ? (int)r.Bits(1) : 0;
-                if (decoderModel && r.Flag())
+                bool modelPresent = decoderModel && r.Flag();
+                if (modelPresent)
                 {
                     r.Bits(bufferDelayLength); // decoder_buffer_delay
                     r.Bits(bufferDelayLength); // encoder_buffer_delay
@@ -264,7 +325,7 @@ internal sealed record Av1SequenceHeader
                     r.Bits(4); // initial_display_delay_minus_1
                 }
 
-                points[i] = new Av1OperatingPoint(idc, level, tier);
+                points[i] = new Av1OperatingPoint(idc, level, tier, modelPresent);
             }
         }
 
@@ -376,6 +437,7 @@ internal sealed record Av1SequenceHeader
             TimingInfoPresent = timing,
             DecoderModelInfoPresent = decoderModel,
             BufferDelayLength = bufferDelayLength,
+            BufferRemovalTimeLength = removalTimeLength,
             FramePresentationTimeLength = presentationTimeLength,
             EqualPictureInterval = equalInterval,
             OperatingPoints = points,
