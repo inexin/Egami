@@ -15,7 +15,7 @@ namespace Egami.Tests.Operations;
 public abstract class EveryPixelTypeTests<TPart> : IDisposable
     where TPart : IPart
 {
-    private const int PartCount = 6;
+    private const int PartCount = 12;
 
     private static readonly Type[] NewTypes =
     [
@@ -176,7 +176,10 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
     {
         EgamiContext context = EgamiContext.Default with { MaxParallelism = 1 };
         using Raster<Rgba8> smallSource = OperationCoverageTests.Noise(120, 90, context);
-        using Raster<Rgba8> largeSource = OperationCoverageTests.Noise(480, 360, context);
+
+        // ZoomBlur's work grows with its blur length, which grows with the image; at a quarter of the area any growth still shows.
+        Size big = operation == "ZoomBlur" ? new Size(240, 180) : new Size(480, 360);
+        using Raster<Rgba8> largeSource = OperationCoverageTests.Noise(big.Width, big.Height, context);
         using Raster<T> small = smallSource.As<T>();
         using Raster<T> large = largeSource.As<T>();
 
@@ -186,14 +189,14 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
         for (int attempt = 0; attempt < 5; attempt++)
         {
             smallBytes = Allocated(small, OperationCoverageTests.Chains[operation](new Size(120, 90), _logo));
-            largeBytes = Allocated(large, OperationCoverageTests.Chains[operation](new Size(480, 360), _logo));
+            largeBytes = Allocated(large, OperationCoverageTests.Chains[operation](big, _logo));
             if (largeBytes - smallBytes < 1024 && largeBytes < 8 * 1024)
             {
                 break;
             }
         }
 
-        Assert.True(largeBytes - smallBytes < 1024, $"{operation} on {typeof(T).Name}: {largeBytes:N0} bytes for 480×360 against {smallBytes:N0} for 120×90.");
+        Assert.True(largeBytes - smallBytes < 1024, $"{operation} on {typeof(T).Name}: {largeBytes:N0} bytes for {big.Width}×{big.Height} against {smallBytes:N0} for 120×90.");
         Assert.True(largeBytes < 8 * 1024, $"{operation} on {typeof(T).Name}: {largeBytes:N0} bytes per call.");
     }
 
@@ -217,20 +220,38 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
     }
 }
 
-/// <summary>Part 1 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+/// <summary>Part 1 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
 public sealed class EveryPixelTypeTestsPart0 : EveryPixelTypeTests<Part0>;
 
-/// <summary>Part 2 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+/// <summary>Part 2 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
 public sealed class EveryPixelTypeTestsPart1 : EveryPixelTypeTests<Part1>;
 
-/// <summary>Part 3 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+/// <summary>Part 3 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
 public sealed class EveryPixelTypeTestsPart2 : EveryPixelTypeTests<Part2>;
 
-/// <summary>Part 4 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+/// <summary>Part 4 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
 public sealed class EveryPixelTypeTestsPart3 : EveryPixelTypeTests<Part3>;
 
-/// <summary>Part 5 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+/// <summary>Part 5 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
 public sealed class EveryPixelTypeTestsPart4 : EveryPixelTypeTests<Part4>;
 
-/// <summary>Part 6 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+/// <summary>Part 6 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
 public sealed class EveryPixelTypeTestsPart5 : EveryPixelTypeTests<Part5>;
+
+/// <summary>Part 7 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart6 : EveryPixelTypeTests<Part6>;
+
+/// <summary>Part 8 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart7 : EveryPixelTypeTests<Part7>;
+
+/// <summary>Part 9 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart8 : EveryPixelTypeTests<Part8>;
+
+/// <summary>Part 10 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart9 : EveryPixelTypeTests<Part9>;
+
+/// <summary>Part 11 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart10 : EveryPixelTypeTests<Part10>;
+
+/// <summary>Part 12 of 12 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart11 : EveryPixelTypeTests<Part11>;

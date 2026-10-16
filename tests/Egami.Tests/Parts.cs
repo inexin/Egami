@@ -53,6 +53,48 @@ public sealed class Part5 : IPart
     public static int Index => 5;
 }
 
+/// <summary>Part 7 of a split test class.</summary>
+public sealed class Part6 : IPart
+{
+    /// <inheritdoc/>
+    public static int Index => 6;
+}
+
+/// <summary>Part 8 of a split test class.</summary>
+public sealed class Part7 : IPart
+{
+    /// <inheritdoc/>
+    public static int Index => 7;
+}
+
+/// <summary>Part 9 of a split test class.</summary>
+public sealed class Part8 : IPart
+{
+    /// <inheritdoc/>
+    public static int Index => 8;
+}
+
+/// <summary>Part 10 of a split test class.</summary>
+public sealed class Part9 : IPart
+{
+    /// <inheritdoc/>
+    public static int Index => 9;
+}
+
+/// <summary>Part 11 of a split test class.</summary>
+public sealed class Part10 : IPart
+{
+    /// <inheritdoc/>
+    public static int Index => 10;
+}
+
+/// <summary>Part 12 of a split test class.</summary>
+public sealed class Part11 : IPart
+{
+    /// <inheritdoc/>
+    public static int Index => 11;
+}
+
 /// <summary>Picks a part's rows from a theory's data.</summary>
 internal static class Parts
 {

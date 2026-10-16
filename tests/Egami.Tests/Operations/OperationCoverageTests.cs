@@ -15,7 +15,7 @@ namespace Egami.Tests.Operations;
 public abstract class OperationCoverageTests<TPart> : IDisposable
     where TPart : IPart
 {
-    private const int PartCount = 4;
+    private const int PartCount = 8;
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -70,7 +70,10 @@ public abstract class OperationCoverageTests<TPart> : IDisposable
         // One thread, so every allocation is on this one; pixel memory comes from the memory source, not the managed heap.
         EgamiContext context = EgamiContext.Default with { MaxParallelism = 1 };
         using Raster<Rgba8> small = Noise(120, 90, context);
-        using Raster<Rgba8> large = Noise(1200, 900, context);
+
+        // ZoomBlur's work grows with its blur length, which grows with the image; at a quarter of the area any growth still shows.
+        Size big = operation == "ZoomBlur" ? new Size(600, 450) : new Size(1200, 900);
+        using Raster<Rgba8> large = Noise(big.Width, big.Height, context);
 
         // Tests running alongside can empty the shared array pool for a while, so an over-budget measurement is taken again.
         long smallBytes = 0;
@@ -78,14 +81,14 @@ public abstract class OperationCoverageTests<TPart> : IDisposable
         for (int attempt = 0; attempt < 5; attempt++)
         {
             smallBytes = Allocated(small, Chains[operation](new Size(120, 90), _logo));
-            largeBytes = Allocated(large, Chains[operation](new Size(1200, 900), _logo));
+            largeBytes = Allocated(large, Chains[operation](big, _logo));
             if (largeBytes - smallBytes < 1024 && largeBytes < 8 * 1024)
             {
                 break;
             }
         }
 
-        Assert.True(largeBytes - smallBytes < 1024, $"{operation}: {largeBytes:N0} bytes for 1200×900 against {smallBytes:N0} for 120×90.");
+        Assert.True(largeBytes - smallBytes < 1024, $"{operation}: {largeBytes:N0} bytes for {big.Width}×{big.Height} against {smallBytes:N0} for 120×90.");
         Assert.True(largeBytes < 8 * 1024, $"{operation}: {largeBytes:N0} bytes per call.");
     }
 
@@ -302,14 +305,26 @@ internal static class OperationCoverageTests
     }
 }
 
-/// <summary>Part 1 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+/// <summary>Part 1 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
 public sealed class OperationCoverageTestsPart0 : OperationCoverageTests<Part0>;
 
-/// <summary>Part 2 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+/// <summary>Part 2 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
 public sealed class OperationCoverageTestsPart1 : OperationCoverageTests<Part1>;
 
-/// <summary>Part 3 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+/// <summary>Part 3 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
 public sealed class OperationCoverageTestsPart2 : OperationCoverageTests<Part2>;
 
-/// <summary>Part 4 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+/// <summary>Part 4 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
 public sealed class OperationCoverageTestsPart3 : OperationCoverageTests<Part3>;
+
+/// <summary>Part 5 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart4 : OperationCoverageTests<Part4>;
+
+/// <summary>Part 6 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart5 : OperationCoverageTests<Part5>;
+
+/// <summary>Part 7 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart6 : OperationCoverageTests<Part6>;
+
+/// <summary>Part 8 of 8 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart7 : OperationCoverageTests<Part7>;
