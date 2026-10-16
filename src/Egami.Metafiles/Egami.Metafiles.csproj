@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Metafiles</RootNamespace>
+    <PackageId>Egami.Metafiles</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Windows metafiles for Egami: plays WMF, EMF and EMF+ pictures onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output and rasterize on any OS, in managed code.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Public API of the packages below only (2.3.7 design, question 2). -->
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+    <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Metafiles.Tests" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
+  </ItemGroup>
+
+</Project>

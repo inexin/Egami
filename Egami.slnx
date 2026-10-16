@@ -23,6 +23,7 @@
     <Project Path="src/Egami.Css/Egami.Css.csproj" />
     <Project Path="src/Egami.Drawing/Egami.Drawing.csproj" />
     <Project Path="src/Egami.Fonts/Egami.Fonts.csproj" />
+    <Project Path="src/Egami.Metafiles/Egami.Metafiles.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -32,6 +33,7 @@
     <Project Path="tests/Egami.Drawing.Tests/Egami.Drawing.Tests.csproj" />
     <Project Path="tests/Egami.Fonts.Tests/Egami.Fonts.Tests.csproj" />
     <Project Path="tests/Egami.Fuzz/Egami.Fuzz.csproj" />
+    <Project Path="tests/Egami.Metafiles.Tests/Egami.Metafiles.Tests.csproj" />
     <Project Path="tests/Egami.OutsideTests/Egami.OutsideTests.csproj" />
     <Project Path="tests/Egami.Svg.Tests/Egami.Svg.Tests.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />

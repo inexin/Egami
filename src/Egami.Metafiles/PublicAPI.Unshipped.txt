@@ -1,0 +1,27 @@
+#nullable enable
+Egami.Metafiles.Metafile
+Egami.Metafiles.Metafile.Description.get -> string?
+Egami.Metafiles.Metafile.Dpi.get -> System.Numerics.Vector2
+Egami.Metafiles.Metafile.Frame.get -> Egami.Drawing.RectF
+Egami.Metafiles.Metafile.Kind.get -> Egami.Metafiles.MetafileKind
+static Egami.Metafiles.Metafile.Load(System.IO.Stream! stream, Egami.Metafiles.MetafileLoadOptions? options = null) -> Egami.Metafiles.Metafile!
+static Egami.Metafiles.Metafile.Load(string! path, Egami.Metafiles.MetafileLoadOptions? options = null) -> Egami.Metafiles.Metafile!
+Egami.Metafiles.Metafile.Size.get -> System.Numerics.Vector2
+Egami.Metafiles.Metafile.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
+Egami.Metafiles.MetafileKind
+Egami.Metafiles.MetafileKind.Emf = 1 -> Egami.Metafiles.MetafileKind
+Egami.Metafiles.MetafileKind.EmfPlusDual = 2 -> Egami.Metafiles.MetafileKind
+Egami.Metafiles.MetafileKind.EmfPlusOnly = 3 -> Egami.Metafiles.MetafileKind
+Egami.Metafiles.MetafileKind.Wmf = 0 -> Egami.Metafiles.MetafileKind
+Egami.Metafiles.MetafileLoadOptions
+Egami.Metafiles.MetafileLoadOptions.<Clone>$() -> Egami.Metafiles.MetafileLoadOptions!
+Egami.Metafiles.MetafileLoadOptions.Context.get -> Egami.EgamiContext?
+Egami.Metafiles.MetafileLoadOptions.Context.init -> void
+static Egami.Metafiles.MetafileLoadOptions.Default.get -> Egami.Metafiles.MetafileLoadOptions!
+Egami.Metafiles.MetafileLoadOptions.Equals(Egami.Metafiles.MetafileLoadOptions? other) -> bool
+override Egami.Metafiles.MetafileLoadOptions.Equals(object? obj) -> bool
+override Egami.Metafiles.MetafileLoadOptions.GetHashCode() -> int
+Egami.Metafiles.MetafileLoadOptions.MetafileLoadOptions() -> void
+override Egami.Metafiles.MetafileLoadOptions.ToString() -> string!
+static Egami.Metafiles.MetafileLoadOptions.operator !=(Egami.Metafiles.MetafileLoadOptions? left, Egami.Metafiles.MetafileLoadOptions? right) -> bool
+static Egami.Metafiles.MetafileLoadOptions.operator ==(Egami.Metafiles.MetafileLoadOptions? left, Egami.Metafiles.MetafileLoadOptions? right) -> bool
