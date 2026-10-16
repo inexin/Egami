@@ -102,10 +102,48 @@ internal sealed class Av1Frame
     }
 
     /// <summary>Gets the reconstructed planes (Y, U, V), or null when only parsing.</summary>
-    internal ushort[][]? Planes { get; }
+    internal ushort[][]? Planes { get; private set; }
 
     /// <summary>Gets each plane's stride.</summary>
     internal int[] Strides { get; } = [];
+
+    /// <summary>
+    /// Applies the in-loop filters (section 7.14 to 7.17): deblocking, CDEF, superres upscaling and loop restoration, which
+    /// reads the deblocked frame for the rows beyond each stripe.
+    /// </summary>
+    internal void ApplyFilters()
+    {
+        if (Planes is null)
+        {
+            return;
+        }
+
+        Av1LoopFilter.Apply(this);
+        bool restore = Restoration.Any(r => r.Type != Av1RestorationType.None);
+        ushort[][]? deblocked = restore ? [.. Planes.Select(p => (ushort[])p.Clone())] : null;
+        Av1Cdef.Apply(this);
+        if (Header.FrameWidth != Header.UpscaledWidth)
+        {
+            int[] strides = [.. Strides];
+            For(Planes.Length * (deblocked is null ? 1 : 2), i =>
+            {
+                int plane = i % Planes.Length;
+                if (i < Planes.Length)
+                {
+                    (Planes[plane], Strides[plane]) = Av1Superres.Upscale(this, Planes[plane], strides[plane], plane);
+                }
+                else
+                {
+                    deblocked![plane] = Av1Superres.Upscale(this, deblocked[plane], strides[plane], plane).Plane;
+                }
+            });
+        }
+
+        if (deblocked is not null)
+        {
+            Av1Restoration.Apply(this, [.. Planes], deblocked, Strides);
+        }
+    }
 
     /// <summary>Gets the frame header.</summary>
     internal Av1FrameHeader Header { get; }
@@ -222,6 +260,45 @@ internal sealed class Av1Frame
         }
 
         return tiles;
+    }
+
+    /// <summary>Gets or sets how many threads the frame's tiles and filters may use.</summary>
+    internal int Parallelism { get; init; } = 1;
+
+    /// <summary>Gets or sets the token that cancels decoding.</summary>
+    internal CancellationToken CancellationToken { get; init; }
+
+    /// <summary>Decodes the frame's tiles, in parallel when there are several and threads to spare.</summary>
+    internal void DecodeTiles(byte[] data, List<(int Tile, int Offset, int Size)> tiles)
+    {
+        if (Parallelism > 1 && tiles.Count > 1)
+        {
+            ParallelOptions options = new() { MaxDegreeOfParallelism = Parallelism, CancellationToken = CancellationToken };
+            Parallel.ForEach(tiles, options, t => DecodeTile(t.Tile, data, t.Offset, t.Size));
+            return;
+        }
+
+        foreach ((int tile, int offset, int size) in tiles)
+        {
+            CancellationToken.ThrowIfCancellationRequested();
+            DecodeTile(tile, data, offset, size);
+        }
+    }
+
+    /// <summary>Runs <paramref name="body"/> for 0 to <paramref name="count"/> - 1, on the frame's threads.</summary>
+    internal void For(int count, Action<int> body)
+    {
+        if (Parallelism > 1 && count > 1)
+        {
+            Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = Parallelism, CancellationToken = CancellationToken }, body);
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            CancellationToken.ThrowIfCancellationRequested();
+            body(i);
+        }
     }
 
     /// <summary>Decodes one tile.</summary>

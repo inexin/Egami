@@ -77,6 +77,10 @@ NUMERIC = [
     ("FilterIntraTaps", "av1/common/reconintra.c", "av1_filter_intra_taps", "sbyte"),
     ("CospiData", "av1/common/av1_txfm.c", "av1_cospi_arr_data", "int"),
     ("SinpiData", "av1/common/av1_txfm.c", "av1_sinpi_arr_data", "int"),
+    ("ResizeFilterNormative", "av1/common/resize.c", "av1_resize_filter_normative", "short"),
+    ("XByXPlus1", "av1/common/restoration.c", "av1_x_by_xplus1", "short"),
+    ("OneByX", "av1/common/restoration.c", "av1_one_by_x", "short"),
+    ("GaussianSequence", "av1/decoder/grain_synthesis.c", "gaussian_sequence", "short"),
 ] + [
     (pascal(f"has_{kind}_{size}"), "av1/common/reconintra.c", f"has_{kind}_{size}", "byte")
     for kind in ("tr", "bl")
@@ -161,6 +165,9 @@ def load_enums():
 
 def numeric(file, name):
     text = strip_comments(open(os.path.join(AOM, file)).read())
+    # Keep the first branch of a preprocessor conditional inside an initializer (resize.c's filter table).
+    text = re.sub(r"#else.*?#endif", "", text, flags=re.S)
+    text = re.sub(r"^#if.*$", "", text, flags=re.M)
     dims, body = initializer(text, name)
     values = []
     for token in re.findall(r"(?:-\s*)?(?:0x[0-9a-fA-F]+|\d+|[A-Za-z_]\w*)", body):
@@ -219,6 +226,7 @@ def main():
            "internal static partial class Av1Tables", "{"]
     for csharp, file, name, kind in NUMERIC:
         dims, values = numeric(file, name)
+        dims = dims.replace("<", "&lt;").replace(">", "&gt;")
         out.append(f"    /// <summary>libaom's {name}{dims} ({file}).</summary>")
         out.append(f"    internal static readonly {kind}[] {csharp} =")
         out.append("    [")

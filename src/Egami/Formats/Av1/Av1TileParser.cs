@@ -151,6 +151,7 @@ internal sealed partial class Av1TileParser
         int sbIndexRowStride = _frame.SbCols;
         for (int miRow = MiRowStart; miRow < MiRowEnd; miRow += _sbMi)
         {
+            _frame.CancellationToken.ThrowIfCancellationRequested();
             foreach (byte[] left in _leftEntropy)
             {
                 Array.Clear(left);
@@ -690,7 +691,17 @@ internal sealed partial class Av1TileParser
         int index = _frame.SbSize == Bs.B128x128 ? ((_miCol & 16) != 0 ? 1 : 0) + ((_miRow & 16) != 0 ? 2 : 0) : 0;
         if (!_cdefTransmitted[index] && !_b.Skip)
         {
-            _frame.CdefIndex[((_miRow >> 4) * _frame.CdefStride) + (_miCol >> 4)] = (sbyte)_r.Literal(_header.CdefBits);
+            // A block wider or taller than 64 sets every 64x64 unit it covers (libaom reads the block at each unit's corner).
+            sbyte value = (sbyte)_r.Literal(_header.CdefBits);
+            int rows = Math.Max(1, Av1Tables.MiSizeHigh[_b.Size] >> 4), cols = Math.Max(1, Av1Tables.MiSizeWide[_b.Size] >> 4);
+            for (int y = 0; y < rows && ((_miRow >> 4) + y) * 16 < _frame.MiRows; y++)
+            {
+                for (int x = 0; x < cols && ((_miCol >> 4) + x) * 16 < _miCols; x++)
+                {
+                    _frame.CdefIndex[(((_miRow >> 4) + y) * _frame.CdefStride) + (_miCol >> 4) + x] = value;
+                }
+            }
+
             _cdefTransmitted[index] = true;
         }
     }

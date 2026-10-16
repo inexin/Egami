@@ -392,7 +392,11 @@ of `restoration.c` (`Av1Frame.cs`, `Av1TileParser*.cs`); the intra predictors, e
 `av1/common/reconintra.c` and `aom_dsp/intrapred.c` with their tables, chroma from luma (`cfl.c`) and the intra block copy
 prediction of `reconinter.c` and `convolve.c` (`Av1Reconstructor*.cs`); and the inverse transforms of `av1_inv_txfm2d.c` and
 `idct.c` (`Av1InverseTransform.cs`), whose one-dimensional transforms `av1_inv_txfm1d.c` `tools/make-av1-tables.py` translates
-into `Av1InverseTransform.OneD.cs`. libaom is distributed under the BSD 2-clause license:
+into `Av1InverseTransform.OneD.cs`; the deblocking filter of `av1_loopfilter.c` and `aom_dsp/loopfilter.c`
+(`Av1LoopFilter.cs`), CDEF from `cdef.c` and `cdef_block.c` (`Av1Cdef.cs`), superres upscaling from `resize.c` with its
+normative filter (`Av1Superres.cs`), loop restoration from `restoration.c` and the Wiener convolution of `convolve.c`
+(`Av1Restoration.cs`), and the Gaussian sequence of `av1/decoder/grain_synthesis.c` (`Av1FilmGrainSynthesis.cs`). libaom is
+distributed under the BSD 2-clause license:
 
     Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 
@@ -536,7 +540,8 @@ and with the Alliance for Open Media Patent License 1.0, which covers implementa
 Where libaom rejects a stream that dav1d 1.5.4 decodes, Egami's AV1 decoder follows dav1d (`src/decode.c`, `src/recon_tmpl.c`),
 whose output its tests hold it to: a segment id past the last active one becomes 0, a coefficient's Golomb code may run to 32
 bits, and an intra block copy vector that reaches outside the decoded area is moved back inside it (`Av1TileParser*.cs`,
-`Av1SymbolDecoder.cs`). dav1d is distributed under the BSD 2-clause license:
+`Av1SymbolDecoder.cs`). Film grain synthesis is translated from its `src/filmgrain_tmpl.c` and `src/fg_apply_tmpl.c`
+(`Av1FilmGrainSynthesis.cs`). dav1d is distributed under the BSD 2-clause license:
 
     Copyright © 2018-2025, VideoLAN and dav1d authors
     All rights reserved.
