@@ -1551,6 +1551,29 @@ Egami.Formats.Webp.WebpWriterOptions.SharpYuv.init -> void
 Egami.Formats.Webp.WebpWriterOptions.WebpWriterOptions() -> void
 Egami.Formats.WriterOptions.OmitSrgbProfile.get -> bool
 Egami.Formats.WriterOptions.OmitSrgbProfile.init -> void
+Egami.InkDepth
+Egami.InkDepth.Unorm16 = 1 -> Egami.InkDepth
+Egami.InkDepth.Unorm8 = 0 -> Egami.InkDepth
+Egami.InkPlate
+Egami.InkPlate.AsRaster<TPixel>() -> Egami.Raster<TPixel>!
+Egami.InkPlate.Colorant.get -> Egami.Colors.Colorant?
+Egami.InkPlate.Depth.get -> Egami.InkDepth
+Egami.InkPlate.Height.get -> int
+Egami.InkPlate.Name.get -> string!
+Egami.InkPlate.Row16(int y) -> System.Span<ushort>
+Egami.InkPlate.Row8(int y) -> System.Span<byte>
+Egami.InkPlate.Width.get -> int
+Egami.InkRaster
+Egami.InkRaster.Alpha.get -> Egami.InkPlate!
+Egami.InkRaster.Context.get -> Egami.EgamiContext!
+Egami.InkRaster.Depth.get -> Egami.InkDepth
+Egami.InkRaster.Dispose() -> void
+Egami.InkRaster.Height.get -> int
+Egami.InkRaster.InkRaster(Egami.Colors.InkSet! inks, int width, int height, Egami.InkDepth depth = Egami.InkDepth.Unorm8, Egami.EgamiContext? context = null) -> void
+Egami.InkRaster.Inks.get -> Egami.Colors.InkSet!
+Egami.InkRaster.Plate(string! name) -> Egami.InkPlate?
+Egami.InkRaster.Plates.get -> System.Collections.Generic.IReadOnlyList<Egami.InkPlate!>!
+Egami.InkRaster.Width.get -> int
 Egami.Metadata.ExifData.ReadThumbnail(Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.Rgb8>?
 Egami.Metadata.ExifData.SetThumbnail(Egami.Raster! raster, int maxSide = 160, int quality = 75) -> void
 Egami.Metadata.IptcData
@@ -2636,6 +2659,7 @@ override Egami.Formats.Webp.WebpReaderOptions.<Clone>$() -> Egami.Formats.Webp.W
 override Egami.Formats.Webp.WebpReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Webp.WebpReaderOptions.GetHashCode() -> int
 override Egami.Formats.Webp.WebpReaderOptions.ToString() -> string!
+override Egami.InkPlate.ToString() -> string!
 override Egami.Metadata.IptcEntry.ToString() -> string!
 override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!

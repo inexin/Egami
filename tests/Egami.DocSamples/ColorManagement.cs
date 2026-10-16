@@ -242,6 +242,22 @@ public class ColorManagement
     }
 
     [Fact]
+    public void InkPlates()
+    {
+        InkSet inks = InkSet.FromProfile(ColorProfile.Fogra39).WithSpot("PANTONE 186 C", InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+
+        #region ink-raster
+        // A page as plates: CMYK and the spot, 8 bits each, plus alpha. Rows are written in place; a plate is also a gray raster.
+        using InkRaster page = new(inks, 200, 100, InkDepth.Unorm8);
+        page.Plate("PANTONE 186 C")!.Row8(10).Fill(255);              // a full-tint line of the spot
+        page.Alpha.Row8(10).Fill(255);
+        using Raster<Gray8> spot = page.Plate("PANTONE 186 C")!.AsRaster<Gray8>();   // no copy: 0 = no ink, 255 = full ink
+        #endregion
+
+        Assert.Equal(255, spot.Frames[0].Plane.Row(10)[0].L);
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);

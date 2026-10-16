@@ -135,6 +135,12 @@ process inks.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#inks)]
 
+An `InkRaster` holds a page as plates: one plane per ink of its set plus an alpha plane, 8 or 16 bits (`InkDepth`). A plane
+holds the ink as it prints over paper, 0 for none to the maximum for full ink. Each `InkPlate` gives its rows in place, or a
+`Raster<Gray8>` or `Raster<Gray16>` over the same memory to save or process like any image.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#ink-raster)]
+
 ## Code points
 
 `ColorCodePoints` holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami
