@@ -186,6 +186,14 @@ public class JxlRecompressTests
         Assert.Equal(jpeg, RoundTrip(jpeg));
     }
 
+    /// <summary>A JPEG with a single Huffman table, a count the jbrd box cannot hold (libjxl refuses it alike).</summary>
+    [Fact]
+    public void SingleHuffmanTableIsRefused()
+    {
+        byte[] jpeg = File.ReadAllBytes(Path.Combine(SimpleCorpus.Images, "fuzz", "jxl-jpeg", "one-huffman-table.jpg"));
+        Assert.Throws<UnsupportedFormatException>(() => Recompress(jpeg));
+    }
+
     /// <summary>A damaged stream whose coefficients re-encode with other padding than it had: libjxl writes a file it cannot rebuild; Egami refuses it.</summary>
     [Fact]
     public void UnrebuildableJpegsAreRefused()

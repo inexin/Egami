@@ -187,7 +187,17 @@ internal sealed class JxlJpegEncoder
             }
         }
 
-        byte[] jbrd = WriteJbrd(jpg);
+        byte[] jbrd;
+        try
+        {
+            jbrd = WriteJbrd(jpg);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // A count the jbrd box's fields cannot hold, such as a single Huffman table (they start at 2); libjxl fails alike.
+            throw new UnsupportedFormatException("The JPEG has a table, marker or scan count the JPEG XL reconstruction data cannot describe.");
+        }
+
         byte[] codestream = e.Codestream(icc, orientation);
         using MemoryStream output = new();
         JxlWriter.WriteFile(output, codestream, exif, xmp, jbrd, compressBoxes: true);
