@@ -311,6 +311,9 @@ internal static partial class Av1InverseTransform
 
 VECTOR_TRANSFORMS = ("av1_idct8", "av1_idct16", "av1_idct32", "av1_idct64", "av1_iadst8", "av1_iadst16")
 
+# The transforms of the blocks four samples on a side, on Vector128 lanes at 8 bits (av1_iadst4 is written by hand).
+NARROW_TRANSFORMS = ("av1_idct4", "av1_idct8", "av1_idct16", "av1_iadst8", "av1_iadst16")
+
 
 def vector_lines(lines):
     """The lines of a scalar transform on Vector256 lanes: HalfBtf and Clamp have vector overloads taking the same arguments."""
@@ -368,6 +371,11 @@ def translate_inverse_transforms():
             emit(vector, f"    /// <summary>libaom's {name} on each lane.</summary>",
                  f"    internal static void {TRANSFORM_NAMES[name]}<T>(ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, "
                  "Vector256<int> lo, Vector256<int> hi)\n        where T : IButterfly", vector_lines(split))
+        if name in NARROW_TRANSFORMS:
+            emit(vector, f"    /// <summary>libaom's {name} on each of four lanes, at 8 bits.</summary>",
+                 f"    internal static void {TRANSFORM_NAMES[name]}(ReadOnlySpan<Vector128<int>> input, Span<Vector128<int>> output, "
+                 "Vector128<int> lo, Vector128<int> hi)",
+                 [line.replace("Vector256", "Vector128").replace("T.HalfBtf(", "HalfBtf(") for line in vector_lines(split)])
     out[-1] = "}"
     open(os.path.join(OUT, "Av1InverseTransform.OneD.cs"), "w", newline="\n").write(TRANSFORM_HEADER + "\n".join(out) + "\n")
     vector[-1] = "}"

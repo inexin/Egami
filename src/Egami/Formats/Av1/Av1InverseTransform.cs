@@ -65,6 +65,12 @@ internal static partial class Av1InverseTransform
         bool rect2 = w == 2 * h || h == 2 * w;
         int rowClamp = bitDepth + 8, colClamp = Math.Max(bitDepth + 6, 16);
         int max = (1 << bitDepth) - 1;
+        if (Vector128.IsHardwareAccelerated && bitDepth == 8 && (w == 4 || h == 4) && w <= 16 && h <= 16)
+        {
+            AddNarrow(coeffs, w, h, rect2, rowShift, new Types(rowType, colType), dst, offset, stride);
+            return;
+        }
+
         if (Vector256.IsHardwareAccelerated && w >= 8 && h >= 8)
         {
             Types types = new(rowType, colType);
@@ -264,6 +270,167 @@ internal static partial class Av1InverseTransform
 
         static (Vector256<int> Lo, Vector256<int> Hi) Bounds(int bits) => (Vector256.Create(-(1 << (bits - 1))), Vector256.Create((1 << (bits - 1)) - 1));
     }
+
+    /// <summary>
+    /// The 8-bit blocks four samples on a side (4x4 to 16x4 and 4x16), four rows and then four columns at a time. At 8 bits
+    /// every input is clamped to 16 bits and every weight is 12, so even the ADST4's sums of three products fit 32 bits.
+    /// </summary>
+    private static void AddNarrow(int[] coeffs, int w, int h, bool rect2, int rowShift, Types types, ushort[] dst, int offset, int stride)
+    {
+        Span<int> buf = stackalloc int[w * h];
+        Span<Vector128<int>> input = stackalloc Vector128<int>[16];
+        Span<Vector128<int>> output = stackalloc Vector128<int>[16];
+        ref int c0 = ref MemoryMarshal.GetArrayDataReference(coeffs);
+        Vector128<int> lo = Vector128.Create(-(1 << 15)), hi = Vector128.Create((1 << 15) - 1);
+        for (int r0 = 0; r0 < h; r0 += 4)
+        {
+            Vector128<int> any = Vector128<int>.Zero;
+            for (int c = 0; c < w; c++)
+            {
+                Vector128<int> v = Vector128.LoadUnsafe(ref c0, (nuint)((c * h) + r0));
+                if (rect2)
+                {
+                    v = Vector128.ShiftRightArithmetic((v * NewInvSqrt2) + Vector128.Create(1 << (NewSqrt2Bits - 1)), NewSqrt2Bits);
+                }
+
+                input[c] = Vector128.Min(Vector128.Max(v, lo), hi);
+                any |= v;
+            }
+
+            if (any == Vector128<int>.Zero)
+            {
+                buf.Slice(r0 * w, 4 * w).Clear();
+                continue;
+            }
+
+            Transform(types.Row, w, input[..w], output[..w], lo, hi);
+            for (int c = 0; c < w; c += 4)
+            {
+                Transpose(output.Slice(c, 4), buf.Slice((r0 * w) + c), w, rowShift);
+            }
+        }
+
+        bool lrFlip = types.Row == 2, udFlip = types.Column == 2;
+        ref int b0 = ref MemoryMarshal.GetReference(buf);
+        ref ushort d0 = ref MemoryMarshal.GetArrayDataReference(dst);
+        Vector128<int> round = Vector128.Create(8), top = Vector128.Create(255);
+        for (int col = 0; col < w; col += 4)
+        {
+            for (int r = 0; r < h; r++)
+            {
+                Vector128<int> v = lrFlip
+                    ? Vector128.Shuffle(Vector128.LoadUnsafe(ref b0, (nuint)((r * w) + w - 4 - col)), Vector128.Create(3, 2, 1, 0))
+                    : Vector128.LoadUnsafe(ref b0, (nuint)((r * w) + col));
+                input[r] = Vector128.Min(Vector128.Max(v, lo), hi);
+            }
+
+            Transform(types.Column, h, input[..h], output[..h], lo, hi);
+            for (int r = 0; r < h; r++)
+            {
+                ref ushort at = ref Unsafe.Add(ref d0, offset + (r * stride) + col);
+                Vector128<int> prediction = Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<ushort, byte>(ref at))).AsUInt16()).AsInt32();
+                Vector128<int> sum = prediction + Vector128.ShiftRightArithmetic(output[udFlip ? h - 1 - r : r] + round, 4);
+                sum = Vector128.Min(Vector128.Max(sum, Vector128<int>.Zero), top);
+                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref at), Vector128.Narrow(sum.AsUInt32(), sum.AsUInt32()).AsUInt64().ToScalar());
+            }
+        }
+    }
+
+    /// <summary>Writes the 4x4 block whose columns are <paramref name="columns"/> as four rows, <paramref name="stride"/> apart, rounded by <paramref name="shift"/>.</summary>
+    private static void Transpose(ReadOnlySpan<Vector128<int>> columns, Span<int> rows, int stride, int shift)
+    {
+        Vector128<int> a0 = columns[0], a1 = columns[1], a2 = columns[2], a3 = columns[3];
+        if (shift > 0)
+        {
+            Vector128<int> half = Vector128.Create(1 << (shift - 1));
+            a0 = Vector128.ShiftRightArithmetic(a0 + half, shift);
+            a1 = Vector128.ShiftRightArithmetic(a1 + half, shift);
+            a2 = Vector128.ShiftRightArithmetic(a2 + half, shift);
+            a3 = Vector128.ShiftRightArithmetic(a3 + half, shift);
+        }
+
+        ref int r = ref MemoryMarshal.GetReference(rows);
+        if (Sse2.IsSupported)
+        {
+            Vector128<long> t0 = Sse2.UnpackLow(a0, a1).AsInt64(), t1 = Sse2.UnpackHigh(a0, a1).AsInt64();
+            Vector128<long> t2 = Sse2.UnpackLow(a2, a3).AsInt64(), t3 = Sse2.UnpackHigh(a2, a3).AsInt64();
+            Sse2.UnpackLow(t0, t2).AsInt32().StoreUnsafe(ref r, 0);
+            Sse2.UnpackHigh(t0, t2).AsInt32().StoreUnsafe(ref r, (nuint)stride);
+            Sse2.UnpackLow(t1, t3).AsInt32().StoreUnsafe(ref r, (nuint)(2 * stride));
+            Sse2.UnpackHigh(t1, t3).AsInt32().StoreUnsafe(ref r, (nuint)(3 * stride));
+            return;
+        }
+
+        for (int lane = 0; lane < 4; lane++)
+        {
+            Vector128.Create(a0.GetElement(lane), a1.GetElement(lane), a2.GetElement(lane), a3.GetElement(lane)).StoreUnsafe(ref r, (nuint)(lane * stride));
+        }
+    }
+
+    private static void Transform(int type1d, int n, ReadOnlySpan<Vector128<int>> input, Span<Vector128<int>> output, Vector128<int> lo, Vector128<int> hi)
+    {
+        switch (type1d)
+        {
+            case 0:
+                switch (n)
+                {
+                    case 4: Dct4(input, output, lo, hi); break;
+                    case 8: Dct8(input, output, lo, hi); break;
+                    default: Dct16(input, output, lo, hi); break;
+                }
+
+                break;
+            case 3:
+                // av1_iidentity4_c to 16_c: times sqrt(2), 2 and 2 sqrt(2).
+                for (int i = 0; i < n; i++)
+                {
+                    output[i] = n switch
+                    {
+                        4 => Vector128.ShiftRightArithmetic((input[i] * NewSqrt2) + Vector128.Create(1 << (NewSqrt2Bits - 1)), NewSqrt2Bits),
+                        8 => input[i] * 2,
+                        _ => Vector128.ShiftRightArithmetic((input[i] * (NewSqrt2 * 2)) + Vector128.Create(1 << (NewSqrt2Bits - 1)), NewSqrt2Bits),
+                    };
+                }
+
+                break;
+            default:
+                switch (n)
+                {
+                    case 4: Adst4(input, output); break;
+                    case 8: Adst8(input, output, lo, hi); break;
+                    default: Adst16(input, output, lo, hi); break;
+                }
+
+                break;
+        }
+    }
+
+    /// <summary>av1_iadst4 on four lanes at 8 bits, its 64-bit sums in 32.</summary>
+    private static void Adst4(ReadOnlySpan<Vector128<int>> input, Span<Vector128<int>> output)
+    {
+        ReadOnlySpan<int> sinpi = Sinpi;
+        Vector128<int> x0 = input[0], x1 = input[1], x2 = input[2], x3 = input[3];
+        Vector128<int> s0 = x0 * sinpi[1], s1 = x0 * sinpi[2], s2 = x1 * sinpi[3], s3 = x2 * sinpi[4];
+        Vector128<int> s4 = x2 * sinpi[1], s5 = x3 * sinpi[2], s6 = x3 * sinpi[4], s7 = (x0 - x2) + x3;
+        s0 += s3;
+        s1 -= s4;
+        s3 = s2;
+        s2 = s7 * sinpi[3];
+        s0 += s5;
+        s1 -= s6;
+        Vector128<int> round = Vector128.Create(1 << (CosBit - 1));
+        output[0] = Vector128.ShiftRightArithmetic(s0 + s3 + round, CosBit);
+        output[1] = Vector128.ShiftRightArithmetic(s1 + s3 + round, CosBit);
+        output[2] = Vector128.ShiftRightArithmetic(s2 + round, CosBit);
+        output[3] = Vector128.ShiftRightArithmetic(s0 + s1 - s3 + round, CosBit);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> HalfBtf(int w0, Vector128<int> in0, int w1, Vector128<int> in1, int bit) =>
+        Vector128.ShiftRightArithmetic((in0 * w0) + (in1 * w1) + Vector128.Create(1 << (bit - 1)), bit);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Clamp(Vector128<int> value, Vector128<int> lo, Vector128<int> hi) => Vector128.Min(Vector128.Max(value, lo), hi);
 
     /// <summary>Writes the 8x8 block whose columns are <paramref name="columns"/> as eight rows, <paramref name="stride"/> apart.</summary>
     private static void Transpose(ReadOnlySpan<Vector256<int>> columns, Span<int> rows, int stride)
