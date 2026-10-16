@@ -39,6 +39,7 @@
     <None Include="../images/jbig2/book-3pages-symbol.jb2" Link="images/book.jb2" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jbig2/book-pdf.sym" Link="images/book-globals.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jbig2/book-pdf.0000" Link="images/book-page1.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/ccitt/shapes-k-1-a1-e0-b1-i0-r1.ccitt" Link="images/fax-g4.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg2000/rgb-layers.jp2" Link="images/photo.jp2" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jpeg2000/rgb-lossy.j2k" Link="images/photo.j2k" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ico/set.ico" Link="images/app.ico" CopyToOutputDirectory="PreserveNewest" />

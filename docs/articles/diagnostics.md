@@ -86,6 +86,9 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Bmp.ProfileTruncated` | Warning | The file ends before the embedded ICC profile; it was dropped |
 | `Bmp.RowsMissing` | Warning | The pixel data ends or is damaged; the rows not decoded are black |
 | `Bmp.RunPastRow` | Warning | RLE runs go past the end of a row; the extra pixels were dropped |
+| `Ccitt.Damaged` | Warning | A row of CCITT data is damaged and could not be skipped; the rows before it were kept and the rest are white |
+| `Ccitt.RowsSkipped` | Warning | Damaged CCITT rows were skipped to the next EOL, as DamagedRowsBeforeError allows; each repeats the row before it |
+| `Ccitt.Truncated` | Warning | The CCITT data ends before the rows its parameters give; the rest are white |
 | `Color.ConvertedOnLoad` | Info | `ReaderOptions.ConvertColorTo` converted the pixels; from which encoding to which |
 | `Decode.FramesSelected` | Info | `ReaderOptions.Frames` chose some frames; how many were read |
 | `Decode.ScaleChosen` | Info | For `ReaderOptions.MinimumSize`, the 1/N scale the reader decodes at and the box factor after it |

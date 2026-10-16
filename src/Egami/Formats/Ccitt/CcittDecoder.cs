@@ -1,15 +1,18 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
-namespace Egami.Formats.Tiff;
+using Egami.Formats.Tiff;
+
+namespace Egami.Formats.Ccitt;
 
 /// <summary>
-/// CCITT fax coding in TIFF: modified Huffman rows (compression 2, and 32771 with rows on 16-bit words), Group 3 (3: ITU-T T.4,
-/// one- and two-dimensional, with EOLs) and Group 4 (4: ITU-T T.6). Rows come out packed most significant bit first, a black
-/// run as 1 bits, a white run as 0 bits; the photometric interpretation decides what the bits mean. Moved from Lars's ClassicMac
-/// (CcittFax.cs, MIT): the same decoding, with the run and mode codes looked up in tables instead of one bit at a time.
+/// CCITT fax decoding, one decoder for PDF's CCITTFaxDecode, TIFF and JBIG2's MMR regions: modified Huffman rows (TIFF
+/// compression 2, and 32771 with rows on 16-bit words), Group 3 (ITU-T T.4, one- and two-dimensional, with EOLs) and Group 4
+/// (ITU-T T.6), driven by PDF's eight parameters, which TIFF's compressions and JBIG2's MMR map onto. Rows come out packed most
+/// significant bit first, a black run as 1 bits, a white run as 0 bits. Moved from Lars's ClassicMac (CcittFax.cs, MIT): the
+/// same decoding, with the run and mode codes looked up in tables instead of one bit at a time.
 /// </summary>
-internal static class CcittFax
+internal sealed class CcittDecoder
 {
     // The run-length codes of T.4 tables 2 and 3: (bits, run).
     private static readonly (string Bits, int Run)[] WhiteCodes =
@@ -113,64 +116,274 @@ internal static class CcittFax
         return table;
     }
 
-    /// <summary>
-    /// Decodes <paramref name="rows"/> rows of <paramref name="width"/> pixels into <paramref name="output"/>; returns the bytes of
-    /// the rows decoded whole (fewer when the data ends or is damaged).
-    /// </summary>
-    public static int Decode(ReadOnlySpan<byte> input, Span<byte> output, int width, int rows, int compression, uint t4Options)
+    private readonly int _k;
+    private readonly bool _endOfLine;
+    private readonly bool _align;
+    private readonly int _alignBits;
+    private readonly bool _eolsPossible;
+    private readonly int _columns;
+    private readonly int _rows;
+    private readonly int _damagedRowsAllowed;
+    private readonly int _rowBytes;
+    private int[] _a;
+    private int[] _b;
+    private int _referenceCount;
+    private long _position;
+    private int _damagedRows;
+    private byte[]? _previous;
+
+    /// <summary>Starts decoding with PDF's parameters; each <see cref="NextRow"/> is given the same coded data.</summary>
+    /// <param name="k">PDF's K: below 0 Group 4 (T.6), 0 one-dimensional Group 3, above 0 mixed Group 3 (T.4).</param>
+    /// <param name="endOfLine">Whether EOLs are required; they are accepted where present either way.</param>
+    /// <param name="align">PDF's EncodedByteAlign: Group 4 rows, or Group 3 rows without an EOL, start on a byte boundary (16-bit words with <paramref name="alignBits"/> 16).</param>
+    /// <param name="columns">The row width in pixels.</param>
+    /// <param name="rows">The rows to decode, or 0 to decode until the data or its end-of-block code ends.</param>
+    /// <param name="damagedRowsAllowed">PDF's DamagedRowsBeforeError: with EOLs and K 0 or above, how many bad rows are skipped at the next EOL.</param>
+    /// <param name="eolsPossible">False for TIFF's modified Huffman rows, which have no EOLs, so zeros before a row are never skipped.</param>
+    /// <param name="alignBits">8, or 16 for TIFF compression 32771.</param>
+    internal CcittDecoder(int k, bool endOfLine, bool align, int columns, int rows, int damagedRowsAllowed, bool eolsPossible = true, int alignBits = 8)
     {
-        BitReader bits = new(input);
-        int rowBytes = (width + 7) / 8;
-        int[] a = new int[width + 4];
-        int[] b = new int[width + 4];
-        int referenceCount = 2;
-        b[0] = width;
-        b[1] = width;
-        int done = 0;
-        for (; done < rows; done++)
+        _k = k;
+        _endOfLine = endOfLine;
+        _align = align;
+        _alignBits = alignBits;
+        _eolsPossible = eolsPossible;
+        _columns = columns;
+        _rows = rows;
+        _damagedRowsAllowed = damagedRowsAllowed;
+        _rowBytes = (columns + 7) / 8;
+        _a = new int[columns + 4];
+        _b = new int[columns + 4];
+        _b[0] = columns;
+        _b[1] = columns;
+        _referenceCount = 2;
+    }
+
+    /// <summary>Gets the rows decoded so far, damaged rows that were skipped included.</summary>
+    internal int RowsDone { get; private set; }
+
+    /// <summary>Gets whether decoding has ended: the rows asked for are done, an end-of-block code was read, or the data ended or is damaged.</summary>
+    internal bool Ended { get; private set; }
+
+    /// <summary>Gets what was wrong when the data is damaged (a bad row the decoder could not skip), or null.</summary>
+    internal string? Damage { get; private set; }
+
+    /// <summary>Gets how many damaged rows were skipped, each a copy of the row before it.</summary>
+    internal int SkippedRows => _damagedRows;
+
+    /// <summary>Gets the bytes read so far, rounded up to a whole byte.</summary>
+    internal int BytesRead => (int)((_position + 7) >> 3);
+
+    /// <summary>
+    /// Decodes the next row into <paramref name="row"/>, packed most significant bit first with black runs as 1 bits; returns
+    /// false, leaving <paramref name="row"/> alone, when decoding has ended.
+    /// </summary>
+    internal bool NextRow(ReadOnlySpan<byte> data, Span<byte> row)
+    {
+        if (Ended)
         {
-            bool twoDimensional = compression == TiffCodes.CcittGroup4;
-            if (compression == TiffCodes.CcittGroup3)
+            return false;
+        }
+
+        if (_rows > 0 && RowsDone >= _rows)
+        {
+            Ended = true;
+            return false;
+        }
+
+        BitReader bits = new(data, _position);
+        long start = bits.Position;
+        bool twoDimensional = _k < 0;
+        if (_k < 0)
+        {
+            if (_align && RowsDone > 0)
             {
-                // An EOL (eleven zeros and a one, after any fill), then with 2-D coding a bit: 1 one-dimensional, 0 two.
-                while (bits.Left >= 12 && bits.Peek(12) == 0)
-                {
-                    bits.Skip(1);
-                }
-
-                if (bits.Peek(12) == 1)
-                {
-                    bits.Skip(12);
-                }
-
-                if ((t4Options & 1) != 0)
-                {
-                    twoDimensional = bits.Read(1) == 0;
-                }
+                bits.Align(_alignBits);
             }
 
-            int count = twoDimensional ? TwoDimensional(ref bits, width, b, referenceCount, a) : OneDimensional(ref bits, width, a);
-            if (count < 0)
+            if (_endOfLine)
             {
-                break;
+                SkipEol(ref bits);
             }
 
-            Fill(output.Slice(done * rowBytes, rowBytes), a, count, width);
-            (a, b) = (b, a);
-            b[count] = width;
-            b[count + 1] = width;
-            referenceCount = count + 2;
-            if (compression == TiffCodes.CcittRle)
+            // EOFB: two EOLs (T.6 2.4.2).
+            if (bits.Left >= 24 && bits.Peek(24) == 0x001001)
             {
-                bits.Align(8);
+                return End(ref bits, null);
             }
-            else if (compression == TiffCodes.CcittRleWord)
+        }
+        else
+        {
+            bool eol = _eolsPossible && (_align ? SkipAlignedEol(ref bits) : SkipEol(ref bits));
+            if (eol && EolFollows(bits))
             {
-                bits.Align(16);
+                // RTC: six EOLs end the page (T.4 4.1.4); the first ended the last row, the next starts no row.
+                return End(ref bits, null);
+            }
+
+            if (!eol && _align && RowsDone > 0)
+            {
+                bits.Align(_alignBits);
+            }
+
+            if (_k > 0)
+            {
+                twoDimensional = bits.Read(1) == 0;
             }
         }
 
-        return done * rowBytes;
+        int count = bits.Left <= 0 ? -1
+            : twoDimensional ? TwoDimensional(ref bits, _columns, _b, _referenceCount, _a) : OneDimensional(ref bits, _columns, _a);
+        if (count < 0)
+        {
+            return Damaged(ref bits, start, row);
+        }
+
+        Fill(row[.._rowBytes], _a, count, _columns);
+        (_a, _b) = (_b, _a);
+        _b[count] = _columns;
+        _b[count + 1] = _columns;
+        _referenceCount = count + 2;
+        _position = bits.Position;
+        RowsDone++;
+        if (_damagedRowsAllowed > 0)
+        {
+            _previous ??= new byte[_rowBytes];
+            row[.._rowBytes].CopyTo(_previous);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// A row that did not decode. With EOLs, K 0 or above and damaged rows still allowed, the decoder finds the next EOL and the
+    /// row repeats the one before it; otherwise decoding ends, as damage unless only zeros or nothing were left.
+    /// </summary>
+    private bool Damaged(ref BitReader bits, long start, Span<byte> row)
+    {
+        bits.Seek(start);
+        if (bits.Left < 12 || bits.OnlyZeros())
+        {
+            return End(ref bits, null);
+        }
+
+        if (_endOfLine && _k >= 0 && _damagedRows < _damagedRowsAllowed && FindEol(ref bits, start + 1))
+        {
+            _damagedRows++;
+            if (_previous is null)
+            {
+                row[.._rowBytes].Clear();
+            }
+            else
+            {
+                _previous.CopyTo(row);
+            }
+
+            // The reference row of a 2-D row after this one stays the row before, which this one repeats.
+            _position = bits.Position;
+            RowsDone++;
+            return true;
+        }
+
+        return End(ref bits, $"Row {RowsDone} of the CCITT data is damaged at bit {start}.");
+    }
+
+    private bool End(ref BitReader bits, string? damage)
+    {
+        _position = bits.Position;
+        Ended = true;
+        Damage = damage;
+        return false;
+    }
+
+    /// <summary>Skips fill (12 or more zeros) and an EOL if one follows; returns whether an EOL was read.</summary>
+    private static bool SkipEol(ref BitReader bits)
+    {
+        while (bits.Left >= 12 && bits.Peek(12) == 0)
+        {
+            bits.Skip(1);
+        }
+
+        if (bits.Left >= 12 && bits.Peek(12) == 1)
+        {
+            bits.Skip(12);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// With EncodedByteAlign, an EOL ends on a byte boundary after its fill bits (T.4 4.1.3), so zeros are an EOL only when 11
+    /// or more of them and a 1 end exactly there; any other zeros belong to the row, which then starts on the next boundary.
+    /// Returns whether an EOL was read.
+    /// </summary>
+    private static bool SkipAlignedEol(ref BitReader bits)
+    {
+        long start = bits.Position;
+        while (bits.Left > 0 && bits.Peek(1) == 0)
+        {
+            bits.Skip(1);
+        }
+
+        if (bits.Left > 0 && bits.Position - start >= 11 && ((bits.Position + 1) & 7) == 0)
+        {
+            bits.Skip(1);
+            return true;
+        }
+
+        bits.Seek(start);
+        return false;
+    }
+
+    /// <summary>Whether another EOL comes next, after the tag bit with K above 0 and any fill: the rest of RTC or EOFB.</summary>
+    private bool EolFollows(BitReader bits)
+    {
+        if (_k > 0)
+        {
+            bits.Skip(1);
+        }
+
+        return _align ? SkipAlignedEol(ref bits) : SkipEol(ref bits);
+    }
+
+    /// <summary>Moves to the next EOL at or after bit <paramref name="from"/>, leaving it to be read; returns false when none is left.</summary>
+    private static bool FindEol(ref BitReader bits, long from)
+    {
+        bits.Seek(from);
+        while (bits.Left >= 12)
+        {
+            if (bits.Peek(12) == 1)
+            {
+                return true;
+            }
+
+            bits.Skip(1);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Decodes TIFF's CCITT strips (compressions 2, 3, 4 and 32771): <paramref name="rows"/> rows of <paramref name="width"/>
+    /// pixels into <paramref name="output"/>; returns the bytes of the rows decoded whole (fewer when the data ends or is damaged).
+    /// T4Options bit 0 asks for mixed 1-D and 2-D rows; the fill bits of bit 2 are skipped with the EOL they come before.
+    /// </summary>
+    public static int DecodeTiff(ReadOnlySpan<byte> input, Span<byte> output, int width, int rows, int compression, uint t4Options)
+    {
+        CcittDecoder decoder = compression switch
+        {
+            TiffCodes.CcittRle => new(0, false, true, width, rows, 0, eolsPossible: false),
+            TiffCodes.CcittRleWord => new(0, false, true, width, rows, 0, eolsPossible: false, alignBits: 16),
+            TiffCodes.CcittGroup3 => new((t4Options & 1) != 0 ? 1 : 0, false, false, width, rows, 0),
+            _ => new(-1, false, false, width, rows, 0),
+        };
+        int rowBytes = (width + 7) / 8;
+        while (decoder.RowsDone < rows && decoder.NextRow(input, output.Slice(decoder.RowsDone * rowBytes, rowBytes)))
+        {
+        }
+
+        return decoder.RowsDone * rowBytes;
     }
 
     /// <summary>
@@ -179,34 +392,13 @@ internal static class CcittFax
     /// </summary>
     public static int DecodeMmr(ReadOnlySpan<byte> input, Span<byte> output, int width, int rows, out int consumed)
     {
-        BitReader bits = new(input);
+        CcittDecoder decoder = new(-1, false, false, width, rows, 0);
         int rowBytes = (width + 7) / 8;
-        int[] a = new int[width + 4];
-        int[] b = new int[width + 4];
-        int referenceCount = 2;
-        b[0] = width;
-        b[1] = width;
-        int done = 0;
-        for (; done < rows; done++)
+        while (decoder.RowsDone < rows && decoder.NextRow(input, output.Slice(decoder.RowsDone * rowBytes, rowBytes)))
         {
-            if (bits.Left >= 24 && bits.Peek(24) == 0x001001)
-            {
-                break;
-            }
-
-            int count = TwoDimensional(ref bits, width, b, referenceCount, a);
-            if (count < 0)
-            {
-                break;
-            }
-
-            Fill(output.Slice(done * rowBytes, rowBytes), a, count, width);
-            (a, b) = (b, a);
-            b[count] = width;
-            b[count + 1] = width;
-            referenceCount = count + 2;
         }
 
+        BitReader bits = new(input, decoder._position);
         if (bits.Left >= 24 && bits.Peek(24) == 0x001001)
         {
             bits.Skip(24);
@@ -214,7 +406,7 @@ internal static class CcittFax
 
         bits.Align(8);
         consumed = (int)(bits.Position >> 3);
-        return done;
+        return decoder.RowsDone;
     }
 
     /// <summary>Sets the bits of a row's black runs: changes alternate white to black, black to white.</summary>
@@ -399,10 +591,10 @@ internal static class CcittFax
     }
 
     /// <summary>Bits most significant first, read through a 32-bit window; bits past the end read as zeros.</summary>
-    private ref struct BitReader(ReadOnlySpan<byte> data)
+    private ref struct BitReader(ReadOnlySpan<byte> data, long position = 0)
     {
         private readonly ReadOnlySpan<byte> _data = data;
-        private long _position;
+        private long _position = position;
 
         public readonly long Left => (_data.Length * 8L) - _position;
 
@@ -440,5 +632,19 @@ internal static class CcittFax
         public void Skip(int count) => _position = Math.Min(_position + count, _data.Length * 8L);
 
         public void Align(int bits) => _position = Math.Min((_position + bits - 1) / bits * bits, _data.Length * 8L);
+
+        public void Seek(long position) => _position = Math.Min(position, _data.Length * 8L);
+
+        /// <summary>Whether every bit left is 0.</summary>
+        public readonly bool OnlyZeros()
+        {
+            int at = (int)(_position >> 3);
+            if (at >= _data.Length)
+            {
+                return true;
+            }
+
+            return (_data[at] & (0xFF >> (int)(_position & 7))) == 0 && !_data[(at + 1)..].ContainsAnyExcept((byte)0);
+        }
     }
 }

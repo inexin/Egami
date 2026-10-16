@@ -150,7 +150,7 @@ internal static class Jbig2Generic
 
         int rowBytes = (width + 7) / 8;
         byte[] rows = new byte[checked(rowBytes * height)];
-        Tiff.CcittFax.DecodeMmr(data, rows, width, height, out int consumed);
+        Ccitt.CcittDecoder.DecodeMmr(data, rows, width, height, out int consumed);
         FromBytes(bitmap, rows, rowBytes);
         return (bitmap, consumed);
     }

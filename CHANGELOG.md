@@ -7,6 +7,18 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Raw CCITT fax data
+
+- `CcittFax.Decode` decodes Group 3 and Group 4 fax data (ITU-T T.4 and T.6) as PDF's CCITTFaxDecode filter does, taking all
+  eight of its parameters in `CcittFaxParameters`: K, EndOfLine, EncodedByteAlign (byte-aligned Group 4 included, which a TIFF
+  wrapper cannot say), Columns, Rows, EndOfBlock, BlackIs1 and DamagedRowsBeforeError. It returns packed rows in PDF's bit sense.
+  Every CCITT stream of a 4,000-file PDF corpus and of a generated matrix of every parameter combination decodes bit for bit as
+  PDFium and pdf.js decode it, about six times faster than PDFium and two and a half times faster than PdfPig.
+- `CcittFormat` loads the same data as a `Gray8` image with its parameters in `CcittReaderOptions`, with Probe, the row reader,
+  regions and reductions. It has no signature, so detection never picks it.
+- A damaged row ends decoding: the rows before it are kept, the rest are white, and `Ccitt.Damaged` warns (strict loading
+  throws). With EOLs, up to DamagedRowsBeforeError bad rows are skipped first. TIFF and JBIG2's MMR regions use the same decoder.
+
 ### VP8 video frames
 
 - `Vp8StreamDecoder` decodes VP8 video (RFC 6386) a frame at a time: inter frames with the last, golden and alternate references,

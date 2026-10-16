@@ -53,7 +53,7 @@ internal sealed class TiffDecoder : IDisposable
                 TiffCodes.PackBits => PackBits.Decode(packed, target, out _),
                 TiffCodes.ThunderScan => ThunderScan(packed, target, page.UnitWidth, rows),
                 TiffCodes.CcittRle or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4 or TiffCodes.CcittRleWord
-                    => CcittFax.Decode(packed, target, page.UnitWidth, rows, page.Compression, page.FaxOptions),
+                    => Ccitt.CcittDecoder.DecodeTiff(packed, target, page.UnitWidth, rows, page.Compression, page.FaxOptions),
                 TiffCodes.SgiLog or TiffCodes.SgiLog24
                     => SgiLog.DecodeStrip(packed, target, page.UnitWidth, rows, page.Photometric == 32844, page.Compression == TiffCodes.SgiLog24),
                 _ => throw new NotSupportedException($"TIFF: compression {page.Compression} is not read here."),

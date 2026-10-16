@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, and Windows icons and cursors, and reads JBIG2, JPEG 2000 and Photoshop's PSD and PSB. Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG 2000 and Photoshop's PSD and PSB. Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -16,6 +16,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 | TGA | Color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, all origins, TGA 2.0 footer and extension area | 8-bit gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer | `Bgr8`, `Bgra8`, `Gray8` or `GrayAlpha8` |
 | QOI | The whole format, 3 or 4 channels, both colorspaces | 3 or 4 channels, byte-identical to the reference encoder | `Rgb8` or `Rgba8` |
 | TIFF | Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits; see the [TIFF guide](tiff.md) | Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, WebP | The page's own: `Gray8`, `Gray16`, `Rgb8`, `Rgb16`, `Cmyk8`, `Cmyk16`, float types and more |
+| CCITT | Raw Group 3 and Group 4 data (T.4, T.6) with PDF's eight CCITTFaxDecode parameters, byte-aligned rows included; see the [CCITT guide](ccitt.md) | No | `Gray8`, black 0 and white 255 |
 | JBIG2 | Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals; see the [JBIG2 guide](jbig2.md) | No | `Gray8`, black 0 and white 255 |
 | JPEG 2000 | All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes; see the [JPEG 2000 guide](jpeg2000.md) | No | `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8` or their 16-bit forms, by depth and color space |
 | ICO, CUR | Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by `MinimumSize` or index; cursor hotspots; see the [ICO guide](ico.md) | One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots | `Rgba8` |
@@ -37,7 +38,7 @@ that one:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Formats.cs#one-format)]
 
-Data without a signature of its own, such as the JBIG2 stream of a PDF image, loads with its format named, which skips detection.
+Data without a signature of its own, such as the JBIG2 or CCITT stream of a PDF image, loads with its format named, which skips detection.
 `Load`, `LoadAll`, `Probe` and `RasterDecoder.Open` all take the format this way; naming the wrong one throws
 `CorruptDataException`, as damaged data of that format would.
 

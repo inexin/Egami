@@ -32,7 +32,9 @@ using DrawingPath = Egami.Drawing.Path;
 // leniently, which must agree; writes it back every way, which must read again to the same path; and runs small paths through
 // measuring, dashing, stroke outlines and the boolean engine. The jpeg-transform target (Phase 2.4.4) runs lossless transforms
 // with options picked from the input's hash: a result must load at the size the transform reports, a flip done twice with its
-// edges kept must give back the source's pixels, and the result must not depend on the core count.
+// edges kept must give back the source's pixels, and the result must not depend on the core count. The ccitt target (Phase
+// 2.3.6) decodes raw CCITT data with PDF's parameters picked by its first bytes, through the filter call, Load and the row
+// reader, which must agree.
 // The ico target (Phase 2.3.3) loads ICO and CUR files every way (each entry, the
 // best one, MinimumSize, rows) and writes the entries back, which must read again to the same pixels; icoentry wraps its input
 // as the one entry of an icon, so mutations reach the BMP and PNG entry decoders and the AND mask directly. The psdfile target
@@ -142,6 +144,7 @@ static Action<Stream> Target(string name) => name switch
     "vp8video" => DecodeVp8Video,
     "jbig2" => LoadJbig2,
     "jbig2codec" => DecodeJbig2Codec,
+    "ccitt" => DecodeCcitt,
     "cube" => LoadCube,
     "jpeg2000" => LoadJpeg2000,
     "jpeg2000codec" => DecodeJpeg2000Codec,
@@ -168,7 +171,7 @@ static Action<Stream> Target(string name) => name switch
     "css" => stream => Egami.Fuzz.CssFuzzTarget.Run(ReadAll(stream)),
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph."),
 };
 
 static EgamiContext Context()
@@ -628,6 +631,87 @@ static void LoadTiff(Stream stream)
     }
 }
 
+// Phase 2.3.6: raw CCITT data with PDF's parameters. Six bytes pick them: K, the five flags, Columns, Rows and
+// DamagedRowsBeforeError; the rest is the data. The filter call, Load (lenient and strict) and the row reader may fail only
+// with an EgamiException, and must agree on every pixel and on the row count.
+static void DecodeCcitt(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 6)
+    {
+        return;
+    }
+
+    int flags = data[1];
+    Egami.Formats.Ccitt.CcittFaxParameters p = new()
+    {
+        K = (data[0] % 6) switch { 0 => -1, 1 => 0, int k => k - 1 },
+        EndOfLine = (flags & 1) != 0,
+        EncodedByteAlign = (flags & 2) != 0,
+        EndOfBlock = (flags & 4) == 0,
+        BlackIs1 = (flags & 8) != 0,
+        Columns = 1 + (((data[2] << 8) | data[3]) % 2048),
+        Rows = (flags & 16) != 0 ? 1 + data[4] : 0,
+        DamagedRowsBeforeError = data[5] % 4,
+    };
+    ReadOnlyMemory<byte> input = data.AsMemory(6);
+    EgamiContext context = Context();
+    byte[] packed;
+    int rows;
+    try
+    {
+        packed = Egami.Formats.Ccitt.CcittFax.Decode(input.Span, p, out rows, context);
+    }
+    catch (EgamiException)
+    {
+        packed = [];
+        rows = -1;
+    }
+
+    int rowBytes = (p.Columns + 7) / 8;
+    if (rows >= 0 && packed.Length != rows * rowBytes)
+    {
+        throw new InvalidOperationException($"The filter gave {packed.Length} bytes for {rows} rows of {rowBytes}.");
+    }
+
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        Egami.Formats.Ccitt.CcittReaderOptions options = new() { Parameters = p, Recovery = recovery };
+        try
+        {
+            RasterInfo info = Raster.Probe(input, Egami.Formats.Ccitt.CcittFormat.Info, context, options);
+            using Raster<Gray8> raster = Raster.Load<Gray8>(input, Egami.Formats.Ccitt.CcittFormat.Info, context, options);
+            using RasterDecoder decoder = RasterDecoder.Open(input, Egami.Formats.Ccitt.CcittFormat.Info, context, options);
+            using Raster<Gray8> streamed = (Raster<Gray8>)decoder.ReadAll();
+            if (raster.Height != rows || info.Height != rows || streamed.Height != rows || raster.Width != p.Columns)
+            {
+                throw new InvalidOperationException($"Load gave {raster.Width}x{raster.Height}, Probe {info.Height} rows, streaming {streamed.Height}, the filter {rows}.");
+            }
+
+            for (int y = 0; y < rows; y++)
+            {
+                Span<Gray8> row = raster.Row(y);
+                Span<Gray8> other = streamed.Row(y);
+                for (int x = 0; x < p.Columns; x++)
+                {
+                    bool black = ((packed[(y * rowBytes) + (x >> 3)] >> (7 - (x & 7))) & 1) == (p.BlackIs1 ? 1 : 0);
+                    if (black != (row[x].L == 0) || row[x].L != other[x].L)
+                    {
+                        throw new InvalidOperationException($"Pixel ({x}, {y}) differs between the filter, Load and streaming.");
+                    }
+                }
+            }
+        }
+        catch (EgamiException)
+        {
+            if (recovery == RecoveryMode.Lenient && rows >= 0)
+            {
+                throw new InvalidOperationException("Load failed where the filter decoded.");
+            }
+        }
+    }
+}
+
 // Phase 2.3.2: TIFF's decompressors and predictors fed directly: the first byte picks the codec and the next two the row width.
 // No decoder may throw or write past its output.
 static void DecodeTiffCodec(Stream stream)
@@ -646,13 +730,13 @@ static void DecodeTiffCodec(Stream stream)
     {
         0 => Egami.Formats.Tiff.TiffLzw.Decode(input, output),
         1 => Egami.Formats.PackBits.Decode(input, output, out _),
-        2 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 2, 0),
-        3 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 3, 0),
-        4 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 3, 1),
-        5 => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 4, 0),
+        2 => Egami.Formats.Ccitt.CcittDecoder.DecodeTiff(input, output, width, rows, 2, 0),
+        3 => Egami.Formats.Ccitt.CcittDecoder.DecodeTiff(input, output, width, rows, 3, 0),
+        4 => Egami.Formats.Ccitt.CcittDecoder.DecodeTiff(input, output, width, rows, 3, 1),
+        5 => Egami.Formats.Ccitt.CcittDecoder.DecodeTiff(input, output, width, rows, 4, 0),
         6 => Egami.Formats.Tiff.SgiLog.DecodeStrip(input, output, Math.Min(width, 256), 8, data[1] % 2 == 0, data[2] % 2 == 0),
         7 => Predict(input, output, width),
-        _ => Egami.Formats.Tiff.CcittFax.Decode(input, output, width, rows, 32771, 0),
+        _ => Egami.Formats.Ccitt.CcittDecoder.DecodeTiff(input, output, width, rows, 32771, 0),
     };
     if (written < 0 || written > output.Length)
     {

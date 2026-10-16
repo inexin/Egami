@@ -223,7 +223,7 @@ public sealed class FormatPipelineTests : IDisposable
     {
         FormatInfo other = TestFormat.Info with { Name = "Other", Matches = _ => false };
         EgamiContext context = EgamiContext.Default.WithFormat(TestFormat.Info).WithFormat(other);
-        string[] builtIn = ["PNG", "JPEG", "GIF", "WebP", "BMP", "QOI", "PNM", "TIFF", "JBIG2", "JPEG 2000", "ICO", "CUR", "PSD", "Radiance", "OpenEXR", "JPEG XL", "TGA"];
+        string[] builtIn = ["PNG", "JPEG", "GIF", "WebP", "BMP", "QOI", "PNM", "TIFF", "JBIG2", "JPEG 2000", "ICO", "CUR", "PSD", "Radiance", "OpenEXR", "JPEG XL", "TGA", "CCITT"];
         Assert.Equal([.. builtIn, "EGTF", "Other"], context.Formats.Select(f => f.Name));
 
         FormatInfo replacement = TestFormat.Info with { Name = "egtf", Extensions = ["x"] };

@@ -62,6 +62,8 @@
       href: guides/tiff.md
     - name: JBIG2
       href: guides/jbig2.md
+    - name: CCITT fax
+      href: guides/ccitt.md
     - name: JPEG 2000
       href: guides/jpeg2000.md
     - name: ICO and CUR

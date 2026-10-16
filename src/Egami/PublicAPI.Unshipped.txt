@@ -514,6 +514,33 @@ Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
 Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
 Egami.DecodeStatus.NeedsInput = 1 -> Egami.DecodeStatus
 Egami.DecodeStatus.RowsAvailable = 0 -> Egami.DecodeStatus
+Egami.Formats.Ccitt.CcittFax
+Egami.Formats.Ccitt.CcittFaxParameters
+Egami.Formats.Ccitt.CcittFaxParameters.<Clone>$() -> Egami.Formats.Ccitt.CcittFaxParameters!
+Egami.Formats.Ccitt.CcittFaxParameters.BlackIs1.get -> bool
+Egami.Formats.Ccitt.CcittFaxParameters.BlackIs1.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.CcittFaxParameters() -> void
+Egami.Formats.Ccitt.CcittFaxParameters.Columns.get -> int
+Egami.Formats.Ccitt.CcittFaxParameters.Columns.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.DamagedRowsBeforeError.get -> int
+Egami.Formats.Ccitt.CcittFaxParameters.DamagedRowsBeforeError.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.EncodedByteAlign.get -> bool
+Egami.Formats.Ccitt.CcittFaxParameters.EncodedByteAlign.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.EndOfBlock.get -> bool
+Egami.Formats.Ccitt.CcittFaxParameters.EndOfBlock.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.EndOfLine.get -> bool
+Egami.Formats.Ccitt.CcittFaxParameters.EndOfLine.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.Equals(Egami.Formats.Ccitt.CcittFaxParameters? other) -> bool
+Egami.Formats.Ccitt.CcittFaxParameters.K.get -> int
+Egami.Formats.Ccitt.CcittFaxParameters.K.init -> void
+Egami.Formats.Ccitt.CcittFaxParameters.Rows.get -> int
+Egami.Formats.Ccitt.CcittFaxParameters.Rows.init -> void
+Egami.Formats.Ccitt.CcittFormat
+Egami.Formats.Ccitt.CcittReaderOptions
+Egami.Formats.Ccitt.CcittReaderOptions.CcittReaderOptions() -> void
+Egami.Formats.Ccitt.CcittReaderOptions.Equals(Egami.Formats.Ccitt.CcittReaderOptions? other) -> bool
+Egami.Formats.Ccitt.CcittReaderOptions.Parameters.get -> Egami.Formats.Ccitt.CcittFaxParameters!
+Egami.Formats.Ccitt.CcittReaderOptions.Parameters.init -> void
 Egami.Formats.EncodeStart<TPixel>
 Egami.Formats.EncodeStart<TPixel>.Context.get -> Egami.EgamiContext!
 Egami.Formats.EncodeStart<TPixel>.Height.get -> int
@@ -2283,6 +2310,13 @@ override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
+override Egami.Formats.Ccitt.CcittFaxParameters.Equals(object? obj) -> bool
+override Egami.Formats.Ccitt.CcittFaxParameters.GetHashCode() -> int
+override Egami.Formats.Ccitt.CcittFaxParameters.ToString() -> string!
+override Egami.Formats.Ccitt.CcittReaderOptions.<Clone>$() -> Egami.Formats.Ccitt.CcittReaderOptions!
+override Egami.Formats.Ccitt.CcittReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Ccitt.CcittReaderOptions.GetHashCode() -> int
+override Egami.Formats.Ccitt.CcittReaderOptions.ToString() -> string!
 override Egami.Formats.Exr.ExrChannel.Equals(object? obj) -> bool
 override Egami.Formats.Exr.ExrChannel.GetHashCode() -> int
 override Egami.Formats.Exr.ExrChannel.ToString() -> string!
@@ -2458,6 +2492,7 @@ override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
+override sealed Egami.Formats.Ccitt.CcittReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Exr.ExrReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Ico.IcoReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
@@ -2596,6 +2631,12 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Formats.Ccitt.CcittFax.Decode(System.ReadOnlySpan<byte> data, Egami.Formats.Ccitt.CcittFaxParameters! parameters, out int rows, Egami.EgamiContext? context = null) -> byte[]!
+static Egami.Formats.Ccitt.CcittFaxParameters.operator !=(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool
+static Egami.Formats.Ccitt.CcittFaxParameters.operator ==(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool
+static Egami.Formats.Ccitt.CcittFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Ccitt.CcittReaderOptions.operator !=(Egami.Formats.Ccitt.CcittReaderOptions? left, Egami.Formats.Ccitt.CcittReaderOptions? right) -> bool
+static Egami.Formats.Ccitt.CcittReaderOptions.operator ==(Egami.Formats.Ccitt.CcittReaderOptions? left, Egami.Formats.Ccitt.CcittReaderOptions? right) -> bool
 static Egami.Formats.Exr.ExrChannel.operator !=(Egami.Formats.Exr.ExrChannel? left, Egami.Formats.Exr.ExrChannel? right) -> bool
 static Egami.Formats.Exr.ExrChannel.operator ==(Egami.Formats.Exr.ExrChannel? left, Egami.Formats.Exr.ExrChannel? right) -> bool
 static Egami.Formats.Exr.ExrFormat.Info.get -> Egami.Formats.FormatInfo!
