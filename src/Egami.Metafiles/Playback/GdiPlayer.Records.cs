@@ -19,7 +19,9 @@ internal sealed partial class GdiPlayer
         {
             case 1: // EMR_HEADER
             case 14: // EMR_EOF
-            case 70: // EMR_GDICOMMENT (EMF+ and public comments are read elsewhere)
+                break;
+            case 70: // EMR_GDICOMMENT: EMF+ records are read elsewhere; a public comment may carry other formats
+                Comment(r, offset);
                 break;
             case 2: // EMR_POLYBEZIER
                 PolyBezier(Points32(r, 24, I32(r, 24)), to: false);
@@ -367,6 +369,67 @@ internal sealed partial class GdiPlayer
         return (l, t, r, b);
     }
 
+    /// <summary>
+    /// EMR_GDICOMMENT: a public comment (GDIC) with GDICOMMENT_MULTIFORMATS plays its EMF format in the comment's output
+    /// rectangle and skips EPS (design question 15); EMF+ and private comments draw nothing here.
+    /// </summary>
+    private void Comment(ReadOnlySpan<byte> r, long offset)
+    {
+        if (r.Length < 24 || U32(r, 12) != 0x43494447 || U32(r, 16) != 0x40000004 || r.Length < 44)
+        {
+            return;
+        }
+
+        // MULTIFORMATS: OutputRect, CountFormats, then (Signature, Version, cbData, offData) per format, offData from the
+        // start of the record.
+        RectF output = new(I32(r, 20), I32(r, 24), I32(r, 28) - I32(r, 20), I32(r, 32) - I32(r, 24));
+        int count = (int)Math.Min(U32(r, 36), (uint)((r.Length - 40) / 16));
+        for (int i = 0; i < count; i++)
+        {
+            int at = 40 + (i * 16);
+            uint signature = U32(r, at), size = U32(r, at + 8), off = U32(r, at + 12);
+            if (signature == EmfSignature && size >= 88 && off <= r.Length && size <= r.Length - off)
+            {
+                PlayNested(r.Slice((int)off, (int)size).ToArray(), output, offset);
+                return;
+            }
+        }
+
+        WarnOnce("Metafile.SkippedRecord", "A comment carries only EPS or other formats Egami does not play; it is skipped (design question 15).", offset, "skip:multiformats");
+    }
+
+    /// <summary>Plays an EMF carried inside this file into a logical rectangle, nested up to the depth limit.</summary>
+    private void PlayNested(byte[] data, RectF logical, long offset)
+    {
+        if (_depth + 1 >= EmfPlusPlayer.MaxDepth)
+        {
+            WarnOnce("Metafile.TooDeep", $"A metafile nested deeper than {EmfPlusPlayer.MaxDepth} levels is not drawn.", offset);
+            return;
+        }
+
+        Metafile nested;
+        try
+        {
+            nested = Metafile.Load(new MemoryStream(data), new MetafileLoadOptions { Context = (_options.Context ?? _metafile.Context) with { Diagnostics = null } });
+        }
+        catch (Exception e) when (e is EgamiException or ArgumentException)
+        {
+            WarnOnce("Metafile.BadBitmap", "A metafile inside a comment cannot be read; it is not drawn.", offset);
+            return;
+        }
+
+        int count = _canvas.Save();
+        try
+        {
+            _canvas.SetMatrix(Full);
+            nested.DrawCore(_canvas, logical, _options, _report, _depth + 1);
+        }
+        finally
+        {
+            _canvas.RestoreToCount(count);
+        }
+    }
+
     private T? Object<T>(uint index)
         where T : GdiObject => index < _objects.Length ? _objects[index] as T : null;
 
@@ -701,7 +764,12 @@ internal sealed partial class GdiPlayer
             case 0x0A32: // META_EXTTEXTOUT
                 PlayWmfText(function, p, offset);
                 break;
-            case 0x0626: // META_ESCAPE
+            case 0x0626: // META_ESCAPE: PostScript in an escape is skipped (design question 15); the other escapes draw nothing
+                if (p.Length >= 2 && U16(p, 0) is 0x0025 or 0x1013 or 0x1014 or 0x1015 or 0x0026)
+                {
+                    WarnOnce("Metafile.SkippedRecord", "PostScript carried in a WMF escape is skipped; the GDI drawing beside it plays (design question 15).", offset, "skip:postscript");
+                }
+
                 break;
             case 0x0419: // META_FLOODFILL
             case 0x0548: // META_EXTFLOODFILL

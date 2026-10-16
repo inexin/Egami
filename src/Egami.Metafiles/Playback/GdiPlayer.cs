@@ -15,6 +15,8 @@ namespace Egami.Metafiles.Playback;
 /// </summary>
 internal sealed partial class GdiPlayer
 {
+    private readonly Metafile _metafile;
+    private readonly int _depth;
     private readonly MetafileContent _content;
     private readonly byte[] _data;
     private readonly Canvas _canvas;
@@ -43,8 +45,10 @@ internal sealed partial class GdiPlayer
     private Matrix3x2? _pageWorld;
     private int _clipToken;
 
-    internal GdiPlayer(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report)
+    internal GdiPlayer(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report, int depth = 0)
     {
+        _metafile = metafile;
+        _depth = depth;
         _content = metafile.Content;
         _data = _content.Data;
         _canvas = canvas;
@@ -103,9 +107,9 @@ internal sealed partial class GdiPlayer
     }
 
     /// <summary>Plays the WMF or EMF records of the metafile.</summary>
-    public static void Play(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report)
+    public static void Play(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report, int depth = 0)
     {
-        GdiPlayer player = new(metafile, canvas, options, report);
+        GdiPlayer player = new(metafile, canvas, options, report, depth);
         int start = player.Begin();
         try
         {

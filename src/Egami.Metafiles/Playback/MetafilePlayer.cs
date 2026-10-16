@@ -15,7 +15,7 @@ internal static class MetafilePlayer
         }
         else
         {
-            GdiPlayer.Play(metafile, canvas, options, report);
+            GdiPlayer.Play(metafile, canvas, options, report, depth);
         }
     }
 }

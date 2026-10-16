@@ -63,7 +63,7 @@ internal sealed partial class EmfPlusPlayer
         _options = options;
         _report = report;
         _depth = depth;
-        _gdi = new GdiPlayer(metafile, canvas, options, report);
+        _gdi = new GdiPlayer(metafile, canvas, options, report, depth);
 
         // GDI+ takes the frame as inclusive, one device pixel wider than GDI does, and fits that to the destination
         // (checked against DrawImage of a Metafile): the picture is scaled by width / (width + 1) about the frame's corner.
