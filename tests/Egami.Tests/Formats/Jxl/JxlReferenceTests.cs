@@ -23,6 +23,11 @@ public partial class JxlReferenceTests
     /// <summary>Gets the folder of the fetched suite and its references, or null.</summary>
     internal static string? Cache()
     {
+        if (!LocalCorpus.Enabled("jxl"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string candidate = Path.Combine(dir.FullName, ".cache", "jxl");
@@ -126,7 +131,7 @@ public partial class JxlReferenceTests
     {
         if (Cache() is not string cache)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         string folder = Path.Combine(cache, "conformance", "testcases", name);

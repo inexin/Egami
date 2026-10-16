@@ -13,6 +13,11 @@ public class Jpeg2000ConformanceTests(ITestOutputHelper output)
 {
     internal static string? Folder()
     {
+        if (!LocalCorpus.Enabled("jpeg2000"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string candidate = Path.Combine(dir.FullName, ".cache", "openjpeg-data");
@@ -40,7 +45,7 @@ public class Jpeg2000ConformanceTests(ITestOutputHelper output)
         string? folder = Folder();
         if (folder is null)
         {
-            return;
+            throw LocalCorpus.Skip("jpeg2000");
         }
 
         byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name + ".j2k"));
@@ -107,7 +112,12 @@ public class Jpeg2000ConformanceTests(ITestOutputHelper output)
     {
         string? folder = Folder();
         string reference = Path.Combine(folder ?? "", "..", "j2k-pillow", name + ".png");
-        if (folder is null || !File.Exists(reference) || PillowDiffers.Contains(name))
+        if (folder is null)
+        {
+            throw LocalCorpus.Skip("jpeg2000");
+        }
+
+        if (!File.Exists(reference) || PillowDiffers.Contains(name))
         {
             return;
         }

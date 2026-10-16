@@ -94,7 +94,7 @@ public class JxlColorTests
     {
         if (JxlReferenceTests.Cache() is not string cache)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         string folder = Path.Combine(cache, "conformance", "testcases", name);

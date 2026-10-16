@@ -23,7 +23,7 @@ public class Jpeg2000StreamingTests(ITestOutputHelper output)
         string? folder = Jpeg2000ConformanceTests.Folder();
         if (folder is null)
         {
-            return;
+            throw LocalCorpus.Skip("jpeg2000");
         }
 
         byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name));
@@ -66,7 +66,7 @@ public class Jpeg2000StreamingTests(ITestOutputHelper output)
         string? folder = Jpeg2000ConformanceTests.Folder();
         if (folder is null)
         {
-            return;
+            throw LocalCorpus.Skip("jpeg2000");
         }
 
         byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name + ".j2k"));
@@ -118,7 +118,7 @@ public class Jpeg2000StreamingTests(ITestOutputHelper output)
         string? folder = Jpeg2000ConformanceTests.Folder();
         if (folder is null)
         {
-            return;
+            throw LocalCorpus.Skip("jpeg2000");
         }
 
         byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", "p0_07.j2k"));
@@ -138,7 +138,7 @@ public class Jpeg2000StreamingTests(ITestOutputHelper output)
         string? folder = Jpeg2000ConformanceTests.Folder();
         if (folder is null)
         {
-            return;
+            throw LocalCorpus.Skip("jpeg2000");
         }
 
         byte[] data = File.ReadAllBytes(Path.Combine(folder, "input", "conformance", name));

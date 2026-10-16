@@ -36,6 +36,11 @@ internal sealed class Jbig2Corpus
 
     private static Jbig2Corpus? FindLocal()
     {
+        if (!LocalCorpus.Enabled("jbig2"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string candidate = Path.Combine(dir.FullName, ".cache", "jbig2-local");
@@ -152,10 +157,12 @@ public class Jbig2CorpusTests
     [MemberData(nameof(LocalFiles))]
     public void ThirdPartyPagesMatchPdfium(string name)
     {
-        if (Jbig2Corpus.Local is not null)
+        if (Jbig2Corpus.Local is null)
         {
-            Jbig2Corpus.Local.AssertPagesMatch(name);
+            throw LocalCorpus.Skip("jbig2");
         }
+
+        Jbig2Corpus.Local.AssertPagesMatch(name);
     }
 
     [Theory]

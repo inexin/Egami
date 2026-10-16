@@ -32,6 +32,11 @@ public class AvifReferenceTests
     /// <summary>Gets the fetched .cache/avif folder, or null.</summary>
     internal static string? Cache()
     {
+        if (!LocalCorpus.Enabled("avif"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string candidate = Path.Combine(dir.FullName, ".cache", "avif");
@@ -194,7 +199,7 @@ public class AvifReferenceTests
     {
         if (Cache() is not string cache)
         {
-            return;
+            throw LocalCorpus.Skip("avif");
         }
 
         string summary = set == "argon" ? Path.Combine(cache, "argon", "reference", "summary.json") : Path.Combine(cache, "reference", set, "summary.json");

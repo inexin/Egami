@@ -28,7 +28,7 @@ public class JxlExtraChannelTests
     {
         if (Case("alpha_premultiplied") is not string path)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         JxlPlanes raw = Raw(path);
@@ -61,7 +61,7 @@ public class JxlExtraChannelTests
     {
         if (Case("cmyk_layers") is not string path)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         JxlPlanes raw = Raw(path);
@@ -87,7 +87,7 @@ public class JxlExtraChannelTests
     {
         if (Case("spot") is not string path)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         JxlPlanes raw = Raw(path);
@@ -124,7 +124,7 @@ public class JxlExtraChannelTests
     {
         if (Case("spot") is not string path)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         string rendered = Path.Combine(JxlReferenceTests.Cache()!, "reference", "conformance", "spot", "djxl-spot.npy");
@@ -158,7 +158,7 @@ public class JxlExtraChannelTests
     {
         if (Case("spot") is not string path)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         JxlPlanes raw = Raw(path);

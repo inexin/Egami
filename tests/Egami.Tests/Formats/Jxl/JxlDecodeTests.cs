@@ -109,7 +109,12 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
     [MemberData(nameof(JxlHeaderTests.CachedFiles), MemberType = typeof(JxlHeaderTests))]
     public void ConformanceDecodesWithinThresholds(string name)
     {
-        if (JxlReferenceTests.Cache() is not string cache || !name.StartsWith("conformance/", StringComparison.Ordinal))
+        if (JxlReferenceTests.Cache() is not string cache)
+        {
+            throw LocalCorpus.Skip("jxl");
+        }
+
+        if (!name.StartsWith("conformance/", StringComparison.Ordinal))
         {
             return;
         }

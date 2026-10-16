@@ -19,6 +19,11 @@ internal static class Vp8VideoCorpus
     /// <summary>Gets the folder of the fetched test vectors and their references, or null.</summary>
     internal static string? Cache()
     {
+        if (!LocalCorpus.Enabled("vp8"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string candidate = Path.Combine(dir.FullName, ".cache", "vp8");

@@ -25,6 +25,8 @@ dotnet test
 
 To test the SIMD fallback paths locally, run the tests with `DOTNET_EnableHWIntrinsic=0`.
 
+The large third-party corpora (conformance suites and test vectors) are fetched into `.cache` by the `tools/make-*-references.py` scripts and never committed. A normal run skips them; set `EGAMI_CORPUS` to the codecs you are working on (`avif`, `exr`, `jbig2`, `jpeg2000`, `jxl`, `tiff`, `vp8`, comma-separated, or `all`) to check them too, for example `EGAMI_CORPUS=jxl dotnet test --filter FullyQualifiedName~Jxl`.
+
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 
 ## Pull requests

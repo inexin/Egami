@@ -57,7 +57,7 @@ public class JxlHeaderTests(ITestOutputHelper output)
     {
         if (JxlReferenceTests.Cache() is not string cache)
         {
-            return;
+            throw LocalCorpus.Skip("jxl");
         }
 
         string[] parts = name.Split('/');
@@ -71,7 +71,12 @@ public class JxlHeaderTests(ITestOutputHelper output)
     [MemberData(nameof(CachedFiles))]
     public void IccProfilesEqualTheConformanceSuiteAndDjxl(string name)
     {
-        if (JxlReferenceTests.Cache() is not string cache || !name.StartsWith("conformance/", StringComparison.Ordinal))
+        if (JxlReferenceTests.Cache() is not string cache)
+        {
+            throw LocalCorpus.Skip("jxl");
+        }
+
+        if (!name.StartsWith("conformance/", StringComparison.Ordinal))
         {
             return;
         }

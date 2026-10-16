@@ -16,6 +16,11 @@ public class Jbig2ConformanceTests
 {
     internal static string? Folder()
     {
+        if (!LocalCorpus.Enabled("jbig2"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string candidate = Path.Combine(dir.FullName, ".cache", "standards", "t88conf", "JBIG2_ConformanceData-A20180829");
@@ -48,7 +53,7 @@ public class Jbig2ConformanceTests
         string? folder = Folder();
         if (folder is null)
         {
-            return;
+            throw LocalCorpus.Skip("jbig2");
         }
 
         if (Malformed.Contains((name, 0)))

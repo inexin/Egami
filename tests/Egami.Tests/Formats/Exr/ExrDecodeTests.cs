@@ -24,7 +24,7 @@ public class ExrDecodeTests
         string root = RepoRoot();
         string refs = Path.Combine(root, ".cache", "exr-ref");
         TheoryData<string> data = [];
-        if (Directory.Exists(refs))
+        if (LocalCorpus.Enabled("exr") && Directory.Exists(refs))
         {
             foreach (string file in Directory.GetFiles(refs, "*.ref").Order(StringComparer.Ordinal))
             {
@@ -59,7 +59,7 @@ public class ExrDecodeTests
     {
         if (name.Length == 0)
         {
-            Assert.Skip("No .cache/exr-ref: run tools/make-hdr-references.py exr.");
+            throw LocalCorpus.Skip("exr");
         }
 
         string root = RepoRoot();

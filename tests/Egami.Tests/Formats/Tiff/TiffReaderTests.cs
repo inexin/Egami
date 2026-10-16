@@ -11,7 +11,7 @@ public class TiffReaderTests
 {
     public static TheoryData<string, int> Pages() => PagesOf(TiffCorpus.Main);
 
-    public static TheoryData<string, int> PicsPages() => TiffCorpus.Pics is { } pics ? PagesOf(pics) : [];
+    public static TheoryData<string, int> PicsPages() => TiffCorpus.Pics is { } pics ? PagesOf(pics) : new() { { "(none)", 0 } };
 
     private static TheoryData<string, int> PagesOf(TiffCorpus corpus)
     {
@@ -43,7 +43,15 @@ public class TiffReaderTests
 
     [Theory]
     [MemberData(nameof(PicsPages))]
-    public void LibtiffSamplesMatchLibtiff(string file, int pageNumber) => Check(TiffCorpus.Pics!, file, pageNumber);
+    public void LibtiffSamplesMatchLibtiff(string file, int pageNumber)
+    {
+        if (TiffCorpus.Pics is null)
+        {
+            throw LocalCorpus.Skip("tiff");
+        }
+
+        Check(TiffCorpus.Pics, file, pageNumber);
+    }
 
     private static void Check(TiffCorpus corpus, string file, int pageNumber)
     {

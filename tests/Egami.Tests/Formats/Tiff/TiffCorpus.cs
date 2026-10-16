@@ -63,6 +63,11 @@ internal sealed class TiffCorpus
 
     private static TiffCorpus? FindPics()
     {
+        if (!LocalCorpus.Enabled("tiff"))
+        {
+            return null;
+        }
+
         for (DirectoryInfo? dir = new(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
             string references = Path.Combine(dir.FullName, ".cache", "libtiff-pics-ref");
