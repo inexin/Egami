@@ -2397,6 +2397,31 @@
    ],
    "source": "generated:odd-31x17"
   },
+  "palette-implicit-alpha-lossless.jxl": {
+   "covers": "lossless RGBA palette with rare implicit colors (their alpha is 0)",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "64 48",
+    "Composite:Megapixels": 0.003072,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 48,
+    "File:ImageWidth": 64,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 64x48, (possibly) lossless, 8-bit RGB+Alpha\nNumber of color channels: 3\nNumber of extra channels: 1\nExtra channel 0:\n  type: Alpha\n  bits per sample: 8\n  alpha premultiplied: 0 (Non-premultiplied)\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 64x48\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: sRGB\nTransfer function: sRGB\nRendering intent: Perceptual\n",
+   "options": "-d 0 -e 7 --keep_invisible=1",
+   "oxide_peak": 0.125490203499794,
+   "oxide_rms": 0.005062723627800169,
+   "reference": "palette-implicit-alpha-lossless.png",
+   "shape": [
+    1,
+    48,
+    64,
+    4
+   ],
+   "source": "generated:palette-implicit"
+  },
   "pan-anim-d1.jxl": {
    "covers": "animation, VarDCT",
    "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",

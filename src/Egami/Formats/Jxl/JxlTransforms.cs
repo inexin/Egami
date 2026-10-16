@@ -103,12 +103,13 @@ internal static class JxlTransforms
             }
             else if (v >= colours)
             {
+                // The implicit cubes give the first three channels; a fourth and later are 0, as libjxl decodes them.
                 int k = v - colours;
                 if (k < 64)
                 {
                     for (int c = 0; c < count; c++)
                     {
-                        outputs[c].Data[i] = (((k >> (2 * c)) % 4) * ((1 << bitDepth) - 1) / 4) + (1 << Math.Max(bitDepth - 3, 0));
+                        outputs[c].Data[i] = c >= 3 ? 0 : (((k >> (2 * c)) % 4) * ((1 << bitDepth) - 1) / 4) + (1 << Math.Max(bitDepth - 3, 0));
                     }
                 }
                 else
@@ -116,7 +117,7 @@ internal static class JxlTransforms
                     k -= 64;
                     for (int c = 0; c < count; c++)
                     {
-                        outputs[c].Data[i] = (k % 5) * ((1 << bitDepth) - 1) / 4;
+                        outputs[c].Data[i] = c >= 3 ? 0 : (k % 5) * ((1 << bitDepth) - 1) / 4;
                         k /= 5;
                     }
                 }

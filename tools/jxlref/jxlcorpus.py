@@ -127,6 +127,17 @@ def sources():
     s["duck-float"] = f"{TMP}/src-duck-float.pfm"
     linear = (small / 255.0) ** 2.2 * np.array([1.0, 2.5, 4.0])  # beyond 1.0, as HDR files are
     write_pfm(s["duck-float"], linear.astype(np.float32))
+    # RGBA in five colors and twenty rare pixels of the implicit small-cube colors with alpha 0, which a palette codes as
+    # implicit indices: their fourth channel decodes to 0.
+    implicit = np.zeros((48, 64, 4), np.uint16)
+    for y in range(48):
+        for x in range(64):
+            i, k = y * 64 + x, (x // 8 + y // 8) % 5
+            implicit[y, x] = (10 * k, 200 - 10 * k, 30, 255)
+            if i % 97 == 0 and i // 97 < 20:
+                cube = (32, 95, 159, 223)
+                implicit[y, x] = (cube[i // 97 % 4], cube[(i // 97 + 1) % 4], cube[(i // 97 + 2) % 4], 0)
+    put("palette-implicit", implicit)
     put("odd-31x17", duck[200:217, 300:331])
     put("odd-1x1", duck[240:241, 320:321])
     return s
@@ -140,6 +151,7 @@ CJXL = {
     "duck-small-lossless-e9": ("duck-small", "-d 0 -e 9", "lossless, tree learning at effort 9"),
     "duck-small-lossless-group128": ("duck-small", "-d 0 -e 7 -g 0", "lossless, 128-pixel groups"),
     "duck-posterized-lossless-palette": ("duck-posterized", "-d 0 -e 7", "lossless, palette of 216 colors"),
+    "palette-implicit-alpha-lossless": ("palette-implicit", "-d 0 -e 7 --keep_invisible=1", "lossless RGBA palette with rare implicit colors (their alpha is 0)"),
     "duck-small-lossy-palette": ("duck-small", "-d 0 --modular_lossy_palette --modular_palette_colors=0", "lossy (delta) palette"),
     "duck-small-lossless-gradient": ("duck-small", "-d 0 -P 5", "lossless, gradient predictor only"),
     "duck-small-lossless-prev-channels": ("duck-small", "-d 0 -e 7 -E 3", "lossless, previous channels in the MA tree"),

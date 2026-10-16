@@ -79,9 +79,11 @@ public partial class JxlReferenceTests
         Assert.Equal(shape[0], raster.FrameCount);
 
         // jxl-oxide agrees with djxl to float rounding, except where they convert color differently (gray, float lossy, and the
-        // color files, which jxl-oxide writes in another space).
+        // color files, which jxl-oxide writes in another space), and on the alpha of implicit palette colors, which jxl-oxide
+        // gives the cube's value where libjxl (and Egami) give 0.
         string covers = entry.TryGetProperty("covers", out JsonElement c) ? c.GetString()! : string.Empty;
-        double limit = covers.StartsWith("color,", StringComparison.Ordinal) || covers.StartsWith("HDR,", StringComparison.Ordinal) || covers.StartsWith("gain map", StringComparison.Ordinal) ? double.MaxValue : file is "duck-gray-d1.jxl" or "duck-float-d1.jxl" ? 0.05 : 1e-3;
+        double limit = covers.StartsWith("color,", StringComparison.Ordinal) || covers.StartsWith("HDR,", StringComparison.Ordinal) || covers.StartsWith("gain map", StringComparison.Ordinal)
+            || file is "palette-implicit-alpha-lossless.jxl" ? double.MaxValue : file is "duck-gray-d1.jxl" or "duck-float-d1.jxl" ? 0.05 : 1e-3;
         Assert.InRange(entry.GetProperty("oxide_peak").GetDouble(), 0, limit);
     }
 

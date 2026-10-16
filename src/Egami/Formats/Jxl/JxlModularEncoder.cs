@@ -669,17 +669,14 @@ internal sealed class JxlModularEncoder
         int n = first.Data.Length;
         int[][] planes = [.. Enumerable.Range(0, count).Select(c => gi.Channels[begin + c].Data)];
 
-        // The implicit colors, as the decoder makes them; a fourth channel of them differs between decoders, so then there are none.
+        // The implicit colors, as the decoder makes them.
         Dictionary<ColorKey, int> implicitColors = [];
         List<int[]> implicitList = [];
-        if (count <= 3)
+        for (int k = 0; k < 64 + 125; k++)
         {
-            for (int k = 0; k < 64 + 125; k++)
-            {
-                int[] color = [.. Enumerable.Range(0, count).Select(c => ImplicitColor(k, c, gi.BitDepth))];
-                implicitColors.TryAdd(new ColorKey(color), k);
-                implicitList.Add(color);
-            }
+            int[] color = [.. Enumerable.Range(0, count).Select(c => ImplicitColor(k, c, gi.BitDepth))];
+            implicitColors.TryAdd(new ColorKey(color), k);
+            implicitList.Add(color);
         }
 
         HashSet<ColorKey> candidate = [];
@@ -784,9 +781,14 @@ internal sealed class JxlModularEncoder
         return true;
     }
 
-    /// <summary>Gets implicit palette color <paramref name="k"/>'s channel <paramref name="c"/> as Egami's decoder makes it.</summary>
+    /// <summary>Gets implicit palette color <paramref name="k"/>'s channel <paramref name="c"/> (0 beyond the third) as the decoders make it.</summary>
     private static int ImplicitColor(int k, int c, int bitDepth)
     {
+        if (c >= 3)
+        {
+            return 0;
+        }
+
         if (k < 64)
         {
             return (((k >> (2 * c)) % 4) * ((1 << bitDepth) - 1) / 4) + (1 << Math.Max(bitDepth - 3, 0));
