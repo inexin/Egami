@@ -227,6 +227,18 @@ internal sealed class JxlTree
 
     internal bool IsLeaf(int node) => _property[node] < 0;
 
+    /// <summary>Gets each node's property (−1 for a leaf), for decoders that walk the tree themselves.</summary>
+    internal int[] Properties => _property;
+
+    /// <summary>Gets each decision node's split value.</summary>
+    internal int[] Values => _value;
+
+    /// <summary>Gets each decision node's child taken when the property is above the value.</summary>
+    internal int[] Lefts => _left;
+
+    /// <summary>Gets each decision node's other child.</summary>
+    internal int[] Rights => _right;
+
     internal int Predictor(int leaf) => _predictor[leaf];
 
     internal int Offset(int leaf) => _offset[leaf];

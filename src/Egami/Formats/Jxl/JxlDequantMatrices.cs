@@ -13,6 +13,16 @@ internal sealed class JxlDequantMatrices
     private static readonly float[][] Dct4Params = [[2200f, 0, 0, 0], [392f, 0, 0, 0], [112f, -0.25f, -0.25f, -0.5f]];
     private static readonly float[] AfvFreqs = [0, 0, 0.8517779f, 5.3777843f, 0, 0, 4.734748f, 5.4492455f, 1.659827f, 4.0f, 7.275749f, 10.423227f, 2.6629324f, 7.6306577f, 8.962389f, 12.971662f];
 
+    private static readonly Lazy<JxlDequantMatrices> DefaultSet = new(() =>
+    {
+        JxlBitReader none = new([], 0, 0);
+        JxlDequantMatrices set = new([.. Enumerable.Range(0, 17).Select(i => Weights(none, i, Default(i)))]);
+        DefaultMatrices = set;
+        return set;
+    });
+
+    private static JxlDequantMatrices? DefaultMatrices;
+
     // Index i holds matrix set entry i: per channel, weights row by row in the wide layout, and the same transposed.
     private readonly float[][][] _matrices;
     private readonly float[][][] _transposed;
@@ -23,6 +33,12 @@ internal sealed class JxlDequantMatrices
         _transposed = new float[matrices.Length][][];
         for (int i = 0; i < matrices.Length; i++)
         {
+            if (DefaultMatrices is JxlDequantMatrices defaults && ReferenceEquals(matrices[i], defaults._matrices[i]))
+            {
+                _transposed[i] = defaults._transposed[i];
+                continue;
+            }
+
             (int w, int h) = JxlTransforms8.MatrixSize(i);
             _transposed[i] = new float[3][];
             for (int c = 0; c < 3; c++)
@@ -50,12 +66,24 @@ internal sealed class JxlDequantMatrices
     /// <summary>Reads the matrix set; raw matrices are Modular streams from <paramref name="stream"/> on.</summary>
     internal static JxlDequantMatrices Read(JxlBitReader r, JxlTree? globalTree, int bitDepth, int stream, SafetyLimits limits)
     {
+        bool defaults = r.ReadBool();
+        if (defaults)
+        {
+            // Most files use the default matrices; they are the same every time, so they are built once.
+            return DefaultSet.Value;
+        }
+
         float[][][] matrices = new float[17][][];
         int[][]? jpeg = null;
-        bool defaults = r.ReadBool();
         for (int i = 0; i < 17; i++)
         {
-            Encoding e = defaults ? Default(i) : ReadEncoding(r, i, globalTree, bitDepth, stream + i, limits);
+            Encoding e = ReadEncoding(r, i, globalTree, bitDepth, stream + i, limits);
+            if (e.IsDefault)
+            {
+                matrices[i] = DefaultSet.Value._matrices[i];
+                continue;
+            }
+
             if (i == 0 && e.Raw is { } raw && (int)Math.Round(1 / e.Denominator) == 2040)
             {
                 jpeg = raw;
@@ -78,7 +106,7 @@ internal sealed class JxlDequantMatrices
         switch (mode)
         {
             case 0:
-                return Default(index);
+                return Default(index) with { IsDefault = true };
             case 1:
                 return new Encoding(Kind.Hornuss) { Params = Fixed(r, 3) };
             case 2:
@@ -428,9 +456,10 @@ internal sealed class JxlDequantMatrices
         Raw,
     }
 
-    private sealed class Encoding(Kind kind)
+    private sealed record Encoding(Kind Kind)
     {
-        internal Kind Kind { get; } = kind;
+        /// <summary>Gets whether the codestream asked for the default matrix, whose weights are built once.</summary>
+        internal bool IsDefault { get; init; }
 
         internal float[][]? Params { get; init; }
 

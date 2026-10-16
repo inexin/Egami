@@ -36,9 +36,9 @@ internal readonly record struct JxlParallel(int Threads, CancellationToken Cance
     }
 
     /// <summary>Calls <paramref name="body"/> with bands of rows covering 0 to <paramref name="rows"/>, a band per piece of work.</summary>
-    internal void Rows(int rows, Action<int, int> body)
+    internal void Rows(int rows, Action<int, int> body, int band = 32)
     {
-        const int Band = 32;
+        int Band = band;
         int bands = (rows + Band - 1) / Band;
         For(bands, b => body(b * Band, Math.Min(rows, (b + 1) * Band)), minimumPerThread: 2);
     }

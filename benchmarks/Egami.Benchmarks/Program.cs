@@ -22,6 +22,13 @@ if (args is ["--time-vp8", .. string[] ivfs])
     return;
 }
 
+// Time JPEG XL decoding (Phase 2.9.3 speed gate) at one thread and all cores: -- --time-jxl <file.jxl>...
+if (args is ["--time-jxl", .. string[] jxls])
+{
+    JxlTiming.Run(jxls);
+    return;
+}
+
 // Write the benchmark photo as PNG, for tools/make-jpeg-bench-files.py: -- --write-photo <path>
 if (args is ["--write-photo", string path])
 {

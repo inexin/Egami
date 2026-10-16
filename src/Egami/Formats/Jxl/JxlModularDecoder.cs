@@ -106,63 +106,100 @@ internal static class JxlModularDecoder
         int height = c.Height;
         int[] data = c.Data;
         JxlWeightedPredictor? weighted = tree.UsesWp ? new JxlWeightedPredictor(width, wp) : null;
-        bool needProperties = !tree.IsLeaf(root);
-        properties[0] = channel;
-        properties[1] = stream;
+        int[] property = tree.Properties;
+        int[] value = tree.Values;
+        int[] left = tree.Lefts;
+        int[] right = tree.Rights;
         for (int y = 0; y < height; y++)
         {
             int row = y * width;
             int prevGrad = 0;
+            bool inner = y > 1;
             for (int x = 0; x < width; x++)
             {
-                // Neighbours with the spec's edge rules.
-                int w = x > 0 ? data[row + x - 1] : y > 0 ? data[row - width + x] : 0;
-                int n = y > 0 ? data[row - width + x] : w;
-                int nw = x > 0 && y > 0 ? data[row - width + x - 1] : w;
-                int ne = x + 1 < width && y > 0 ? data[row - width + x + 1] : n;
-                int nn = y > 1 ? data[row - (2 * width) + x] : n;
-                int ww = x > 1 ? data[row + x - 2] : w;
-                int nee = x + 2 < width && y > 0 ? data[row - width + x + 2] : ne;
-                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
-                int leaf = root;
-                int grad = unchecked(w + n - nw);
-                if (needProperties)
+                int w, n, nw, ne, nn, ww, nee;
+                if (inner && x > 1 && x + 2 < width)
                 {
-                    properties[2] = y;
-                    properties[3] = x;
-                    properties[4] = (int)(uint)Math.Abs((long)n);
-                    properties[5] = (int)(uint)Math.Abs((long)w);
-                    properties[6] = n;
-                    properties[7] = w;
-                    properties[8] = unchecked(w - prevGrad);
-                    properties[9] = grad;
-                    properties[10] = unchecked(w - nw);
-                    properties[11] = unchecked(nw - n);
-                    properties[12] = unchecked(n - ne);
-                    properties[13] = unchecked(n - nn);
-                    properties[14] = unchecked(w - ww);
-                    properties[15] = weighted?.MaxError ?? 0;
-                    for (int k = 0; k < previous.Count; k++)
+                    // Away from the edges every neighbour exists.
+                    int up = row - width + x;
+                    w = data[row + x - 1];
+                    n = data[up];
+                    nw = data[up - 1];
+                    ne = data[up + 1];
+                    nn = data[up - width];
+                    ww = data[row + x - 2];
+                    nee = data[up + 2];
+                }
+                else
+                {
+                    // Neighbours with the spec's edge rules.
+                    w = x > 0 ? data[row + x - 1] : y > 0 ? data[row - width + x] : 0;
+                    n = y > 0 ? data[row - width + x] : w;
+                    nw = x > 0 && y > 0 ? data[row - width + x - 1] : w;
+                    ne = x + 1 < width && y > 0 ? data[row - width + x + 1] : n;
+                    nn = y > 1 ? data[row - (2 * width) + x] : n;
+                    ww = x > 1 ? data[row + x - 2] : w;
+                    nee = x + 2 < width && y > 0 ? data[row - width + x + 2] : ne;
+                }
+
+                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
+                int grad = unchecked(w + n - nw);
+
+                // The tree is walked with each property worked out only when a node tests it.
+                int leaf = root;
+                while (true)
+                {
+                    int p = property[leaf];
+                    if (p < 0)
                     {
-                        PreviousProperties(previous[k], x, y, properties.Slice(16 + (4 * k), 4));
+                        break;
                     }
 
-                    for (int k = previous.Count; 16 + (4 * k) < properties.Length; k++)
+                    int v = p switch
                     {
-                        properties.Slice(16 + (4 * k), 4).Clear();
-                    }
-
-                    leaf = tree.LeafFrom(root, properties);
+                        0 => channel,
+                        1 => stream,
+                        2 => y,
+                        3 => x,
+                        4 => (int)(uint)Math.Abs((long)n),
+                        5 => (int)(uint)Math.Abs((long)w),
+                        6 => n,
+                        7 => w,
+                        8 => unchecked(w - prevGrad),
+                        9 => grad,
+                        10 => unchecked(w - nw),
+                        11 => unchecked(nw - n),
+                        12 => unchecked(n - ne),
+                        13 => unchecked(n - nn),
+                        14 => unchecked(w - ww),
+                        15 => weighted?.MaxError ?? 0,
+                        _ => PreviousProperty(previous, p, x, y),
+                    };
+                    leaf = v > value[leaf] ? left[leaf] : right[leaf];
                 }
 
                 prevGrad = grad;
                 long prediction = Predict(tree.Predictor(leaf), w, n, nw, ne, nn, ww, nee, wpPrediction);
                 int diff = unchecked((JxlHeaders.UnpackSigned(decoder.ReadUintClustered(r, tree.Cluster(leaf), multiplier)) * tree.Multiplier(leaf)) + tree.Offset(leaf));
-                int value = unchecked((int)prediction + diff);
-                data[row + x] = value;
-                weighted?.Record(value);
+                int sample = unchecked((int)prediction + diff);
+                data[row + x] = sample;
+                weighted?.Record(sample);
             }
         }
+    }
+
+    /// <summary>Gets property 16 or above: one of the four a previous channel gives, or 0 when there is no such channel.</summary>
+    private static int PreviousProperty(List<JxlChannel> previous, int p, int x, int y)
+    {
+        int k = (p - 16) / 4;
+        if (k >= previous.Count)
+        {
+            return 0;
+        }
+
+        Span<int> four = stackalloc int[4];
+        PreviousProperties(previous[k], x, y, four);
+        return four[(p - 16) % 4];
     }
 
     /// <summary>The four properties a previous channel gives: |c|, c, |c - g| and c - g, with g its clamped gradient.</summary>

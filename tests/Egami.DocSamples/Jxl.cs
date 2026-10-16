@@ -98,4 +98,25 @@ public class Jxl
         using Raster jpeg = Raster.Load("original.jpg");
         Assert.Equal((image.Width, image.Height), (jpeg.Width, jpeg.Height));
     }
+
+    [Fact]
+    public void Cookbook()
+    {
+        using SampleFiles files = new();
+
+        #region cookbook-load
+        // JPEG XL loads like any format: lossless, lossy, animated or recompressed from a JPEG, in its natural pixel type.
+        using Raster duck = Raster.Load("duck.jxl");
+        duck.Save("duck.png");
+        #endregion
+
+        #region cookbook-sdr
+        // An HDR (PQ or HLG) file, tone mapped into sRGB as it loads; the peak comes from the file's intensity_target.
+        using Raster<Rgb8> sdr = Raster.Load<Rgb8>("hdr.jxl", options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });
+        sdr.Save("hdr-as-sdr.jpg");
+        #endregion
+
+        Assert.True(File.Exists("duck.png"));
+        Assert.True(File.Exists("hdr-as-sdr.jpg"));
+    }
 }

@@ -1,3 +1,8 @@
+using System.Buffers;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -77,7 +82,8 @@ internal static class JxlFilters
     /// <summary>Gaborish (J.2): a 3×3 convolution of each plane with its own side and diagonal weights, normalized.</summary>
     internal static void Gaborish(float[][] planes, int width, int height, int stride, float[] weights, JxlParallel parallel)
     {
-        float[] output = new float[planes[0].Length];
+        // Pooled: a frame-sized buffer for every decode would keep the GC busy.
+        float[] output = ArrayPool<float>.Shared.Rent(planes[0].Length);
         for (int c = 0; c < 3; c++)
         {
             float w0 = weights[2 * c];
@@ -89,7 +95,27 @@ internal static class JxlFilters
                 int up = Mirror(y - 1, height) * stride;
                 int row = y * stride;
                 int down = Mirror(y + 1, height) * stride;
-                for (int x = 0; x < width; x++)
+                int x0 = 0;
+                if (Vector.IsHardwareAccelerated && width > Vector<float>.Count + 2)
+                {
+                    // The same additions in the same order as below, several pixels at a time.
+                    Vector<float> vw0 = new(w0);
+                    Vector<float> vw1 = new(w1);
+                    Vector<float> vnorm = new(norm);
+                    int lanes = Vector<float>.Count;
+                    int end = 1 + ((width - 2) / lanes * lanes);
+                    for (int x = 1; x < end; x += lanes)
+                    {
+                        Vector<float> side = new Vector<float>(p, up + x) + new Vector<float>(p, down + x) + new Vector<float>(p, row + x - 1) + new Vector<float>(p, row + x + 1);
+                        Vector<float> diag = new Vector<float>(p, up + x - 1) + new Vector<float>(p, up + x + 1) + new Vector<float>(p, down + x - 1) + new Vector<float>(p, down + x + 1);
+                        ((new Vector<float>(p, row + x) + (side * vw0) + (diag * vw1)) * vnorm).CopyTo(output, row + x);
+                    }
+
+                    GaborishPixel(p, output, 0, up, row, down, width, w0, w1, norm);
+                    x0 = end;
+                }
+
+                for (int x = x0; x < width; x++)
                 {
                     int l = Mirror(x - 1, width);
                     int r = Mirror(x + 1, width);
@@ -99,8 +125,19 @@ internal static class JxlFilters
                 }
             }, minimumPerThread: 16);
 
-            Array.Copy(output, p, Math.Min(output.Length, p.Length));
+            Array.Copy(output, p, p.Length);
         }
+
+        ArrayPool<float>.Shared.Return(output);
+    }
+
+    private static void GaborishPixel(float[] p, float[] output, int x, int up, int row, int down, int width, float w0, float w1, float norm)
+    {
+        int l = Mirror(x - 1, width);
+        int r = Mirror(x + 1, width);
+        float side = p[up + x] + p[down + x] + p[row + l] + p[row + r];
+        float diag = p[up + l] + p[up + r] + p[down + l] + p[down + r];
+        output[row + x] = (p[row + x] + (side * w0) + (diag * w1)) * norm;
     }
 
     /// <summary>
@@ -109,7 +146,10 @@ internal static class JxlFilters
     /// </summary>
     internal static void Epf(float[][] planes, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock, JxlParallel parallel)
     {
-        float[][] scratch = [new float[planes[0].Length], new float[planes[0].Length], new float[planes[0].Length]];
+        // Pooled, as Gaborish's buffer; whichever three arrays end up outside planes go back.
+        int length = planes[0].Length;
+        float[][] scratch = [ArrayPool<float>.Shared.Rent(length), ArrayPool<float>.Shared.Rent(length), ArrayPool<float>.Shared.Rent(length)];
+        float[][] rented = [.. scratch];
         if (lf.EpfIterations == 3)
         {
             EpfStep(0, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
@@ -122,6 +162,25 @@ internal static class JxlFilters
         {
             EpfStep(2, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
             Swap(planes, scratch);
+        }
+
+        for (int c = 0; c < 3; c++)
+        {
+            if (planes[c].Length != length)
+            {
+                // A pooled array may be longer than asked for; the planes keep their exact size.
+                float[] exact = scratch[c].Length == length ? scratch[c] : new float[length];
+                Array.Copy(planes[c], exact, length);
+                (planes[c], scratch[c]) = (exact, planes[c]);
+            }
+        }
+
+        foreach (float[] a in scratch)
+        {
+            if (rented.Contains(a))
+            {
+                ArrayPool<float>.Shared.Return(a);
+            }
         }
     }
 
@@ -199,75 +258,251 @@ internal static class JxlFilters
 
     private static void EpfStep(int step, float[][] input, float[][] output, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock, JxlParallel parallel)
     {
-        int[] kernelOffsets = step == 0 ? EpfKernel0 : EpfKernel12;
-        int[] distOffsets = step switch { 0 => EpfDistance0, 1 => EpfDistance1, _ => EpfDistance2 };
+        int[] kernel = step == 0 ? EpfKernel0 : EpfKernel12;
+        int[] dist = step switch { 0 => EpfDistance0, 1 => EpfDistance1, _ => EpfDistance2 };
         float stepMultiplier = step == 0 ? lf.Pass0SigmaScale : step == 2 ? lf.Pass2SigmaScale : 1;
         float border = lf.BorderSadMul;
-        float[] channelScale = lf.ChannelScale;
-        parallel.For(height, y =>
+        float[] scale = lf.ChannelScale;
+        int reachY = dist.Where((_, i) => i % 2 == 1).Max(Math.Abs);
+        int reachX = dist.Where((_, i) => i % 2 == 0).Max(Math.Abs);
+        int taps = kernel.Length / 2;
+
+        // A band of rows at a time: the weighted patch difference |p(z + tap) − p(z)| of the three channels is worked out once
+        // for each tap and each place the band's patches cover (libjxl's way), then each pixel sums its patches for every tap
+        // in one pass, in the taps' order.
+        parallel.Rows(height, (top, bottom) =>
         {
-            ReadOnlySpan<int> kernel = kernelOffsets;
-            ReadOnlySpan<int> dist = distOffsets;
-            ReadOnlySpan<float> scale = channelScale;
-            Span<float> sums = stackalloc float[3];
-            bool yBorder = ((y + 1) & 6) == 0;
-            for (int x = 0; x < width; x++)
+            int rows = bottom - top;
+            int wRows = rows + (2 * reachY);
+            int wWidth = width + (2 * reachX);
+            int plane = wRows * wWidth;
+            ArrayPool<float> pool = ArrayPool<float>.Shared;
+            float[] factor = pool.Rent(rows * width);
+            float[] w = pool.Rent(plane * taps);
+            try
             {
-                int at = (y * stride) + x;
-                float sigma = sigmaOfBlock(x / 8, y / 8);
-                if (sigma < 0.3f)
+                float scaleFactor = 6.6f * (MathF.Sqrt(0.5f) - 1);
+                float inner = stepMultiplier;
+                float edge = stepMultiplier * border;
+                for (int y = top; y < bottom; y++)
                 {
-                    for (int c = 0; c < 3; c++)
+                    bool yBorder = ((y + 1) & 6) == 0;
+                    int b = (y - top) * width;
+                    for (int bx = 0; bx * 8 < width; bx++)
                     {
-                        output[c][at] = input[c][at];
-                    }
-
-                    continue;
-                }
-
-                float sm = yBorder || (x & 7) is 0 or 7 ? stepMultiplier * border : stepMultiplier;
-                float negInvSigma = 6.6f * (MathF.Sqrt(0.5f) - 1) / sigma * sm;
-                float sumWeights = 1;
-                for (int c = 0; c < 3; c++)
-                {
-                    sums[c] = input[c][at];
-                }
-
-                for (int k = 0; k < kernel.Length; k += 2)
-                {
-                    int kx = x + kernel[k];
-                    int ky = y + kernel[k + 1];
-                    float d = 0;
-                    for (int c = 0; c < 3; c++)
-                    {
-                        float[] p = input[c];
-                        float acc = 0;
-                        for (int i = 0; i < dist.Length; i += 2)
+                        // The same value as 6.6 (√0.5 − 1) / sigma · sm, worked out once a block.
+                        float sigma = sigmaOfBlock(bx, y / 8);
+                        float t = scaleFactor / sigma;
+                        float fi = sigma < 0.3f ? float.NaN : t * (yBorder ? edge : inner);
+                        float fe = sigma < 0.3f ? float.NaN : t * edge;
+                        int x0 = bx * 8;
+                        int x1 = Math.Min(width, x0 + 8);
+                        for (int x = x0; x < x1; x++)
                         {
-                            float a = p[(Mirror(ky + dist[i + 1], height) * stride) + Mirror(kx + dist[i], width)];
-                            float b = p[(Mirror(y + dist[i + 1], height) * stride) + Mirror(x + dist[i], width)];
-                            acc += MathF.Abs(a - b);
+                            factor[b + x] = (x & 7) is 0 or 7 ? fe : fi;
                         }
-
-                        d += scale[c] * acc;
-                    }
-
-                    float weight = MathF.Max(0, 1 + (d * negInvSigma));
-                    sumWeights += weight;
-                    int kat = (Mirror(ky, height) * stride) + Mirror(kx, width);
-                    for (int c = 0; c < 3; c++)
-                    {
-                        sums[c] += weight * input[c][kat];
                     }
                 }
 
-                for (int c = 0; c < 3; c++)
+                for (int k = 0; k < taps; k++)
                 {
-                    output[c][at] = sums[c] / sumWeights;
+                    for (int r = 0; r < wRows; r++)
+                    {
+                        EpfDifferences(input, w.AsSpan((k * plane) + (r * wWidth), wWidth), top - reachY + r, kernel[2 * k], kernel[(2 * k) + 1], reachX, width, height, stride, scale);
+                    }
+                }
+
+                for (int y = top; y < bottom; y++)
+                {
+                    EpfRow(input, output, w, plane, wWidth, reachX, reachY, y - top, y, kernel, dist, width, height, stride, factor.AsSpan((y - top) * width, width));
                 }
             }
-        }, minimumPerThread: 16);
+            finally
+            {
+                pool.Return(factor);
+                pool.Return(w);
+            }
+        }, band: 8);
     }
+
+    /// <summary>
+    /// Writes the weighted three-channel difference |p(z + tap) − p(z)| for row <paramref name="r"/> and every z from −reach to
+    /// width + reach − 1, mirroring each sample's place at the edges as the patch sums need.
+    /// </summary>
+    private static void EpfDifferences(float[][] input, Span<float> w, int r, int tx, int ty, int reachX, int width, int height, int stride, float[] scale)
+    {
+        int rowB = Mirror(r, height) * stride;
+        int rowA = Mirror(r + ty, height) * stride;
+        float[] p0 = input[0];
+        float[] p1 = input[1];
+        float[] p2 = input[2];
+        float k0 = scale[0];
+        float k1 = scale[1];
+        float k2 = scale[2];
+
+        // Where neither z nor z + tap leaves the row, no place is mirrored.
+        int lo = Math.Max(0, -tx);
+        int hi = Math.Min(width, width - tx);
+        int z = -reachX;
+        for (; z < lo; z++)
+        {
+            w[z + reachX] = EpfDifference(p0, p1, p2, rowA + Mirror(z + tx, width), rowB + Mirror(z, width), k0, k1, k2);
+        }
+
+        if (Vector.IsHardwareAccelerated)
+        {
+            ref float r0 = ref MemoryMarshal.GetArrayDataReference(p0);
+            ref float r1 = ref MemoryMarshal.GetArrayDataReference(p1);
+            ref float r2 = ref MemoryMarshal.GetArrayDataReference(p2);
+            ref float wr = ref MemoryMarshal.GetReference(w);
+            Vector<float> v0 = new(k0);
+            Vector<float> v1 = new(k1);
+            Vector<float> v2 = new(k2);
+            int lanes = Vector<float>.Count;
+            for (; z + lanes <= hi; z += lanes)
+            {
+                int a = rowA + z + tx;
+                int b = rowB + z;
+                Vector<float> d = (v0 * Vector.Abs(Load(ref r0, a) - Load(ref r0, b))) + (v1 * Vector.Abs(Load(ref r1, a) - Load(ref r1, b))) + (v2 * Vector.Abs(Load(ref r2, a) - Load(ref r2, b)));
+                Unsafe.WriteUnaligned(ref Unsafe.As<float, byte>(ref Unsafe.Add(ref wr, z + reachX)), d);
+            }
+        }
+
+        for (; z < hi; z++)
+        {
+            w[z + reachX] = EpfDifference(p0, p1, p2, rowA + z + tx, rowB + z, k0, k1, k2);
+        }
+
+        for (; z < width + reachX; z++)
+        {
+            w[z + reachX] = EpfDifference(p0, p1, p2, rowA + Mirror(z + tx, width), rowB + Mirror(z, width), k0, k1, k2);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static float EpfDifference(float[] p0, float[] p1, float[] p2, int a, int b, float k0, float k1, float k2)
+    {
+        return (k0 * MathF.Abs(p0[a] - p0[b])) + (k1 * MathF.Abs(p1[a] - p1[b])) + (k2 * MathF.Abs(p2[a] - p2[b]));
+    }
+
+    /// <summary>Filters row <paramref name="y"/>: for each pixel and tap, the patch sum, its weight and the weighted sample, then the mean.</summary>
+    private static void EpfRow(float[][] input, float[][] output, float[] w, int plane, int wWidth, int reachX, int reachY, int row, int y, int[] kernel, int[] dist,
+        int width, int height, int stride, Span<float> factor)
+    {
+        int taps = kernel.Length / 2;
+        int n = dist.Length / 2;
+        Span<int> around = stackalloc int[n * taps];
+        Span<int> tapRows = stackalloc int[taps];
+        for (int k = 0; k < taps; k++)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                around[(k * n) + i] = (k * plane) + ((row + reachY + dist[(2 * i) + 1]) * wWidth) + reachX + dist[2 * i];
+            }
+
+            tapRows[k] = Mirror(y + kernel[(2 * k) + 1], height) * stride;
+        }
+
+        // The pixels whose taps all stay inside the row need no mirroring.
+        int reach = kernel.Where((_, i) => i % 2 == 0).Max(Math.Abs);
+        int lo = Math.Min(width, reach);
+        int hi = Math.Max(lo, width - reach);
+        int at = y * stride;
+        int x = 0;
+        for (; x < lo; x++)
+        {
+            EpfRowPixel(input, output, w, around, tapRows, kernel, n, x, at, width, factor[x]);
+        }
+
+        if (Vector.IsHardwareAccelerated)
+        {
+            ref float wr = ref MemoryMarshal.GetArrayDataReference(w);
+            ref float r0 = ref MemoryMarshal.GetArrayDataReference(input[0]);
+            ref float r1 = ref MemoryMarshal.GetArrayDataReference(input[1]);
+            ref float r2 = ref MemoryMarshal.GetArrayDataReference(input[2]);
+            int lanes = Vector<float>.Count;
+            for (; x + lanes <= hi; x += lanes)
+            {
+                Vector<float> f = new(factor[x..]);
+                Vector<float> c0 = Load(ref r0, at + x);
+                Vector<float> c1 = Load(ref r1, at + x);
+                Vector<float> c2 = Load(ref r2, at + x);
+                Vector<float> s0 = c0;
+                Vector<float> s1 = c1;
+                Vector<float> s2 = c2;
+                Vector<float> sumW = Vector<float>.One;
+                for (int k = 0; k < taps; k++)
+                {
+                    int o = k * n;
+                    Vector<float> d = Load(ref wr, around[o] + x);
+                    for (int i = 1; i < n; i++)
+                    {
+                        d += Load(ref wr, around[o + i] + x);
+                    }
+
+                    Vector<float> weight = Vector.Max(Vector<float>.Zero, Vector<float>.One + (d * f));
+                    int t = tapRows[k] + x + kernel[2 * k];
+                    sumW += weight;
+                    s0 += weight * Load(ref r0, t);
+                    s1 += weight * Load(ref r1, t);
+                    s2 += weight * Load(ref r2, t);
+                }
+
+                // Pixels the filter leaves as they are (a NaN factor) keep their input.
+                Vector<int> filtered = Vector.Equals(f, f);
+                Vector.ConditionalSelect(filtered, s0 / sumW, c0).CopyTo(output[0], at + x);
+                Vector.ConditionalSelect(filtered, s1 / sumW, c1).CopyTo(output[1], at + x);
+                Vector.ConditionalSelect(filtered, s2 / sumW, c2).CopyTo(output[2], at + x);
+            }
+        }
+
+        for (; x < width; x++)
+        {
+            EpfRowPixel(input, output, w, around, tapRows, kernel, n, x, at, width, factor[x]);
+        }
+    }
+
+    private static void EpfRowPixel(float[][] input, float[][] output, float[] w, ReadOnlySpan<int> around, ReadOnlySpan<int> tapRows, int[] kernel, int n, int x, int at, int width, float factor)
+    {
+        float[] p0 = input[0];
+        float[] p1 = input[1];
+        float[] p2 = input[2];
+        if (float.IsNaN(factor))
+        {
+            output[0][at + x] = p0[at + x];
+            output[1][at + x] = p1[at + x];
+            output[2][at + x] = p2[at + x];
+            return;
+        }
+
+        float s0 = p0[at + x];
+        float s1 = p1[at + x];
+        float s2 = p2[at + x];
+        float sumW = 1;
+        for (int k = 0; k < tapRows.Length; k++)
+        {
+            int o = k * n;
+            float d = w[around[o] + x];
+            for (int i = 1; i < n; i++)
+            {
+                d += w[around[o + i] + x];
+            }
+
+            float weight = MathF.Max(0, 1 + (d * factor));
+            int t = tapRows[k] + Mirror(x + kernel[2 * k], width);
+            sumW += weight;
+            s0 += weight * p0[t];
+            s1 += weight * p1[t];
+            s2 += weight * p2[t];
+        }
+
+        output[0][at + x] = s0 / sumW;
+        output[1][at + x] = s1 / sumW;
+        output[2][at + x] = s2 / sumW;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector<float> Load(ref float origin, int at) => Unsafe.ReadUnaligned<Vector<float>>(ref Unsafe.As<float, byte>(ref Unsafe.Add(ref origin, at)));
 
     private static readonly int[] EpfKernel0 = [0, -2, -1, -1, 0, -1, 1, -1, -2, 0, -1, 0, 1, 0, 2, 0, -1, 1, 0, 1, 1, 1, 0, 2];
     private static readonly int[] EpfKernel12 = [0, -1, 0, 1, -1, 0, 1, 0];

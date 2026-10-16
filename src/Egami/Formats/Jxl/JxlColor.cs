@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 using Egami.Colors;
 using Egami.Pixels;
 
@@ -9,6 +11,10 @@ namespace Egami.Formats.Jxl;
 /// </summary>
 internal static class JxlColor
 {
+    // libjxl's TF_SRGB EncodedFromDisplay coefficients, lowest degree first (its EvalRationalPolynomial starts from the last).
+    private static readonly float[] SrgbP = [-5.135152395e-04f, 5.287254571e-03f, 3.903842876e-01f, 1.474205315e+00f, 7.352629620e-01f];
+    private static readonly float[] SrgbQ = [1.004519624e-02f, 3.036675394e-01f, 1.340816930e+00f, 9.258482155e-01f, 2.424867759e-02f];
+
     private static readonly float[] DefaultOpsin =
     [
         11.031566901960783f, -9.866943921568629f, -0.16462299647058826f,
@@ -38,7 +44,35 @@ internal static class JxlColor
         float[] x = planes[0];
         float[] y = planes[1];
         float[] b = planes[2];
-        for (int i = start; i < end; i++)
+        int i = start;
+        if (System.Runtime.Intrinsics.X86.Fma.IsSupported)
+        {
+            // The same operations as below, eight samples at a time.
+            Vector256<float> vc0 = Vector256.Create(c0);
+            Vector256<float> vc1 = Vector256.Create(c1);
+            Vector256<float> vc2 = Vector256.Create(c2);
+            Vector256<float> vb0 = Vector256.Create(b0);
+            Vector256<float> vb1 = Vector256.Create(b1);
+            Vector256<float> vb2 = Vector256.Create(b2);
+            Vector256<float> vs = Vector256.Create(scale);
+            for (; i + 8 <= end; i += 8)
+            {
+                Vector256<float> vx = Vector256.Create(x.AsSpan(i, 8));
+                Vector256<float> vy = Vector256.Create(y.AsSpan(i, 8));
+                Vector256<float> vb = Vector256.Create(b.AsSpan(i, 8));
+                Vector256<float> gl = vy + vx - vc0;
+                Vector256<float> gm = vy - vx - vc1;
+                Vector256<float> gs = vb - vc2;
+                Vector256<float> l = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gl * gl, gl, vb0) * vs;
+                Vector256<float> mm = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gm * gm, gm, vb1) * vs;
+                Vector256<float> ss = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gs * gs, gs, vb2) * vs;
+                ((Vector256.Create(m[0]) * l) + (Vector256.Create(m[1]) * mm) + (Vector256.Create(m[2]) * ss)).CopyTo(x.AsSpan(i, 8));
+                ((Vector256.Create(m[3]) * l) + (Vector256.Create(m[4]) * mm) + (Vector256.Create(m[5]) * ss)).CopyTo(y.AsSpan(i, 8));
+                ((Vector256.Create(m[6]) * l) + (Vector256.Create(m[7]) * mm) + (Vector256.Create(m[8]) * ss)).CopyTo(b.AsSpan(i, 8));
+            }
+        }
+
+        for (; i < end; i++)
         {
             float gl = y[i] + x[i] - c0;
             float gm = y[i] - x[i] - c1;
@@ -254,13 +288,7 @@ internal static class JxlColor
         if (c.Gamma != 0 || c.TransferFunction == 17)
         {
             // As libjxl: samples at or below 10^-5 become 0.
-            float g = c.Gamma != 0 ? c.Gamma / 1e7f : 1 / 2.6f;
-            for (int i = 0; i < count; i++)
-            {
-                float v = plane[i];
-                plane[i] = v <= 1e-5f ? 0 : MathF.Pow(v, g);
-            }
-
+            JxlFastMath.EncodeGamma(plane, c.Gamma != 0 ? c.Gamma / 1e7f : 1 / 2.6f);
             return;
         }
 
@@ -296,23 +324,58 @@ internal static class JxlColor
 
                 return;
             case 1:
-                for (int i = 0; i < count; i++)
-                {
-                    // Negative values stay on the linear segment, as libjxl and jxl-oxide encode them.
-                    float v = plane[i];
-                    plane[i] = v <= 0.018f ? 4.5f * v : (1.099f * MathF.Pow(v, 0.45f)) - 0.099f;
-                }
-
+                // Negative values stay on the linear segment, as libjxl and jxl-oxide encode them.
+                JxlFastMath.Encode709(plane);
                 return;
             default:
-                for (int i = 0; i < count; i++)
+                EncodeSrgb(plane);
+                return;
+        }
+    }
+
+    /// <summary>
+    /// The sRGB curve as libjxl's high-precision TF_SRGB computes it: a rational polynomial in √x above 0.0031308 (error about
+    /// 5e-7), 12.92·x below, sign kept. Several samples at a time with AVX and FMA, the rest with the same operations.
+    /// </summary>
+    private static void EncodeSrgb(Span<float> plane)
+    {
+        int i = 0;
+        if (System.Runtime.Intrinsics.X86.Fma.IsSupported)
+        {
+            ref float start = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(plane);
+            for (; i + 8 <= plane.Length; i += 8)
+            {
+                Vector256<float> v = Vector256.LoadUnsafe(ref start, (nuint)i);
+                Vector256<float> sign = v & Vector256.Create(-0f);
+                Vector256<float> x = Vector256.AndNot(v, Vector256.Create(-0f));
+                Vector256<float> r = Vector256.Sqrt(x);
+                Vector256<float> yp = Vector256.Create(SrgbP[4]);
+                Vector256<float> yq = Vector256.Create(SrgbQ[4]);
+                for (int k = 3; k >= 0; k--)
                 {
-                    float v = plane[i];
-                    float a = MathF.Abs(v);
-                    plane[i] = MathF.CopySign(a <= 0.0031308f ? 12.92f * a : (1.055f * MathF.Pow(a, 1 / 2.4f)) - 0.055f, v);
+                    yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(SrgbP[k]));
+                    yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(SrgbQ[k]));
                 }
 
-                return;
+                Vector256<float> magnitude = Vector256.ConditionalSelect(Vector256.GreaterThan(x, Vector256.Create(0.0031308f)), yp / yq, x * Vector256.Create(12.92f));
+                (magnitude | sign).StoreUnsafe(ref start, (nuint)i);
+            }
+        }
+
+        for (; i < plane.Length; i++)
+        {
+            float v = plane[i];
+            float x = MathF.Abs(v);
+            float r = MathF.Sqrt(x);
+            float yp = SrgbP[4];
+            float yq = SrgbQ[4];
+            for (int k = 3; k >= 0; k--)
+            {
+                yp = MathF.FusedMultiplyAdd(yp, r, SrgbP[k]);
+                yq = MathF.FusedMultiplyAdd(yq, r, SrgbQ[k]);
+            }
+
+            plane[i] = MathF.CopySign(x > 0.0031308f ? yp / yq : x * 12.92f, v);
         }
     }
 }

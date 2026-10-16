@@ -4,7 +4,7 @@ namespace Egami.Formats.Jxl;
 /// The DCTs of ISO/IEC 18181-1 I.4 at every power-of-two size up to 256, in JPEG XL's scaling (the DC is the mean), and the
 /// special 8×8 transforms: DCT2, DCT4, Hornuss, DCT4x8 and AFV. Ported from jxl-oxide's jxl-render (see THIRD-PARTY-NOTICES).
 /// </summary>
-internal static class JxlDct
+internal static partial class JxlDct
 {
     private static readonly float Sqrt2 = MathF.Sqrt(2);
     private static readonly float[][] SecHalfTables = BuildSecHalf();
@@ -61,7 +61,7 @@ internal static class JxlDct
     /// <summary>A 2D DCT of a <paramref name="width"/>×<paramref name="height"/> area at <paramref name="offset"/>, rows then columns.</summary>
     internal static void Dct2D(Span<float> data, int offset, int stride, int width, int height, bool forward)
     {
-        if (width * height <= 1)
+        if (width * height <= 1 || Dct2DVector(data, offset, stride, width, height, forward))
         {
             return;
         }
@@ -121,6 +121,9 @@ internal static class JxlDct
             case JxlTransformType.Afv2:
             case JxlTransformType.Afv3:
                 Afv(data, offset, stride, t - JxlTransformType.Afv0);
+                break;
+            case JxlTransformType.Dct8 when Idct8x8Vectorized:
+                Idct8x8(data, offset, stride);
                 break;
             default:
                 (int w, int h) = JxlTransforms8.Size(t);

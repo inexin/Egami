@@ -637,6 +637,28 @@ the full HDR rendition.
 The SDR picture is the render tone mapped with BT.2390; the gain map, half the size here, brings the HDR render back.
 
 
+## Load a JPEG XL image
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#cookbook-load)]
+
+Lossless and lossy files, animations (as their blended frames), extra channels and recompressed JPEGs all load through
+`Raster.Load`; lossy color comes out in the file's own color space. See the [formats guide](../guides/formats.md).
+
+## Get the original JPEG back from a JPEG XL file
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#reconstruct)]
+
+A JPEG recompressed losslessly into JPEG XL (`cjxl` does this by default for JPEG input) keeps a jbrd box, and
+`JxlImage.ReconstructJpeg` writes the original file from it, byte for byte. Loading such a file gives its pixels, as viewers show them.
+
+## Read an HDR JPEG XL file as SDR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#cookbook-sdr)]
+
+PQ and HLG files keep their curve when they load, with intensity_target as `HdrMetadata.MaxContentLightLevel`; converting to
+sRGB tone maps with BT.2390 from that peak. A file with a jhgm gain map loads as its SDR base, and `ReaderOptions.Hdr` renders
+it as HDR, as for [Ultra HDR photos](#show-an-ultra-hdr-photo-as-hdr).
+
 ## Find a PDF font's glyph by name
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#names)]

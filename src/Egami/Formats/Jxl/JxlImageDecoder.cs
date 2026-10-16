@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 using Egami.Colors;
 using Egami.Metadata;
@@ -14,6 +15,7 @@ namespace Egami.Formats.Jxl;
 /// </summary>
 internal static class JxlImageDecoder
 {
+
     /// <summary>Decodes into the natural pixel type: one frame for a still, the coalesced frames for an animation.</summary>
     internal static Raster Decode(EgamiInput input, ReaderOptions options)
     {
@@ -929,6 +931,63 @@ internal static class JxlImageDecoder
             bool cmyk = layout == Cmyk8.Layout || layout == Cmyk16.Layout;
             int blackIndex = h.ExtraChannels.ToList().FindIndex(e => e.Type == JxlExtraChannelType.Black);
             float[]? black = cmyk ? d.Extras![blackIndex] : null;
+            if (d.Ints is null && extra < 0 && !cmyk && layout.ChannelType is PixelChannelType.Unorm8 or PixelChannelType.Unorm16)
+            {
+                // Each sample's plane picked once; rows on several threads.
+                float[]?[] planes = new float[samples][];
+                for (int s = 0; s < samples; s++)
+                {
+                    bool isAlpha = alpha && s == samples - 1;
+                    planes[s] = isAlpha ? (alphaIndex >= 0 ? d.Extras![alphaIndex] : null) : color![Math.Min(s, colorSamples - 1) % 3];
+                }
+
+                bool wide = layout.ChannelType == PixelChannelType.Unorm16;
+                d.File.Parallel.For(d.Height, y =>
+                {
+                    Span<int> rounded = stackalloc int[8];
+                    Span<byte> bytes = MemoryMarshal.AsBytes(raster.Row(y));
+                    Span<ushort> words = MemoryMarshal.Cast<byte, ushort>(bytes);
+                    int at = y * d.Width;
+                    for (int s = 0; s < samples; s++)
+                    {
+                        float[]? plane = planes[s];
+                        int x0 = 0;
+                        if (!wide && plane is not null && System.Runtime.Intrinsics.X86.Avx.IsSupported)
+                        {
+                            // Eight samples at a time: clamped, scaled and rounded to nearest even, as MathF.Round does.
+                            System.Runtime.Intrinsics.Vector256<float> zero = System.Runtime.Intrinsics.Vector256<float>.Zero;
+                            System.Runtime.Intrinsics.Vector256<float> one = System.Runtime.Intrinsics.Vector256<float>.One;
+                            System.Runtime.Intrinsics.Vector256<float> max = System.Runtime.Intrinsics.Vector256.Create(255f);
+                            for (; x0 + 8 <= d.Width; x0 += 8)
+                            {
+                                System.Runtime.Intrinsics.Vector256<float> f = System.Runtime.Intrinsics.Vector256.Create(plane.AsSpan(at + x0, 8));
+                                f = System.Runtime.Intrinsics.Vector256.Min(System.Runtime.Intrinsics.Vector256.Max(f, zero), one) * max;
+                                System.Runtime.Intrinsics.X86.Avx.ConvertToVector256Int32(System.Runtime.Intrinsics.X86.Avx.RoundToNearestInteger(f)).CopyTo(rounded);
+                                for (int k = 0; k < 8; k++)
+                                {
+                                    bytes[((x0 + k) * samples) + s] = (byte)rounded[k];
+                                }
+                            }
+                        }
+
+                        for (int x = x0; x < d.Width; x++)
+                        {
+                            float f = plane is null ? 1f : plane[at + x];
+                            int i = (x * samples) + s;
+                            if (wide)
+                            {
+                                words[i] = (ushort)MathF.Round(Math.Clamp(f, 0, 1) * 65535);
+                            }
+                            else
+                            {
+                                bytes[i] = (byte)MathF.Round(Math.Clamp(f, 0, 1) * 255);
+                            }
+                        }
+                    }
+                }, minimumPerThread: 16);
+                return raster;
+            }
+
             for (int y = 0; y < d.Height; y++)
             {
                 Span<byte> row = MemoryMarshal.AsBytes(raster.Row(y));

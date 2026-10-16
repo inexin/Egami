@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -526,13 +528,30 @@ internal sealed class JxlVarDct
                 float mul = 65536f / (_global.GlobalScale * (float)hfMul) * qmScale[c];
                 float[] matrix = hf.Matrices.Get(c, t);
                 int o = (by * 8 * stride) + (bx * 8);
+                float bias = quantBias[c];
                 for (int y = 0; y < h8 * 8; y++)
                 {
                     int row = o + (y * stride);
-                    for (int x = 0; x < width; x++)
+                    int x = 0;
+                    if (Vector256.IsHardwareAccelerated)
+                    {
+                        // The same operations as below, eight coefficients at a time (a division by 0 is in the lane not chosen).
+                        Vector256<float> vBias = Vector256.Create(bias);
+                        Vector256<float> vNumerator = Vector256.Create(numerator);
+                        Vector256<float> vMul = Vector256.Create(mul);
+                        for (; x + 8 <= width; x += 8)
+                        {
+                            Vector256<float> q = Vector256.ConvertToSingle(Vector256.Create(coeffs.AsSpan(row + x, 8)));
+                            Vector256<float> small = Vector256.LessThanOrEqual(Vector256.Abs(q), Vector256<float>.One);
+                            q = Vector256.ConditionalSelect(small, q * vBias, q - (vNumerator / q));
+                            (q * Vector256.Create(matrix.AsSpan((y * width) + x, 8)) * vMul).CopyTo(plane.AsSpan(row + x, 8));
+                        }
+                    }
+
+                    for (; x < width; x++)
                     {
                         float q = coeffs[row + x];
-                        q = MathF.Abs(q) <= 1 ? q * quantBias[c] : q - (numerator / q);
+                        q = MathF.Abs(q) <= 1 ? q * bias : q - (numerator / q);
                         plane[row + x] = q * matrix[(y * width) + x] * mul;
                     }
                 }
@@ -697,15 +716,33 @@ internal sealed class JxlVarDct
         parallel.For(height, y =>
         {
             int tileRow = Math.Min(y / 64, (_xFromY.Length / _tiles) - 1) * _tiles;
-            for (int x = 0; x < stride; x++)
+            for (int x0 = 0; x0 < stride; x0 += 64)
             {
-                int tile = tileRow + Math.Min(x / 64, _tiles - 1);
+                // One tile's factors for its 64 columns (the last tile also takes any columns past it).
+                int tile = tileRow + Math.Min(x0 / 64, _tiles - 1);
                 float kx = _global.BaseCorrelationX + (_xFromY[tile] / (float)_global.ColourFactor);
                 float kb = _global.BaseCorrelationB + (_bFromY[tile] / (float)_global.ColourFactor);
-                int at = (y * stride) + x;
-                float yv = py[at];
-                px[at] += kx * yv;
-                pb[at] += kb * yv;
+                int at = (y * stride) + x0;
+                int end = Math.Min(stride, x0 + 64) - x0;
+                int x = 0;
+                if (Vector256.IsHardwareAccelerated)
+                {
+                    Vector256<float> vkx = Vector256.Create(kx);
+                    Vector256<float> vkb = Vector256.Create(kb);
+                    for (; x + 8 <= end; x += 8)
+                    {
+                        Vector256<float> yv = Vector256.Create(py.AsSpan(at + x, 8));
+                        (Vector256.Create(px.AsSpan(at + x, 8)) + (vkx * yv)).CopyTo(px.AsSpan(at + x, 8));
+                        (Vector256.Create(pb.AsSpan(at + x, 8)) + (vkb * yv)).CopyTo(pb.AsSpan(at + x, 8));
+                    }
+                }
+
+                for (; x < end; x++)
+                {
+                    float yv = py[at + x];
+                    px[at + x] += kx * yv;
+                    pb[at + x] += kb * yv;
+                }
             }
         });
     }
