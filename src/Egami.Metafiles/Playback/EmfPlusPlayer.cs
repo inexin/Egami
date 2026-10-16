@@ -176,8 +176,7 @@ internal sealed partial class EmfPlusPlayer
     {
         get
         {
-            float page = UnitScale(_state.PageUnit) * _state.PageScale;
-            Matrix3x2 m = _state.Container * _state.World * Matrix3x2.CreateScale(page) * _gdi.Device;
+            Matrix3x2 m = Unshifted;
 
             // Without PixelOffsetModeHalf (2 HighQuality, 4 Half), GDI+ puts integer coordinates on pixel centers.
             if (_state.PixelOffset is not (2 or 4))
@@ -188,6 +187,9 @@ internal sealed partial class EmfPlusPlayer
             return m;
         }
     }
+
+    /// <summary>World units to the canvas's device space without the pixel offset, which GDI+ does not apply to images.</summary>
+    private Matrix3x2 Unshifted => _state.Container * _state.World * Matrix3x2.CreateScale(UnitScale(_state.PageUnit) * _state.PageScale) * _gdi.Device;
 
     /// <summary>Gets a value indicating whether shapes are antialiased: SmoothingModeHighQuality (2), AntiAlias (4) and AntiAlias8x8 (5).</summary>
     private bool Smooth => _state.Smoothing is 2 or 4 or 5;

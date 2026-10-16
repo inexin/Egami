@@ -32,7 +32,8 @@ internal sealed partial class EmfPlusPlayer
 
             case PlusBrush.HatchType:
                 {
-                    // The tile is 8 reference pixels, as for GDI hatches (question 11), from the device origin.
+                    // The tile is 8 reference pixels, as for GDI hatches (question 11), from the device origin; the scale is rounded to
+                    // whole output pixels so the tile's pixels stay sharp, as GDI+ draws them.
                     byte[] rows = PlusHatches.Tiles[Math.Clamp(brush.HatchStyle, 0, PlusHatches.Tiles.Length - 1)];
                     PictureRecorder tile = new(new RectF(0, 0, 8, 8));
                     tile.FillRect(new RectF(0, 0, 8, 8), new SolidPaint(brush.BackColor) { Antialias = false, BlendMode = BlendMode.Source });
@@ -49,7 +50,9 @@ internal sealed partial class EmfPlusPlayer
                     }
 
                     Matrix3x2 device = _gdi.Device;
-                    return new PlusFill(new PicturePaint(tile.Finish(), TileMode.Repeat, TileMode.Repeat, new RectF(0, 0, 8, 8)) { LocalMatrix = device, Antialias = Smooth, BlendMode = Blend }, null);
+                    float scale = MathF.Max(1, MathF.Round(MathF.Sqrt(MathF.Abs(device.GetDeterminant()))));
+                    Matrix3x2 pixels = Matrix3x2.CreateScale(scale);
+                    return new PlusFill(new PicturePaint(tile.Finish(), TileMode.Repeat, TileMode.Repeat, new RectF(0, 0, 8, 8)) { LocalMatrix = pixels, Antialias = Smooth, BlendMode = Blend }, null);
                 }
 
             case PlusBrush.TextureType when brush.Texture?.Bitmap is Raster<Rgba8> image:

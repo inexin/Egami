@@ -46,6 +46,15 @@ public class IntegrationTests
     }
 
     [Fact]
+    public void ASourceBeyondTheImageTilesEvenWhenThePictureIsEncoded()
+    {
+        // The third picture's source rectangle is three images wide with TileFlipX: it fills its whole destination.
+        Metafile m = Metafile.Load(TestFiles.SyntheticPath("plus-image-attributes.plus.emf"));
+        using Raster<Rgba8> r = m.Rasterize<Rgba8>(new MetafileRenderOptions { Width = 181, Height = 136 });
+        Assert.Equal(255, r.GetPixel(150, 110).A);
+    }
+
+    [Fact]
     public void TextReachesTheCanvasAsGlyphRunsWithItsCharacters()
     {
         foreach (string name in (string[])["gdi-text-textout.emf", "gdi-text-textout.wmf", "plus-text-drawstring.plus.emf", "plus-text-drawdriverstring.plus.emf"])

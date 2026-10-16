@@ -93,7 +93,7 @@ internal sealed partial class EmfPlusPlayer
         }
 
         _ = srcUnit;
-        Matrix3x2 full = map * Full;
+        Matrix3x2 full = map * Unshifted;
         int count = _canvas.Save();
         try
         {
@@ -110,7 +110,9 @@ internal sealed partial class EmfPlusPlayer
             _canvas.Concat(full);
             SolidPaint paint = new(new Rgba8(0, 0, 0, 255)) { Antialias = Smooth, BlendMode = Blend };
             // Only bytes that decoded go through, so a damaged picture is skipped here as on a raster canvas.
-            if (effect is null && image.Bitmap is not null && image.Encoded is byte[] encoded && IsJpegOrPng(encoded) && (attributes is null || attributes.WrapMode != 4))
+            // A source rectangle beyond the image tiles it by the attributes' wrap mode, so it is drawn from the bitmap.
+            bool tiled = image.Bitmap is Raster<Rgba8> b && attributes is not null && attributes.WrapMode != 4 && !new RectF(0, 0, b.Width, b.Height).Contains(src);
+            if (effect is null && !tiled && image.Bitmap is not null && image.Encoded is byte[] encoded && IsJpegOrPng(encoded))
             {
                 // JPEG and PNG pass through to a PDF canvas unchanged (question 12); a raster canvas decodes them.
                 try
@@ -128,10 +130,9 @@ internal sealed partial class EmfPlusPlayer
             if (image.Bitmap is Raster<Rgba8> bitmap)
             {
                 Raster<Rgba8> drawn = effect is null ? bitmap : effect(bitmap);
-                if (attributes is not null && attributes.WrapMode != 4 && !new RectF(0, 0, bitmap.Width, bitmap.Height).Contains(src))
+                if (tiled)
                 {
-                    // A source rectangle beyond the image tiles it by the attributes' wrap mode.
-                    (TileMode tx, TileMode ty) = Wrap(attributes.WrapMode);
+                    (TileMode tx, TileMode ty) = Wrap(attributes!.WrapMode);
                     _canvas.FillRect(src, new ImagePaint(drawn, tx, ty, Sampling) { Antialias = Smooth, BlendMode = Blend });
                 }
                 else
