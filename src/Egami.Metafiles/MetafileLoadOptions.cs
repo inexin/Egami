@@ -1,6 +1,9 @@
 namespace Egami.Metafiles;
 
 /// <summary>How <see cref="Metafile"/> reads a file: which limits and diagnostics apply.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-limits"/>
+/// </example>
 public sealed record class MetafileLoadOptions
 {
     /// <summary>Gets the defaults: the default context.</summary>

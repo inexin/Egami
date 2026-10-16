@@ -7,6 +7,20 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Windows metafiles (new package Egami.Metafiles 0.1)
+
+- `Metafile` reads WMF (placeable or not), EMF and EMF+ files and their gzip forms WMZ and EMZ, and plays them onto any
+  Egami.Drawing canvas, so pictures from Word, Excel and Visio stay vectors in PDF and SVG output and rasterize on any OS.
+  `Draw` stretches the picture's frame to a box as Word does; `Rasterize` draws at a DPI or a size. Kind, size, frame,
+  DPI and description come from the header, matching GDI+ and Pillow on 2,106 of 2,111 corpus files (the other five are WMFs
+  without a placeable header, sized by their window extent).
+- The GDI records play as GDI does: map modes, world transform, pens, brushes, hatches and pattern brushes, paths, clip
+  regions, bitmaps and raster operations, gradients and text. Drawn aliased, the test files match Windows GDI within a mean of
+  one level and 99% of pixels within 16 levels; text within a looser bound. Text keeps the file's glyph positions in a
+  substitute face (Carlito for Calibri, Liberation for Arial, Times New Roman and Courier New, and your own substitutions).
+- `MetafileFormat` lets `Raster.Load` and `Raster.Probe` read metafiles (opt-in, as SVG). Drawing the 2,111-file corpus
+  takes 0.69 times what GDI+ takes.
+
 ### FOGRA39 print profile
 
 - `ColorProfile.Fogra39` is a built-in CMYK profile for offset printing on coated paper (FOGRA39L, ISO 12647-2, built for

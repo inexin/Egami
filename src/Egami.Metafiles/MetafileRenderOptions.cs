@@ -5,6 +5,9 @@ using Egami.Pixels;
 namespace Egami.Metafiles;
 
 /// <summary>Which records of an EMF+ dual file play (design question 5).</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-gdi"/>
+/// </example>
 public enum MetafilePlayback
 {
     /// <summary>As GDI+ plays the file: the EMF+ records, and the GDI records only where EmfPlusGetDC hands drawing to GDI. Plain WMF and EMF play their GDI records.</summary>
@@ -15,6 +18,9 @@ public enum MetafilePlayback
 }
 
 /// <summary>How <see cref="Metafile.Draw(Canvas, RectF?, MetafileRenderOptions?)"/> and <see cref="Metafile.Rasterize{TPixel}(MetafileRenderOptions?)"/> draw a metafile.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-fonts"/>
+/// </example>
 public sealed record class MetafileRenderOptions
 {
     private readonly int? _width;

@@ -3,6 +3,9 @@ using Egami.Formats;
 namespace Egami.Metafiles;
 
 /// <summary>How <see cref="MetafileFormat"/> draws a metafile for <c>Raster.Load</c> and sizes it for <c>Raster.Probe</c>.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-format"/>
+/// </example>
 public sealed record MetafileDecodeOptions : ReaderOptions
 {
     /// <summary>Gets the resolution the picture's size is drawn at; 96 by default.</summary>

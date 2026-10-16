@@ -13,6 +13,9 @@ namespace Egami.Metafiles;
 /// size from the header without drawing. Text uses the installed fonts. For your own fonts, a target size, a background or the
 /// GDI part of a dual file, load a <see cref="Metafile"/> and call <see cref="Metafile.Rasterize{TPixel}(MetafileRenderOptions?)"/>.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-format"/>
+/// </example>
 public static class MetafileFormat
 {
     /// <summary>How many leading bytes detection looks at: an EMF header is 44 bytes in; gzip needs more to inflate that much.</summary>
@@ -83,7 +86,7 @@ public static class MetafileFormat
             (int width, int height) = metafile.PixelSize(render);
             input.CheckMemory((long)System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>() * width * height);
             MetafileReport report = new();
-            Raster<TPixel> raster = metafile.Rasterize<TPixel>(render, report);
+            Raster<TPixel> raster = metafile.RasterizeCore<TPixel>(render, report);
             foreach (EgamiDiagnostic warning in metafile.Warnings.Concat(report.Warnings))
             {
                 input.Warn(raster, warning.Id, warning.Message, warning.Offset);

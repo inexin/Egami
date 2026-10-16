@@ -12,6 +12,9 @@ namespace Egami.Metafiles;
 /// question 3). The size facts come from the header: an EMF's frame, a placeable WMF's box and units per inch, or a plain
 /// WMF's window extent at 96 DPI. A metafile is immutable and safe to read from many threads.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-to-png"/>
+/// </example>
 public sealed class Metafile
 {
     private Metafile(MetafileContent content, IReadOnlyList<EgamiDiagnostic> warnings, EgamiContext context)
@@ -58,6 +61,9 @@ public sealed class Metafile
     /// <returns>The metafile.</returns>
     /// <exception cref="CorruptDataException">The file is no WMF or EMF file, or its header is broken.</exception>
     /// <exception cref="LimitExceededException">The file, or an EMZ or WMZ file once inflated, is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-to-png"/>
+    /// </example>
     public static Metafile Load(string path, MetafileLoadOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -71,6 +77,9 @@ public sealed class Metafile
     /// <returns>The metafile.</returns>
     /// <exception cref="CorruptDataException">The data is no WMF or EMF file, or its header is broken.</exception>
     /// <exception cref="LimitExceededException">The data, or an EMZ or WMZ stream once inflated, is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-limits"/>
+    /// </example>
     public static Metafile Load(Stream stream, MetafileLoadOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -101,12 +110,15 @@ public sealed class Metafile
     /// <param name="canvas">The canvas.</param>
     /// <param name="box">The rectangle to stretch the frame to, in the canvas's coordinates, or <see langword="null"/>.</param>
     /// <param name="options">Fonts, antialiasing and playback, or <see langword="null"/> for the defaults.</param>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-draw"/>
+    /// </example>
     public void Draw(Canvas canvas, RectF? box = null, MetafileRenderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(canvas);
         options ??= MetafileRenderOptions.Default;
         MetafileReport report = new();
-        Draw(canvas, box, options, report);
+        DrawCore(canvas, box, options, report);
         report.Deliver(options.Context ?? Context);
     }
 
@@ -118,12 +130,15 @@ public sealed class Metafile
     /// <param name="options">The size, background, fonts and playback, or <see langword="null"/> for the defaults.</param>
     /// <returns>The raster.</returns>
     /// <exception cref="LimitExceededException">The raster would break the context's size limits.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-to-png"/>
+    /// </example>
     public Raster<TPixel> Rasterize<TPixel>(MetafileRenderOptions? options = null)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         options ??= MetafileRenderOptions.Default;
         MetafileReport report = new();
-        Raster<TPixel> raster = Rasterize<TPixel>(options, report);
+        Raster<TPixel> raster = RasterizeCore<TPixel>(options, report);
         report.Deliver(options.Context ?? Context);
         return raster;
     }
@@ -155,7 +170,7 @@ public sealed class Metafile
     }
 
     /// <summary>Rasterizes, collecting what playback skipped into <paramref name="report"/>.</summary>
-    internal Raster<TPixel> Rasterize<TPixel>(MetafileRenderOptions options, MetafileReport report)
+    internal Raster<TPixel> RasterizeCore<TPixel>(MetafileRenderOptions options, MetafileReport report)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         (int w, int h) = PixelSize(options);
@@ -183,12 +198,12 @@ public sealed class Metafile
             canvas.Clear(options.Background);
         }
 
-        Draw(canvas, new RectF(0, 0, w, h), options, report);
+        DrawCore(canvas, new RectF(0, 0, w, h), options, report);
         return raster;
     }
 
     /// <summary>Draws, collecting what playback skipped into <paramref name="report"/>.</summary>
-    internal void Draw(Canvas canvas, RectF? box, MetafileRenderOptions options, MetafileReport report)
+    internal void DrawCore(Canvas canvas, RectF? box, MetafileRenderOptions options, MetafileReport report)
     {
         RectF frame = Frame;
         Matrix3x2 place;

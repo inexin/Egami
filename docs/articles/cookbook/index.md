@@ -210,6 +210,26 @@ With system fonts off, the label looks the same on every machine.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#wrapped-text)]
 
+## Render an EMF or WMF to PNG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-to-png)]
+
+Egami.Metafiles plays the records as Windows does (GDI for WMF and EMF, GDI+ for EMF+), in managed code on any OS.
+
+## Draw a Word or Excel picture onto a page
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-draw)]
+
+## Load metafiles with Raster.Load
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-format)]
+
+## Metafiles that name fonts you do not have
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-fonts)]
+
+Each glyph still goes where the file put it, so lines keep their length in a substitute face.
+
 ## Paint a dusk sky
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#sky-gradient)]
