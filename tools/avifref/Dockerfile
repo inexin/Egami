@@ -20,4 +20,7 @@ RUN git clone --depth 1 --branch v1.4.2 https://github.com/AOMediaCodec/libavif 
         -DAVIF_LIBYUV=OFF -DAVIF_JPEG=SYSTEM -DAVIF_ZLIBPNG=SYSTEM -DAVIF_LIBXML2=SYSTEM -DAVIF_LIBSHARPYUV=OFF \
     && ninja -C /src/libavif/build install && rm -rf /src/libavif/build && ldconfig
 RUN dav1d --version && aomenc --help > /dev/null; avifdec --version && avifenc --version && exiftool -ver
+# avifitems prints libavif's item model (its read.c, compiled in) for comparing item lists.
+COPY avifitems.c /src/libavif/apps/avifitems.c
+RUN cd /src/libavif/src && gcc -O1 -I/src/libavif/include -o /usr/local/bin/avifitems /src/libavif/apps/avifitems.c         $(ls *.c | grep -v -e '^read.c$' -e '^codec_' -e '^scale.c$') -lavif -lm
 WORKDIR /work

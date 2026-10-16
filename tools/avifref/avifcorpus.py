@@ -5,15 +5,17 @@
                the coding tools libaom can be steered to (tiles, superres, palette, intra block copy, film grain, quantizer
                matrices, delta q, 128x128 superblocks), alpha, grids, clap, irot and imir, ICC and CICP, HDR metadata, Exif and
                XMP, sequences, layered files and gain maps; plus libavif's own test files (BSD-2) copied into
-               tests/images/avif/libavif. tests/reference/avif: avifdec's RGB decode of each (PNG at 8 or 16 bits) and manifest.json with each file's source and
-               options, avifdec --info's text, ExifTool's tags, the MD5 of avifdec's YUV decode through dav1d (the planes
-               YuvRaster.Load gives; the y4m itself stays in .cache/avif/reference/corpus), and every item (type, properties, references, extents) with
-               the MD5 of dav1d's decode of each AV1 item: with film grain, without it, with every in-loop filter off, and
-               whether libaom's aomdec decodes it to the same planes.
-  conformance  .cache/avif/reference/<set>/summary.json and <stream>.y4m (for Argon, .cache/avif/argon/reference): dav1d's
-               first frame of every stream of libaom's test vectors, dav1d's test data and, when unpacked, the Argon streams; the MD5 of that frame with film grain, without
-               it and with the in-loop filters off; whether aomdec agrees; and the frame's type. For Argon also dav1d's MD5 of
-               the whole stream against Argon's own, and whether every frame is intra (the streams an intra decoder can pass).
+               tests/images/avif/libavif. tests/reference/avif: avifdec's RGB decode of each (PNG at 8 or 16 bits) and
+               manifest.json with each file's source and options, avifdec --info's text, ExifTool's tags, libavif's item model
+               (avifitems.c), the MD5 of avifdec's YUV decode through dav1d (the planes YuvRaster.Load gives; the y4m itself
+               stays in .cache/avif/reference/corpus), and every item (type, properties, references, extents) with the MD5 of
+               dav1d's decode of each AV1 item: with film grain, without it, with every in-loop filter off, and whether libaom's
+               aomdec decodes it to the same planes.
+  conformance  .cache/avif/reference/<set>/summary.json and <stream>.y4m (for Argon, .cache/avif/argon/reference): dav1d's first
+               frame of every stream of libaom's test vectors, dav1d's test data and, when unpacked, the Argon streams; the MD5
+               of that frame with film grain, without it and with the in-loop filters off; whether aomdec agrees; and the
+               frame's type. For Argon also dav1d's MD5 of the whole stream against Argon's own, and whether every frame is
+               intra (the streams an intra decoder can pass).
   extra        .cache/avif/reference/extra/: the corpus treatment (manifest entries and decodes) for the AVIF files that stay in
                .cache: AOM's av1-avif test files (Apple, Link-U, Microsoft, Netflix, Xiph) and libavif's files whose pictures
                have other licenses.
@@ -673,6 +675,9 @@ def reference(name, path, entry, ref_folder, yuv_folder):
     entry["avifdec_info"] = (r.stdout + r.stderr).strip()
     entry["avifdec_info_ok"] = r.returncode == 0
     entry["exiftool"] = exiftool(path)
+    # libavif's own item model, through avifitems (its read.c compiled in), for comparing container readers.
+    r = sh("avifitems", path, check=False)
+    entry["libavif"] = json.loads(r.stdout) if r.returncode == 0 else {"error": (r.stderr or r.stdout).strip()[-300:]}
     data = open(path, "rb").read()
     try:
         listed = items(data)
@@ -731,7 +736,9 @@ def corpus():
             # Each -q:u applies to the inputs after it, so the options place the inputs.
             args = [inputs[0] if a == "{in}" else a for a in args]
             inputs = []
-        r = sh("avifenc", "-j", "1", *args, *inputs, "-o", out, check=False)
+        # Fixed sequence times keep the files the same from run to run.
+        times = ["--creation-time", "1", "--modification-time", "1"] if len(inputs) > 1 else []
+        r = sh("avifenc", "-j", "1", *times, *args, *inputs, "-o", out, check=False)
         if r.returncode != 0:
             print(f"skipped {name}: {(r.stderr or r.stdout).strip()[-300:]}")
             return
