@@ -65,15 +65,16 @@ internal static partial class Av1InverseTransform
         bool rect2 = w == 2 * h || h == 2 * w;
         int rowClamp = bitDepth + 8, colClamp = Math.Max(bitDepth + 6, 16);
         int max = (1 << bitDepth) - 1;
-        if (Vector256.IsHardwareAccelerated && colType == 0 && rowType == 0 && w >= 8 && h >= 8)
+        if (Vector256.IsHardwareAccelerated && w >= 8 && h >= 8)
         {
+            Types types = new(rowType, colType);
             if (bitDepth <= 10)
             {
-                AddDct<Narrow>(coeffs, w, h, codedW, codedH, rect2, rowShift, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+                AddVector<Narrow>(coeffs, w, h, codedW, codedH, rect2, rowShift, types, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
             }
             else
             {
-                AddDct<Wide>(coeffs, w, h, codedW, codedH, rect2, rowShift, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+                AddVector<Wide>(coeffs, w, h, codedW, codedH, rect2, rowShift, types, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
             }
 
             return;
@@ -162,13 +163,20 @@ internal static partial class Av1InverseTransform
     internal interface IButterfly
     {
         static abstract Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit);
+
+        /// <summary>Gets round_shift(w * x, bit) as if taken in 64 bits.</summary>
+        static abstract Vector256<int> Scale(Vector256<int> x, int w, int bit);
     }
 
+    /// <summary>A block's one-dimensional transform types (0 DCT, 1 ADST, 2 flipped ADST, 3 identity), across its rows and down its columns.</summary>
+    private readonly record struct Types(int Row, int Column);
+
     /// <summary>
-    /// The DCT_DCT blocks of 8 and more samples a side, eight rows and then eight columns at a time, with the butterfly
-    /// <typeparamref name="T"/> that is exact at the bit depth.
+    /// The blocks of 8 and more samples a side, eight rows and then eight columns at a time, with the butterfly
+    /// <typeparamref name="T"/> that is exact at the bit depth; flipped ADSTs read their columns right to left and write their
+    /// rows bottom to top, as the scalar path does.
     /// </summary>
-    private static void AddDct<T>(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, (int Clamp, int Range) row,
+    private static void AddVector<T>(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, Types types, (int Clamp, int Range) row,
         (int Clamp, int Range) column, ushort[] dst, int offset, int stride, int max)
         where T : IButterfly
     {
@@ -207,7 +215,7 @@ internal static partial class Av1InverseTransform
             }
 
             input[codedW..w].Clear();
-            Dct<T>(w, input[..w], output[..w], rangeLo, rangeHi);
+            Transform<T>(types.Row, w, input[..w], output[..w], rangeLo, rangeHi);
             if (rowShift > 0)
             {
                 Vector256<int> half = Vector256.Create(1 << (rowShift - 1));
@@ -230,19 +238,24 @@ internal static partial class Av1InverseTransform
         ref int b0 = ref MemoryMarshal.GetReference(buf);
         ref ushort d0 = ref MemoryMarshal.GetArrayDataReference(dst);
         Vector256<int> round = Vector256.Create(8), top = Vector256.Create(max);
+        bool lrFlip = types.Row == 2, udFlip = types.Column == 2;
+        Vector256<int> reverse = Vector256.Create(7, 6, 5, 4, 3, 2, 1, 0);
         for (int col = 0; col < w; col += 8)
         {
             for (int r = 0; r < h; r++)
             {
-                input[r] = Vector256.Min(Vector256.Max(Vector256.LoadUnsafe(ref b0, (nuint)((r * w) + col)), lo), hi);
+                Vector256<int> v = lrFlip
+                    ? Vector256.Shuffle(Vector256.LoadUnsafe(ref b0, (nuint)((r * w) + w - 8 - col)), reverse)
+                    : Vector256.LoadUnsafe(ref b0, (nuint)((r * w) + col));
+                input[r] = Vector256.Min(Vector256.Max(v, lo), hi);
             }
 
-            Dct<T>(h, input[..h], output[..h], rangeLo, rangeHi);
+            Transform<T>(types.Column, h, input[..h], output[..h], rangeLo, rangeHi);
             for (int r = 0; r < h; r++)
             {
                 nuint at = (nuint)(offset + (r * stride) + col);
                 Vector256<int> prediction = Vector256.WidenLower(Vector128.LoadUnsafe(ref d0, at).AsUInt16().ToVector256()).AsInt32();
-                Vector256<int> sum = prediction + Vector256.ShiftRightArithmetic(output[r] + round, 4);
+                Vector256<int> sum = prediction + Vector256.ShiftRightArithmetic(output[udFlip ? h - 1 - r : r] + round, 4);
                 sum = Vector256.Min(Vector256.Max(sum, Vector256<int>.Zero), top);
                 Vector128<ushort> samples = Vector128.Narrow(sum.GetLower().AsUInt32(), sum.GetUpper().AsUInt32());
                 samples.StoreUnsafe(ref d0, at);
@@ -286,15 +299,45 @@ internal static partial class Av1InverseTransform
         }
     }
 
-    private static void Dct<T>(int n, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, Vector256<int> lo, Vector256<int> hi)
+    private static void Transform<T>(int type1d, int n, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, Vector256<int> lo, Vector256<int> hi)
         where T : IButterfly
     {
-        switch (n)
+        switch (type1d)
         {
-            case 8: Dct8<T>(input, output, lo, hi); break;
-            case 16: Dct16<T>(input, output, lo, hi); break;
-            case 32: Dct32<T>(input, output, lo, hi); break;
-            default: Dct64<T>(input, output, lo, hi); break;
+            case 0:
+                switch (n)
+                {
+                    case 8: Dct8<T>(input, output, lo, hi); break;
+                    case 16: Dct16<T>(input, output, lo, hi); break;
+                    case 32: Dct32<T>(input, output, lo, hi); break;
+                    default: Dct64<T>(input, output, lo, hi); break;
+                }
+
+                break;
+            case 3:
+                // av1_iidentity8_c to 32_c: times 2, 2 sqrt(2) and 4.
+                for (int i = 0; i < n; i++)
+                {
+                    output[i] = n switch
+                    {
+                        8 => input[i] * 2,
+                        16 => T.Scale(input[i], NewSqrt2 * 2, NewSqrt2Bits),
+                        _ => input[i] * 4,
+                    };
+                }
+
+                break;
+            default:
+                if (n == 8)
+                {
+                    Adst8<T>(input, output, lo, hi);
+                }
+                else
+                {
+                    Adst16<T>(input, output, lo, hi);
+                }
+
+                break;
         }
     }
 
@@ -307,6 +350,10 @@ internal static partial class Av1InverseTransform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit) =>
             Vector256.ShiftRightArithmetic((in0 * w0) + (in1 * w1) + Vector256.Create(1 << (bit - 1)), bit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<int> Scale(Vector256<int> x, int w, int bit) =>
+            Vector256.ShiftRightArithmetic((x * w) + Vector256.Create(1 << (bit - 1)), bit);
     }
 
     /// <summary>
@@ -322,6 +369,11 @@ internal static partial class Av1InverseTransform
             Vector256<int> carry = Vector256.ShiftRightArithmetic((p0 & low) + (p1 & low) + Vector256.Create(1 << (bit - 1)), bit);
             return Vector256.ShiftRightArithmetic(p0, bit) + Vector256.ShiftRightArithmetic(p1, bit) + carry;
         }
+
+        /// <summary>The product split as x is: w times its high part, and the rounded product of its low part shifted.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<int> Scale(Vector256<int> x, int w, int bit) =>
+            (Vector256.ShiftRightArithmetic(x, bit) * w) + Vector256.ShiftRightArithmetic(((x & Vector256.Create((1 << bit) - 1)) * w) + Vector256.Create(1 << (bit - 1)), bit);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
