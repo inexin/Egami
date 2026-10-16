@@ -350,7 +350,9 @@ and coded dequantization matrices, HF coefficient contexts, chroma from luma, ad
 Hornuss, DCT4x8 and AFV transforms with the AFV basis), the restoration filters and upsampling (`JxlFilters.cs`, with the default
 upsampling weights) the XYB conversion (`JxlColor.cs`) and the patches, splines and noise (`JxlFeatures.cs`: the patch dictionary and patch
 blending, spline dequantization, Catmull-Rom sampling and drawing with its error function approximation, and the noise
-generator, filter and strength table) from its jxl-vardct, jxl-frame, jxl-render, jxl-image and jxl-color crates. It is distributed under the MIT license (or Apache-2.0); the MIT
+generator, filter and strength table) from its jxl-vardct, jxl-frame, jxl-render, jxl-image and jxl-color crates; the JPEG
+bitstream reconstruction (`JxlJpegReconstruction.cs`: the jbrd header, its marker, table and scan bookkeeping, the integer chroma
+from luma, Huffman table building and the sequential and progressive scan writers) is translated from its jxl-jbr crate. It is distributed under the MIT license (or Apache-2.0); the MIT
 terms:
 
     Copyright (c) Wonwoo Choi and the jxl-oxide contributors

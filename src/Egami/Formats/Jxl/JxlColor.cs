@@ -209,6 +209,32 @@ internal static class JxlColor
         }
     }
 
+    /// <summary>Converts Cb, Y, Cr planes in place to R, G, B with the JPEG (JFIF) matrix, Y offset by 128/255, as libjxl does.</summary>
+    internal static void YCbCrToRgb(float[][] planes, int count, JxlParallel parallel)
+    {
+        const float C128 = 128f / 255;
+        const float CrCr = 1.402f;
+        const float CgCb = -0.114f * 1.772f / 0.587f;
+        const float CgCr = -0.299f * 1.402f / 0.587f;
+        const float CbCb = 1.772f;
+        float[] cb = planes[0];
+        float[] yy = planes[1];
+        float[] cr = planes[2];
+        const int Chunk = 1 << 15;
+        parallel.For((count + Chunk - 1) / Chunk, k =>
+        {
+            for (int i = k * Chunk; i < Math.Min(count, (k + 1) * Chunk); i++)
+            {
+                float y = yy[i] + C128;
+                float b = cb[i];
+                float r = cr[i];
+                cb[i] = MathF.FusedMultiplyAdd(CrCr, r, y);
+                yy[i] = MathF.FusedMultiplyAdd(CgCr, r, MathF.FusedMultiplyAdd(CgCb, b, y));
+                cr[i] = MathF.FusedMultiplyAdd(CbCb, b, y);
+            }
+        });
+    }
+
     /// <summary>Gets whether linear sRGB converts to the color encoding by a transfer function alone (sRGB primaries, D65).</summary>
     internal static bool TransferOnly(JxlColorEncoding c)
     {

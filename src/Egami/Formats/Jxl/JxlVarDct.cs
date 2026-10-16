@@ -126,6 +126,21 @@ internal sealed class JxlVarDct
 
     internal JxlVarDctGlobal Global => _global;
 
+    /// <summary>Gets a plane's quantized coefficients, frame-wide (for JPEG reconstruction).</summary>
+    internal int[] Coefficients(int c) => _coeffs[c];
+
+    /// <summary>Gets a plane's quantized LF (DC) coefficients, one a block.</summary>
+    internal int[] LfQuant(int c) => _lfQuant[c];
+
+    /// <summary>Gets the X from Y chroma-from-luma factors, one a 64×64 tile.</summary>
+    internal int[] XFromY => _xFromY;
+
+    /// <summary>Gets the B from Y factors, one a 64×64 tile.</summary>
+    internal int[] BFromY => _bFromY;
+
+    /// <summary>Gets the number of 64×64 tiles in a row.</summary>
+    internal int Tiles => _tiles;
+
     /// <summary>Decodes the VarDCT part of LF group <paramref name="index"/>: the LF coefficients, then the HF metadata.</summary>
     internal void DecodeLfGroupCoefficients(JxlBitReader r, int index, JxlTree? tree, int numLf)
     {

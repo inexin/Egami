@@ -221,12 +221,6 @@ public class JxlHeaderTests(ITestOutputHelper output)
         Assert.Throws<LimitExceededException>(() => Raster.Probe(Path.Combine(Corpus, "pan-anim-lossless.jxl"), fewFrames));
     }
 
-    [Fact]
-    public void LoadSaysWhatItDoesNotDecodeYet()
-    {
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(Path.Combine(Corpus, "jpeg-duck-444.jxl")));
-    }
-
     private static byte[] Box(string type, byte[] content)
     {
         byte[] box = new byte[8 + content.Length];

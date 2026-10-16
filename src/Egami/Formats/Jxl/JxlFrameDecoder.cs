@@ -86,6 +86,9 @@ internal sealed class JxlFrameDecoder
     /// </summary>
     internal (int X0, int Y0, int X1, int Y1)? Needed { get; init; }
 
+    /// <summary>Gets a value indicating whether a VarDCT frame stops at its coefficients, for JPEG reconstruction.</summary>
+    internal bool CoefficientsOnly { get; init; }
+
     /// <summary>Gets how many pass groups (of all passes) were decoded, and how many the frame has.</summary>
     internal (int Decoded, int Total) PassGroups => (_decodedGroups, _frame.Passes * (int)_frame.Groups);
 
@@ -258,6 +261,11 @@ internal sealed class JxlFrameDecoder
         if (varDct is null)
         {
             return new JxlFrameChannels(width, height, global.Channels, colorChannels, extraStart) { LfDequant = lfDequant, Patches = patches, Splines = splines, Noise = noise };
+        }
+
+        if (CoefficientsOnly)
+        {
+            return new JxlFrameChannels(width, height, global.Channels, 3, extraStart) { VarDct = varDct, LfDequant = lfDequant };
         }
 
         float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null, Parallel);

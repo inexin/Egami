@@ -79,4 +79,23 @@ public class Jxl
         Assert.Equal(JxlExtraChannelKind.Alpha, details.ExtraChannels[0].Kind);
         Assert.Equal((image.Width, image.Height), (alpha.Width, alpha.Height));
     }
+
+    [Fact]
+    public void Reconstruct()
+    {
+        using SampleFiles files = new();
+
+        #region reconstruct
+        // A JPEG recompressed into JPEG XL loads as pixels like any other file, and gives its JPEG back byte for byte.
+        using Raster image = Raster.Load("recompressed.jxl");
+        if (((JxlDetails)image.Metadata.FormatDetails!).HasJpegReconstruction)
+        {
+            JxlImage.ReconstructJpeg("recompressed.jxl", "original.jpg");
+        }
+        #endregion
+
+        Assert.True(File.Exists("original.jpg"));
+        using Raster jpeg = Raster.Load("original.jpg");
+        Assert.Equal((image.Width, image.Height), (jpeg.Width, jpeg.Height));
+    }
 }

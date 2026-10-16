@@ -74,6 +74,52 @@ public static class JxlImage
     }
 
     /// <summary>
+    /// Writes the JPEG a JPEG XL file was losslessly recompressed from, byte for byte (design question 8). Load decodes such a
+    /// file to pixels like any other; this gives the original JPEG back instead, when <see cref="JxlDetails.HasJpegReconstruction"/>.
+    /// </summary>
+    /// <param name="path">The JPEG XL file.</param>
+    /// <param name="outputPath">The JPEG file to write.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="UnsupportedFormatException">The file has no JPEG reconstruction data, or its frame is not one Egami can rebuild a JPEG from.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules, including data of another format.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="reconstruct"/>
+    /// </example>
+    public static void ReconstructJpeg(string path, string outputPath, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(outputPath);
+        using FileStream input = File.OpenRead(path);
+        using MemoryStream jpeg = new();
+        ReconstructJpeg(input, jpeg, context);
+        File.WriteAllBytes(outputPath, jpeg.ToArray());
+    }
+
+    /// <summary>Writes the original JPEG of a recompressed JPEG XL file to a stream; see <see cref="ReconstructJpeg(string, string, EgamiContext?)"/>.</summary>
+    /// <param name="stream">The JPEG XL file's data, from its start.</param>
+    /// <param name="output">Where to write the JPEG.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="UnsupportedFormatException">The file has no JPEG reconstruction data, or its frame is not one Egami can rebuild a JPEG from.</exception>
+    /// <exception cref="CorruptDataException">The data breaks the format's rules, including data of another format.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="reconstruct"/>
+    /// </example>
+    public static void ReconstructJpeg(Stream stream, Stream output, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(output);
+        ReaderOptions read = ReaderOptions.Default with { Format = JxlFormat.Info };
+        FormatPipeline.Run<object?>(stream, context ?? EgamiContext.Default, read, (_, input) =>
+        {
+            // Written to memory first, so a failure halfway leaves the output untouched.
+            using MemoryStream jpeg = new();
+            JxlImageDecoder.ReconstructJpeg(input, jpeg);
+            jpeg.Position = 0;
+            jpeg.CopyTo(output);
+            return null;
+        }, CancellationToken.None);
+    }
+
+    /// <summary>
     /// Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image
     /// size: as stored, scaled to 0 to 1 for integer samples, with a frame for each frame Load shows.
     /// </summary>

@@ -125,6 +125,31 @@ internal static class JxlImageDecoder
         return result;
     }
 
+    /// <summary>
+    /// Writes the JPEG a recompressed JPEG XL file was made from (design question 8): the jbrd box's segments around the
+    /// frame's quantized coefficients, the ICC profile, Exif and XMP from the file.
+    /// </summary>
+    internal static void ReconstructJpeg(EgamiInput input, Stream output)
+    {
+        (JxlFile file, byte[] codestream) = Open(input, ReaderOptions.Default);
+        if (file.Container.JpegReconstruction is not byte[] box)
+        {
+            throw new UnsupportedFormatException("The JPEG XL file has no JPEG reconstruction data (jbrd box); it was not recompressed from a JPEG.");
+        }
+
+        List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
+        if (sequence.Count != 1 || sequence[0].Header is not { Modular: false, Type: JxlFrameType.Regular } f || file.Header.XybEncoded
+            || (f.Flags & 0x20) != 0 || (f.Flags & 0x80) == 0)
+        {
+            throw new UnsupportedFormatException("The JPEG XL file's frames are not one recompressed JPEG frame, so the JPEG cannot be rebuilt.");
+        }
+
+        JxlJbrd jbrd = JxlJbrd.Parse(box, input.Limits);
+        JxlFrameDecoder decoder = new(codestream, file.Header, f, sequence[0].Toc, sequence[0].Offset, input.Limits) { Parallel = new JxlParallel(Math.Max(1, input.Context.MaxParallelism), input.CancellationToken), CoefficientsOnly = true };
+        JxlFrameChannels frame = decoder.Decode(null);
+        jbrd.Write(output, f, frame.VarDct!, file.Icc, file.Container.Exif, file.Container.Xmp);
+    }
+
     /// <summary>Converts a decoded raster, every frame, to <typeparamref name="TPixel"/>.</summary>
     internal static Raster<TPixel> Convert<TPixel>(EgamiInput input, Raster natural)
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -368,11 +393,6 @@ internal static class JxlImageDecoder
                 invisible++;
             }
 
-            if (f.YCbCr)
-            {
-                throw new UnsupportedFormatException("Egami does not decode recompressed JPEG frames yet.");
-            }
-
             bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
             JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits) { Parallel = file.Parallel, Needed = f.IsLast && file.DisplayedFrames == 1 && !lfOnly && !layers ? file.Needed(f) : null };
             if (lfOnly && f.Type != JxlFrameType.Lf)
@@ -425,6 +445,12 @@ internal static class JxlImageDecoder
                 {
                     continue;
                 }
+            }
+
+            if (f.YCbCr)
+            {
+                // A recompressed JPEG: its color transform is YCbCr to RGB, in the file's own color space.
+                JxlColor.YCbCrToRgb(planes.Planes, planes.Width * planes.Height, file.Parallel);
             }
 
             ToColorSpace(planes.Planes, planes.Width * planes.Height, file);
@@ -480,6 +506,54 @@ internal static class JxlImageDecoder
         return planes;
     }
 
+    /// <summary>
+    /// Brings a subsampled JPEG chroma plane to full size as libjxl does: each step doubles it with weights of 3/4 for the
+    /// sample and 1/4 for its neighbor on that side, mirrored at the edges; horizontally first, then vertically.
+    /// </summary>
+    private static float[] ChromaUpsample(float[] plane, int stride, int hs, int vs, int width, int height)
+    {
+        int w = (width + (1 << hs) - 1) >> hs;
+        int h = (height + (1 << vs) - 1) >> vs;
+        float[] p = Crop(plane, stride, w, h);
+        if (hs == 1)
+        {
+            float[] wide = new float[w * 2 * h];
+            for (int y = 0; y < h; y++)
+            {
+                int row = y * w;
+                for (int x = 0; x < w; x++)
+                {
+                    float current = p[row + x] * 0.75f;
+                    wide[(row * 2) + (2 * x)] = MathF.FusedMultiplyAdd(0.25f, p[row + JxlFilters.Mirror(x - 1, w)], current);
+                    wide[(row * 2) + (2 * x) + 1] = MathF.FusedMultiplyAdd(0.25f, p[row + JxlFilters.Mirror(x + 1, w)], current);
+                }
+            }
+
+            (p, w) = (wide, w * 2);
+        }
+
+        if (vs == 1)
+        {
+            float[] tall = new float[w * h * 2];
+            for (int y = 0; y < h; y++)
+            {
+                int top = JxlFilters.Mirror(y - 1, h) * w;
+                int mid = y * w;
+                int bottom = JxlFilters.Mirror(y + 1, h) * w;
+                for (int x = 0; x < w; x++)
+                {
+                    float scaled = p[mid + x] * 0.75f;
+                    tall[(2 * y * w) + x] = MathF.FusedMultiplyAdd(p[top + x], 0.25f, scaled);
+                    tall[(((2 * y) + 1) * w) + x] = MathF.FusedMultiplyAdd(p[bottom + x], 0.25f, scaled);
+                }
+            }
+
+            (p, h) = (tall, h * 2);
+        }
+
+        return Crop(p, w, width, height);
+    }
+
     private static float[] Crop(float[] plane, int stride, int width, int height)
     {
         if (stride == width && plane.Length == width * height)
@@ -509,7 +583,9 @@ internal static class JxlImageDecoder
         int count = width * height;
         if (frame.ColorPlanes is float[][] planes)
         {
-            color = [.. planes.Select((p, c) => Crop(p, frame.ColorStrides[c], width, height))];
+            color = frame.VarDct is { Subsampled: true } v
+                ? [.. planes.Select((p, c) => ChromaUpsample(p, frame.ColorStrides[c], v.HShift(c), v.VShift(c), width, height))]
+                : [.. planes.Select((p, c) => Crop(p, frame.ColorStrides[c], width, height))];
         }
         else if (xyb)
         {
