@@ -31,7 +31,12 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - Tiles and the in-loop filters run on up to `MaxParallelism` threads with the same output at every thread count; rows stream,
   and `ReaderOptions.Region` decodes only the grid cells it touches. On all cores Load is faster than libavif with dav1d on
   large photos; on one thread it is about 2 to 3.5 times slower, which a later release works on.
-- Layered (progressive) items decode their first layer for now; gain maps, auxiliary items and sequences come later.
+- Gain maps (tmap items) load into `RasterMetadata.GainMap`, and `ReaderOptions.Hdr` renders the other rendition (from an SDR
+  or an HDR base) within 2.9.1's tolerance of libavif's.
+- `AvifDetails.Items` lists every item with its role (`AvifItem`, `AvifItemRole`), and `AvifImage.ReadItem` decodes thumbnails,
+  depth maps and other auxiliary images on their own.
+- Image sequences (avis) load every frame as an animation when all are key frames, else the first frame; layered images load
+  their base layer. The rest of both waits for inter frames.
 
 ### JPEG XL
 

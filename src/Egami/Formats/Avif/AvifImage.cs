@@ -51,8 +51,8 @@ public sealed record AvifItem
     /// <summary>Gets what the item is to the primary image.</summary>
     public AvifItemRole Role { get; init; }
 
-    /// <summary>Gets the size its ispe property gives, or (0, 0).</summary>
-    public (int Width, int Height) Size { get; init; }
+    /// <summary>Gets the size its ispe property gives, or 0 × 0 when it has none.</summary>
+    public Size Size { get; init; }
 
     /// <summary>Gets the auxiliary type URN of an auxiliary image (auxC), or <see langword="null"/>.</summary>
     public string? AuxiliaryType { get; init; }
@@ -129,7 +129,7 @@ public static class AvifImage
         foreach (HeifItem item in heif.Items)
         {
             string? auxType = null;
-            (int, int) size = (0, 0);
+            Size size = default;
             foreach ((HeifProperty property, _) in heif.PropertiesOf(item))
             {
                 if (property.Type == AvifProperties.AuxC)
@@ -138,7 +138,8 @@ public static class AvifImage
                 }
                 else if (property.Type == AvifProperties.Ispe)
                 {
-                    size = AvifProperties.ReadSpatialExtents(heif, property);
+                    (int w, int h) = AvifProperties.ReadSpatialExtents(heif, property);
+                    size = new Size(w, h);
                 }
             }
 

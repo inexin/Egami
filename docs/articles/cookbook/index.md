@@ -699,6 +699,28 @@ them; see [Planar YUV](../guides/planar-yuv.md).
 PQ and HLG files keep their curve when they load, with clli and mdcv in `RasterMetadata.Hdr`; converting to sRGB tone maps
 with BT.2390.
 
+## Show an AVIF with a gain map as HDR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-gainmap)]
+
+An AVIF tone-mapped image (tmap) loads as its base rendition with the gain map in `RasterMetadata.GainMap`, and
+`ReaderOptions.Hdr` renders the other rendition for a display's headroom, as for [Ultra HDR photos](#show-an-ultra-hdr-photo-as-hdr);
+the base may be the SDR or the HDR one.
+
+## Read an AVIF's thumbnail or depth map
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-items)]
+
+`AvifDetails.Items` lists every item of the file with what it is to the primary image, and `AvifImage.ReadItem` decodes any
+image item on its own, in its natural pixel type.
+
+## Turn an AVIF image sequence into an animation
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sequence)]
+
+A sequence (the avis brand) whose frames are all key frames loads every frame with its delay; one with inter frames loads its
+first frame with a warning for now.
+
 ## Find a PDF font's glyph by name
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#names)]

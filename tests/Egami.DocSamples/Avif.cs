@@ -87,4 +87,41 @@ public class Avif
 
         Assert.Equal((image.Width, image.Height), (item.Width, item.Height));
     }
+
+    [Fact]
+    public void StageD()
+    {
+        using SampleFiles files = new();
+
+        #region cookbook-gainmap
+        // An AVIF with a gain map loads as its base image, the map in Metadata.GainMap; ReaderOptions.Hdr renders the HDR
+        // rendition for a display with the given headroom (its peak over SDR white), as linear RgbaF16.
+        using Raster sdr = Raster.Load("gainmap.avif");
+        bool hasMap = sdr.Metadata.GainMap is not null;
+        using Raster hdr = Raster.Load("gainmap.avif", options: new ReaderOptions { Hdr = new HdrDecode { Headroom = 4 } });
+        #endregion
+
+        #region cookbook-items
+        // The file's other images: thumbnails, depth maps and auxiliary images, each read on its own.
+        AvifDetails details = (AvifDetails)sdr.Metadata.FormatDetails!;
+        foreach (AvifItem item in details.Items.Where(i => i.IsImage && i.Role is AvifItemRole.Thumbnail or AvifItemRole.Depth or AvifItemRole.GainMap))
+        {
+            using Raster image = AvifImage.ReadItem("gainmap.avif", item.Id);
+            image.Save($"item-{item.Id}-{item.Role}.png");
+        }
+        #endregion
+
+        #region cookbook-sequence
+        // An image sequence whose frames are all key frames loads as an animation; save it as an animated WebP.
+        using Raster<Rgba8> frames = Raster.Load<Rgba8>("sequence.avif");
+        TimeSpan firstDelay = frames.Frames[0].Metadata.Delay;
+        frames.Save("sequence.webp");
+        #endregion
+
+        Assert.True(hasMap);
+        Assert.Equal(RgbaF16.Layout, hdr.Layout);
+        Assert.Equal(4, frames.FrameCount);
+        Assert.True(firstDelay > TimeSpan.Zero);
+        Assert.True(File.Exists("item-3-GainMap.png") || details.Items.Any(i => i.Role == AvifItemRole.GainMap));
+    }
 }

@@ -608,7 +608,7 @@ Egami.Formats.Avif.AvifItem.IsImage.get -> bool
 Egami.Formats.Avif.AvifItem.IsImage.init -> void
 Egami.Formats.Avif.AvifItem.Role.get -> Egami.Formats.Avif.AvifItemRole
 Egami.Formats.Avif.AvifItem.Role.init -> void
-Egami.Formats.Avif.AvifItem.Size.get -> (int Width, int Height)
+Egami.Formats.Avif.AvifItem.Size.get -> Egami.Size
 Egami.Formats.Avif.AvifItem.Size.init -> void
 Egami.Formats.Avif.AvifItem.Type.get -> string!
 Egami.Formats.Avif.AvifItem.Type.init -> void
