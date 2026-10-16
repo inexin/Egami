@@ -831,7 +831,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>libjxl's MakeFixedTree: a balanced tree over the cutoffs of one property, shallower for small images.</summary>
-    private static List<JxlTreeNode> FixedTree(int property, int predictor, long pixels, int bitDepth)
+    internal static List<JxlTreeNode> FixedTree(int property, int predictor, long pixels, int bitDepth)
     {
         int logPixels = pixels <= 1 ? 0 : 64 - System.Numerics.BitOperations.LeadingZeroCount((ulong)(pixels - 1));
         int minGap = logPixels < 14 ? 8 * (14 - logPixels) : 0;
@@ -1155,7 +1155,7 @@ internal sealed class JxlModularEncoder
     /// Writes the tree's tokens in breadth-first order (TokenizeTree) and gives it back as the decoder will lay it out: each
     /// node's property (−1 for a leaf), split value, children, predictor and leaf context.
     /// </summary>
-    private static (int[] Property, int[] Value, int[] Left, int[] Right, int[] Predictor, int[] Context) TokenizeTree(List<JxlTreeNode> tree, List<JxlToken> tokens)
+    internal static (int[] Property, int[] Value, int[] Left, int[] Right, int[] Predictor, int[] Context) TokenizeTree(List<JxlTreeNode> tree, List<JxlToken> tokens)
     {
         List<int> property = [];
         List<int> value = [];
@@ -1221,7 +1221,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Codes one channel as residual tokens through the tree (ModularCompress's per-channel loop).</summary>
-    private static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp)
+    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp)
     {
         if (SingleProperty(property, value, left, right, c, stream, out int only, out int range) is int[] lut)
         {

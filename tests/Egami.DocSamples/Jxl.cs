@@ -81,6 +81,21 @@ public class Jxl
     }
 
     [Fact]
+    public void Recompress()
+    {
+        using SampleFiles files = new();
+
+        #region recompress
+        // A JPEG becomes a JPEG XL file about a fifth smaller with the same pixels, and comes back byte for byte.
+        JxlImage.RecompressJpeg("duck.jpg", "duck.jxl");
+        JxlImage.ReconstructJpeg("duck.jxl", "duck-again.jpg");
+        #endregion
+
+        Assert.Equal(File.ReadAllBytes("duck.jpg"), File.ReadAllBytes("duck-again.jpg"));
+        Assert.True(new FileInfo("duck.jxl").Length < new FileInfo("duck.jpg").Length);
+    }
+
+    [Fact]
     public void Reconstruct()
     {
         using SampleFiles files = new();

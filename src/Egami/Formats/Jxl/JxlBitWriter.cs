@@ -95,10 +95,39 @@ internal sealed class JxlBitWriter : IJxlBitSink
         }
     }
 
-    /// <summary>Writes a binary16 float (the value must be finite and representable).</summary>
+    /// <summary>Writes a binary16 float, the mantissa truncated as libjxl's F16Coder does (the value must be finite and below 65536).</summary>
     internal void WriteF16(float value)
     {
-        Write(BitConverter.HalfToUInt16Bits((Half)value), 16);
+        uint bits32 = BitConverter.SingleToUInt32Bits(value);
+        uint sign = bits32 >> 31;
+        int exp = (int)((bits32 >> 23) & 0xFF) - 127;
+        uint mantissa32 = bits32 & 0x7FFFFF;
+        if (exp > 15)
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Too large for a binary16 float.");
+        }
+
+        if (exp < -24)
+        {
+            Write(0, 16);
+            return;
+        }
+
+        uint biased;
+        uint mantissa;
+        if (exp < -14)
+        {
+            int sub = -14 - exp;
+            biased = 0;
+            mantissa = (1u << (10 - sub)) + (mantissa32 >> (13 + sub));
+        }
+        else
+        {
+            biased = (uint)(exp + 15);
+            mantissa = mantissa32 >> 13;
+        }
+
+        Write((sign << 15) | (biased << 10) | mantissa, 16);
     }
 
     internal void WriteEnum(uint value) => WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 18, 6), value);
@@ -134,6 +163,17 @@ internal sealed class JxlBitWriter : IJxlBitSink
         }
 
         _bytes.AddRange(bytes);
+    }
+
+    /// <summary>Appends another writer's bits, unaligned, as if they had been written here.</summary>
+    internal void AppendBits(JxlBitWriter other)
+    {
+        foreach (byte b in other._bytes)
+        {
+            Write(b, 8);
+        }
+
+        Write(other._buffer, other._count);
     }
 
     internal byte[] ToArray()

@@ -826,7 +826,7 @@ internal sealed class JxlEntropyCode
     private static int CeilLog2(int x) => x <= 1 ? 0 : 32 - BitOperations.LeadingZeroCount((uint)(x - 1));
 
     /// <summary>Writes the context map (C.2.2): a few bits each, or entropy coded with or without move-to-front, whichever is smallest.</summary>
-    private static void WriteContextMap(IJxlBitSink w, byte[] map, int histograms)
+    internal static void WriteContextMap(IJxlBitSink w, byte[] map, int histograms)
     {
         if (histograms == 1)
         {

@@ -97,7 +97,7 @@ internal static class JxlLosslessEncoder
         return file;
     }
 
-    private static void WriteImageHeader(JxlBitWriter w, JxlEncodeInput input)
+    internal static void WriteImageHeader(JxlBitWriter w, JxlEncodeInput input)
     {
         w.Write(0x0AFF, 16);
         WriteSize(w, input.Width, input.Height);

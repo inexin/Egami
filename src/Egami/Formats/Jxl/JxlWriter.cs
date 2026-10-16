@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 using Egami.Colors;
@@ -142,10 +143,10 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         return (new JxlColorEncoding(), null);
     }
 
-    /// <summary>Wraps the codestream in the container (ISO/IEC 18181-2) with Exif and xml boxes, or returns it bare when there are none.</summary>
-    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp)
+    /// <summary>Wraps the codestream in the container (ISO/IEC 18181-2) with jbrd, Exif and xml boxes, or returns it bare when there are none.</summary>
+    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, bool compressBoxes = false)
     {
-        if (exif is null && xmp is null)
+        if (exif is null && xmp is null && jbrd is null)
         {
             output.Write(codestream);
             return;
@@ -153,18 +154,42 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
 
         Box(output, "JXL ", [0x0D, 0x0A, 0x87, 0x0A]);
         Box(output, "ftyp", [.. "jxl "u8, 0, 0, 0, 0, .. "jxl "u8]);
+        if (jbrd is not null)
+        {
+            Box(output, "jbrd", jbrd);
+        }
+
         if (exif is not null)
         {
             // The box starts with the offset of the TIFF header within it: none here.
-            Box(output, "Exif", [0, 0, 0, 0, .. exif]);
+            MetadataBox(output, "Exif", [0, 0, 0, 0, .. exif], compressBoxes);
         }
 
         if (xmp is not null)
         {
-            Box(output, "xml ", xmp);
+            MetadataBox(output, "xml ", xmp, compressBoxes);
         }
 
         Box(output, "jxlc", codestream);
+    }
+
+    /// <summary>Writes a metadata box, or a brob box holding it Brotli compressed at quality 4, as cjxl does for recompressed JPEGs.</summary>
+    private static void MetadataBox(Stream output, string type, byte[] payload, bool compress)
+    {
+        if (!compress)
+        {
+            Box(output, type, payload);
+            return;
+        }
+
+        byte[] packed = new byte[4 + BrotliEncoder.GetMaxCompressedLength(payload.Length)];
+        System.Text.Encoding.Latin1.GetBytes(type, packed);
+        if (!BrotliEncoder.TryCompress(payload, packed.AsSpan(4), out int written, 4, 22))
+        {
+            throw new InvalidOperationException("Brotli compression failed.");
+        }
+
+        Box(output, "brob", packed.AsSpan(0, 4 + written));
     }
 
     private static void Box(Stream output, string type, ReadOnlySpan<byte> payload)

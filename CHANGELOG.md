@@ -42,6 +42,15 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   the orientation in the codestream too. Encoding runs on up to `MaxParallelism` threads with the same file at every count,
   within 1.75 times cjxl's time on one thread and about as fast as cjxl on all cores.
   `JxlWriterOptions.Lossless` is reserved for the lossy encoder of 2.9.7; `false` is refused until then.
+- `JxlImage.RecompressJpeg` recompresses a JPEG into JPEG XL without loss, as cjxl does: the JPEG's coefficients become a
+  VarDCT frame with chroma from luma, and a jbrd box keeps what rebuilding the file needs, so `ReconstructJpeg` (and djxl)
+  give the original back byte for byte. Files come out 0.82 of the JPEGs' size, within 0.1% of cjxl's (libjxl 0.12.0), and
+  decode in djxl to cjxl's pixels exactly. ICC goes in the codestream, Exif and XMP in Brotli-compressed boxes, the Exif
+  orientation in the header. Arithmetic-coded, lossless, hierarchical, 12-bit and CMYK JPEGs, 4:1:1 sampling and two DRI
+  markers are refused (`UnsupportedFormatException`), as cjxl refuses them.
+- Fixed: `ReconstructJpeg` failed on scans holding some of the components (such as Cb and Cr together), and rebuilt JPEGs
+  whose components all have the same sampling other than 1×1 (such as 1×2) wrongly; those files' pixels also lacked chroma
+  from luma.
 
 ### Raw CCITT fax data
 

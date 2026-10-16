@@ -651,6 +651,15 @@ Lossless and lossy files, animations (as their blended frames), extra channels a
 A JPEG recompressed losslessly into JPEG XL (`cjxl` does this by default for JPEG input) keeps a jbrd box, and
 `JxlImage.ReconstructJpeg` writes the original file from it, byte for byte. Loading such a file gives its pixels, as viewers show them.
 
+## Recompress a JPEG into JPEG XL without loss
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#recompress)]
+
+The JPEG's own coefficients become the JPEG XL image, so nothing is decoded again or lost: the file loads to the pixels the
+JPEG gave, about a fifth smaller (as cjxl makes it, within a few bytes), and `JxlImage.ReconstructJpeg` writes the original
+back byte for byte. Baseline and progressive JPEGs with any Huffman tables, restart markers, ICC, Exif and XMP are taken;
+arithmetic-coded, lossless, hierarchical, 12-bit and CMYK JPEGs, and 4:1:1 sampling, are refused.
+
 ## Save a lossless JPEG XL file
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save)]

@@ -717,8 +717,9 @@ internal static class JpegScanWriter
         int count = s.Components.Count;
         int[] hs = [.. s.Components.Select(c => HSamples[up[c.Component]])];
         int[] vs = [.. s.Components.Select(c => VSamples[up[c.Component]])];
-        int maxH = System.Numerics.BitOperations.TrailingZeroCount(hs.Max());
-        int maxV = System.Numerics.BitOperations.TrailingZeroCount(vs.Max());
+        // An interleaved scan's MCU spans the frame's largest sampling factors, even when its components have smaller ones.
+        int maxH = System.Numerics.BitOperations.TrailingZeroCount(up.Max(m => HSamples[m]));
+        int maxV = System.Numerics.BitOperations.TrailingZeroCount(up.Max(m => VSamples[m]));
         int w8 = (int)((((frame.Width + 7) / 8) + maxH) >> maxH);
         int h8 = (int)((((frame.Height + 7) / 8) + maxV) >> maxV);
         if (count == 1)

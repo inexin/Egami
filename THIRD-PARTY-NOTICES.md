@@ -322,8 +322,11 @@ clustering, context map, hybrid integer choice and RLE (enc_ans, enc_cluster, en
 the MA tree learning with its sample deduplication and property quantization (enc_ma, enc_encoding; `JxlTreeLearner.cs`), the
 choices of palettes, RCTs, fixed trees and settings at each effort (enc_modular, enc_palette, enc_rct; `JxlModularEncoder.cs`),
 the fast lossless encoder of effort 1 with its fixed tree, prefix codes and code-length search (enc_fast_lossless;
-`JxlFastLossless.cs`) and the ICC profile transform (enc_icc_codec; `JxlIccEncoder.cs`). libjxl is distributed under the BSD
-3-clause license:
+`JxlFastLossless.cs`) and the ICC profile transform (enc_icc_codec; `JxlIccEncoder.cs`). Its JPEG recompression is translated
+from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
+`JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
+(jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is
+distributed under the BSD 3-clause license:
 
     Copyright (c) the JPEG XL Project Authors. All rights reserved.
 

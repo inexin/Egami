@@ -120,6 +120,51 @@ public static class JxlImage
     }
 
     /// <summary>
+    /// Recompresses a JPEG into JPEG XL without loss, about a fifth smaller (design question 8): the JPEG's quantized
+    /// coefficients become the JPEG XL image, so Load shows the same pixels a JPEG decoder would, and
+    /// <see cref="ReconstructJpeg(string, string, EgamiContext?)"/> gives the original file back byte for byte. The file
+    /// is what cjxl makes at its default effort, with the ICC profile in the codestream and Exif and XMP in boxes.
+    /// </summary>
+    /// <param name="path">The JPEG file.</param>
+    /// <param name="outputPath">The JPEG XL file to write.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="UnsupportedFormatException">
+    /// The JPEG uses something JPEG XL cannot keep: arithmetic coding, 12-bit samples, CMYK or four components, or sampling
+    /// other than 4:4:4, 4:2:0, 4:2:2 and 4:4:0.
+    /// </exception>
+    /// <exception cref="CorruptDataException">The JPEG breaks the format's rules.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="recompress"/>
+    /// </example>
+    public static void RecompressJpeg(string path, string outputPath, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(outputPath);
+        byte[] jxl = Recompress(File.ReadAllBytes(path), context ?? EgamiContext.Default);
+        File.WriteAllBytes(outputPath, jxl);
+    }
+
+    /// <summary>Recompresses a JPEG from a stream; see <see cref="RecompressJpeg(string, string, EgamiContext?)"/>.</summary>
+    /// <param name="stream">The JPEG's data, from its start.</param>
+    /// <param name="output">Where to write the JPEG XL file.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <exception cref="UnsupportedFormatException">The JPEG uses something JPEG XL cannot keep.</exception>
+    /// <exception cref="CorruptDataException">The JPEG breaks the format's rules.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jxl.cs" region="recompress"/>
+    /// </example>
+    public static void RecompressJpeg(Stream stream, Stream output, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(output);
+        using MemoryStream input = new();
+        stream.CopyTo(input);
+        output.Write(Recompress(input.ToArray(), context ?? EgamiContext.Default));
+    }
+
+    private static byte[] Recompress(byte[] jpeg, EgamiContext context) => JxlJpegEncoder.Recompress(jpeg, context.MaxParallelism, context.Limits);
+
+    /// <summary>
     /// Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image
     /// size: as stored, scaled to 0 to 1 for integer samples, with a frame for each frame Load shows.
     /// </summary>

@@ -110,7 +110,8 @@ internal sealed class JxlVarDct
 
     internal int BlocksY { get; }
 
-    internal bool Subsampled => _hasH || _hasV;
+    /// <summary>Gets whether a channel is subsampled; chroma from luma applies only when none is (equal JPEG sampling factors, such as all 1×2, are not).</summary>
+    internal bool Subsampled => _hs.Any(s => s != 0) || _vs.Any(s => s != 0);
 
     internal int HShift(int c) => _hs[c];
 
