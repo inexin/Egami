@@ -7,6 +7,34 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### JPEG XL
+
+- `JxlFormat` reads JPEG XL (ISO/IEC 18181) in the box format or as a bare codestream, at Level 5 and 10, registered by
+  default. Lossless Modular files (every predictor, the self-correcting one included, RCT, palette and delta palette,
+  squeeze, 1 to 31-bit and float samples) decode bit for bit as djxl (libjxl 0.12.0) decodes them; lossy VarDCT files
+  (every transform from DCT2x2 to DCT256x256, AFV, Gaborish, the edge-preserving filter, LF frames, upsampling, patches,
+  splines and noise) within one 8-bit level of djxl, and every 18181-3 conformance file within its thresholds.
+- Lossy color comes out in the file's own color space: enumerated spaces as djxl gives them, ICC profiles through Egami's
+  color pipeline (where djxl gives linear sRGB), PQ and HLG kept with intensity_target as `HdrMetadata.MaxContentLightLevel`;
+  the space is recorded on the raster. `JxlReaderOptions.LinearOutput` gives linear light in float instead. Pixel types come
+  from the declared bit depth.
+- Animations load through `Raster.LoadAll` as their blended frames with delays and loop count; `JxlImage.ReadLayers` gives
+  the frames before blending (`JxlLayer`, `JxlLayerBlend`), `JxlImage.ReadPreview` the preview, and
+  `JxlReaderOptions.MaxDownscale` 8 a lossy still's LF image alone (1:8, much faster).
+- Alpha loads straight, CMYK as `Cmyk8` or `Cmyk16`, spot colors are mixed in (`JxlReaderOptions.RenderSpotColors` turns
+  that off); `JxlDetails.ExtraChannels` lists every channel (`JxlExtraChannel`, `JxlExtraChannelKind`) and
+  `JxlImage.ReadExtraChannel` reads one alone.
+- Recompressed JPEGs load as pixels, and `JxlImage.ReconstructJpeg` gives the original JPEG back byte for byte from the jbrd
+  box (`JxlDetails.HasJpegReconstruction`). A jhgm gain map loads into `RasterMetadata.GainMap`, and `ReaderOptions.Hdr`
+  renders HDR from it as for Ultra HDR JPEGs.
+- Exif, XMP and orientation are read, Brotli-compressed (brob) boxes included; JUMBF boxes are kept in `JxlDetails.Jumbf`.
+  Damaged metadata or gain map boxes are dropped with a warning (`Jxl.BoxDropped`, `Jxl.BrobDropped`, `Jxl.ExifDropped`,
+  `Jxl.GainMapDropped`).
+- Groups decode on up to `MaxParallelism` threads with the same output at every thread count; `ReaderOptions.Region` on a
+  still decodes only the groups it touches (`Jxl.RegionGroups` at Debug level counts them).
+- Speed against djxl, threads matched: lossless within 1.5 times; lossy 1.4 to 2.3 times on one thread and 1.9 to 3 times on
+  all cores; recompressed JPEGs further behind.
+
 ### Raw CCITT fax data
 
 - `CcittFax.Decode` decodes Group 3 and Group 4 fax data (ITU-T T.4 and T.6) as PDF's CCITTFaxDecode filter does, taking all
