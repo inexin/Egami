@@ -175,6 +175,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Jxl.RegionGroups` | Debug | How many of a JPEG XL frame's pass groups ReaderOptions.Region needed; the others were not decoded |
 | `Jxl.TrailingData` | Warning | A JPEG XL file ends with bytes after its last box that do not make a whole box; they were ignored |
 | `Limits.Exceeded` | Debug | A safety limit is about to fail the load: its name, the limit and the value found |
+| `Metafile.BadBitmap` | Warning | A bitmap in a record or a pattern brush cannot be decoded; it is not drawn, or the brush draws black (Egami.Metafiles) |
 | `Metafile.BadChecksum` | Warning | A placeable WMF header's checksum does not match; the header is used anyway, as Windows does (Egami.Metafiles) |
 | `Metafile.BadHeader` | Warning | A header field cannot be used (0 units per inch, a description outside the header); a default is used or the field ignored (Egami.Metafiles) |
 | `Metafile.BadObject` | Warning | An EMF+ object split over several records is broken (no size, interrupted, larger than the file); it is skipped (Egami.Metafiles) |
