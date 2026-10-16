@@ -21,6 +21,9 @@ internal sealed partial class Vp8Decoder : IDisposable
     private const int ChromaTail = 4;
 
     internal static readonly byte[] Bands = [0, 1, 2, 3, 6, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 7, 0];
+    // Each position's band times 33 (3 contexts × 11 probabilities): where its probabilities start in a type's 264.
+    private static readonly byte[] BandOffsets = [0, 33, 66, 99, 198, 132, 165, 198, 198, 198, 198, 198, 198, 198, 198, 231, 0];
+
     internal static readonly byte[] Zigzag = [0, 1, 4, 8, 5, 2, 3, 6, 9, 12, 13, 10, 7, 11, 14, 15];
     internal static readonly byte[] Cat3 = [173, 148, 140];
     internal static readonly byte[] Cat4 = [176, 155, 140, 135];
@@ -1006,13 +1009,12 @@ internal sealed partial class Vp8Decoder : IDisposable
     {
         // The bit state lives in locals for the whole block: this loop is where most of a lossy decode's time goes.
         br.Take(out ulong value, out int bits, out uint range);
-        ref byte probs = ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(_state.CoefficientProbabilities);
-        ref byte bands = ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(Bands);
-        ref byte zigzag = ref System.Runtime.InteropServices.MemoryMarshal.GetArrayDataReference(Zigzag);
+        ref byte probs = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_state.CoefficientProbabilities), type * 8 * 3 * 11);
+        ref byte bands = ref MemoryMarshal.GetArrayDataReference(BandOffsets);
+        ref byte zigzag = ref MemoryMarshal.GetArrayDataReference(Zigzag);
         _ = output[15];
-        ref short outputs = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(output);
-        int typeAt = type * 8 * 3 * 11;
-        int p = typeAt + (((Unsafe.Add(ref bands, n) * 3) + ctx) * 11);
+        ref short outputs = ref MemoryMarshal.GetReference(output);
+        int p = Unsafe.Add(ref bands, n) + (ctx * 11);
         int result = 16;
         for (; n < 16; n++)
         {
@@ -1032,7 +1034,7 @@ internal sealed partial class Vp8Decoder : IDisposable
                     break;
                 }
 
-                p = typeAt + (Unsafe.Add(ref bands, n) * 3 * 11);
+                p = Unsafe.Add(ref bands, n);
             }
 
             if (done)
@@ -1041,7 +1043,7 @@ internal sealed partial class Vp8Decoder : IDisposable
             }
 
             int v;
-            int next = typeAt + (Unsafe.Add(ref bands, n + 1) * 3 * 11);
+            int next = Unsafe.Add(ref bands, n + 1);
             if (Vp8BoolDecoder.Bit(ref br, ref value, ref bits, ref range, Unsafe.Add(ref probs, p + 2)) == 0)
             {
                 v = 1;
