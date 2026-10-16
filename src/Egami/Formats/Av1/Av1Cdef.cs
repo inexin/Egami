@@ -268,18 +268,40 @@ internal static class Av1Cdef
         int priShift = DampingShift(priStrength, damping), secShift = DampingShift(secStrength, damping);
         ReadOnlySpan<sbyte> d = Directions;
         int dirP = dir * 4, dirS1 = ((dir + 2) & 7) * 4, dirS2 = ((dir + 6) & 7) * 4;
-        if (x0 >= 2 && y0 >= 2 && x0 + bw + 2 <= width && y0 + bh + 2 <= height)
+        bool inside = x0 >= 2 && y0 >= 2 && x0 + bw + 2 <= width && y0 + bh + 2 <= height;
+        if (Vector128.IsHardwareAccelerated && (bw == 8 || (bw == 4 && (bh & 1) == 0)))
+        {
+            Strengths strengths = new(priStrength, secStrength, priTap0, priTap1, priShift, secShift);
+            ref ushort output = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dst), (y0 * stride) + x0);
+            if (inside)
+            {
+                FilterVector(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), (y0 * stride) + x0), stride, ref output, stride, bw, bh,
+                    TapsOf(d, dirP, dirS1, dirS2, stride), strengths, border: false);
+                return;
+            }
+
+            // At the frame's border: the block and two samples around it, those outside the frame unavailable (VeryLarge), as
+            // the taps below read them.
+            const int Padded = 16;
+            Span<ushort> block = stackalloc ushort[Padded * 12];
+            for (int i = -2; i < bh + 2; i++)
+            {
+                for (int j = -2; j < bw + 2; j++)
+                {
+                    block[((i + 2) * Padded) + j + 2] = (ushort)Fetch(src, stride, width, height, y0 + i, x0 + j);
+                }
+            }
+
+            FilterVector(ref block[(2 * Padded) + 2], Padded, ref output, stride, bw, bh, TapsOf(d, dirP, dirS1, dirS2, Padded), strengths, border: true);
+            return;
+        }
+
+        if (inside)
         {
             // Every tap is inside the frame: offsets instead of coordinates, and no unavailable samples to leave out.
             int p0 = (d[dirP] * stride) + d[dirP + 1], p1 = (d[dirP + 2] * stride) + d[dirP + 3];
             int a0 = (d[dirS1] * stride) + d[dirS1 + 1], a1 = (d[dirS1 + 2] * stride) + d[dirS1 + 3];
             int b0 = (d[dirS2] * stride) + d[dirS2 + 1], b1 = (d[dirS2 + 2] * stride) + d[dirS2 + 3];
-            if (Vector128.IsHardwareAccelerated && (bw == 8 || (bw == 4 && (bh & 1) == 0)))
-            {
-                FilterInterior(src, dst, stride, (y0 * stride) + x0, bw, bh, new Taps(p0, p1, a0, a1, b0, b1), priStrength, secStrength,
-                    priTap0, priTap1, priShift, secShift);
-                return;
-            }
 
             for (int i = 0; i < bh; i++)
             {
@@ -383,23 +405,31 @@ internal static class Av1Cdef
     /// <summary>The offsets of a block's taps: primary p0 and p1, secondary a0, a1, b0 and b1.</summary>
     private readonly record struct Taps(int P0, int P1, int A0, int A1, int B0, int B1);
 
+    /// <summary>A block's strengths, taps and damping shifts.</summary>
+    private readonly record struct Strengths(int Primary, int Secondary, int Tap0, int Tap1, int PrimaryShift, int SecondaryShift);
+
+    private static Taps TapsOf(ReadOnlySpan<sbyte> d, int dirP, int dirS1, int dirS2, int stride) => new(
+        (d[dirP] * stride) + d[dirP + 1], (d[dirP + 2] * stride) + d[dirP + 3],
+        (d[dirS1] * stride) + d[dirS1 + 1], (d[dirS1 + 2] * stride) + d[dirS1 + 3],
+        (d[dirS2] * stride) + d[dirS2 + 1], (d[dirS2 + 2] * stride) + d[dirS2 + 3]);
+
     /// <summary>
-    /// The inside of the frame, eight samples at a time: a row of an 8-wide block, or two rows of a 4-wide one. Samples are at
-    /// most 12 bits, so every difference, constrained tap and sum fits 16 bits and the result is the scalar one.
+    /// Filters a block eight samples at a time: a row of an 8-wide block, or two rows of a 4-wide one. Samples are at most 12
+    /// bits and unavailable ones 0x4000, so every difference, constrained tap and sum fits 16 bits and the result is the scalar
+    /// one. On the <paramref name="border"/>, unavailable samples are left out of the clipping maximum, as the scalar filter does.
     /// </summary>
-    private static void FilterInterior(ushort[] src, ushort[] dst, int stride, int origin, int bw, int bh, Taps t, int priStrength, int secStrength,
-        int priTap0, int priTap1, int priShift, int secShift)
+    private static void FilterVector(ref ushort s, int sourceStride, ref ushort o, int stride, int bw, int bh, Taps t, Strengths k, bool border)
     {
-        bool primary = priStrength != 0, secondary = secStrength != 0, clipping = primary && secondary;
-        ref ushort s = ref MemoryMarshal.GetArrayDataReference(src);
-        ref ushort o = ref MemoryMarshal.GetArrayDataReference(dst);
-        Vector128<short> pri = Vector128.Create((short)priStrength), sec = Vector128.Create((short)secStrength);
-        Vector128<short> tap0 = Vector128.Create((short)priTap0), tap1 = Vector128.Create((short)priTap1);
+        bool primary = k.Primary != 0, secondary = k.Secondary != 0, clipping = primary && secondary;
+        Vector128<short> pri = Vector128.Create((short)k.Primary), sec = Vector128.Create((short)k.Secondary);
+        Vector128<short> tap0 = Vector128.Create((short)k.Tap0), tap1 = Vector128.Create((short)k.Tap1);
+        Vector128<short> large = Vector128.Create((short)VeryLarge);
+        int priShift = k.PrimaryShift, secShift = k.SecondaryShift;
         int step = bw == 8 ? 1 : 2;
         for (int i = 0; i < bh; i += step)
         {
-            int at = origin + (i * stride);
-            int next = bw == 8 ? -1 : at + stride;
+            int at = i * sourceStride;
+            int next = bw == 8 ? -1 : at + sourceStride;
             Vector128<short> value = Load(ref s, at, next, 0);
             Vector128<short> sum = Vector128<short>.Zero, max = value, min = value;
             if (primary)
@@ -410,7 +440,7 @@ internal static class Av1Cdef
                 sum += tap1 * (Constrain(q2 - value, pri, priShift) + Constrain(q3 - value, pri, priShift));
                 if (clipping)
                 {
-                    max = Vector128.Max(Vector128.Max(Vector128.Max(q0, q1), Vector128.Max(q2, q3)), max);
+                    max = Vector128.Max(Vector128.Max(Vector128.Max(Available(q0), Available(q1)), Vector128.Max(Available(q2), Available(q3))), max);
                     min = Vector128.Min(Vector128.Min(Vector128.Min(q0, q1), Vector128.Min(q2, q3)), min);
                 }
             }
@@ -428,8 +458,8 @@ internal static class Av1Cdef
                     + Constrain(s6 - value, sec, secShift) + Constrain(s7 - value, sec, secShift);
                 if (clipping)
                 {
-                    max = Vector128.Max(Vector128.Max(Vector128.Max(Vector128.Max(s0, s1), Vector128.Max(s2, s3)),
-                        Vector128.Max(Vector128.Max(s4, s5), Vector128.Max(s6, s7))), max);
+                    max = Vector128.Max(Vector128.Max(Vector128.Max(Vector128.Max(Available(s0), Available(s1)), Vector128.Max(Available(s2), Available(s3))),
+                        Vector128.Max(Vector128.Max(Available(s4), Available(s5)), Vector128.Max(Available(s6), Available(s7)))), max);
                     min = Vector128.Min(Vector128.Min(Vector128.Min(Vector128.Min(s0, s1), Vector128.Min(s2, s3)),
                         Vector128.Min(Vector128.Min(s4, s5), Vector128.Min(s6, s7))), min);
                 }
@@ -443,20 +473,24 @@ internal static class Av1Cdef
             }
 
             Vector128<ushort> samples = result.AsUInt16();
+            int to = i * stride;
             if (bw == 8)
             {
-                samples.StoreUnsafe(ref o, (nuint)at);
+                samples.StoreUnsafe(ref o, (nuint)to);
             }
             else
             {
-                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, at)), samples.GetLower());
-                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, next)), samples.GetUpper());
+                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, to)), samples.GetLower());
+                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, to + stride)), samples.GetUpper());
             }
         }
 
+        // An unavailable sample counts as 0 towards the maximum, which never exceeds the block's own sample.
+        Vector128<short> Available(Vector128<short> sample) => border ? Vector128.AndNot(sample, Vector128.Equals(sample, large)) : sample;
+
         // Eight samples at an offset from a row, or four from each of two rows.
         static Vector128<short> Load(ref ushort s, int at, int next, int offset) => next < 0
-            ? Vector128.LoadUnsafe(ref s, (nuint)(at + offset)).AsInt16()
+            ? Vector128.LoadUnsafe(ref Unsafe.Add(ref s, at + offset)).AsInt16()
             : Vector128.Create(Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref s, at + offset))),
                 Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref s, next + offset)))).AsInt16();
 
