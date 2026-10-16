@@ -9,10 +9,7 @@ internal static class MetafilePlayer
     /// <summary>Plays the metafile onto a canvas whose coordinates are the frame's points.</summary>
     public static void Play(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report)
     {
-        // The GDI and EMF+ players come in stages B and C.
-        _ = metafile;
-        _ = canvas;
-        _ = options;
-        _ = report;
+        // The EMF+ player comes in stage C; until then every file plays its GDI records.
+        GdiPlayer.Play(metafile, canvas, options, report);
     }
 }
