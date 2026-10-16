@@ -221,8 +221,23 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> bytes = Bytes.Span;
         IsoBoxReader top = new(bytes, 0, bytes.Length, FormatName);
         bool first = true;
-        while (top.Next(out IsoBox box))
+        while (true)
         {
+            IsoBox box;
+            try
+            {
+                if (!top.Next(out box))
+                {
+                    break;
+                }
+            }
+            catch (CorruptDataException e) when (HasMeta)
+            {
+                // Bytes after the boxes that do not form one, such as data appended to the file, are left alone.
+                Problem("Heif.TrailingData", e.Offset, "The data after the last whole top-level box does not form a box; it was ignored.");
+                break;
+            }
+
             Boxes.Add(box);
             if (first)
             {
@@ -283,8 +298,23 @@ internal sealed class HeifFile
 
         IsoBox? hdlr = null, pitm = null, iinf = null, iloc = null, iref = null, iprp = null, grpl = null;
         IsoBoxReader children = new(bytes, meta.ContentStart + 4, meta.End, FormatName);
-        while (children.Next(out IsoBox box))
+        while (true)
         {
+            IsoBox box;
+            try
+            {
+                if (!children.Next(out box))
+                {
+                    break;
+                }
+            }
+            catch (CorruptDataException e) when (meta.End == bytes.Length && iinf is not null && iloc is not null)
+            {
+                // A meta box sized to the end of the file (size 0) takes in whatever follows it; data that does not form a box is left alone.
+                Problem("Heif.TrailingData", e.Offset, "The data after the last whole top-level box does not form a box; it was ignored.");
+                break;
+            }
+
             ref IsoBox? slot = ref hdlr;
             switch (box.Type)
             {

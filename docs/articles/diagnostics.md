@@ -127,6 +127,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Heif.PropertiesOfUnknownItem` | Warning | A HEIF (AVIF) ipma box associates properties with an item that has no iinf entry; they were ignored |
 | `Heif.ReferenceFromUnknownItem` | Warning | A HEIF (AVIF) iref box has a reference from an item that has no iinf entry; it was ignored |
 | `Heif.SecondMeta` | Warning | A HEIF (AVIF) file has a second meta box at the top level; it was ignored |
+| `Heif.TrailingData` | Warning | A HEIF (AVIF) file has data after its last whole top-level box that does not form a box; it was ignored |
 | `Heif.UnknownLocatedItem` | Warning | A HEIF (AVIF) iloc box locates an item that has no iinf entry; it was ignored |
 | `Icc.Unusable` | Warning | The embedded ICC profile is damaged or of a kind Egami cannot use; colors are read as if it were absent |
 | `Ico.DirectoryMismatch` | Warning | An icon's directory gives a size its entry's own header contradicts; the header's was used |
