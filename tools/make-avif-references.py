@@ -26,6 +26,7 @@ Usage, from the repo root with Docker running:
   python tools/make-avif-references.py headers      dav1d's AV1 headers again, for the corpus and every stream
   python tools/make-avif-references.py modeinfo     libaom's mode info of every AV1 item (aominspect), for the corpus and extra
   python tools/make-avif-references.py overlay      overlay (iovl) files built from corpus images, and libheif's decodes of them
+  python tools/make-avif-references.py gainmap      libavif's HDR renditions of the gain map files (avifgainmaputil tonemap)
 """
 import hashlib
 import os
@@ -125,6 +126,6 @@ def run(*args):
 steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra"]
 if "fetch" in steps:
     fetch("argon" in steps)
-for step in ("corpus", "conformance", "extra", "headers", "modeinfo", "overlay"):
+for step in ("corpus", "conformance", "extra", "headers", "modeinfo", "overlay", "gainmap"):
     if step in steps:
         run(step)

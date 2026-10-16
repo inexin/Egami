@@ -23,6 +23,8 @@
   overlay      tests/images/avif/overlay: overlay (iovl) files built here from corpus images (each image's av01 item and
                properties, placed several times on a filled canvas), which libavif does not read; tests/reference/avif/overlay:
                libheif's heif-dec decode of each and of its layer image alone (PNG), and overlay.json with how each was built.
+  gainmap      .cache/avif/reference/gainmap: libavif's HDR rendition (avifgainmaputil tonemap, PQ PNG) of every corpus file
+               with a gain map that avifdec reads, at headrooms of 1, 2 and 3 stops, and summary.json with each file's errors.
   modeinfo     libaom's mode info of each AV1 item's frames (aominspect, libaom's inspect example): block sizes, transform sizes,
                modes, skip, CDEF, chroma from luma, quantizer index, segment, intra block copy and its vector, palette sizes and
                the bits each superblock took, each layer as the MD5 of its 16-bit values row by row, in
@@ -1326,6 +1328,35 @@ def overlay():
         f.write("\n")
 
 
+# ---------------------------------------------------------------- gain map renditions
+
+GAINMAP_STOPS = (1, 2, 3)
+
+
+def gainmap():
+    folder = f"{CACHE}/reference/gainmap"
+    os.makedirs(folder, exist_ok=True)
+    with open(f"{REF}/manifest.json") as f:
+        files = json.load(f)["files"]
+    summary = {}
+    for name, entry in sorted(files.items()):
+        if not any(item["type"] == "tmap" for item in entry.get("items", [])) or "avifdec_error" in entry:
+            continue
+        result = {}
+        for stops in GAINMAP_STOPS:
+            out = f"{folder}/{name.replace('/', '_')[:-5]}-h{stops}.png"
+            r = sh("avifgainmaputil", "tonemap", "--headroom", str(stops), "--ignore-profile", "-d", "12", "-y", "444", f"{OUT}/{name}", out, check=False)
+            if r.returncode:
+                result[f"h{stops}_error"] = (r.stderr or r.stdout).strip()[-300:]
+            else:
+                result[f"h{stops}"] = os.path.basename(out)
+        summary[name] = result
+        print(name, result, flush=True)
+    with open(f"{folder}/summary.json", "w") as f:
+        json.dump({"tools": tools(), "files": summary}, f, indent=1, sort_keys=True)
+        f.write("\n")
+
+
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers, "modeinfo": modeinfo, "overlay": overlay}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers, "modeinfo": modeinfo, "overlay": overlay, "gainmap": gainmap}[step]()

@@ -16,6 +16,8 @@ internal sealed class AvifFile
     internal static readonly uint Av01 = FourCC.Of("av01");
     internal static readonly uint Grid = FourCC.Of("grid");
     internal static readonly uint Iovl = FourCC.Of("iovl");
+    internal static readonly uint Tmap = FourCC.Of("tmap");
+    internal static readonly uint Altr = FourCC.Of("altr");
     internal static readonly uint Exif = FourCC.Of("Exif");
     internal static readonly uint Auxl = FourCC.Of("auxl");
     internal static readonly uint Dimg = FourCC.Of("dimg");
@@ -71,6 +73,19 @@ internal sealed class AvifFile
 
     /// <summary>Gets the overlay (iovl) when the primary item is one: its canvas fill, size and each layer's offset.</summary>
     internal HeifOverlay? Overlay { get; private set; }
+
+    /// <summary>
+    /// Gets the tone-mapped derived image (tmap) whose gain map applies to the primary item, found as libavif finds it: the file
+    /// has the tmap brand, an altr group holds the tmap item and the primary item, and the tmap item's dimg references are the
+    /// primary item and the gain map image. Otherwise <see langword="null"/>.
+    /// </summary>
+    internal HeifItem? ToneMap { get; private set; }
+
+    /// <summary>Gets the gain map image's av01 items (a grid's cells, or the item alone).</summary>
+    internal IReadOnlyList<HeifItem> GainMapCells { get; private set; } = [];
+
+    /// <summary>Gets how the gain map's cells tile: rows, columns and output size.</summary>
+    internal (int Rows, int Columns, int Width, int Height) GainMapLayout { get; private set; }
 
     /// <summary>Gets whether Load gives alpha: there is an alpha image, or an overlay's canvas is not opaque.</summary>
     internal bool HasAlpha => Alpha is not null || Overlay is { Fill: [_, _, _, < 0xFFFF] };
@@ -259,6 +274,7 @@ internal sealed class AvifFile
             && (heif.Property(first, AvifProperties.Lsel) is not HeifProperty lsel || heif.Content(lsel) is [0xFF, 0xFF, ..]);
 
         FindAlpha();
+        FindGainMap();
         foreach (HeifItem item in heif.Items)
         {
             if (Array.IndexOf(item.ReferencesOf(Cdsc), Primary.Id) < 0 || item.UnsupportedEssential != 0)
@@ -342,6 +358,64 @@ internal sealed class AvifFile
             Alpha = alphas[0];
             (AlphaCells, AlphaLayout) = (alphas, (GridSize.Rows, GridSize.Columns, Width, Height));
             AlphaPremultiplied = Array.IndexOf(Cells[0].ReferencesOf(Prem), alphas[0].Id) >= 0;
+        }
+    }
+
+    private void FindGainMap()
+    {
+        HeifFile heif = Heif;
+        if (!heif.HasBrand(Tmap))
+        {
+            return;
+        }
+
+        foreach (HeifEntityGroup group in heif.Groups)
+        {
+            if (group.Type != Altr || Array.IndexOf(group.Entities, Primary.Id) < 0)
+            {
+                continue;
+            }
+
+            // The group lists its alternatives by preference; libavif takes the gain map only when the tmap item comes first.
+            foreach (uint id in group.Entities.AsSpan(0, Math.Min(1, group.Entities.Length)))
+            {
+                if (heif.Item(id) is not HeifItem tmap || tmap.Type != Tmap || tmap.UnsupportedEssential != 0)
+                {
+                    continue;
+                }
+
+                uint[] inputs = tmap.ReferencesOf(Dimg);
+                if (inputs.Length != 2 || inputs[0] != Primary.Id || heif.Item(inputs[1]) is not HeifItem map || map.UnsupportedEssential != 0)
+                {
+                    continue;
+                }
+
+                if (map.Type == Grid)
+                {
+                    try
+                    {
+                        (List<HeifItem> cells, int rows, int columns, int width, int height) = ReadGrid(map);
+                        (GainMapCells, GainMapLayout) = (cells, (rows, columns, width, height));
+                    }
+                    catch (EgamiException e)
+                    {
+                        heif.Problems.Add(new HeifProblem("Avif.GainMapDropped", $"The gain map grid could not be read ({e.Message}); the image loads as SDR only.", -1));
+                        return;
+                    }
+                }
+                else if (map.Type == Av01)
+                {
+                    (int width, int height) = Extents(map);
+                    (GainMapCells, GainMapLayout) = ([map], (1, 1, width, height));
+                }
+                else
+                {
+                    continue;
+                }
+
+                ToneMap = tmap;
+                return;
+            }
         }
     }
 

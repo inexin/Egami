@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
+using Egami.Colors;
 using Egami.Formats;
 using Egami.Metadata;
 using Egami.Pixels;
@@ -83,11 +84,12 @@ public class AvifPixelTests
         Assert.False(paris.Metadata.IccProfile.IsEmpty);
         Assert.NotNull(paris.Metadata.Exif);
         Assert.False(paris.Metadata.Xmp.IsEmpty);
-        Assert.NotNull(paris.Metadata.CodePoints);
+        Assert.Null(paris.Metadata.CodePoints);   // the ICC profile says what the pixels mean (design question 8)
         Assert.IsType<Egami.Formats.Avif.AvifDetails>(paris.Metadata.FormatDetails);
 
         using Raster pq = Raster.Load(Path.Combine(Corpus, "duck-pq.avif"));
-        Assert.Equal(16, pq.Metadata.CodePoints!.Value.TransferCharacteristics);
+        Assert.Equal(new ColorCodePoints(9, 16, 0, true), pq.Metadata.CodePoints);
+        Assert.True(pq.Metadata.GetColorProfile().IsEquivalentTo(ColorProfile.Rec2100Pq));
         Assert.NotNull(pq.Metadata.Hdr?.MaxContentLightLevel);
     }
 

@@ -79,6 +79,7 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | Id | Level | Meaning |
 | --- | --- | --- |
 | `Avif.ExifDamaged` | Warning | An AVIF Exif item's TIFF header offset points past its end; the item was skipped |
+| `Avif.GainMapDropped` | Warning | An AVIF gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only |
 | `Avif.MatrixApproximated` | Warning | An AVIF image's matrix coefficients are ones libavif does not convert (reserved, constant luminance, or YCgCo at limited range); the nearest matrix it has was used |
 | `Avif.MatrixUnknown` | Warning | An AVIF image's matrix coefficients have no YuvMatrix; YuvRaster.Load marks the planes BT.601 |
 | `Bmp.DataOffsetInHeaders` | Warning | The pixel data offset points into the headers; the pixels are read from where the headers end |

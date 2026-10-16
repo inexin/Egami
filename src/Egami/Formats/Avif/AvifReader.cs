@@ -33,7 +33,7 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
 
         (int width, int height) = OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
-        PixelLayoutInfo layout = NaturalLayout(file);
+        PixelLayoutInfo layout = options.Hdr is not null && file.ToneMap is not null ? RgbaF16.Layout : NaturalLayout(file);
         return new RasterInfo
         {
             Format = AvifFormat.Info,
@@ -53,6 +53,28 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
+        if (options.Hdr is HdrDecode hdr)
+        {
+            // As Ultra HDR JPEGs: the SDR base, then its gain map applied for the display's headroom (design question 12).
+            Raster sdr = Read(input, options with { Hdr = null, ReadMetadata = true });
+            if (sdr.Metadata.GainMap is not GainMap map)
+            {
+                return sdr;
+            }
+
+            using (sdr)
+            {
+                Raster<RgbaF16> result = map.Apply(sdr, hdr.Headroom);
+                RasterMetadata metadata = result.Metadata;
+                metadata.FormatName = sdr.Metadata.FormatName;
+                metadata.FormatDetails = sdr.Metadata.FormatDetails;
+                metadata.Exif = sdr.Metadata.Exif;
+                metadata.Xmp = sdr.Metadata.Xmp;
+                metadata.WarningList.Prepend(sdr.Metadata.WarningList);
+                return result;
+            }
+        }
+
         Prepared image = Prepare(input, AvifFile.Read(input), options, null);
         return image.Natural switch
         {
@@ -70,6 +92,20 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        if (options.Hdr is not null)
+        {
+            Raster hdr = Read(input, options);
+            if (hdr is Raster<TPixel> typed)
+            {
+                return typed;
+            }
+
+            using (hdr)
+            {
+                return hdr.As<TPixel>();
+            }
+        }
+
         return Read<TPixel>(input, Prepare(input, AvifFile.Read(input), options, null));
     }
 
@@ -238,6 +274,11 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         }
 
         RasterMetadata metadata = Metadata(file, codec, input);
+        if (file.ToneMap is not null && options.ReadMetadata)
+        {
+            ReadGainMap(file, input, metadata);
+        }
+
         if (unsupported.Count > 0)
         {
             metadata.WarningList.Add("Avif.MatrixApproximated", $"libavif does not convert matrix coefficients {file.CodePoints.MatrixCoefficients} with this range and chroma; the nearest matrix it has was used.");
@@ -263,15 +304,111 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         }
     }
 
+    /// <summary>
+    /// Reads the tmap item's ISO 21496-1 metadata and decodes its gain map image (converted with its own color, 8 bits a sample)
+    /// into <see cref="RasterMetadata.GainMap"/>. A gain map that cannot be read never fails the load: it is dropped with an
+    /// Avif.GainMapDropped warning.
+    /// </summary>
+    private static void ReadGainMap(AvifFile file, EgamiInput input, RasterMetadata metadata)
+    {
+        string problem;
+        try
+        {
+            byte[] data = file.Heif.ItemData(file.ToneMap!, input.Limits).ToArray();
+            if (data.Length < 1 || data[0] != 0)
+            {
+                problem = data.Length < 1 ? "the tmap item is empty" : $"tmap version {data[0]} is unknown";
+            }
+            else if (Jpeg.JpegGainMap.ParseIso(data[1..], out string? why) is not GainMapInfo parsed)
+            {
+                problem = why ?? "its metadata is damaged";
+            }
+            else
+            {
+                // AVIF's tmap says which rendition the base is by its headrooms alone, as libavif reads it: an alternate headroom
+                // below the base's makes the base the HDR one, and the map is applied toward SDR as the display's headroom drops.
+                GainMapInfo info = parsed.HdrCapacityMax < parsed.HdrCapacityMin
+                    ? parsed with { BaseRenditionIsHdr = true, HdrCapacityMin = parsed.HdrCapacityMax, HdrCapacityMax = parsed.HdrCapacityMin }
+                    : parsed with { BaseRenditionIsHdr = false };
+                AvifCodec codec = new(filmGrain: true);
+                (int rows, int columns, _, _) = file.GainMapLayout;
+                HeifPlanes planes = file.GainMapCells.Count == 1 && rows * columns == 1
+                    ? Cell(file, codec, file.GainMapCells[0], input)
+                    : Grid(file, codec, file.GainMapCells, file.GainMapLayout, input, null, lumaOnly: false);
+                ColorCodePoints points = GainMapColor(file) ?? codec.CodePoints;
+                HeifRgbConverter converter = new(planes, null, false, points);
+                int channels = converter.Channels;
+                byte[] pixels = new byte[planes.Width * planes.Height * channels];
+                byte[] row = new byte[planes.Width * channels * 2];
+                for (int y = 0; y < planes.Height; y++)
+                {
+                    converter.Write(y, 0, planes.Width, row);
+                    Span<byte> target = pixels.AsSpan(y * planes.Width * channels, planes.Width * channels);
+                    if (converter.OutputDepth > 8)
+                    {
+                        ReadOnlySpan<ushort> words = MemoryMarshal.Cast<byte, ushort>(row);
+                        for (int i = 0; i < target.Length; i++)
+                        {
+                            target[i] = (byte)(((words[i] * 255) + 32767) / 65535);
+                        }
+                    }
+                    else
+                    {
+                        row.AsSpan(0, target.Length).CopyTo(target);
+                    }
+                }
+
+                metadata.GainMap = new GainMap(info, planes.Width, planes.Height, channels, pixels);
+                return;
+            }
+        }
+        catch (EgamiException e)
+        {
+            problem = e.Message;
+        }
+
+        metadata.WarningList.Add("Avif.GainMapDropped", $"The gain map could not be read ({problem}); the image loads as SDR only.");
+    }
+
+    /// <summary>Gets the gain map image's nclx color, from its item or its first cell, or null to take its sequence header's.</summary>
+    private static ColorCodePoints? GainMapColor(AvifFile file)
+    {
+        HeifFile heif = file.Heif;
+        HeifItem map = heif.Item(file.ToneMap!.ReferencesOf(AvifFile.Dimg)[1])!;
+        foreach (HeifItem item in (HeifItem[])[map, file.GainMapCells[0]])
+        {
+            foreach ((HeifProperty property, _) in heif.PropertiesOf(item))
+            {
+                if (property.Type == AvifProperties.Colr && AvifProperties.ReadColor(heif, property).Nclx is NclxColor n)
+                {
+                    return new ColorCodePoints((byte)n.Primaries, (byte)n.Transfer, (byte)n.Matrix, n.FullRange);
+                }
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Moves what <see cref="Metadata"/> gathered onto the raster's metadata.</summary>
     private static void Adopt(RasterMetadata target, RasterMetadata source)
     {
         target.IccProfile = source.IccProfile;
-        target.CodePoints = source.CodePoints;
+        // The raster's pixels are full-range RGB, so its code points say so (matrix 0), and an ICC profile comes first (design
+        // question 8). Unspecified primaries or transfer are BT.709's and sRGB's, as libavif takes them.
+        target.CodePoints = source.IccProfile.IsEmpty && source.CodePoints is ColorCodePoints points
+            ? points with
+            {
+                Primaries = points.Primaries == 2 ? (byte)1 : points.Primaries,
+                TransferCharacteristics = points.TransferCharacteristics == 2 ? (byte)13 : points.TransferCharacteristics,
+                MatrixCoefficients = 0,
+                FullRange = true,
+            }
+            : null;
         target.Hdr = source.Hdr;
         target.Exif = source.Exif;
         target.Xmp = source.Xmp;
         target.FormatDetails = source.FormatDetails;
+        target.GainMap = source.GainMap;
         foreach (EgamiDiagnostic warning in source.Warnings)
         {
             target.WarningList.Add(warning);

@@ -13,6 +13,9 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
     /// <summary>Gets the film grain parameters of the first frame decoded that applies grain, or null.</summary>
     internal AvifFilmGrain? FilmGrain { get; private set; }
 
+    /// <summary>Gets the color code points and range the last decoded frame's sequence header gives.</summary>
+    internal Colors.ColorCodePoints CodePoints { get; private set; }
+
     public HeifPlanes Decode(byte[] data, EgamiInput input)
     {
         Av1Frame frame = Av1Decoder.DecodeFirstFrame(data, input.FormatName, parallelism: input.Context.MaxParallelism,
@@ -23,6 +26,7 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
         }
 
         Av1SequenceHeader sequence = frame.Sequence;
+        CodePoints = new Colors.ColorCodePoints((byte)sequence.ColorPrimaries, (byte)sequence.TransferCharacteristics, (byte)sequence.MatrixCoefficients, sequence.FullRange);
         Av1FilmGrain grain = frame.Header.FilmGrain;
         if (grain.ApplyGrain)
         {
