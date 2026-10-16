@@ -1,8 +1,9 @@
 namespace Egami.Tests;
 
 /// <summary>
-/// The fetched corpora under .cache (conformance suites, test vectors and their references, never committed). They are slow and
-/// matter mostly while working on their codec, so a run reads one only when EGAMI_CORPUS names it: "jxl", "avif,vp8" or "all".
+/// The fetched corpora under .cache (conformance suites, test vectors and their references, never committed), and the committed
+/// images the every-file streaming tests run over. They are slow and matter mostly while working on their codec, so a run reads
+/// one only when EGAMI_CORPUS names it: "jxl", "avif,vp8" or "all".
 /// </summary>
 internal static class LocalCorpus
 {
@@ -30,8 +31,11 @@ internal static class LocalCorpus
             throw new ArgumentException($"No local corpus is named {codec}.", nameof(codec));
         }
 
-        return Asked.Contains("all") || Asked.Contains(codec);
+        return Asks(codec);
     }
+
+    /// <summary>Gets whether EGAMI_CORPUS names this codec or folder of tests/images, or says "all".</summary>
+    internal static bool Asks(string name) => Asked.Contains("all") || Asked.Contains(name);
 
     /// <summary>Gets the exception that skips a test whose local corpus this run does not read, saying how to get it.</summary>
     internal static Exception Skip(string codec) => Xunit.Sdk.SkipException.ForSkip(Enabled(codec)

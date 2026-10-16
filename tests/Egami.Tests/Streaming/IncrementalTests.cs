@@ -13,7 +13,7 @@ public abstract class IncrementalTests<TPart>
     public static TheoryData<string, int> Cases()
     {
         TheoryData<string, int> data = [];
-        foreach (string file in StreamingCorpus.Files)
+        foreach (string file in StreamingCorpus.Asked)
         {
             foreach (int split in (int[])[1, 7, 65_536, -1])
             {
@@ -21,10 +21,10 @@ public abstract class IncrementalTests<TPart>
             }
         }
 
-        return Parts.Take(data, TPart.Index, PartCount);
+        return Parts.Take(data, TPart.Index, PartCount, StreamingCorpus.NotAsked);
     }
 
-    public static TheoryData<string> Others() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
+    public static TheoryData<string> Others() => Parts.Take(StreamingCorpus.Asked, TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     [Theory]
     [MemberData(nameof(Cases))]

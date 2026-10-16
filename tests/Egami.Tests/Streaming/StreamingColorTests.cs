@@ -24,7 +24,7 @@ public abstract class StreamingColorTests<TPart>
     public static TheoryData<string, string> FilesAndTargets()
     {
         TheoryData<string, string> data = [];
-        foreach (string file in StreamingCorpus.Files)
+        foreach (string file in StreamingCorpus.Asked)
         {
             foreach (string target in Targets.Keys)
             {
@@ -32,7 +32,7 @@ public abstract class StreamingColorTests<TPart>
             }
         }
 
-        return Parts.Take(data, TPart.Index, PartCount);
+        return Parts.Take(data, TPart.Index, PartCount, StreamingCorpus.NotAsked);
     }
 
     [Theory]

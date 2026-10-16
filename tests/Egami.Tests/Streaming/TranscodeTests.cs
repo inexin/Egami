@@ -38,7 +38,7 @@ public abstract class TranscodeTests<TPart>
     public static TheoryData<string, string> FilesAndChains()
     {
         TheoryData<string, string> data = [];
-        foreach (string file in StreamingCorpus.Files)
+        foreach (string file in StreamingCorpus.Asked)
         {
             foreach (string name in Chains.Keys)
             {
@@ -46,7 +46,7 @@ public abstract class TranscodeTests<TPart>
             }
         }
 
-        return Parts.Take(data, TPart.Index, PartCount);
+        return Parts.Take(data, TPart.Index, PartCount, StreamingCorpus.NotAsked);
     }
 
     [Theory]

@@ -61,7 +61,7 @@ public abstract class EncodeTests<TPart>
     public static TheoryData<string, string> FilesAndCases()
     {
         TheoryData<string, string> data = [];
-        foreach (string file in StreamingCorpus.Files)
+        foreach (string file in StreamingCorpus.Asked)
         {
             foreach (string name in Cases.Keys)
             {
@@ -69,7 +69,7 @@ public abstract class EncodeTests<TPart>
             }
         }
 
-        return Parts.Take(data, TPart.Index, PartCount);
+        return Parts.Take(data, TPart.Index, PartCount, StreamingCorpus.NotAsked);
     }
 
     [Theory]
@@ -107,7 +107,7 @@ public abstract class EncodeTests<TPart>
         }
     }
 
-    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Asked, TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     private static void Check<TPixel>(byte[] data, Case c, string because)
         where TPixel : unmanaged, IPixelType<TPixel>

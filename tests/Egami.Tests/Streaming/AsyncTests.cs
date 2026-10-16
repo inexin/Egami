@@ -12,7 +12,7 @@ public abstract class AsyncTests<TPart>
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Asked, TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     [Theory]
     [MemberData(nameof(Files))]

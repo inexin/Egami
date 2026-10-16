@@ -56,11 +56,26 @@ public sealed class Part5 : IPart
 /// <summary>Picks a part's rows from a theory's data.</summary>
 internal static class Parts
 {
-    /// <summary>Gets every <paramref name="count"/>-th row, starting at row <paramref name="index"/>.</summary>
-    internal static TheoryData<T> Take<T>(IEnumerable<T> rows, int index, int count) => [.. rows.Where((_, i) => i % count == index)];
+    /// <summary>
+    /// Gets every <paramref name="count"/>-th row, starting at row <paramref name="index"/>; with none, one row skipped with
+    /// <paramref name="skip"/>, or none.
+    /// </summary>
+    internal static TheoryData<T> Take<T>(IEnumerable<T> rows, int index, int count, string? skip = null)
+    {
+        TheoryData<T> part = [.. rows.Where((_, i) => i % count == index)];
+        if (part.Count == 0 && skip is not null)
+        {
+            part.Add(new TheoryDataRow<T>(default!) { Skip = skip });
+        }
 
-    /// <summary>Gets every <paramref name="count"/>-th row, starting at row <paramref name="index"/>.</summary>
-    internal static TheoryData<T1, T2> Take<T1, T2>(TheoryData<T1, T2> rows, int index, int count)
+        return part;
+    }
+
+    /// <summary>
+    /// Gets every <paramref name="count"/>-th row, starting at row <paramref name="index"/>; with none, one row skipped with
+    /// <paramref name="skip"/>, or none.
+    /// </summary>
+    internal static TheoryData<T1, T2> Take<T1, T2>(TheoryData<T1, T2> rows, int index, int count, string? skip = null)
     {
         TheoryData<T1, T2> part = [];
         int i = 0;
@@ -70,6 +85,11 @@ internal static class Parts
             {
                 part.Add(row.Data.Item1, row.Data.Item2);
             }
+        }
+
+        if (part.Count == 0 && skip is not null)
+        {
+            part.Add(new TheoryDataRow<T1, T2>(default!, default!) { Skip = skip });
         }
 
         return part;

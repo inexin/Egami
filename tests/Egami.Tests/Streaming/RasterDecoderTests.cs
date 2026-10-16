@@ -21,8 +21,19 @@ internal static class StreamingCorpus
             .Order(StringComparer.Ordinal),
     ]);
 
+    private static readonly Lazy<string[]> AskedFiles = new(() => [.. AllFiles.Value.Where(f => LocalCorpus.Asks(f[..f.IndexOf('/', StringComparison.Ordinal)]))]);
+
     /// <summary>Gets every corpus file Egami loads, as "png/name.png".</summary>
     public static IReadOnlyList<string> Files => AllFiles.Value;
+
+    /// <summary>
+    /// Gets the files the every-file streaming tests run over: those of the folders EGAMI_CORPUS names ("avif", "jpeg" or "all"),
+    /// since the corpus matters mostly while working on its codec. A normal run names none, and the tests skip.
+    /// </summary>
+    public static IReadOnlyList<string> Asked => AskedFiles.Value;
+
+    /// <summary>Gets why an every-file streaming test skips: EGAMI_CORPUS names no folder of its files.</summary>
+    public static string NotAsked => "Set EGAMI_CORPUS to folders of tests/images (avif, jpeg or all) to stream their files.";
 
     public static byte[] Read(string file) => File.ReadAllBytes(Path.Combine(Root, file));
 
@@ -61,7 +72,7 @@ internal static class StreamingCorpus
 /// </summary>
 public class NaturalConversionTests
 {
-    public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Asked, 0, 1, StreamingCorpus.NotAsked);
 
     [Theory]
     [MemberData(nameof(Files))]
@@ -99,7 +110,7 @@ public abstract class RasterDecoderTests<TPart>
 {
     private const int PartCount = 2;
 
-    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Asked, TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     [Theory]
     [MemberData(nameof(Files))]
@@ -319,15 +330,15 @@ public abstract class RegionAndReductionTests<TPart>
 {
     private const int PartCount = 5;
 
-    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Asked, TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     // A TIFF pyramid's levels serve reduced decodes, so its reductions are its smaller pages, not box averages.
-    public static TheoryData<string> NotJpeg() => Parts.Take(StreamingCorpus.Files.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif" && !IsIconSet(f)), TPart.Index, PartCount);
+    public static TheoryData<string> NotJpeg() => Parts.Take(StreamingCorpus.Asked.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif" && !IsIconSet(f)), TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
-    public static TheoryData<string> Jpeg() => Parts.Take(StreamingCorpus.Files.Where(IsJpeg), TPart.Index, PartCount);
+    public static TheoryData<string> Jpeg() => Parts.Take(StreamingCorpus.Asked.Where(IsJpeg), TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     /// <summary>JPEG 2000 files whose image starts at the grid's origin, so every wavelet level can be dropped.</summary>
-    public static TheoryData<string> Jpeg2000() => Parts.Take(StreamingCorpus.Files.Where(f => IsJpeg2000(f) && !f.Contains("offsets", StringComparison.Ordinal)), TPart.Index, PartCount);
+    public static TheoryData<string> Jpeg2000() => Parts.Take(StreamingCorpus.Asked.Where(f => IsJpeg2000(f) && !f.Contains("offsets", StringComparison.Ordinal)), TPart.Index, PartCount, StreamingCorpus.NotAsked);
 
     [Theory]
     [MemberData(nameof(Files))]
