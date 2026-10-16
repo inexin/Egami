@@ -100,7 +100,11 @@ public class PaletteApiTests
 
                 PaletteOptions basic = new() { MaxColors = 32, Dither = mode };
                 double baseline = Psnr(basic);
-                Assert.True(Psnr(basic with { RefineIterations = 6 }) >= baseline - 1e-9, $"{name} {mode} refined");
+
+                // Refinement fits the palette to the pixels, so mapped straight it never loses. Dithering spreads each pixel's error
+                // to its neighbors, which a better fitted palette can shift either way: duck.png loses 0.09 dB with Floyd-Steinberg.
+                double slack = mode == DitherMode.None ? 1e-9 : 0.25;
+                Assert.True(Psnr(basic with { RefineIterations = 6 }) >= baseline - slack, $"{name} {mode} refined");
                 Assert.True(Psnr(basic with { ExactMatching = true }) >= baseline - 0.05, $"{name} {mode} exact");
             }
         }
