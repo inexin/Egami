@@ -212,6 +212,12 @@ internal sealed partial class GdiPlayer
 
         // The em size in logical units: a negative height is the em, a positive one the cell (ascent plus descent).
         float em = f.Height < 0 ? -f.Height : f.Height > 0 ? f.Height * typeface.UnitsPerEm / cell : 12 * 96 / 72f;
+        if (f.Stock && MathF.Abs(Full.M22) > 0)
+        {
+            // A stock font is realized in reference device pixels, whatever the mapping.
+            em = em * MathF.Abs(_deviceScale.Y) / MathF.Abs(Full.M22);
+        }
+
         Font font = new(typeface, em) { Synthesis = resolved.Synthesis, Kerning = false };
         float scale = em / typeface.UnitsPerEm;
         float ascent = win.Ascent * scale, descent = -win.Descent * scale;

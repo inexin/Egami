@@ -114,8 +114,11 @@ internal sealed class GdiFont : GdiObject
     /// <summary>Gets the face name.</summary>
     public string Face { get; init; } = "";
 
+    /// <summary>Gets a value indicating whether this is a stock font, whose height is in device pixels, not logical units.</summary>
+    public bool Stock { get; init; }
+
     /// <summary>Gets the stock system font (SYSTEM_FONT, DEFAULT_GUI_FONT and the rest map to it).</summary>
-    public static GdiFont System { get; } = new() { Height = 16, Weight = 700, Face = "System" };
+    public static GdiFont System { get; } = new() { Height = 16, Weight = 700, Face = "System", Stock = true };
 }
 
 /// <summary>A logical palette: the colors palette-index COLORREFs and DIB_PAL_COLORS bitmaps refer to.</summary>

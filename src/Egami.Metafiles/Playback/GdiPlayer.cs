@@ -115,6 +115,7 @@ internal sealed partial class GdiPlayer
             }
 
             player.FlushPending();
+            player.FlushStipple();
         }
         finally
         {
@@ -156,10 +157,17 @@ internal sealed partial class GdiPlayer
         ReadOnlySpan<byte> r = _data.AsSpan(record.Offset, record.Size);
         try
         {
-            // A blit that may start a transparent-bitmap idiom waits only for the next blit.
+            // A blit that may start a transparent-bitmap idiom waits only for the next blit; a stipple idiom also lets object
+            // records through.
             if (_pending is not null && record.Type is not (76 or 77 or 0x0940 or 0x0B41 or 0x0F43))
             {
                 FlushPending();
+            }
+
+            if (_stipple is not null && record.Type is not (0x061D or 0x0940 or 0x0B41 or 0x012D or 0x0142 or 0x01F0 or 0x02FC or 0x02FA or 0x01F9
+                or 37 or 39 or 40 or 93 or 94 or 76 or 77))
+            {
+                FlushStipple(record.Offset);
             }
 
             if (_wmf)

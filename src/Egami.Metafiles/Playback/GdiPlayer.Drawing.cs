@@ -113,7 +113,7 @@ internal sealed partial class GdiPlayer
     {
         if (_bracket is not null)
         {
-            _bracket.AddPath(device.ToPath());
+            Continue(_bracket, device.ToPath());
             return;
         }
 
@@ -124,6 +124,47 @@ internal sealed partial class GdiPlayer
         }
 
         StrokeDevice(path);
+    }
+
+    /// <summary>
+    /// Adds a figure to the path bracket; one that starts where the bracket's current figure ends (LineTo, PolylineTo,
+    /// PolyBezierTo, ArcTo) continues that figure instead of starting a new one, as GDI builds paths.
+    /// </summary>
+    private static void Continue(PathBuilder bracket, Path path)
+    {
+        ReadOnlySpan<Vector2> points = path.Points;
+        int p = 0;
+        bool first = true;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            switch (verb)
+            {
+                case PathVerb.Move:
+                    if (!(first && !bracket.IsEmpty && Vector2.DistanceSquared(bracket.CurrentPoint, points[p]) <= 1f))
+                    {
+                        bracket.MoveTo(points[p]);
+                    }
+
+                    p++;
+                    break;
+                case PathVerb.Line:
+                    bracket.LineTo(points[p++]);
+                    break;
+                case PathVerb.Quad:
+                    bracket.QuadTo(points[p], points[p + 1]);
+                    p += 2;
+                    break;
+                case PathVerb.Cubic:
+                    bracket.CubicTo(points[p], points[p + 1], points[p + 2]);
+                    p += 3;
+                    break;
+                case PathVerb.Close:
+                    bracket.Close();
+                    break;
+            }
+
+            first = false;
+        }
     }
 
     /// <summary>Strokes a device-space path with the current pen; an opaque background fills the gaps of a styled pen first.</summary>

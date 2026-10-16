@@ -477,6 +477,91 @@ internal sealed partial class GdiPlayer
     {
         FlushPending();
         RectF rect = new(MathF.Min(dest.X, dest.Right), MathF.Min(dest.Y, dest.Bottom), MathF.Abs(dest.Width), MathF.Abs(dest.Height));
+        if (Stipple(rect, rop, offset))
+        {
+            return;
+        }
+
+        PatBltNow(rect, rop, offset);
+    }
+
+    /// <summary>
+    /// The stipple idiom of older programs: PATINVERT with a brush, DPa (0x00A000C9) with a pattern, PATINVERT with the same brush
+    /// over one rectangle paints the brush color where the pattern is 0 and leaves the rest. It is drawn as that, since the XOR
+    /// steps alone have no Egami equivalent.
+    /// </summary>
+    private bool Stipple(RectF rect, uint rop, long offset)
+    {
+        if (_stipple is (RectF r0, GdiBrush first, var pattern) && Same(r0, rect))
+        {
+            if (pattern is null && rop == 0x00A000C9)
+            {
+                _stipple = (r0, first, _dc.Brush);
+                return true;
+            }
+
+            if (pattern is not null && rop == PatInvert && _dc.Brush.Style == GdiBrush.Solid && _dc.Brush.Color.Equals(first.Color))
+            {
+                _stipple = null;
+                if (pattern.Image is Raster<Rgba8> tile)
+                {
+                    Raster<Rgba8> mask = tile.Copy();
+                    for (int y = 0; y < mask.Height; y++)
+                    {
+                        Span<Rgba8> row = mask.Row(y);
+                        for (int x = 0; x < row.Length; x++)
+                        {
+                            bool zero = pattern.Bits is bool[] bits ? !bits[(y * mask.Width) + x] : row[x] is { R: < 128, G: < 128, B: < 128 };
+                            row[x] = zero ? first.Color : default;
+                        }
+                    }
+
+                    _canvas.FillRect(rect, new ImagePaint(mask, TileMode.Repeat, TileMode.Repeat, new SamplingOptions { Filter = ResampleFilter.Nearest }) { LocalMatrix = TileMatrix, Antialias = !_aliased });
+                }
+                else
+                {
+                    _canvas.FillRect(rect, new SolidPaint(first.Color) { Antialias = !_aliased });
+                }
+
+                return true;
+            }
+        }
+
+        FlushStipple(offset);
+        if (rop == PatInvert && _dc.Brush.Style == GdiBrush.Solid)
+        {
+            _stipple = (rect, _dc.Brush, null);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Draws the steps of a stipple idiom that did not finish, one by one.</summary>
+    internal void FlushStipple(long offset = 0)
+    {
+        if (_stipple is not (RectF rect, GdiBrush first, var pattern))
+        {
+            return;
+        }
+
+        _stipple = null;
+        GdiBrush current = _dc.Brush;
+        _dc.Brush = first;
+        PatBltNow(rect, PatInvert, offset);
+        if (pattern is not null)
+        {
+            _dc.Brush = pattern;
+            PatBltNow(rect, 0x00A000C9, offset);
+        }
+
+        _dc.Brush = current;
+    }
+
+    private (RectF Rect, GdiBrush First, GdiBrush? Pattern)? _stipple;
+
+    private void PatBltNow(RectF rect, uint rop, long offset)
+    {
         Paint? paint = rop switch
         {
             PatCopy => BrushPaint(),
