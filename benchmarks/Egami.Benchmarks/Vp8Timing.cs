@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 using Egami.Formats.Webp;
 using Egami.Pixels;
@@ -10,7 +11,7 @@ namespace Egami.Benchmarks;
 /// runs, at one thread and at all cores, for comparison with vpxdec's times in timing.json. And the Phase 2.4.5 profile
 /// (<see cref="RunStages"/>): where one thread's time goes, stage by stage.
 /// </summary>
-internal static class Vp8Timing
+internal static partial class Vp8Timing
 {
     internal static void Run(string[] files)
     {
@@ -58,6 +59,7 @@ internal static class Vp8Timing
             int count = still ? 20 : packets.Count;
             EgamiContext context = EgamiContext.Default with { MaxParallelism = 1 };
             double best = double.MaxValue;
+            double bestCycles = double.MaxValue;
             long[] stages = new long[(int)Vp8Stage.Count];
             long allocated = 0;
             for (int run = 0; run < 5; run++)
@@ -65,6 +67,7 @@ internal static class Vp8Timing
                 using Vp8VideoDecoder video = new(1);
                 Vp8StageTimes.Start();
                 long bytes = 0;
+                long cycles = ThreadCycles();
                 long start = Stopwatch.GetTimestamp();
                 for (int i = 0; i < count; i++)
                 {
@@ -85,6 +88,7 @@ internal static class Vp8Timing
                 }
 
                 double ms = Stopwatch.GetElapsedTime(start).TotalMilliseconds / count;
+                bestCycles = Math.Min(bestCycles, (ThreadCycles() - cycles) / (double)count);
                 if (ms < best)
                 {
                     best = ms;
@@ -93,7 +97,7 @@ internal static class Vp8Timing
                 }
             }
 
-            Console.WriteLine($"{Path.GetFileName(file)}: {best:F3} ms a {(still ? "decode" : "packet")} on 1 thread, {allocated:N0} bytes allocated a {(still ? "decode" : "frame after the first")}");
+            Console.WriteLine($"{Path.GetFileName(file)}: {best:F3} ms a {(still ? "decode" : "packet")} on 1 thread, {allocated:N0} bytes allocated a {(still ? "decode" : "frame after the first")}, {bestCycles / 1e6:F3} Mcycles");
             double attributed = 0;
             for (int stage = 0; stage < stages.Length; stage++)
             {
@@ -111,6 +115,19 @@ internal static class Vp8Timing
             }
         }
     }
+
+    /// <summary>
+    /// Returns the cycles this thread has run (Windows' QueryThreadCycleTime), which time spent waiting for the CPU leaves out:
+    /// steadier than wall time on a busy machine. 0 elsewhere.
+    /// </summary>
+    private static long ThreadCycles() => OperatingSystem.IsWindows() && QueryThreadCycleTime(GetCurrentThread(), out ulong cycles) ? (long)cycles : 0;
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool QueryThreadCycleTime(nint thread, out ulong cycles);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial nint GetCurrentThread();
 
     /// <summary>Writes the 2.3.1 WebP benchmark pictures as PNG, for cwebp to make the lossy stills the profile decodes.</summary>
     internal static void WritePictures(string directory)
