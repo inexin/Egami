@@ -297,20 +297,23 @@ internal static class Vp8Dsp
     /// <summary>Predicts the 4 × 4 block at <paramref name="at"/>: the row above (and four above-right) and the column to the left are in place.</summary>
     internal static void PredictSubblock(int mode, Span<byte> b, int at)
     {
+        // One check for every byte read or written, from the corner above-left to the last pixel; then no checks.
+        _ = b.Slice(at - Stride - 1, (4 * Stride) + 5);
+        ref byte p = ref MemoryMarshal.GetReference(b);
         int t = at - Stride;
-        int x0 = b[t - 1];
-        int a0 = b[t], a1 = b[t + 1], a2 = b[t + 2], a3 = b[t + 3];
-        int l0 = b[at - 1], l1 = b[at + Stride - 1], l2 = b[at + (2 * Stride) - 1], l3 = b[at + (3 * Stride) - 1];
+        int x0 = Unsafe.Add(ref p, t - 1);
+        int a0 = Unsafe.Add(ref p, t), a1 = Unsafe.Add(ref p, t + 1), a2 = Unsafe.Add(ref p, t + 2), a3 = Unsafe.Add(ref p, t + 3);
+        int l0 = Unsafe.Add(ref p, at - 1), l1 = Unsafe.Add(ref p, at + Stride - 1), l2 = Unsafe.Add(ref p, at + (2 * Stride) - 1), l3 = Unsafe.Add(ref p, at + (3 * Stride) - 1);
         int r0 = at, r1 = at + Stride, r2 = at + (2 * Stride), r3 = at + (3 * Stride);
         switch (mode)
         {
             case BDc:
                 {
                     byte dc = (byte)((a0 + a1 + a2 + a3 + l0 + l1 + l2 + l3 + 4) >> 3);
-                    b.Slice(r0, 4).Fill(dc);
-                    b.Slice(r1, 4).Fill(dc);
-                    b.Slice(r2, 4).Fill(dc);
-                    b.Slice(r3, 4).Fill(dc);
+                    Fill(ref Unsafe.Add(ref p, r0), dc, 4);
+                    Fill(ref Unsafe.Add(ref p, r1), dc, 4);
+                    Fill(ref Unsafe.Add(ref p, r2), dc, 4);
+                    Fill(ref Unsafe.Add(ref p, r3), dc, 4);
                     break;
                 }
 
@@ -319,96 +322,93 @@ internal static class Vp8Dsp
                 break;
             case BVe:
                 {
-                    int a4 = b[t + 4];
-                    byte v0 = Avg3(x0, a0, a1), v1 = Avg3(a0, a1, a2), v2 = Avg3(a1, a2, a3), v3 = Avg3(a2, a3, a4);
-                    foreach (int r in (ReadOnlySpan<int>)[r0, r1, r2, r3])
-                    {
-                        b[r] = v0;
-                        b[r + 1] = v1;
-                        b[r + 2] = v2;
-                        b[r + 3] = v3;
-                    }
+                    int a4 = Unsafe.Add(ref p, t + 4);
+                    uint row = Avg3(x0, a0, a1) | ((uint)Avg3(a0, a1, a2) << 8) | ((uint)Avg3(a1, a2, a3) << 16) | ((uint)Avg3(a2, a3, a4) << 24);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, r0), row);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, r1), row);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, r2), row);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, r3), row);
 
                     break;
                 }
 
             case BHe:
-                b.Slice(r0, 4).Fill(Avg3(x0, l0, l1));
-                b.Slice(r1, 4).Fill(Avg3(l0, l1, l2));
-                b.Slice(r2, 4).Fill(Avg3(l1, l2, l3));
-                b.Slice(r3, 4).Fill(Avg3(l2, l3, l3));
+                Fill(ref Unsafe.Add(ref p, r0), Avg3(x0, l0, l1), 4);
+                Fill(ref Unsafe.Add(ref p, r1), Avg3(l0, l1, l2), 4);
+                Fill(ref Unsafe.Add(ref p, r2), Avg3(l1, l2, l3), 4);
+                Fill(ref Unsafe.Add(ref p, r3), Avg3(l2, l3, l3), 4);
                 break;
             case BLd:
                 {
-                    int a4 = b[t + 4], a5 = b[t + 5], a6 = b[t + 6], a7 = b[t + 7];
-                    b[r0] = Avg3(a0, a1, a2);
-                    b[r0 + 1] = b[r1] = Avg3(a1, a2, a3);
-                    b[r0 + 2] = b[r1 + 1] = b[r2] = Avg3(a2, a3, a4);
-                    b[r0 + 3] = b[r1 + 2] = b[r2 + 1] = b[r3] = Avg3(a3, a4, a5);
-                    b[r1 + 3] = b[r2 + 2] = b[r3 + 1] = Avg3(a4, a5, a6);
-                    b[r2 + 3] = b[r3 + 2] = Avg3(a5, a6, a7);
-                    b[r3 + 3] = Avg3(a6, a7, a7);
+                    int a4 = Unsafe.Add(ref p, t + 4), a5 = Unsafe.Add(ref p, t + 5), a6 = Unsafe.Add(ref p, t + 6), a7 = Unsafe.Add(ref p, t + 7);
+                    Unsafe.Add(ref p, r0) = Avg3(a0, a1, a2);
+                    Unsafe.Add(ref p, r0 + 1) = Unsafe.Add(ref p, r1) = Avg3(a1, a2, a3);
+                    Unsafe.Add(ref p, r0 + 2) = Unsafe.Add(ref p, r1 + 1) = Unsafe.Add(ref p, r2) = Avg3(a2, a3, a4);
+                    Unsafe.Add(ref p, r0 + 3) = Unsafe.Add(ref p, r1 + 2) = Unsafe.Add(ref p, r2 + 1) = Unsafe.Add(ref p, r3) = Avg3(a3, a4, a5);
+                    Unsafe.Add(ref p, r1 + 3) = Unsafe.Add(ref p, r2 + 2) = Unsafe.Add(ref p, r3 + 1) = Avg3(a4, a5, a6);
+                    Unsafe.Add(ref p, r2 + 3) = Unsafe.Add(ref p, r3 + 2) = Avg3(a5, a6, a7);
+                    Unsafe.Add(ref p, r3 + 3) = Avg3(a6, a7, a7);
                     break;
                 }
 
             case BRd:
-                b[r3] = Avg3(l3, l2, l1);
-                b[r3 + 1] = b[r2] = Avg3(l2, l1, l0);
-                b[r3 + 2] = b[r2 + 1] = b[r1] = Avg3(l1, l0, x0);
-                b[r3 + 3] = b[r2 + 2] = b[r1 + 1] = b[r0] = Avg3(l0, x0, a0);
-                b[r2 + 3] = b[r1 + 2] = b[r0 + 1] = Avg3(x0, a0, a1);
-                b[r1 + 3] = b[r0 + 2] = Avg3(a0, a1, a2);
-                b[r0 + 3] = Avg3(a1, a2, a3);
+                Unsafe.Add(ref p, r3) = Avg3(l3, l2, l1);
+                Unsafe.Add(ref p, r3 + 1) = Unsafe.Add(ref p, r2) = Avg3(l2, l1, l0);
+                Unsafe.Add(ref p, r3 + 2) = Unsafe.Add(ref p, r2 + 1) = Unsafe.Add(ref p, r1) = Avg3(l1, l0, x0);
+                Unsafe.Add(ref p, r3 + 3) = Unsafe.Add(ref p, r2 + 2) = Unsafe.Add(ref p, r1 + 1) = Unsafe.Add(ref p, r0) = Avg3(l0, x0, a0);
+                Unsafe.Add(ref p, r2 + 3) = Unsafe.Add(ref p, r1 + 2) = Unsafe.Add(ref p, r0 + 1) = Avg3(x0, a0, a1);
+                Unsafe.Add(ref p, r1 + 3) = Unsafe.Add(ref p, r0 + 2) = Avg3(a0, a1, a2);
+                Unsafe.Add(ref p, r0 + 3) = Avg3(a1, a2, a3);
                 break;
             case BVr:
-                b[r3] = Avg3(l2, l1, l0);
-                b[r2] = Avg3(l1, l0, x0);
-                b[r3 + 1] = b[r1] = Avg3(l0, x0, a0);
-                b[r2 + 1] = b[r0] = Avg2(x0, a0);
-                b[r3 + 2] = b[r1 + 1] = Avg3(x0, a0, a1);
-                b[r2 + 2] = b[r0 + 1] = Avg2(a0, a1);
-                b[r3 + 3] = b[r1 + 2] = Avg3(a0, a1, a2);
-                b[r2 + 3] = b[r0 + 2] = Avg2(a1, a2);
-                b[r1 + 3] = Avg3(a1, a2, a3);
-                b[r0 + 3] = Avg2(a2, a3);
+                Unsafe.Add(ref p, r3) = Avg3(l2, l1, l0);
+                Unsafe.Add(ref p, r2) = Avg3(l1, l0, x0);
+                Unsafe.Add(ref p, r3 + 1) = Unsafe.Add(ref p, r1) = Avg3(l0, x0, a0);
+                Unsafe.Add(ref p, r2 + 1) = Unsafe.Add(ref p, r0) = Avg2(x0, a0);
+                Unsafe.Add(ref p, r3 + 2) = Unsafe.Add(ref p, r1 + 1) = Avg3(x0, a0, a1);
+                Unsafe.Add(ref p, r2 + 2) = Unsafe.Add(ref p, r0 + 1) = Avg2(a0, a1);
+                Unsafe.Add(ref p, r3 + 3) = Unsafe.Add(ref p, r1 + 2) = Avg3(a0, a1, a2);
+                Unsafe.Add(ref p, r2 + 3) = Unsafe.Add(ref p, r0 + 2) = Avg2(a1, a2);
+                Unsafe.Add(ref p, r1 + 3) = Avg3(a1, a2, a3);
+                Unsafe.Add(ref p, r0 + 3) = Avg2(a2, a3);
                 break;
             case BVl:
                 {
-                    int a4 = b[t + 4], a5 = b[t + 5], a6 = b[t + 6], a7 = b[t + 7];
-                    b[r0] = Avg2(a0, a1);
-                    b[r1] = Avg3(a0, a1, a2);
-                    b[r2] = b[r0 + 1] = Avg2(a1, a2);
-                    b[r1 + 1] = b[r3] = Avg3(a1, a2, a3);
-                    b[r2 + 1] = b[r0 + 2] = Avg2(a2, a3);
-                    b[r3 + 1] = b[r1 + 2] = Avg3(a2, a3, a4);
-                    b[r2 + 2] = b[r0 + 3] = Avg2(a3, a4);
-                    b[r3 + 2] = b[r1 + 3] = Avg3(a3, a4, a5);
-                    b[r2 + 3] = Avg3(a4, a5, a6);
-                    b[r3 + 3] = Avg3(a5, a6, a7);
+                    int a4 = Unsafe.Add(ref p, t + 4), a5 = Unsafe.Add(ref p, t + 5), a6 = Unsafe.Add(ref p, t + 6), a7 = Unsafe.Add(ref p, t + 7);
+                    Unsafe.Add(ref p, r0) = Avg2(a0, a1);
+                    Unsafe.Add(ref p, r1) = Avg3(a0, a1, a2);
+                    Unsafe.Add(ref p, r2) = Unsafe.Add(ref p, r0 + 1) = Avg2(a1, a2);
+                    Unsafe.Add(ref p, r1 + 1) = Unsafe.Add(ref p, r3) = Avg3(a1, a2, a3);
+                    Unsafe.Add(ref p, r2 + 1) = Unsafe.Add(ref p, r0 + 2) = Avg2(a2, a3);
+                    Unsafe.Add(ref p, r3 + 1) = Unsafe.Add(ref p, r1 + 2) = Avg3(a2, a3, a4);
+                    Unsafe.Add(ref p, r2 + 2) = Unsafe.Add(ref p, r0 + 3) = Avg2(a3, a4);
+                    Unsafe.Add(ref p, r3 + 2) = Unsafe.Add(ref p, r1 + 3) = Avg3(a3, a4, a5);
+                    Unsafe.Add(ref p, r2 + 3) = Avg3(a4, a5, a6);
+                    Unsafe.Add(ref p, r3 + 3) = Avg3(a5, a6, a7);
                     break;
                 }
 
             case BHd:
-                b[r3] = Avg2(l3, l2);
-                b[r3 + 1] = Avg3(l3, l2, l1);
-                b[r2] = b[r3 + 2] = Avg2(l2, l1);
-                b[r2 + 1] = b[r3 + 3] = Avg3(l2, l1, l0);
-                b[r2 + 2] = b[r1] = Avg2(l1, l0);
-                b[r2 + 3] = b[r1 + 1] = Avg3(l1, l0, x0);
-                b[r1 + 2] = b[r0] = Avg2(l0, x0);
-                b[r1 + 3] = b[r0 + 1] = Avg3(l0, x0, a0);
-                b[r0 + 2] = Avg3(x0, a0, a1);
-                b[r0 + 3] = Avg3(a0, a1, a2);
+                Unsafe.Add(ref p, r3) = Avg2(l3, l2);
+                Unsafe.Add(ref p, r3 + 1) = Avg3(l3, l2, l1);
+                Unsafe.Add(ref p, r2) = Unsafe.Add(ref p, r3 + 2) = Avg2(l2, l1);
+                Unsafe.Add(ref p, r2 + 1) = Unsafe.Add(ref p, r3 + 3) = Avg3(l2, l1, l0);
+                Unsafe.Add(ref p, r2 + 2) = Unsafe.Add(ref p, r1) = Avg2(l1, l0);
+                Unsafe.Add(ref p, r2 + 3) = Unsafe.Add(ref p, r1 + 1) = Avg3(l1, l0, x0);
+                Unsafe.Add(ref p, r1 + 2) = Unsafe.Add(ref p, r0) = Avg2(l0, x0);
+                Unsafe.Add(ref p, r1 + 3) = Unsafe.Add(ref p, r0 + 1) = Avg3(l0, x0, a0);
+                Unsafe.Add(ref p, r0 + 2) = Avg3(x0, a0, a1);
+                Unsafe.Add(ref p, r0 + 3) = Avg3(a0, a1, a2);
                 break;
             default:
-                b[r0] = Avg2(l0, l1);
-                b[r0 + 1] = Avg3(l0, l1, l2);
-                b[r0 + 2] = b[r1] = Avg2(l1, l2);
-                b[r0 + 3] = b[r1 + 1] = Avg3(l1, l2, l3);
-                b[r1 + 2] = b[r2] = Avg2(l2, l3);
-                b[r1 + 3] = b[r2 + 1] = Avg3(l2, l3, l3);
-                b[r2 + 2] = b[r2 + 3] = (byte)l3;
-                b.Slice(r3, 4).Fill((byte)l3);
+                Unsafe.Add(ref p, r0) = Avg2(l0, l1);
+                Unsafe.Add(ref p, r0 + 1) = Avg3(l0, l1, l2);
+                Unsafe.Add(ref p, r0 + 2) = Unsafe.Add(ref p, r1) = Avg2(l1, l2);
+                Unsafe.Add(ref p, r0 + 3) = Unsafe.Add(ref p, r1 + 1) = Avg3(l1, l2, l3);
+                Unsafe.Add(ref p, r1 + 2) = Unsafe.Add(ref p, r2) = Avg2(l2, l3);
+                Unsafe.Add(ref p, r1 + 3) = Unsafe.Add(ref p, r2 + 1) = Avg3(l2, l3, l3);
+                Unsafe.Add(ref p, r2 + 2) = Unsafe.Add(ref p, r2 + 3) = (byte)l3;
+                Fill(ref Unsafe.Add(ref p, r3), (byte)l3, 4);
                 break;
         }
     }
