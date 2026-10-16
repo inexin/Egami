@@ -17,8 +17,11 @@ namespace Egami.Tests.Streaming;
 /// Phase 2.2 task 10: RasterEncoder writes the bytes Save writes for every option streaming allows, refuses at Create the options
 /// that need every pixel, and SaveAsync goes through the same encoder.
 /// </summary>
-public class EncodeTests
+public abstract class EncodeTests<TPart>
+    where TPart : IPart
 {
+    private const int PartCount = 5;
+
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     /// <summary>
@@ -66,7 +69,7 @@ public class EncodeTests
             }
         }
 
-        return data;
+        return Parts.Take(data, TPart.Index, PartCount);
     }
 
     [Theory]
@@ -99,12 +102,131 @@ public class EncodeTests
             using MemoryStream sync = new();
             raster.Save(sync, format);
             using MemoryStream async = new();
-            await raster.SaveAsync(new NonSeekableWriteStream(async), format, cancellationToken: Ct);
+            await raster.SaveAsync(new EncodeTests.NonSeekableWriteStream(async), format, cancellationToken: Ct);
             Assert.True(sync.ToArray().AsSpan().SequenceEqual(async.ToArray()), $"{file} as {format.Name}");
         }
     }
 
-    public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
+
+    private static void Check<TPixel>(byte[] data, Case c, string because)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using Raster<TPixel> raster = Raster.Load<TPixel>(data);
+        bool frames = raster.FrameCount > 1 && (c.Format == PngFormat.Info || c.Format == GifFormat.Info);
+        using MemoryStream saved = new();
+        raster.Save(saved, c.Format, c.Options());
+        byte[] expected = frames ? saved.ToArray() : SaveFirst(raster, c);
+
+        Verify(Streamed(raster, c, seekable: true, frames), c.Seekable);
+        WriterOptions options = c.Options();
+        if (frames && c.Format == PngFormat.Info)
+        {
+            PngWriterOptions png = (PngWriterOptions)options;
+            options = new PngWriterOptions
+            {
+                ColorType = png.ColorType,
+                BitDepth = png.BitDepth,
+                Filter = png.Filter,
+                CompressionLevel = png.CompressionLevel,
+                CompressionStrategy = png.CompressionStrategy,
+                Interlace = png.Interlace,
+                ParallelCompression = png.ParallelCompression,
+                ParallelThreshold = png.ParallelThreshold,
+                ParallelBandSize = png.ParallelBandSize,
+                FrameCount = raster.FrameCount,
+            };
+        }
+
+        if (c.Unseekable == Unseekable.Refused)
+        {
+            Assert.Throws<NotSupportedException>(() => Streamed(raster, c with { Options = () => options }, seekable: false, frames));
+            return;
+        }
+
+        Verify(Streamed(raster, c with { Options = () => options }, seekable: false, frames), c.Unseekable);
+
+        void Verify(byte[] actual, Unseekable how)
+        {
+            if (how == Unseekable.SameBytes)
+            {
+                Assert.True(expected.AsSpan().SequenceEqual(actual), $"{because}: the bytes differ from Save's.");
+                return;
+            }
+
+            using Raster<Rgba8> want = Raster.Load<Rgba8>(expected);
+            using Raster<Rgba8> got = Raster.Load<Rgba8>(actual);
+            StreamingCorpus.Equal(want, 0, got, because);
+        }
+    }
+
+    /// <summary>What Save writes for the first frame alone, which is what a still image streamed by rows is.</summary>
+    private static byte[] SaveFirst<TPixel>(Raster<TPixel> raster, Case c)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using Raster<TPixel> first = raster.CopyFrame(0);
+        using MemoryStream saved = new();
+        first.Save(saved, c.Format, c.Options());
+        return saved.ToArray();
+    }
+
+    private static byte[] Streamed<TPixel>(Raster<TPixel> raster, Case c, bool seekable, bool frames)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using MemoryStream memory = new();
+        Stream target = seekable ? memory : new EncodeTests.NonSeekableWriteStream(memory);
+        using (RasterEncoder<TPixel> encoder = RasterEncoder.Create<TPixel>(target, c.Format, raster.Width, raster.Height, c.Options(), raster.Metadata))
+        {
+            if (frames)
+            {
+                for (int f = 0; f < raster.FrameCount; f++)
+                {
+                    using Raster<TPixel> frame = raster.CopyFrame(f);
+                    encoder.WriteFrame(frame, raster.Frames[f].Metadata);
+                }
+            }
+            else
+            {
+                using Raster<TPixel> band = Raster.Create<TPixel>(raster.Width, 7);
+                for (int y = 0; y < raster.Height; y += 7)
+                {
+                    int rows = Math.Min(7, raster.Height - y);
+                    for (int r = 0; r < rows; r++)
+                    {
+                        raster.Row(y + r).CopyTo(band.Row(r));
+                    }
+
+                    encoder.WriteRows(band, rows);
+                }
+            }
+
+            encoder.Complete();
+        }
+
+        return memory.ToArray();
+    }
+
+    private enum Pixel
+    {
+        Rgba8,
+        Rgb8,
+        RgbF32,
+    }
+
+    private enum Unseekable
+    {
+        SameBytes,
+        SamePixels,
+        Refused,
+    }
+
+    private sealed record Case(FormatInfo Format, Func<WriterOptions> Options, Pixel Pixel, Unseekable Unseekable = Unseekable.SameBytes, Unseekable Seekable = Unseekable.SameBytes);
+}
+
+/// <summary>The tests of <see cref="EncodeTests{TPart}"/> that run once rather than in parts.</summary>
+public class EncodeTests
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
     public void AnApngToAStreamThatCannotSeekNeedsItsFrameCount()
@@ -316,119 +438,6 @@ public class EncodeTests
         Assert.Equal(0, peak.LeftBytes);
     }
 
-    private static void Check<TPixel>(byte[] data, Case c, string because)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        using Raster<TPixel> raster = Raster.Load<TPixel>(data);
-        bool frames = raster.FrameCount > 1 && (c.Format == PngFormat.Info || c.Format == GifFormat.Info);
-        using MemoryStream saved = new();
-        raster.Save(saved, c.Format, c.Options());
-        byte[] expected = frames ? saved.ToArray() : SaveFirst(raster, c);
-
-        Verify(Streamed(raster, c, seekable: true, frames), c.Seekable);
-        WriterOptions options = c.Options();
-        if (frames && c.Format == PngFormat.Info)
-        {
-            PngWriterOptions png = (PngWriterOptions)options;
-            options = new PngWriterOptions
-            {
-                ColorType = png.ColorType,
-                BitDepth = png.BitDepth,
-                Filter = png.Filter,
-                CompressionLevel = png.CompressionLevel,
-                CompressionStrategy = png.CompressionStrategy,
-                Interlace = png.Interlace,
-                ParallelCompression = png.ParallelCompression,
-                ParallelThreshold = png.ParallelThreshold,
-                ParallelBandSize = png.ParallelBandSize,
-                FrameCount = raster.FrameCount,
-            };
-        }
-
-        if (c.Unseekable == Unseekable.Refused)
-        {
-            Assert.Throws<NotSupportedException>(() => Streamed(raster, c with { Options = () => options }, seekable: false, frames));
-            return;
-        }
-
-        Verify(Streamed(raster, c with { Options = () => options }, seekable: false, frames), c.Unseekable);
-
-        void Verify(byte[] actual, Unseekable how)
-        {
-            if (how == Unseekable.SameBytes)
-            {
-                Assert.True(expected.AsSpan().SequenceEqual(actual), $"{because}: the bytes differ from Save's.");
-                return;
-            }
-
-            using Raster<Rgba8> want = Raster.Load<Rgba8>(expected);
-            using Raster<Rgba8> got = Raster.Load<Rgba8>(actual);
-            StreamingCorpus.Equal(want, 0, got, because);
-        }
-    }
-
-    /// <summary>What Save writes for the first frame alone, which is what a still image streamed by rows is.</summary>
-    private static byte[] SaveFirst<TPixel>(Raster<TPixel> raster, Case c)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        using Raster<TPixel> first = raster.CopyFrame(0);
-        using MemoryStream saved = new();
-        first.Save(saved, c.Format, c.Options());
-        return saved.ToArray();
-    }
-
-    private static byte[] Streamed<TPixel>(Raster<TPixel> raster, Case c, bool seekable, bool frames)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        using MemoryStream memory = new();
-        Stream target = seekable ? memory : new NonSeekableWriteStream(memory);
-        using (RasterEncoder<TPixel> encoder = RasterEncoder.Create<TPixel>(target, c.Format, raster.Width, raster.Height, c.Options(), raster.Metadata))
-        {
-            if (frames)
-            {
-                for (int f = 0; f < raster.FrameCount; f++)
-                {
-                    using Raster<TPixel> frame = raster.CopyFrame(f);
-                    encoder.WriteFrame(frame, raster.Frames[f].Metadata);
-                }
-            }
-            else
-            {
-                using Raster<TPixel> band = Raster.Create<TPixel>(raster.Width, 7);
-                for (int y = 0; y < raster.Height; y += 7)
-                {
-                    int rows = Math.Min(7, raster.Height - y);
-                    for (int r = 0; r < rows; r++)
-                    {
-                        raster.Row(y + r).CopyTo(band.Row(r));
-                    }
-
-                    encoder.WriteRows(band, rows);
-                }
-            }
-
-            encoder.Complete();
-        }
-
-        return memory.ToArray();
-    }
-
-    private enum Pixel
-    {
-        Rgba8,
-        Rgb8,
-        RgbF32,
-    }
-
-    private enum Unseekable
-    {
-        SameBytes,
-        SamePixels,
-        Refused,
-    }
-
-    private sealed record Case(FormatInfo Format, Func<WriterOptions> Options, Pixel Pixel, Unseekable Unseekable = Unseekable.SameBytes, Unseekable Seekable = Unseekable.SameBytes);
-
     /// <summary>A format from outside with only the frozen writer interface: every row of every frame, raw.</summary>
     private sealed class RawWriter : IFormatWriter
     {
@@ -479,3 +488,18 @@ public class EncodeTests
         public override void SetLength(long value) => throw new NotSupportedException();
     }
 }
+
+/// <summary>Part 1 of 5 of <see cref="EncodeTests{TPart}"/>.</summary>
+public sealed class EncodeTestsPart0 : EncodeTests<Part0>;
+
+/// <summary>Part 2 of 5 of <see cref="EncodeTests{TPart}"/>.</summary>
+public sealed class EncodeTestsPart1 : EncodeTests<Part1>;
+
+/// <summary>Part 3 of 5 of <see cref="EncodeTests{TPart}"/>.</summary>
+public sealed class EncodeTestsPart2 : EncodeTests<Part2>;
+
+/// <summary>Part 4 of 5 of <see cref="EncodeTests{TPart}"/>.</summary>
+public sealed class EncodeTestsPart3 : EncodeTests<Part3>;
+
+/// <summary>Part 5 of 5 of <see cref="EncodeTests{TPart}"/>.</summary>
+public sealed class EncodeTestsPart4 : EncodeTests<Part4>;

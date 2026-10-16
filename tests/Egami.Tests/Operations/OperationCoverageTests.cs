@@ -3,6 +3,8 @@ using System.Buffers;
 using Egami.Operations;
 using Egami.Pixels;
 
+using static Egami.Tests.Operations.OperationCoverageTests;
+
 namespace Egami.Tests.Operations;
 
 /// <summary>
@@ -10,14 +12,131 @@ namespace Egami.Tests.Operations;
 /// must give the same pixels on contiguous, chunked and caller-owned memory and at sizes down to one pixel, and its managed
 /// allocations must not grow with the image.
 /// </summary>
-public sealed class OperationCoverageTests : IDisposable
+public abstract class OperationCoverageTests<TPart> : IDisposable
+    where TPart : IPart
 {
+    private const int PartCount = 4;
+
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private readonly Raster<Rgba8> _logo = Logo();
 
-    public static TheoryData<string> Operations() => [.. Chains.Keys];
+    public static TheoryData<string> Operations() => Parts.Take(Chains.Keys, TPart.Index, PartCount);
 
+    [Theory]
+    [MemberData(nameof(Operations))]
+    public void EveryPlaneShapeGivesTheSamePixels(string operation)
+    {
+        foreach ((int width, int height) in new[] { (1, 1), (1, 17), (17, 1), (13, 7), (130, 70) })
+        {
+            using Raster<Rgba8> contiguous = Noise(width, height, EgamiContext.Default);
+            Action<RasterOps> chain = Chains[operation](new Size(width, height), _logo);
+            using Raster<Rgba8> expected = contiguous.Derive(chain, Ct);
+
+            // Chunked: rows spread over many small blocks, one thread.
+            EgamiContext chunked = EgamiContext.Default with { Memory = new SmallBlocks(96), MaxParallelism = 1 };
+            using Raster<Rgba8> blocks = Noise(width, height, chunked);
+            blocks.Apply(chain, Ct);
+            AssertSame(expected, blocks, $"{operation} {width}×{height} chunked");
+
+            // Caller-owned memory with a stride wider than the image, changed in place.
+            Rgba8[] memory = new Rgba8[(width + 5) * height];
+            using Raster<Rgba8> wrapped = Raster.Wrap<Rgba8>(memory, width, height, width + 5);
+            for (int y = 0; y < height; y++)
+            {
+                contiguous.Row(y).CopyTo(wrapped.Row(y));
+            }
+
+            wrapped.Apply(chain, Ct);
+            AssertSame(expected, wrapped, $"{operation} {width}×{height} wrapped");
+
+            // Other pixel types run the same chain without failing and keep its size.
+            using Raster<Rgb8> rgb = contiguous.As<Rgb8>();
+            using Raster<Rgb8> rgbResult = rgb.Derive(chain, Ct);
+            using Raster<Gray16> gray = contiguous.As<Gray16>();
+            using Raster<Gray16> grayResult = gray.Derive(chain, Ct);
+            using Raster<RgbaF32> floats = contiguous.As<RgbaF32>();
+            using Raster<RgbaF32> floatResult = floats.Derive(chain, Ct);
+            Assert.Equal((expected.Width, expected.Height), (rgbResult.Width, rgbResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (grayResult.Width, grayResult.Height));
+            Assert.Equal((expected.Width, expected.Height), (floatResult.Width, floatResult.Height));
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Operations))]
+    public void AllocationsDoNotGrowWithTheImage(string operation)
+    {
+        // One thread, so every allocation is on this one; pixel memory comes from the memory source, not the managed heap.
+        EgamiContext context = EgamiContext.Default with { MaxParallelism = 1 };
+        using Raster<Rgba8> small = Noise(120, 90, context);
+        using Raster<Rgba8> large = Noise(1200, 900, context);
+
+        // Tests running alongside can empty the shared array pool for a while, so an over-budget measurement is taken again.
+        long smallBytes = 0;
+        long largeBytes = 0;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            smallBytes = Allocated(small, Chains[operation](new Size(120, 90), _logo));
+            largeBytes = Allocated(large, Chains[operation](new Size(1200, 900), _logo));
+            if (largeBytes - smallBytes < 1024 && largeBytes < 8 * 1024)
+            {
+                break;
+            }
+        }
+
+        Assert.True(largeBytes - smallBytes < 1024, $"{operation}: {largeBytes:N0} bytes for 1200×900 against {smallBytes:N0} for 120×90.");
+        Assert.True(largeBytes < 8 * 1024, $"{operation}: {largeBytes:N0} bytes per call.");
+    }
+
+    public void Dispose()
+    {
+        _logo.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>The fewest bytes one Derive allocated over several tries; see AllocationTests for why the minimum.</summary>
+    private static long Allocated(Raster<Rgba8> raster, Action<RasterOps> chain)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            raster.Derive(chain, Ct).Dispose();
+        }
+
+        long fewest = long.MaxValue;
+        for (int i = 0; i < 6; i++)
+        {
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            raster.Derive(chain, Ct).Dispose();
+            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
+        }
+
+        return fewest;
+    }
+
+    private static void AssertSame(Raster<Rgba8> expected, Raster<Rgba8> actual, string label)
+    {
+        Assert.True(expected.Width == actual.Width && expected.Height == actual.Height, $"{label}: {actual.Width}×{actual.Height}");
+        for (int y = 0; y < expected.Height; y++)
+        {
+            Assert.True(expected.Row(y).SequenceEqual(actual.Row(y)), $"{label}: row {y} differs");
+        }
+    }
+
+    private sealed class SmallBlocks(int maxBlockBytes) : IPixelMemorySource
+    {
+        public int MaxBlockBytes => maxBlockBytes;
+
+        public IMemoryOwner<byte> Allocate(int byteLength, ClearMode clear)
+        {
+            return PooledPixelMemorySource.Shared.Allocate(byteLength, clear);
+        }
+    }
+}
+
+/// <summary>The operation chains and test images the coverage tests share with the other operation tests.</summary>
+internal static class OperationCoverageTests
+{
     private static readonly Lut3D Grade = Lut3D.FromFunction(c => new System.Numerics.Vector3(c.Y, MathF.Sqrt(c.X), c.Z * c.Z), 9);
 
     /// <summary>One chain per operation and mode, each sized relative to its input so it runs on any shape.</summary>
@@ -141,84 +260,6 @@ public sealed class OperationCoverageTests : IDisposable
         ["LocalContrast"] = (_, _) => ops => ops.LocalContrast(0.3f, 0.4f),
     };
 
-    [Theory]
-    [MemberData(nameof(Operations))]
-    public void EveryPlaneShapeGivesTheSamePixels(string operation)
-    {
-        foreach ((int width, int height) in new[] { (1, 1), (1, 17), (17, 1), (13, 7), (130, 70) })
-        {
-            using Raster<Rgba8> contiguous = Noise(width, height, EgamiContext.Default);
-            Action<RasterOps> chain = Chains[operation](new Size(width, height), _logo);
-            using Raster<Rgba8> expected = contiguous.Derive(chain, Ct);
-
-            // Chunked: rows spread over many small blocks, one thread.
-            EgamiContext chunked = EgamiContext.Default with { Memory = new SmallBlocks(96), MaxParallelism = 1 };
-            using Raster<Rgba8> blocks = Noise(width, height, chunked);
-            blocks.Apply(chain, Ct);
-            AssertSame(expected, blocks, $"{operation} {width}×{height} chunked");
-
-            // Caller-owned memory with a stride wider than the image, changed in place.
-            Rgba8[] memory = new Rgba8[(width + 5) * height];
-            using Raster<Rgba8> wrapped = Raster.Wrap<Rgba8>(memory, width, height, width + 5);
-            for (int y = 0; y < height; y++)
-            {
-                contiguous.Row(y).CopyTo(wrapped.Row(y));
-            }
-
-            wrapped.Apply(chain, Ct);
-            AssertSame(expected, wrapped, $"{operation} {width}×{height} wrapped");
-
-            // Other pixel types run the same chain without failing and keep its size.
-            using Raster<Rgb8> rgb = contiguous.As<Rgb8>();
-            using Raster<Rgb8> rgbResult = rgb.Derive(chain, Ct);
-            using Raster<Gray16> gray = contiguous.As<Gray16>();
-            using Raster<Gray16> grayResult = gray.Derive(chain, Ct);
-            using Raster<RgbaF32> floats = contiguous.As<RgbaF32>();
-            using Raster<RgbaF32> floatResult = floats.Derive(chain, Ct);
-            Assert.Equal((expected.Width, expected.Height), (rgbResult.Width, rgbResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (grayResult.Width, grayResult.Height));
-            Assert.Equal((expected.Width, expected.Height), (floatResult.Width, floatResult.Height));
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(Operations))]
-    public void AllocationsDoNotGrowWithTheImage(string operation)
-    {
-        // One thread, so every allocation is on this one; pixel memory comes from the memory source, not the managed heap.
-        EgamiContext context = EgamiContext.Default with { MaxParallelism = 1 };
-        using Raster<Rgba8> small = Noise(120, 90, context);
-        using Raster<Rgba8> large = Noise(1200, 900, context);
-        long smallBytes = Allocated(small, Chains[operation](new Size(120, 90), _logo));
-        long largeBytes = Allocated(large, Chains[operation](new Size(1200, 900), _logo));
-        Assert.True(largeBytes - smallBytes < 1024, $"{operation}: {largeBytes:N0} bytes for 1200×900 against {smallBytes:N0} for 120×90.");
-        Assert.True(largeBytes < 8 * 1024, $"{operation}: {largeBytes:N0} bytes per call.");
-    }
-
-    public void Dispose()
-    {
-        _logo.Dispose();
-    }
-
-    /// <summary>The fewest bytes one Derive allocated over several tries; see AllocationTests for why the minimum.</summary>
-    private static long Allocated(Raster<Rgba8> raster, Action<RasterOps> chain)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            raster.Derive(chain, Ct).Dispose();
-        }
-
-        long fewest = long.MaxValue;
-        for (int i = 0; i < 6; i++)
-        {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            raster.Derive(chain, Ct).Dispose();
-            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-        }
-
-        return fewest;
-    }
-
     /// <summary>A displacement map of the given size, made once per size and kept for the test run.</summary>
     private static Raster<Rgba8> MapFor(Size size)
     {
@@ -228,15 +269,6 @@ public sealed class OperationCoverageTests : IDisposable
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Size, Raster<Rgba8>> Maps = new();
 
     private static int Half(int size) => Math.Max(1, size / 2);
-
-    private static void AssertSame(Raster<Rgba8> expected, Raster<Rgba8> actual, string label)
-    {
-        Assert.True(expected.Width == actual.Width && expected.Height == actual.Height, $"{label}: {actual.Width}×{actual.Height}");
-        for (int y = 0; y < expected.Height; y++)
-        {
-            Assert.True(expected.Row(y).SequenceEqual(actual.Row(y)), $"{label}: row {y} differs");
-        }
-    }
 
     internal static Raster<Rgba8> Noise(int width, int height, EgamiContext context)
     {
@@ -268,14 +300,16 @@ public sealed class OperationCoverageTests : IDisposable
 
         return logo;
     }
-
-    private sealed class SmallBlocks(int maxBlockBytes) : IPixelMemorySource
-    {
-        public int MaxBlockBytes => maxBlockBytes;
-
-        public IMemoryOwner<byte> Allocate(int byteLength, ClearMode clear)
-        {
-            return PooledPixelMemorySource.Shared.Allocate(byteLength, clear);
-        }
-    }
 }
+
+/// <summary>Part 1 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart0 : OperationCoverageTests<Part0>;
+
+/// <summary>Part 2 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart1 : OperationCoverageTests<Part1>;
+
+/// <summary>Part 3 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart2 : OperationCoverageTests<Part2>;
+
+/// <summary>Part 4 of 4 of <see cref="OperationCoverageTests{TPart}"/>.</summary>
+public sealed class OperationCoverageTestsPart3 : OperationCoverageTests<Part3>;

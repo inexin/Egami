@@ -12,8 +12,11 @@ namespace Egami.Tests.Streaming;
 /// Phase 2.2 task 11: Transcode gives the pixels of loading with the options it chose and running the rest of the chain, holds a
 /// few bands, and refuses operations that cannot stream before writing anything.
 /// </summary>
-public class TranscodeTests
+public abstract class TranscodeTests<TPart>
+    where TPart : IPart
 {
+    private const int PartCount = 5;
+
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static readonly Dictionary<string, Action<RasterOps>> Chains = new()
@@ -43,7 +46,7 @@ public class TranscodeTests
             }
         }
 
-        return data;
+        return Parts.Take(data, TPart.Index, PartCount);
     }
 
     [Theory]
@@ -96,6 +99,12 @@ public class TranscodeTests
             StreamingCorpus.Equal(want, f, frame, $"{file} {name}");
         }
     }
+}
+
+/// <summary>The tests of <see cref="TranscodeTests{TPart}"/> that run once rather than in parts.</summary>
+public class TranscodeTests
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
     public void ALeadingResizeShrinksOnLoadAndALeadingCropIsARegion()
@@ -196,3 +205,18 @@ public class TranscodeTests
         Assert.Equal(0, peak.LeftBytes);
     }
 }
+
+/// <summary>Part 1 of 5 of <see cref="TranscodeTests{TPart}"/>.</summary>
+public sealed class TranscodeTestsPart0 : TranscodeTests<Part0>;
+
+/// <summary>Part 2 of 5 of <see cref="TranscodeTests{TPart}"/>.</summary>
+public sealed class TranscodeTestsPart1 : TranscodeTests<Part1>;
+
+/// <summary>Part 3 of 5 of <see cref="TranscodeTests{TPart}"/>.</summary>
+public sealed class TranscodeTestsPart2 : TranscodeTests<Part2>;
+
+/// <summary>Part 4 of 5 of <see cref="TranscodeTests{TPart}"/>.</summary>
+public sealed class TranscodeTestsPart3 : TranscodeTests<Part3>;
+
+/// <summary>Part 5 of 5 of <see cref="TranscodeTests{TPart}"/>.</summary>
+public sealed class TranscodeTestsPart4 : TranscodeTests<Part4>;

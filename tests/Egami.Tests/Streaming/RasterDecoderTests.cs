@@ -94,9 +94,12 @@ public class NaturalConversionTests
 }
 
 /// <summary>Phase 2.2 task 2: every file decodes through the session exactly as Load decodes it.</summary>
-public class RasterDecoderTests
+public abstract class RasterDecoderTests<TPart>
+    where TPart : IPart
 {
-    public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
+    private const int PartCount = 2;
+
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
 
     [Theory]
     [MemberData(nameof(Files))]
@@ -204,6 +207,42 @@ public class RasterDecoderTests
         Assert.Equal(expected.Frames[0].Metadata.Delay, target.Frames[0].Metadata.Delay);
     }
 
+    private static long BytesOf(Raster raster) => (long)raster.Width * raster.Height * raster.Layout.BytesPerPixel * raster.FrameCount;
+
+    private static void CheckFrames<TPixel>(byte[] data)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using Raster<TPixel> expected = Raster.Load<TPixel>(data);
+        using RasterDecoder decoder = RasterDecoder.Open(data);
+        using Raster<TPixel> target = Raster.Create<TPixel>(decoder.Info.Width, decoder.Info.Height);
+        for (int frame = 0; frame < expected.FrameCount; frame++)
+        {
+            FrameMetadata? metadata;
+            if (frame % 2 == 0)
+            {
+                metadata = decoder.ReadFrame(target);
+                StreamingCorpus.Equal(expected, frame, target, typeof(TPixel).Name);
+            }
+            else
+            {
+                using Raster<TPixel>? own = decoder.ReadFrame<TPixel>();
+                Assert.NotNull(own);
+                StreamingCorpus.Equal(expected, frame, own, typeof(TPixel).Name);
+                metadata = own.Frames[0].Metadata;
+            }
+
+            FrameMetadata e = expected.Frames[frame].Metadata;
+            Assert.NotNull(metadata);
+            Assert.Equal((e.Delay, e.Disposal, e.Blend, e.Bounds), (metadata.Delay, metadata.Disposal, metadata.Blend, metadata.Bounds));
+        }
+
+        Assert.Null(decoder.ReadFrame(target));
+    }
+}
+
+/// <summary>The tests of <see cref="RasterDecoderTests{TPart}"/> that run once rather than in parts.</summary>
+public class RasterDecoderTests
+{
     [Fact]
     public void LoadIntoAWrongSizeNamesBothSizes()
     {
@@ -272,52 +311,23 @@ public class RasterDecoderTests
         StreamingCorpus.Equal(expected, 0, frame, file);
         Assert.Null(decoder.ReadFrame<Rgba8>());
     }
-
-    private static long BytesOf(Raster raster) => (long)raster.Width * raster.Height * raster.Layout.BytesPerPixel * raster.FrameCount;
-
-    private static void CheckFrames<TPixel>(byte[] data)
-        where TPixel : unmanaged, IPixelType<TPixel>
-    {
-        using Raster<TPixel> expected = Raster.Load<TPixel>(data);
-        using RasterDecoder decoder = RasterDecoder.Open(data);
-        using Raster<TPixel> target = Raster.Create<TPixel>(decoder.Info.Width, decoder.Info.Height);
-        for (int frame = 0; frame < expected.FrameCount; frame++)
-        {
-            FrameMetadata? metadata;
-            if (frame % 2 == 0)
-            {
-                metadata = decoder.ReadFrame(target);
-                StreamingCorpus.Equal(expected, frame, target, typeof(TPixel).Name);
-            }
-            else
-            {
-                using Raster<TPixel>? own = decoder.ReadFrame<TPixel>();
-                Assert.NotNull(own);
-                StreamingCorpus.Equal(expected, frame, own, typeof(TPixel).Name);
-                metadata = own.Frames[0].Metadata;
-            }
-
-            FrameMetadata e = expected.Frames[frame].Metadata;
-            Assert.NotNull(metadata);
-            Assert.Equal((e.Delay, e.Disposal, e.Blend, e.Bounds), (metadata.Delay, metadata.Disposal, metadata.Blend, metadata.Bounds));
-        }
-
-        Assert.Null(decoder.ReadFrame(target));
-    }
 }
 
 /// <summary>Region and reduced decoding, through Load and the session, against Load then Crop and a scalar box-average reference.</summary>
-public class RegionAndReductionTests
+public abstract class RegionAndReductionTests<TPart>
+    where TPart : IPart
 {
-    public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
+    private const int PartCount = 5;
+
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
 
     // A TIFF pyramid's levels serve reduced decodes, so its reductions are its smaller pages, not box averages.
-    public static TheoryData<string> NotJpeg() => [.. StreamingCorpus.Files.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif" && !IsIconSet(f))];
+    public static TheoryData<string> NotJpeg() => Parts.Take(StreamingCorpus.Files.Where(f => !IsJpeg(f) && !IsJpeg2000(f) && f != "tiff/pyramid-exact.tif" && !IsIconSet(f)), TPart.Index, PartCount);
 
-    public static TheoryData<string> Jpeg() => [.. StreamingCorpus.Files.Where(IsJpeg)];
+    public static TheoryData<string> Jpeg() => Parts.Take(StreamingCorpus.Files.Where(IsJpeg), TPart.Index, PartCount);
 
     /// <summary>JPEG 2000 files whose image starts at the grid's origin, so every wavelet level can be dropped.</summary>
-    public static TheoryData<string> Jpeg2000() => [.. StreamingCorpus.Files.Where(f => IsJpeg2000(f) && !f.Contains("offsets", StringComparison.Ordinal))];
+    public static TheoryData<string> Jpeg2000() => Parts.Take(StreamingCorpus.Files.Where(f => IsJpeg2000(f) && !f.Contains("offsets", StringComparison.Ordinal)), TPart.Index, PartCount);
 
     [Theory]
     [MemberData(nameof(Files))]
@@ -435,39 +445,6 @@ public class RegionAndReductionTests
                 StreamingCorpus.Equal(expected, 0, actual, $"{file} {minimum} {region} scale {scale} box {k}");
             }
         }
-    }
-
-    [Fact]
-    public void ARegionThatMissesTheImageThrows()
-    {
-        byte[] data = StreamingCorpus.Read("ops/shapes.png");
-        Assert.Throws<ArgumentOutOfRangeException>(() => Raster.Load(data, options: new ReaderOptions { Region = new Rect(200, 0, 5, 5) }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => Raster.Probe(data, options: new ReaderOptions { Region = new Rect(-10, -10, 10, 10) }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => RasterDecoder.Open(data, options: new ReaderOptions { Region = new Rect(5, 5, 0, 3) }));
-    }
-
-    [Fact]
-    public void ARegionDropsTheStoredLayoutFromFrameMetadata()
-    {
-        string file = StreamingCorpus.Files.First(f => f.StartsWith("apng/", StringComparison.Ordinal) && Raster.Probe(StreamingCorpus.Read(f)).FrameCount > 1);
-        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(StreamingCorpus.Read(file), options: new ReaderOptions { Region = new Rect(1, 1, 4, 4) });
-        Assert.All(loaded.Frames, f => Assert.Null(f.Metadata.Bounds));
-    }
-
-    [Fact]
-    public void ProbeReportsTheWorkingBytesOfTheBuffer()
-    {
-        // A run-length BMP is bottom-up, so it is decoded into a buffer first.
-        byte[] data = StreamingCorpus.Read("bmp/os2-rle24.bmp");
-        RasterInfo full = Raster.Probe(data);
-        Assert.Equal(RasterAccess.Buffered, full.Access);
-        Assert.Equal((long)full.Width * full.Height * full.Layout.BytesPerPixel, full.WorkingBytes);
-        RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(full.Width / 4, full.Height / 4) });
-        Assert.True(reduced.WorkingBytes > full.WorkingBytes);
-        byte[] jpeg = StreamingCorpus.Read("jpeg/egret-420.jpg");
-        RasterInfo jpegFull = Raster.Probe(jpeg);
-        Assert.Equal(RasterAccess.Streamed, jpegFull.Access);
-        Assert.True(Raster.Probe(jpeg, options: new ReaderOptions { MinimumSize = new Size(30, 40) }).WorkingBytes < jpegFull.WorkingBytes);
     }
 
     private static void CheckReduced<TPixel>(byte[] data, ReaderOptions options, Raster<RgbaF32> natural, Rect region, int factor, string file)
@@ -613,3 +590,61 @@ public class RegionAndReductionTests
         }
     }
 }
+
+/// <summary>The tests of <see cref="RegionAndReductionTests{TPart}"/> that run once rather than in parts.</summary>
+public class RegionAndReductionTests
+{
+    [Fact]
+    public void ARegionThatMissesTheImageThrows()
+    {
+        byte[] data = StreamingCorpus.Read("ops/shapes.png");
+        Assert.Throws<ArgumentOutOfRangeException>(() => Raster.Load(data, options: new ReaderOptions { Region = new Rect(200, 0, 5, 5) }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Raster.Probe(data, options: new ReaderOptions { Region = new Rect(-10, -10, 10, 10) }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => RasterDecoder.Open(data, options: new ReaderOptions { Region = new Rect(5, 5, 0, 3) }));
+    }
+
+    [Fact]
+    public void ARegionDropsTheStoredLayoutFromFrameMetadata()
+    {
+        string file = StreamingCorpus.Files.First(f => f.StartsWith("apng/", StringComparison.Ordinal) && Raster.Probe(StreamingCorpus.Read(f)).FrameCount > 1);
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(StreamingCorpus.Read(file), options: new ReaderOptions { Region = new Rect(1, 1, 4, 4) });
+        Assert.All(loaded.Frames, f => Assert.Null(f.Metadata.Bounds));
+    }
+
+    [Fact]
+    public void ProbeReportsTheWorkingBytesOfTheBuffer()
+    {
+        // A run-length BMP is bottom-up, so it is decoded into a buffer first.
+        byte[] data = StreamingCorpus.Read("bmp/os2-rle24.bmp");
+        RasterInfo full = Raster.Probe(data);
+        Assert.Equal(RasterAccess.Buffered, full.Access);
+        Assert.Equal((long)full.Width * full.Height * full.Layout.BytesPerPixel, full.WorkingBytes);
+        RasterInfo reduced = Raster.Probe(data, options: new ReaderOptions { MinimumSize = new Size(full.Width / 4, full.Height / 4) });
+        Assert.True(reduced.WorkingBytes > full.WorkingBytes);
+        byte[] jpeg = StreamingCorpus.Read("jpeg/egret-420.jpg");
+        RasterInfo jpegFull = Raster.Probe(jpeg);
+        Assert.Equal(RasterAccess.Streamed, jpegFull.Access);
+        Assert.True(Raster.Probe(jpeg, options: new ReaderOptions { MinimumSize = new Size(30, 40) }).WorkingBytes < jpegFull.WorkingBytes);
+    }
+}
+
+/// <summary>Part 1 of 2 of <see cref="RasterDecoderTests{TPart}"/>.</summary>
+public sealed class RasterDecoderTestsPart0 : RasterDecoderTests<Part0>;
+
+/// <summary>Part 2 of 2 of <see cref="RasterDecoderTests{TPart}"/>.</summary>
+public sealed class RasterDecoderTestsPart1 : RasterDecoderTests<Part1>;
+
+/// <summary>Part 1 of 5 of <see cref="RegionAndReductionTests{TPart}"/>.</summary>
+public sealed class RegionAndReductionTestsPart0 : RegionAndReductionTests<Part0>;
+
+/// <summary>Part 2 of 5 of <see cref="RegionAndReductionTests{TPart}"/>.</summary>
+public sealed class RegionAndReductionTestsPart1 : RegionAndReductionTests<Part1>;
+
+/// <summary>Part 3 of 5 of <see cref="RegionAndReductionTests{TPart}"/>.</summary>
+public sealed class RegionAndReductionTestsPart2 : RegionAndReductionTests<Part2>;
+
+/// <summary>Part 4 of 5 of <see cref="RegionAndReductionTests{TPart}"/>.</summary>
+public sealed class RegionAndReductionTestsPart3 : RegionAndReductionTests<Part3>;
+
+/// <summary>Part 5 of 5 of <see cref="RegionAndReductionTests{TPart}"/>.</summary>
+public sealed class RegionAndReductionTestsPart4 : RegionAndReductionTests<Part4>;

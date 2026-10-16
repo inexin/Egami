@@ -9,8 +9,11 @@ namespace Egami.Tests.Streaming;
 /// Streaming reads honour <see cref="ReaderOptions.ConvertColorTo"/>: the decoder's rows, type, metadata and Transcode equal a
 /// load with the same options, which loads and then converts.
 /// </summary>
-public class StreamingColorTests
+public abstract class StreamingColorTests<TPart>
+    where TPart : IPart
 {
+    private const int PartCount = 4;
+
     private static readonly Dictionary<string, ColorProfile> Targets = new()
     {
         ["p3"] = ColorProfile.DisplayP3,
@@ -29,7 +32,7 @@ public class StreamingColorTests
             }
         }
 
-        return data;
+        return Parts.Take(data, TPart.Index, PartCount);
     }
 
     [Theory]
@@ -70,3 +73,15 @@ public class StreamingColorTests
         StreamingCorpus.Equal(want, 0, got, $"{file} to {target}");
     }
 }
+
+/// <summary>Part 1 of 4 of <see cref="StreamingColorTests{TPart}"/>.</summary>
+public sealed class StreamingColorTestsPart0 : StreamingColorTests<Part0>;
+
+/// <summary>Part 2 of 4 of <see cref="StreamingColorTests{TPart}"/>.</summary>
+public sealed class StreamingColorTestsPart1 : StreamingColorTests<Part1>;
+
+/// <summary>Part 3 of 4 of <see cref="StreamingColorTests{TPart}"/>.</summary>
+public sealed class StreamingColorTestsPart2 : StreamingColorTests<Part2>;
+
+/// <summary>Part 4 of 4 of <see cref="StreamingColorTests{TPart}"/>.</summary>
+public sealed class StreamingColorTestsPart3 : StreamingColorTests<Part3>;

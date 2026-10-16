@@ -12,8 +12,11 @@ namespace Egami.Tests.Operations;
 /// in the allocation budget. CMYK filters work on the four inks by design, so only CMYK geometry and color operations are
 /// compared with the RGB float path; CmykTests checks the ink filtering itself.
 /// </summary>
-public sealed class EveryPixelTypeTests : IDisposable
+public abstract class EveryPixelTypeTests<TPart> : IDisposable
+    where TPart : IPart
 {
+    private const int PartCount = 6;
+
     private static readonly Type[] NewTypes =
     [
         typeof(Rgb16), typeof(GrayAlpha16), typeof(Argb8), typeof(Abgr8), typeof(Alpha8), typeof(RgbaF16), typeof(RgbF32),
@@ -36,7 +39,7 @@ public sealed class EveryPixelTypeTests : IDisposable
             }
         }
 
-        return data;
+        return Parts.Take(data, TPart.Index, PartCount);
     }
 
     [Theory]
@@ -56,11 +59,12 @@ public sealed class EveryPixelTypeTests : IDisposable
     public void Dispose()
     {
         _logo.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void Invoke(string method, string type, string operation)
     {
-        MethodInfo m = typeof(EveryPixelTypeTests).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)!;
+        MethodInfo m = typeof(EveryPixelTypeTests<TPart>).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)!;
         try
         {
             m.MakeGenericMethod(NewTypes.Single(t => t.Name == type)).Invoke(this, [operation]);
@@ -175,8 +179,20 @@ public sealed class EveryPixelTypeTests : IDisposable
         using Raster<Rgba8> largeSource = OperationCoverageTests.Noise(480, 360, context);
         using Raster<T> small = smallSource.As<T>();
         using Raster<T> large = largeSource.As<T>();
-        long smallBytes = Allocated(small, OperationCoverageTests.Chains[operation](new Size(120, 90), _logo));
-        long largeBytes = Allocated(large, OperationCoverageTests.Chains[operation](new Size(480, 360), _logo));
+
+        // Tests running alongside can empty the shared array pool for a while, so an over-budget measurement is taken again.
+        long smallBytes = 0;
+        long largeBytes = 0;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            smallBytes = Allocated(small, OperationCoverageTests.Chains[operation](new Size(120, 90), _logo));
+            largeBytes = Allocated(large, OperationCoverageTests.Chains[operation](new Size(480, 360), _logo));
+            if (largeBytes - smallBytes < 1024 && largeBytes < 8 * 1024)
+            {
+                break;
+            }
+        }
+
         Assert.True(largeBytes - smallBytes < 1024, $"{operation} on {typeof(T).Name}: {largeBytes:N0} bytes for 480×360 against {smallBytes:N0} for 120×90.");
         Assert.True(largeBytes < 8 * 1024, $"{operation} on {typeof(T).Name}: {largeBytes:N0} bytes per call.");
     }
@@ -200,3 +216,21 @@ public sealed class EveryPixelTypeTests : IDisposable
         return fewest;
     }
 }
+
+/// <summary>Part 1 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart0 : EveryPixelTypeTests<Part0>;
+
+/// <summary>Part 2 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart1 : EveryPixelTypeTests<Part1>;
+
+/// <summary>Part 3 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart2 : EveryPixelTypeTests<Part2>;
+
+/// <summary>Part 4 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart3 : EveryPixelTypeTests<Part3>;
+
+/// <summary>Part 5 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart4 : EveryPixelTypeTests<Part4>;
+
+/// <summary>Part 6 of 6 of <see cref="EveryPixelTypeTests{TPart}"/>.</summary>
+public sealed class EveryPixelTypeTestsPart5 : EveryPixelTypeTests<Part5>;

@@ -5,8 +5,11 @@ using Egami.Pixels;
 namespace Egami.Tests.Streaming;
 
 /// <summary>Phase 2.2 task 7: PNG, APNG and GIF decode while their bytes arrive, to exactly what Load gives, whatever the splits.</summary>
-public class IncrementalTests
+public abstract class IncrementalTests<TPart>
+    where TPart : IPart
 {
+    private const int PartCount = 5;
+
     public static TheoryData<string, int> Cases()
     {
         TheoryData<string, int> data = [];
@@ -18,10 +21,10 @@ public class IncrementalTests
             }
         }
 
-        return data;
+        return Parts.Take(data, TPart.Index, PartCount);
     }
 
-    public static TheoryData<string> Others() => [.. StreamingCorpus.Files];
+    public static TheoryData<string> Others() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
 
     [Theory]
     [MemberData(nameof(Cases))]
@@ -171,20 +174,6 @@ public class IncrementalTests
         }
     }
 
-    [Fact]
-    public void InfoWaitsForTheHeader()
-    {
-        byte[] data = StreamingCorpus.Read("ops/egret.png");
-        using RasterDecoder decoder = RasterDecoder.OpenIncremental();
-        decoder.Append(data.AsSpan(0, 20));
-        Assert.False(decoder.HeaderRead);
-        Assert.Equal(DecodeStatus.NeedsInput, decoder.Status);
-        Assert.Throws<InvalidOperationException>(() => decoder.Info);
-        decoder.Append(data.AsSpan(20, 2000));
-        Assert.True(decoder.HeaderRead);
-        Assert.Equal((480, 640), (decoder.Info.Width, decoder.Info.Height));
-    }
-
     private static void Pump(RasterDecoder decoder, ref Raster<Rgba8>? target, List<Raster<Rgba8>> frames)
     {
         if (!decoder.HeaderRead)
@@ -197,6 +186,24 @@ public class IncrementalTests
         {
             frames.Add(target.Copy());
         }
+    }
+}
+
+/// <summary>The tests of <see cref="IncrementalTests{TPart}"/> that run once rather than in parts.</summary>
+public class IncrementalTests
+{
+    [Fact]
+    public void InfoWaitsForTheHeader()
+    {
+        byte[] data = StreamingCorpus.Read("ops/egret.png");
+        using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+        decoder.Append(data.AsSpan(0, 20));
+        Assert.False(decoder.HeaderRead);
+        Assert.Equal(DecodeStatus.NeedsInput, decoder.Status);
+        Assert.Throws<InvalidOperationException>(() => decoder.Info);
+        decoder.Append(data.AsSpan(20, 2000));
+        Assert.True(decoder.HeaderRead);
+        Assert.Equal((480, 640), (decoder.Info.Width, decoder.Info.Height));
     }
 }
 
@@ -318,3 +325,18 @@ public class PreviewTests
         }
     }
 }
+
+/// <summary>Part 1 of 5 of <see cref="IncrementalTests{TPart}"/>.</summary>
+public sealed class IncrementalTestsPart0 : IncrementalTests<Part0>;
+
+/// <summary>Part 2 of 5 of <see cref="IncrementalTests{TPart}"/>.</summary>
+public sealed class IncrementalTestsPart1 : IncrementalTests<Part1>;
+
+/// <summary>Part 3 of 5 of <see cref="IncrementalTests{TPart}"/>.</summary>
+public sealed class IncrementalTestsPart2 : IncrementalTests<Part2>;
+
+/// <summary>Part 4 of 5 of <see cref="IncrementalTests{TPart}"/>.</summary>
+public sealed class IncrementalTestsPart3 : IncrementalTests<Part3>;
+
+/// <summary>Part 5 of 5 of <see cref="IncrementalTests{TPart}"/>.</summary>
+public sealed class IncrementalTestsPart4 : IncrementalTests<Part4>;

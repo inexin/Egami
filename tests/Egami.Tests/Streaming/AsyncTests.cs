@@ -5,11 +5,14 @@ using Egami.Streaming;
 namespace Egami.Tests.Streaming;
 
 /// <summary>Phase 2.2 task 9: asynchronous loads decode as the stream arrives, to Load's pixels, without holding the file.</summary>
-public class AsyncTests
+public abstract class AsyncTests<TPart>
+    where TPart : IPart
 {
+    private const int PartCount = 2;
+
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    public static TheoryData<string> Files() => [.. StreamingCorpus.Files];
+    public static TheoryData<string> Files() => Parts.Take(StreamingCorpus.Files, TPart.Index, PartCount);
 
     [Theory]
     [MemberData(nameof(Files))]
@@ -17,7 +20,7 @@ public class AsyncTests
     {
         byte[] data = StreamingCorpus.Read(file);
         using Raster<Rgba8> expected = Raster.Load<Rgba8>(data);
-        using Raster<Rgba8> loaded = await Raster.LoadAsync<Rgba8>(new TrickleStream(data, 333), cancellationToken: Ct);
+        using Raster<Rgba8> loaded = await Raster.LoadAsync<Rgba8>(new AsyncTests.TrickleStream(data, 333), cancellationToken: Ct);
         Assert.Equal(expected.FrameCount, loaded.FrameCount);
         for (int f = 0; f < expected.FrameCount; f++)
         {
@@ -30,7 +33,7 @@ public class AsyncTests
         Assert.Equal(expected.Metadata.FormatName, loaded.Metadata.FormatName);
 
         using Raster natural = Raster.Load(data);
-        using Raster naturalAsync = await Raster.LoadAsync(new TrickleStream(data, 4096), cancellationToken: Ct);
+        using Raster naturalAsync = await Raster.LoadAsync(new AsyncTests.TrickleStream(data, 4096), cancellationToken: Ct);
         Assert.Equal(natural.Layout, naturalAsync.Layout);
     }
 
@@ -52,32 +55,13 @@ public class AsyncTests
         Assert.Equal(sync.Position, async.Position);
     }
 
-    [Fact]
-    public async Task ALoadAsyncHoldsChunksNotTheFile()
-    {
-        using Raster<Rgb8> image = Raster.Create(2000, 1500, new Rgb8(10, 200, 30));
-        for (int y = 0; y < image.Height; y++)
-        {
-            image.Row(y)[y % 2000] = new Rgb8(255, 0, 0);
-        }
-
-        using MemoryStream png = new();
-        image.Save(png, Egami.Formats.Png.PngFormat.Info, new Egami.Formats.Png.PngWriterOptions { CompressionLevel = 0 });
-        byte[] data = png.ToArray();
-        Assert.True(data.Length > 5_000_000);
-        using IncrementalLoad load = new(new MemoryStream(data), EgamiContext.Default, ReaderOptions.Default, Ct);
-        using Raster<Rgb8> loaded = await load.ReadAsync<Rgb8>();
-        Assert.InRange(load.Decoder.MostBytesHeld, 1, 256 * 1024);
-        Assert.True(image.Row(777).SequenceEqual(loaded.Row(777)));
-    }
-
     [Theory]
     [MemberData(nameof(Files))]
     public async Task OpenAsyncReadsRowsAndFrames(string file)
     {
         byte[] data = StreamingCorpus.Read(file);
         using Raster<Rgba8> expected = Raster.Load<Rgba8>(data);
-        using RasterDecoder decoder = await RasterDecoder.OpenAsync(new TrickleStream(data, 101), cancellationToken: Ct);
+        using RasterDecoder decoder = await RasterDecoder.OpenAsync(new AsyncTests.TrickleStream(data, 101), cancellationToken: Ct);
         using Raster<Rgba8> band = Raster.Create<Rgba8>(decoder.Info.Width, 5);
         for (int f = 0; f < expected.FrameCount; f++)
         {
@@ -99,6 +83,31 @@ public class AsyncTests
 
         Assert.Equal(DecodeStatus.Completed, decoder.Status);
     }
+}
+
+/// <summary>The tests of <see cref="AsyncTests{TPart}"/> that run once rather than in parts.</summary>
+public class AsyncTests
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    [Fact]
+    public async Task ALoadAsyncHoldsChunksNotTheFile()
+    {
+        using Raster<Rgb8> image = Raster.Create(2000, 1500, new Rgb8(10, 200, 30));
+        for (int y = 0; y < image.Height; y++)
+        {
+            image.Row(y)[y % 2000] = new Rgb8(255, 0, 0);
+        }
+
+        using MemoryStream png = new();
+        image.Save(png, Egami.Formats.Png.PngFormat.Info, new Egami.Formats.Png.PngWriterOptions { CompressionLevel = 0 });
+        byte[] data = png.ToArray();
+        Assert.True(data.Length > 5_000_000);
+        using IncrementalLoad load = new(new MemoryStream(data), EgamiContext.Default, ReaderOptions.Default, Ct);
+        using Raster<Rgb8> loaded = await load.ReadAsync<Rgb8>();
+        Assert.InRange(load.Decoder.MostBytesHeld, 1, 256 * 1024);
+        Assert.True(image.Row(777).SequenceEqual(loaded.Row(777)));
+    }
 
     [Fact]
     public async Task ReadFrameAsyncGivesEveryFrame()
@@ -118,7 +127,7 @@ public class AsyncTests
     }
 
     /// <summary>A stream that hands out at most a few bytes per read and cannot seek, like a slow upload.</summary>
-    private sealed class TrickleStream(byte[] data, int most) : Stream
+    internal sealed class TrickleStream(byte[] data, int most) : Stream
     {
         private int _position;
 
@@ -162,3 +171,9 @@ public class AsyncTests
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }
+
+/// <summary>Part 1 of 2 of <see cref="AsyncTests{TPart}"/>.</summary>
+public sealed class AsyncTestsPart0 : AsyncTests<Part0>;
+
+/// <summary>Part 2 of 2 of <see cref="AsyncTests{TPart}"/>.</summary>
+public sealed class AsyncTestsPart1 : AsyncTests<Part1>;
