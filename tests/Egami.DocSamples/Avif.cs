@@ -1,5 +1,6 @@
 using Egami.Formats;
 using Egami.Formats.Avif;
+using Egami.Pixels;
 
 namespace Egami.DocSamples;
 
@@ -39,5 +40,33 @@ public class Avif
 
         Assert.Equal((image.Width, image.Height), (clean.Width, clean.Height));
         Assert.Null(grain);
+    }
+
+    [Fact]
+    public void Cookbook()
+    {
+        using SampleFiles files = new();
+
+        #region cookbook-load
+        // AVIF loads like any format, in its natural pixel type: Rgb8 or Rgba8 for 8-bit files, Rgb16 or Rgba16 for 10 and 12 bits.
+        using Raster duck = Raster.Load("duck.avif");
+        duck.Save("duck.png");
+        #endregion
+
+        #region cookbook-yuv
+        // The AV1 planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
+        using YuvRaster planes = YuvRaster.Load("duck.avif");
+        ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for most AVIF files
+        #endregion
+
+        #region cookbook-sdr
+        // An HDR (PQ or HLG) AVIF, tone mapped into sRGB as it loads; the peak comes from the file's clli box when it has one.
+        using Raster<Rgb8> sdr = Raster.Load<Rgb8>("hdr.avif", options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });
+        sdr.Save("hdr-as-sdr.jpg");
+        #endregion
+
+        Assert.True(File.Exists("duck.png"));
+        Assert.True(File.Exists("hdr-as-sdr.jpg"));
+        Assert.Equal(ChromaFormat.Yuv420, chroma);
     }
 }

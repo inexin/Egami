@@ -7,6 +7,24 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### AVIF
+
+- `AvifFormat` reads AVIF (AV1 Image File Format over HEIF) stills, registered by default. The AV1 decoder, written from the
+  specification with libaom and dav1d as references, covers every intra coding tool, the loop filter, CDEF, loop restoration,
+  superres and film grain at 8, 10 and 12 bits and every chroma format; its output is bit-exact against dav1d on libaom's and
+  dav1d's test streams, the Argon conformance suite and the corpus.
+- `Raster.Load` converts to RGB as libavif does (equal to avifdec sample for sample) in the natural pixel type: `Rgb8` or
+  `Rgba8` for 8-bit files, `Rgb16` or `Rgba16` for 10 and 12 bits, gray types for monochrome. Alpha items (straight or
+  premultiplied, which loads straight), grids (alpha grids and per-cell alpha included) and overlays (iovl) are supported;
+  the clean aperture is cropped, and `irot` and `imir` become the orientation.
+- `YuvRaster.Load` gives the decoded planes. ICC, CICP, HDR metadata (clli, mdcv), Exif and XMP are read; `AvifDetails`
+  describes the AV1 configuration, color, alpha, grid and brands, and `AvifFilmGrain` the grain parameters.
+  `AvifReaderOptions.FilmGrain` false loads the image without its grain.
+- Tiles and the in-loop filters run on up to `MaxParallelism` threads with the same output at every thread count; rows stream,
+  and `ReaderOptions.Region` decodes only the grid cells it touches. On all cores Load is faster than libavif with dav1d on
+  large photos; on one thread it is about 2 to 3.5 times slower, which a later release works on.
+- Layered (progressive) items decode their first layer for now; gain maps, auxiliary items and sequences come later.
+
 ### JPEG XL
 
 - `JxlFormat` reads JPEG XL (ISO/IEC 18181) in the box format or as a bare codestream, at Level 5 and 10, registered by

@@ -677,6 +677,28 @@ PQ and HLG files keep their curve when they load, with intensity_target as `HdrM
 sRGB tone maps with BT.2390 from that peak. A file with a jhgm gain map loads as its SDR base, and `ReaderOptions.Hdr` renders
 it as HDR, as for [Ultra HDR photos](#show-an-ultra-hdr-photo-as-hdr).
 
+## Load an AVIF image
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-load)]
+
+Stills, grids and overlays load through `Raster.Load`, converted to RGB as libavif converts them, the clean aperture cropped
+and `irot` and `imir` kept as the orientation (`AutoOrient` applies it). Film grain is added unless
+`AvifReaderOptions.FilmGrain` is false. See the [formats guide](../guides/formats.md).
+
+## Get an AVIF file's YUV planes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-yuv)]
+
+`YuvRaster.Load` gives the decoded AV1 planes at 8, 10 or 12 bits, with the alpha image as a fourth plane, as dav1d decodes
+them; see [Planar YUV](../guides/planar-yuv.md).
+
+## Read an HDR AVIF file as SDR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sdr)]
+
+PQ and HLG files keep their curve when they load, with clli and mdcv in `RasterMetadata.Hdr`; converting to sRGB tone maps
+with BT.2390.
+
 ## Find a PDF font's glyph by name
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#names)]
