@@ -268,6 +268,12 @@ internal sealed partial class EmfPlusPlayer
             return;
         }
 
+        if (!GdiPlayer.Sane(world.Transform(Full)))
+        {
+            WarnOnce("Metafile.BadRecord", "A shape lies more than a million pixels away; it is not drawn.", "insane");
+            return;
+        }
+
         Matrix3x2 full = Full;
         float scale = MathF.Sqrt(MathF.Abs((full.M11 * full.M22) - (full.M12 * full.M21)));
         float unit = pen.Unit is 0 or 2 or 1 ? 1 : UnitScale(pen.Unit) / UnitScale(_state.PageUnit) / _state.PageScale;

@@ -109,12 +109,20 @@ internal sealed partial class EmfPlusPlayer
 
             _canvas.Concat(full);
             SolidPaint paint = new(new Rgba8(0, 0, 0, 255)) { Antialias = Smooth, BlendMode = Blend };
-            if (effect is null && image.Encoded is byte[] encoded && IsJpegOrPng(encoded) && (attributes is null || attributes.WrapMode != 4))
+            // Only bytes that decoded go through, so a damaged picture is skipped here as on a raster canvas.
+            if (effect is null && image.Bitmap is not null && image.Encoded is byte[] encoded && IsJpegOrPng(encoded) && (attributes is null || attributes.WrapMode != 4))
             {
                 // JPEG and PNG pass through to a PDF canvas unchanged (question 12); a raster canvas decodes them.
-                EncodedImage passthrough = EncodedImage.Load(encoded, (_options.Context ?? _metafile.Context) with { Diagnostics = null });
-                _canvas.DrawImage(passthrough, src, src, Sampling, paint);
-                return;
+                try
+                {
+                    EncodedImage passthrough = EncodedImage.Load(encoded, (_options.Context ?? _metafile.Context) with { Diagnostics = null });
+                    _canvas.DrawImage(passthrough, src, src, Sampling, paint);
+                    return;
+                }
+                catch (EgamiException)
+                {
+                    // Fall back to the decoded bitmap.
+                }
             }
 
             if (image.Bitmap is Raster<Rgba8> bitmap)

@@ -19,4 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Egami.Fuzz\MetafileFuzzTarget.cs" Link="MetafileFuzzTarget.cs" />
+  </ItemGroup>
 </Project>

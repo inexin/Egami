@@ -30,6 +30,12 @@ internal sealed partial class GdiPlayer
     /// </summary>
     private void CombineClip(Path? region, int mode)
     {
+        if (region is not null && !Sane(region))
+        {
+            Insane();
+            return;
+        }
+
         Path current = _dc.Clip ?? Everything;
         Path? result = mode switch
         {

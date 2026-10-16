@@ -224,6 +224,12 @@ internal sealed partial class EmfPlusPlayer
     private void SetClip(Path? world, int mode)
     {
         Path? device = world?.Transform(Full);
+        if (device is not null && !GdiPlayer.Sane(device))
+        {
+            WarnOnce("Metafile.BadRecord", "A clip lies more than a million pixels away; it is ignored.", "insane-clip");
+            return;
+        }
+
         _state = _state with { Clip = PlusObjectReader.Combine(_state.Clip, device, mode) };
         if (mode == 0 && world is null)
         {

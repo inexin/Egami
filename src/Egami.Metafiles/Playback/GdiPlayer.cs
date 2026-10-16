@@ -369,6 +369,20 @@ internal sealed partial class GdiPlayer
         SetWorldTransform(world);
     }
 
+    /// <summary>
+    /// Gets whether a device-space path stays within a million pixels of the origin: geometry beyond that cannot be seen and
+    /// would make curve flattening and path operations take unbounded time, so it is skipped (one warning per file).
+    /// </summary>
+    internal static bool Sane(Path path)
+    {
+        RectF b = path.Bounds;
+        return float.IsFinite(b.X) && float.IsFinite(b.Y) && float.IsFinite(b.Width) && float.IsFinite(b.Height)
+            && b.X > -1e6f && b.Y > -1e6f && b.Right < 1e6f && b.Bottom < 1e6f;
+    }
+
+    /// <summary>Reports geometry skipped by <see cref="Sane"/>.</summary>
+    private void Insane() => WarnOnce("Metafile.BadRecord", "A shape lies more than a million pixels away; it is not drawn.", key: "insane");
+
     private static bool IsFinite(Matrix3x2 m) =>
         float.IsFinite(m.M11) && float.IsFinite(m.M12) && float.IsFinite(m.M21) && float.IsFinite(m.M22) && float.IsFinite(m.M31) && float.IsFinite(m.M32);
 

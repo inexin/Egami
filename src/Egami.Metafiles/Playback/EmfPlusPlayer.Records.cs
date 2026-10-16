@@ -359,6 +359,12 @@ internal sealed partial class EmfPlusPlayer
 
     private void Fill(Path world, PlusFill fill)
     {
+        if (!GdiPlayer.Sane(world.Transform(Full)))
+        {
+            WarnOnce("Metafile.BadRecord", "A shape lies more than a million pixels away; it is not drawn.", "insane");
+            return;
+        }
+
         if (fill.Mesh is Mesh mesh)
         {
             int count = _canvas.Save();

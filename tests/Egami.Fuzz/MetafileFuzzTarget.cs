@@ -38,13 +38,14 @@ internal static class MetafileFuzzTarget
             // Probe goes through the same load; a limit may stop it.
         }
 
-        float longest = Math.Max(metafile.Size.X, metafile.Size.Y);
-        float dpi = longest > 0 ? Math.Clamp(96 * 96 / longest, 1, 96) : 96;
+        // At most 128 pixels a side whatever the picture's size, keeping its aspect ratio roughly.
+        float w = Math.Max(1, metafile.Size.X), h = Math.Max(1, metafile.Size.Y), fit = 128 / Math.Max(w, h);
+        int width = Math.Clamp((int)(w * fit), 1, 128), height = Math.Clamp((int)(h * fit), 1, 128);
         foreach (MetafilePlayback playback in (MetafilePlayback[])[MetafilePlayback.Auto, MetafilePlayback.Gdi])
         {
             foreach (bool antialias in (bool[])[true, false])
             {
-                MetafileRenderOptions options = new() { Dpi = dpi, Playback = playback, Antialias = antialias, Context = s_context };
+                MetafileRenderOptions options = new() { Width = width, Height = height, Playback = playback, Antialias = antialias, Context = s_context };
                 using Raster<Rgba8> raster = metafile.Rasterize<Rgba8>(options);
             }
         }

@@ -118,6 +118,12 @@ internal sealed partial class GdiPlayer
         }
 
         Path path = device.ToPath(Rule);
+        if (!Sane(path))
+        {
+            Insane();
+            return;
+        }
+
         if (closed && fill && BrushPaint() is Paint brush)
         {
             _canvas.FillPath(path, brush);
@@ -579,6 +585,12 @@ internal sealed partial class GdiPlayer
     {
         Path? path = _path?.ToPath(Rule);
         _path = null;
+        if (path is not null && !Sane(path))
+        {
+            Insane();
+            return null;
+        }
+
         return path;
     }
 
