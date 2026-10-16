@@ -131,22 +131,22 @@ internal sealed class Av1SymbolDecoder
         return v < m ? v : (v << 1) - m + Literal(1);
     }
 
-    /// <summary>Reads an Exp-Golomb number (read_golomb), failing at 20 leading zeros as libaom does.</summary>
-    internal int Golomb(string formatName)
+    /// <summary>
+    /// Reads an Exp-Golomb number (read_golomb) as dav1d does: at most 32 leading zeros, the value wrapping at 32 bits (libaom
+    /// rejects codes over 20 bits).
+    /// </summary>
+    internal uint Golomb()
     {
         int length = 0;
-        while (Bit() == 0)
+        while (Bit() == 0 && length < 32)
         {
-            if (++length >= 20)
-            {
-                throw new CorruptDataException(formatName, -1, "An AV1 coefficient's Golomb code is longer than 20 bits.");
-            }
+            length++;
         }
 
-        int x = 1;
-        for (int i = 0; i < length; i++)
+        uint x = 1;
+        while (length-- > 0)
         {
-            x = (x << 1) | Bit();
+            x = (x << 1) + (uint)Bit();
         }
 
         return x - 1;

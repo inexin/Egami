@@ -45,7 +45,10 @@ internal sealed class Av1RestorationPlane
 internal sealed class Av1Frame
 {
     /// <summary>Creates the state of a frame.</summary>
-    internal Av1Frame(Av1FrameHeader header, string formatName)
+    /// <param name="header">The frame header.</param>
+    /// <param name="formatName">The format name errors name.</param>
+    /// <param name="reconstruct">Whether to reconstruct samples, or only parse.</param>
+    internal Av1Frame(Av1FrameHeader header, string formatName, bool reconstruct)
     {
         Header = header;
         Sequence = header.Sequence;
@@ -82,7 +85,27 @@ internal sealed class Av1Frame
         }
 
         Context = Av1FrameContext.CreateDefault(header.BaseQIdx);
+        if (reconstruct)
+        {
+            // Superblock-aligned planes: transform blocks reach past the frame's edge as far as their superblock.
+            int sbPixels = 4 << SbMiLog2;
+            int width = ((MiCols * 4) + sbPixels - 1) & ~(sbPixels - 1), height = ((MiRows * 4) + sbPixels - 1) & ~(sbPixels - 1);
+            Planes = new ushort[header.NumPlanes][];
+            Strides = new int[header.NumPlanes];
+            for (int plane = 0; plane < header.NumPlanes; plane++)
+            {
+                int ssx = plane > 0 ? Sequence.SubsamplingX : 0, ssy = plane > 0 ? Sequence.SubsamplingY : 0;
+                Strides[plane] = width >> ssx;
+                Planes[plane] = new ushort[(width >> ssx) * (height >> ssy)];
+            }
+        }
     }
+
+    /// <summary>Gets the reconstructed planes (Y, U, V), or null when only parsing.</summary>
+    internal ushort[][]? Planes { get; }
+
+    /// <summary>Gets each plane's stride.</summary>
+    internal int[] Strides { get; } = [];
 
     /// <summary>Gets the frame header.</summary>
     internal Av1FrameHeader Header { get; }
@@ -173,7 +196,7 @@ internal sealed class Av1Frame
             {
                 if (end - at < Header.TileSizeBytes)
                 {
-                    throw new CorruptDataException(FormatName, at, "An AV1 tile group ends inside a tile size.");
+                    throw new CorruptDataException(FormatName, at, "An AV1 tile group ends inside a tile size.") { IsTruncation = true };
                 }
 
                 size = 1;
@@ -185,7 +208,7 @@ internal sealed class Av1Frame
                 at += Header.TileSizeBytes;
                 if (size > end - at)
                 {
-                    throw new CorruptDataException(FormatName, at, "An AV1 tile is larger than its tile group.");
+                    throw new CorruptDataException(FormatName, at, "An AV1 tile is larger than its tile group.") { IsTruncation = true };
                 }
             }
 
@@ -202,10 +225,10 @@ internal sealed class Av1Frame
     }
 
     /// <summary>Decodes one tile.</summary>
-    internal void DecodeTile(int tile, byte[] data, int offset, int size, IAv1Reconstructor? reconstructor)
+    internal void DecodeTile(int tile, byte[] data, int offset, int size)
     {
         int row = tile / Header.TileCols, col = tile % Header.TileCols;
-        Av1TileParser parser = new(this, row, col, data, offset, size, reconstructor);
+        Av1TileParser parser = new(this, row, col, data, offset, size, Planes is null ? null : new Av1Reconstructor(this));
         parser.Parse();
         if (tile == Header.ContextUpdateTileId && !Header.DisableFrameEndUpdateCdf)
         {

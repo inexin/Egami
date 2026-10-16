@@ -49,7 +49,7 @@ public class Av1ModeInfoTests
                 Av1Frame frame;
                 try
                 {
-                    frame = Av1Decoder.DecodeFirstFrame(heif.ItemData(heif.Item(uint.Parse(item.Name, System.Globalization.CultureInfo.InvariantCulture))!).ToArray(), "AVIF", null);
+                    frame = Av1Decoder.DecodeFirstFrame(heif.ItemData(heif.Item(uint.Parse(item.Name, System.Globalization.CultureInfo.InvariantCulture))!).ToArray(), "AVIF", reconstruct: false);
                 }
                 catch (UnsupportedFormatException)
                 {
@@ -137,7 +137,7 @@ public class Av1ModeInfoTests
             Av1Frame frame;
             try
             {
-                frame = Av1Decoder.DecodeFirstFrame(data, "AVIF", null);
+                frame = Av1Decoder.DecodeFirstFrame(data, "AVIF", reconstruct: false);
             }
             catch (UnsupportedFormatException)
             {

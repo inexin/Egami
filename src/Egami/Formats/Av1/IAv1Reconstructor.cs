@@ -24,4 +24,7 @@ internal interface IAv1Reconstructor
 
     /// <summary>Adds one transform block of residual to an intra block copy block.</summary>
     void InterResidual(Av1TileParser tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs);
+
+    /// <summary>Finishes an intra block copy block, after its residual.</summary>
+    void InterDone(Av1TileParser tile);
 }

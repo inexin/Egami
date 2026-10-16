@@ -5,10 +5,10 @@ internal static class Av1Decoder
 {
     /// <summary>
     /// Decodes the first frame of a low-overhead (Section 5) stream, with operating point 0: its sequence header, frame header
-    /// and tile groups, handing the blocks to <paramref name="reconstructor"/>. Only key and intra-only frames decode; the
-    /// frame header throws <see cref="UnsupportedFormatException"/> for others.
+    /// and tile groups, reconstructing its samples before the loop filters unless <paramref name="reconstruct"/> is false. Only
+    /// key and intra-only frames decode; the frame header throws <see cref="UnsupportedFormatException"/> for others.
     /// </summary>
-    internal static Av1Frame DecodeFirstFrame(byte[] data, string formatName, IAv1Reconstructor? reconstructor)
+    internal static Av1Frame DecodeFirstFrame(byte[] data, string formatName, bool reconstruct = true)
     {
         Av1SequenceHeader? sequence = null;
         Av1Frame? frame = null;
@@ -35,17 +35,17 @@ internal static class Av1Decoder
                         throw new CorruptDataException(formatName, obu.PayloadStart, "An AV1 stream shows an existing frame before decoding one.");
                     }
 
-                    frame = new Av1Frame(header, formatName);
+                    frame = new Av1Frame(header, formatName, reconstruct);
                     tilesLeft = header.TileCols * header.TileRows;
                     if (obu.Type == Av1ObuType.Frame)
                     {
                         int skip = (header.BitLength + 7) >> 3;
-                        tilesLeft -= DecodeTileGroup(frame, data, obu.PayloadStart + skip, obu.PayloadLength - skip, reconstructor);
+                        tilesLeft -= DecodeTileGroup(frame, data, obu.PayloadStart + skip, obu.PayloadLength - skip);
                     }
 
                     break;
                 case Av1ObuType.TileGroup when frame is not null && tilesLeft > 0:
-                    tilesLeft -= DecodeTileGroup(frame, data, obu.PayloadStart, obu.PayloadLength, reconstructor);
+                    tilesLeft -= DecodeTileGroup(frame, data, obu.PayloadStart, obu.PayloadLength);
                     break;
             }
 
@@ -61,12 +61,12 @@ internal static class Av1Decoder
         { IsTruncation = sequence is not null };
     }
 
-    private static int DecodeTileGroup(Av1Frame frame, byte[] data, int start, int length, IAv1Reconstructor? reconstructor)
+    private static int DecodeTileGroup(Av1Frame frame, byte[] data, int start, int length)
     {
         List<(int Tile, int Offset, int Size)> tiles = frame.TileGroupTiles(data, start, length);
         foreach ((int tile, int offset, int size) in tiles)
         {
-            frame.DecodeTile(tile, data, offset, size, reconstructor);
+            frame.DecodeTile(tile, data, offset, size);
         }
 
         return tiles.Count;

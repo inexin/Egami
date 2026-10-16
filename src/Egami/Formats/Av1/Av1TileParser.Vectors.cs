@@ -1,6 +1,9 @@
 namespace Egami.Formats.Av1;
 
-/// <summary>Intra block copy vectors (libaom's read_intrabc_info and the INTRA_FRAME case of mvref_common.c) and loop restoration units.</summary>
+/// <summary>
+/// Intra block copy vectors (libaom's read_intrabc_info and the INTRA_FRAME case of mvref_common.c, with dav1d's correction of
+/// vectors that reach outside the decoded area) and loop restoration units.
+/// </summary>
 internal sealed partial class Av1TileParser
 {
     private readonly int[] _stackRow = new int[8];
@@ -27,23 +30,69 @@ internal sealed partial class Av1TileParser
             }
         }
 
-        bool valid = (refRow & 7) == 0 && (refCol & 7) == 0;
-        refRow = (refRow >> 3) * 8;
-        refCol = (refCol >> 3) * 8;
         Av1FrameContext.MvTables t = Av1FrameContext.Dv;
         int joint = Symbol(t.Joints[0], 4);
         int row = refRow + (joint is 2 or 3 ? ReadVectorComponent(t, 0) : 0);
         int col = refCol + (joint is 1 or 3 ? ReadVectorComponent(t, 1) : 0);
-        row = (row >> 3) * 8;
-        col = (col >> 3) * 8;
-        valid = valid && row > -(1 << 14) && row < 1 << 14 && col > -(1 << 14) && col < 1 << 14 && DvValid(row, col);
-        if (!valid)
+
+        // libaom rejects a vector that reaches outside the decoded part of the tile; dav1d, whose output the gates hold to,
+        // moves the source area back inside, and only fails when it still overlaps the current superblock.
+        int borderLeft = MiColStart * 4, borderTop = MiRowStart * 4;
+        if (_isChromaRef && !_sequence.Monochrome)
         {
-            throw Corrupt("An AV1 intra block copy vector points outside the area it may copy from.");
+            borderLeft += _bw < 2 && _ssx != 0 ? 4 : 0;
+            borderTop += _bh < 2 && _ssy != 0 ? 4 : 0;
         }
 
-        _b.MvRow = row;
-        _b.MvCol = col;
+        int srcLeft = (_miCol * 4) + (col >> 3), srcTop = (_miRow * 4) + (row >> 3);
+        int srcRight = srcLeft + (_bw * 4), srcBottom = srcTop + (_bh * 4);
+        int borderRight = ((MiColEnd + _bw - 1) & ~(_bw - 1)) * 4;
+        if (srcLeft < borderLeft)
+        {
+            srcRight += borderLeft - srcLeft;
+            srcLeft = borderLeft;
+        }
+        else if (srcRight > borderRight)
+        {
+            srcLeft -= srcRight - borderRight;
+            srcRight = borderRight;
+        }
+
+        if (srcTop < borderTop)
+        {
+            srcBottom += borderTop - srcTop;
+            srcTop = borderTop;
+        }
+
+        int sbPixels = _sbMi * 4;
+        int sbx = (_miCol >> _frame.SbMiLog2) * sbPixels, sby = (_miRow >> _frame.SbMiLog2) * sbPixels;
+        if (srcBottom > sby && srcRight > sbx)
+        {
+            if (srcTop - borderTop >= srcBottom - sby)
+            {
+                srcTop -= srcBottom - sby;
+                srcBottom = sby;
+            }
+            else if (srcLeft - borderLeft >= srcRight - sbx)
+            {
+                srcLeft -= srcRight - sbx;
+                srcRight = sbx;
+            }
+        }
+
+        if (srcBottom > sby + sbPixels)
+        {
+            srcTop -= srcBottom - (sby + sbPixels);
+            srcBottom = sby + sbPixels;
+        }
+
+        if (srcBottom > sby && srcRight > sbx)
+        {
+            throw Corrupt("An AV1 intra block copy vector points into the superblock being decoded.");
+        }
+
+        _b.MvRow = (srcTop - (_miRow * 4)) * 8;
+        _b.MvCol = (srcLeft - (_miCol * 4)) * 8;
     }
 
     private int ReadVectorComponent(Av1FrameContext.MvTables t, int comp)
@@ -70,44 +119,6 @@ internal sealed partial class Av1TileParser
         // Integer vectors only: the fraction and the high precision bit take their defaults.
         mag += ((d << 3) | (3 << 1) | 1) + 1;
         return sign != 0 ? -mag : mag;
-    }
-
-    private bool DvValid(int row, int col)
-    {
-        int bw = Av1Tables.BlockSizeWide[_b.Size], bh = Av1Tables.BlockSizeHigh[_b.Size];
-        int srcTop = (_miRow * 4 * 8) + row, tileTop = MiRowStart * 4 * 8;
-        int srcLeft = (_miCol * 4 * 8) + col, tileLeft = MiColStart * 4 * 8;
-        int srcBottom = (((_miRow * 4) + bh) * 8) + row, srcRight = (((_miCol * 4) + bw) * 8) + col;
-        if (srcTop < tileTop || srcLeft < tileLeft || srcBottom > MiRowEnd * 4 * 8 || srcRight > MiColEnd * 4 * 8)
-        {
-            return false;
-        }
-
-        if (_isChromaRef && _planes > 1)
-        {
-            if ((bw < 8 && _ssx != 0 && srcLeft < tileLeft + 32) || (bh < 8 && _ssy != 0 && srcTop < tileTop + 32))
-            {
-                return false;
-            }
-        }
-
-        int sbLog2 = _frame.SbMiLog2;
-        int activeSbRow = _miRow >> sbLog2;
-        int activeSb64Col = (_miCol * 4) >> 6;
-        int sbSize = _sbMi * 4;
-        int srcSbRow = ((srcBottom >> 3) - 1) / sbSize;
-        int srcSb64Col = ((srcRight >> 3) - 1) >> 6;
-        int sb64PerRow = ((MiColEnd - MiColStart - 1) >> 4) + 1;
-        int activeSb64 = (activeSbRow * sb64PerRow) + activeSb64Col;
-        int srcSb64 = (srcSbRow * sb64PerRow) + srcSb64Col;
-        if (srcSb64 >= activeSb64 - 4)
-        {
-            return false;
-        }
-
-        int gradient = 1 + 4 + (sbSize > 64 ? 1 : 0);
-        int wfOffset = gradient * (activeSbRow - srcSbRow);
-        return srcSbRow <= activeSbRow && srcSb64Col < activeSb64Col - 4 + wfOffset;
     }
 
     /// <summary>Finds the nearest and near reference vectors of an intra block copy (av1_find_mv_refs for INTRA_FRAME).</summary>

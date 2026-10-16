@@ -54,6 +54,7 @@ internal sealed partial class Av1TileParser
         _reconstructor?.InterPrediction(this);
         if (b.Skip)
         {
+            _reconstructor?.InterDone(this);
             return;
         }
 
@@ -84,6 +85,8 @@ internal sealed partial class Av1TileParser
                 }
             }
         }
+
+        _reconstructor?.InterDone(this);
     }
 
     private void DecodeInterTransformTree(int plane, int planeBsize, int blkRow, int blkCol, int txSize)
@@ -408,12 +411,12 @@ internal sealed partial class Av1TileParser
             int sign = c == 0 ? Symbol(Av1FrameContext.DcSign[(planeType * 3) + dcSignCtx], 2) : _r.Bit();
             if (level >= 15)
             {
-                level += _r.Golomb(_frame.FormatName);
+                level = (int)((_r.Golomb() + 15) & 0xfffff);
             }
 
             if (c == 0)
             {
-                dcValue = sign != 0 ? -level : level;
+                dcValue = sign != 0 ? -1 : 1;
             }
 
             level &= 0xfffff;

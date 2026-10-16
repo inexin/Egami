@@ -243,7 +243,7 @@ public class Av1HeaderTests
     /// Gives the start of a stream as Section 5 OBUs with obu_size: IVF frames joined, Annex B (Argon's, and dav1d's annexb.obu)
     /// rewritten. Only the first <paramref name="limit"/> bytes are read.
     /// </summary>
-    private static byte[] Section5(string path, string relative, int limit)
+    internal static byte[] Section5(string path, string relative, int limit)
     {
         byte[] data;
         using (FileStream file = File.OpenRead(path))

@@ -42,8 +42,8 @@ internal sealed partial class Av1TileParser
     private Av1BlockInfo _b = null!;
     private int _miRow, _miCol, _bw, _bh;
     private int _toTopEdge, _toBottomEdge, _toLeftEdge, _toRightEdge;
-    private bool _upAvailable, _leftAvailable;
-    private Av1BlockInfo? _above, _left;
+    private bool _upAvailable, _leftAvailable, _chromaUpAvailable, _chromaLeftAvailable;
+    private Av1BlockInfo? _above, _left, _chromaAbove, _chromaLeft;
     private bool _isChromaRef;
     private bool _isLastVerticalRect, _isFirstHorizontalRect;
 
@@ -108,6 +108,42 @@ internal sealed partial class Av1TileParser
 
     /// <summary>Gets whether the current block carries chroma for its area (is_chroma_ref).</summary>
     internal bool IsChromaRef => _isChromaRef;
+
+    /// <summary>Gets the current block's top row, in 4x4 units.</summary>
+    internal int MiRow => _miRow;
+
+    /// <summary>Gets the current block's left column, in 4x4 units.</summary>
+    internal int MiCol => _miCol;
+
+    /// <summary>Gets the current block's width, in 4x4 units.</summary>
+    internal int BlockWidth4 => _bw;
+
+    /// <summary>Gets the current block's height, in 4x4 units.</summary>
+    internal int BlockHeight4 => _bh;
+
+    /// <summary>Gets how far right of the frame's edge the current block reaches, in eighth samples (negative when it crosses).</summary>
+    internal int ToRightEdge => _toRightEdge;
+
+    /// <summary>Gets how far below the frame's edge the current block reaches, in eighth samples (negative when it crosses).</summary>
+    internal int ToBottomEdge => _toBottomEdge;
+
+    /// <summary>Gets the current block's distance from the frame's left edge, in eighth samples (zero or negative).</summary>
+    internal int ToLeftEdge => _toLeftEdge;
+
+    /// <summary>Gets the current block's distance from the frame's top edge, in eighth samples (zero or negative).</summary>
+    internal int ToTopEdge => _toTopEdge;
+
+    /// <summary>Gets whether the row above the block is in the tile, for a plane.</summary>
+    internal bool UpAvailable(int plane) => plane == 0 || _ssy == 0 ? _upAvailable : _chromaUpAvailable;
+
+    /// <summary>Gets whether the column left of the block is in the tile, for a plane.</summary>
+    internal bool LeftAvailable(int plane) => plane == 0 || _ssx == 0 ? _leftAvailable : _chromaLeftAvailable;
+
+    /// <summary>Gets the block above, for a plane (the chroma one for chroma), or null.</summary>
+    internal Av1BlockInfo? AboveBlock(int plane) => plane == 0 ? _above : _chromaAbove;
+
+    /// <summary>Gets the block to the left, for a plane, or null.</summary>
+    internal Av1BlockInfo? LeftBlock(int plane) => plane == 0 ? _left : _chromaLeft;
 
     /// <summary>Parses the tile.</summary>
     internal void Parse()
@@ -406,6 +442,17 @@ internal sealed partial class Av1TileParser
         _above = _upAvailable ? _frame.Grid[((miRow - 1) * _miCols) + miCol] : null;
         _left = _leftAvailable ? _frame.Grid[(miRow * _miCols) + miCol - 1] : null;
         _isChromaRef = ((miRow & 1) != 0 || (bh & 1) == 0 || _ssy == 0) && ((miCol & 1) != 0 || (bw & 1) == 0 || _ssx == 0);
+        _chromaUpAvailable = _ssy != 0 && bh < 2 ? miRow - 1 > MiRowStart : _upAvailable;
+        _chromaLeftAvailable = _ssx != 0 && bw < 2 ? miCol - 1 > MiColStart : _leftAvailable;
+        _chromaAbove = _chromaLeft = null;
+        if (_isChromaRef)
+        {
+            // The chroma block's neighbours: the bottom right 4x4 unit of the luma area left of and above its chroma block.
+            int baseRow = miRow - (miRow & _ssy), baseCol = miCol - (miCol & _ssx);
+            _chromaAbove = _chromaUpAvailable ? _frame.Grid[((baseRow - 1) * _miCols) + baseCol + _ssx] : null;
+            _chromaLeft = _chromaLeftAvailable ? _frame.Grid[((baseRow + _ssy) * _miCols) + baseCol - 1] : null;
+        }
+
         _isLastVerticalRect = bw < bh && ((miCol + bw) & (bh - 1)) == 0;
         _isFirstHorizontalRect = bw > bh && (miRow & (bw - 1)) == 0;
 
@@ -570,9 +617,11 @@ internal sealed partial class Av1TileParser
         {
             int coded = Symbol(Av1FrameContext.SpatialPredSegTree[cdfIndex], 8);
             segment = NegDeinterleave(coded, pred, _header.LastActiveSegId + 1);
+
+            // libaom rejects a segment past the last active one; dav1d, whose output the gates hold to, takes segment 0.
             if (segment < 0 || segment > _header.LastActiveSegId)
             {
-                throw Corrupt("An AV1 segment id is out of range.");
+                segment = 0;
             }
         }
 

@@ -385,7 +385,11 @@ decoder: the arithmetic decoder of `aom_dsp/entdec.c` (`Av1SymbolDecoder.cs`); t
 `Av1Tables.Data.cs` (`Av1Tables.cs`, `Av1FrameContext.cs`); and the tile syntax of `av1/decoder/decodeframe.c`, `decodemv.c`,
 `decodetxb.c` and `detokenize.c` with the contexts of `av1/common/av1_common_int.h`, `blockd.h`, `pred_common.c`,
 `txb_common.h` and `entropymode.c`, the intra block copy vector search of `mvref_common.c` and the loop restoration unit layout
-of `restoration.c` (`Av1Frame.cs`, `Av1TileParser*.cs`). libaom is distributed under the BSD 2-clause license:
+of `restoration.c` (`Av1Frame.cs`, `Av1TileParser*.cs`); the intra predictors, edge filters and upsampling of
+`av1/common/reconintra.c` and `aom_dsp/intrapred.c` with their tables, chroma from luma (`cfl.c`) and the intra block copy
+prediction of `reconinter.c` and `convolve.c` (`Av1Reconstructor*.cs`); and the inverse transforms of `av1_inv_txfm2d.c` and
+`idct.c` (`Av1InverseTransform.cs`), whose one-dimensional transforms `av1_inv_txfm1d.c` `tools/make-av1-tables.py` translates
+into `Av1InverseTransform.OneD.cs`. libaom is distributed under the BSD 2-clause license:
 
     Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 
@@ -523,3 +527,34 @@ and with the Alliance for Open Media Patent License 1.0, which covers implementa
     2.12. Specification. "Specification" means the specification designated by
           the Alliance for Open Media as a Final Deliverable for which this
           License was issued.
+
+## dav1d
+
+Where libaom rejects a stream that dav1d 1.5.4 decodes, Egami's AV1 decoder follows dav1d (`src/decode.c`, `src/recon_tmpl.c`),
+whose output its tests hold it to: a segment id past the last active one becomes 0, a coefficient's Golomb code may run to 32
+bits, and an intra block copy vector that reaches outside the decoded area is moved back inside it (`Av1TileParser*.cs`,
+`Av1SymbolDecoder.cs`). dav1d is distributed under the BSD 2-clause license:
+
+    Copyright © 2018-2025, VideoLAN and dav1d authors
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+       list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright notice,
+       this list of conditions and the following disclaimer in the documentation
+       and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+    ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
