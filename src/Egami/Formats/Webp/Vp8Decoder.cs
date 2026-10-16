@@ -1053,8 +1053,7 @@ internal sealed partial class Vp8Decoder : IDisposable
                 p = next + 22;
             }
 
-            int sign = Vp8BoolDecoder.Bit(ref br, ref value, ref bits, ref range, 0x80);
-            int coefficient = (sign != 0 ? -v : v) * (n > 0 ? acQuant : dcQuant);
+            int coefficient = Vp8BoolDecoder.Signed(ref br, ref value, ref bits, ref range, v) * (n > 0 ? acQuant : dcQuant);
 
             // Stored as 16 bits, as libwebp stores it, so even absurd values come out the same.
             Unsafe.Add(ref outputs, Unsafe.Add(ref zigzag, n)) = (short)coefficient;

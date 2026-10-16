@@ -121,6 +121,29 @@ internal struct Vp8BoolDecoder
         return bit;
     }
 
+    /// <summary>
+    /// Decodes a sign bit (probability 1/2) with the state in locals and returns <paramref name="magnitude"/>, negated when the bit
+    /// is 1. As <see cref="Bit"/> at probability 128, without a branch: the split is half the range and the range always needs
+    /// one shift to normalise, as libwebp's VP8GetSigned has it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int Signed(ref Vp8BoolDecoder decoder, ref ulong value, ref int bits, ref uint range, int magnitude)
+    {
+        if (bits < 0)
+        {
+            (value, bits) = decoder.Refilled(value, bits);
+        }
+
+        uint split = range >> 1;
+
+        // All ones when the bit is 1.
+        int mask = (int)(split - (uint)(value >> bits)) >> 31;
+        value -= (ulong)((split + 1) & (uint)mask) << bits;
+        range = (range + (uint)mask) | 1;
+        bits--;
+        return (magnitude ^ mask) - mask;
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private (ulong Value, int Bits) Refilled(ulong value, int bits)
     {
