@@ -117,6 +117,14 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Gif.TrailerMissing` | Warning | The file ends without a trailer |
 | `Gif.UnknownBlock` | Warning | An unknown block where a block introducer was expected |
 | `Gif.XmpTrailerMissing` | Warning | The XMP application extension lacks its magic trailer |
+| `Heif.ItemCount` | Warning | A HEIF (AVIF) iinf box's entry count differs from the infe boxes it holds; the boxes found are read |
+| `Heif.ItemEntryVersion` | Warning | A HEIF (AVIF) infe box has an unknown version; the item was skipped |
+| `Heif.OldItemEntry` | Warning | A HEIF (AVIF) infe box of version 0 or 1 has no item type; the item was skipped |
+| `Heif.PrimaryItemMissing` | Warning | A HEIF (AVIF) pitm box names an item that has no iinf entry |
+| `Heif.PropertiesOfUnknownItem` | Warning | A HEIF (AVIF) ipma box associates properties with an item that has no iinf entry; they were ignored |
+| `Heif.ReferenceFromUnknownItem` | Warning | A HEIF (AVIF) iref box has a reference from an item that has no iinf entry; it was ignored |
+| `Heif.SecondMeta` | Warning | A HEIF (AVIF) file has a second meta box at the top level; it was ignored |
+| `Heif.UnknownLocatedItem` | Warning | A HEIF (AVIF) iloc box locates an item that has no iinf entry; it was ignored |
 | `Icc.Unusable` | Warning | The embedded ICC profile is damaged or of a kind Egami cannot use; colors are read as if it were absent |
 | `Ico.DirectoryMismatch` | Warning | An icon's directory gives a size its entry's own header contradicts; the header's was used |
 | `Ico.EntryDamaged` | Warning | The entry Load picked could not be decoded; the next best was loaded |

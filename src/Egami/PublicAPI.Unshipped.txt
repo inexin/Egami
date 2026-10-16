@@ -1,4 +1,41 @@
 #nullable enable
+Egami.Formats.Avif.AvifDetails
+Egami.Formats.Avif.AvifDetails.AlphaPremultiplied.get -> bool
+Egami.Formats.Avif.AvifDetails.AlphaPremultiplied.set -> void
+Egami.Formats.Avif.AvifDetails.AvifDetails() -> void
+Egami.Formats.Avif.AvifDetails.BitDepth.get -> int
+Egami.Formats.Avif.AvifDetails.BitDepth.set -> void
+Egami.Formats.Avif.AvifDetails.Chroma.get -> Egami.Pixels.ChromaFormat
+Egami.Formats.Avif.AvifDetails.Chroma.set -> void
+Egami.Formats.Avif.AvifDetails.ChromaSiting.get -> Egami.Pixels.ChromaSiting?
+Egami.Formats.Avif.AvifDetails.ChromaSiting.set -> void
+Egami.Formats.Avif.AvifDetails.CodePoints.get -> Egami.Colors.ColorCodePoints
+Egami.Formats.Avif.AvifDetails.CodePoints.set -> void
+Egami.Formats.Avif.AvifDetails.CompatibleBrands.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.Avif.AvifDetails.CompatibleBrands.set -> void
+Egami.Formats.Avif.AvifDetails.GridColumns.get -> int
+Egami.Formats.Avif.AvifDetails.GridColumns.set -> void
+Egami.Formats.Avif.AvifDetails.GridRows.get -> int
+Egami.Formats.Avif.AvifDetails.GridRows.set -> void
+Egami.Formats.Avif.AvifDetails.HasAlpha.get -> bool
+Egami.Formats.Avif.AvifDetails.HasAlpha.set -> void
+Egami.Formats.Avif.AvifDetails.HasFilmGrain.get -> bool
+Egami.Formats.Avif.AvifDetails.HasFilmGrain.set -> void
+Egami.Formats.Avif.AvifDetails.IsProgressive.get -> bool
+Egami.Formats.Avif.AvifDetails.IsProgressive.set -> void
+Egami.Formats.Avif.AvifDetails.IsSequence.get -> bool
+Egami.Formats.Avif.AvifDetails.IsSequence.set -> void
+Egami.Formats.Avif.AvifDetails.Level.get -> int
+Egami.Formats.Avif.AvifDetails.Level.set -> void
+Egami.Formats.Avif.AvifDetails.MajorBrand.get -> string!
+Egami.Formats.Avif.AvifDetails.MajorBrand.set -> void
+Egami.Formats.Avif.AvifDetails.Profile.get -> int
+Egami.Formats.Avif.AvifDetails.Profile.set -> void
+Egami.Formats.Avif.AvifDetails.Tier.get -> int
+Egami.Formats.Avif.AvifDetails.Tier.set -> void
+Egami.Formats.Avif.AvifFormat
+override Egami.Formats.Avif.AvifDetails.Copy() -> Egami.Metadata.FormatDetails!
+static Egami.Formats.Avif.AvifFormat.Info.get -> Egami.Formats.FormatInfo!
 abstract Egami.Formats.RowEncoder<TPixel>.Complete() -> void
 abstract Egami.Formats.RowEncoder<TPixel>.WriteRow(System.ReadOnlySpan<TPixel> row) -> void
 abstract Egami.Formats.RowReader.Height.get -> int
