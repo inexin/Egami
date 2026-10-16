@@ -145,23 +145,42 @@ internal static class Vp8Dsp
         DcNoTopLeft,
     }
 
-    /// <summary>Predicts a square block of <paramref name="size"/> pixels (16 or 8) at <paramref name="at"/>.</summary>
+    /// <summary>
+    /// Predicts a square block of <paramref name="size"/> pixels (16 or 8) at <paramref name="at"/>: whole rows a store at a
+    /// time, the row above loaded once, true motion in 16-bit lanes with the clamp of an unsigned saturating pack.
+    /// </summary>
     internal static void PredictBlock(BlockMode mode, Span<byte> b, int at, int size)
     {
-        int top = at - Stride;
+        // The corner above-left through the last row: every byte the modes read or write.
+        _ = b.Slice(at - Stride - 1, (size * Stride) + size + 1);
+        ref byte p = ref Unsafe.Add(ref MemoryMarshal.GetReference(b), at);
+        ref byte top = ref Unsafe.Subtract(ref p, Stride);
         switch (mode)
         {
             case BlockMode.Vertical:
-                for (int y = 0; y < size; y++)
+                if (size == 16)
                 {
-                    b.Slice(top, size).CopyTo(b.Slice(at + (y * Stride), size));
+                    Vector128<byte> row = Vector128.LoadUnsafe(ref top);
+                    for (int y = 0; y < 16; y++)
+                    {
+                        row.StoreUnsafe(ref Unsafe.Add(ref p, y * Stride));
+                    }
+                }
+                else
+                {
+                    ulong row = Unsafe.ReadUnaligned<ulong>(ref top);
+                    for (int y = 0; y < 8; y++)
+                    {
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, y * Stride), row);
+                    }
                 }
 
                 break;
             case BlockMode.Horizontal:
                 for (int y = 0; y < size; y++)
                 {
-                    b.Slice(at + (y * Stride), size).Fill(b[at + (y * Stride) - 1]);
+                    ref byte row = ref Unsafe.Add(ref p, y * Stride);
+                    Fill(ref row, Unsafe.Subtract(ref row, 1), size);
                 }
 
                 break;
@@ -173,11 +192,18 @@ internal static class Vp8Dsp
                 int sum = 0;
                 bool hasTop = mode is BlockMode.Dc or BlockMode.DcNoLeft;
                 bool hasLeft = mode is BlockMode.Dc or BlockMode.DcNoTop;
-                if (hasTop)
+                if (hasTop && Sse2.IsSupported)
+                {
+                    // psadbw against zero sums each 8 bytes into its 64-bit half.
+                    Vector128<byte> row = size == 16 ? Vector128.LoadUnsafe(ref top) : Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref top)).AsByte();
+                    Vector128<ulong> sums = Sse2.SumAbsoluteDifferences(row, Vector128<byte>.Zero).AsUInt64();
+                    sum = (int)(sums.ToScalar() + sums.GetElement(1));
+                }
+                else if (hasTop)
                 {
                     for (int x = 0; x < size; x++)
                     {
-                        sum += b[top + x];
+                        sum += Unsafe.Add(ref top, x);
                     }
                 }
 
@@ -185,31 +211,76 @@ internal static class Vp8Dsp
                 {
                     for (int y = 0; y < size; y++)
                     {
-                        sum += b[at + (y * Stride) - 1];
+                        sum += Unsafe.Add(ref p, (y * Stride) - 1);
                     }
                 }
 
-                int dc = hasTop && hasLeft ? (sum + size) >> (shift + 1) : hasTop || hasLeft ? (sum + (size >> 1)) >> shift : 0x80;
+                byte dc = (byte)(hasTop && hasLeft ? (sum + size) >> (shift + 1) : hasTop || hasLeft ? (sum + (size >> 1)) >> shift : 0x80);
                 for (int y = 0; y < size; y++)
                 {
-                    b.Slice(at + (y * Stride), size).Fill((byte)dc);
+                    Fill(ref Unsafe.Add(ref p, y * Stride), dc, size);
                 }
 
                 break;
         }
     }
 
+    /// <summary>Sets the 16, 8 or 4 bytes at <paramref name="at"/> to <paramref name="value"/> with one store.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Fill(ref byte at, byte value, int size)
+    {
+        if (size == 16)
+        {
+            Vector128.Create(value).StoreUnsafe(ref at);
+        }
+        else if (size == 8)
+        {
+            Unsafe.WriteUnaligned(ref at, value * 0x0101010101010101UL);
+        }
+        else
+        {
+            Unsafe.WriteUnaligned(ref at, value * 0x01010101U);
+        }
+    }
+
+    /// <summary>True motion (RFC 6386 section 12.2): each pixel is its column's top plus its row's left minus the corner, clamped.</summary>
     private static void TrueMotion(Span<byte> b, int at, int size)
     {
-        int top = at - Stride;
-        int corner = b[top - 1];
+        _ = b.Slice(at - Stride - 1, (size * Stride) + size + 1);
+        ref byte p = ref Unsafe.Add(ref MemoryMarshal.GetReference(b), at);
+        ref byte top = ref Unsafe.Subtract(ref p, Stride);
+        int corner = Unsafe.Subtract(ref top, 1);
+        if (Sse2.IsSupported && size >= 8)
+        {
+            // The top row in 16-bit lanes; each row adds its left minus the corner and packs back with unsigned saturation,
+            // which clamps to 0 to 255 as Clip8 does (the sums stay within 16 bits).
+            Vector128<short> lo = Sse2.UnpackLow(Vector128.LoadUnsafe(ref top), Vector128<byte>.Zero).AsInt16();
+            Vector128<short> hi = Sse2.UnpackHigh(Vector128.LoadUnsafe(ref top), Vector128<byte>.Zero).AsInt16();
+            for (int y = 0; y < size; y++)
+            {
+                ref byte row = ref Unsafe.Add(ref p, y * Stride);
+                Vector128<short> left = Vector128.Create((short)(Unsafe.Subtract(ref row, 1) - corner));
+                Vector128<byte> o = Sse2.PackUnsignedSaturate(lo + left, hi + left);
+                if (size == 16)
+                {
+                    o.StoreUnsafe(ref row);
+                }
+                else
+                {
+                    Unsafe.WriteUnaligned(ref row, o.AsUInt64().ToScalar());
+                }
+            }
+
+            return;
+        }
+
         for (int y = 0; y < size; y++)
         {
-            int row = at + (y * Stride);
-            int left = b[row - 1] - corner;
+            ref byte row = ref Unsafe.Add(ref p, y * Stride);
+            int left = Unsafe.Subtract(ref row, 1) - corner;
             for (int x = 0; x < size; x++)
             {
-                b[row + x] = Clip8(b[top + x] + left);
+                Unsafe.Add(ref row, x) = Clip8(Unsafe.Add(ref top, x) + left);
             }
         }
     }
