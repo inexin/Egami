@@ -62,19 +62,29 @@ internal static class Av1LoopFilter
         }
         else
         {
+            // A column's edges go top to bottom, and columns do not touch each other: rows of the band at a time, for the cache.
             frame.For((planeMiCols + 15) >> 4, band =>
             {
-                for (int x = band * 16; x < Math.Min(planeMiCols, (band + 1) * 16); x++)
+                int first = band * 16, count = Math.Min(planeMiCols - first, 16);
+                Span<int> next = stackalloc int[16];
+                next.Clear();
+                for (int y = 0; y < planeMiRows; y++)
                 {
-                    for (int y = 0; y < planeMiRows;)
+                    for (int i = 0; i < count; i++)
                     {
+                        if (next[i] != y)
+                        {
+                            continue;
+                        }
+
+                        int x = first + i;
                         (int txSize, int length, int level) = EdgeParameters(frame, plane, false, x * 4, y * 4, width, height, ssx, ssy);
                         if (length != 0)
                         {
                             FilterEdge(buf, (y * 4 * stride) + (x * 4), stride, 1, length, level, h.LoopFilterSharpness, bitDepth);
                         }
 
-                        y += Av1Tables.TxSizeHighUnit[txSize];
+                        next[i] = y + Av1Tables.TxSizeHighUnit[txSize];
                     }
                 }
             });

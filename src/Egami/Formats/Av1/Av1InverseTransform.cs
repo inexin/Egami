@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Av1;
 
@@ -207,18 +208,19 @@ internal static partial class Av1InverseTransform
 
             input[codedW..w].Clear();
             Dct<T>(w, input[..w], output[..w], rangeLo, rangeHi);
-            for (int c = 0; c < w; c++)
+            if (rowShift > 0)
             {
-                Vector256<int> v = output[c];
-                if (rowShift > 0)
+                Vector256<int> half = Vector256.Create(1 << (rowShift - 1));
+                for (int c = 0; c < w; c++)
                 {
-                    v = Vector256.ShiftRightArithmetic(v + Vector256.Create(1 << (rowShift - 1)), rowShift);
+                    output[c] = Vector256.ShiftRightArithmetic(output[c] + half, rowShift);
                 }
+            }
 
-                for (int lane = 0; lane < 8; lane++)
-                {
-                    buf[((r0 + lane) * w) + c] = v.GetElement(lane);
-                }
+            // Eight columns of eight rows at a time, turned into eight rows of eight columns.
+            for (int c = 0; c < w; c += 8)
+            {
+                Transpose(output.Slice(c, 8), buf.Slice((r0 * w) + c), w);
             }
         }
 
@@ -248,6 +250,40 @@ internal static partial class Av1InverseTransform
         }
 
         static (Vector256<int> Lo, Vector256<int> Hi) Bounds(int bits) => (Vector256.Create(-(1 << (bits - 1))), Vector256.Create((1 << (bits - 1)) - 1));
+    }
+
+    /// <summary>Writes the 8x8 block whose columns are <paramref name="columns"/> as eight rows, <paramref name="stride"/> apart.</summary>
+    private static void Transpose(ReadOnlySpan<Vector256<int>> columns, Span<int> rows, int stride)
+    {
+        if (Avx2.IsSupported)
+        {
+            Vector256<int> t0 = Avx2.UnpackLow(columns[0], columns[1]), t1 = Avx2.UnpackHigh(columns[0], columns[1]);
+            Vector256<int> t2 = Avx2.UnpackLow(columns[2], columns[3]), t3 = Avx2.UnpackHigh(columns[2], columns[3]);
+            Vector256<int> t4 = Avx2.UnpackLow(columns[4], columns[5]), t5 = Avx2.UnpackHigh(columns[4], columns[5]);
+            Vector256<int> t6 = Avx2.UnpackLow(columns[6], columns[7]), t7 = Avx2.UnpackHigh(columns[6], columns[7]);
+            Vector256<int> s0 = Avx2.UnpackLow(t0.AsInt64(), t2.AsInt64()).AsInt32(), s1 = Avx2.UnpackHigh(t0.AsInt64(), t2.AsInt64()).AsInt32();
+            Vector256<int> s2 = Avx2.UnpackLow(t1.AsInt64(), t3.AsInt64()).AsInt32(), s3 = Avx2.UnpackHigh(t1.AsInt64(), t3.AsInt64()).AsInt32();
+            Vector256<int> s4 = Avx2.UnpackLow(t4.AsInt64(), t6.AsInt64()).AsInt32(), s5 = Avx2.UnpackHigh(t4.AsInt64(), t6.AsInt64()).AsInt32();
+            Vector256<int> s6 = Avx2.UnpackLow(t5.AsInt64(), t7.AsInt64()).AsInt32(), s7 = Avx2.UnpackHigh(t5.AsInt64(), t7.AsInt64()).AsInt32();
+            ref int r = ref MemoryMarshal.GetReference(rows);
+            Avx2.Permute2x128(s0, s4, 0x20).StoreUnsafe(ref r, 0);
+            Avx2.Permute2x128(s1, s5, 0x20).StoreUnsafe(ref r, (nuint)stride);
+            Avx2.Permute2x128(s2, s6, 0x20).StoreUnsafe(ref r, (nuint)(2 * stride));
+            Avx2.Permute2x128(s3, s7, 0x20).StoreUnsafe(ref r, (nuint)(3 * stride));
+            Avx2.Permute2x128(s0, s4, 0x31).StoreUnsafe(ref r, (nuint)(4 * stride));
+            Avx2.Permute2x128(s1, s5, 0x31).StoreUnsafe(ref r, (nuint)(5 * stride));
+            Avx2.Permute2x128(s2, s6, 0x31).StoreUnsafe(ref r, (nuint)(6 * stride));
+            Avx2.Permute2x128(s3, s7, 0x31).StoreUnsafe(ref r, (nuint)(7 * stride));
+            return;
+        }
+
+        for (int c = 0; c < 8; c++)
+        {
+            for (int lane = 0; lane < 8; lane++)
+            {
+                rows[(lane * stride) + c] = columns[c].GetElement(lane);
+            }
+        }
     }
 
     private static void Dct<T>(int n, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, Vector256<int> lo, Vector256<int> hi)

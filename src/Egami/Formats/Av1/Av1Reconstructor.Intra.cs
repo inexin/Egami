@@ -225,7 +225,8 @@ internal sealed partial class Av1Reconstructor
         ushort[] above = _aboveData, left = _leftData;
         if (needLeft)
         {
-            left.AsSpan().Fill((ushort)(baseValue + 1));
+            // These modes read the edges' first txh (or txw) samples only.
+            left.AsSpan(EdgeBase, txh).Fill((ushort)(baseValue + 1));
             if (nLeft > 0)
             {
                 int i = 0;
@@ -247,7 +248,7 @@ internal sealed partial class Av1Reconstructor
 
         if (needAbove)
         {
-            above.AsSpan().Fill((ushort)(baseValue - 1));
+            above.AsSpan(EdgeBase, txw).Fill((ushort)(baseValue - 1));
             if (nTop > 0)
             {
                 buf.AsSpan(aboveRef, nTop).CopyTo(above.AsSpan(EdgeBase));
