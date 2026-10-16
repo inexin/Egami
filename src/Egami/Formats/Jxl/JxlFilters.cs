@@ -82,8 +82,8 @@ internal static class JxlFilters
     /// <summary>Gaborish (J.2): a 3×3 convolution of each plane with its own side and diagonal weights, normalized.</summary>
     internal static void Gaborish(float[][] planes, int width, int height, int stride, float[] weights, JxlParallel parallel)
     {
-        // Pooled: a frame-sized buffer for every decode would keep the GC busy.
-        float[] output = ArrayPool<float>.Shared.Rent(planes[0].Length);
+        // One new plane: each channel's result takes its place, and the plane it replaces holds the next channel's result.
+        float[] output = new float[planes[0].Length];
         for (int c = 0; c < 3; c++)
         {
             float w0 = weights[2 * c];
@@ -125,10 +125,8 @@ internal static class JxlFilters
                 }
             }, minimumPerThread: 16);
 
-            Array.Copy(output, p, p.Length);
+            (planes[c], output) = (output, p);
         }
-
-        ArrayPool<float>.Shared.Return(output);
     }
 
     private static void GaborishPixel(float[] p, float[] output, int x, int up, int row, int down, int width, float w0, float w1, float norm)
