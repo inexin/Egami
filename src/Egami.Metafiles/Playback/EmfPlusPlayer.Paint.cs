@@ -57,8 +57,9 @@ internal sealed partial class EmfPlusPlayer
 
             case PlusBrush.TextureType when brush.Texture?.Bitmap is Raster<Rgba8> image:
                 {
+                    // Like images, a texture is placed without the pixel offset.
                     (TileMode tx, TileMode ty) = Wrap(brush.WrapMode);
-                    return new PlusFill(new ImagePaint(image, tx, ty, Sampling) { LocalMatrix = local, Antialias = Smooth, BlendMode = Blend }, null);
+                    return new PlusFill(new ImagePaint(image, tx, ty, Sampling) { LocalMatrix = brush.Transform * Unshifted, Antialias = Smooth, BlendMode = Blend }, null);
                 }
 
             case PlusBrush.LinearGradientType:
@@ -300,7 +301,7 @@ internal sealed partial class EmfPlusPlayer
             dashes = [.. dashes, .. dashes];
         }
 
-        LineCap cap = (pen.LineStyle != 0 && dashes is not null ? pen.DashCap : pen.StartCap) switch
+        LineCap cap = (dashes is not null ? pen.DashCap : pen.StartCap) switch
         {
             1 or 0x11 => LineCap.Square,
             2 or 0x12 => LineCap.Round,
@@ -311,7 +312,7 @@ internal sealed partial class EmfPlusPlayer
             Cap = cap,
             Join = pen.Join switch { 1 => LineJoin.Bevel, 2 => LineJoin.Round, _ => LineJoin.Miter },
             MiterLimit = Math.Max(1, pen.MiterLimit),
-            Dash = dashes is null ? null : new DashPattern([.. dashes.Select(v => Math.Max(v * width, 1e-3f))], pen.DashOffset * width),
+            Dash = dashes is null ? null : new DashPattern([.. dashes.Select((v, i) => DashLength(v * width, i, cap, width))], pen.DashOffset * width),
         };
 
         PlusFill fill = BrushPaint(pen.Brush);
@@ -366,6 +367,13 @@ internal sealed partial class EmfPlusPlayer
     }
 
     /// <summary>The anchor caps (square, round, diamond, arrow) and custom caps at the open ends of the path.</summary>
+    /// <summary>GDI+ keeps a round or square dash cap inside the dash, so the dash shortens and the gap after it grows by the width.</summary>
+    private static float DashLength(float length, int index, LineCap cap, float width)
+    {
+        float extra = cap == LineCap.Butt ? 0 : width;
+        return Math.Max(index % 2 == 0 ? length - extra : length + extra, 1e-3f);
+    }
+
     private void Anchors(Path world, PlusPen pen, float width, Paint paint, Matrix3x2 full)
     {
         ReadOnlySpan<Vector2> p = world.Points;
@@ -394,7 +402,7 @@ internal sealed partial class EmfPlusPlayer
             0x11 => Path.Polygon([end + ((normal + dir) * size / 2), end + ((normal - dir) * size / 2), end - ((normal + dir) * size / 2), end - ((normal - dir) * size / 2)]),
             0x12 => Path.Circle(end, size / 2),
             0x13 => Path.Polygon([end + (dir * size / 2), end + (normal * size / 2), end - (dir * size / 2), end - (normal * size / 2)]),
-            0x14 => Path.Polygon([end + (dir * size), end + (normal * size / 2), end - (normal * size / 2)]),
+            0x14 => Path.Polygon([end, end - (dir * size) + (normal * size / 2), end - (dir * size) - (normal * size / 2)]),
             _ => null,
         };
         if (kind == 0xFF && custom is { Arrow: true } arrow)

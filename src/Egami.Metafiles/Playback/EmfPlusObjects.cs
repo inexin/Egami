@@ -272,12 +272,12 @@ internal static class PlusObjectReader
                     }
                     else if ((flags & 0x08) != 0)
                     {
-                        stops = BlendFactors(d, ref at, start, end);
+                        stops = BlendFactors(d, ref at, start, end, (flags & 0x80) != 0);
                     }
 
                     if ((flags & 0x10) != 0 && stops is null)
                     {
-                        stops = BlendFactors(d, ref at, start, end);
+                        stops = BlendFactors(d, ref at, start, end, (flags & 0x80) != 0);
                     }
 
                     return new PlusBrush { Type = type, WrapMode = wrap, Rect = rect, Color = start, EndColor = end, Transform = transform, Stops = stops, GammaCorrected = (flags & 0x80) != 0 };
@@ -326,8 +326,9 @@ internal static class PlusObjectReader
                     }
                     else if ((flags & 0x08) != 0)
                     {
-                        // The surround color is at position 0, the center color at 1.
-                        stops = BlendFactors(d, ref at, surround.Length > 0 ? surround[0] : center, center);
+                        // Measured against GDI+: a blend position runs from the center (0) to the boundary (1), and its factor from the
+                        // center color (0) to the surround color (1). The stops are kept from the boundary, as preset colors are.
+                        stops = [.. BlendFactors(d, ref at, center, surround.Length > 0 ? surround[0] : center).Select(s => new GradientStop(1 - s.Offset, s.Color))];
                     }
 
                     Vector2 focus = Vector2.Zero;
@@ -371,8 +372,11 @@ internal static class PlusObjectReader
         return stops;
     }
 
-    /// <summary>EmfPlusBlendFactors: a count, positions, then factors from the start color (0) to the end color (1).</summary>
-    private static GradientStop[] BlendFactors(ReadOnlySpan<byte> d, ref int at, Rgba8 start, Rgba8 end)
+    /// <summary>
+    /// EmfPlusBlendFactors: a count, positions, then factors from the start color (0) to the end color (1); a gamma-corrected
+    /// brush mixes the two colors in linear light.
+    /// </summary>
+    private static GradientStop[] BlendFactors(ReadOnlySpan<byte> d, ref int at, Rgba8 start, Rgba8 end, bool gamma = false)
     {
         int n = Count(d, ref at, 8);
         GradientStop[] stops = new GradientStop[n];
@@ -380,11 +384,18 @@ internal static class PlusObjectReader
         {
             float position = Math.Clamp(F32(d, at + (i * 4)), 0, 1);
             float t = Math.Clamp(F32(d, at + (n * 4) + (i * 4)), 0, 1);
-            stops[i] = new GradientStop(position, Lerp(start, end, t));
+            stops[i] = new GradientStop(position, gamma ? LinearLerp(start, end, t) : Lerp(start, end, t));
         }
 
         at += n * 8;
         return stops;
+    }
+
+    private static Rgba8 LinearLerp(Rgba8 a, Rgba8 b, float t)
+    {
+        static byte Mix(byte x, byte y, float t) =>
+            (byte)((MathF.Pow((MathF.Pow(x / 255f, 2.2f) * (1 - t)) + (MathF.Pow(y / 255f, 2.2f) * t), 1 / 2.2f) * 255) + 0.5f);
+        return new(Mix(a.R, b.R, t), Mix(a.G, b.G, t), Mix(a.B, b.B, t), (byte)(a.A + ((b.A - a.A) * t) + 0.5f));
     }
 
     public static Rgba8 Lerp(Rgba8 a, Rgba8 b, float t) =>
