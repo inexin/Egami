@@ -3184,3 +3184,10 @@ static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream! stream, int
 static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(string! path, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
 static Egami.Formats.Jxl.JxlImage.ReconstructJpeg(string! path, string! outputPath, Egami.EgamiContext? context = null) -> void
 static Egami.Formats.Jxl.JxlImage.ReconstructJpeg(System.IO.Stream! stream, System.IO.Stream! output, Egami.EgamiContext? context = null) -> void
+Egami.Formats.Jxl.JxlWriterOptions
+Egami.Formats.Jxl.JxlWriterOptions.JxlWriterOptions() -> void
+static Egami.Formats.Jxl.JxlWriterOptions.Default.get -> Egami.Formats.Jxl.JxlWriterOptions!
+Egami.Formats.Jxl.JxlWriterOptions.Effort.get -> int
+Egami.Formats.Jxl.JxlWriterOptions.Effort.init -> void
+Egami.Formats.Jxl.JxlWriterOptions.Lossless.get -> bool?
+Egami.Formats.Jxl.JxlWriterOptions.Lossless.init -> void

@@ -651,6 +651,15 @@ Lossless and lossy files, animations (as their blended frames), extra channels a
 A JPEG recompressed losslessly into JPEG XL (`cjxl` does this by default for JPEG input) keeps a jbrd box, and
 `JxlImage.ReconstructJpeg` writes the original file from it, byte for byte. Loading such a file gives its pixels, as viewers show them.
 
+## Save a lossless JPEG XL file
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save)]
+
+Every pixel comes back exactly, in the raster's own precision: 8 or 16-bit, half or single float, gray or RGB, with alpha
+when it is not opaque everywhere. The effort follows cjxl's: 1 is its fast path, 7 learns a context tree and tries palettes
+and color transforms, for files within a few bytes of cjxl's. The ICC profile (or an enumerated sRGB, linear or HDR space),
+EXIF, XMP and orientation are kept. A lossy encoder comes in 2.9.7.
+
 ## Read an HDR JPEG XL file as SDR
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#cookbook-sdr)]

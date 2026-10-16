@@ -85,7 +85,7 @@ internal static class JxlIcc
         ReadOnlySpan<byte> headerData = data[..headerSize];
         for (int i = 0; i < headerSize; i++)
         {
-            output.Add((byte)(Predict(i, (uint)outputSize, output) + headerData[i]));
+            output.Add((byte)(PredictHeader(i, (uint)outputSize, output) + headerData[i]));
         }
 
         data = data[headerSize..];
@@ -263,7 +263,7 @@ internal static class JxlIcc
         return [.. output];
     }
 
-    private static int Context(int index, int b1, int b2)
+    internal static int Context(int index, int b1, int b2)
     {
         if (index <= 128)
         {
@@ -292,7 +292,7 @@ internal static class JxlIcc
     }
 
     /// <summary>Predicts a header byte from the profile size and the bytes decoded so far, as libjxl's ICCPredictHeader does.</summary>
-    private static byte Predict(int index, uint outputSize, List<byte> header)
+    internal static byte PredictHeader(int index, uint outputSize, List<byte> header)
     {
         switch (index)
         {

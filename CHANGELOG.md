@@ -34,6 +34,14 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   still decodes only the groups it touches (`Jxl.RegionGroups` at Debug level counts them).
 - Speed against djxl, threads matched: lossless within 1.5 times; lossy 1.4 to 2.3 times on one thread and 1.9 to 3 times on
   all cores; recompressed JPEGs further behind.
+- `Raster.Save` writes lossless JPEG XL (`JxlWriterOptions`): every sample back exactly in the raster's own precision (8 or
+  16-bit, half or single float, gray or RGB, alpha unless opaque everywhere), at `Effort` 1 to 7 on cjxl's scale, with files
+  within 0.3% of cjxl's (libjxl 0.12.0) at the same effort and djxl decoding every one bit for bit. Effort 1 is libjxl's fast
+  lossless path, 2 and 3 its fixed trees, 4 and up learn the context tree, 5 and up try local palettes and color transforms.
+  The color space goes in enumerated when it is sRGB, linear, PQ or HLG, else as the ICC profile; EXIF and XMP go in boxes,
+  the orientation in the codestream too. Encoding runs on up to `MaxParallelism` threads with the same file at every count,
+  within 1.75 times cjxl's time on one thread and about as fast as cjxl on all cores.
+  `JxlWriterOptions.Lossless` is reserved for the lossy encoder of 2.9.7; `false` is refused until then.
 
 ### Raw CCITT fax data
 

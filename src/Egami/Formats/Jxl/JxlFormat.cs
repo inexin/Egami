@@ -17,6 +17,7 @@ public static class JxlFormat
         SignatureLength = 12,
         Matches = JxlContainer.Matches,
         Reader = JxlReader.Instance,
+        Writer = JxlWriter.Instance,
     };
 }
 

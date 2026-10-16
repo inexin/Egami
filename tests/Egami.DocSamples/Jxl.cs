@@ -116,7 +116,14 @@ public class Jxl
         sdr.Save("hdr-as-sdr.jpg");
         #endregion
 
+        #region save
+        // Lossless JPEG XL, about the size cjxl -d 0 makes at the same effort (1 fastest to 7 smallest, 5 by default).
+        using Raster photo = Raster.Load("duck.png");
+        photo.Save("duck-lossless.jxl", new JxlWriterOptions { Effort = 7 });
+        #endregion
+
         Assert.True(File.Exists("duck.png"));
         Assert.True(File.Exists("hdr-as-sdr.jpg"));
+        Assert.True(File.Exists("duck-lossless.jxl"));
     }
 }

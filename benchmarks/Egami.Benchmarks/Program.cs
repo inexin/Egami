@@ -29,6 +29,13 @@ if (args is ["--time-jxl", .. string[] jxls])
     return;
 }
 
+// Encode lossless JPEG XL (Phase 2.9.3 encoder gate), timed: -- --encode-jxl <effort> <in> <out.jxl> [<in> <out.jxl>]...
+if (args is ["--encode-jxl", string effort, .. string[] pairs])
+{
+    JxlTiming.Encode(int.Parse(effort, System.Globalization.CultureInfo.InvariantCulture), pairs);
+    return;
+}
+
 // Write the benchmark photo as PNG, for tools/make-jpeg-bench-files.py: -- --write-photo <path>
 if (args is ["--write-photo", string path])
 {
