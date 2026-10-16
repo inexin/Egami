@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -182,6 +186,12 @@ internal static class Av1LoopFilter
         limit <<= shift;
         int thresh = (level >> 4) << shift;
         int flatThresh = 1 << shift;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            FilterEdgeVector(s, at, step, along, length, new Thresholds(limit, blimit, thresh, flatThresh), bitDepth);
+            return;
+        }
+
         for (int i = 0; i < 4; i++, at += along)
         {
             int p0 = s[at - step], q0 = s[at], p1 = s[at - (2 * step)], q1 = s[at + step];
@@ -277,6 +287,168 @@ internal static class Av1LoopFilter
                     }
             }
         }
+    }
+
+    /// <summary>An edge's limits: its level's limit and blimit, the high edge variance threshold and the flatness threshold.</summary>
+    private readonly record struct Thresholds(int Limit, int Blimit, int Thresh, int Flat);
+
+    /// <summary>
+    /// <see cref="FilterEdge"/> on its four rows (or columns) at once, a lane each: every filter the length allows worked out,
+    /// then each lane given the one its masks choose, as the scalar filter branches. The lanes never touch each other's samples.
+    /// </summary>
+    private static void FilterEdgeVector(ushort[] s, int at, int step, int along, int length, Thresholds t, int bitDepth)
+    {
+        ref ushort origin = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(s), at);
+        int taps = length == 14 ? 7 : length == 4 ? 2 : length == 6 ? 3 : 4;
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)(at - (taps * step)), (uint)s.Length, nameof(at));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)(at + ((taps - 1) * step) + (3 * along)), (uint)s.Length, nameof(at));
+
+        Span<Vector128<int>> v = stackalloc Vector128<int>[14];
+        for (int k = -taps; k < taps; k++)
+        {
+            v[7 + k] = Load(ref origin, k * step, along);
+        }
+
+        // v[7 + k]: q_k for k >= 0, p_(-1-k) for k < 0.
+        Vector128<int> p0 = v[6], p1 = v[5], q0 = v[7], q1 = v[8];
+        Vector128<int> limit = Vector128.Create(t.Limit), flatThresh = Vector128.Create(t.Flat);
+        Vector128<int> mask = Le(Vector128.Abs(p1 - p0), limit) & Le(Vector128.Abs(q1 - q0), limit)
+            & Le((Vector128.Abs(p0 - q0) * 2) + Vector128.ShiftRightArithmetic(Vector128.Abs(p1 - q1), 1), Vector128.Create(t.Blimit));
+        Vector128<int> flat = Vector128<int>.Zero, flat2 = Vector128<int>.Zero;
+        if (length >= 6)
+        {
+            Vector128<int> p2 = v[4], q2 = v[9];
+            mask &= Le(Vector128.Abs(p2 - p1), limit) & Le(Vector128.Abs(q2 - q1), limit);
+            flat = Le(Vector128.Abs(p1 - p0), flatThresh) & Le(Vector128.Abs(q1 - q0), flatThresh) & Le(Vector128.Abs(p2 - p0), flatThresh)
+                & Le(Vector128.Abs(q2 - q0), flatThresh);
+            if (length >= 8)
+            {
+                Vector128<int> p3 = v[3], q3 = v[10];
+                mask &= Le(Vector128.Abs(p3 - p2), limit) & Le(Vector128.Abs(q3 - q2), limit);
+                flat &= Le(Vector128.Abs(p3 - p0), flatThresh) & Le(Vector128.Abs(q3 - q0), flatThresh);
+            }
+
+            if (length == 14)
+            {
+                flat2 = flat;
+                for (int k = 4; k < 7; k++)
+                {
+                    flat2 &= Le(Vector128.Abs(v[6 - k] - p0), flatThresh) & Le(Vector128.Abs(v[7 + k] - q0), flatThresh);
+                }
+            }
+        }
+
+        if (mask == Vector128<int>.Zero)
+        {
+            return;
+        }
+
+        // The narrow filter, for every lane the wider ones leave.
+        Span<Vector128<int>> o = stackalloc Vector128<int>[14];
+        v.CopyTo(o);
+        Filter4(v, o, mask & ~flat, t.Thresh, bitDepth);
+        if (length >= 6 && (mask & flat) != Vector128<int>.Zero)
+        {
+            Vector128<int> f = mask & flat & ~flat2;
+            if (length == 6)
+            {
+                Vector128<int> p2 = v[4], q2 = v[9];
+                Vector128<int> four = Vector128.Create(4);
+                o[5] = Select(f, Vector128.ShiftRightArithmetic((p2 * 3) + (p1 * 2) + (p0 * 2) + q0 + four, 3), o[5]);
+                o[6] = Select(f, Vector128.ShiftRightArithmetic(p2 + (p1 * 2) + (p0 * 2) + (q0 * 2) + q1 + four, 3), o[6]);
+                o[7] = Select(f, Vector128.ShiftRightArithmetic(p1 + (p0 * 2) + (q0 * 2) + (q1 * 2) + q2 + four, 3), o[7]);
+                o[8] = Select(f, Vector128.ShiftRightArithmetic(p0 + (q0 * 2) + (q1 * 2) + (q2 * 3) + four, 3), o[8]);
+            }
+            else
+            {
+                Vector128<int> p2 = v[4], q2 = v[9], p3 = v[3], q3 = v[10];
+                Vector128<int> four = Vector128.Create(4);
+                o[4] = Select(f, Vector128.ShiftRightArithmetic(p3 + p3 + p3 + (2 * p2) + p1 + p0 + q0 + four, 3), o[4]);
+                o[5] = Select(f, Vector128.ShiftRightArithmetic(p3 + p3 + p2 + (2 * p1) + p0 + q0 + q1 + four, 3), o[5]);
+                o[6] = Select(f, Vector128.ShiftRightArithmetic(p3 + p2 + p1 + (2 * p0) + q0 + q1 + q2 + four, 3), o[6]);
+                o[7] = Select(f, Vector128.ShiftRightArithmetic(p2 + p1 + p0 + (2 * q0) + q1 + q2 + q3 + four, 3), o[7]);
+                o[8] = Select(f, Vector128.ShiftRightArithmetic(p1 + p0 + q0 + (2 * q1) + q2 + q3 + q3 + four, 3), o[8]);
+                o[9] = Select(f, Vector128.ShiftRightArithmetic(p0 + q0 + q1 + (2 * q2) + q3 + q3 + q3 + four, 3), o[9]);
+                if (length == 14 && (mask & flat2) != Vector128<int>.Zero)
+                {
+                    Wide(v, o, mask & flat2);
+                }
+            }
+        }
+
+        for (int k = -taps; k < taps; k++)
+        {
+            Store(ref origin, k * step, along, o[7 + k]);
+        }
+
+        static Vector128<int> Le(Vector128<int> a, Vector128<int> b) => Vector128.LessThanOrEqual(a, b);
+
+        static Vector128<int> Select(Vector128<int> m, Vector128<int> a, Vector128<int> b) => Vector128.ConditionalSelect(m, a, b);
+
+        static Vector128<int> Load(ref ushort origin, int offset, int along) => along == 1
+            ? Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref origin, offset)))).AsUInt16()).AsInt32()
+            : Vector128.Create(Unsafe.Add(ref origin, offset), Unsafe.Add(ref origin, offset + along), Unsafe.Add(ref origin, offset + (2 * along)),
+                Unsafe.Add(ref origin, offset + (3 * along)));
+
+        static void Store(ref ushort origin, int offset, int along, Vector128<int> value)
+        {
+            if (along == 1)
+            {
+                Vector128<ushort> narrow = Vector128.Narrow(value.AsUInt32(), value.AsUInt32());
+                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref origin, offset)), narrow.AsUInt64().ToScalar());
+                return;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                Unsafe.Add(ref origin, offset + (i * along)) = (ushort)value.GetElement(i);
+            }
+        }
+    }
+
+    /// <summary>highbd_filter4 on lanes, applied where <paramref name="m"/> is set.</summary>
+    private static void Filter4(ReadOnlySpan<Vector128<int>> v, Span<Vector128<int>> o, Vector128<int> m, int thresh, int bitDepth)
+    {
+        int shift = bitDepth - 8;
+        Vector128<int> offset = Vector128.Create(0x80 << shift);
+        Vector128<int> lo = Vector128.Create(-128 << shift), hi = Vector128.Create((128 << shift) - 1);
+        Vector128<int> ps1 = v[5] - offset, ps0 = v[6] - offset, qs0 = v[7] - offset, qs1 = v[8] - offset;
+        Vector128<int> threshold = Vector128.Create(thresh);
+        Vector128<int> hev = Vector128.GreaterThan(Vector128.Abs(ps1 - ps0), threshold) | Vector128.GreaterThan(Vector128.Abs(qs1 - qs0), threshold);
+        Vector128<int> filter = hev & Clamp(ps1 - qs1, lo, hi);
+        filter = Clamp(filter + (qs0 - ps0) * 3, lo, hi);
+        Vector128<int> filter1 = Vector128.ShiftRightArithmetic(Clamp(filter + Vector128.Create(4), lo, hi), 3);
+        Vector128<int> filter2 = Vector128.ShiftRightArithmetic(Clamp(filter + Vector128.Create(3), lo, hi), 3);
+        o[7] = Vector128.ConditionalSelect(m, Clamp(qs0 - filter1, lo, hi) + offset, o[7]);
+        o[6] = Vector128.ConditionalSelect(m, Clamp(ps0 + filter2, lo, hi) + offset, o[6]);
+        filter = Vector128.AndNot(Vector128.ShiftRightArithmetic(filter1 + Vector128<int>.One, 1), hev);
+        o[8] = Vector128.ConditionalSelect(m, Clamp(qs1 - filter, lo, hi) + offset, o[8]);
+        o[5] = Vector128.ConditionalSelect(m, Clamp(ps1 + filter, lo, hi) + offset, o[5]);
+
+        static Vector128<int> Clamp(Vector128<int> x, Vector128<int> lo, Vector128<int> hi) => Vector128.Min(Vector128.Max(x, lo), hi);
+    }
+
+    /// <summary>The 14-tap filter's outputs on lanes, applied where <paramref name="m"/> is set.</summary>
+    private static void Wide(ReadOnlySpan<Vector128<int>> v, Span<Vector128<int>> o, Vector128<int> m)
+    {
+        Vector128<int> p6 = v[0], p5 = v[1], p4 = v[2], p3 = v[3], p2 = v[4], p1 = v[5], p0 = v[6];
+        Vector128<int> q0 = v[7], q1 = v[8], q2 = v[9], q3 = v[10], q4 = v[11], q5 = v[12], q6 = v[13];
+        Vector128<int> eight = Vector128.Create(8);
+        o[1] = Pick(m, (p6 * 7) + (p5 * 2) + (p4 * 2) + p3 + p2 + p1 + p0 + q0 + eight, o[1]);
+        o[2] = Pick(m, (p6 * 5) + (p5 * 2) + (p4 * 2) + (p3 * 2) + p2 + p1 + p0 + q0 + q1 + eight, o[2]);
+        o[3] = Pick(m, (p6 * 4) + p5 + (p4 * 2) + (p3 * 2) + (p2 * 2) + p1 + p0 + q0 + q1 + q2 + eight, o[3]);
+        o[4] = Pick(m, (p6 * 3) + p5 + p4 + (p3 * 2) + (p2 * 2) + (p1 * 2) + p0 + q0 + q1 + q2 + q3 + eight, o[4]);
+        o[5] = Pick(m, (p6 * 2) + p5 + p4 + p3 + (p2 * 2) + (p1 * 2) + (p0 * 2) + q0 + q1 + q2 + q3 + q4 + eight, o[5]);
+        o[6] = Pick(m, p6 + p5 + p4 + p3 + p2 + (p1 * 2) + (p0 * 2) + (q0 * 2) + q1 + q2 + q3 + q4 + q5 + eight, o[6]);
+        o[7] = Pick(m, p5 + p4 + p3 + p2 + p1 + (p0 * 2) + (q0 * 2) + (q1 * 2) + q2 + q3 + q4 + q5 + q6 + eight, o[7]);
+        o[8] = Pick(m, p4 + p3 + p2 + p1 + p0 + (q0 * 2) + (q1 * 2) + (q2 * 2) + q3 + q4 + q5 + (q6 * 2) + eight, o[8]);
+        o[9] = Pick(m, p3 + p2 + p1 + p0 + q0 + (q1 * 2) + (q2 * 2) + (q3 * 2) + q4 + q5 + (q6 * 3) + eight, o[9]);
+        o[10] = Pick(m, p2 + p1 + p0 + q0 + q1 + (q2 * 2) + (q3 * 2) + (q4 * 2) + q5 + (q6 * 4) + eight, o[10]);
+        o[11] = Pick(m, p1 + p0 + q0 + q1 + q2 + (q3 * 2) + (q4 * 2) + (q5 * 2) + (q6 * 5) + eight, o[11]);
+        o[12] = Pick(m, p0 + q0 + q1 + q2 + q3 + (q4 * 2) + (q5 * 2) + (q6 * 7) + eight, o[12]);
+
+        static Vector128<int> Pick(Vector128<int> m, Vector128<int> sum, Vector128<int> other) =>
+            Vector128.ConditionalSelect(m, Vector128.ShiftRightArithmetic(sum, 4), other);
     }
 
     /// <summary>highbd_filter4: the narrow filter, its taps limited when the edge has high variance.</summary>
