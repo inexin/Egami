@@ -38,6 +38,14 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
         }
 
         (int width, int height) = OutputSize(file);
+        if (file.Overlay is null && file.Primary.Type != AvifFile.Grid && file.Heif.Property(file.Cells[0], AvifProperties.A1lx) is not null
+            && Av1.Av1Decoder.FirstFrameSize(file.Heif.ItemData(file.Cells[0], input.Limits).ToArray(), input.FormatName) is (int w, int h)
+            && (w, h) != (file.Width, file.Height))
+        {
+            // Load gives a spatially layered image's base layer, at its own size (design question 15).
+            (width, height) = (w, h);
+        }
+
         input.Limits.CheckFrameSize(width, height);
         PixelLayoutInfo layout = options.Hdr is not null && file.ToneMap is not null ? RgbaF16.Layout : NaturalLayout(file);
         return new RasterInfo

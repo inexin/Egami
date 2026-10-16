@@ -116,7 +116,8 @@ public partial class AvifProbeTests
         Match mirror = MirrorPattern().Match(transforms);
         Assert.Equal(mirror.Success ? int.Parse(mirror.Groups[1].Value, CultureInfo.InvariantCulture) : null, avif.Mirror);
 
-        (int width, int height) = avif.Crop is (_, _, int w, int h) ? (w, h) : (avif.Width, avif.Height);
+        // A layered image probes at its base layer's size, which Load gives; AvifItemTests checks that.
+        (int width, int height) = details.IsProgressive ? (probe.Width, probe.Height) : avif.Crop is (_, _, int w, int h) ? (w, h) : (avif.Width, avif.Height);
         Assert.Equal((width, height), (probe.Width, probe.Height));
         Assert.Equal(AvifFile.Orient(avif.Rotation, avif.Mirror), probe.Orientation);
         Assert.Equal(details.BitDepth > 8 ? 16 : 8, probe.Layout.BitsPerChannel);

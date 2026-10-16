@@ -3,6 +3,34 @@ namespace Egami.Formats.Av1;
 /// <summary>Decodes the frames of an AV1 stream as an AVIF item holds it.</summary>
 internal static class Av1Decoder
 {
+    /// <summary>Gets the size of a stream's first frame from its sequence and frame headers alone, or null when it has none.</summary>
+    internal static (int Width, int Height)? FirstFrameSize(byte[] data, string formatName)
+    {
+        Av1SequenceHeader? sequence = null;
+        foreach (Av1Obu obu in Av1Obu.Split(data, formatName))
+        {
+            ReadOnlySpan<byte> payload = data.AsSpan(obu.PayloadStart, obu.PayloadLength);
+            int idc = sequence?.OperatingPoints[0].Idc ?? 0;
+            if (obu.Type is not (Av1ObuType.SequenceHeader or Av1ObuType.TemporalDelimiter) && obu.HasExtension && idc != 0
+                && (((idc >> obu.TemporalId) & 1) == 0 || ((idc >> (obu.SpatialId + 8)) & 1) == 0))
+            {
+                continue;
+            }
+
+            if (obu.Type == Av1ObuType.SequenceHeader && sequence is null)
+            {
+                sequence = Av1SequenceHeader.Parse(payload, formatName);
+            }
+            else if (obu.Type is Av1ObuType.FrameHeader or Av1ObuType.Frame && sequence is not null)
+            {
+                Av1FrameHeader header = Av1FrameHeader.Parse(payload, sequence, obu.TemporalId, obu.SpatialId, formatName);
+                return (header.UpscaledWidth, header.FrameHeight);
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Decodes the first frame of a low-overhead (Section 5) stream, with operating point 0: its sequence header, frame header
     /// and tile groups, reconstructing its samples unless <paramref name="reconstruct"/> is false, and applying the in-loop

@@ -124,10 +124,17 @@ public class AvifItemTests
         Assert.Contains(raster.Metadata.Warnings, w => w.Id == "Avif.SequenceFirstFrame");
     }
 
-    [Fact]
-    public void LayeredImageLoadsItsBaseLayerWithAWarning()
+    [Theory]
+    [InlineData("duck-layered-3.avif")]
+    [InlineData("duck-progressive.avif")]
+    public void LayeredImageLoadsItsBaseLayerWithAWarning(string file)
     {
-        using Raster raster = Raster.Load(Path.Combine(Corpus, "duck-layered-3.avif"));
+        string path = Path.Combine(Corpus, file);
+        using Raster raster = Raster.Load(path);
         Assert.Contains(raster.Metadata.Warnings, w => w.Id == "Avif.BaseLayerOnly");
+
+        // Probe gives the size Load gives: a spatially layered base layer's own, smaller than ispe's.
+        RasterInfo info = Raster.Probe(path);
+        Assert.Equal((raster.Width, raster.Height), (info.Width, info.Height));
     }
 }
