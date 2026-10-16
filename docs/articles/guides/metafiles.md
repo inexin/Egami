@@ -70,5 +70,12 @@ reader, and text. Drawn aliased, the synthetic test files match Windows GDI with
 Egami draws with the nearest blend: AND as multiply, OR as lighten, XOR as difference, and the common transparent-bitmap
 idioms as one masked image; others draw as a copy with a `Metafile.RasterOperation` warning.
 
+EMF+ records play as GDI+ plays them: the world and page transforms, containers, clips with all six combine modes,
+smoothing, pixel offset and compositing; solid, hatch, texture, linear and path gradient brushes (path gradients as a
+Gouraud mesh); pens with dashes, compound lines, inset alignment and anchor and arrow caps; cardinal curves; images, with
+JPEG and PNG handed to the canvas unchanged so a PDF page embeds them as they are, and metafile images played as vectors up to
+eight levels deep; GDI+ 1.1 image effects; `DrawString` laid out in its rectangle and `DrawDriverString`. In a dual file the
+GDI records play only where GDI+ hands drawing to GDI (EmfPlusGetDC).
+
 Flood fills, OpenGL records, escapes and PostScript carried in comments are skipped with a `Metafile.SkippedRecord`
 warning. The [diagnostics](../diagnostics.md) page lists every `Metafile.*` id.

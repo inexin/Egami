@@ -18,8 +18,12 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   regions, bitmaps and raster operations, gradients and text. Drawn aliased, the test files match Windows GDI within a mean of
   one level and 99% of pixels within 16 levels; text within a looser bound. Text keeps the file's glyph positions in a
   substitute face (Carlito for Calibri, Liberation for Arial, Times New Roman and Courier New, and your own substitutions).
+- EMF+ records play as GDI+ plays them: transforms and containers, clips, gradients (path gradients as meshes), pens with
+  dashes, compound lines and caps, images (JPEG and PNG passed to PDF unchanged, nested metafiles as vectors), image
+  effects, `DrawString` and `DrawDriverString`; dual files draw their EMF+ records, or their GDI part with
+  `MetafilePlayback.Gdi`.
 - `MetafileFormat` lets `Raster.Load` and `Raster.Probe` read metafiles (opt-in, as SVG). Drawing the 2,111-file corpus
-  takes 0.69 times what GDI+ takes.
+  takes 0.74 times what GDI+ takes.
 
 ### FOGRA39 print profile
 
