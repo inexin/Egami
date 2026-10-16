@@ -307,11 +307,8 @@ internal sealed partial class Av1TileParser
             eob += eobExtra;
         }
 
+        // The levels buffer is all zero between blocks: each block clears the positions it wrote when it is done.
         byte[] levels = _levels;
-        if (eob > 1)
-        {
-            Array.Clear(levels, 0, ((height + 4) * (width + 4)) + 16);
-        }
 
         int baseTable = Av1FrameContext.CoeffBase[((txsCtx * 2) + planeType) * 42];
         int brTable = Av1FrameContext.CoeffBr[((Math.Min(txsCtx, 3) * 2) + planeType) * 21];
@@ -402,11 +399,14 @@ internal sealed partial class Av1TileParser
         for (int c = 0; c < eob; c++)
         {
             int pos = scan[c];
-            int level = levels[pos + ((pos >> bhl) << 2)];
+            int at = pos + ((pos >> bhl) << 2);
+            int level = levels[at];
             if (level == 0)
             {
                 continue;
             }
+
+            levels[at] = 0;
 
             int sign = c == 0 ? Symbol(Av1FrameContext.DcSign[(planeType * 3) + dcSignCtx], 2) : _r.Bit();
             if (level >= 15)

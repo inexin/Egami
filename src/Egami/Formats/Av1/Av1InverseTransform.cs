@@ -4,6 +4,9 @@ namespace Egami.Formats.Av1;
 /// AV1's inverse transforms, after libaom's av1_inv_txfm2d.c and idct.c (BSD 2-clause, see THIRD-PARTY-NOTICES): rows, then
 /// columns, then the residual added to the prediction and clipped; the Walsh-Hadamard transform for lossless blocks.
 /// </summary>
+// Every stack buffer here is written before it is read (as in libaom, whose arrays are not initialized either), so skipping
+// the zeroing is safe and saves it on each transform block.
+[System.Runtime.CompilerServices.SkipLocalsInit]
 internal static partial class Av1InverseTransform
 {
     private const int CosBit = 12;
@@ -58,7 +61,7 @@ internal static partial class Av1InverseTransform
         int rowClamp = bitDepth + 8, colClamp = Math.Max(bitDepth + 6, 16);
         int max = (1 << bitDepth) - 1;
 
-        Span<int> buf = stackalloc int[64 * 64];
+        Span<int> buf = stackalloc int[w * h];
         Span<int> tempIn = stackalloc int[64];
         Span<int> tempOut = stackalloc int[64];
         for (int r = 0; r < h; r++)

@@ -29,6 +29,13 @@ if (args is ["--time-jxl", .. string[] jxls])
     return;
 }
 
+// Time AVIF loading (Phase 2.9.2 speed gate) at one thread and all cores: -- --time-avif <file.avif>...
+if (args is ["--time-avif", .. string[] avifs])
+{
+    JxlTiming.Run(avifs);
+    return;
+}
+
 // Encode lossless JPEG XL (Phase 2.9.3 encoder gate), timed: -- --encode-jxl <effort> <in> <out.jxl> [<in> <out.jxl>]...
 if (args is ["--encode-jxl", string effort, .. string[] pairs])
 {

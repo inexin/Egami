@@ -102,6 +102,163 @@ internal sealed class HeifRgbConverter
     /// </summary>
     internal bool Supported { get; }
 
+    /// <summary>
+    /// Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into
+    /// <paramref name="target"/>, as interleaved samples of <see cref="OutputDepth"/> bits (bytes, or native-endian 16-bit words).
+    /// </summary>
+    internal void Write(int y, int x, int width, Span<byte> target)
+    {
+        if (_mode == Mode.Coefficients && !_color.Monochrome && !_floatUnmultiply)
+        {
+            WriteCoefficients(y, x, width, target);
+            return;
+        }
+
+        int[] samples = System.Buffers.ArrayPool<int>.Shared.Rent(width * Channels);
+        try
+        {
+            Span<int> row = samples.AsSpan(0, width * Channels);
+            Row(y, x, width, row);
+            if (OutputDepth > 8)
+            {
+                Span<ushort> words = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, ushort>(target);
+                for (int i = 0; i < row.Length; i++)
+                {
+                    words[i] = (ushort)row[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < row.Length; i++)
+                {
+                    target[i] = (byte)row[i];
+                }
+            }
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<int>.Shared.Return(samples);
+        }
+    }
+
+    /// <summary>
+    /// The common case of <see cref="Write"/>, color through Kr and Kb without premultiplication undone in floating point: the
+    /// chroma rows' lookups and weighted terms computed once a row, with the operations in libavif's order so the result is the same.
+    /// </summary>
+    private void WriteCoefficients(int y, int x, int width, Span<byte> target)
+    {
+        HeifPlanes c = _color;
+        int ssx = c.SubsamplingX, ssy = c.SubsamplingY, max = _yuvMax;
+        ushort[] yPlane = c.Samples[0], uPlane = c.Samples[1], vPlane = c.Samples[2];
+        int yRow = y * c.Strides[0], uvStride = c.Strides[1];
+        int uvRow = (y >> ssy) * uvStride;
+        bool subsampled = (ssx | ssy) != 0;
+        float[] tableY = _tableY, tableUv = _tableUv;
+        float cR = 2 * (1 - _kr), cB = 2 * (1 - _kb), kR = _kr * (1 - _kr), kB = _kb * (1 - _kb), kg = _kg;
+        float maxF = _rgbMax;
+        bool wide = OutputDepth > 8;
+        Span<ushort> words = wide ? System.Runtime.InteropServices.MemoryMarshal.Cast<byte, ushort>(target) : default;
+        ushort[]? aPlane = _alpha?.Samples[0];
+        int aRow = _alpha is null ? 0 : y * _alpha.Strides[0];
+        int channels = Channels;
+
+        // For subsampled chroma, the four weighted terms of each chroma sample in the row and in the adjacent row.
+        int first = 0, count = 0;
+        float[]? terms = null;
+        if (subsampled)
+        {
+            int adjRow = 0;
+            if (!(y == 0 || (y == c.Height - 1 && (y & 1) != 0) || ssy == 0))
+            {
+                adjRow = (y & 1) != 0 ? uvStride : -uvStride;
+            }
+
+            first = Math.Max(0, (x >> ssx) - 1);
+            int last = Math.Min(c.ChromaWidth - 1, ((x + width - 1) >> ssx) + 1);
+            count = last - first + 1;
+            terms = System.Buffers.ArrayPool<float>.Shared.Rent(8 * count);
+            for (int k = 0; k < count; k++)
+            {
+                int at = uvRow + first + k;
+                float u = tableUv[Math.Min(uPlane[at], max)], ua = tableUv[Math.Min(uPlane[at + adjRow], max)];
+                float v = tableUv[Math.Min(vPlane[at], max)], va = tableUv[Math.Min(vPlane[at + adjRow], max)];
+                terms[k] = u * (9.0f / 16.0f);
+                terms[count + k] = u * (3.0f / 16.0f);
+                terms[(2 * count) + k] = ua * (3.0f / 16.0f);
+                terms[(3 * count) + k] = ua * (1.0f / 16.0f);
+                terms[(4 * count) + k] = v * (9.0f / 16.0f);
+                terms[(5 * count) + k] = v * (3.0f / 16.0f);
+                terms[(6 * count) + k] = va * (3.0f / 16.0f);
+                terms[(7 * count) + k] = va * (1.0f / 16.0f);
+            }
+        }
+
+        try
+        {
+            for (int i = 0, at = 0; i < width; i++, at += channels)
+            {
+                int px = x + i;
+                float yf = tableY[Math.Min(yPlane[yRow + px], max)];
+                float cb, cr;
+                if (subsampled)
+                {
+                    int k = (px >> ssx) - first;
+                    int adj = px == 0 || (px == c.Width - 1 && (px & 1) != 0) || ssx == 0 ? 0 : (px & 1) != 0 ? 1 : -1;
+                    float[] t = terms!;
+                    cb = ((t[k] + t[count + k + adj]) + t[(2 * count) + k]) + t[(3 * count) + k + adj];
+                    cr = ((t[(4 * count) + k] + t[(5 * count) + k + adj]) + t[(6 * count) + k]) + t[(7 * count) + k + adj];
+                }
+                else
+                {
+                    cb = tableUv[Math.Min(uPlane[uvRow + px], max)];
+                    cr = tableUv[Math.Min(vPlane[uvRow + px], max)];
+                }
+
+                float r = Math.Clamp(yf + (cR * cr), 0f, 1f);
+                float b = Math.Clamp(yf + (cB * cb), 0f, 1f);
+                float g = Math.Clamp(yf - ((2 * ((kR * cr) + (kB * cb))) / kg), 0f, 1f);
+                int ri = (int)(0.5f + (r * maxF)), gi = (int)(0.5f + (g * maxF)), bi = (int)(0.5f + (b * maxF));
+                int alpha = -1;
+                if (aPlane is not null)
+                {
+                    alpha = Alpha(aPlane[aRow + px]);
+                    if (_storedUnmultiply && alpha < _rgbMax)
+                    {
+                        (ri, gi, bi) = alpha == 0 ? (0, 0, 0) : (Unmultiplied(ri, alpha), Unmultiplied(gi, alpha), Unmultiplied(bi, alpha));
+                    }
+                }
+
+                if (wide)
+                {
+                    words[at] = (ushort)ri;
+                    words[at + 1] = (ushort)gi;
+                    words[at + 2] = (ushort)bi;
+                    if (alpha >= 0)
+                    {
+                        words[at + 3] = (ushort)alpha;
+                    }
+                }
+                else
+                {
+                    target[at] = (byte)ri;
+                    target[at + 1] = (byte)gi;
+                    target[at + 2] = (byte)bi;
+                    if (alpha >= 0)
+                    {
+                        target[at + 3] = (byte)alpha;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (terms is not null)
+            {
+                System.Buffers.ArrayPool<float>.Shared.Return(terms);
+            }
+        }
+    }
+
     /// <summary>Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into <paramref name="row"/> (<see cref="Channels"/> samples each).</summary>
     internal void Row(int y, int x, int width, Span<int> row)
     {
@@ -305,10 +462,16 @@ internal sealed class HeifRgbConverter
             return;
         }
 
-        float maxF = _rgbMax;
         for (int i = 0; i < color.Length; i++)
         {
-            color[i] = alpha == 0 ? 0 : (int)Math.Min(MathF.Floor((color[i] * maxF / alpha) + 0.5f), maxF);
+            color[i] = alpha == 0 ? 0 : Unmultiplied(color[i], alpha);
         }
+    }
+
+    /// <summary>Divides a stored sample by its alpha (below the maximum and above 0), rounding as libavif does.</summary>
+    private int Unmultiplied(int sample, int alpha)
+    {
+        float maxF = _rgbMax;
+        return (int)Math.Min(MathF.Floor((sample * maxF / alpha) + 0.5f), maxF);
     }
 }

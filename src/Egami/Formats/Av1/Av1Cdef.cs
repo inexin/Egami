@@ -225,17 +225,15 @@ internal static class Av1Cdef
         return bestDir;
     }
 
-    private static int Constrain(int diff, int threshold, int damping)
+    /// <summary>constrain() with the threshold's shift worked out once a block: the difference pulled toward 0 as it grows.</summary>
+    private static int Constrain(int diff, int threshold, int shift)
     {
-        if (threshold == 0)
-        {
-            return 0;
-        }
-
-        int shift = Math.Max(0, damping - (31 - int.LeadingZeroCount(threshold)));
-        int magnitude = Math.Clamp(threshold - (Math.Abs(diff) >> shift), 0, Math.Abs(diff));
+        int abs = Math.Abs(diff);
+        int magnitude = Math.Min(Math.Max(threshold - (abs >> shift), 0), abs);
         return diff < 0 ? -magnitude : magnitude;
     }
+
+    private static int DampingShift(int threshold, int damping) => threshold == 0 ? 0 : Math.Max(0, damping - (31 - int.LeadingZeroCount(threshold)));
 
     private static void FilterBlock(ushort[] src, ushort[] dst, int stride, int x0, int y0, int bw, int bh, int width, int height, int priStrength,
         int secStrength, int dir, int damping, int coeffShift)
@@ -243,8 +241,58 @@ internal static class Av1Cdef
         bool primary = priStrength != 0, secondary = secStrength != 0;
         bool clipping = primary && secondary;
         int priTap0 = ((priStrength >> coeffShift) & 1) == 0 ? 4 : 3, priTap1 = ((priStrength >> coeffShift) & 1) == 0 ? 2 : 3;
+        int priShift = DampingShift(priStrength, damping), secShift = DampingShift(secStrength, damping);
         ReadOnlySpan<sbyte> d = Directions;
         int dirP = dir * 4, dirS1 = ((dir + 2) & 7) * 4, dirS2 = ((dir + 6) & 7) * 4;
+        if (x0 >= 2 && y0 >= 2 && x0 + bw + 2 <= width && y0 + bh + 2 <= height)
+        {
+            // Every tap is inside the frame: offsets instead of coordinates, and no unavailable samples to leave out.
+            int p0 = (d[dirP] * stride) + d[dirP + 1], p1 = (d[dirP + 2] * stride) + d[dirP + 3];
+            int a0 = (d[dirS1] * stride) + d[dirS1 + 1], a1 = (d[dirS1 + 2] * stride) + d[dirS1 + 3];
+            int b0 = (d[dirS2] * stride) + d[dirS2 + 1], b1 = (d[dirS2 + 2] * stride) + d[dirS2 + 3];
+            for (int i = 0; i < bh; i++)
+            {
+                int row = ((y0 + i) * stride) + x0;
+                for (int j = 0; j < bw; j++)
+                {
+                    int at = row + j;
+                    int value = src[at];
+                    int sum = 0, max = value, min = value;
+                    if (primary)
+                    {
+                        int q0 = src[at + p0], q1 = src[at - p0], q2 = src[at + p1], q3 = src[at - p1];
+                        sum += priTap0 * (Constrain(q0 - value, priStrength, priShift) + Constrain(q1 - value, priStrength, priShift));
+                        sum += priTap1 * (Constrain(q2 - value, priStrength, priShift) + Constrain(q3 - value, priStrength, priShift));
+                        if (clipping)
+                        {
+                            max = Math.Max(Math.Max(q0, q1), Math.Max(Math.Max(q2, q3), max));
+                            min = Math.Min(Math.Min(q0, q1), Math.Min(Math.Min(q2, q3), min));
+                        }
+                    }
+
+                    if (secondary)
+                    {
+                        int s0 = src[at + a0], s1 = src[at - a0], s2 = src[at + b0], s3 = src[at - b0];
+                        int s4 = src[at + a1], s5 = src[at - a1], s6 = src[at + b1], s7 = src[at - b1];
+                        sum += 2 * (Constrain(s0 - value, secStrength, secShift) + Constrain(s1 - value, secStrength, secShift)
+                            + Constrain(s2 - value, secStrength, secShift) + Constrain(s3 - value, secStrength, secShift));
+                        sum += Constrain(s4 - value, secStrength, secShift) + Constrain(s5 - value, secStrength, secShift)
+                            + Constrain(s6 - value, secStrength, secShift) + Constrain(s7 - value, secStrength, secShift);
+                        if (clipping)
+                        {
+                            max = Math.Max(Math.Max(Math.Max(s0, s1), Math.Max(s2, s3)), Math.Max(Math.Max(Math.Max(s4, s5), Math.Max(s6, s7)), max));
+                            min = Math.Min(Math.Min(Math.Min(s0, s1), Math.Min(s2, s3)), Math.Min(Math.Min(Math.Min(s4, s5), Math.Min(s6, s7)), min));
+                        }
+                    }
+
+                    int result = value + ((8 + sum - (sum < 0 ? 1 : 0)) >> 4);
+                    dst[at] = (ushort)(clipping ? Math.Clamp(result, min, max) : result);
+                }
+            }
+
+            return;
+        }
+
         for (int i = 0; i < bh; i++)
         {
             int y = y0 + i;
@@ -260,8 +308,8 @@ internal static class Av1Cdef
                     {
                         int p0 = Fetch(src, stride, width, height, y + d[dirP + (2 * k)], x + d[dirP + (2 * k) + 1]);
                         int p1 = Fetch(src, stride, width, height, y - d[dirP + (2 * k)], x - d[dirP + (2 * k) + 1]);
-                        sum += tapPri * Constrain(p0 - value, priStrength, damping);
-                        sum += tapPri * Constrain(p1 - value, priStrength, damping);
+                        sum += tapPri * Constrain(p0 - value, priStrength, priShift);
+                        sum += tapPri * Constrain(p1 - value, priStrength, priShift);
                         if (clipping)
                         {
                             max = MaxAvailable(p0, MaxAvailable(p1, max));
@@ -281,10 +329,10 @@ internal static class Av1Cdef
                             min = Math.Min(Math.Min(s0, s1), Math.Min(Math.Min(s2, s3), min));
                         }
 
-                        sum += tapSec * Constrain(s0 - value, secStrength, damping);
-                        sum += tapSec * Constrain(s1 - value, secStrength, damping);
-                        sum += tapSec * Constrain(s2 - value, secStrength, damping);
-                        sum += tapSec * Constrain(s3 - value, secStrength, damping);
+                        sum += tapSec * Constrain(s0 - value, secStrength, secShift);
+                        sum += tapSec * Constrain(s1 - value, secStrength, secShift);
+                        sum += tapSec * Constrain(s2 - value, secStrength, secShift);
+                        sum += tapSec * Constrain(s3 - value, secStrength, secShift);
                     }
                 }
 

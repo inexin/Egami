@@ -231,7 +231,10 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
             }
 
             rows = new PixelRows(converter.Channels, converter.OutputDepth, (row, column, samples) =>
-                converter.Row(y + row, x + column, samples.Length / converter.Channels, samples));
+                converter.Row(y + row, x + column, samples.Length / converter.Channels, samples))
+            {
+                Write = (row, column, width, target) => converter.Write(y + row, x + column, width, target),
+            };
         }
 
         RasterMetadata metadata = Metadata(file, codec, input);
@@ -558,8 +561,19 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         bool direct = TPixel.Layout == natural;
-        rows.Read(row, column, samples);
         Span<byte> target = direct ? MemoryMarshal.AsBytes(destination) : packed;
+        if (rows.Write is RowWriter write)
+        {
+            write(row, column, destination.Length, target);
+            if (!direct)
+            {
+                Convert(natural, packed, destination);
+            }
+
+            return;
+        }
+
+        rows.Read(row, column, samples);
         if (rows.Depth > 8)
         {
             Span<ushort> words = MemoryMarshal.Cast<byte, ushort>(target);
@@ -648,11 +662,18 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
     }
 
     /// <summary>Where output rows come from: samples a pixel has, their depth (8 or 16), and how to read part of a row.</summary>
-    private sealed record PixelRows(int Channels, int Depth, RowReader Read);
+    private sealed record PixelRows(int Channels, int Depth, RowReader Read)
+    {
+        /// <summary>Gets how to write part of a row straight into natural samples, when the source can.</summary>
+        internal RowWriter? Write { get; init; }
+    }
 
     /// <summary>What a read decodes: the output size, natural layout, rows, metadata and the bytes held.</summary>
     private sealed record Prepared(int Width, int Height, PixelLayoutInfo Natural, PixelRows Rows, RasterMetadata Metadata, long WorkingBytes);
 
     /// <summary>Reads output row <paramref name="row"/> from column <paramref name="column"/> into <paramref name="samples"/> (as many pixels as fit).</summary>
     private delegate void RowReader(int row, int column, Span<int> samples);
+
+    /// <summary>Writes <paramref name="width"/> pixels of output row <paramref name="row"/> from column <paramref name="column"/> into <paramref name="target"/> as natural samples.</summary>
+    private delegate void RowWriter(int row, int column, int width, Span<byte> target);
 }

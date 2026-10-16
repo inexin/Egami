@@ -3,9 +3,9 @@ using System.Diagnostics;
 namespace Egami.Benchmarks;
 
 /// <summary>
-/// The Phase 2.9.3 speed gate: decode time of JPEG XL files read into memory first, the best of ten runs after ten warm-up runs
+/// The Phase 2.9.3 and 2.9.2 speed gates: Raster.Load time of JPEG XL or AVIF files read into memory first, the best of ten runs after ten warm-up runs
 /// (so the JIT has optimized the hot loops, as a native decoder starts optimized), at one thread and at all cores, for comparison
-/// with djxl's (tools/time-jxl-gate.py).
+/// with djxl's (tools/time-jxl-gate.py) or libavif's (tools/time-avif-gate.py).
 /// </summary>
 internal static class JxlTiming
 {
