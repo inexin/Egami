@@ -872,20 +872,36 @@ def conformance():
         folder = f"{CACHE}/argon/reference" if name == "argon" else f"{CACHE}/reference/{name}"
         os.makedirs(folder, exist_ok=True)
         summary = {}
+        # The Argon set takes hours, so a rerun keeps the first frames already decoded and only redoes missing whole-stream
+        # checks.
+        previous = {}
+        if name == "argon" and os.path.isfile(f"{folder}/summary.json"):
+            with open(f"{folder}/summary.json") as f:
+                previous = json.load(f)["streams"]
         for path in streams:
             rel = os.path.relpath(path, CACHE)
             # Argon's streams are named by set and test, as profile0_core_test10001.obu.
             key = "_".join(rel.split("/")[-3::2]) if name == "argon" else rel.replace("/", "_")
+            # Argon's streams (also those in dav1d's test data) are Annex B except in its *_not_annexb sets; so is dav1d's
+            # features/annexb.obu.
+            annexb = ("argon" in rel and "not_annexb" not in rel) or rel.endswith("/annexb.obu")
+            demux = ["--demuxer", "annexb"] if annexb else []
+            if "dav1d_md5" in previous.get(key, {}):
+                entry = previous[key]
+                if "dav1d_full_md5" not in entry:
+                    for k in [k for k in entry if k.startswith(("dav1d_full", "dav1d_intra", "argon_md5"))
+                              or k in ("dav1d_matches_argon", "intra_only")]:
+                        del entry[k]
+                    argon_full(path, demux, entry)
+                    print(key, "whole stream", entry.get("dav1d_full_md5", entry.get("dav1d_full_error")), flush=True)
+                summary[key] = entry
+                continue
             entry = {"stream": rel}
             frames = ivf_frames(path)
             if frames:
                 entry["first_frame_type"] = frame_type(frames[0])
                 entry["frames"] = len(frames)
             out = f"{folder}/{os.path.splitext(key)[0]}.y4m"
-            # Argon's streams (also those in dav1d's test data) are Annex B except in its *_not_annexb sets; so is dav1d's
-            # features/annexb.obu.
-            annexb = ("argon" in rel and "not_annexb" not in rel) or rel.endswith("/annexb.obu")
-            demux = ["--demuxer", "annexb"] if annexb else []
             for k, extra in (("dav1d", ["--filmgrain", "1"]), ("dav1d_no_grain", ["--filmgrain", "0"]),
                              ("dav1d_no_filters", ["--filmgrain", "0", "--inloopfilters", "none"])):
                 target = out if k == "dav1d" else f"{TMP}/c.y4m"

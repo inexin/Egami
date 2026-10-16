@@ -214,7 +214,9 @@ public class AvifReferenceTests
             }
 
             decoded++;
-            if (stream.Value.TryGetProperty("aomdec_equal", out JsonElement equal))
+            // Argon's own MD5s are the judge for its streams: aomdec's first frame differs from dav1d's on 73 of them, where
+            // dav1d's whole-stream decode matches Argon's.
+            if (set != "argon" && stream.Value.TryGetProperty("aomdec_equal", out JsonElement equal))
             {
                 // In the two-spatial-layer SVC streams aomdec's first frame is the base layer, dav1d's the full one.
                 Assert.True(equal.GetBoolean() || stream.Name.Contains("-svc-L2T", StringComparison.Ordinal), stream.Name);
