@@ -309,6 +309,10 @@ internal sealed partial class GdiPlayer
         return false;
     }
 
+    private static bool Finite(RectF r) =>
+        float.IsFinite(r.X) && float.IsFinite(r.Y) && float.IsFinite(r.Width) && float.IsFinite(r.Height)
+        && MathF.Abs(r.X) < 1e7f && MathF.Abs(r.Y) < 1e7f && MathF.Abs(r.Width) < 1e7f && MathF.Abs(r.Height) < 1e7f;
+
     private static bool Same(RectF a, RectF b) =>
         MathF.Abs(a.X - b.X) < 0.5f && MathF.Abs(a.Y - b.Y) < 0.5f && MathF.Abs(a.Width - b.Width) < 0.5f && MathF.Abs(a.Height - b.Height) < 0.5f;
 
@@ -352,7 +356,8 @@ internal sealed partial class GdiPlayer
     /// <summary>Draws a blit by its raster operation.</summary>
     private void Draw(Blit blit, float opacity = 1)
     {
-        if (blit.Destination.Width == 0 || blit.Destination.Height == 0 || blit.Source.Width <= 0 || blit.Source.Height <= 0)
+        if (blit.Destination.Width == 0 || blit.Destination.Height == 0 || blit.Source.Width <= 0 || blit.Source.Height <= 0
+            || !Finite(blit.Source) || !Finite(blit.Destination))
         {
             return;
         }
