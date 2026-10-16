@@ -20,6 +20,9 @@
                .cache: AOM's av1-avif test files (Apple, Link-U, Microsoft, Netflix, Xiph) and libavif's files whose pictures
                have other licenses.
   headers      dav1d's AV1 headers again (tests/reference/avif/av1-headers.json and each stream summary's), nothing else.
+  overlay      tests/images/avif/overlay: overlay (iovl) files built here from corpus images (each image's av01 item and
+               properties, placed several times on a filled canvas), which libavif does not read; tests/reference/avif/overlay:
+               libheif's heif-dec decode of each and of its layer image alone (PNG), and overlay.json with how each was built.
   modeinfo     libaom's mode info of each AV1 item's frames (aominspect, libaom's inspect example): block sizes, transform sizes,
                modes, skip, CDEF, chroma from luma, quantizer index, segment, intra block copy and its vector, palette sizes and
                the bits each superblock took, each layer as the MD5 of its 16-bit values row by row, in
@@ -930,6 +933,24 @@ def frame_type(payload):
     return None
 
 
+DAV1D_STAGES = (("dav1d", ["--filmgrain", "1"]), ("dav1d_no_grain", ["--filmgrain", "0"]),
+                ("dav1d_no_filters", ["--filmgrain", "0", "--inloopfilters", "none"]))
+
+
+def dav1d_stage(path, demux, entry, k, extra, target):
+    """Records the MD5 of dav1d's first frame at one stage (or the error) in entry; returns the y4m header, or None."""
+    r = sh("dav1d", "-q", "-i", path, *demux, "--limit", "1", "--threads", "1", "-o", target, *extra, check=False, timeout=300)
+    if r.returncode:
+        entry[k + "_error"] = (r.stderr or r.stdout).strip()[-300:]
+        return None
+    head, decoded = read_y4m(target)
+    if not decoded:
+        entry[k + "_error"] = "no frame"
+        return None
+    entry[k + "_md5"] = md5(*decoded[0])
+    return head
+
+
 def argon_full(path, demux, entry):
     """Checks dav1d's decode of a whole Argon stream (every frame and layer, as Argon's aomdec command) against Argon's MD5s,
     and whether every frame is intra (decoding the intra frames only gives the same output)."""
@@ -991,6 +1012,12 @@ def conformance():
                     print(key, "whole stream", entry.get("dav1d_full_md5", entry.get("dav1d_full_error")), flush=True)
                 if "headers" not in entry:
                     entry["headers"] = av1_headers(section5(path))
+                # Stages an earlier run failed to write (a full temporary disk) are decoded again.
+                for k, extra in DAV1D_STAGES[1:]:
+                    if k + "_md5" not in entry:
+                        entry.pop(k + "_error", None)
+                        dav1d_stage(path, demux, entry, k, extra, f"{TMP}/c.y4m")
+                        print(key, k, entry.get(k + "_md5", entry.get(k + "_error")), flush=True)
                 summary[key] = entry
                 continue
             entry = {"stream": rel}
@@ -999,20 +1026,9 @@ def conformance():
                 entry["first_frame_type"] = frame_type(frames[0])
                 entry["frames"] = len(frames)
             out = f"{folder}/{os.path.splitext(key)[0]}.y4m"
-            for k, extra in (("dav1d", ["--filmgrain", "1"]), ("dav1d_no_grain", ["--filmgrain", "0"]),
-                             ("dav1d_no_filters", ["--filmgrain", "0", "--inloopfilters", "none"])):
-                target = out if k == "dav1d" else f"{TMP}/c.y4m"
-                r = sh("dav1d", "-q", "-i", path, *demux, "--limit", "1", "--threads", "1", "-o", target, *extra, check=False,
-                       timeout=300)
-                if r.returncode:
-                    entry[k + "_error"] = (r.stderr or r.stdout).strip()[-300:]
-                    continue
-                head, decoded = read_y4m(target)
-                if not decoded:
-                    entry[k + "_error"] = "no frame"
-                    continue
-                entry[k + "_md5"] = md5(*decoded[0])
-                if k == "dav1d":
+            for k, extra in DAV1D_STAGES:
+                head = dav1d_stage(path, demux, entry, k, extra, out if k == "dav1d" else f"{TMP}/c.y4m")
+                if head is not None and k == "dav1d":
                     entry["size"] = [int(head["W"]), int(head["H"])]
                     entry["y4m_colorspace"] = head.get("C", "420jpeg")
                     entry["reference_yuv"] = os.path.basename(out)
@@ -1170,6 +1186,146 @@ def extra():
         f.write("\n")
 
 
+# ---------------------------------------------------------------- overlay (iovl) files and libheif's decodes
+
+OVERLAYS = {
+    # name: (source, canvas size, RGBA fill, layer offsets, 32-bit fields). heif-dec 1.23.4 leaves out a layer whose offset is
+    # negative (HEIF clips it to the canvas), so the offsets here are not; the tests cover negative ones on their own. It also
+    # composes in YUV and converts the canvas after, so the layers are even-sized at even offsets and it upsamples chroma by
+    # repeating samples (-C nn): its overlay is then exactly its layer decode placed on the fill.
+    "overlay-8bit-420": ("camera-pixel2xl-srgb.avif", (150, 100), (0xFFFF, 0x8000, 0, 0xFFFF), [(0, 4), (40, 30), (110, 60)], False),
+    "overlay-10bit-large": ("camera-sony-rx1rm2-709-10bit.avif", (150, 90), (0, 0, 0xFFFF, 0xFFFF), [(0, 0), (100, 40), (30, 20)], True),
+    "overlay-422-gray-fill": ("camera-huawei-eva-srgb-422.avif", (100, 120), (0x4000, 0x4000, 0x4000, 0xFFFF), [(10, 10), (30, 50)], False),
+}
+
+
+def iso_boxes(data, start, end):
+    pos = start
+    while pos + 8 <= end:
+        size, kind = struct.unpack(">I4s", data[pos:pos + 8])
+        header = 8
+        if size == 1:
+            size, header = struct.unpack(">Q", data[pos + 8:pos + 16])[0], 16
+        elif size == 0:
+            size = end - pos
+        yield kind.decode("latin1"), pos, pos + header, pos + size
+        pos += size
+
+
+def single_item(path):
+    """Returns the primary av01 item's data and its properties (raw boxes, with whether each is essential) of a simple AVIF."""
+    data = open(path, "rb").read()
+    meta = next(b for b in iso_boxes(data, 0, len(data)) if b[0] == "meta")
+    sub = {b[0]: b for b in iso_boxes(data, meta[2] + 4, meta[3])}
+    c = sub["pitm"][2]
+    primary = struct.unpack(">H", data[c + 4:c + 6])[0] if data[c] == 0 else struct.unpack(">I", data[c + 4:c + 8])[0]
+    c = sub["iloc"][2]
+    version, p = data[c], c + 4
+    off_size, len_size, base_size = data[p] >> 4, data[p] & 15, data[p + 1] >> 4
+    index_size = data[p + 1] & 15 if version in (1, 2) else 0
+    p += 2
+
+    def read(n):
+        nonlocal p
+        value = int.from_bytes(data[p:p + n], "big") if n else 0
+        p += n
+        return value
+
+    payload = None
+    for _ in range(read(2 if version < 2 else 4)):
+        item = read(2 if version < 2 else 4)
+        method = read(2) & 15 if version in (1, 2) else 0
+        read(2)
+        base = read(base_size)
+        chunks = []
+        for _ in range(read(2)):
+            read(index_size)
+            offset, length = read(off_size), read(len_size)
+            chunks.append(data[base + offset:base + offset + length])
+        if item == primary:
+            assert method == 0
+            payload = b"".join(chunks)
+    c, e = sub["iprp"][2], sub["iprp"][3]
+    parts = {b[0]: b for b in iso_boxes(data, c, e)}
+    ipco = [data[s:x] for _, s, _, x in iso_boxes(data, parts["ipco"][2], parts["ipco"][3])]
+    c = parts["ipma"][2]
+    version, flags, p = data[c], int.from_bytes(data[c + 1:c + 4], "big"), c + 4
+    properties = []
+    for _ in range(read(4)):
+        item = read(2 if version < 1 else 4)
+        for _ in range(read(1)):
+            bits = 15 if flags & 1 else 7
+            value = read(2 if flags & 1 else 1)
+            if item == primary:
+                properties.append((ipco[(value & ((1 << bits) - 1)) - 1], bool(value >> bits)))
+    return payload, properties
+
+
+def iso_box(kind, content):
+    return struct.pack(">I", len(content) + 8) + kind.encode() + content
+
+
+def build_overlay(source, size, fill, offsets, large):
+    """An AVIF whose primary item is an overlay of the source's av01 item, once for each offset, the layers hidden (as AvifOverlayTests builds them)."""
+    payload, properties = single_item(source)
+    field, ufield = (">i", ">I") if large else (">h", ">H")
+    iovl = bytes([0, 1 if large else 0]) + struct.pack(">4H", *fill) + struct.pack(ufield, size[0]) + struct.pack(ufield, size[1])
+    iovl += b"".join(struct.pack(field, x) + struct.pack(field, y) for x, y in offsets)
+    layers = len(offsets)
+    overlay_id = layers + 1
+    items = [(i + 1, "av01", payload) for i in range(layers)] + [(overlay_id, "iovl", iovl)]
+    ispe = iso_box("ispe", bytes(4) + struct.pack(">II", *size))
+    # The overlay carries the layer's colr properties too, which libheif converts the composed canvas with.
+    colr = [i for i, (raw, _) in enumerate(properties) if raw[4:8] == b"colr"]
+    ipco = iso_box("ipco", b"".join(raw for raw, _ in properties) + ispe)
+    ipma = bytes(4) + struct.pack(">I", len(items))
+    for item, kind, _ in items:
+        if kind == "av01":
+            ipma += struct.pack(">HB", item, len(properties))
+            ipma += bytes((0x80 if essential else 0) | (i + 1) for i, (_, essential) in enumerate(properties))
+        else:
+            ipma += struct.pack(">HB", item, 1 + len(colr)) + bytes([len(properties) + 1] + [i + 1 for i in colr])
+    iprp = iso_box("iprp", ipco + iso_box("ipma", ipma))
+    hdlr = iso_box("hdlr", bytes(8) + b"pict" + bytes(13))
+    pitm = iso_box("pitm", bytes(4) + struct.pack(">H", overlay_id))
+    infe = b"".join(iso_box("infe", bytes([2, 0, 0, 1 if kind == "av01" else 0]) + struct.pack(">HH", item, 0) + kind.encode() + bytes(1)) for item, kind, _ in items)
+    iinf = iso_box("iinf", bytes(4) + struct.pack(">H", len(items)) + infe)
+    dimg = struct.pack(">HH", overlay_id, layers) + b"".join(struct.pack(">H", i + 1) for i in range(layers))
+    iref = iso_box("iref", bytes(4) + iso_box("dimg", dimg))
+    ftyp = iso_box("ftyp", b"avif" + bytes(4) + b"avifmif1miaf")
+
+    def meta(start):
+        iloc = bytes(4) + bytes([0x44, 0]) + struct.pack(">H", len(items))
+        at = start
+        for item, _, data in items:
+            iloc += struct.pack(">HHHII", item, 0, 1, at, len(data))
+            at += len(data)
+        return iso_box("meta", bytes(4) + hdlr + pitm + iinf + iref + iprp + iso_box("iloc", iloc))
+
+    start = len(ftyp) + len(meta(0)) + 8
+    return ftyp + meta(start) + iso_box("mdat", b"".join(data for _, _, data in items))
+
+
+def overlay():
+    os.makedirs(f"{OUT}/overlay", exist_ok=True)
+    os.makedirs(f"{REF}/overlay", exist_ok=True)
+    version = sh("heif-dec", "--version").stdout.strip()
+    manifest = {}
+    for name, (source, size, fill, offsets, large) in OVERLAYS.items():
+        path = f"{OUT}/overlay/{name}.avif"
+        with open(path, "wb") as f:
+            f.write(build_overlay(f"{OUT}/{source}", size, fill, offsets, large))
+        sh("heif-dec", "-C", "nn", path, f"{REF}/overlay/{name}.png")
+        # The layer alone, as heif-dec converts it, to tell its composition from its YUV to RGB conversion.
+        sh("heif-dec", "-C", "nn", f"{OUT}/{source}", f"{REF}/overlay/{name}-layer.png")
+        manifest[name + ".avif"] = {"source": source, "canvas": list(size), "fill": list(fill), "offsets": [list(o) for o in offsets],
+                                    "large_fields": large, "reference": name + ".png", "layer": name + "-layer.png"}
+        print(name, flush=True)
+    with open(f"{REF}/overlay/overlay.json", "w") as f:
+        json.dump({"heif_dec": version, "files": manifest}, f, indent=1, sort_keys=True)
+        f.write("\n")
+
+
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers, "modeinfo": modeinfo}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "headers": headers, "modeinfo": modeinfo, "overlay": overlay}[step]()

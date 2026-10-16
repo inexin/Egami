@@ -1,0 +1,91 @@
+{
+ "files": {
+  "overlay-10bit-large.avif": {
+   "canvas": [
+    150,
+    90
+   ],
+   "fill": [
+    0,
+    0,
+    65535,
+    65535
+   ],
+   "large_fields": true,
+   "layer": "overlay-10bit-large-layer.png",
+   "offsets": [
+    [
+     0,
+     0
+    ],
+    [
+     100,
+     40
+    ],
+    [
+     30,
+     20
+    ]
+   ],
+   "reference": "overlay-10bit-large.png",
+   "source": "camera-sony-rx1rm2-709-10bit.avif"
+  },
+  "overlay-422-gray-fill.avif": {
+   "canvas": [
+    100,
+    120
+   ],
+   "fill": [
+    16384,
+    16384,
+    16384,
+    65535
+   ],
+   "large_fields": false,
+   "layer": "overlay-422-gray-fill-layer.png",
+   "offsets": [
+    [
+     10,
+     10
+    ],
+    [
+     30,
+     50
+    ]
+   ],
+   "reference": "overlay-422-gray-fill.png",
+   "source": "camera-huawei-eva-srgb-422.avif"
+  },
+  "overlay-8bit-420.avif": {
+   "canvas": [
+    150,
+    100
+   ],
+   "fill": [
+    65535,
+    32768,
+    0,
+    65535
+   ],
+   "large_fields": false,
+   "layer": "overlay-8bit-420-layer.png",
+   "offsets": [
+    [
+     0,
+     4
+    ],
+    [
+     40,
+     30
+    ],
+    [
+     110,
+     60
+    ]
+   ],
+   "reference": "overlay-8bit-420.png",
+   "source": "camera-pixel2xl-srgb.avif"
+  }
+ },
+ "heif_dec": "1.23.4\nlibheif: 1.23.4\nplugin path: /usr/lib/x86_64-linux-gnu/libheif/plugins"
+}

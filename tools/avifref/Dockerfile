@@ -29,4 +29,7 @@ RUN gcc -O1 -o /usr/local/bin/av1headers /src/av1headers.c -ldav1d
 # aominspect is libaom's inspect example (CONFIG_INSPECTION): each frame's mode info (block sizes, modes, transforms, skip,
 # CDEF, segment ids, palette, intra block copy) as JSON, the block syntax trace the AV1 decoder is compared with.
 RUN cmake -S /src/aom -B /src/aom/inspect -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONFIG_INSPECTION=1 -DCONFIG_ACCOUNTING=1         -DCONFIG_AV1_ENCODER=0 -DENABLE_EXAMPLES=1 -DENABLE_TESTS=0 -DENABLE_DOCS=0 -DENABLE_TOOLS=0     && ninja -C /src/aom/inspect inspect && cp /src/aom/inspect/inspect /usr/local/bin/aominspect && rm -rf /src/aom/inspect
+# libheif's heif-dec 1.23.4 (LGPL) from Debian, run as a black box only, decodes the overlay (iovl) files libavif cannot.
+RUN apt-get update && apt-get install -y --no-install-recommends libheif-examples libheif-plugin-dav1d \
+    && rm -rf /var/lib/apt/lists/* && heif-dec --version
 WORKDIR /work

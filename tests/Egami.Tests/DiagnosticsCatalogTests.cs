@@ -5,7 +5,7 @@ namespace Egami.Tests;
 /// <summary>Every diagnostic id in the source is in docs/articles/diagnostics.md, and every id there is in the source.</summary>
 public partial class DiagnosticsCatalogTests
 {
-    private const string Sources = "Bmp|Ccitt|Gif|Heif|Ico|Jbig2|Jpeg|Jpeg2000|Png|Psd|Pnm|Qoi|Radiance|Exr|Jxl|Tga|Tiff|Webp|Exif|Xmp|Iptc|Icc|Detect|Decode|Limits|Parallel|Streaming|Color|Resize|Operation|Save";
+    private const string Sources = "Avif|Bmp|Ccitt|Gif|Heif|Ico|Jbig2|Jpeg|Jpeg2000|Png|Psd|Pnm|Qoi|Radiance|Exr|Jxl|Tga|Tiff|Webp|Exif|Xmp|Iptc|Icc|Detect|Decode|Limits|Parallel|Streaming|Color|Resize|Operation|Save";
 
     [Fact]
     public void TheCatalogListsEveryIdOnce()

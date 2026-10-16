@@ -51,10 +51,12 @@ public class AvifReferenceTests
 
     public static TheoryData<string> CorpusFiles() => [.. Files()];
 
+    /// <summary>The corpus files avifdec decoded; the overlay files, which libavif cannot read, have their own references.</summary>
     private static IEnumerable<string> Files()
     {
         return Directory.GetFiles(Corpus, "*.avif", SearchOption.AllDirectories)
-            .Select(f => Path.GetRelativePath(Corpus, f).Replace('\\', '/')).Order(StringComparer.Ordinal);
+            .Select(f => Path.GetRelativePath(Corpus, f).Replace('\\', '/'))
+            .Where(f => !f.StartsWith("overlay/", StringComparison.Ordinal)).Order(StringComparer.Ordinal);
     }
 
     [Fact]

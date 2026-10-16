@@ -13,6 +13,8 @@ Egami.Formats.Avif.AvifDetails.CodePoints.get -> Egami.Colors.ColorCodePoints
 Egami.Formats.Avif.AvifDetails.CodePoints.set -> void
 Egami.Formats.Avif.AvifDetails.CompatibleBrands.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Egami.Formats.Avif.AvifDetails.CompatibleBrands.set -> void
+Egami.Formats.Avif.AvifDetails.FilmGrain.get -> Egami.Formats.Avif.AvifFilmGrain?
+Egami.Formats.Avif.AvifDetails.FilmGrain.set -> void
 Egami.Formats.Avif.AvifDetails.GridColumns.get -> int
 Egami.Formats.Avif.AvifDetails.GridColumns.set -> void
 Egami.Formats.Avif.AvifDetails.GridRows.get -> int
@@ -33,8 +35,46 @@ Egami.Formats.Avif.AvifDetails.Profile.get -> int
 Egami.Formats.Avif.AvifDetails.Profile.set -> void
 Egami.Formats.Avif.AvifDetails.Tier.get -> int
 Egami.Formats.Avif.AvifDetails.Tier.set -> void
+Egami.Formats.Avif.AvifFilmGrain
+Egami.Formats.Avif.AvifFilmGrain.<Clone>$() -> Egami.Formats.Avif.AvifFilmGrain!
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffLag.get -> int
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffLag.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffsCb.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffsCb.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffsCr.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffsCr.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffShift.get -> int
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffShift.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffsY.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Formats.Avif.AvifFilmGrain.ArCoeffsY.init -> void
+Egami.Formats.Avif.AvifFilmGrain.AvifFilmGrain() -> void
+Egami.Formats.Avif.AvifFilmGrain.Cb.get -> (int Mult, int LumaMult, int Offset)
+Egami.Formats.Avif.AvifFilmGrain.Cb.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ChromaScalingFromLuma.get -> bool
+Egami.Formats.Avif.AvifFilmGrain.ChromaScalingFromLuma.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ClipToRestrictedRange.get -> bool
+Egami.Formats.Avif.AvifFilmGrain.ClipToRestrictedRange.init -> void
+Egami.Formats.Avif.AvifFilmGrain.Cr.get -> (int Mult, int LumaMult, int Offset)
+Egami.Formats.Avif.AvifFilmGrain.Cr.init -> void
+Egami.Formats.Avif.AvifFilmGrain.Equals(Egami.Formats.Avif.AvifFilmGrain? other) -> bool
+Egami.Formats.Avif.AvifFilmGrain.GrainScaleShift.get -> int
+Egami.Formats.Avif.AvifFilmGrain.GrainScaleShift.init -> void
+Egami.Formats.Avif.AvifFilmGrain.Overlap.get -> bool
+Egami.Formats.Avif.AvifFilmGrain.Overlap.init -> void
+Egami.Formats.Avif.AvifFilmGrain.RandomSeed.get -> int
+Egami.Formats.Avif.AvifFilmGrain.RandomSeed.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ScalingPointsCb.get -> System.Collections.Generic.IReadOnlyList<(int Value, int Scaling)>!
+Egami.Formats.Avif.AvifFilmGrain.ScalingPointsCb.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ScalingPointsCr.get -> System.Collections.Generic.IReadOnlyList<(int Value, int Scaling)>!
+Egami.Formats.Avif.AvifFilmGrain.ScalingPointsCr.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ScalingPointsY.get -> System.Collections.Generic.IReadOnlyList<(int Value, int Scaling)>!
+Egami.Formats.Avif.AvifFilmGrain.ScalingPointsY.init -> void
+Egami.Formats.Avif.AvifFilmGrain.ScalingShift.get -> int
+Egami.Formats.Avif.AvifFilmGrain.ScalingShift.init -> void
 Egami.Formats.Avif.AvifFormat
 override Egami.Formats.Avif.AvifDetails.Copy() -> Egami.Metadata.FormatDetails!
+static Egami.Formats.Avif.AvifFilmGrain.operator !=(Egami.Formats.Avif.AvifFilmGrain? left, Egami.Formats.Avif.AvifFilmGrain? right) -> bool
+static Egami.Formats.Avif.AvifFilmGrain.operator ==(Egami.Formats.Avif.AvifFilmGrain? left, Egami.Formats.Avif.AvifFilmGrain? right) -> bool
 static Egami.Formats.Avif.AvifFormat.Info.get -> Egami.Formats.FormatInfo!
 abstract Egami.Formats.RowEncoder<TPixel>.Complete() -> void
 abstract Egami.Formats.RowEncoder<TPixel>.WriteRow(System.ReadOnlySpan<TPixel> row) -> void
@@ -551,6 +591,11 @@ Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
 Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
 Egami.DecodeStatus.NeedsInput = 1 -> Egami.DecodeStatus
 Egami.DecodeStatus.RowsAvailable = 0 -> Egami.DecodeStatus
+Egami.Formats.Avif.AvifReaderOptions
+Egami.Formats.Avif.AvifReaderOptions.AvifReaderOptions() -> void
+Egami.Formats.Avif.AvifReaderOptions.Equals(Egami.Formats.Avif.AvifReaderOptions? other) -> bool
+Egami.Formats.Avif.AvifReaderOptions.FilmGrain.get -> bool
+Egami.Formats.Avif.AvifReaderOptions.FilmGrain.init -> void
 Egami.Formats.Ccitt.CcittFax
 Egami.Formats.Ccitt.CcittFaxParameters
 Egami.Formats.Ccitt.CcittFaxParameters.<Clone>$() -> Egami.Formats.Ccitt.CcittFaxParameters!
@@ -2347,6 +2392,13 @@ override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
+override Egami.Formats.Avif.AvifFilmGrain.Equals(object? obj) -> bool
+override Egami.Formats.Avif.AvifFilmGrain.GetHashCode() -> int
+override Egami.Formats.Avif.AvifFilmGrain.ToString() -> string!
+override Egami.Formats.Avif.AvifReaderOptions.<Clone>$() -> Egami.Formats.Avif.AvifReaderOptions!
+override Egami.Formats.Avif.AvifReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Avif.AvifReaderOptions.GetHashCode() -> int
+override Egami.Formats.Avif.AvifReaderOptions.ToString() -> string!
 override Egami.Formats.Ccitt.CcittFaxParameters.Equals(object? obj) -> bool
 override Egami.Formats.Ccitt.CcittFaxParameters.GetHashCode() -> int
 override Egami.Formats.Ccitt.CcittFaxParameters.ToString() -> string!
@@ -2529,6 +2581,7 @@ override Egami.YuvRaster<TSample>.HasAlpha.get -> bool
 override Egami.YuvRasterInfo.Equals(object? obj) -> bool
 override Egami.YuvRasterInfo.GetHashCode() -> int
 override Egami.YuvRasterInfo.ToString() -> string!
+override sealed Egami.Formats.Avif.AvifReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Ccitt.CcittReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Exr.ExrReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Ico.IcoReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
@@ -2668,6 +2721,8 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
+static Egami.Formats.Avif.AvifReaderOptions.operator !=(Egami.Formats.Avif.AvifReaderOptions? left, Egami.Formats.Avif.AvifReaderOptions? right) -> bool
+static Egami.Formats.Avif.AvifReaderOptions.operator ==(Egami.Formats.Avif.AvifReaderOptions? left, Egami.Formats.Avif.AvifReaderOptions? right) -> bool
 static Egami.Formats.Ccitt.CcittFax.Decode(System.ReadOnlySpan<byte> data, Egami.Formats.Ccitt.CcittFaxParameters! parameters, out int rows, Egami.EgamiContext? context = null) -> byte[]!
 static Egami.Formats.Ccitt.CcittFaxParameters.operator !=(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool
 static Egami.Formats.Ccitt.CcittFaxParameters.operator ==(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool

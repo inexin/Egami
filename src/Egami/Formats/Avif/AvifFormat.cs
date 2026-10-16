@@ -111,6 +111,12 @@ public sealed class AvifDetails : FormatDetails
     /// <summary>Gets or sets whether the AV1 stream carries film grain parameters.</summary>
     public bool HasFilmGrain { get; set; }
 
+    /// <summary>
+    /// Gets or sets the primary image's film grain parameters as its AV1 frame header codes them, or <see langword="null"/> when it
+    /// applies none. Load adds the grain unless <see cref="AvifReaderOptions.FilmGrain"/> is false (design question 6).
+    /// </summary>
+    public AvifFilmGrain? FilmGrain { get; set; }
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
@@ -132,6 +138,7 @@ public sealed class AvifDetails : FormatDetails
             IsProgressive = IsProgressive,
             IsSequence = IsSequence,
             HasFilmGrain = HasFilmGrain,
+            FilmGrain = FilmGrain,
         };
     }
 
@@ -163,4 +170,76 @@ public sealed class AvifDetails : FormatDetails
             HasFilmGrain = file.Sequence.FilmGrainParamsPresent,
         };
     }
+}
+
+/// <summary>Options for reading AVIF.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="options"/>
+/// </example>
+public sealed record AvifReaderOptions : ReaderOptions
+{
+    /// <summary>
+    /// Gets whether the film grain an AV1 image carries is added to its pixels, as the AV1 specification's output process does
+    /// (the default, true), or left out, giving the image as coded; the parameters are in <see cref="AvifDetails.FilmGrain"/>
+    /// either way.
+    /// </summary>
+    public bool FilmGrain { get; init; } = true;
+}
+
+/// <summary>
+/// An AV1 frame's film grain parameters (AV1 specification 5.9.30 and 6.8.20): what the decoder's grain synthesis adds to the
+/// output, kept so an image loaded without its grain can have it added again or described.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="options"/>
+/// </example>
+public sealed record AvifFilmGrain
+{
+    /// <summary>Gets the random seed.</summary>
+    public int RandomSeed { get; init; }
+
+    /// <summary>Gets the piecewise-linear scaling function for luma: (value, scaling) points with increasing values.</summary>
+    public IReadOnlyList<(int Value, int Scaling)> ScalingPointsY { get; init; } = [];
+
+    /// <summary>Gets the scaling function for Cb.</summary>
+    public IReadOnlyList<(int Value, int Scaling)> ScalingPointsCb { get; init; } = [];
+
+    /// <summary>Gets the scaling function for Cr.</summary>
+    public IReadOnlyList<(int Value, int Scaling)> ScalingPointsCr { get; init; } = [];
+
+    /// <summary>Gets whether chroma grain is scaled by the luma scaling function.</summary>
+    public bool ChromaScalingFromLuma { get; init; }
+
+    /// <summary>Gets the scaling shift, 8 to 11.</summary>
+    public int ScalingShift { get; init; }
+
+    /// <summary>Gets the autoregressive filter's lag, 0 to 3.</summary>
+    public int ArCoeffLag { get; init; }
+
+    /// <summary>Gets the luma autoregressive coefficients, from -128 to 127.</summary>
+    public IReadOnlyList<int> ArCoeffsY { get; init; } = [];
+
+    /// <summary>Gets the Cb autoregressive coefficients, the last weighting luma when there is luma grain.</summary>
+    public IReadOnlyList<int> ArCoeffsCb { get; init; } = [];
+
+    /// <summary>Gets the Cr autoregressive coefficients.</summary>
+    public IReadOnlyList<int> ArCoeffsCr { get; init; } = [];
+
+    /// <summary>Gets the autoregressive coefficients' shift, 6 to 9.</summary>
+    public int ArCoeffShift { get; init; }
+
+    /// <summary>Gets the shift that scales the Gaussian samples down, 0 to 3.</summary>
+    public int GrainScaleShift { get; init; }
+
+    /// <summary>Gets the Cb multipliers and offset as coded: cb_mult, cb_luma_mult and cb_offset.</summary>
+    public (int Mult, int LumaMult, int Offset) Cb { get; init; }
+
+    /// <summary>Gets the Cr multipliers and offset as coded: cr_mult, cr_luma_mult and cr_offset.</summary>
+    public (int Mult, int LumaMult, int Offset) Cr { get; init; }
+
+    /// <summary>Gets whether grain blocks are blended where they overlap.</summary>
+    public bool Overlap { get; init; }
+
+    /// <summary>Gets whether the output is clipped to the video range.</summary>
+    public bool ClipToRestrictedRange { get; init; }
 }

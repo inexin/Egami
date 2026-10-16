@@ -187,9 +187,12 @@ public partial class AvifProbeTests
     }
 
     [Fact]
-    public void LoadSaysPixelsAreNotDecodedYet()
+    public void LoadGivesTheProbedSizeAndLayout()
     {
-        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(File.ReadAllBytes(Path.Combine(Corpus, "duck-420-q60.avif"))));
+        byte[] data = File.ReadAllBytes(Path.Combine(Corpus, "duck-420-q60.avif"));
+        RasterInfo info = Raster.Probe(data);
+        using Raster raster = Raster.Load(data);
+        Assert.Equal((info.Width, info.Height, info.Layout), (raster.Width, raster.Height, raster.Layout));
     }
 
     private static Dictionary<string, string> Info(string text)

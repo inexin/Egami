@@ -15,6 +15,7 @@ internal sealed class AvifFile
 {
     internal static readonly uint Av01 = FourCC.Of("av01");
     internal static readonly uint Grid = FourCC.Of("grid");
+    internal static readonly uint Iovl = FourCC.Of("iovl");
     internal static readonly uint Exif = FourCC.Of("Exif");
     internal static readonly uint Auxl = FourCC.Of("auxl");
     internal static readonly uint Dimg = FourCC.Of("dimg");
@@ -32,10 +33,10 @@ internal sealed class AvifFile
     /// <summary>Gets the container.</summary>
     internal HeifFile Heif { get; }
 
-    /// <summary>Gets the primary item: an av01 item or a grid.</summary>
+    /// <summary>Gets the primary item: an av01 item, a grid or an overlay.</summary>
     internal HeifItem Primary { get; }
 
-    /// <summary>Gets the grid's cells in order, when the primary item is a grid; otherwise the primary item alone.</summary>
+    /// <summary>Gets the grid's cells or the overlay's layers in order; otherwise the primary item alone.</summary>
     internal IReadOnlyList<HeifItem> Cells { get; private set; } = [];
 
     /// <summary>Gets the grid's rows and columns, or (1, 1).</summary>
@@ -59,8 +60,20 @@ internal sealed class AvifFile
     /// <summary>Gets the ICC profile of a colr property, or an empty block.</summary>
     internal ReadOnlyMemory<byte> Icc { get; private set; }
 
-    /// <summary>Gets the alpha item (an av01 item or a grid), or <see langword="null"/>.</summary>
+    /// <summary>Gets the alpha item (an av01 item or a grid, or the first cell's when each cell has its own), or <see langword="null"/>.</summary>
     internal HeifItem? Alpha { get; private set; }
+
+    /// <summary>Gets the alpha image's av01 items: the alpha grid's cells, one for each color cell, or the alpha item alone.</summary>
+    internal IReadOnlyList<HeifItem> AlphaCells { get; private set; } = [];
+
+    /// <summary>Gets how the alpha cells tile: the alpha grid's layout, the color grid's when each cell has its own alpha, or (1, 1).</summary>
+    internal (int Rows, int Columns, int Width, int Height) AlphaLayout { get; private set; }
+
+    /// <summary>Gets the overlay (iovl) when the primary item is one: its canvas fill, size and each layer's offset.</summary>
+    internal HeifOverlay? Overlay { get; private set; }
+
+    /// <summary>Gets whether Load gives alpha: there is an alpha image, or an overlay's canvas is not opaque.</summary>
+    internal bool HasAlpha => Alpha is not null || Overlay is { Fill: [_, _, _, < 0xFFFF] };
 
     /// <summary>Gets whether the color is premultiplied by the alpha (a prem reference from the color item to the alpha item).</summary>
     internal bool AlphaPremultiplied { get; private set; }
@@ -117,9 +130,9 @@ internal sealed class AvifFile
             throw Corrupt(heif, heif.PrimaryItemId == 0 ? "The AVIF file has no primary item (pitm box)." : $"The primary item, {heif.PrimaryItemId}, has no iinf entry.");
         }
 
-        if (primary.Type != Av01 && primary.Type != Grid)
+        if (primary.Type != Av01 && primary.Type != Grid && primary.Type != Iovl)
         {
-            throw new UnsupportedFormatException($"The AVIF file's primary item is a \"{FourCC.ToString(primary.Type)}\" item; Egami reads av01 and grid items.");
+            throw new UnsupportedFormatException($"The AVIF file's primary item is a \"{FourCC.ToString(primary.Type)}\" item; Egami reads av01, grid and iovl items.");
         }
 
         AvifFile avif = new(heif, primary);
@@ -169,7 +182,12 @@ internal sealed class AvifFile
 
         if (Primary.Type == Grid)
         {
-            ReadGrid();
+            (List<HeifItem> cells, int rows, int columns, int width, int height) = ReadGrid(Primary);
+            (Cells, GridSize, Width, Height) = (cells, (rows, columns), width, height);
+        }
+        else if (Primary.Type == Iovl)
+        {
+            ReadOverlay();
         }
         else
         {
@@ -223,7 +241,7 @@ internal sealed class AvifFile
             }
         }
 
-        if (Nclx is null && Icc.IsEmpty && Primary.Type == Grid)
+        if (Nclx is null && Icc.IsEmpty && Primary.Type != Av01)
         {
             foreach ((HeifProperty property, _) in heif.PropertiesOf(first))
             {
@@ -275,35 +293,55 @@ internal sealed class AvifFile
                 continue;
             }
 
-            foreach ((HeifProperty property, _) in heif.PropertiesOf(item))
+            if (!IsAlpha(item))
             {
-                if (property.Type == AvifProperties.AuxC && AvifProperties.ReadAuxiliaryType(heif, property) is AvifProperties.AlphaUrn or AvifProperties.HevcAlphaUrn)
-                {
-                    Alpha = item;
-                    AlphaPremultiplied = Array.IndexOf(Primary.ReferencesOf(Prem), item.Id) >= 0;
-                    return;
-                }
+                continue;
             }
+
+            Alpha = item;
+            AlphaPremultiplied = Array.IndexOf(Primary.ReferencesOf(Prem), item.Id) >= 0;
+            if (item.Type == Grid)
+            {
+                (List<HeifItem> cells, int rows, int columns, int width, int height) = ReadGrid(item);
+                (AlphaCells, AlphaLayout) = (cells, (rows, columns, width, height));
+            }
+            else
+            {
+                (int width, int height) = Extents(item);
+                (AlphaCells, AlphaLayout) = ([item], (1, 1, width, height));
+            }
+
+            return;
         }
 
-        // libavif's grid files may give each color cell its own alpha item instead of an alpha grid.
+        // libavif's grid files may give each color cell its own alpha item instead of an alpha grid; every cell needs one.
         if (Primary.Type == Grid)
         {
-            HeifItem? firstAlpha = null;
-            foreach (HeifItem item in heif.Items)
+            List<HeifItem> alphas = [];
+            foreach (HeifItem cell in Cells)
             {
-                uint[] owners = item.ReferencesOf(Auxl);
-                if (item.Type == Av01 && owners.Length > 0 && owners[0] == Cells[0].Id && IsAlpha(item))
+                HeifItem? found = null;
+                foreach (HeifItem item in heif.Items)
                 {
-                    firstAlpha = item;
+                    uint[] owners = item.ReferencesOf(Auxl);
+                    if (item.Type == Av01 && item.UnsupportedEssential == 0 && owners.Length > 0 && owners[0] == cell.Id && IsAlpha(item))
+                    {
+                        found = item;
+                        break;
+                    }
                 }
+
+                if (found is null)
+                {
+                    return;
+                }
+
+                alphas.Add(found);
             }
 
-            if (firstAlpha is not null)
-            {
-                Alpha = firstAlpha;
-                AlphaPremultiplied = Array.IndexOf(Cells[0].ReferencesOf(Prem), firstAlpha.Id) >= 0;
-            }
+            Alpha = alphas[0];
+            (AlphaCells, AlphaLayout) = (alphas, (GridSize.Rows, GridSize.Columns, Width, Height));
+            AlphaPremultiplied = Array.IndexOf(Cells[0].ReferencesOf(Prem), alphas[0].Id) >= 0;
         }
     }
 
@@ -320,10 +358,11 @@ internal sealed class AvifFile
         return false;
     }
 
-    private void ReadGrid()
+    /// <summary>Reads a grid item (HEIF 6.6.2.3.2): its av01 cells in order, rows, columns and output size.</summary>
+    private (List<HeifItem> Cells, int Rows, int Columns, int Width, int Height) ReadGrid(HeifItem grid)
     {
         HeifFile heif = Heif;
-        ReadOnlySpan<byte> data = heif.ItemData(Primary).Span;
+        ReadOnlySpan<byte> data = heif.ItemData(grid).Span;
         if (data.Length < 8 || data[0] != 0)
         {
             throw Corrupt(heif, data.Length < 8 ? "The grid item's data is cut off." : $"The grid item's version is {data[0]}, not 0.");
@@ -343,35 +382,92 @@ internal sealed class AvifFile
             throw Corrupt(heif, $"The grid's output size is {width} x {height}.");
         }
 
-        uint[] ids = Primary.ReferencesOf(Dimg);
+        uint[] ids = grid.ReferencesOf(Dimg);
         if (ids.Length != rows * columns)
         {
             throw Corrupt(heif, $"The {rows} x {columns} grid has {ids.Length} cells.");
         }
 
+        return (Coded(ids, "grid cell"), rows, columns, (int)width, (int)height);
+    }
+
+    /// <summary>Reads an overlay item (HEIF 6.6.2.3.3): the canvas fill and size, and where each layer goes.</summary>
+    private void ReadOverlay()
+    {
+        HeifFile heif = Heif;
+        ReadOnlySpan<byte> data = heif.ItemData(Primary).Span;
+        uint[] ids = Primary.ReferencesOf(Dimg);
+        if (data.Length < 2 || data[0] != 0)
+        {
+            throw Corrupt(heif, data.Length < 2 ? "The overlay item's data is cut off." : $"The overlay item's version is {data[0]}, not 0.");
+        }
+
+        if (ids.Length == 0)
+        {
+            throw Corrupt(heif, "The overlay item has no layers (dimg references).");
+        }
+
+        // version, flags (bit 0: 32-bit fields), the RGBA canvas fill, the canvas size, then each layer's offset.
+        bool large = (data[1] & 1) != 0;
+        int field = large ? 4 : 2;
+        if (data.Length < 10 + (2 * field) + (ids.Length * 2 * field))
+        {
+            throw Corrupt(heif, "The overlay item's data is cut off.");
+        }
+
+        ushort[] fill = new ushort[4];
+        for (int i = 0; i < 4; i++)
+        {
+            fill[i] = BinaryPrimitives.ReadUInt16BigEndian(data[(2 + (2 * i))..]);
+        }
+
+        long width = Unsigned(data, 10), height = Unsigned(data, 10 + field);
+        if (width == 0 || height == 0 || width > int.MaxValue || height > int.MaxValue)
+        {
+            throw Corrupt(heif, $"The overlay's canvas is {width} x {height}.");
+        }
+
+        (int X, int Y)[] offsets = new (int, int)[ids.Length];
+        for (int i = 0, at = 10 + (2 * field); i < ids.Length; i++, at += 2 * field)
+        {
+            offsets[i] = large
+                ? (BinaryPrimitives.ReadInt32BigEndian(data[at..]), BinaryPrimitives.ReadInt32BigEndian(data[(at + 4)..]))
+                : (BinaryPrimitives.ReadInt16BigEndian(data[at..]), BinaryPrimitives.ReadInt16BigEndian(data[(at + 2)..]));
+        }
+
+        Cells = Coded(ids, "overlay layer");
+        Overlay = new HeifOverlay(fill, (int)width, (int)height, offsets);
+        (Width, Height) = ((int)width, (int)height);
+
+        long Unsigned(ReadOnlySpan<byte> d, int position) => large ? BinaryPrimitives.ReadUInt32BigEndian(d[position..]) : BinaryPrimitives.ReadUInt16BigEndian(d[position..]);
+    }
+
+    /// <summary>Gets the av01 items a derived image references, which must exist and be understood.</summary>
+    private List<HeifItem> Coded(uint[] ids, string role)
+    {
+        HeifFile heif = Heif;
         List<HeifItem> cells = [];
         foreach (uint id in ids)
         {
-            HeifItem cell = heif.Item(id) ?? throw Corrupt(heif, $"A grid cell, item {id}, has no iinf entry.");
+            HeifItem cell = heif.Item(id) ?? throw Corrupt(heif, $"A {role}, item {id}, has no iinf entry.");
             if (cell.Type != Av01)
             {
-                throw new UnsupportedFormatException($"A grid cell is a \"{FourCC.ToString(cell.Type)}\" item; Egami reads av01 cells.");
+                throw new UnsupportedFormatException($"A {role} is a \"{FourCC.ToString(cell.Type)}\" item; Egami reads av01 ones.");
             }
 
             if (cell.UnsupportedEssential != 0)
             {
-                throw new UnsupportedFormatException($"A grid cell has an essential \"{FourCC.ToString(cell.UnsupportedEssential)}\" property Egami does not understand.");
+                throw new UnsupportedFormatException($"A {role} has an essential \"{FourCC.ToString(cell.UnsupportedEssential)}\" property Egami does not understand.");
             }
 
             cells.Add(cell);
         }
 
-        Cells = cells;
-        GridSize = (rows, columns);
-        (Width, Height) = ((int)width, (int)height);
+        return cells;
     }
 
-    private (int Width, int Height) Extents(HeifItem item) =>
+    /// <summary>Gets an item's ispe size.</summary>
+    internal (int Width, int Height) Extents(HeifItem item) =>
         Heif.Property(item, AvifProperties.Ispe) is HeifProperty ispe
             ? AvifProperties.ReadSpatialExtents(Heif, ispe)
             : throw Corrupt(Heif, $"{Capital(item)} has no ispe property.");
