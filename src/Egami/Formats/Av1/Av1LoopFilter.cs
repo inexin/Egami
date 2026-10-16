@@ -29,12 +29,52 @@ internal static class Av1LoopFilter
                 continue;
             }
 
-            FilterPlane(frame, plane, vertical: true);
-            FilterPlane(frame, plane, vertical: false);
+            int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
+            int planeMiRows = (frame.MiRows + ssy) >> ssy, planeMiCols = (frame.MiCols + ssx) >> ssx;
+            int[] units = System.Buffers.ArrayPool<int>.Shared.Rent(planeMiRows * planeMiCols);
+            try
+            {
+                Units(frame, plane, ssx, ssy, planeMiRows, planeMiCols, units);
+                FilterPlane(frame, plane, units, vertical: true);
+                FilterPlane(frame, plane, units, vertical: false);
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<int>.Shared.Return(units);
+            }
         }
     }
 
-    private static void FilterPlane(Av1Frame frame, int plane, bool vertical)
+    /// <summary>
+    /// What the edges of each 4x4 unit of a plane need from its block, packed: the transform size (bits 0-7), the filter
+    /// levels across vertical and horizontal edges (8-13 and 14-19), whether it is a skipped inter block (20) and the log2 of
+    /// the plane block's width and height (21-24 and 25-28).
+    /// </summary>
+    private static void Units(Av1Frame frame, int plane, int ssx, int ssy, int planeMiRows, int planeMiCols, int[] units)
+    {
+        Av1FrameHeader h = frame.Header;
+        frame.For(planeMiRows, y =>
+        {
+            int miRow = ssy | (y << ssy);
+            for (int x = 0; x < planeMiCols; x++)
+            {
+                int miCol = ssx | (x << ssx);
+                if (miRow >= frame.MiRows || miCol >= frame.MiCols)
+                {
+                    units[(y * planeMiCols) + x] = 0;
+                    continue;
+                }
+
+                Av1BlockInfo b = frame.Grid[(miRow * frame.MiCols) + miCol]!;
+                int ts = TransformSize(frame, b, miRow, miCol, plane, ssx, ssy);
+                int bsize = plane == 0 ? b.Size : Av1Tables.PlaneBlockSize(b.Size, ssx, ssy);
+                units[(y * planeMiCols) + x] = ts | (FilterLevel(h, b, plane, 0) << 8) | (FilterLevel(h, b, plane, 1) << 14) | ((b.Skip && b.IsInter ? 1 : 0) << 20)
+                    | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeWide[bsize]) << 21) | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeHigh[bsize]) << 25);
+            }
+        });
+    }
+
+    private static void FilterPlane(Av1Frame frame, int plane, int[] units, bool vertical)
     {
         Av1FrameHeader h = frame.Header;
         int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
@@ -53,7 +93,7 @@ internal static class Av1LoopFilter
                 {
                     for (int x = 0; x < planeMiCols;)
                     {
-                        (int txSize, int length, int level) = EdgeParameters(frame, plane, true, x * 4, y * 4, width, height, ssx, ssy);
+                        (int txSize, int length, int level) = EdgeParameters(units, planeMiCols, plane, true, x, y, width, height);
                         if (length != 0)
                         {
                             FilterEdge(buf, (y * 4 * stride) + (x * 4), 1, stride, length, level, h.LoopFilterSharpness, bitDepth);
@@ -82,7 +122,7 @@ internal static class Av1LoopFilter
                         }
 
                         int x = first + i;
-                        (int txSize, int length, int level) = EdgeParameters(frame, plane, false, x * 4, y * 4, width, height, ssx, ssy);
+                        (int txSize, int length, int level) = EdgeParameters(units, planeMiCols, plane, false, x, y, width, height);
                         if (length != 0)
                         {
                             FilterEdge(buf, (y * 4 * stride) + (x * 4), stride, 1, length, level, h.LoopFilterSharpness, bitDepth);
@@ -95,34 +135,31 @@ internal static class Av1LoopFilter
         }
     }
 
-    /// <summary>set_lpf_parameters: the transform size at a 4x4 unit, and the filter length and level of the edge it starts.</summary>
-    private static (int TxSize, int Length, int Level) EdgeParameters(Av1Frame frame, int plane, bool vertical, int x, int y, int width, int height,
-        int ssx, int ssy)
+    /// <summary>set_lpf_parameters: the transform size at 4x4 unit (x, y), and the filter length and level of the edge it starts.</summary>
+    private static (int TxSize, int Length, int Level) EdgeParameters(int[] units, int stride, int plane, bool vertical, int x, int y, int width, int height)
     {
-        if (x >= width || y >= height)
+        if (x * 4 >= width || y * 4 >= height)
         {
             return (Tx.T4x4, 0, 0);
         }
 
-        int miRow = ssy | ((y << ssy) >> 2), miCol = ssx | ((x << ssx) >> 2);
-        Av1BlockInfo b = frame.Grid[(miRow * frame.MiCols) + miCol]!;
-        int ts = TransformSize(frame, b, miRow, miCol, plane, ssx, ssy);
-        int coord = vertical ? x : y;
+        int unit = units[(y * stride) + x];
+        int ts = unit & 0xff;
+        int coord = (vertical ? x : y) * 4;
         int mask = (vertical ? Av1Tables.TxSizeWide[ts] : Av1Tables.TxSizeHigh[ts]) - 1;
         if ((coord & mask) != 0 || coord == 0)
         {
             return (ts, 0, 0);
         }
 
-        int level = FilterLevel(frame.Header, b, plane, vertical ? 0 : 1);
-        bool skipped = b.Skip && b.IsInter;
-        int pvRow = vertical ? miRow : miRow - (1 << ssy), pvCol = vertical ? miCol - (1 << ssx) : miCol;
-        Av1BlockInfo prev = frame.Grid[(pvRow * frame.MiCols) + pvCol]!;
-        int pvTs = TransformSize(frame, prev, pvRow, pvCol, plane, ssx, ssy);
-        int pvLevel = FilterLevel(frame.Header, prev, plane, vertical ? 0 : 1);
-        bool pvSkipped = prev.Skip && prev.IsInter;
-        int bsize = plane == 0 ? b.Size : Av1Tables.PlaneBlockSize(b.Size, ssx, ssy);
-        int predMask = (vertical ? Av1Tables.BlockSizeWide[bsize] : Av1Tables.BlockSizeHigh[bsize]) - 1;
+        int shift = vertical ? 8 : 14;
+        int level = (unit >> shift) & 63;
+        bool skipped = (unit & (1 << 20)) != 0;
+        int previous = units[vertical ? (y * stride) + x - 1 : ((y - 1) * stride) + x];
+        int pvTs = previous & 0xff;
+        int pvLevel = (previous >> shift) & 63;
+        bool pvSkipped = (previous & (1 << 20)) != 0;
+        int predMask = (1 << ((unit >> (vertical ? 21 : 25)) & 15)) - 1;
         bool puEdge = (coord & predMask) == 0;
         if ((level == 0 && pvLevel == 0) || (pvSkipped && skipped && !puEdge))
         {
