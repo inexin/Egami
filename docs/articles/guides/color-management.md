@@ -126,6 +126,15 @@ libtiff and browsers do, not through this profile.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#cmyk-ink)]
 
+A printed page can use more than the four process inks. An `InkSet` lists them: a CMYK profile's Cyan, Magenta, Yellow and
+Black (each a `Colorant` of `ColorantKind.Process`), then named spot colours and technical inks such as varnish, at most 64.
+An `InkColor` names inks with tints, as PDF's Separation and DeviceN colours do (an `InkTint` each), and carries an
+`InkAppearance` (CMYK, sRGB or Lab, an `InkAppearanceKind`) for anything that cannot print the inks: the tinted appearances
+of inks printed over one another combine as filters. Names match exactly, and Cyan, Magenta, Yellow and Black always mean the
+process inks.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#inks)]
+
 ## Code points
 
 `ColorCodePoints` holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami

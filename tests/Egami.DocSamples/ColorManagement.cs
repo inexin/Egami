@@ -223,6 +223,25 @@ public class ColorManagement
     }
 
     [Fact]
+    public void Inks()
+    {
+        #region inks
+        // The inks of a page: FOGRA39's process inks, a spot colour with how it looks, and a varnish that never shows.
+        InkSet inks = InkSet.FromProfile(ColorProfile.Fogra39)
+            .WithSpot("PANTONE 186 C", InkAppearance.Cmyk(0, 1, 0.81f, 0.04f))
+            .WithSpot("Varnish", null, ColorantKind.Technical);
+
+        // Colours as inks: process CMYK, the spot at 60%, and the spot over 30% black (a DeviceN colour).
+        InkColor text = InkColor.Cmyk(0, 0, 0, 1);
+        InkColor logo = InkColor.Spot(inks[4], 0.6f);
+        InkColor shadow = InkColor.Mix(new InkTint(Colorant.Black, 0.3f), new InkTint(inks[4], 1));
+        InkAppearance? onScreen = shadow.Appearance;   // CMYK 0, 1, 0.81, 0.328: the spot's look printed over the black
+        #endregion
+
+        Assert.True(text.IsCmyk && logo.TintOf("PANTONE 186 C") == 0.6f && onScreen?.Values.W > 0.3f && inks.Count == 6);
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);

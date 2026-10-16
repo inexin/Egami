@@ -88,6 +88,8 @@ abstract Egami.Formats.RowReader.ReadRow<TPixel>(int y, int x, System.Span<TPixe
 abstract Egami.Formats.RowReader.Width.get -> int
 abstract Egami.Operations.Light.<Clone>$() -> Egami.Operations.Light!
 abstract Egami.YuvRaster.HasAlpha.get -> bool
+const Egami.Colors.Colorant.MaxNameLength = 127 -> int
+const Egami.Colors.InkSet.MaxInks = 64 -> int
 const Egami.Metadata.XmpNamespaces.CameraRaw = "http://ns.adobe.com/camera-raw-settings/1.0/" -> string!
 const Egami.Metadata.XmpNamespaces.DublinCore = "http://purl.org/dc/elements/1.1/" -> string!
 const Egami.Metadata.XmpNamespaces.Exif = "http://ns.adobe.com/exif/1.0/" -> string!
@@ -243,6 +245,16 @@ Egami.Colors.CmykColor.ToRgbaF32() -> Egami.Pixels.RgbaF32
 Egami.Colors.CmykColor.ToXyz() -> Egami.Colors.XyzColor
 Egami.Colors.CmykColor.Y.get -> float
 Egami.Colors.CmykColor.Y.init -> void
+Egami.Colors.Colorant
+Egami.Colors.Colorant.Appearance.get -> Egami.Colors.InkAppearance?
+Egami.Colors.Colorant.Equals(Egami.Colors.Colorant? other) -> bool
+Egami.Colors.Colorant.IsCmyk.get -> bool
+Egami.Colors.Colorant.Kind.get -> Egami.Colors.ColorantKind
+Egami.Colors.Colorant.Name.get -> string!
+Egami.Colors.ColorantKind
+Egami.Colors.ColorantKind.Process = 0 -> Egami.Colors.ColorantKind
+Egami.Colors.ColorantKind.Spot = 1 -> Egami.Colors.ColorantKind
+Egami.Colors.ColorantKind.Technical = 2 -> Egami.Colors.ColorantKind
 Egami.Colors.ColorCodePoints
 Egami.Colors.ColorCodePoints.ColorCodePoints() -> void
 Egami.Colors.ColorCodePoints.ColorCodePoints(byte Primaries, byte TransferCharacteristics, byte MatrixCoefficients, bool FullRange) -> void
@@ -473,6 +485,44 @@ Egami.Colors.IColorValue<TSelf>.IsCloseTo(TSelf other, float tolerance = 0.0001)
 Egami.Colors.IColorValue<TSelf>.ToRgba8() -> Egami.Pixels.Rgba8
 Egami.Colors.IColorValue<TSelf>.ToRgbaF32() -> Egami.Pixels.RgbaF32
 Egami.Colors.IColorValue<TSelf>.ToXyz() -> Egami.Colors.XyzColor
+Egami.Colors.InkAppearance
+Egami.Colors.InkAppearance.Equals(Egami.Colors.InkAppearance other) -> bool
+Egami.Colors.InkAppearance.InkAppearance() -> void
+Egami.Colors.InkAppearance.Kind.get -> Egami.Colors.InkAppearanceKind
+Egami.Colors.InkAppearance.ToLab() -> Egami.Colors.LabColor
+Egami.Colors.InkAppearance.Values.get -> System.Numerics.Vector4
+Egami.Colors.InkAppearanceKind
+Egami.Colors.InkAppearanceKind.Cmyk = 0 -> Egami.Colors.InkAppearanceKind
+Egami.Colors.InkAppearanceKind.Lab = 2 -> Egami.Colors.InkAppearanceKind
+Egami.Colors.InkAppearanceKind.Rgb = 1 -> Egami.Colors.InkAppearanceKind
+Egami.Colors.InkColor
+Egami.Colors.InkColor.Appearance.get -> Egami.Colors.InkAppearance?
+Egami.Colors.InkColor.Equals(Egami.Colors.InkColor? other) -> bool
+Egami.Colors.InkColor.IndexOf(string! name) -> int
+Egami.Colors.InkColor.Inks.get -> System.Collections.Generic.IReadOnlyList<Egami.Colors.InkTint>!
+Egami.Colors.InkColor.IsCmyk.get -> bool
+Egami.Colors.InkColor.TintOf(string! name) -> float?
+Egami.Colors.InkSet
+Egami.Colors.InkSet.Contains(string! name) -> bool
+Egami.Colors.InkSet.Count.get -> int
+Egami.Colors.InkSet.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Colors.Colorant!>!
+Egami.Colors.InkSet.IndexOf(string! name) -> int
+Egami.Colors.InkSet.IsDisabled(int index) -> bool
+Egami.Colors.InkSet.ProcessCount.get -> int
+Egami.Colors.InkSet.Profile.get -> Egami.Colors.ColorProfile!
+Egami.Colors.InkSet.this[int index].get -> Egami.Colors.Colorant!
+Egami.Colors.InkSet.WithDisabled(string! name) -> Egami.Colors.InkSet!
+Egami.Colors.InkSet.WithSpot(Egami.Colors.Colorant! colorant) -> Egami.Colors.InkSet!
+Egami.Colors.InkSet.WithSpot(string! name, Egami.Colors.InkAppearance? appearance, Egami.Colors.ColorantKind kind = Egami.Colors.ColorantKind.Spot) -> Egami.Colors.InkSet!
+Egami.Colors.InkTint
+Egami.Colors.InkTint.Colorant.get -> Egami.Colors.Colorant!
+Egami.Colors.InkTint.Colorant.init -> void
+Egami.Colors.InkTint.Deconstruct(out Egami.Colors.Colorant! Colorant, out float Tint) -> void
+Egami.Colors.InkTint.Equals(Egami.Colors.InkTint other) -> bool
+Egami.Colors.InkTint.InkTint() -> void
+Egami.Colors.InkTint.InkTint(Egami.Colors.Colorant! Colorant, float Tint) -> void
+Egami.Colors.InkTint.Tint.get -> float
+Egami.Colors.InkTint.Tint.init -> void
 Egami.Colors.LabColor
 Egami.Colors.LabColor.A.get -> float
 Egami.Colors.LabColor.A.init -> void
@@ -1085,6 +1135,8 @@ Egami.Formats.Jxl.JxlDetails.BitsPerSample.get -> int
 Egami.Formats.Jxl.JxlDetails.BitsPerSample.set -> void
 Egami.Formats.Jxl.JxlDetails.ExponentBits.get -> int
 Egami.Formats.Jxl.JxlDetails.ExponentBits.set -> void
+Egami.Formats.Jxl.JxlDetails.ExtraChannels.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlExtraChannel!>!
+Egami.Formats.Jxl.JxlDetails.ExtraChannels.set -> void
 Egami.Formats.Jxl.JxlDetails.HasJpegReconstruction.get -> bool
 Egami.Formats.Jxl.JxlDetails.HasJpegReconstruction.set -> void
 Egami.Formats.Jxl.JxlDetails.IsContainer.get -> bool
@@ -1096,7 +1148,63 @@ Egami.Formats.Jxl.JxlDetails.Jumbf.set -> void
 Egami.Formats.Jxl.JxlDetails.JxlDetails() -> void
 Egami.Formats.Jxl.JxlDetails.Level.get -> int?
 Egami.Formats.Jxl.JxlDetails.Level.set -> void
+Egami.Formats.Jxl.JxlExtraChannel
+Egami.Formats.Jxl.JxlExtraChannel.AlphaPremultiplied.get -> bool
+Egami.Formats.Jxl.JxlExtraChannel.AlphaPremultiplied.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.BitsPerSample.get -> int
+Egami.Formats.Jxl.JxlExtraChannel.BitsPerSample.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.ExponentBits.get -> int
+Egami.Formats.Jxl.JxlExtraChannel.ExponentBits.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.JxlExtraChannel() -> void
+Egami.Formats.Jxl.JxlExtraChannel.Kind.get -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannel.Kind.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.Name.get -> string!
+Egami.Formats.Jxl.JxlExtraChannel.Name.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.SpotColor.get -> System.Collections.Generic.IReadOnlyList<float>?
+Egami.Formats.Jxl.JxlExtraChannel.SpotColor.init -> void
+Egami.Formats.Jxl.JxlExtraChannel.Subsampling.get -> int
+Egami.Formats.Jxl.JxlExtraChannel.Subsampling.init -> void
+Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Alpha = 0 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Black = 4 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.ColorFilterArray = 5 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Depth = 1 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.NonOptional = 15 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Optional = 16 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.SelectionMask = 3 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.SpotColor = 2 -> Egami.Formats.Jxl.JxlExtraChannelKind
+Egami.Formats.Jxl.JxlExtraChannelKind.Thermal = 6 -> Egami.Formats.Jxl.JxlExtraChannelKind
 Egami.Formats.Jxl.JxlFormat
+Egami.Formats.Jxl.JxlImage
+Egami.Formats.Jxl.JxlLayer
+Egami.Formats.Jxl.JxlLayer.Blend.get -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayer.Dispose() -> void
+Egami.Formats.Jxl.JxlLayer.Duration.get -> System.TimeSpan
+Egami.Formats.Jxl.JxlLayer.Name.get -> string!
+Egami.Formats.Jxl.JxlLayer.Raster.get -> Egami.Raster!
+Egami.Formats.Jxl.JxlLayer.X.get -> int
+Egami.Formats.Jxl.JxlLayer.Y.get -> int
+Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Add = 1 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Blend = 2 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.MulAdd = 3 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Multiply = 4 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlLayerBlend.Replace = 0 -> Egami.Formats.Jxl.JxlLayerBlend
+Egami.Formats.Jxl.JxlReaderOptions
+Egami.Formats.Jxl.JxlReaderOptions.Equals(Egami.Formats.Jxl.JxlReaderOptions? other) -> bool
+Egami.Formats.Jxl.JxlReaderOptions.JxlReaderOptions() -> void
+Egami.Formats.Jxl.JxlReaderOptions.LinearOutput.get -> bool
+Egami.Formats.Jxl.JxlReaderOptions.LinearOutput.init -> void
+Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.get -> int
+Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.init -> void
+Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.get -> bool
+Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.init -> void
+Egami.Formats.Jxl.JxlWriterOptions
+Egami.Formats.Jxl.JxlWriterOptions.Effort.get -> int
+Egami.Formats.Jxl.JxlWriterOptions.Effort.init -> void
+Egami.Formats.Jxl.JxlWriterOptions.JxlWriterOptions() -> void
+Egami.Formats.Jxl.JxlWriterOptions.Lossless.get -> bool?
+Egami.Formats.Jxl.JxlWriterOptions.Lossless.init -> void
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Png.PngWriterOptions.Interlace.get -> bool
@@ -1245,7 +1353,9 @@ Egami.Formats.Tiff.TiffCompression.CcittGroup4 = 4 -> Egami.Formats.Tiff.TiffCom
 Egami.Formats.Tiff.TiffCompression.CcittRle = 2 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffCompression.CcittRleWord = 32771 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffCompression.Deflate = 8 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.DngJpegXl = 52546 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffCompression.Jpeg = 7 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.JpegXl = 50002 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffCompression.Lzw = 5 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffCompression.None = 1 -> Egami.Formats.Tiff.TiffCompression
 Egami.Formats.Tiff.TiffCompression.OldJpeg = 6 -> Egami.Formats.Tiff.TiffCompression
@@ -2392,6 +2502,9 @@ override Egami.Analysis.DominantColorOptions.ToString() -> string!
 override Egami.Analysis.WeightedColor.GetHashCode() -> int
 override Egami.Colors.Chromaticity.GetHashCode() -> int
 override Egami.Colors.CmykColor.GetHashCode() -> int
+override Egami.Colors.Colorant.Equals(object? obj) -> bool
+override Egami.Colors.Colorant.GetHashCode() -> int
+override Egami.Colors.Colorant.ToString() -> string!
 override Egami.Colors.ColorCodePoints.GetHashCode() -> int
 override Egami.Colors.ColorPrimaries.Equals(object? obj) -> bool
 override Egami.Colors.ColorPrimaries.GetHashCode() -> int
@@ -2414,6 +2527,14 @@ override Egami.Colors.HslColor.GetHashCode() -> int
 override Egami.Colors.HsvColor.GetHashCode() -> int
 override Egami.Colors.IccData.ToString() -> string!
 override Egami.Colors.IccTag.GetHashCode() -> int
+override Egami.Colors.InkAppearance.Equals(object? obj) -> bool
+override Egami.Colors.InkAppearance.GetHashCode() -> int
+override Egami.Colors.InkAppearance.ToString() -> string!
+override Egami.Colors.InkColor.Equals(object? obj) -> bool
+override Egami.Colors.InkColor.GetHashCode() -> int
+override Egami.Colors.InkColor.ToString() -> string!
+override Egami.Colors.InkSet.ToString() -> string!
+override Egami.Colors.InkTint.GetHashCode() -> int
 override Egami.Colors.LabColor.GetHashCode() -> int
 override Egami.Colors.LchColor.GetHashCode() -> int
 override Egami.Colors.OklabColor.GetHashCode() -> int
@@ -2484,6 +2605,10 @@ override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(object? obj) -> boo
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.GetHashCode() -> int
 override Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.ToString() -> string!
 override Egami.Formats.Jxl.JxlDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Jxl.JxlReaderOptions.<Clone>$() -> Egami.Formats.Jxl.JxlReaderOptions!
+override Egami.Formats.Jxl.JxlReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Jxl.JxlReaderOptions.GetHashCode() -> int
+override Egami.Formats.Jxl.JxlReaderOptions.ToString() -> string!
 override Egami.Formats.Psd.PsdDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Psd.PsdLayer.Equals(object? obj) -> bool
 override Egami.Formats.Psd.PsdLayer.GetHashCode() -> int
@@ -2621,6 +2746,7 @@ override sealed Egami.Formats.Exr.ExrReaderOptions.Equals(Egami.Formats.ReaderOp
 override sealed Egami.Formats.Ico.IcoReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+override sealed Egami.Formats.Jxl.JxlReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Tiff.TiffReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Webp.WebpReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Operations.DistantLight.Equals(Egami.Operations.Light? other) -> bool
@@ -2655,6 +2781,13 @@ static Egami.Colors.CmykColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.C
 static Egami.Colors.CmykColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.CmykColor
 static Egami.Colors.CmykColor.operator !=(Egami.Colors.CmykColor left, Egami.Colors.CmykColor right) -> bool
 static Egami.Colors.CmykColor.operator ==(Egami.Colors.CmykColor left, Egami.Colors.CmykColor right) -> bool
+static Egami.Colors.Colorant.Black.get -> Egami.Colors.Colorant!
+static Egami.Colors.Colorant.Cyan.get -> Egami.Colors.Colorant!
+static Egami.Colors.Colorant.Magenta.get -> Egami.Colors.Colorant!
+static Egami.Colors.Colorant.Process(string! name, Egami.Colors.InkAppearance? appearance) -> Egami.Colors.Colorant!
+static Egami.Colors.Colorant.Spot(string! name, Egami.Colors.InkAppearance? appearance) -> Egami.Colors.Colorant!
+static Egami.Colors.Colorant.Technical(string! name) -> Egami.Colors.Colorant!
+static Egami.Colors.Colorant.Yellow.get -> Egami.Colors.Colorant!
 static Egami.Colors.ColorCodePoints.operator !=(Egami.Colors.ColorCodePoints left, Egami.Colors.ColorCodePoints right) -> bool
 static Egami.Colors.ColorCodePoints.operator ==(Egami.Colors.ColorCodePoints left, Egami.Colors.ColorCodePoints right) -> bool
 static Egami.Colors.ColorCodePoints.Rec2100Hlg.get -> Egami.Colors.ColorCodePoints
@@ -2713,6 +2846,19 @@ static Egami.Colors.HsvColor.operator ==(Egami.Colors.HsvColor left, Egami.Color
 static Egami.Colors.IccData.Parse(System.ReadOnlySpan<byte> profile, Egami.SafetyLimits? limits = null) -> Egami.Colors.IccData!
 static Egami.Colors.IccTag.operator !=(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
 static Egami.Colors.IccTag.operator ==(Egami.Colors.IccTag left, Egami.Colors.IccTag right) -> bool
+static Egami.Colors.InkAppearance.Cmyk(float c, float m, float y, float k) -> Egami.Colors.InkAppearance
+static Egami.Colors.InkAppearance.Lab(Egami.Colors.LabColor lab) -> Egami.Colors.InkAppearance
+static Egami.Colors.InkAppearance.operator !=(Egami.Colors.InkAppearance left, Egami.Colors.InkAppearance right) -> bool
+static Egami.Colors.InkAppearance.operator ==(Egami.Colors.InkAppearance left, Egami.Colors.InkAppearance right) -> bool
+static Egami.Colors.InkAppearance.Rgb(float r, float g, float b) -> Egami.Colors.InkAppearance
+static Egami.Colors.InkColor.Cmyk(float c, float m, float y, float k) -> Egami.Colors.InkColor!
+static Egami.Colors.InkColor.Mix(params System.ReadOnlySpan<Egami.Colors.InkTint> inks) -> Egami.Colors.InkColor!
+static Egami.Colors.InkColor.None.get -> Egami.Colors.InkColor!
+static Egami.Colors.InkColor.Spot(Egami.Colors.Colorant! colorant, float tint) -> Egami.Colors.InkColor!
+static Egami.Colors.InkColor.Spot(string! name, float tint, Egami.Colors.InkAppearance? appearance) -> Egami.Colors.InkColor!
+static Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile! profile) -> Egami.Colors.InkSet!
+static Egami.Colors.InkTint.operator !=(Egami.Colors.InkTint left, Egami.Colors.InkTint right) -> bool
+static Egami.Colors.InkTint.operator ==(Egami.Colors.InkTint left, Egami.Colors.InkTint right) -> bool
 static Egami.Colors.LabColor.From(Egami.Pixels.Rgba8 color) -> Egami.Colors.LabColor
 static Egami.Colors.LabColor.From(Egami.Pixels.RgbaF32 color) -> Egami.Colors.LabColor
 static Egami.Colors.LabColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.LabColor
@@ -2811,6 +2957,20 @@ static Egami.Formats.Jpeg2000.Jpeg2000Format.Info.get -> Egami.Formats.FormatInf
 static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator !=(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
 static Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.operator ==(Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? left, Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions? right) -> bool
 static Egami.Formats.Jxl.JxlFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(string! path, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
+static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream! stream, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
+static Egami.Formats.Jxl.JxlImage.ReadLayers(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>!
+static Egami.Formats.Jxl.JxlImage.ReadLayers(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>!
+static Egami.Formats.Jxl.JxlImage.ReadPreview(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster?
+static Egami.Formats.Jxl.JxlImage.ReadPreview(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster?
+static Egami.Formats.Jxl.JxlImage.RecompressJpeg(string! path, string! outputPath, Egami.EgamiContext? context = null) -> void
+static Egami.Formats.Jxl.JxlImage.RecompressJpeg(System.IO.Stream! stream, System.IO.Stream! output, Egami.EgamiContext? context = null) -> void
+static Egami.Formats.Jxl.JxlImage.ReconstructJpeg(string! path, string! outputPath, Egami.EgamiContext? context = null) -> void
+static Egami.Formats.Jxl.JxlImage.ReconstructJpeg(System.IO.Stream! stream, System.IO.Stream! output, Egami.EgamiContext? context = null) -> void
+static Egami.Formats.Jxl.JxlReaderOptions.Default.get -> Egami.Formats.Jxl.JxlReaderOptions!
+static Egami.Formats.Jxl.JxlReaderOptions.operator !=(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
+static Egami.Formats.Jxl.JxlReaderOptions.operator ==(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
+static Egami.Formats.Jxl.JxlWriterOptions.Default.get -> Egami.Formats.Jxl.JxlWriterOptions!
 static Egami.Formats.Psd.PsdFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Psd.PsdLayer.operator !=(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
 static Egami.Formats.Psd.PsdLayer.operator ==(Egami.Formats.Psd.PsdLayer? left, Egami.Formats.Psd.PsdLayer? right) -> bool
@@ -3182,6 +3342,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Colors.HsvColor.ToString() -> string
 ~override Egami.Colors.IccTag.Equals(object obj) -> bool
 ~override Egami.Colors.IccTag.ToString() -> string
+~override Egami.Colors.InkTint.Equals(object obj) -> bool
+~override Egami.Colors.InkTint.ToString() -> string
 ~override Egami.Colors.LabColor.Equals(object obj) -> bool
 ~override Egami.Colors.LabColor.ToString() -> string
 ~override Egami.Colors.LchColor.Equals(object obj) -> bool
@@ -3210,82 +3372,3 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Operations.OperationReach.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
 ~override Egami.Pixels.YuvColor.ToString() -> string
-Egami.Formats.Jxl.JxlImage
-Egami.Formats.Jxl.JxlLayer
-Egami.Formats.Jxl.JxlLayer.Blend.get -> Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlLayer.Dispose() -> void
-Egami.Formats.Jxl.JxlLayer.Duration.get -> System.TimeSpan
-Egami.Formats.Jxl.JxlLayer.Name.get -> string!
-Egami.Formats.Jxl.JxlLayer.Raster.get -> Egami.Raster!
-Egami.Formats.Jxl.JxlLayer.X.get -> int
-Egami.Formats.Jxl.JxlLayer.Y.get -> int
-Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlLayerBlend.Add = 1 -> Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlLayerBlend.Blend = 2 -> Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlLayerBlend.MulAdd = 3 -> Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlLayerBlend.Multiply = 4 -> Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlLayerBlend.Replace = 0 -> Egami.Formats.Jxl.JxlLayerBlend
-Egami.Formats.Jxl.JxlReaderOptions
-Egami.Formats.Jxl.JxlReaderOptions.Equals(Egami.Formats.Jxl.JxlReaderOptions? other) -> bool
-Egami.Formats.Jxl.JxlReaderOptions.JxlReaderOptions() -> void
-Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.get -> int
-Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.init -> void
-override Egami.Formats.Jxl.JxlReaderOptions.<Clone>$() -> Egami.Formats.Jxl.JxlReaderOptions!
-override Egami.Formats.Jxl.JxlReaderOptions.Equals(object? obj) -> bool
-override Egami.Formats.Jxl.JxlReaderOptions.GetHashCode() -> int
-override Egami.Formats.Jxl.JxlReaderOptions.ToString() -> string!
-override sealed Egami.Formats.Jxl.JxlReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
-static Egami.Formats.Jxl.JxlImage.ReadLayers(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>!
-static Egami.Formats.Jxl.JxlImage.ReadLayers(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlLayer!>!
-static Egami.Formats.Jxl.JxlImage.ReadPreview(System.IO.Stream! stream, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster?
-static Egami.Formats.Jxl.JxlImage.ReadPreview(string! path, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster?
-static Egami.Formats.Jxl.JxlReaderOptions.Default.get -> Egami.Formats.Jxl.JxlReaderOptions!
-static Egami.Formats.Jxl.JxlReaderOptions.operator !=(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
-static Egami.Formats.Jxl.JxlReaderOptions.operator ==(Egami.Formats.Jxl.JxlReaderOptions? left, Egami.Formats.Jxl.JxlReaderOptions? right) -> bool
-Egami.Formats.Jxl.JxlDetails.ExtraChannels.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Jxl.JxlExtraChannel!>!
-Egami.Formats.Jxl.JxlDetails.ExtraChannels.set -> void
-Egami.Formats.Jxl.JxlExtraChannel
-Egami.Formats.Jxl.JxlExtraChannel.AlphaPremultiplied.get -> bool
-Egami.Formats.Jxl.JxlExtraChannel.AlphaPremultiplied.init -> void
-Egami.Formats.Jxl.JxlExtraChannel.BitsPerSample.get -> int
-Egami.Formats.Jxl.JxlExtraChannel.BitsPerSample.init -> void
-Egami.Formats.Jxl.JxlExtraChannel.ExponentBits.get -> int
-Egami.Formats.Jxl.JxlExtraChannel.ExponentBits.init -> void
-Egami.Formats.Jxl.JxlExtraChannel.JxlExtraChannel() -> void
-Egami.Formats.Jxl.JxlExtraChannel.Kind.get -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannel.Kind.init -> void
-Egami.Formats.Jxl.JxlExtraChannel.Name.get -> string!
-Egami.Formats.Jxl.JxlExtraChannel.Name.init -> void
-Egami.Formats.Jxl.JxlExtraChannel.SpotColor.get -> System.Collections.Generic.IReadOnlyList<float>?
-Egami.Formats.Jxl.JxlExtraChannel.SpotColor.init -> void
-Egami.Formats.Jxl.JxlExtraChannel.Subsampling.get -> int
-Egami.Formats.Jxl.JxlExtraChannel.Subsampling.init -> void
-Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.Alpha = 0 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.Black = 4 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.ColorFilterArray = 5 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.Depth = 1 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.NonOptional = 15 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.Optional = 16 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.SelectionMask = 3 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.SpotColor = 2 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlExtraChannelKind.Thermal = 6 -> Egami.Formats.Jxl.JxlExtraChannelKind
-Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.get -> bool
-Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.init -> void
-Egami.Formats.Jxl.JxlReaderOptions.LinearOutput.get -> bool
-Egami.Formats.Jxl.JxlReaderOptions.LinearOutput.init -> void
-static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream! stream, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
-static Egami.Formats.Jxl.JxlImage.ReadExtraChannel(string! path, int index, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.GrayF32>!
-static Egami.Formats.Jxl.JxlImage.ReconstructJpeg(string! path, string! outputPath, Egami.EgamiContext? context = null) -> void
-static Egami.Formats.Jxl.JxlImage.ReconstructJpeg(System.IO.Stream! stream, System.IO.Stream! output, Egami.EgamiContext? context = null) -> void
-Egami.Formats.Jxl.JxlWriterOptions
-Egami.Formats.Jxl.JxlWriterOptions.JxlWriterOptions() -> void
-static Egami.Formats.Jxl.JxlWriterOptions.Default.get -> Egami.Formats.Jxl.JxlWriterOptions!
-Egami.Formats.Jxl.JxlWriterOptions.Effort.get -> int
-Egami.Formats.Jxl.JxlWriterOptions.Effort.init -> void
-Egami.Formats.Jxl.JxlWriterOptions.Lossless.get -> bool?
-Egami.Formats.Jxl.JxlWriterOptions.Lossless.init -> void
-static Egami.Formats.Jxl.JxlImage.RecompressJpeg(string! path, string! outputPath, Egami.EgamiContext? context = null) -> void
-static Egami.Formats.Jxl.JxlImage.RecompressJpeg(System.IO.Stream! stream, System.IO.Stream! output, Egami.EgamiContext? context = null) -> void
-Egami.Formats.Tiff.TiffCompression.DngJpegXl = 52546 -> Egami.Formats.Tiff.TiffCompression
-Egami.Formats.Tiff.TiffCompression.JpegXl = 50002 -> Egami.Formats.Tiff.TiffCompression
