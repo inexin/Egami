@@ -15,13 +15,19 @@ namespace Egami.Formats.Avif;
 /// converts them, the clean aperture cropped, and irot and imir left as the orientation (design question 9). Rows are converted
 /// as they are read, after the in-loop filters; a Region decodes only the grid cells it touches (design question 11).
 /// </summary>
-internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceReader
+internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceReader
 {
     internal static readonly AvifReader Instance = new();
 
     public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
     {
-        AvifFile file = AvifFile.Read(input);
+        HeifFile heif = HeifFile.Read(input);
+        if (AvifSequence.Find(heif) is AvifSequence sequence)
+        {
+            return SequenceInfo(sequence, input, options);
+        }
+
+        AvifFile file = AvifFile.Open(heif);
         if (input.Reports(DiagnosticLevel.Warning))
         {
             // A probe has no raster to list warnings on, so skipped entries go to the handler directly.
@@ -75,7 +81,18 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
             }
         }
 
-        Prepared image = Prepare(input, AvifFile.Read(input), options, null);
+        HeifFile heif = HeifFile.Read(input);
+        if (AvifSequence.Find(heif) is AvifSequence sequence)
+        {
+            return ReadSequence(input, sequence, options);
+        }
+
+        return Natural(input, Prepare(input, AvifFile.Open(heif), options, null));
+    }
+
+    /// <summary>Reads a prepared image into its natural pixel type.</summary>
+    private static Raster Natural(EgamiInput input, Prepared image)
+    {
         return image.Natural switch
         {
             _ when image.Natural == Gray8.Layout => Read<Gray8>(input, image),
@@ -106,14 +123,24 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
             }
         }
 
-        return Read<TPixel>(input, Prepare(input, AvifFile.Read(input), options, null));
+        HeifFile heif = HeifFile.Read(input);
+        return AvifSequence.Find(heif) is AvifSequence sequence
+            ? ReadSequence<TPixel>(input, sequence, options)
+            : Read<TPixel>(input, Prepare(input, AvifFile.Open(heif), options, null));
     }
 
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
         try
         {
-            return new AvifRows(input, Prepare(input, AvifFile.Read(input), options, options.Region));
+            HeifFile heif = HeifFile.Read(input);
+            if (AvifSequence.Find(heif) is AvifSequence sequence)
+            {
+                // A sequence is read whole, its frames served from the raster.
+                return BufferedRowSource.From(ReadSequence(input, sequence, options));
+            }
+
+            return new AvifRows(input, Prepare(input, AvifFile.Open(heif), options, options.Region));
         }
         catch
         {
@@ -124,7 +151,13 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
 
     public YuvRaster ReadYuv(EgamiInput input, ReaderOptions options)
     {
-        AvifFile file = AvifFile.Read(input);
+        HeifFile heif = HeifFile.Read(input);
+        if (AvifSequence.Find(heif) is AvifSequence sequence)
+        {
+            return SequenceYuv(sequence, input, options);
+        }
+
+        AvifFile file = AvifFile.Open(heif);
         if (file.Overlay is not null)
         {
             throw new NotSupportedException("This AVIF is an overlay of several images, which has no single set of YUV planes; load it with Raster.Load.");
@@ -141,7 +174,14 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
 
     public (RasterInfo Info, ChromaFormat? Format, int BitDepth, YuvColor Color) ProbeYuv(EgamiInput input, ReaderOptions options)
     {
-        AvifFile file = AvifFile.Read(input);
+        HeifFile heif = HeifFile.Read(input);
+        if (AvifSequence.Find(heif) is AvifSequence sequence)
+        {
+            RasterInfo first = SequenceInfo(sequence, input, options);
+            return (first, sequence.Config.Chroma, sequence.Config.BitDepth, PlaneColor(sequence.CodePoints, sequence.Config, sequence.Sequence, null));
+        }
+
+        AvifFile file = AvifFile.Open(heif);
         RasterInfo info = new()
         {
             Format = AvifFormat.Info,
@@ -213,6 +253,72 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         return HeifPlanes.Grid(decoded, layout.Rows, layout.Columns, layout.Width, layout.Height, input);
     }
 
+    /// <summary>
+    /// Reads image item <paramref name="itemId"/> for <see cref="AvifImage.ReadItem(Stream, uint, ReaderOptions?, EgamiContext?)"/>:
+    /// an av01 item or a grid, with its own color and clean aperture, and no alpha.
+    /// </summary>
+    internal static Raster ReadItem(EgamiInput input, ReaderOptions options, uint itemId)
+    {
+        AvifFile file = AvifFile.Read(input);
+        HeifFile heif = file.Heif;
+        HeifItem item = heif.Item(itemId) ?? throw new ArgumentException($"The AVIF file has no item {itemId}.", nameof(itemId));
+        if (item.Type != AvifFile.Av01 && item.Type != AvifFile.Grid)
+        {
+            throw new ArgumentException($"Item {itemId} is a \"{FourCC.ToString(item.Type)}\" item, not an image (av01 or grid).", nameof(itemId));
+        }
+
+        AvifCodec codec = new(options is not AvifReaderOptions { FilmGrain: false });
+        HeifItem first = item;
+        HeifPlanes planes;
+        if (item.Type == AvifFile.Grid)
+        {
+            (List<HeifItem> cells, int rows, int columns, int width, int height) = file.ReadGrid(item);
+            planes = Grid(file, codec, cells, (rows, columns, width, height), input, null, lumaOnly: false);
+            first = cells[0];
+        }
+        else
+        {
+            planes = Cell(file, codec, item, input);
+        }
+
+        NclxColor? nclx = null;
+        ReadOnlyMemory<byte> icc = default;
+        (int X, int Y, int Width, int Height)? crop = null;
+        foreach (HeifItem source in (HeifItem[])[item, first])
+        {
+            foreach ((HeifProperty property, _) in heif.PropertiesOf(source))
+            {
+                if (property.Type == AvifProperties.Colr)
+                {
+                    (NclxColor? n, ReadOnlyMemory<byte> profile) = AvifProperties.ReadColor(heif, property);
+                    nclx ??= n;
+                    icc = icc.IsEmpty ? profile : icc;
+                }
+                else if (property.Type == AvifProperties.Clap && source == item)
+                {
+                    crop = AvifProperties.ReadCleanAperture(heif, property).CropRectangle(planes.Width, planes.Height);
+                }
+            }
+        }
+
+        ColorCodePoints points = nclx is NclxColor c ? new ColorCodePoints((byte)c.Primaries, (byte)c.Transfer, (byte)c.Matrix, c.FullRange) : codec.CodePoints;
+        HeifRgbConverter converter = new(planes, null, false, points);
+        (int x, int y, int w, int h) = crop ?? (0, 0, planes.Width, planes.Height);
+        input.Limits.CheckFrameSize(w, h);
+        PixelRows rows2 = new(converter.Channels, converter.OutputDepth, (row, column, samples) => converter.Row(y + row, x + column, samples.Length / converter.Channels, samples))
+        {
+            Write = (row, column, width, target) => converter.Write(y + row, x + column, width, target),
+        };
+        RasterMetadata metadata = new() { FormatName = AvifFormat.Info.Name, IccProfile = icc, CodePoints = RasterCodePoints(points, icc) };
+        if (!converter.Supported)
+        {
+            metadata.WarningList.Add("Avif.MatrixApproximated", $"libavif does not convert matrix coefficients {points.MatrixCoefficients} with this range and chroma; the nearest matrix it has was used.");
+        }
+
+        PixelLayoutInfo natural = NaturalLayout(planes.BitDepth, planes.Monochrome, false);
+        return Natural(input, new Prepared(w, h, natural, rows2, metadata, 0));
+    }
+
     /// <summary>Decodes one av01 item.</summary>
     private static HeifPlanes Cell(AvifFile file, AvifCodec codec, HeifItem item, EgamiInput input) =>
         codec.Decode(file.Heif.ItemData(item, input.Limits).ToArray(), input);
@@ -241,6 +347,7 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         (int width, int height) = OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
         (int x, int y) = file.Crop is (int cx, int cy, _, _) ? (cx, cy) : (0, 0);
+        bool layered = file.Overlay is null && file.Heif.Property(file.Cells[0], AvifProperties.A1lx) is not null;
         PixelLayoutInfo natural = NaturalLayout(file);
         AvifCodec codec = new(options is not AvifReaderOptions { FilmGrain: false });
         PixelRows rows;
@@ -255,6 +362,12 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         {
             Rect? needed = region is Rect r ? r with { X = r.X + x, Y = r.Y + y } : null;
             (HeifPlanes color, HeifPlanes? alpha) = Decode(file, codec, input, needed);
+            if (layered && (color.Width, color.Height) != (file.Width, file.Height))
+            {
+                // A spatially layered image's base layer is smaller than the image; it loads whole, at its own size.
+                (x, y, width, height) = (0, 0, color.Width, color.Height);
+            }
+
             if (x + width > color.Width || y + height > color.Height)
             {
                 throw input.Corrupt(-1, $"The image is {color.Width} x {color.Height}, smaller than its {width} x {height} clean aperture at ({x}, {y}).");
@@ -274,9 +387,15 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         }
 
         RasterMetadata metadata = Metadata(file, codec, input);
+        metadata.CodePoints = RasterCodePoints(metadata.CodePoints, metadata.IccProfile);
         if (file.ToneMap is not null && options.ReadMetadata)
         {
             ReadGainMap(file, input, metadata);
+        }
+
+        if (layered)
+        {
+            metadata.WarningList.Add("Avif.BaseLayerOnly", "The image is coded in layers whose later ones are inter frames, which Egami decodes from 2.9.5; its first (lowest quality) layer was loaded.");
         }
 
         if (unsupported.Count > 0)
@@ -389,21 +508,26 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
         return null;
     }
 
-    /// <summary>Moves what <see cref="Metadata"/> gathered onto the raster's metadata.</summary>
-    private static void Adopt(RasterMetadata target, RasterMetadata source)
-    {
-        target.IccProfile = source.IccProfile;
-        // The raster's pixels are full-range RGB, so its code points say so (matrix 0), and an ICC profile comes first (design
-        // question 8). Unspecified primaries or transfer are BT.709's and sRGB's, as libavif takes them.
-        target.CodePoints = source.IccProfile.IsEmpty && source.CodePoints is ColorCodePoints points
-            ? points with
+    /// <summary>
+    /// Gets the code points of a raster's RGB pixels from the file's: matrix 0 and full range, unspecified primaries or transfer as
+    /// BT.709's and sRGB's (as libavif takes them), and none when an ICC profile says what the pixels mean (design question 8).
+    /// </summary>
+    private static ColorCodePoints? RasterCodePoints(ColorCodePoints? points, ReadOnlyMemory<byte> icc) =>
+        icc.IsEmpty && points is ColorCodePoints p
+            ? p with
             {
-                Primaries = points.Primaries == 2 ? (byte)1 : points.Primaries,
-                TransferCharacteristics = points.TransferCharacteristics == 2 ? (byte)13 : points.TransferCharacteristics,
+                Primaries = p.Primaries == 2 ? (byte)1 : p.Primaries,
+                TransferCharacteristics = p.TransferCharacteristics == 2 ? (byte)13 : p.TransferCharacteristics,
                 MatrixCoefficients = 0,
                 FullRange = true,
             }
             : null;
+
+    /// <summary>Moves what <see cref="Metadata"/> gathered onto the raster's metadata.</summary>
+    private static void Adopt(RasterMetadata target, RasterMetadata source)
+    {
+        target.IccProfile = source.IccProfile;
+        target.CodePoints = source.CodePoints;
         target.Hdr = source.Hdr;
         target.Exif = source.Exif;
         target.Xmp = source.Xmp;
@@ -493,7 +617,13 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
     private static void Fill<TPixel>(Raster<TPixel> raster, PixelRows source, PixelLayoutInfo natural, EgamiInput input)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        int width = raster.Width, height = raster.Height;
+        Fill(raster.Width, raster.Height, y => raster.Row(y), source, natural, input);
+    }
+
+    /// <summary>Converts rows of samples into the rows <paramref name="target"/> gives, in bands on several threads for a large image.</summary>
+    private static void Fill<TPixel>(int width, int height, RowTarget<TPixel> target, PixelRows source, PixelLayoutInfo natural, EgamiInput input)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         void Rows(int from, int to)
         {
             int[] samples = new int[width * source.Channels];
@@ -501,7 +631,7 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
             for (int row = from; row < to; row++)
             {
                 input.CancellationToken.ThrowIfCancellationRequested();
-                ReadRow(source, natural, row, 0, samples, packed, raster.Row(row));
+                ReadRow(source, natural, row, 0, samples, packed, target(row));
             }
         }
 
@@ -614,11 +744,12 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
     /// Gets the planes' encoding: the matrix and range of the color code points (design question 8), with BT.601 for a matrix
     /// <see cref="YuvColor"/> has no member for, and the AV1 chroma sample position.
     /// </summary>
-    private static YuvColor PlaneColor(AvifFile file, RasterMetadata? metadata)
+    private static YuvColor PlaneColor(AvifFile file, RasterMetadata? metadata) => PlaneColor(file.CodePoints, file.Config, file.Sequence, metadata);
+
+    private static YuvColor PlaneColor(ColorCodePoints points, Av1Config config, Av1.Av1SequenceHeader sequence, RasterMetadata? metadata)
     {
-        ColorCodePoints points = file.CodePoints;
-        ChromaSiting siting = file.Config.Chroma != ChromaFormat.Yuv420 ? ChromaSiting.Center
-            : file.Sequence.ChromaSamplePosition == 2 ? ChromaSiting.TopLeft : ChromaSiting.Left;
+        ChromaSiting siting = config.Chroma != ChromaFormat.Yuv420 ? ChromaSiting.Center
+            : sequence.ChromaSamplePosition == 2 ? ChromaSiting.TopLeft : ChromaSiting.Left;
         if (YuvColor.TryFromH273(points.MatrixCoefficients, points.FullRange, siting, out YuvColor color))
         {
             return color;
@@ -810,6 +941,10 @@ internal sealed class AvifReader : IFormatReader, IYuvFormatReader, IRowSourceRe
 
     /// <summary>Reads output row <paramref name="row"/> from column <paramref name="column"/> into <paramref name="samples"/> (as many pixels as fit).</summary>
     private delegate void RowReader(int row, int column, Span<int> samples);
+
+    /// <summary>Gets row <paramref name="y"/> of what Fill writes into.</summary>
+    private delegate Span<TPixel> RowTarget<TPixel>(int y)
+        where TPixel : unmanaged, IPixelType<TPixel>;
 
     /// <summary>Writes <paramref name="width"/> pixels of output row <paramref name="row"/> from column <paramref name="column"/> into <paramref name="target"/> as natural samples.</summary>
     private delegate void RowWriter(int row, int column, int width, Span<byte> target);

@@ -117,6 +117,12 @@ public sealed class AvifDetails : FormatDetails
     /// </summary>
     public AvifFilmGrain? FilmGrain { get; set; }
 
+    /// <summary>
+    /// Gets or sets every item of the file with what it is to the primary image (design question 13); read an image item with
+    /// <see cref="AvifImage.ReadItem(string, uint, ReaderOptions?, EgamiContext?)"/>. Empty for a sequence read from its tracks.
+    /// </summary>
+    public IReadOnlyList<AvifItem> Items { get; set; } = [];
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
@@ -139,6 +145,7 @@ public sealed class AvifDetails : FormatDetails
             IsSequence = IsSequence,
             HasFilmGrain = HasFilmGrain,
             FilmGrain = FilmGrain,
+            Items = Items,
         };
     }
 
@@ -168,6 +175,7 @@ public sealed class AvifDetails : FormatDetails
             IsProgressive = file.Progressive,
             IsSequence = file.Heif.HasBrand(AvifFile.Avis),
             HasFilmGrain = file.Sequence.FilmGrainParamsPresent,
+            Items = AvifImage.Items(file),
         };
     }
 }

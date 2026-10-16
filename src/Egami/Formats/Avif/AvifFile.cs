@@ -433,7 +433,7 @@ internal sealed class AvifFile
     }
 
     /// <summary>Reads a grid item (HEIF 6.6.2.3.2): its av01 cells in order, rows, columns and output size.</summary>
-    private (List<HeifItem> Cells, int Rows, int Columns, int Width, int Height) ReadGrid(HeifItem grid)
+    internal (List<HeifItem> Cells, int Rows, int Columns, int Width, int Height) ReadGrid(HeifItem grid)
     {
         HeifFile heif = Heif;
         ReadOnlySpan<byte> data = heif.ItemData(grid).Span;

@@ -78,10 +78,13 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 
 | Id | Level | Meaning |
 | --- | --- | --- |
+| `Avif.BaseLayerOnly` | Warning | An AVIF image is coded in layers whose later ones are inter frames, which Egami does not decode yet; its first layer was loaded |
 | `Avif.ExifDamaged` | Warning | An AVIF Exif item's TIFF header offset points past its end; the item was skipped |
+| `Avif.FramesDropped` | Warning | A frame of an AVIF sequence after the first cannot be decoded; a lenient load keeps the frames before it |
 | `Avif.GainMapDropped` | Warning | An AVIF gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only |
 | `Avif.MatrixApproximated` | Warning | An AVIF image's matrix coefficients are ones libavif does not convert (reserved, constant luminance, or YCgCo at limited range); the nearest matrix it has was used |
 | `Avif.MatrixUnknown` | Warning | An AVIF image's matrix coefficients have no YuvMatrix; YuvRaster.Load marks the planes BT.601 |
+| `Avif.SequenceFirstFrame` | Warning | An AVIF sequence has inter frames, which Egami does not decode yet; only its first frame was loaded |
 | `Bmp.DataOffsetInHeaders` | Warning | The pixel data offset points into the headers; the pixels are read from where the headers end |
 | `Bmp.EmbeddedSizeMismatch` | Warning | An embedded PNG or JPEG is not the size the BMP header gives |
 | `Bmp.IndexOutOfRange` | Warning | Pixels use indices past the palette; they are drawn black |

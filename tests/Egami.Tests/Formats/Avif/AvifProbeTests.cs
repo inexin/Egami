@@ -121,7 +121,8 @@ public partial class AvifProbeTests
         Assert.Equal(AvifFile.Orient(avif.Rotation, avif.Mirror), probe.Orientation);
         Assert.Equal(details.BitDepth > 8 ? 16 : 8, probe.Layout.BitsPerChannel);
         Assert.Equal(details.HasAlpha, probe.Layout.HasAlpha);
-        Assert.Equal((long)width * height * probe.Layout.BytesPerPixel, probe.EstimatedBytes);
+        // A sequence loads every frame when all are key frames (design question 4).
+        Assert.Equal((long)width * height * probe.Layout.BytesPerPixel * (probe.FrameCount ?? 1), probe.EstimatedBytes);
     }
 
     [Theory]

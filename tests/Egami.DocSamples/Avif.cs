@@ -69,4 +69,22 @@ public class Avif
         Assert.True(File.Exists("hdr-as-sdr.jpg"));
         Assert.Equal(ChromaFormat.Yuv420, chroma);
     }
+
+    [Fact]
+    public void Items()
+    {
+        using SampleFiles files = new();
+
+        #region items
+        // Every item of the file, with what it is to the image Load gives: alpha, thumbnails, depth maps, grid cells, metadata.
+        using Raster image = Raster.Load("duck.avif");
+        IReadOnlyList<AvifItem> items = ((AvifDetails)image.Metadata.FormatDetails!).Items;
+        AvifItem primary = items.First(i => i.Role == AvifItemRole.Primary);
+
+        // Any image item decodes on its own, with its own color, such as a depth map or a thumbnail.
+        using Raster item = AvifImage.ReadItem("duck.avif", primary.Id);
+        #endregion
+
+        Assert.Equal((image.Width, image.Height), (item.Width, item.Height));
+    }
 }
