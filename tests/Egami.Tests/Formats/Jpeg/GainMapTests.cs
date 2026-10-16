@@ -65,6 +65,12 @@ public class GainMapTests(ITestOutputHelper output)
     public void HdrIsCloseToLibultrahdr(string name, double boost)
     {
         using Raster raster = Raster.Load(Path.Combine(Images, name), options: new ReaderOptions { Hdr = new HdrDecode { Headroom = boost } });
+        AssertCloseToLibultrahdr(raster, name, boost, output.WriteLine);
+    }
+
+    /// <summary>Asserts an HDR rendition of gain map JPEG <paramref name="name"/> (or a file made from it) lies within tolerance of libultrahdr's.</summary>
+    internal static void AssertCloseToLibultrahdr(Raster raster, string name, double boost, Action<string> log)
+    {
         Raster<RgbaF16> hdr = Assert.IsType<Raster<RgbaF16>>(raster);
         (int width, int height, ushort[] want) = Reference(name, boost);
         Assert.Equal((width, height), (hdr.Width, hdr.Height));
@@ -107,7 +113,7 @@ public class GainMapTests(ITestOutputHelper output)
         }
 
         double mean = sum / count;
-        output.WriteLine($"{name} at {boost}: mean relative error {mean:P2}, worst {worst:P1}, {far} of {count} samples beyond 10%");
+        log($"{name} at {boost}: mean relative error {mean:P2}, worst {worst:P1}, {far} of {count} samples beyond 10%");
         // A map smaller than the image is interpolated: libultrahdr weighs the four nearest map pixels by inverse squared
         // distance, Egami bilinearly, and at a large boost the two differ by more than rounding.
         bool scaled = hdr.Width != Manifest().GetProperty(name).GetProperty("gainmapWidth").GetInt32();
@@ -176,7 +182,7 @@ public class GainMapTests(ITestOutputHelper output)
     /// <summary>The linear RGB to RGB matrix between two sets of primaries, adapting the white with Bradford.</summary>
     private static Matrix3d Convert(ColorPrimaries from, ColorPrimaries to) => to.ToXyz().Inverse() * Matrix3d.Bradford(from.White.ToXyz(), to.White.ToXyz()) * from.ToXyz();
 
-    private static JsonElement Manifest()
+    internal static JsonElement Manifest()
     {
         using JsonDocument document = JsonDocument.Parse(File.ReadAllText(Path.Combine(References, "manifest.json")));
         return document.RootElement.GetProperty("files").Clone();

@@ -17,6 +17,28 @@ internal static class JxlImageDecoder
     /// <summary>Decodes into the natural pixel type: one frame for a still, the coalesced frames for an animation.</summary>
     internal static Raster Decode(EgamiInput input, ReaderOptions options)
     {
+        if (options.Hdr is HdrDecode hdr)
+        {
+            // As Ultra HDR JPEGs: the SDR base, then its gain map applied for the display's headroom (design question 12).
+            Raster sdr = Decode(input, options with { Hdr = null });
+            if (sdr.Metadata.GainMap is not GainMap map)
+            {
+                return sdr;
+            }
+
+            using (sdr)
+            {
+                Raster<RgbaF16> result = map.Apply(sdr, hdr.Headroom);
+                RasterMetadata metadata = result.Metadata;
+                metadata.FormatName = sdr.Metadata.FormatName;
+                metadata.FormatDetails = sdr.Metadata.FormatDetails;
+                metadata.Exif = sdr.Metadata.Exif;
+                metadata.Xmp = sdr.Metadata.Xmp;
+                metadata.WarningList.Prepend(sdr.Metadata.WarningList);
+                return result;
+            }
+        }
+
         (JxlFile file, byte[] codestream) = Open(input, options);
         return Natural(input, file, layout => Shown(layout, input, options, file, codestream, forceFloat: false));
     }
@@ -624,7 +646,7 @@ internal static class JxlImageDecoder
         int count = end - start;
         if (h.XybEncoded)
         {
-            JxlColor.XybToLinear(color, start, end, h);
+            JxlColor.XybToLinear(color, start, end, h, output.Opsin);
         }
 
         if (output.Transform is ColorTransform transform)
@@ -638,7 +660,7 @@ internal static class JxlImageDecoder
             return;
         }
 
-        if (output.Matrix is float[] m)
+        if (output.Matrix is float[] m && output.Opsin is null)
         {
             float[] r = color[0];
             float[] g = color[1];
@@ -660,9 +682,16 @@ internal static class JxlImageDecoder
 
         if (output.Curve is JxlColorEncoding curve)
         {
+            float target = h.ToneMapping.IntensityTarget;
+            if (curve is { Gamma: 0, TransferFunction: 18 })
+            {
+                Span<float> y = color[1].AsSpan(start, count);
+                JxlColor.HlgToSceneLight(output.Gray ? y : color[0].AsSpan(start, count), y, output.Gray ? y : color[2].AsSpan(start, count), output.Gray ? [0, 1, 0] : output.Luminances, target);
+            }
+
             foreach (int c in output.Gray ? (ReadOnlySpan<int>)[1] : [0, 1, 2])
             {
-                JxlColor.Encode(color[c].AsSpan(start, count), curve);
+                JxlColor.Encode(color[c].AsSpan(start, count), curve, target);
             }
         }
     }
@@ -696,10 +725,31 @@ internal static class JxlImageDecoder
         {
             metadata.ColorSpace = ColorSpaceHint.Linear;
         }
+        else if (output.Profile.IsEquivalentTo(ColorProfile.Rec2100Pq) || output.Profile.IsEquivalentTo(ColorProfile.Rec2100Hlg))
+        {
+            // PQ and HLG as the file says (design question 12), named by their H.273 code points.
+            metadata.CodePoints = output.Profile.IsEquivalentTo(ColorProfile.Rec2100Pq) ? ColorCodePoints.Rec2100Pq : ColorCodePoints.Rec2100Hlg;
+        }
         else
         {
             metadata.IccProfile = output.Profile.ToIcc();
             metadata.ColorSpace = ColorSpaceHint.EmbeddedIcc;
+        }
+
+        // intensity_target is the brightest light in the image; min_nits the darkest.
+        JxlToneMapping tone = h.ToneMapping;
+        if (output.Profile.Transfer?.IsHdr == true || tone.IntensityTarget != 255 || tone.MinNits > 0)
+        {
+            metadata.Hdr = new HdrMetadata
+            {
+                MaxContentLightLevel = tone.IntensityTarget,
+                MasteringMinLuminance = tone.MinNits > 0 ? tone.MinNits : null,
+            };
+        }
+
+        if (file.Container.GainMap is byte[] bundle && input.Context is EgamiContext context)
+        {
+            JxlGainMap.Read(context, bundle, metadata);
         }
 
         if (file.Container.Exif is byte[] exif)

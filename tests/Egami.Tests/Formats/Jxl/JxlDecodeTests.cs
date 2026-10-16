@@ -66,6 +66,10 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
             double peak = 0;
             int steps = 0;
             bool png = reference.GetString()!.EndsWith(".png", StringComparison.Ordinal);
+
+            // PQ and HLG are so steep near black that float rounding a hundred-thousandth of white apart moves a sample by
+            // several 8-bit levels, so an HDR sample is also close when it is within 10^-5 of the curve's peak in linear light.
+            Egami.Colors.TransferFunction? hdrCurve = djxl.Metadata.GetColorProfile().Transfer is { IsHdr: true } t ? t : null;
             int samples = 0;
             for (int frame = 0; frame < egami.FrameCount; frame++)
             {
@@ -82,7 +86,12 @@ public partial class JxlDecodeTests(ITestOutputHelper output)
                 for (int i = 0; i < a.Length; i++)
                 {
                     // PNG references hold 0 to 1; linear float output may go beyond.
-                    float d = Math.Abs((png ? Math.Clamp(a[i], 0, 1) : a[i]) - b[i]);
+                    float ai = png ? Math.Clamp(a[i], 0, 1) : a[i];
+                    float d = Math.Abs(ai - b[i]);
+                    if (hdrCurve is not null && d > 1.001 / 255 && Math.Abs(hdrCurve.ToLinear(ai) - hdrCurve.ToLinear(b[i])) <= 1e-5 * hdrCurve.ToLinear(1))
+                    {
+                        d = 0;
+                    }
                     peak = Math.Max(peak, d);
                     if (d > 1.001 / 255)
                     {

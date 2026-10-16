@@ -897,6 +897,32 @@
    ],
    "source": "generated:duck-gray"
   },
+  "duck-hlg-d1.jxl": {
+   "covers": "HDR, Rec. 2100 HLG, 1000 nits",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nIntensity target: 1000.000000 nits\nMin nits: 0.000000\nRelative to max display: 0\nLinear below: 0.000000\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: Rec.2100\nTransfer function: HLG\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=RGB_D65_202_Rel_HLG --intensity_target=1000",
+   "oxide_nan_samples": 2451,
+   "oxide_peak": 0.5423053205013275,
+   "oxide_rms": 0.017333026778550132,
+   "reference": "duck-hlg-d1.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-16bit"
+  },
   "duck-linear-d1.jxl": {
    "covers": "color, linear sRGB",
    "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
@@ -1046,6 +1072,61 @@
     3
    ],
    "source": "generated:duck-posterized"
+  },
+  "duck-pq-d1.jxl": {
+   "covers": "HDR, Rec. 2100 PQ, 4000 nits",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL Codestream",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl"
+   },
+   "jxlinfo": "JPEG XL image, 256x192, lossy, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nIntensity target: 4000.000000 nits\nMin nits: 0.000000\nRelative to max display: 0\nLinear below: 0.000000\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: Rec.2100\nTransfer function: PQ\nRendering intent: Relative\n",
+   "options": "-d 1 -x color_space=RGB_D65_202_Rel_PeQ --intensity_target=4000",
+   "oxide_peak": 1.3655994534492493,
+   "oxide_rms": 0.14869898841324453,
+   "reference": "duck-pq-d1.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-16bit"
+  },
+  "duck-pq-lossless.jxl": {
+   "covers": "HDR, Rec. 2100 PQ, lossless",
+   "encoder": "cjxl v0.12.0 a7a9c78 [_AVX2_,SSE4,SSE2] {GNU 14.2.0}",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jxll\"\n  size: 9\n  contents size: 1\nBox:\n  type: \"jxlc\"\n  size: 229818\n  contents size: 229810\nJPEG XL image, 256x192, (possibly) lossless, 16-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nIntensity target: 10000.000000 nits\nMin nits: 0.000000\nRelative to max display: 0\nLinear below: 0.000000\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\nColor space: RGB\nWhite point: D65\nPrimaries: Rec.2100\nTransfer function: PQ\nRendering intent: Relative\n",
+   "options": "-d 0 -x color_space=RGB_D65_202_Rel_PeQ --intensity_target=10000",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 1.9596466612651955e-09,
+   "reference": "duck-pq-lossless.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "generated:duck-16bit"
   },
   "duck-rec2020-perceptual-d1.jxl": {
    "covers": "color, Rec. 2020 with the BT.709 curve, perceptual intent",
@@ -1401,6 +1482,93 @@
     3
    ],
    "source": "generated:egret-mid"
+  },
+  "gainmap-uhdr-default.jxl": {
+   "covers": "gain map (jhgm), RGB map, from uhdr-default.jpg",
+   "encoder": "cjxl -d 0 -e 3 per image, jhgm by jxlcorpus.py",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jhgm\"\n  size: 30623\n  contents size: 30615\nGain map (jhgm) box: version = 0  30546-byte gain map, 61-byte metadata\nBox:\n  type: \"jxlc\"\n  size: 77671\n  contents size: 77663\nJPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\n600-byte ICC profile, CMM type: \"\", Color space: \"RGB \", Rendering intent: 1\n",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 3.8729873703781775e-08,
+   "reference": "gainmap-uhdr-default.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "gainmap/uhdr-default.jpg (primary and gain map decoded by cjxl's libjpeg)"
+  },
+  "gainmap-uhdr-mono-map.jxl": {
+   "covers": "gain map (jhgm), gray map, from uhdr-mono-map.jpg",
+   "encoder": "cjxl -d 0 -e 3 per image, jhgm by jxlcorpus.py",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jhgm\"\n  size: 29021\n  contents size: 29013\nGain map (jhgm) box: version = 0  28944-byte gain map, 61-byte metadata\nBox:\n  type: \"jxlc\"\n  size: 77671\n  contents size: 77663\nJPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\n600-byte ICC profile, CMM type: \"\", Color space: \"RGB \", Rendering intent: 1\n",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 3.8729873703781775e-08,
+   "reference": "gainmap-uhdr-mono-map.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "gainmap/uhdr-mono-map.jpg (primary and gain map decoded by cjxl's libjpeg)"
+  },
+  "gainmap-uhdr-quarter-map.jxl": {
+   "covers": "gain map (jhgm), quarter-size map, from uhdr-quarter-map.jpg",
+   "encoder": "cjxl -d 0 -e 3 per image, jhgm by jxlcorpus.py",
+   "exiftool": {
+    "Composite:ImageSize": "256 192",
+    "Composite:Megapixels": 0.049152,
+    "File:FileType": "JXL",
+    "File:FileTypeExtension": "JXL",
+    "File:ImageHeight": 192,
+    "File:ImageWidth": 256,
+    "File:MIMEType": "image/jxl",
+    "Jpeg2000:CompatibleBrands": [
+     "jxl "
+    ],
+    "Jpeg2000:MajorBrand": "jxl ",
+    "Jpeg2000:MinorVersion": "0.0.0"
+   },
+   "jxlinfo": "Box:\n  type: \"JXL \"\n  size: 12\n  contents size: 4\nJPEG XL file format container (ISO/IEC 18181-2)\nBox:\n  type: \"ftyp\"\n  size: 20\n  contents size: 12\nBox:\n  type: \"jhgm\"\n  size: 4543\n  contents size: 4535\nGain map (jhgm) box: version = 0  4466-byte gain map, 61-byte metadata\nBox:\n  type: \"jxlc\"\n  size: 77671\n  contents size: 77663\nJPEG XL image, 256x192, (possibly) lossless, 8-bit RGB\nNumber of color channels: 3\nNumber of extra channels: 0\nHave preview: 0\nHave animation: 0\nIntrinsic dimensions: 256x192\nOrientation: 1 (Normal)\n600-byte ICC profile, CMM type: \"\", Color space: \"RGB \", Rendering intent: 1\n",
+   "oxide_peak": 5.960464477539063e-08,
+   "oxide_rms": 3.8729873703781775e-08,
+   "reference": "gainmap-uhdr-quarter-map.png",
+   "shape": [
+    1,
+    192,
+    256,
+    3
+   ],
+   "source": "gainmap/uhdr-quarter-map.jpg (primary and gain map decoded by cjxl's libjpeg)"
   },
   "jpeg-duck-420.jxl": {
    "covers": "recompressed JPEG, 4:2:0",

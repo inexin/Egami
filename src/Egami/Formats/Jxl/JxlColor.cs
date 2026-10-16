@@ -18,12 +18,16 @@ internal static class JxlColor
     ];
 
     /// <summary>Converts X, Y, B planes in place to linear sRGB (R, G, B), with 1.0 at the intensity target scaled to 255 nits.</summary>
-    internal static void XybToLinear(float[][] planes, int count, JxlImageHeader image) => XybToLinear(planes, 0, count, image);
+    internal static void XybToLinear(float[][] planes, int count, JxlImageHeader image) => XybToLinear(planes, 0, count, image, null);
+
+    /// <summary>Gets the opsin inverse matrix and biases of the image (12 values: the matrix by rows, then the biases).</summary>
+    internal static float[] Opsin(JxlImageHeader image) => image.OpsinInverse ?? DefaultOpsin;
 
     /// <summary>Converts samples <paramref name="start"/> to <paramref name="end"/> of the X, Y, B planes to linear sRGB.</summary>
-    internal static void XybToLinear(float[][] planes, int start, int end, JxlImageHeader image)
+    internal static void XybToLinear(float[][] planes, int start, int end, JxlImageHeader image, float[]? opsin)
     {
-        float[] m = image.OpsinInverse ?? DefaultOpsin;
+        // A target matrix folded into the opsin inverse, as libjxl does, rounds as libjxl does.
+        float[] m = opsin ?? image.OpsinInverse ?? DefaultOpsin;
         float b0 = m[9];
         float b1 = m[10];
         float b2 = m[11];
@@ -183,6 +187,28 @@ internal static class JxlColor
 
     }
 
+    /// <summary>
+    /// Takes display light to scene light for HLG output with libjxl's inverse OOTF: each pixel scaled by its luminance to the
+    /// power γ − 1, where γ = 1.111^−log2(peak / 1000) / 1.2 for a display <paramref name="peak"/> in nits.
+    /// </summary>
+    internal static void HlgToSceneLight(Span<float> r, Span<float> g, Span<float> b, float[] luminances, float peak)
+    {
+        float exponent = ((1 / 1.2f) * MathF.Pow(1.111f, -MathF.Log2(peak / 1000f))) - 1;
+        if (exponent is > -0.01f and < 0.01f)
+        {
+            return;
+        }
+
+        for (int i = 0; i < r.Length; i++)
+        {
+            float y = (luminances[0] * r[i]) + (luminances[1] * g[i]) + (luminances[2] * b[i]);
+            float ratio = MathF.Min(MathF.Pow(y, exponent), 1e9f);
+            r[i] *= ratio;
+            g[i] *= ratio;
+            b[i] *= ratio;
+        }
+    }
+
     /// <summary>Gets whether linear sRGB converts to the color encoding by a transfer function alone (sRGB primaries, D65).</summary>
     internal static bool TransferOnly(JxlColorEncoding c)
     {
@@ -190,10 +216,13 @@ internal static class JxlColor
     }
 
     /// <summary>Encodes linear light with the color encoding's transfer function.</summary>
-    internal static void Encode(float[] plane, int count, JxlColorEncoding c) => Encode(plane.AsSpan(0, count), c);
+    internal static void Encode(float[] plane, int count, JxlColorEncoding c) => Encode(plane.AsSpan(0, count), c, 255);
 
-    /// <summary>Encodes linear light with the color encoding's transfer function.</summary>
-    internal static void Encode(Span<float> plane, JxlColorEncoding c)
+    /// <summary>
+    /// Encodes linear light with the color encoding's transfer function; for PQ, 1.0 is <paramref name="intensityTarget"/> nits,
+    /// as libjxl scales it. HLG's inverse OOTF is <see cref="HlgToSceneLight"/>, applied first.
+    /// </summary>
+    internal static void Encode(Span<float> plane, JxlColorEncoding c, float intensityTarget)
     {
         int count = plane.Length;
         if (c.Gamma != 0 || c.TransferFunction == 17)
@@ -212,6 +241,33 @@ internal static class JxlColor
         switch (c.TransferFunction)
         {
             case 8:
+                return;
+            case 16:
+                for (int i = 0; i < count; i++)
+                {
+                    float v = plane[i];
+                    if (v == 0)
+                    {
+                        continue;
+                    }
+
+                    // SMPTE ST 2084 of the display light, sign kept (libjxl's TF_PQ).
+                    double xp = Math.Pow(Math.Abs(v) * (intensityTarget / 10000.0), 2610.0 / 16384);
+                    double e = Math.Pow((3424.0 / 4096 + (xp * (2413.0 / 4096 * 32))) / (1 + (xp * (2392.0 / 4096 * 32))), 2523.0 / 4096 * 128);
+                    plane[i] = MathF.CopySign((float)e, v);
+                }
+
+                return;
+            case 18:
+                for (int i = 0; i < count; i++)
+                {
+                    // The HLG OETF (ITU-R BT.2100), sign kept (libjxl's TF_HLG).
+                    float v = plane[i];
+                    double a = Math.Abs(v);
+                    double e = a <= 1.0 / 12 ? Math.Sqrt(3 * a) : (0.17883277 * Math.Log((12 * a) - (1 - (4 * 0.17883277)))) + 0.5599107295;
+                    plane[i] = v == 0 ? 0 : MathF.CopySign((float)e, v);
+                }
+
                 return;
             case 1:
                 for (int i = 0; i < count; i++)
@@ -261,11 +317,17 @@ internal sealed class JxlOutput
     /// <summary>Gets the linear sRGB to linear target matrix, row by row, or <see langword="null"/> for none.</summary>
     internal float[]? Matrix { get; private init; }
 
+    /// <summary>Gets the opsin inverse with <see cref="Matrix"/> folded in (12 values, as the header's), or <see langword="null"/>.</summary>
+    internal float[]? Opsin { get; private init; }
+
     /// <summary>Gets whether XYB output is gray: the luminance of linear sRGB.</summary>
     internal bool Gray { get; private init; }
 
     /// <summary>Gets the encoding whose transfer function XYB output takes, or <see langword="null"/> to stay linear.</summary>
     internal JxlColorEncoding? Curve { get; private init; }
+
+    /// <summary>Gets the luminance of each target primary, for the HLG OOTF.</summary>
+    internal float[] Luminances { get; private init; } = [0.2126f, 0.7152f, 0.0722f];
 
     internal static JxlOutput For(JxlFile file, bool linear, EgamiContext context, bool likeDjxl = false)
     {
@@ -301,12 +363,9 @@ internal sealed class JxlOutput
             return new JxlOutput(target, linear) { Transform = ColorTransform.Create(ColorProfile.LinearSrgb, target, options, context) };
         }
 
-        if (!linear && c.Gamma == 0 && c.TransferFunction is 16 or 18)
-        {
-            throw new UnsupportedFormatException("Egami does not convert JPEG XL XYB to PQ or HLG yet.");
-        }
-
         float[]? matrix = null;
+        float[] luminances = [0.2126f, 0.7152f, 0.0722f];
+        float[]? folds = null;
         if (!gray && (c.Primaries != 1 || c.WhitePoint != 1))
         {
             // As libjxl: linear sRGB to XYZ D50, then to the target's primaries adapted from D50 to its white (Bradford both ways).
@@ -316,8 +375,14 @@ internal sealed class JxlOutput
             Matrix3d targetToD50 = Matrix3d.Bradford(p.White.ToXyz(), d50) * p.ToXyz();
             Matrix3d m = targetToD50.Inverse() * srgbToD50;
             matrix = [.. Enumerable.Range(0, 9).Select(i => (float)m[i / 3, i % 3])];
+            float[] o = JxlColor.Opsin(h);
+            Matrix3d opsin = new(o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7], o[8]);
+            Matrix3d folded = m * opsin;
+            folds = [.. Enumerable.Range(0, 9).Select(i => (float)folded[i / 3, i % 3]), o[9], o[10], o[11]];
+            Matrix3d toXyz = p.ToXyz();
+            luminances = [(float)toXyz[1, 0], (float)toXyz[1, 1], (float)toXyz[1, 2]];
         }
 
-        return new JxlOutput(target, linear) { Matrix = matrix, Gray = gray, Curve = linear ? null : c };
+        return new JxlOutput(target, linear) { Matrix = matrix, Opsin = folds, Gray = gray, Curve = linear ? null : c, Luminances = luminances };
     }
 }

@@ -182,6 +182,10 @@ CJXL = {
     "duck-custom-primaries-d1": ("duck-mid", "-d 1 -x color_space=RGB_D65_0.64;0.33;0.21;0.71;0.15;0.06_Rel_g0.45455", "color, custom primaries and gamma"),
     "duck-linear-d1": ("duck-mid", "-d 1 -x color_space=RGB_D65_SRG_Rel_Lin", "color, linear sRGB"),
     "duck-gray-d50-d1": ("duck-gray", "-d 1 -x color_space=Gra_0.3457;0.3585_Rel_SRG", "color, gray with a D50 white"),
+    # HDR (task 14): 16-bit samples tagged with each curve, so XYB decodes into PQ or HLG as djxl does.
+    "duck-pq-d1": ("duck-16bit", "-d 1 -x color_space=RGB_D65_202_Rel_PeQ --intensity_target=4000", "HDR, Rec. 2100 PQ, 4000 nits"),
+    "duck-hlg-d1": ("duck-16bit", "-d 1 -x color_space=RGB_D65_202_Rel_HLG --intensity_target=1000", "HDR, Rec. 2100 HLG, 1000 nits"),
+    "duck-pq-lossless": ("duck-16bit", "-d 0 -x color_space=RGB_D65_202_Rel_PeQ --intensity_target=10000", "HDR, Rec. 2100 PQ, lossless"),
 }
 
 # raw.pixls.us camera developments (CC0) from libjxl's testdata: 16-bit PNGs with ICC profiles.
@@ -235,6 +239,96 @@ LIBJXL = {
 }
 
 
+# Gain maps (task 14): an Ultra HDR JPEG's primary image and gain map, each decoded and encoded lossless by cjxl, with the map's
+# ISO 21496-1 metadata, in libjxl's jhgm bundle (version, metadata, no color encoding, no ICC, the map as a bare codestream).
+GAINMAP = {
+    "gainmap-uhdr-default": ("gainmap/uhdr-default.jpg", "gain map (jhgm), RGB map, from uhdr-default.jpg"),
+    "gainmap-uhdr-mono-map": ("gainmap/uhdr-mono-map.jpg", "gain map (jhgm), gray map, from uhdr-mono-map.jpg"),
+    "gainmap-uhdr-quarter-map": ("gainmap/uhdr-quarter-map.jpg", "gain map (jhgm), quarter-size map, from uhdr-quarter-map.jpg"),
+}
+
+
+def jpeg_end(data, start):
+    """Returns where the JPEG starting at start ends (after its EOI), walking its segments and entropy-coded data."""
+    i = start + 2
+    while i < len(data):
+        if data[i] != 0xFF:
+            raise ValueError("not a marker")
+        marker = data[i + 1]
+        if marker == 0xD9:
+            return i + 2
+        if marker == 0xFF or 0xD0 <= marker <= 0xD7 or marker == 0x01:
+            i += 1 if marker == 0xFF else 2
+            continue
+        length = int.from_bytes(data[i + 2:i + 4], "big")
+        i += 2 + length
+        if marker == 0xDA:
+            while not (data[i] == 0xFF and data[i + 1] not in (0x00,) and not 0xD0 <= data[i + 1] <= 0xD7):
+                i += 1
+    raise ValueError("no EOI")
+
+
+def iso_metadata(jpeg):
+    """Returns the ISO 21496-1 metadata of a gain map JPEG's APP2 segment."""
+    ns = b"urn:iso:std:iso:ts:21496:-1\0"
+    i = 2
+    while i < len(jpeg) and jpeg[i] == 0xFF and jpeg[i + 1] != 0xDA:
+        length = int.from_bytes(jpeg[i + 2:i + 4], "big")
+        body = jpeg[i + 4:i + 2 + length]
+        if jpeg[i + 1] == 0xE2 and body.startswith(ns):
+            return body[len(ns):]
+        i += 2 + length
+    raise ValueError("no ISO 21496-1 metadata")
+
+
+def without_app_segments(jpeg):
+    """Returns a JPEG without its APP1 to APP15 segments: a gain map needs no ICC profile (cjxl refuses an RGB one on gray)."""
+    out = bytearray(jpeg[:2])
+    i = 2
+    while jpeg[i] == 0xFF and jpeg[i + 1] != 0xDA:
+        length = int.from_bytes(jpeg[i + 2:i + 4], "big")
+        if not 0xE1 <= jpeg[i + 1] <= 0xEF:
+            out += jpeg[i:i + 2 + length]
+        i += 2 + length
+    return bytes(out + jpeg[i:])
+
+
+def codestream(path):
+    """Returns the codestream of a JPEG XL file: the file itself when bare, else its jxlc box."""
+    data = open(path, "rb").read()
+    if data[:2] == b"\xff\x0a":
+        return data
+    i = 0
+    while i < len(data):
+        size = int.from_bytes(data[i:i + 4], "big")
+        kind = data[i + 4:i + 8]
+        if kind == b"jxlc":
+            return data[i + 8:i + size] if size else data[i + 8:]
+        i += size
+    raise ValueError("no jxlc box")
+
+
+def box(kind, payload):
+    return (8 + len(payload)).to_bytes(4, "big") + kind + payload
+
+
+def gainmap_file(name, jpeg_path, covers):
+    data = open(f"{IMAGES}/{jpeg_path}", "rb").read()
+    end = jpeg_end(data, 0)
+    primary, gain_map = data[:end], data[data.index(b"\xff\xd8", end):]
+    metadata = iso_metadata(gain_map)
+    for part, jpeg in (("base", primary), ("map", without_app_segments(gain_map))):
+        open(f"{TMP}/{part}.jpg", "wb").write(jpeg)
+        sh("cjxl", f"{TMP}/{part}.jpg", f"{TMP}/{part}.jxl", "--lossless_jpeg=0", "-d", "0", "-e", "3", "--quiet")
+    bundle = bytes([0]) + len(metadata).to_bytes(2, "big") + metadata + bytes([0]) + (0).to_bytes(4, "big") + codestream(f"{TMP}/map.jxl")
+    signature = bytes.fromhex("0000000c4a584c200d0a870a")
+    ftyp = box(b"ftyp", b"jxl \0\0\0\0jxl ")
+    with open(f"{OUT}/{name}.jxl", "wb") as f:
+        f.write(signature + ftyp + box(b"jhgm", bundle) + box(b"jxlc", codestream(f"{TMP}/base.jxl")))
+    return {"source": f"{jpeg_path} (primary and gain map decoded by cjxl's libjpeg)", "encoder": "cjxl -d 0 -e 3 per image, jhgm by jxlcorpus.py",
+            "covers": covers}
+
+
 def exiftool(path):
     tags = json.loads(sh("exiftool", "-j", "-G1", "-a", "-n", path).stdout)[0]
     return {k: v for k, v in tags.items() if not k.startswith("System:") and k not in ("SourceFile", "ExifTool:ExifToolVersion")}
@@ -270,7 +364,12 @@ def npy_decode(path):
     if a.shape != b.shape:
         return {"djxl_shape": list(a.shape), "oxide_shape": list(b.shape)}
     e = np.abs(a.astype(np.float64) - b)
-    return {"shape": list(a.shape), "oxide_peak": float(e.max()), "oxide_rms": float(np.sqrt((e * e).mean()))}
+    nan = int(np.isnan(e).sum())
+    e = np.nan_to_num(e, nan=0.0)
+    result = {"shape": list(a.shape), "oxide_peak": float(e.max()), "oxide_rms": float(np.sqrt((e * e).mean()))}
+    if nan:
+        result["oxide_nan_samples"] = nan  # jxl-oxide 0.12.6 gives NaN for some HLG samples
+    return result
 
 
 def reference(name, path, entry):
@@ -330,6 +429,8 @@ def corpus():
         sh("squoosh-cli", "--jxl", json.dumps(options), "-d", f"{TMP}/sq", src.get(png) or f"{IMAGES}/{png}")
         shutil.move(glob.glob(f"{TMP}/sq/*.jxl")[0], f"{OUT}/{name}.jxl")
         manifest[f"{name}.jxl"] = {"source": f"generated:{png[:-4]}" if png in src else png, "encoder": "Squoosh CLI 0.7.3", "options": json.dumps(options), "covers": covers}
+    for name, (jpeg, covers) in GAINMAP.items():
+        manifest[f"{name}.jxl"] = gainmap_file(name, jpeg, covers)
     for name, (path, covers) in LIBJXL.items():
         shutil.copyfile(f"{CACHE}/testdata/{path}", f"{OUT}/libjxl/{name}")
         manifest[f"libjxl/{name}"] = {"source": f"libjxl testdata {path}", "covers": covers}

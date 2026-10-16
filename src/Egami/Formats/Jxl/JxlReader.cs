@@ -27,7 +27,7 @@ internal sealed class JxlReader : IFormatReader, IRowSourceReader
         }
 
         JxlImageHeader h = file.Header;
-        PixelLayoutInfo layout = NaturalLayout(h, options is JxlReaderOptions { LinearOutput: true });
+        PixelLayoutInfo layout = options.Hdr is not null && file.Container.GainMap is not null ? RgbaF16.Layout : NaturalLayout(h, options is JxlReaderOptions { LinearOutput: true });
         int? frames = file.DisplayedFrames;
         return new RasterInfo
         {
