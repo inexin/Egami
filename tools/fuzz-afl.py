@@ -42,7 +42,9 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jxl": "tests/images/fuzz/jxl-seeds/*", "jxlbox": "tests/images/fuzz/jxlbox-seeds/*", "jxlentropy": "tests/images/fuzz/jxlentropy-seeds/*",
          "jxl-write": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-jpeg": "tests/images/jpeg/duck-q50.jpg tests/images/jpeg/odd-*.jpg tests/images/jpeg/transform/t4*.jpg tests/images/jpeg/transform/tprog.jpg tests/images/jpeg/testorig.jpg",
          "css": "tests/images/fuzz/css-seeds/*", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
-         "svg": "tests/images/fuzz/svg-seeds/*"}
+         "svg": "tests/images/fuzz/svg-seeds/*",
+         "wmf": "tests/images/metafiles/synthetic/*.wmf", "emf": "tests/images/metafiles/synthetic/gdi-*.emf",
+         "emfplus": "tests/images/fuzz/emfplus-seeds/*"}
 
 SCRIPT = """
 set -e
@@ -58,6 +60,7 @@ sharpfuzz /out/Egami.dll
 [ -f /out/Egami.Fonts.dll ] && sharpfuzz /out/Egami.Fonts.dll
 if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
 if [ -f /out/Egami.Css.dll ]; then sharpfuzz /out/Egami.Css.dll; fi
+if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """

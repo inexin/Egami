@@ -183,8 +183,10 @@ static Action<Stream> Target(string name) => name switch
     "av1" => stream => Egami.Fuzz.AvifFuzzTarget.DecodeAv1(ReadAll(stream), Context()),
     "css" => stream => Egami.Fuzz.CssFuzzTarget.Run(ReadAll(stream)),
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
+    "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
+    "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph, svg, wmf, emf, emfplus."),
 };
 
 static EgamiContext Context()
