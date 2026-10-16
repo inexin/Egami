@@ -38,4 +38,38 @@ public class Ccitt
         Assert.Equal(Gray8.Layout, image.Layout);
         Assert.Equal((301, 48), (image.Width, image.Height));
     }
+
+    [Fact]
+    public void PdfImage()
+    {
+        using SampleFiles files = new();
+        byte[] data = File.ReadAllBytes("fax-g4.bin");
+        (int k, bool aligned, int columns, int rows, int width, int height) = (-1, true, 301, 0, 301, 48);
+        bool imageMask = false;
+        double[]? decode = null;
+
+        #region ccitt-pdf-image
+        // An image XObject with /Filter /CCITTFaxDecode: DecodeParms keys not given keep PDF's defaults. The image's /Height
+        // stands in for a missing Rows, so the decoder stops where the image does.
+        CcittFaxParameters parameters = new() { K = k, EncodedByteAlign = aligned, Columns = columns, Rows = rows > 0 ? rows : height };
+        byte[] bits = CcittFax.Decode(data, parameters, out int decoded);
+
+        // The filter's samples: 0 black, 1 white. /Decode [1 0] inverts them, and an /ImageMask paints where a sample is 0.
+        bool invert = decode is [> 0.5, ..];
+        int rowBytes = (columns + 7) / 8;
+        using Raster<Gray8> image = Raster.Create<Gray8>(width, decoded);
+        for (int y = 0; y < decoded; y++)
+        {
+            Span<Gray8> row = image.Row(y);
+            for (int x = 0; x < Math.Min(width, columns); x++)
+            {
+                bool sample = ((bits[(y * rowBytes) + (x >> 3)] >> (7 - (x & 7))) & 1) != 0;
+                row[x] = new Gray8(sample != invert ? (byte)255 : (byte)0);
+            }
+        }
+        #endregion
+
+        Assert.False(imageMask);
+        Assert.Equal(height, decoded);
+    }
 }

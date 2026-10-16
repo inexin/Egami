@@ -654,3 +654,11 @@ A simple font's `/Differences` names glyphs; `TryGetGlyphByName` finds them in a
 
 A symbolic TrueType font looks codes up in (3,0), then (1,0); a non-symbolic one in (3,1). A Type1C font without `/Encoding`
 uses the CFF program's own encoding, `BuiltInEncoding`.
+
+## Decode a PDF's CCITT image
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Ccitt.cs#ccitt-pdf-image)]
+
+`CcittFax.Decode` gives what the CCITTFaxDecode filter gives, byte-aligned Group 4 included; the image's `/Decode`, `/ImageMask`
+and color space then apply as after any filter. To load the data straight to `Gray8`, use `CcittFormat`; see the
+[CCITT guide](../guides/ccitt.md).
