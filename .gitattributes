@@ -16,3 +16,7 @@ tests/svg/** -text
 *.y4m binary
 *.ivf binary
 *.obu binary
+*.wmf binary
+*.emf binary
+*.wmz binary
+*.emz binary
