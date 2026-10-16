@@ -114,8 +114,11 @@ internal static class JxlJpegReader
     /// <summary>Gets the zigzag order: the natural position of each coded coefficient.</summary>
     internal static ReadOnlySpan<int> Zigzag => NaturalOrder.AsSpan(0, 64);
 
-    /// <summary>Reads a whole JPEG, or throws <see cref="CorruptDataException"/> or <see cref="UnsupportedFormatException"/>.</summary>
-    internal static JpegData Read(byte[] data)
+    /// <summary>
+    /// Reads a whole JPEG, or throws <see cref="CorruptDataException"/>, <see cref="UnsupportedFormatException"/> or, before any
+    /// scan is decoded, <see cref="LimitExceededException"/> when the frame is larger than <paramref name="limits"/> allow.
+    /// </summary>
+    internal static JpegData Read(byte[] data, SafetyLimits limits)
     {
         JpegData jpg = new();
         int len = data.Length;
@@ -154,6 +157,7 @@ internal static class JxlJpegReader
                 case 0xC0 or 0xC1 or 0xC2:
                     jpg.IsProgressive = marker == 0xC2;
                     ReadSof(data, ref pos, jpg);
+                    CheckLimits(jpg, limits);
                     foundSof = true;
                     break;
                 case 0xC4:
@@ -258,6 +262,21 @@ internal static class JxlJpegReader
             }
 
             p += 2 + ((data[p + 2] << 8) | data[p + 3]);
+        }
+    }
+
+    private static void CheckLimits(JpegData jpg, SafetyLimits limits)
+    {
+        long pixels = (long)jpg.Width * jpg.Height;
+        if (jpg.Width > limits.MaxWidth || jpg.Height > limits.MaxHeight || pixels > limits.MaxPixels)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels, pixels);
+        }
+
+        long bytes = jpg.Components.Sum(c => (long)c.WidthInBlocks * c.HeightInBlocks * 64 * sizeof(short));
+        if (bytes > limits.MaxTotalBytes)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), limits.MaxTotalBytes, bytes);
         }
     }
 

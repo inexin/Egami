@@ -60,7 +60,7 @@ fuzz/exif-seeds/
   Seed EXIF blocks for the exif fuzz target: two taken from jpeg/exif-tags.jpg and jpeg/exif-orientation-6.jpg above, and one
   written by ExifData. Public domain.
 
-fuzz/jpeg/, fuzz/exif/, fuzz/tga/
+fuzz/jpeg/, fuzz/exif/, fuzz/tga/, fuzz/jxl-jpeg/
   Inputs the fuzzers found, mutated from the corpus files above; kept as regression tests. Same licenses as their sources.
 
 gif/*.gif, apng/*.png

@@ -215,7 +215,7 @@ internal sealed class JxlJbrd
         int restart = 0;
         HuffmanTable?[] dc = new HuffmanTable?[4];
         HuffmanTable?[] ac = new HuffmanTable?[4];
-        ushort[]? lastQuant = null;
+        ushort[][] quantValues = QuantValues(frame, varDct);
         JbrdPadding padding = new(Padding, PaddingBits);
         output.Write([0xFF, 0xD8]);
         foreach (byte marker in Markers)
@@ -231,7 +231,13 @@ internal sealed class JxlJbrd
                         for (int i = 0; i < Components.Count; i++)
                         {
                             int sampling = (i < 3 ? upsampling[i] : 0) switch { 1 => 0x22, 2 => 0x21, 3 => 0x12, _ => 0x11 };
-                            output.Write([Components[i].Id, (byte)sampling, (byte)Components[i].QuantIndex]);
+                            int list = Components[i].QuantIndex;
+                            if (list >= QuantTables.Count)
+                            {
+                                throw new CorruptDataException(JxlFormat.Info.Name, -1, "A jbrd component names a quantization table the box does not list.");
+                            }
+
+                            output.Write([Components[i].Id, (byte)sampling, (byte)QuantTables[list].Index]);
                         }
 
                         break;
@@ -315,58 +321,31 @@ internal sealed class JxlJbrd
                         }
 
                         List<(int Precision, int Index, bool IsLast)> tables = QuantTables.GetRange(quant, count);
-                        quant += count;
                         int length = 2 + (65 * count) + (64 * tables.Count(t => t.Precision != 0));
                         output.Write([0xFF, 0xDB, (byte)(length >> 8), (byte)length]);
-                        foreach ((int precision, int index, _) in tables)
+                        for (int t = 0; t < count; t++)
                         {
-                            int channel = Components.FindIndex(c => c.QuantIndex == index);
-                            if (channel >= 0 && frame.YCbCr && channel <= 1)
+                            (int precision, int index, _) = tables[t];
+                            ushort[] values = quantValues[quant + t];
+                            byte[] table = new byte[precision == 0 ? 65 : 129];
+                            table[0] = (byte)(index | (precision << 4));
+                            for (int i = 0; i < 64; i++)
                             {
-                                channel ^= 1;
-                            }
-
-                            if (channel >= 0 && varDct.HfGlobal?.Matrices.JpegTables is int[][] jpeg && channel < jpeg.Length)
-                            {
-                                // The quantization tables are kept transposed for DCT8; DQT lists them in zigzag order.
-                                lastQuant = new ushort[64];
-                                int[] natural = JxlHfPass.Natural(0);
-                                for (int i = 0; i < 64; i++)
+                                ushort v = values[JxlJpegReader.Zigzag[i]];
+                                if (precision == 0)
                                 {
-                                    int pos = natural[i];
-                                    lastQuant[i] = (ushort)jpeg[channel][(pos / 8) + (8 * (pos % 8))];
+                                    table[i + 1] = (byte)v;
+                                }
+                                else
+                                {
+                                    BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(1 + (2 * i)), v);
                                 }
                             }
 
-                            if (lastQuant is null)
-                            {
-                                throw new CorruptDataException(JxlFormat.Info.Name, -1, "A DQT table of the jbrd box has no quantization values in the codestream.");
-                            }
-
-                            if (precision == 0)
-                            {
-                                byte[] table = new byte[65];
-                                table[0] = (byte)index;
-                                for (int i = 0; i < 64; i++)
-                                {
-                                    table[i + 1] = (byte)lastQuant[i];
-                                }
-
-                                output.Write(table);
-                            }
-                            else
-                            {
-                                byte[] table = new byte[129];
-                                table[0] = (byte)(index | (precision << 4));
-                                for (int i = 0; i < 64; i++)
-                                {
-                                    BinaryPrimitives.WriteUInt16BigEndian(table.AsSpan(1 + (2 * i)), lastQuant[i]);
-                                }
-
-                                output.Write(table);
-                            }
+                            output.Write(table);
                         }
 
+                        quant += count;
                         break;
                     }
 
@@ -437,6 +416,48 @@ internal sealed class JxlJbrd
                     throw new CorruptDataException(JxlFormat.Info.Name, -1, $"The jbrd box lists the unknown marker {marker:X2}.");
             }
         }
+    }
+
+    /// <summary>
+    /// Gets each listed quantization table's values in natural order, as libjxl's decoder fills them: the frame's DCT8 table of
+    /// each component's channel (transposed back), and a table no component uses copies the one before it.
+    /// </summary>
+    private ushort[][] QuantValues(JxlFrameHeader frame, JxlVarDct varDct)
+    {
+        if (varDct.HfGlobal?.Matrices.JpegTables is not int[][] jpeg || jpeg.Length < 3)
+        {
+            throw new UnsupportedFormatException("The JPEG XL frame has no JPEG quantization tables, so the JPEG cannot be rebuilt.");
+        }
+
+        ushort[][] values = new ushort[QuantTables.Count][];
+        int[] map = IsGray ? [0, 0, 0] : frame.YCbCr ? [1, 0, 2] : [0, 1, 2];
+        for (int c = 0; c < Components.Count && c < 3; c++)
+        {
+            int channel = IsGray ? 1 : c;
+            int list = Components[map[c]].QuantIndex;
+            if (list >= values.Length)
+            {
+                throw new CorruptDataException(JxlFormat.Info.Name, -1, "A jbrd component names a quantization table the box does not list.");
+            }
+
+            ushort[] v = new ushort[64];
+            for (int x = 0; x < 8; x++)
+            {
+                for (int y = 0; y < 8; y++)
+                {
+                    v[(x * 8) + y] = (ushort)jpeg[channel][(y * 8) + x];
+                }
+            }
+
+            values[list] = v;
+        }
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            values[i] ??= i > 0 ? values[i - 1] : throw new CorruptDataException(JxlFormat.Info.Name, -1, "The jbrd box's first quantization table is unused.");
+        }
+
+        return values;
     }
 
     /// <summary>Gets the JPEG upsampling mode of Y, Cb and Cr (the frame lists Cb, Y, Cr).</summary>
@@ -565,9 +586,10 @@ internal sealed class JbrdPadding(byte[]? bits, int count)
                 throw new CorruptDataException(JxlFormat.Info.Name, -1, "The jbrd box has fewer padding bits than the JPEG needs.");
             }
 
-            // LSB first within each byte, as the bit reader read them.
+            // Stored LSB first within each byte, as the bit reader read them; the first is the highest bit written (libjxl's
+            // JumpToByteBoundary).
             int bit = (bits![_position / 8] >> (_position % 8)) & 1;
-            v |= (uint)bit << i;
+            v = (v << 1) | (uint)bit;
             _position++;
         }
 

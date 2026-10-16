@@ -162,7 +162,7 @@ public static class JxlImage
         output.Write(Recompress(input.ToArray(), context ?? EgamiContext.Default));
     }
 
-    private static byte[] Recompress(byte[] jpeg, EgamiContext context) => JxlJpegEncoder.Recompress(jpeg, context.MaxParallelism, context.Limits);
+    private static byte[] Recompress(byte[] jpeg, EgamiContext context) => JxlJpegEncoder.Recompress(jpeg, context);
 
     /// <summary>
     /// Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image

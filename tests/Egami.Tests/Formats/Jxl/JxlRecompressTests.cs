@@ -173,6 +173,36 @@ public class JxlRecompressTests
         return o.ToArray();
     }
 
+    /// <summary>
+    /// Fuzzer finds: padding bits that are not all ones, written back highest first; quantization tables whose DQT slots are
+    /// not their list order, named in SOF by slot; both rebuild byte for byte, as djxl rebuilds them.
+    /// </summary>
+    [Theory]
+    [InlineData("padding-bits.jpg")]
+    [InlineData("quant-slots.jpg")]
+    public void FuzzedJpegsRoundTrip(string name)
+    {
+        byte[] jpeg = File.ReadAllBytes(Path.Combine(SimpleCorpus.Images, "fuzz", "jxl-jpeg", name));
+        Assert.Equal(jpeg, RoundTrip(jpeg));
+    }
+
+    /// <summary>A damaged stream whose coefficients re-encode with other padding than it had: libjxl writes a file it cannot rebuild; Egami refuses it.</summary>
+    [Fact]
+    public void UnrebuildableJpegsAreRefused()
+    {
+        byte[] jpeg = File.ReadAllBytes(Path.Combine(SimpleCorpus.Images, "fuzz", "jxl-jpeg", "unrebuildable.jpg"));
+        Assert.Throws<UnsupportedFormatException>(() => Recompress(jpeg));
+    }
+
+    /// <summary>A fuzzer's 65329 × 248 frame: the limits stop it at the frame header, before its scan is decoded.</summary>
+    [Fact]
+    public void LimitsStopLargeFramesBeforeTheScan()
+    {
+        byte[] jpeg = File.ReadAllBytes(Path.Combine(SimpleCorpus.Images, "fuzz", "jxl-jpeg", "wide-frame.jpg"));
+        EgamiContext context = EgamiContext.Default with { Limits = SafetyLimits.Default with { MaxPixels = 4_000_000 } };
+        Assert.Throws<LimitExceededException>(() => JxlImage.RecompressJpeg(new MemoryStream(jpeg), Stream.Null, context));
+    }
+
     [Theory]
     [MemberData(nameof(Jpegs))]
     public void RoundTrips(string name)

@@ -47,10 +47,13 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   give the original back byte for byte. Files come out 0.82 of the JPEGs' size, within 0.1% of cjxl's (libjxl 0.12.0), and
   decode in djxl to cjxl's pixels exactly. ICC goes in the codestream, Exif and XMP in Brotli-compressed boxes, the Exif
   orientation in the header. Arithmetic-coded, lossless, hierarchical, 12-bit and CMYK JPEGs, 4:1:1 sampling and two DRI
-  markers are refused (`UnsupportedFormatException`), as cjxl refuses them.
+  markers are refused (`UnsupportedFormatException`), as cjxl refuses them. Each file is checked by rebuilding the JPEG from it;
+  the few damaged JPEGs whose data does not re-encode exactly (which cjxl recompresses into files djxl cannot rebuild) are
+  refused too.
 - Fixed: `ReconstructJpeg` failed on scans holding some of the components (such as Cb and Cr together), and rebuilt JPEGs
   whose components all have the same sampling other than 1×1 (such as 1×2) wrongly; those files' pixels also lacked chroma
-  from luma.
+  from luma. It also wrote padding bits that are not all ones in the wrong order, and named quantization tables by list
+  position where the JPEG used other slots.
 
 ### Raw CCITT fax data
 

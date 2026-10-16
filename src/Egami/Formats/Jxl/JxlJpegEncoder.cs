@@ -135,14 +135,41 @@ internal sealed class JxlJpegEncoder
 
     private bool Is444 => _hs.All(s => s == 0) && _vs.All(s => s == 0);
 
-    /// <summary>Recompresses a JPEG file into a JPEG XL file with a jbrd box.</summary>
-    internal static byte[] Recompress(byte[] jpeg, int parallelism, SafetyLimits limits)
+    /// <summary>
+    /// Recompresses a JPEG file into a JPEG XL file with a jbrd box, and checks that the file rebuilds the JPEG: a few damaged
+    /// streams decode to coefficients whose re-encoding needs other padding bits than the JPEG had, which libjxl writes all
+    /// the same; those are refused.
+    /// </summary>
+    internal static byte[] Recompress(byte[] jpeg, EgamiContext context)
     {
-        JpegData jpg = JxlJpegReader.Read(jpeg);
-        if (jpg.Width > limits.MaxWidth || jpg.Height > limits.MaxHeight || (long)jpg.Width * jpg.Height > limits.MaxPixels)
+        byte[] file = Recompress(jpeg, context.MaxParallelism, context.Limits);
+        using MemoryStream back = new();
+        EgamiInput input = new(new MemoryStream(file, writable: false), context, CancellationToken.None);
+        try
         {
-            throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels, (long)jpg.Width * jpg.Height);
+            JxlImageDecoder.ReconstructJpeg(input, back);
         }
+        catch (CorruptDataException)
+        {
+            back.SetLength(0);
+        }
+        finally
+        {
+            input.Dispose();
+        }
+
+        if (!back.GetBuffer().AsSpan(0, (int)back.Length).SequenceEqual(jpeg))
+        {
+            throw new UnsupportedFormatException("The JPEG's entropy-coded data cannot be rebuilt exactly from JPEG XL (its padding or runs do not re-encode as they were), so it is not recompressed.");
+        }
+
+        return file;
+    }
+
+    /// <summary>Recompresses a JPEG file into a JPEG XL file with a jbrd box.</summary>
+    private static byte[] Recompress(byte[] jpeg, int parallelism, SafetyLimits limits)
+    {
+        JpegData jpg = JxlJpegReader.Read(jpeg, limits);
 
         JxlJpegEncoder e = new(jpg, parallelism);
         DetectMarkerTypes(jpg);
