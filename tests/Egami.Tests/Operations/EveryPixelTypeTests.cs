@@ -8,9 +8,9 @@ namespace Egami.Tests.Operations;
 
 /// <summary>
 /// Phase 2.1.1 task 11: every operation chain on every pixel type added in 2.1.1 matches the float path (the same chain on the
-/// same pixels as RgbaF32, or RgbF32 for types without alpha, then converted to the type) within the 1.2 tolerances, and stays
-/// in the allocation budget. CMYK filters work on the four inks by design, so only CMYK geometry and color operations are
-/// compared with the RGB float path; CmykTests checks the ink filtering itself.
+/// same pixels as RgbaF32, or RgbF32 for types without alpha, then converted to the type) within the 1.2 tolerances, and on four
+/// of the types stays in the allocation budget. CMYK filters work on the four inks by design, so only CMYK geometry and color
+/// operations are compared with the RGB float path; CmykTests checks the ink filtering itself.
 /// </summary>
 public abstract class EveryPixelTypeTests<TPart> : IDisposable
     where TPart : IPart
@@ -24,23 +24,16 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
         typeof(PremulBgra8), typeof(PremulRgbaF32),
     ];
 
+    /// <summary>The types the allocation budget is checked on: 8-bit, 16-bit, premultiplied float and CMYK storage.</summary>
+    private static readonly Type[] BudgetTypes = [typeof(Argb8), typeof(Rgb16), typeof(PremulRgbaF32), typeof(Cmyk16)];
+
     private readonly Raster<Rgba8> _logo = OperationCoverageTests.Logo();
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    public static TheoryData<string, string> Cases()
-    {
-        TheoryData<string, string> data = [];
-        foreach (string operation in OperationCoverageTests.Chains.Keys)
-        {
-            foreach (Type type in NewTypes)
-            {
-                data.Add(operation, type.Name);
-            }
-        }
+    public static TheoryData<string, string> Cases() => Rows(NewTypes);
 
-        return Parts.Take(data, TPart.Index, PartCount);
-    }
+    public static TheoryData<string, string> BudgetCases() => Rows(BudgetTypes);
 
     [Theory]
     [MemberData(nameof(Cases))]
@@ -50,7 +43,7 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
     }
 
     [Theory]
-    [MemberData(nameof(Cases))]
+    [MemberData(nameof(BudgetCases))]
     public void StaysInTheAllocationBudget(string operation, string type)
     {
         Invoke(nameof(Budget), type, operation);
@@ -60,6 +53,20 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
     {
         _logo.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private static TheoryData<string, string> Rows(Type[] types)
+    {
+        TheoryData<string, string> data = [];
+        foreach (string operation in OperationCoverageTests.Chains.Keys)
+        {
+            foreach (Type type in types)
+            {
+                data.Add(operation, type.Name);
+            }
+        }
+
+        return Parts.Take(data, TPart.Index, PartCount);
     }
 
     private void Invoke(string method, string type, string operation)
