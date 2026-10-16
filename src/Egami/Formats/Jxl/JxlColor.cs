@@ -18,7 +18,10 @@ internal static class JxlColor
     ];
 
     /// <summary>Converts X, Y, B planes in place to linear sRGB (R, G, B), with 1.0 at the intensity target scaled to 255 nits.</summary>
-    internal static void XybToLinear(float[][] planes, int count, JxlImageHeader image)
+    internal static void XybToLinear(float[][] planes, int count, JxlImageHeader image) => XybToLinear(planes, 0, count, image);
+
+    /// <summary>Converts samples <paramref name="start"/> to <paramref name="end"/> of the X, Y, B planes to linear sRGB.</summary>
+    internal static void XybToLinear(float[][] planes, int start, int end, JxlImageHeader image)
     {
         float[] m = image.OpsinInverse ?? DefaultOpsin;
         float b0 = m[9];
@@ -31,7 +34,7 @@ internal static class JxlColor
         float[] x = planes[0];
         float[] y = planes[1];
         float[] b = planes[2];
-        for (int i = 0; i < count; i++)
+        for (int i = start; i < end; i++)
         {
             float gl = y[i] + x[i] - c0;
             float gm = y[i] - x[i] - c1;
@@ -110,14 +113,27 @@ internal static class JxlColor
     /// </summary>
     internal static void Apply(ColorTransform transform, float[][] color, int count)
     {
+        Apply(transform, color, 0, count);
+        if (transform.Target.Model == ColorModel.Gray && color.Length >= 3)
+        {
+            color[1] = color[0];
+            color[2] = color[0];
+        }
+    }
+
+    /// <summary>Converts samples <paramref name="first"/> to <paramref name="end"/>; a gray result lands in plane 0 only.</summary>
+    internal static void Apply(ColorTransform transform, float[][] color, int first, int end)
+    {
+        int count = end - first;
         const int Chunk = 1024;
         bool grayIn = transform.Source.Model == ColorModel.Gray;
         bool grayOut = transform.Target.Model == ColorModel.Gray;
         RgbF32[] rgb = new RgbF32[Math.Min(Chunk, count)];
         GrayF32[] gray = new GrayF32[rgb.Length];
-        for (int start = 0; start < count; start += Chunk)
+        for (int at = 0; at < count; at += Chunk)
         {
-            int n = Math.Min(Chunk, count - start);
+            int start = first + at;
+            int n = Math.Min(Chunk, count - at);
             if (grayIn)
             {
                 for (int i = 0; i < n; i++)
@@ -165,11 +181,6 @@ internal static class JxlColor
             }
         }
 
-        if (grayOut && color.Length >= 3)
-        {
-            color[1] = color[0];
-            color[2] = color[0];
-        }
     }
 
     /// <summary>Gets whether linear sRGB converts to the color encoding by a transfer function alone (sRGB primaries, D65).</summary>
@@ -179,8 +190,12 @@ internal static class JxlColor
     }
 
     /// <summary>Encodes linear light with the color encoding's transfer function.</summary>
-    internal static void Encode(float[] plane, int count, JxlColorEncoding c)
+    internal static void Encode(float[] plane, int count, JxlColorEncoding c) => Encode(plane.AsSpan(0, count), c);
+
+    /// <summary>Encodes linear light with the color encoding's transfer function.</summary>
+    internal static void Encode(Span<float> plane, JxlColorEncoding c)
     {
+        int count = plane.Length;
         if (c.Gamma != 0 || c.TransferFunction == 17)
         {
             // As libjxl: samples at or below 10^-5 become 0.

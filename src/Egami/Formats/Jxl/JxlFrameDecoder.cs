@@ -62,6 +62,7 @@ internal sealed class JxlFrameDecoder
     private readonly long _offset;
     private readonly SafetyLimits _limits;
     private JxlBitReader? _single;
+    private int _decodedGroups;
 
     internal JxlFrameDecoder(byte[] codestream, JxlImageHeader image, JxlFrameHeader frame, JxlToc toc, long offset, SafetyLimits limits)
     {
@@ -75,6 +76,18 @@ internal sealed class JxlFrameDecoder
 
     /// <summary>Gets the global MA tree, or <see langword="null"/>.</summary>
     internal JxlTree? GlobalTree { get; private set; }
+
+    /// <summary>Gets how many threads the groups may decode on.</summary>
+    internal JxlParallel Parallel { get; init; } = JxlParallel.Single;
+
+    /// <summary>
+    /// Gets the part of the frame that is needed (x0, y0, x1, y1 in coded pixels, filter borders included), or <see langword="null"/>
+    /// for all of it; the groups outside it are not decoded (design question 10) and their samples are left 0.
+    /// </summary>
+    internal (int X0, int Y0, int X1, int Y1)? Needed { get; init; }
+
+    /// <summary>Gets how many pass groups (of all passes) were decoded, and how many the frame has.</summary>
+    internal (int Decoded, int Total) PassGroups => (_decodedGroups, _frame.Passes * (int)_frame.Groups);
 
     /// <summary>Decodes the whole frame; <paramref name="lfFrame"/> is the LF frame's X, Y and B when the frame uses one.</summary>
     internal JxlFrameChannels Decode(float[][]? lfFrame) => Decode(lfFrame, lfOnly: false);
@@ -158,8 +171,14 @@ internal sealed class JxlFrameDecoder
             throw new CorruptDataException(JxlFormat.Info.Name, -1, "A frame uses an LF frame that the codestream did not give.");
         }
 
-        for (int lf = 0; lf < lfGroups; lf++)
+        JxlParallel parallel = _toc.Sizes.Length > 1 ? Parallel : JxlParallel.Single;
+        parallel.For(lfGroups, lf =>
         {
+            if (!Touches(lf % lfGroupsPerRow, lf / lfGroupsPerRow, groupDim * 8))
+            {
+                return;
+            }
+
             JxlBitReader lr = Section(1 + lf);
             if (varDct is not null && !useLfFrame)
             {
@@ -181,7 +200,7 @@ internal sealed class JxlFrameDecoder
 
             DecodeGroup(lr, 1 + lfGroups + lf, global, rects, parts, bitDepth);
             varDct?.DecodeHfMetadata(lr, lf, GlobalTree, lfGroups);
-        }
+        });
 
         if (lfOnly && varDct is not null)
         {
@@ -201,8 +220,15 @@ internal sealed class JxlFrameDecoder
         int[] passOfShift = PassOfShift();
         for (int p = 0; p < passes; p++)
         {
-            for (int g = 0; g < groups; g++)
+            // Passes add to the same coefficients, so they run in order; the groups of a pass are independent.
+            parallel.For(groups, g =>
             {
+                if (!Touches(g % groupsPerRow, g / groupsPerRow, groupDim))
+                {
+                    return;
+                }
+
+                Interlocked.Increment(ref _decodedGroups);
                 JxlBitReader pr = Section(1 + lfGroups + 1 + (p * groups) + g);
                 varDct?.DecodePassGroup(pr, p, g);
                 List<(int Index, int X, int Y)> rects = [];
@@ -225,7 +251,7 @@ internal sealed class JxlFrameDecoder
                 }
 
                 DecodeGroup(pr, 1 + (3 * lfGroups) + 17 + (p * groups) + g, global, rects, parts, bitDepth);
-            }
+            });
         }
 
         global.Inverse(r);
@@ -234,7 +260,7 @@ internal sealed class JxlFrameDecoder
             return new JxlFrameChannels(width, height, global.Channels, colorChannels, extraStart) { LfDequant = lfDequant, Patches = patches, Splines = splines, Noise = noise };
         }
 
-        float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null);
+        float[][] planes = varDct.Reconstruct(useLfFrame ? lfFrame : null, Parallel);
         return new JxlFrameChannels(width, height, global.Channels, 3, extraStart)
         {
             ColorPlanes = planes,
@@ -245,6 +271,19 @@ internal sealed class JxlFrameDecoder
             Splines = splines,
             Noise = noise,
         };
+    }
+
+    /// <summary>Gets whether the group at (<paramref name="gx"/>, <paramref name="gy"/>) of <paramref name="size"/> pixels meets the needed part.</summary>
+    private bool Touches(int gx, int gy, long size)
+    {
+        if (Needed is not (int x0, int y0, int x1, int y1))
+        {
+            return true;
+        }
+
+        long left = gx * size;
+        long top = gy * size;
+        return left < x1 && left + size > x0 && top < y1 && top + size > y0;
     }
 
     /// <summary>Gets a channel's chroma subsampling shifts from the JPEG upsampling modes (jxl-oxide's reading of them).</summary>

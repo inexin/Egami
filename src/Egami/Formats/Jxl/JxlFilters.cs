@@ -75,7 +75,7 @@ internal static class JxlFilters
     }
 
     /// <summary>Gaborish (J.2): a 3×3 convolution of each plane with its own side and diagonal weights, normalized.</summary>
-    internal static void Gaborish(float[][] planes, int width, int height, int stride, float[] weights)
+    internal static void Gaborish(float[][] planes, int width, int height, int stride, float[] weights, JxlParallel parallel)
     {
         float[] output = new float[planes[0].Length];
         for (int c = 0; c < 3; c++)
@@ -84,7 +84,7 @@ internal static class JxlFilters
             float w1 = weights[(2 * c) + 1];
             float norm = 1 / (1 + (4 * w0) + (4 * w1));
             float[] p = planes[c];
-            for (int y = 0; y < height; y++)
+            parallel.For(height, y =>
             {
                 int up = Mirror(y - 1, height) * stride;
                 int row = y * stride;
@@ -97,7 +97,7 @@ internal static class JxlFilters
                     float diag = p[up + l] + p[up + r] + p[down + l] + p[down + r];
                     output[row + x] = (p[row + x] + (side * w0) + (diag * w1)) * norm;
                 }
-            }
+            }, minimumPerThread: 16);
 
             Array.Copy(output, p, Math.Min(output.Length, p.Length));
         }
@@ -107,26 +107,26 @@ internal static class JxlFilters
     /// The edge-preserving filter (J.3): steps 0 (only with 3 iterations), 1 and 2 (with 2 or 3), each a weighted mean over a
     /// small kernel whose weights fall with the summed absolute differences of the surrounding patches.
     /// </summary>
-    internal static void Epf(float[][] planes, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock)
+    internal static void Epf(float[][] planes, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock, JxlParallel parallel)
     {
         float[][] scratch = [new float[planes[0].Length], new float[planes[0].Length], new float[planes[0].Length]];
         if (lf.EpfIterations == 3)
         {
-            EpfStep(0, planes, scratch, width, height, stride, lf, sigmaOfBlock);
+            EpfStep(0, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
             Swap(planes, scratch);
         }
 
-        EpfStep(1, planes, scratch, width, height, stride, lf, sigmaOfBlock);
+        EpfStep(1, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
         Swap(planes, scratch);
         if (lf.EpfIterations >= 2)
         {
-            EpfStep(2, planes, scratch, width, height, stride, lf, sigmaOfBlock);
+            EpfStep(2, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
             Swap(planes, scratch);
         }
     }
 
     /// <summary>Upsamples a plane by 2, 4 or 8 with the 5×5 kernels of the image header (or their defaults), clamped to the window's range.</summary>
-    internal static float[] Upsample(float[] plane, int width, int height, int stride, int factor, JxlImageHeader image)
+    internal static float[] Upsample(float[] plane, int width, int height, int stride, int factor, JxlImageHeader image, JxlParallel parallel)
     {
         float[] weights = factor switch
         {
@@ -154,7 +154,7 @@ internal static class JxlFilters
         int outWidth = width * factor;
         int outHeight = height * factor;
         float[] output = new float[(long)outWidth * outHeight];
-        for (int y = 0; y < outHeight; y++)
+        parallel.For(outHeight, y =>
         {
             int refY = y / factor;
             int my = Math.Min(y % factor, factor - (y % factor) - 1);
@@ -184,7 +184,7 @@ internal static class JxlFilters
 
                 output[((long)y * outWidth) + x] = float.IsFinite(min) ? Math.Clamp(sum, min, max) : float.NaN;
             }
-        }
+        }, minimumPerThread: 16);
 
         return output;
     }
@@ -197,21 +197,19 @@ internal static class JxlFilters
         }
     }
 
-    private static void EpfStep(int step, float[][] input, float[][] output, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock)
+    private static void EpfStep(int step, float[][] input, float[][] output, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock, JxlParallel parallel)
     {
-        ReadOnlySpan<int> kernel = step == 0 ? [0, -2, -1, -1, 0, -1, 1, -1, -2, 0, -1, 0, 1, 0, 2, 0, -1, 1, 0, 1, 1, 1, 0, 2] : [0, -1, 0, 1, -1, 0, 1, 0];
-        ReadOnlySpan<int> dist = step switch
-        {
-            0 => [0, -1, 1, 0, 0, 0, -1, 0, 0, 1],
-            1 => [0, -1, 0, 0, 0, 1, -1, 0, 1, 0],
-            _ => [0, 0],
-        };
+        int[] kernelOffsets = step == 0 ? EpfKernel0 : EpfKernel12;
+        int[] distOffsets = step switch { 0 => EpfDistance0, 1 => EpfDistance1, _ => EpfDistance2 };
         float stepMultiplier = step == 0 ? lf.Pass0SigmaScale : step == 2 ? lf.Pass2SigmaScale : 1;
         float border = lf.BorderSadMul;
-        ReadOnlySpan<float> scale = lf.ChannelScale;
-        Span<float> sums = stackalloc float[3];
-        for (int y = 0; y < height; y++)
+        float[] channelScale = lf.ChannelScale;
+        parallel.For(height, y =>
         {
+            ReadOnlySpan<int> kernel = kernelOffsets;
+            ReadOnlySpan<int> dist = distOffsets;
+            ReadOnlySpan<float> scale = channelScale;
+            Span<float> sums = stackalloc float[3];
             bool yBorder = ((y + 1) & 6) == 0;
             for (int x = 0; x < width; x++)
             {
@@ -268,6 +266,12 @@ internal static class JxlFilters
                     output[c][at] = sums[c] / sumWeights;
                 }
             }
-        }
+        }, minimumPerThread: 16);
     }
+
+    private static readonly int[] EpfKernel0 = [0, -2, -1, -1, 0, -1, 1, -1, -2, 0, -1, 0, 1, 0, 2, 0, -1, 1, 0, 1, 1, 1, 0, 2];
+    private static readonly int[] EpfKernel12 = [0, -1, 0, 1, -1, 0, 1, 0];
+    private static readonly int[] EpfDistance0 = [0, -1, 1, 0, 0, 0, -1, 0, 0, 1];
+    private static readonly int[] EpfDistance1 = [0, -1, 0, 0, 0, 1, -1, 0, 1, 0];
+    private static readonly int[] EpfDistance2 = [0, 0];
 }

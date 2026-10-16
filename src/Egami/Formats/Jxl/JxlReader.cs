@@ -1,5 +1,6 @@
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Jxl;
 
@@ -9,7 +10,7 @@ namespace Egami.Formats.Jxl;
 /// sample format, channels, orientation, frame count and a memory estimate. Decoding pixels comes with the Modular and VarDCT
 /// stages.
 /// </summary>
-internal sealed class JxlReader : IFormatReader
+internal sealed class JxlReader : IFormatReader, IRowSourceReader
 {
     internal static readonly JxlReader Instance = new();
 
@@ -44,6 +45,17 @@ internal sealed class JxlReader : IFormatReader
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options) => JxlImageDecoder.Decode(input, options);
+
+    /// <summary>
+    /// Decodes the image whole, on several threads, with only the groups a Region touches (design question 10), and serves its
+    /// rows from the result; the session crops them.
+    /// </summary>
+    public RowSource Open(EgamiInput input, ReaderOptions options)
+    {
+        Raster raster = JxlImageDecoder.Decode(input, options);
+        raster.Metadata.FormatName ??= JxlFormat.Info.Name;
+        return BufferedRowSource.From(raster);
+    }
 
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>

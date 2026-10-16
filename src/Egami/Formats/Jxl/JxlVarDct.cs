@@ -484,7 +484,7 @@ internal sealed class JxlVarDct
     /// Reconstructs the color planes: LF (from the LF groups, or <paramref name="lfFrame"/>), dequantized HF, chroma from luma
     /// and the inverse transforms. Returns the three planes at block-padded size, row stride <see cref="PlaneBlocksX"/> × 8.
     /// </summary>
-    internal float[][] Reconstruct(float[][]? lfFrame)
+    internal float[][] Reconstruct(float[][]? lfFrame, JxlParallel parallel)
     {
         PrepareLf(lfFrame);
         float[][] planes = new float[3][];
@@ -504,7 +504,7 @@ internal sealed class JxlVarDct
             }
 
             int[] coeffs = _coeffs[c];
-            ForEachVarblock(c, (bx, by, t, hfMul) =>
+            ForEachVarblock(c, parallel, (bx, by, t, hfMul) =>
             {
                 (int w8, int h8) = JxlTransforms8.Size(t);
                 int width = w8 * 8;
@@ -526,7 +526,7 @@ internal sealed class JxlVarDct
 
         if (hf is not null && !Subsampled)
         {
-            ChromaFromLumaHf(planes);
+            ChromaFromLumaHf(planes, parallel);
         }
 
         for (int c = 0; c < 3; c++)
@@ -535,7 +535,7 @@ internal sealed class JxlVarDct
             float[] plane = planes[c];
             float[] lf = _lf[c];
             int lfStride = PlaneBlocksX(c);
-            ForEachVarblock(c, (bx, by, t, _) =>
+            ForEachVarblock(c, parallel, (bx, by, t, _) =>
             {
                 int o = (by * 8 * stride) + (bx * 8);
                 if (JxlTransforms8.IsSmall(t))
@@ -627,11 +627,13 @@ internal sealed class JxlVarDct
     }
 
     /// <summary>Calls <paramref name="action"/> for each varblock a channel codes, at that channel's block coordinates.</summary>
-    private void ForEachVarblock(int c, Action<int, int, JxlTransformType, int> action)
+    private void ForEachVarblock(int c, JxlParallel parallel, Action<int, int, JxlTransformType, int> action)
     {
         int hs = _hs[c];
         int vs = _vs[c];
-        for (int by = 0; by < BlocksY; by++)
+
+        // Each varblock writes only its own area, so rows of blocks run on several threads.
+        parallel.For(BlocksY, by =>
         {
             for (int bx = 0; bx < BlocksX; bx++)
             {
@@ -667,17 +669,17 @@ internal sealed class JxlVarDct
 
                 action(sbx, sby, (JxlTransformType)type, _hfMul[at]);
             }
-        }
+        }, minimumPerThread: 8);
     }
 
-    private void ChromaFromLumaHf(float[][] planes)
+    private void ChromaFromLumaHf(float[][] planes, JxlParallel parallel)
     {
         int stride = BlocksX * 8;
         int height = BlocksY * 8;
         float[] px = planes[0];
         float[] py = planes[1];
         float[] pb = planes[2];
-        for (int y = 0; y < height; y++)
+        parallel.For(height, y =>
         {
             int tileRow = Math.Min(y / 64, (_xFromY.Length / _tiles) - 1) * _tiles;
             for (int x = 0; x < stride; x++)
@@ -690,7 +692,7 @@ internal sealed class JxlVarDct
                 px[at] += kx * yv;
                 pb[at] += kb * yv;
             }
-        }
+        });
     }
 
     /// <summary>Adaptive LF smoothing (I.5.3), on the LF image as a whole.</summary>

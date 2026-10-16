@@ -22,6 +22,29 @@ internal sealed class JxlFile
     /// <summary>Gets or sets the color space decoded frames are put in; set before decoding.</summary>
     internal JxlOutput? Output { get; set; }
 
+    /// <summary>Gets or sets how many threads decoding may use.</summary>
+    internal JxlParallel Parallel { get; set; } = JxlParallel.Single;
+
+    /// <summary>Gets or sets the part of the image the caller reads (ReaderOptions.Region), or <see langword="null"/> for all of it.</summary>
+    internal Rect? Region { get; set; }
+
+    /// <summary>
+    /// Gets the part of a still frame to decode for <see cref="Region"/>: the region grown by a border that covers LF smoothing, the
+    /// restoration filters and a varblock's reach (design question 10), or <see langword="null"/> to decode the whole frame. Only a
+    /// frame drawn alone at the image's size and scale, with no extra channels, can be cut this way.
+    /// </summary>
+    internal (int X0, int Y0, int X1, int Y1)? Needed(JxlFrameHeader f)
+    {
+        const int Border = 48;
+        if (Region is not Rect r || f.Modular || f.HaveCrop || f.Upsampling != 1 || f.Type != JxlFrameType.Regular || Header.ExtraChannels.Count > 0
+            || f.Width != Header.Width || f.Height != Header.Height)
+        {
+            return null;
+        }
+
+        return (Math.Max(0, r.X - Border), Math.Max(0, r.Y - Border), r.X + r.Width + Border, r.Y + r.Height + Border);
+    }
+
     /// <summary>Gets the preview frame's header, or <see langword="null"/>.</summary>
     internal JxlFrameHeader? PreviewFrame { get; private set; }
 

@@ -166,6 +166,8 @@ internal static class JxlImageDecoder
             {
                 JxlFile file = JxlFile.Read(copy, allBoxes: true);
                 file.Output = JxlOutput.For(file, options is JxlReaderOptions { LinearOutput: true }, input.Context, likeDjxl);
+                file.Parallel = new JxlParallel(Math.Max(1, input.Context.MaxParallelism), input.CancellationToken);
+                file.Region = options.Region;
                 return (file, file.Container.Codestream(data.AsSpan(0, length)));
             }
             finally
@@ -350,7 +352,7 @@ internal static class JxlImageDecoder
             }
 
             bool referenced = !f.IsLast && f.Type != JxlFrameType.Lf && (f.Duration == 0 || f.SaveAsReference != 0);
-            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits);
+            JxlFrameDecoder decoder = new(codestream, h, f, toc, offset, input.Limits) { Parallel = file.Parallel, Needed = f.IsLast && file.DisplayedFrames == 1 && !lfOnly && !layers ? file.Needed(f) : null };
             if (lfOnly && f.Type != JxlFrameType.Lf)
             {
                 // From the LF frame when the frame has one, from its own LF groups otherwise.
@@ -373,6 +375,11 @@ internal static class JxlImageDecoder
             }
 
             JxlFrameChannels frame = decoder.Decode(lfFrames[f.LfLevel]);
+            if (decoder.Needed is not null)
+            {
+                (int decoded, int total) = decoder.PassGroups;
+                input.Emit(DiagnosticLevel.Debug, "Jxl.RegionGroups", $"ReaderOptions.Region needed {decoded} of {total} pass groups; the others were not decoded.");
+            }
             if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && file.Output!.Transform is null && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
                 && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop
                 && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated))
@@ -382,7 +389,7 @@ internal static class JxlImageDecoder
                 return;
             }
 
-            JxlPlanes planes = Render(f, frame, h, references, visible, invisible);
+            JxlPlanes planes = Render(f, frame, h, references, visible, invisible, file.Parallel);
             if (f.Type == JxlFrameType.Lf)
             {
                 lfFrames[f.LfLevel - 1] = planes.Planes[..3];
@@ -471,7 +478,7 @@ internal static class JxlImageDecoder
     /// Renders a decoded frame up to its color transform, in libjxl's order: the restoration filters, extra channel upsampling,
     /// patches, splines, color upsampling, then noise. LF frames stay at their coded size.
     /// </summary>
-    private static JxlPlanes Render(JxlFrameHeader f, JxlFrameChannels frame, JxlImageHeader h, JxlReference?[] references, int visible, int invisible)
+    private static JxlPlanes Render(JxlFrameHeader f, JxlFrameChannels frame, JxlImageHeader h, JxlReference?[] references, int visible, int invisible, JxlParallel parallel)
     {
         int width = frame.Width;
         int height = frame.Height;
@@ -504,7 +511,7 @@ internal static class JxlImageDecoder
 
         if (f.Gaborish)
         {
-            JxlFilters.Gaborish(color, width, height, width, f.LoopFilter.GaborishWeights);
+            JxlFilters.Gaborish(color, width, height, width, f.LoopFilter.GaborishWeights, parallel);
         }
 
         if (f.EpfIterations > 0)
@@ -512,7 +519,7 @@ internal static class JxlImageDecoder
             float[]? sigma = frame.VarDct?.EpfSigma;
             int blocksX = frame.VarDct?.BlocksX ?? 0;
             float modularSigma = f.LoopFilter.SigmaForModular;
-            JxlFilters.Epf(color, width, height, width, f.LoopFilter, sigma is null ? (_, _) => modularSigma : (bx, by) => sigma[(by * blocksX) + bx]);
+            JxlFilters.Epf(color, width, height, width, f.LoopFilter, sigma is null ? (_, _) => modularSigma : (bx, by) => sigma[(by * blocksX) + bx], parallel);
         }
 
         (int outWidth, int outHeight) = f.Type == JxlFrameType.Lf ? (width, height) : (f.Width, f.Height);
@@ -533,7 +540,7 @@ internal static class JxlImageDecoder
             int factor = f.ExtraChannelUpsampling[e];
             if (factor > 1 && !late)
             {
-                plane = Crop(JxlFilters.Upsample(plane, c.Width, c.Height, c.Width, factor, h), c.Width * factor, outWidth, outHeight);
+                plane = Crop(JxlFilters.Upsample(plane, c.Width, c.Height, c.Width, factor, h, parallel), c.Width * factor, outWidth, outHeight);
             }
 
             extras[e] = plane;
@@ -563,12 +570,12 @@ internal static class JxlImageDecoder
         {
             for (int c = 0; c < 3; c++)
             {
-                color[c] = Crop(JxlFilters.Upsample(color[c], width, height, width, f.Upsampling, h), width * f.Upsampling, outWidth, outHeight);
+                color[c] = Crop(JxlFilters.Upsample(color[c], width, height, width, f.Upsampling, h, parallel), width * f.Upsampling, outWidth, outHeight);
             }
 
             for (int e = 0; e < extras.Length && late; e++)
             {
-                extras[e] = Crop(JxlFilters.Upsample(extras[e], width, height, width, f.Upsampling, h), width * f.Upsampling, outWidth, outHeight);
+                extras[e] = Crop(JxlFilters.Upsample(extras[e], width, height, width, f.Upsampling, h, parallel), width * f.Upsampling, outWidth, outHeight);
             }
         }
 
@@ -588,16 +595,41 @@ internal static class JxlImageDecoder
     /// </summary>
     private static void ToColorSpace(float[][] color, int count, JxlFile file)
     {
+        const int Chunk = 1 << 15;
+        file.Parallel.For((count + Chunk - 1) / Chunk, i => ToColorSpace(color, i * Chunk, Math.Min(count, (i + 1) * Chunk), file));
+        JxlOutput output = file.Output!;
+        if (!file.Header.XybEncoded && output.Transform is null)
+        {
+            return;
+        }
+
+        // A gray result lands in one plane (1 from XYB, 0 from a transform); all three planes then share it.
+        if (output.Transform?.Target.Model == ColorModel.Gray && color.Length >= 3)
+        {
+            color[1] = color[0];
+            color[2] = color[0];
+        }
+        else if (output.Transform is null && output.Gray)
+        {
+            color[0] = color[1];
+            color[2] = color[1];
+        }
+    }
+
+    /// <summary>Converts samples <paramref name="start"/> to <paramref name="end"/> of each plane.</summary>
+    private static void ToColorSpace(float[][] color, int start, int end, JxlFile file)
+    {
         JxlImageHeader h = file.Header;
         JxlOutput output = file.Output!;
+        int count = end - start;
         if (h.XybEncoded)
         {
-            JxlColor.XybToLinear(color, count, h);
+            JxlColor.XybToLinear(color, start, end, h);
         }
 
         if (output.Transform is ColorTransform transform)
         {
-            JxlColor.Apply(transform, color, count);
+            JxlColor.Apply(transform, color, start, end);
             return;
         }
 
@@ -611,7 +643,7 @@ internal static class JxlImageDecoder
             float[] r = color[0];
             float[] g = color[1];
             float[] b = color[2];
-            for (int i = 0; i < count; i++)
+            for (int i = start; i < end; i++)
             {
                 (r[i], g[i], b[i]) = ((m[0] * r[i]) + (m[1] * g[i]) + (m[2] * b[i]), (m[3] * r[i]) + (m[4] * g[i]) + (m[5] * b[i]), (m[6] * r[i]) + (m[7] * g[i]) + (m[8] * b[i]));
             }
@@ -619,21 +651,18 @@ internal static class JxlImageDecoder
 
         if (output.Gray)
         {
-            // Gray: the luminance of linear sRGB.
-            for (int i = 0; i < count; i++)
+            // Gray: the luminance of linear sRGB, in plane 1.
+            for (int i = start; i < end; i++)
             {
                 color[1][i] = (0.2126f * color[0][i]) + (0.7152f * color[1][i]) + (0.0722f * color[2][i]);
             }
-
-            color[0] = color[1];
-            color[2] = color[1];
         }
 
         if (output.Curve is JxlColorEncoding curve)
         {
-            for (int c = 0; c < (output.Gray ? 1 : 3); c++)
+            foreach (int c in output.Gray ? (ReadOnlySpan<int>)[1] : [0, 1, 2])
             {
-                JxlColor.Encode(color[c], count, curve);
+                JxlColor.Encode(color[c].AsSpan(start, count), curve);
             }
         }
     }
