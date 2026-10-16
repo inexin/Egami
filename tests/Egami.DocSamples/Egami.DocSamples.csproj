@@ -51,7 +51,6 @@
     <None Include="../images/psd/metadata.psd" Link="images/photo.psd" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/vp8/v0-altref.ivf" Link="images/clip.ivf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="../images/icc/synthetic/cmyk-mab-v4.icc" Link="images/cmyk.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/SourceSans3-Regular.otf" Link="fonts/SourceSans3-Regular.otf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/shaping/NotoSansHebrew-Regular.ttf" Link="fonts/NotoSansHebrew-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />

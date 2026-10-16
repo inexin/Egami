@@ -71,6 +71,30 @@ public class IccPipelineTests(ITestOutputHelper output)
         Assert.True(srgb[0] > 1 && srgb[1] < 0 && srgb[2] < 0);
     }
 
+    /// <summary>
+    /// ColorProfile.Fogra39 is the embedded file unchanged, read once; TransformsMatchLittleCms checks its conversions through
+    /// builtin/FOGRA39L_coated.icc.
+    /// </summary>
+    [Fact]
+    public void Fogra39IsTheEmbeddedProfile()
+    {
+        ColorProfile fogra = ColorProfile.Fogra39;
+        Assert.Same(fogra, ColorProfile.Fogra39);
+        Assert.Equal(ColorModel.Cmyk, fogra.Model);
+        Assert.Equal("FOGRA39L Coated", fogra.Name);
+        Assert.Equal(IccProfileClass.Output, fogra.Icc!.ProfileClass);
+        Assert.Equal(IccReferences.Bytes("builtin/FOGRA39L_coated.icc"), fogra.ToIcc());
+        Assert.True(fogra.IsEquivalentTo(ColorProfile.FromIcc(fogra.ToIcc())));
+
+        // Paper white prints no ink, and sRGB black is rich black: all four inks, black the most.
+        ColorPipeline toInks = ColorPipeline.Create(ColorProfile.Srgb, fogra, RenderingIntent.RelativeColorimetric, true);
+        double[] inks = new double[4];
+        toInks.Evaluate([1, 1, 1], inks);
+        Assert.All(inks, i => Assert.True(i < 0.01, $"{i}"));
+        toInks.Evaluate([0, 0, 0], inks);
+        Assert.True(inks.All(i => i > 0.3) && inks[3] == inks.Max(), string.Join(", ", inks));
+    }
+
     [Fact]
     public void TargetsNeedTables()
     {

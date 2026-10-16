@@ -6,6 +6,8 @@ Profiles (tests/images/icc):
   synthetic/*.icc      written by this script: every LUT tag type (lut8, lut16, lutAtoB, lutBtoA) with Lab and XYZ PCS, CLUTs
                        with unequal grids and one- and two-byte entries, CMYK, gray, para curves of all five types, a chad
                        tag, distinct perceptual and colorimetric tables, and a v2 input profile whose white is not D50
+  builtin/*.icc        the profiles Egami embeds, read from src/Egami/Colors/Profiles (the tests copy them to this folder):
+                       FOGRA39L_coated.icc, ColorProfile.Fogra39
 
 References (tests/reference/icc):
   manifest.json        for each profile, what Little CMS reports (version, class, color space, PCS, matrix-shaper or LUT,
@@ -33,6 +35,8 @@ PACKAGES = "lcms2-dev gcc musl-dev"
 ICC = "tests/images/icc"
 REF = "tests/reference/icc"
 WORK = ".cache/refs-icc"
+# Profile folders by the name the manifest uses; built-in profiles stay where Egami embeds them.
+FOLDERS = {"compact": f"{ICC}/compact", "synthetic": f"{ICC}/synthetic", "builtin": "src/Egami/Colors/Profiles"}
 
 D50 = (0.9642, 1.0, 0.8249)
 D65 = (0.95047, 1.0, 1.08883)
@@ -470,6 +474,12 @@ def inputs():
 MODEL = {"RGB ": "rgb", "GRAY": "gray", "CMYK": "cmyk"}
 
 
+def where(profile):
+    """Returns the repo path of a manifest profile name such as "builtin/FOGRA39L_coated.icc"."""
+    folder, name = profile.split("/", 1)
+    return f"{FOLDERS[folder]}/{name}"
+
+
 def main():
     os.makedirs(os.path.join(ICC, "synthetic"), exist_ok=True)
     os.makedirs(REF, exist_ok=True)
@@ -488,11 +498,11 @@ def main():
     with open(os.path.join(WORK, "harness.c"), "w", newline="\n") as f:
         f.write(HARNESS)
 
-    profiles = sorted(f"{d}/{n}" for d in ("compact", "synthetic") for n in os.listdir(os.path.join(ICC, d)) if n.endswith(".icc"))
+    profiles = sorted(f"{d}/{n}" for d, folder in FOLDERS.items() for n in os.listdir(folder) if n.endswith(".icc"))
     srgb = f"{ICC}/compact/sRGB-v4.icc"
 
     # First pass: what Little CMS reads from each profile.
-    script = f"cd /repo && apk add -q {PACKAGES} >/dev/null && gcc -O2 -o /tmp/h {WORK}/harness.c -llcms2 && /tmp/h info " + " ".join(f"{ICC}/{p}" for p in profiles)
+    script = f"cd /repo && apk add -q {PACKAGES} >/dev/null && gcc -O2 -o /tmp/h {WORK}/harness.c -llcms2 && /tmp/h info " + " ".join(where(p) for p in profiles)
     script += f" > {WORK}/info.jsonl && apk list -I lcms2 > {WORK}/version.txt"
     repo = os.getcwd()
     subprocess.run(["docker", "run", "--rm", "-v", f"{repo}:/repo", IMAGE, "sh", "-c", script], check=True)
@@ -515,8 +525,8 @@ def main():
                 cases.append({"source": "srgb", "target": path, "intent": intent, "bpc": bpc, "inputs": "rgb"})
         name = path.replace("/", "-")[:-4]
         for i, case in enumerate(cases):
-            src = srgb if case["source"] == "srgb" else f"{ICC}/{case['source']}"
-            dst = "lab" if case["target"] == "lab" else srgb if case["target"] == "srgb" else f"{ICC}/{case['target']}"
+            src = srgb if case["source"] == "srgb" else where(case["source"])
+            dst = "lab" if case["target"] == "lab" else srgb if case["target"] == "srgb" else where(case["target"])
             n = len(samples["RGB "]) if case["inputs"] == "rgb" else count
             jobs.append(f"{src} {dst} {case['intent']} {int(case['bpc'])} {n} {REF}/inputs-{case['inputs']}.f32 {WORK}/{name}.{i}.f32")
             case["count"] = n

@@ -2640,6 +2640,7 @@ static Egami.Colors.ColorProfile.AdobeRgb.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.Create(Egami.Colors.ColorPrimaries! primaries, Egami.Colors.TransferFunction! transfer, string? name = null) -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.CreateGray(Egami.Colors.TransferFunction! transfer, Egami.Colors.Chromaticity? white = null, string? name = null) -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.DisplayP3.get -> Egami.Colors.ColorProfile!
+static Egami.Colors.ColorProfile.Fogra39.get -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.FromCodePoints(Egami.Colors.ColorCodePoints codePoints) -> Egami.Colors.ColorProfile?
 static Egami.Colors.ColorProfile.FromIcc(Egami.Colors.IccData! icc) -> Egami.Colors.ColorProfile!
 static Egami.Colors.ColorProfile.FromIcc(System.ReadOnlySpan<byte> profile) -> Egami.Colors.ColorProfile!

@@ -7,7 +7,8 @@ stored, exactly as in 1.0. Phase 2.1.2 adds the types that say what those number
 
 A `ColorProfile` says what a raster's numbers mean: the color model (`ColorModel.Rgb`, `Gray` or `Cmyk`), the primaries and
 white point, and the transfer function. The built-ins cover sRGB, linear sRGB, Display P3, Adobe RGB, ProPhoto RGB, Rec. 2020,
-the two Rec. 2100 HDR encodings and gray; `ColorProfile.Create` makes any other RGB encoding.
+the two Rec. 2100 HDR encodings, gray, and one CMYK print profile, `Fogra39` (offset on coated paper); `ColorProfile.Create`
+makes any other RGB encoding.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#profiles)]
 
@@ -118,7 +119,10 @@ any two through XYZ, and `ColorConvert.FromPixels` and `ToPixels` convert whole 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#color-values)]
 
-Real inks come from a print profile:
+Real inks come from a print profile. `ColorProfile.Fogra39` is built in: FOGRA39L, the usual European condition for offset on
+coated paper, a free profile built by ArgyllCMS from Fogra's measurements and shipped unchanged; `ToIcc` gives its bytes to
+embed in a file or a PDF output intent. CMYK files without a profile still convert by the plain formula, as libjpeg-turbo,
+libtiff and browsers do, not through this profile.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#cmyk-ink)]
 

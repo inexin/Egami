@@ -25,6 +25,8 @@ public enum ColorModel
 /// </example>
 public sealed class ColorProfile
 {
+    private static readonly Lazy<ColorProfile> LazyFogra39 = new(() => FromIcc(EmbeddedProfile("Egami.Colors.FOGRA39L_coated.icc")));
+
     private ColorProfile(string name, ColorModel model, ColorPrimaries? primaries, Chromaticity white, TransferFunction? transfer, IccData? icc = null, IccModel? iccModel = null)
     {
         (Name, Model, Primaries, White, Transfer, Icc, IccModel) = (name, model, primaries, white, transfer, icc, iccModel);
@@ -59,6 +61,17 @@ public sealed class ColorProfile
 
     /// <summary>Gets linear gray with D65 white.</summary>
     public static ColorProfile GrayLinear { get; } = new("Gray linear", ColorModel.Gray, null, Chromaticity.D65, TransferFunction.Linear);
+
+    /// <summary>
+    /// Gets FOGRA39L: offset printing on coated paper (ISO 12647-2, paper types 1 and 2), Europe's usual press condition, built for a
+    /// 300% total ink limit. The profile is colord's, built by ArgyllCMS from Fogra's measurements, as the CTAN colorprofiles
+    /// package ships it (ICC version 2.2, free of known copyright restrictions); <see cref="ToIcc"/> returns its bytes unchanged.
+    /// It is read on first use. CMYK files without a profile still convert by the plain formula, not through this one.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="cmyk-ink"/>
+    /// </example>
+    public static ColorProfile Fogra39 => LazyFogra39.Value;
 
     /// <summary>Gets a short name for the encoding, such as "sRGB" or the description of an ICC profile.</summary>
     public string Name { get; }
@@ -289,4 +302,12 @@ public sealed class ColorProfile
 
     /// <summary>The matrix from this encoding's linear RGB to XYZ relative to its own white.</summary>
     internal Matrix3d ToXyz() => Primaries!.ToXyz();
+
+    private static byte[] EmbeddedProfile(string name)
+    {
+        using Stream stream = typeof(ColorProfile).Assembly.GetManifestResourceStream(name) ?? throw new InvalidOperationException($"The resource {name} is missing.");
+        byte[] bytes = new byte[stream.Length];
+        stream.ReadExactly(bytes);
+        return bytes;
+    }
 }

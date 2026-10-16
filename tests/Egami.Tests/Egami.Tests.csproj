@@ -22,6 +22,7 @@
   <ItemGroup>
     <None Include="../images/**/*" LinkBase="images" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/**/*" LinkBase="reference" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../src/Egami/Colors/Profiles/*.icc" LinkBase="images/icc/builtin" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

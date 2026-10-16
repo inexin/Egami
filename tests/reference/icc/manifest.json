@@ -3,6 +3,179 @@
  "flags": "cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE, double",
  "profiles": [
   {
+   "file": "builtin/FOGRA39L_coated.icc",
+   "lcms": {
+    "version": 2.2,
+    "class": "prtr",
+    "colorSpace": "CMYK",
+    "pcs": "Lab ",
+    "headerIntent": 1,
+    "description": "FOGRA39L Coated",
+    "matrixShaper": 0,
+    "clutAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "intentSupportedAsInput": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "mediaWhite": [
+     0.8448334,
+     0.8762817,
+     0.7462006
+    ],
+    "blackPointPerceptual": [
+     0.0106132,
+     0.011027,
+     0.0075779
+    ],
+    "blackPointRelative": [
+     0.0103045,
+     0.0106871,
+     0.0088158
+    ],
+    "tags": [
+     "desc",
+     "cprt",
+     "wtpt",
+     "bkpt",
+     "clrt",
+     "A2B1",
+     "A2B0",
+     "A2B2",
+     "B2A1",
+     "B2A0",
+     "B2A2",
+     "gamt",
+     "arts",
+     "meta",
+     "dscm",
+     "dmnd",
+     "dmdd"
+    ]
+   },
+   "outputs": "builtin-FOGRA39L_coated.f32.gz",
+   "cases": [
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "lab",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "lab",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "lab",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "srgb",
+     "intent": 2,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "lab",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "srgb",
+     "intent": 3,
+     "bpc": false,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "srgb",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "srgb",
+     "target": "builtin/FOGRA39L_coated.icc",
+     "intent": 0,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "builtin/FOGRA39L_coated.icc",
+     "intent": 0,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "builtin/FOGRA39L_coated.icc",
+     "target": "srgb",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "cmyk",
+     "count": 300
+    },
+    {
+     "source": "srgb",
+     "target": "builtin/FOGRA39L_coated.icc",
+     "intent": 1,
+     "bpc": false,
+     "inputs": "rgb",
+     "count": 256
+    },
+    {
+     "source": "srgb",
+     "target": "builtin/FOGRA39L_coated.icc",
+     "intent": 1,
+     "bpc": true,
+     "inputs": "rgb",
+     "count": 256
+    }
+   ]
+  },
+  {
    "file": "compact/AdobeCompat-v2.icc",
    "lcms": {
     "version": 2.1,

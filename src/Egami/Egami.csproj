@@ -16,6 +16,11 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- ColorProfile.Fogra39: the CTAN colorprofiles copy, unchanged (see THIRD-PARTY-NOTICES.md). -->
+  <ItemGroup>
+    <EmbeddedResource Include="Colors/Profiles/FOGRA39L_coated.icc" LogicalName="Egami.Colors.FOGRA39L_coated.icc" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Tests" />
     <InternalsVisibleTo Include="Egami.Benchmarks" />

@@ -211,10 +211,10 @@ public class ColorManagement
     [Fact]
     public void CmykInk()
     {
-        ColorProfile print = ColorProfile.FromIcc(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "images", "cmyk.icc")));
-
         #region cmyk-ink
-        // The inks a press would use for a color, and the color it would print, through the press's CMYK profile.
+        // The inks a press would use for a color, and the color it would print, through the press's CMYK profile: here the
+        // built-in FOGRA39 (coated offset paper); ColorProfile.FromIcc reads any other.
+        ColorProfile print = ColorProfile.Fogra39;
         CmykColor inks = CmykColor.From(new Rgba8(200, 60, 30, 255), print, new ColorTransformOptions { Intent = RenderingIntent.RelativeColorimetric });
         Rgba8 proof = inks.ToRgba8(print);
         #endregion

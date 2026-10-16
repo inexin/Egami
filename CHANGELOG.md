@@ -7,6 +7,14 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### FOGRA39 print profile
+
+- `ColorProfile.Fogra39` is a built-in CMYK profile for offset printing on coated paper (FOGRA39L, ISO 12647-2, built for
+  a 300% ink limit), so RGB to CMYK and back works without finding an .icc file. It is colord's free profile, built by
+  ArgyllCMS from Fogra's data, shipped unchanged from CTAN (121 KB in Egami.dll, read on first use); `ToIcc` gives its bytes
+  for embedding. Conversions through it match Little CMS 2 within 0.03% of ink and 0.01 in L*a*b*. CMYK files without a
+  profile still convert by the plain formula.
+
 ### AVIF
 
 - `AvifFormat` reads AVIF (AV1 Image File Format over HEIF) stills, registered by default. The AV1 decoder, written from the
