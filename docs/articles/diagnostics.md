@@ -178,8 +178,11 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Metafile.BadChecksum` | Warning | A placeable WMF header's checksum does not match; the header is used anyway, as Windows does (Egami.Metafiles) |
 | `Metafile.BadHeader` | Warning | A header field cannot be used (0 units per inch, a description outside the header); a default is used or the field ignored (Egami.Metafiles) |
 | `Metafile.BadObject` | Warning | An EMF+ object split over several records is broken (no size, interrupted, larger than the file); it is skipped (Egami.Metafiles) |
+| `Metafile.BadRecord` | Warning | A record's fields do not fit its size, or describe geometry that cannot be drawn; that record is skipped and playback goes on (Egami.Metafiles) |
 | `Metafile.NoEndRecord` | Warning | The file ends without its end-of-file record; the records before the end are played (Egami.Metafiles) |
 | `Metafile.NoPlaceableHeader` | Warning | A WMF has no placeable header; it is sized by its window extent at 96 DPI (design question 10) (Egami.Metafiles) |
+| `Metafile.RasterOperation` | Warning | A mix mode or raster operation has no Egami equivalent; it is drawn as a copy (design question 7) (Egami.Metafiles) |
+| `Metafile.SkippedRecord` | Warning | Records Egami.Metafiles does not draw (flood fills, OpenGL, escapes, unknown types); they are skipped, once reported per kind (Egami.Metafiles) |
 | `Metafile.TruncatedRecord` | Warning | A record claims more bytes than the file or its EMF+ comment holds; reading stops there and the records before it are played (Egami.Metafiles) |
 | `Operation.ChainPlanned` | Info | The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped |
 | `Operation.GainMapDropped` | Warning | A step changed pixel values, or moved them in a way the gain map cannot follow; the gain map was dropped and the image saves as SDR only |
