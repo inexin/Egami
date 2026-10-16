@@ -50,6 +50,9 @@ using DrawingPath = Egami.Drawing.Path;
 // The radiance, exr and gainmap targets (Phase 2.9.1) load Radiance pictures (which must write back and write again to the same
 // bytes), OpenEXR files every way (each part, layer, window and channel, written back as OpenEXR), and JPEGs with an MPF index
 // and a gain map (every MP image, the HDR rendition at two headrooms, a crop and turn, and a JPEG save that must keep the map).
+// The jxl, jxlbox, jxlentropy, jxl-write and jxl-jpeg targets (Phase 2.9.3, JxlFuzzTarget.cs) load JPEG XL files every way,
+// reach the box reader, the entropy decoder, MA trees, Modular streams and the ICC decoder directly, and run the lossless encoder
+// and JPEG recompression, whose round trips must be exact.
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
 // computes them over a small tree and runs every value parser; Egami.Css never throws on input. The svg target (SvgFuzzTarget.cs)
 // loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly.
@@ -168,10 +171,15 @@ static Action<Stream> Target(string name) => name switch
     "radiance" => LoadRadiance,
     "exr" => LoadExr,
     "gainmap" => LoadGainMap,
+    "jxl" => stream => Egami.Fuzz.JxlFuzzTarget.Load(ReadAll(stream), Context()),
+    "jxlbox" => stream => Egami.Fuzz.JxlFuzzTarget.LoadBoxes(ReadAll(stream), Context()),
+    "jxlentropy" => stream => Egami.Fuzz.JxlFuzzTarget.DecodeEntropy(ReadAll(stream), Context()),
+    "jxl-write" => stream => Egami.Fuzz.JxlFuzzTarget.Write(ReadAll(stream), Context()),
+    "jxl-jpeg" => stream => Egami.Fuzz.JxlFuzzTarget.Recompress(ReadAll(stream), Context()),
     "css" => stream => Egami.Fuzz.CssFuzzTarget.Run(ReadAll(stream)),
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph."),
 };
 
 static EgamiContext Context()

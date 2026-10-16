@@ -84,6 +84,12 @@ fuzz/detect-seeds/
   Copies of one file of each format from the folders above, as seeds for the detect fuzz target. Same licenses as the files
   they copy.
 
+fuzz/jxl-seeds/, fuzz/jxlbox-seeds/, fuzz/jxlentropy-seeds/
+  Seeds for the JPEG XL fuzz targets: copies of the small files of jxl/ (jxl-seeds), the boxes of jxl/ files and of Egami's
+  recompressions of jpeg/ files with their signature, ftyp and codestream boxes taken out (jxlbox-seeds), and entropy streams,
+  MA trees with Modular streams and ICC streams of icc/compact/ profiles written by Egami's encoder (jxlentropy-seeds). Same
+  licenses as the files they come from; public domain otherwise.
+
 jpeg/duck-ycck.jpg
   Written by tools/make-float-cmyk-references.py with libjpeg-turbo's TurboJPEG from the samples of jpeg/duck-cmyk.jpg (it
   stores CMYK as YCCK). Public domain, as its source.
