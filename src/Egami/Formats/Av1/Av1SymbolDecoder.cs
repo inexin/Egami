@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -79,10 +82,28 @@ internal sealed class Av1SymbolDecoder
     /// <summary>Reads a symbol against an adaptive CDF of <paramref name="n"/> symbols starting at <paramref name="at"/>.</summary>
     internal int Symbol(ushort[] cdf, int n, int at = 0)
     {
-        int symbol = Decode(cdf, at, n);
+        // The CDF and its counter lie inside the array, checked once, so the reads and the adaptation go without checks.
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)(at + n), (uint)cdf.Length, nameof(at));
+
+        ref ushort p = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(cdf), at);
+        uint r = _rng, r8 = r >> 8;
+        uint c = (uint)(_dif >> (WindowSize - 16));
+        uint u, v = r;
+        int symbol = -1;
+        int last = n - 1;
+        do
+        {
+            u = v;
+            symbol++;
+            v = ((r8 * (uint)(Unsafe.Add(ref p, symbol) >> ProbShift)) >> (7 - ProbShift)) + (uint)(MinProb * (last - symbol));
+        }
+        while (c < v);
+
+        _dif -= (ulong)v << (WindowSize - 16);
+        Normalize(u - v);
         if (_adapt)
         {
-            Adapt(cdf, at, symbol, n);
+            Adapt(ref p, symbol, n);
         }
 
         return symbol;
@@ -240,19 +261,27 @@ internal sealed class Av1SymbolDecoder
         }
     }
 
-    /// <summary>Adapts a CDF towards the symbol just read (update_cdf), the counter being the entry after the last symbol.</summary>
-    private static void Adapt(ushort[] cdf, int at, int symbol, int n)
+    /// <summary>
+    /// Adapts a CDF towards the symbol just read (update_cdf), the counter being the entry after the last symbol: the entries
+    /// before the symbol move towards 32768, the others towards 0.
+    /// </summary>
+    private static void Adapt(ref ushort cdf, int symbol, int n)
     {
-        int count = cdf[at + n];
+        int count = Unsafe.Add(ref cdf, n);
         int rate = 3 + (count > 15 ? 1 : 0) + (count > 31 ? 1 : 0) + (n > 3 ? 2 : 1);
-        int tmp = 32768;
-        for (int i = 0; i < n - 1; i++)
+        int i = 0;
+        for (int end = Math.Min(symbol, n - 1); i < end; i++)
         {
-            tmp = i == symbol ? 0 : tmp;
-            int value = cdf[at + i];
-            cdf[at + i] = (ushort)(tmp < value ? value - ((value - tmp) >> rate) : value + ((tmp - value) >> rate));
+            int value = Unsafe.Add(ref cdf, i);
+            Unsafe.Add(ref cdf, i) = (ushort)(value + ((32768 - value) >> rate));
         }
 
-        cdf[at + n] = (ushort)(count + (count < 32 ? 1 : 0));
+        for (; i < n - 1; i++)
+        {
+            int value = Unsafe.Add(ref cdf, i);
+            Unsafe.Add(ref cdf, i) = (ushort)(value - (value >> rate));
+        }
+
+        Unsafe.Add(ref cdf, n) = (ushort)(count + (count < 32 ? 1 : 0));
     }
 }

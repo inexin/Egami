@@ -42,12 +42,32 @@ internal static class Av1Cdef
         }
 
         int planes = h.NumPlanes;
+        // The deblocked frame, in pooled buffers: a frame's planes are large, and fresh memory costs more than the copy.
         ushort[][] source = new ushort[planes][];
         for (int plane = 0; plane < planes; plane++)
         {
-            source[plane] = (ushort[])frame.Planes![plane].Clone();
+            ushort[] deblocked = frame.Planes![plane];
+            source[plane] = System.Buffers.ArrayPool<ushort>.Shared.Rent(deblocked.Length);
+            deblocked.AsSpan().CopyTo(source[plane]);
         }
 
+        try
+        {
+            Filter(frame, source);
+        }
+        finally
+        {
+            foreach (ushort[] buffer in source)
+            {
+                System.Buffers.ArrayPool<ushort>.Shared.Return(buffer);
+            }
+        }
+    }
+
+    private static void Filter(Av1Frame frame, ushort[][] source)
+    {
+        Av1FrameHeader h = frame.Header;
+        int planes = h.NumPlanes;
         int coeffShift = frame.Sequence.BitDepth - 8;
         int ssx = frame.Sequence.SubsamplingX, ssy = frame.Sequence.SubsamplingY;
         int rows64 = (frame.MiRows + 15) >> 4, cols64 = (frame.MiCols + 15) >> 4;
