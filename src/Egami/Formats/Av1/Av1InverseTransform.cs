@@ -64,9 +64,17 @@ internal static partial class Av1InverseTransform
         bool rect2 = w == 2 * h || h == 2 * w;
         int rowClamp = bitDepth + 8, colClamp = Math.Max(bitDepth + 6, 16);
         int max = (1 << bitDepth) - 1;
-        if (Vector256.IsHardwareAccelerated && colType == 0 && rowType == 0 && w >= 8 && h >= 8 && bitDepth <= 10)
+        if (Vector256.IsHardwareAccelerated && colType == 0 && rowType == 0 && w >= 8 && h >= 8)
         {
-            AddDct(coeffs, w, h, codedW, codedH, rect2, rowShift, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+            if (bitDepth <= 10)
+            {
+                AddDct<Narrow>(coeffs, w, h, codedW, codedH, rect2, rowShift, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+            }
+            else
+            {
+                AddDct<Wide>(coeffs, w, h, codedW, codedH, rect2, rowShift, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+            }
+
             return;
         }
 
@@ -147,12 +155,21 @@ internal static partial class Av1InverseTransform
     }
 
     /// <summary>
-    /// The DCT_DCT blocks of 8 and more samples a side at 8 and 10 bits, eight rows and then eight columns at a time. Every
-    /// butterfly's inputs are clamped to the stage's range (18 bits at most here) and its weights are 12 bits, so its products
-    /// and their sum fit 32 bits: the result is the scalar one, which sums in 64.
+    /// A butterfly (half_btf) on eight lanes: each weight times its input wrapping at 32 bits, as the scalar one multiplies, and
+    /// their sum rounded and shifted as if it were taken in 64 bits.
     /// </summary>
-    private static void AddDct(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, (int Clamp, int Range) row,
+    internal interface IButterfly
+    {
+        static abstract Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit);
+    }
+
+    /// <summary>
+    /// The DCT_DCT blocks of 8 and more samples a side, eight rows and then eight columns at a time, with the butterfly
+    /// <typeparamref name="T"/> that is exact at the bit depth.
+    /// </summary>
+    private static void AddDct<T>(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, (int Clamp, int Range) row,
         (int Clamp, int Range) column, ushort[] dst, int offset, int stride, int max)
+        where T : IButterfly
     {
         Span<int> buf = stackalloc int[w * h];
         Span<Vector256<int>> input = stackalloc Vector256<int>[64];
@@ -189,7 +206,7 @@ internal static partial class Av1InverseTransform
             }
 
             input[codedW..w].Clear();
-            Dct(w, input[..w], output[..w], rangeLo, rangeHi);
+            Dct<T>(w, input[..w], output[..w], rangeLo, rangeHi);
             for (int c = 0; c < w; c++)
             {
                 Vector256<int> v = output[c];
@@ -218,7 +235,7 @@ internal static partial class Av1InverseTransform
                 input[r] = Vector256.Min(Vector256.Max(Vector256.LoadUnsafe(ref b0, (nuint)((r * w) + col)), lo), hi);
             }
 
-            Dct(h, input[..h], output[..h], rangeLo, rangeHi);
+            Dct<T>(h, input[..h], output[..h], rangeLo, rangeHi);
             for (int r = 0; r < h; r++)
             {
                 nuint at = (nuint)(offset + (r * stride) + col);
@@ -233,20 +250,43 @@ internal static partial class Av1InverseTransform
         static (Vector256<int> Lo, Vector256<int> Hi) Bounds(int bits) => (Vector256.Create(-(1 << (bits - 1))), Vector256.Create((1 << (bits - 1)) - 1));
     }
 
-    private static void Dct(int n, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, Vector256<int> lo, Vector256<int> hi)
+    private static void Dct<T>(int n, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, Vector256<int> lo, Vector256<int> hi)
+        where T : IButterfly
     {
         switch (n)
         {
-            case 8: Dct8(input, output, lo, hi); break;
-            case 16: Dct16(input, output, lo, hi); break;
-            case 32: Dct32(input, output, lo, hi); break;
-            default: Dct64(input, output, lo, hi); break;
+            case 8: Dct8<T>(input, output, lo, hi); break;
+            case 16: Dct16<T>(input, output, lo, hi); break;
+            case 32: Dct32<T>(input, output, lo, hi); break;
+            default: Dct64<T>(input, output, lo, hi); break;
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit) =>
-        Vector256.ShiftRightArithmetic((in0 * w0) + (in1 * w1) + Vector256.Create(1 << (bit - 1)), bit);
+    /// <summary>
+    /// The butterfly at 8 and 10 bits: its inputs are clamped to the stage's range (18 bits at most) and its weights are 12
+    /// bits, so the products and their sum fit 32 bits.
+    /// </summary>
+    internal readonly struct Narrow : IButterfly
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit) =>
+            Vector256.ShiftRightArithmetic((in0 * w0) + (in1 * w1) + Vector256.Create(1 << (bit - 1)), bit);
+    }
+
+    /// <summary>
+    /// The butterfly at 12 bits, whose 20-bit range lets the sum of two products pass 32 bits: each product split at the shift,
+    /// the high parts added and the low parts' carry, which is floor((p0 + p1 + round) / 2^bit) without overflow.
+    /// </summary>
+    internal readonly struct Wide : IButterfly
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit)
+        {
+            Vector256<int> p0 = in0 * w0, p1 = in1 * w1, low = Vector256.Create((1 << bit) - 1);
+            Vector256<int> carry = Vector256.ShiftRightArithmetic((p0 & low) + (p1 & low) + Vector256.Create(1 << (bit - 1)), bit);
+            return Vector256.ShiftRightArithmetic(p0, bit) + Vector256.ShiftRightArithmetic(p1, bit) + carry;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<int> Clamp(Vector256<int> value, Vector256<int> lo, Vector256<int> hi) => Vector256.Min(Vector256.Max(value, lo), hi);

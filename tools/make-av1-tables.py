@@ -303,7 +303,7 @@ using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Av1;
 
-/// <summary>The DCTs of libaom's av1_inv_txfm1d.c, eight at a time.</summary>
+/// <summary>The DCTs of libaom's av1_inv_txfm1d.c, eight at a time, with the butterfly <c>T</c> chooses for the bit depth.</summary>
 internal static partial class Av1InverseTransform
 {
 """
@@ -317,7 +317,7 @@ def vector_lines(lines):
     for s in lines:
         s = s.replace("scoped Span<int> bf0, bf1;", "scoped Span<Vector256<int>> bf0, bf1;")
         s = re.sub(r"Span<int> step = stackalloc int\[(\d+)\];", r"Span<Vector256<int>> step = stackalloc Vector256<int>[\1];", s)
-        s = s.replace(", range)", ", lo, hi)")
+        s = s.replace(", range)", ", lo, hi)").replace("HalfBtf(", "T.HalfBtf(")
         if "range" in s or "long" in s or "RoundShift" in s:
             raise ValueError(f"not vectorized: {s}")
         out.append(s)
@@ -365,8 +365,8 @@ def translate_inverse_transforms():
              f"    internal static void {TRANSFORM_NAMES[name]}(ReadOnlySpan<int> input, Span<int> output, int range)", split)
         if name in VECTOR_TRANSFORMS:
             emit(vector, f"    /// <summary>libaom's {name} on each lane.</summary>",
-                 f"    internal static void {TRANSFORM_NAMES[name]}(ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, "
-                 "Vector256<int> lo, Vector256<int> hi)", vector_lines(split))
+                 f"    internal static void {TRANSFORM_NAMES[name]}<T>(ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, "
+                 "Vector256<int> lo, Vector256<int> hi)\n        where T : IButterfly", vector_lines(split))
     out[-1] = "}"
     open(os.path.join(OUT, "Av1InverseTransform.OneD.cs"), "w", newline="\n").write(TRANSFORM_HEADER + "\n".join(out) + "\n")
     vector[-1] = "}"

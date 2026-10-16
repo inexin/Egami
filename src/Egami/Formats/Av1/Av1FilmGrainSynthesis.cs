@@ -253,12 +253,16 @@ internal static class Av1FilmGrainSynthesis
         return scaling;
     }
 
-    private static int SampleLut(int[] lut, int[,] offsets, int subx, int suby, int bx, int by, int x, int y)
+    private static int SampleLut(int[] lut, int[,] offsets, int subx, int suby, int bx, int by, int x, int y) =>
+        lut[SampleLutAt(offsets, subx, suby, bx, by) + (y * GrainWidth) + x];
+
+    /// <summary>Where in the grain template the block's sample (0, 0) is.</summary>
+    private static int SampleLutAt(int[,] offsets, int subx, int suby, int bx, int by)
     {
         int randval = offsets[bx, by];
         int offx = 3 + ((2 >> subx) * (3 + (randval >> 4)));
         int offy = 3 + ((2 >> suby) * (3 + (randval & 0xF)));
-        return lut[((offy + y + ((BlockSize >> suby) * by)) * GrainWidth) + offx + x + ((BlockSize >> subx) * bx)];
+        return ((offy + ((BlockSize >> suby) * by)) * GrainWidth) + offx + ((BlockSize >> subx) * bx);
     }
 
     private static void ApplyLuma(ushort[] dst, ushort[] src, int rowStart, int stride, Data d, int pw, int[] scaling, int[] lut, int bh, int rowNum, int bd)
@@ -295,9 +299,22 @@ internal static class Av1FilmGrainSynthesis
 
             int ystart = d.OverlapFlag && rowNum != 0 ? Math.Min(2, bh) : 0;
             int xstart = d.OverlapFlag && bx != 0 ? Math.Min(2, bw) : 0;
+            int lutBase = SampleLutAt(offsets, 0, 0, 0, 0);
+            for (int y = ystart; y < bh; y++)
+            {
+                ReadOnlySpan<int> grains = lut.AsSpan(lutBase + (y * GrainWidth), bw);
+                Span<ushort> line = dst.AsSpan(rowStart + (y * stride) + bx, bw);
+                ReadOnlySpan<ushort> source = src.AsSpan(rowStart + (y * stride) + bx, bw);
+                for (int x = xstart; x < line.Length; x++)
+                {
+                    int value = source[x];
+                    line[x] = (ushort)Math.Clamp(value + Round2(scaling[value] * grains[x], d.ScalingShift), minValue, maxValue);
+                }
+            }
+
             for (int y = 0; y < bh; y++)
             {
-                for (int x = 0; x < bw; x++)
+                for (int x = 0; x < (y < ystart ? bw : xstart); x++)
                 {
                     int grain = SampleLut(lut, offsets, 0, 0, 0, 0, x, y);
                     if (x < xstart)
@@ -361,9 +378,19 @@ internal static class Av1FilmGrainSynthesis
 
             int ystart = d.OverlapFlag && rowNum != 0 ? Math.Min(2 >> sy, bh) : 0;
             int xstart = d.OverlapFlag && bx != 0 ? Math.Min(2 >> sx, bw) : 0;
+            int lutBase = SampleLutAt(offsets, sx, sy, 0, 0);
+            for (int y = ystart; y < bh; y++)
+            {
+                ReadOnlySpan<int> grains = lut.AsSpan(lutBase + (y * GrainWidth), bw);
+                for (int x = xstart; x < bw; x++)
+                {
+                    Add(grains[x], x, y);
+                }
+            }
+
             for (int y = 0; y < bh; y++)
             {
-                for (int x = 0; x < bw; x++)
+                for (int x = 0; x < (y < ystart ? bw : xstart); x++)
                 {
                     int grain = SampleLut(lut, offsets, sx, sy, 0, 0, x, y);
                     if (x < xstart)
@@ -384,24 +411,29 @@ internal static class Av1FilmGrainSynthesis
                         grain = Math.Clamp(Round2((top * Weight(sy, y, 0)) + (grain * Weight(sy, y, 1)), 5), grainMin, grainMax);
                     }
 
-                    int lumaAt = lumaRow + ((y << sy) * lumaStride) + ((bx + x) << sx);
-                    int average = luma[lumaAt];
-                    if (sx != 0)
-                    {
-                        average = (average + luma[lumaAt + 1] + 1) >> 1;
-                    }
-
-                    int at = rowStart + (y * stride) + bx + x;
-                    int value = average;
-                    if (!d.ChromaScalingFromLuma)
-                    {
-                        int combined = (average * d.UvLumaMult[uv]) + (src[at] * d.UvMult[uv]);
-                        value = Math.Clamp((combined >> 6) + (d.UvOffset[uv] * (1 << (bd - 8))), 0, pixelMax);
-                    }
-
-                    int noise = Round2(scaling[value] * grain, d.ScalingShift);
-                    dst[at] = (ushort)Math.Clamp(src[at] + noise, minValue, maxValue);
+                    Add(grain, x, y);
                 }
+            }
+
+            void Add(int grain, int x, int y)
+            {
+                int lumaAt = lumaRow + ((y << sy) * lumaStride) + ((bx + x) << sx);
+                int average = luma[lumaAt];
+                if (sx != 0)
+                {
+                    average = (average + luma[lumaAt + 1] + 1) >> 1;
+                }
+
+                int at = rowStart + (y * stride) + bx + x;
+                int value = average;
+                if (!d.ChromaScalingFromLuma)
+                {
+                    int combined = (average * d.UvLumaMult[uv]) + (src[at] * d.UvMult[uv]);
+                    value = Math.Clamp((combined >> 6) + (d.UvOffset[uv] * (1 << (bd - 8))), 0, pixelMax);
+                }
+
+                int noise = Round2(scaling[value] * grain, d.ScalingShift);
+                dst[at] = (ushort)Math.Clamp(src[at] + noise, minValue, maxValue);
             }
         }
 
