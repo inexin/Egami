@@ -114,6 +114,10 @@ icc/synthetic/
   ICC profiles written byte by byte by tools/make-icc-references.py, covering the LUT tag types and curve forms the compact
   profiles do not. Public domain.
 
+icc/ncolor/
+  n-colour output profiles (seven inks, v4; a duotone, v2) written byte by byte by tools/make-ink-profiles.py for the
+  multi-ink work. Public domain.
+
 ../reference/icc/
   Little CMS's reading of every profile above and its transforms of fixed inputs, made by tools/make-icc-references.py.
   Public domain, as the profiles.
