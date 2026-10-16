@@ -216,6 +216,12 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
         HeifPlanes color = file.Primary.Type == AvifFile.Grid
             ? Grid(file, codec, file.Cells, (file.GridSize.Rows, file.GridSize.Columns, file.Width, file.Height), input, needed, lumaOnly: false)
             : Cell(file, codec, file.Cells[0], input);
+        if (color.BitDepth != file.Config.BitDepth || color.Monochrome != file.Config.Monochrome)
+        {
+            // The layout Load gives comes from av1C, so the image must match it.
+            throw input.Corrupt(-1, $"The image is {color.BitDepth}-bit{(color.Monochrome ? " monochrome" : "")}, but its av1C property says {file.Config.BitDepth}-bit{(file.Config.Monochrome ? " monochrome" : "")}.");
+        }
+
         HeifPlanes? alpha = null;
         if (file.Alpha is not null)
         {

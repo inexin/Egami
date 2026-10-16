@@ -804,6 +804,11 @@ internal sealed class Av1FrameHeader
             for (int i = 0; i < n; i++)
             {
                 points[i] = ((int)r.Bits(8), (int)r.Bits(8));
+                if (i > 0 && points[i].Item1 <= points[i - 1].Item1)
+                {
+                    // Section 6.8.20: each point's value is above the one before.
+                    throw new CorruptDataException(formatName, -1, "An AV1 film grain table's point values do not increase.");
+                }
             }
 
             return points;

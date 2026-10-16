@@ -60,7 +60,7 @@ fuzz/exif-seeds/
   Seed EXIF blocks for the exif fuzz target: two taken from jpeg/exif-tags.jpg and jpeg/exif-orientation-6.jpg above, and one
   written by ExifData. Public domain.
 
-fuzz/jpeg/, fuzz/exif/, fuzz/tga/, fuzz/jxl-jpeg/
+fuzz/jpeg/, fuzz/exif/, fuzz/tga/, fuzz/jxl-jpeg/, fuzz/avif/, fuzz/av1/
   Inputs the fuzzers found, mutated from the corpus files above; kept as regression tests. Same licenses as their sources.
 
 gif/*.gif, apng/*.png
@@ -83,6 +83,10 @@ bmp/, tga/, qoi/, pnm/
 fuzz/detect-seeds/
   Copies of one file of each format from the folders above, as seeds for the detect fuzz target. Same licenses as the files
   they copy.
+
+fuzz/avif-seeds/, fuzz/avifbox-seeds/, fuzz/av1-seeds/
+  Seeds for the AVIF fuzz targets: copies of small files of avif/ (avif-seeds), the same files with their ftyp box taken out
+  (avifbox-seeds), and the AV1 data of their primary items (av1-seeds). Same licenses as the files they come from.
 
 fuzz/jxl-seeds/, fuzz/jxlbox-seeds/, fuzz/jxlentropy-seeds/
   Seeds for the JPEG XL fuzz targets: copies of the small files of jxl/ (jxl-seeds), the boxes of jxl/ files and of Egami's

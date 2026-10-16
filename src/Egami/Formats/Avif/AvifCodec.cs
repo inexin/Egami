@@ -19,7 +19,7 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
     public HeifPlanes Decode(byte[] data, EgamiInput input)
     {
         Av1Frame frame = Av1Decoder.DecodeFirstFrame(data, input.FormatName, parallelism: input.Context.MaxParallelism,
-            cancellationToken: input.CancellationToken);
+            cancellationToken: input.CancellationToken, limits: input.Limits);
         if (!frame.Header.ShowFrame && !frame.Header.ShowableFrame)
         {
             throw new CorruptDataException(input.FormatName, -1, "The AV1 item's first frame is never shown.");

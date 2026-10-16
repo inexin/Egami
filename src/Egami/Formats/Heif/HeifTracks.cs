@@ -258,6 +258,11 @@ internal static class HeifTracks
                 {
                     Need(file, box, c, 12 + (4L * count));
                 }
+                else
+                {
+                    // Samples of one size lie end to end in the file, so no more of them fit than its length allows.
+                    count = (int)Math.Min(count, (file.Bytes.Length / size) + 1);
+                }
 
                 for (int i = 0; i < count; i++)
                 {

@@ -1,3 +1,5 @@
+using System.Runtime.ExceptionServices;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>The loop restoration of one unit: its type and its filter (section 5.11.58).</summary>
@@ -90,6 +92,11 @@ internal sealed class Av1Frame
             // Superblock-aligned planes: transform blocks reach past the frame's edge as far as their superblock.
             int sbPixels = 4 << SbMiLog2;
             int width = ((MiCols * 4) + sbPixels - 1) & ~(sbPixels - 1), height = ((MiRows * 4) + sbPixels - 1) & ~(sbPixels - 1);
+            if ((long)width * height > Array.MaxLength)
+            {
+                throw new CorruptDataException(formatName, -1, $"The AV1 frame is {header.UpscaledWidth} x {header.FrameHeight}, too large to decode.");
+            }
+
             Planes = new ushort[header.NumPlanes][];
             Strides = new int[header.NumPlanes];
             for (int plane = 0; plane < header.NumPlanes; plane++)
@@ -274,7 +281,16 @@ internal sealed class Av1Frame
         if (Parallelism > 1 && tiles.Count > 1)
         {
             ParallelOptions options = new() { MaxDegreeOfParallelism = Parallelism, CancellationToken = CancellationToken };
-            Parallel.ForEach(tiles, options, t => DecodeTile(t.Tile, data, t.Offset, t.Size));
+            try
+            {
+                Parallel.ForEach(tiles, options, t => DecodeTile(t.Tile, data, t.Offset, t.Size));
+            }
+            catch (AggregateException e) when (e.InnerExceptions.Count > 0)
+            {
+                // A damaged tile throws as it would on one thread.
+                ExceptionDispatchInfo.Capture(e.InnerExceptions[0]).Throw();
+            }
+
             return;
         }
 
@@ -290,7 +306,15 @@ internal sealed class Av1Frame
     {
         if (Parallelism > 1 && count > 1)
         {
-            Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = Parallelism, CancellationToken = CancellationToken }, body);
+            try
+            {
+                Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = Parallelism, CancellationToken = CancellationToken }, body);
+            }
+            catch (AggregateException e) when (e.InnerExceptions.Count > 0)
+            {
+                ExceptionDispatchInfo.Capture(e.InnerExceptions[0]).Throw();
+            }
+
             return;
         }
 

@@ -26,7 +26,8 @@ internal sealed class AvifSequence
         Config = AvifProperties.ReadAv1Config(heif, Property(color, AvifProperties.Av1C)
             ?? throw new CorruptDataException(heif.FormatName, -1, "The AVIF sequence's color track has no av1C box."));
         Sequence = Av1SequenceHeader.Find(Config.ConfigObus.Span, heif.FormatName)
-            ?? (color.Samples.Count > 0 ? Av1SequenceHeader.Find(heif.Bytes.Span.Slice((int)color.Samples[0].Offset, color.Samples[0].Size), heif.FormatName) : null)
+            ?? (color.Samples.Count > 0 && Fits(heif, color.Samples[0])
+                ? Av1SequenceHeader.Find(heif.Bytes.Span.Slice((int)color.Samples[0].Offset, color.Samples[0].Size), heif.FormatName) : null)
             ?? throw new CorruptDataException(heif.FormatName, -1, "The AVIF sequence has no AV1 sequence header.");
         if (Property(color, AvifProperties.Colr) is HeifProperty colr)
         {
@@ -123,6 +124,12 @@ internal sealed class AvifSequence
     internal (HeifPlanes Color, HeifPlanes? Alpha) Decode(int index, AvifCodec codec, EgamiInput input)
     {
         HeifPlanes color = codec.Decode(Sample(Color, index, _colorPrefix), input);
+        if (color.BitDepth != Config.BitDepth || color.Monochrome != Config.Monochrome)
+        {
+            // The layout Load gives comes from av1C, so every frame must match it.
+            throw input.Corrupt(-1, $"Frame {index} of the AVIF sequence is {color.BitDepth}-bit{(color.Monochrome ? " monochrome" : "")}, but its av1C box says {Config.BitDepth}-bit{(Config.Monochrome ? " monochrome" : "")}.");
+        }
+
         HeifPlanes? alpha = null;
         if (Alpha is HeifTrack track && index < track.Samples.Count)
         {
@@ -166,7 +173,7 @@ internal sealed class AvifSequence
         }
 
         HeifSample first = track.Samples[0];
-        if (first.Offset < 0 || first.Offset + first.Size > heif.Bytes.Length)
+        if (!Fits(heif, first))
         {
             return configObus.ToArray();
         }
@@ -194,12 +201,15 @@ internal sealed class AvifSequence
         return configObus.ToArray();
     }
 
+    /// <summary>Gets whether a sample lies within the file.</summary>
+    private static bool Fits(HeifFile heif, HeifSample sample) => sample.Offset >= 0 && sample.Size >= 0 && sample.Offset + sample.Size <= heif.Bytes.Length;
+
     /// <summary>A sample's bytes, after <paramref name="prefix"/> (the configuration OBUs and sequence header).</summary>
     private byte[] Sample(HeifTrack track, int index, byte[] prefix)
     {
         HeifSample sample = track.Samples[index];
         ReadOnlySpan<byte> obus = prefix;
-        if (sample.Offset < 0 || sample.Offset + sample.Size > Heif.Bytes.Length)
+        if (!Fits(Heif, sample))
         {
             throw new CorruptDataException(Heif.FormatName, sample.Offset, "A sample of the AVIF sequence lies past the end of the file.") { IsTruncation = true };
         }

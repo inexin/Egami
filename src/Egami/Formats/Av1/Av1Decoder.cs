@@ -8,10 +8,10 @@ internal static class Av1Decoder
     /// and tile groups, reconstructing its samples unless <paramref name="reconstruct"/> is false, and applying the in-loop
     /// filters unless <paramref name="filter"/> is false. Only key and intra-only frames decode; the frame header throws
     /// <see cref="UnsupportedFormatException"/> for others. Tiles, and the filters' rows and units, decode on up to
-    /// <paramref name="parallelism"/> threads.
+    /// <paramref name="parallelism"/> threads. A frame larger than <paramref name="limits"/> allow throws before its planes are made.
     /// </summary>
     internal static Av1Frame DecodeFirstFrame(byte[] data, string formatName, bool reconstruct = true, bool filter = true, int parallelism = 1,
-        CancellationToken cancellationToken = default)
+        SafetyLimits? limits = null, CancellationToken cancellationToken = default)
     {
         Av1SequenceHeader? sequence = null;
         Av1Frame? frame = null;
@@ -39,6 +39,7 @@ internal static class Av1Decoder
                         throw new CorruptDataException(formatName, obu.PayloadStart, "An AV1 stream shows an existing frame before decoding one.");
                     }
 
+                    limits?.CheckFrameSize(header.UpscaledWidth, header.FrameHeight);
                     frame = new Av1Frame(header, formatName, reconstruct) { Parallelism = Math.Max(1, parallelism), CancellationToken = cancellationToken };
                     tilesLeft = header.TileCols * header.TileRows;
                     if (obu.Type == Av1ObuType.Frame)
