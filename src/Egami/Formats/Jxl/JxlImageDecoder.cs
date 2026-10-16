@@ -562,7 +562,7 @@ internal static class JxlImageDecoder
 
             if (frame.Splines is JxlSplines splines && colorFeatures)
             {
-                JxlFeatures.RenderSplines(coded, splines, frame.Correlation.X, frame.Correlation.B);
+                JxlFeatures.RenderSplines(coded, splines, frame.Correlation.X, frame.Correlation.B, parallel);
             }
         }
 

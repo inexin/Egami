@@ -288,11 +288,14 @@ internal static class JxlFeatures
     }
 
     /// <summary>Draws the splines into the X, Y and B planes.</summary>
-    internal static void RenderSplines(JxlPlanes frame, JxlSplines splines, float correlationX, float correlationB)
+    internal static void RenderSplines(JxlPlanes frame, JxlSplines splines, float correlationX, float correlationB, JxlParallel parallel)
     {
         ReadOnlySpan<float> weights = [0.0042f, 0.075f, 0.07f, 0.3333f];
         float qa = splines.QuantAdjust;
         float inverted = qa >= 0 ? 1 / (1 + (qa / 8)) : 1 - (qa / 8);
+        // Every sample's place, size and color first, in drawing order; then bands of rows draw them all on several threads.
+        // Each pixel gets its additions in the same order, so the output is the same at every thread count.
+        List<SplineSample> drawn = [];
         foreach (JxlQuantSpline q in splines.Splines)
         {
             float[][] xyb = [new float[32], new float[32], new float[32]];
@@ -319,7 +322,6 @@ internal static class JxlFeatures
                 (float px, float py, float length) = samples[i];
                 float t = 31 * MathF.Min(1, i / arclength);
                 float sig = ContinuousIdct(sigma, t);
-                float invSigma = 1 / sig;
                 float v0 = ContinuousIdct(xyb[0], t) * length;
                 float v1 = ContinuousIdct(xyb[1], t) * length;
                 float v2 = ContinuousIdct(xyb[2], t) * length;
@@ -329,25 +331,40 @@ internal static class JxlFeatures
                 int x1 = Math.Min(frame.Width, (int)MathF.Floor(px + maxDistance + 1.5f));
                 int y0 = Math.Max(0, (int)MathF.Floor(py - maxDistance + 0.5f));
                 int y1 = Math.Min(frame.Height, (int)MathF.Floor(py + maxDistance + 1.5f));
-                for (int c = 0; c < 3; c++)
+                if (x0 < x1 && y0 < y1)
                 {
-                    float value = c == 0 ? v0 : c == 1 ? v1 : v2;
-                    float[] plane = frame.Planes[c];
-                    for (int y = y0; y < y1; y++)
-                    {
-                        for (int x = x0; x < x1; x++)
-                        {
-                            float dx = x - px;
-                            float dy = y - py;
-                            float distance = MathF.Sqrt((dx * dx) + (dy * dy));
-                            const float Sqrt0125 = 0.35355338f;
-                            float factor = Erf(((0.5f * distance) + Sqrt0125) * invSigma) - Erf(((0.5f * distance) - Sqrt0125) * invSigma);
-                            plane[(y * frame.Width) + x] += 0.25f * value * sig * factor * factor;
-                        }
-                    }
+                    drawn.Add(new SplineSample(px, py, sig, v0, v1, v2, x0, x1, y0, y1));
                 }
             }
         }
+
+        float[] p0 = frame.Planes[0];
+        float[] p1 = frame.Planes[1];
+        float[] p2 = frame.Planes[2];
+        int width = frame.Width;
+        parallel.Rows(frame.Height, (top, bottom) =>
+        {
+            foreach (SplineSample d in drawn)
+            {
+                float invSigma = 1 / d.Sigma;
+                for (int y = Math.Max(top, d.Y0); y < Math.Min(bottom, d.Y1); y++)
+                {
+                    float dy = y - d.Y;
+                    for (int x = d.X0; x < d.X1; x++)
+                    {
+                        // The falloff is the same for the three channels, so it is computed once a pixel.
+                        float dx = x - d.X;
+                        float distance = MathF.Sqrt((dx * dx) + (dy * dy));
+                        const float Sqrt0125 = 0.35355338f;
+                        float factor = Erf(((0.5f * distance) + Sqrt0125) * invSigma) - Erf(((0.5f * distance) - Sqrt0125) * invSigma);
+                        int at = (y * width) + x;
+                        p0[at] += 0.25f * d.V0 * d.Sigma * factor * factor;
+                        p1[at] += 0.25f * d.V1 * d.Sigma * factor * factor;
+                        p2[at] += 0.25f * d.V2 * d.Sigma * factor * factor;
+                    }
+                }
+            }
+        });
     }
 
     /// <summary>Gets the points of the centripetal Catmull-Rom spline through the control points, 16 per segment.</summary>
@@ -617,3 +634,6 @@ internal sealed record JxlQuantSpline((long X, long Y)[] Points, long Manhattan,
 
 /// <summary>A frame's splines.</summary>
 internal sealed record JxlSplines(JxlQuantSpline[] Splines, int QuantAdjust);
+
+/// <summary>One drawn point of a spline: its place, width (sigma), color and the window of pixels it reaches.</summary>
+internal readonly record struct SplineSample(float X, float Y, float Sigma, float V0, float V1, float V2, int X0, int X1, int Y0, int Y1);
