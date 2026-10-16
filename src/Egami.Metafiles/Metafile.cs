@@ -203,7 +203,7 @@ public sealed class Metafile
     }
 
     /// <summary>Draws, collecting what playback skipped into <paramref name="report"/>.</summary>
-    internal void DrawCore(Canvas canvas, RectF? box, MetafileRenderOptions options, MetafileReport report)
+    internal void DrawCore(Canvas canvas, RectF? box, MetafileRenderOptions options, MetafileReport report, int depth = 0)
     {
         RectF frame = Frame;
         Matrix3x2 place;
@@ -232,7 +232,7 @@ public sealed class Metafile
         try
         {
             canvas.Concat(place);
-            MetafilePlayer.Play(this, canvas, options, report);
+            MetafilePlayer.Play(this, canvas, options, report, depth);
         }
         finally
         {

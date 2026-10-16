@@ -186,6 +186,8 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Metafile.NoPlaceableHeader` | Warning | A WMF has no placeable header; it is sized by its window extent at 96 DPI (design question 10) (Egami.Metafiles) |
 | `Metafile.RasterOperation` | Warning | A mix mode or raster operation has no Egami equivalent; it is drawn as a copy (design question 7) (Egami.Metafiles) |
 | `Metafile.SkippedRecord` | Warning | Records Egami.Metafiles does not draw (flood fills, OpenGL, escapes, unknown types); they are skipped, once reported per kind (Egami.Metafiles) |
+| `Metafile.TextApproximated` | Warning | An EMF+ DrawString has no layout width; its text is aligned from its origin instead (Egami.Metafiles) |
+| `Metafile.TooDeep` | Warning | A metafile inside a metafile is nested deeper than 8 levels; it is not drawn (design question 12) (Egami.Metafiles) |
 | `Metafile.TruncatedRecord` | Warning | A record claims more bytes than the file or its EMF+ comment holds; reading stops there and the records before it are played (Egami.Metafiles) |
 | `Operation.ChainPlanned` | Info | The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped |
 | `Operation.GainMapDropped` | Warning | A step changed pixel values, or moved them in a way the gain map cannot follow; the gain map was dropped and the image saves as SDR only |

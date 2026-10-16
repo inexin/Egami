@@ -24,13 +24,13 @@ internal sealed partial class GdiPlayer
     private readonly bool _aliased;
 
     /// <summary>Device units to the canvas's device space: reference pixels (EMF) or 1/96 inch (WMF) to the frame's points, then the canvas matrix.</summary>
-    private readonly Matrix3x2 _device;
+    private Matrix3x2 _device;
 
     /// <summary>Gets a value indicating whether <see cref="_device"/> only scales and moves, so aliased drawing can round as GDI does.</summary>
-    private readonly bool _deviceAxisAligned;
+    private bool _deviceAxisAligned;
 
     /// <summary>The scale and offset of <see cref="_device"/>, output pixels per reference device pixel.</summary>
-    private readonly Vector2 _deviceScale, _deviceOffset;
+    private Vector2 _deviceScale, _deviceOffset;
 
     /// <summary>Reference device pixels per millimetre, for the fixed map modes.</summary>
     private readonly Vector2 _pixelsPerMm;
@@ -43,7 +43,7 @@ internal sealed partial class GdiPlayer
     private Matrix3x2? _pageWorld;
     private int _clipToken;
 
-    private GdiPlayer(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report)
+    internal GdiPlayer(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report)
     {
         _content = metafile.Content;
         _data = _content.Data;
@@ -106,15 +106,12 @@ internal sealed partial class GdiPlayer
     public static void Play(Metafile metafile, Canvas canvas, MetafileRenderOptions options, MetafileReport report)
     {
         GdiPlayer player = new(metafile, canvas, options, report);
-        int start = canvas.Save();
+        int start = player.Begin();
         try
         {
-            canvas.SetMatrix(Matrix3x2.Identity);
-            player._clipToken = canvas.Save();
-            List<MetaRecord> records = player._content.Records;
-            for (int i = 0; i < records.Count; i++)
+            foreach (MetaRecord record in player._content.Records)
             {
-                player.PlayRecord(records[i]);
+                player.PlayRecord(record);
             }
 
             player.FlushPending();
@@ -125,7 +122,36 @@ internal sealed partial class GdiPlayer
         }
     }
 
-    private void PlayRecord(MetaRecord record)
+    /// <summary>Gets reference device units to the canvas's device space, which the EMF+ player shares.</summary>
+    internal Matrix3x2 Device => _device;
+
+    /// <summary>
+    /// Puts a transform in device units before the device mapping: the EMF+ player fits GDI+'s inclusive frame this way, so the
+    /// GDI records of GetDC sections land where GDI+ puts them.
+    /// </summary>
+    internal void Refit(Matrix3x2 fit)
+    {
+        _device = fit * _device;
+        _deviceAxisAligned = _device.M12 == 0 && _device.M21 == 0;
+        _deviceScale = new Vector2(_device.M11, _device.M22);
+        _deviceOffset = new Vector2(_device.M31, _device.M32);
+        Changed();
+    }
+
+    /// <summary>Gets the reference device's pixels per millimetre.</summary>
+    internal Vector2 PixelsPerMm => _pixelsPerMm;
+
+    /// <summary>Starts playing: the canvas matrix becomes identity (device space) and the clip has its save. Returns the count to restore to.</summary>
+    internal int Begin()
+    {
+        int start = _canvas.Save();
+        _canvas.SetMatrix(Matrix3x2.Identity);
+        _clipToken = _canvas.Save();
+        return start;
+    }
+
+    /// <summary>Plays one record (the EMF+ player calls this for the GDI records of a GetDC section).</summary>
+    internal void PlayRecord(MetaRecord record)
     {
         ReadOnlySpan<byte> r = _data.AsSpan(record.Offset, record.Size);
         try

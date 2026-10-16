@@ -335,7 +335,7 @@ internal sealed partial class GdiPlayer
     }
 
     /// <summary>Flushes a blit that waited for an idiom that did not come.</summary>
-    private void FlushPending()
+    internal void FlushPending()
     {
         if (_pending is Blit pending)
         {

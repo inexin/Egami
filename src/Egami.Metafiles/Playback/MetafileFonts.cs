@@ -30,6 +30,9 @@ internal sealed class MetafileFonts(MetafileRenderOptions options, MetafileRepor
     };
 
     private readonly FontCollection _fonts = options.Fonts ?? FontCollection.System;
+
+    /// <summary>Gets the collection faces are looked up in.</summary>
+    public FontCollection Collection => _fonts;
     private readonly Dictionary<(string, int, bool), Resolved?> _cache = [];
     private readonly HashSet<string> _warned = new(StringComparer.OrdinalIgnoreCase);
 
