@@ -1,7 +1,9 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.Metafiles.Playback;
 using Egami.Metafiles.Reading;
+using Egami.Pixels;
 
 namespace Egami.Metafiles;
 
@@ -88,6 +90,139 @@ public sealed class Metafile
 
         report.Deliver(context);
         return new Metafile(content, report.Warnings, context);
+    }
+
+    /// <summary>
+    /// Draws the picture on a canvas: in points from the canvas's origin (the frame's corner there), or with its frame stretched
+    /// to <paramref name="box"/> exactly, as Word stretches a picture to its frame (design question 10). Drawing calls only the
+    /// public canvas API, so a raster canvas, a PDF page, SvgCanvas or a PictureRecorder receive the same calls. It never throws
+    /// on content: what it cannot draw is skipped and reported to the context's diagnostics.
+    /// </summary>
+    /// <param name="canvas">The canvas.</param>
+    /// <param name="box">The rectangle to stretch the frame to, in the canvas's coordinates, or <see langword="null"/>.</param>
+    /// <param name="options">Fonts, antialiasing and playback, or <see langword="null"/> for the defaults.</param>
+    public void Draw(Canvas canvas, RectF? box = null, MetafileRenderOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        options ??= MetafileRenderOptions.Default;
+        MetafileReport report = new();
+        Draw(canvas, box, options, report);
+        report.Deliver(options.Context ?? Context);
+    }
+
+    /// <summary>
+    /// Draws the picture into a new raster: at its size at <see cref="MetafileRenderOptions.Dpi"/> (96 by default), or at a
+    /// target width and/or height (the other side keeps the aspect ratio), over <see cref="MetafileRenderOptions.Background"/>.
+    /// </summary>
+    /// <typeparam name="TPixel">The pixel type of the raster.</typeparam>
+    /// <param name="options">The size, background, fonts and playback, or <see langword="null"/> for the defaults.</param>
+    /// <returns>The raster.</returns>
+    /// <exception cref="LimitExceededException">The raster would break the context's size limits.</exception>
+    public Raster<TPixel> Rasterize<TPixel>(MetafileRenderOptions? options = null)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        options ??= MetafileRenderOptions.Default;
+        MetafileReport report = new();
+        Raster<TPixel> raster = Rasterize<TPixel>(options, report);
+        report.Deliver(options.Context ?? Context);
+        return raster;
+    }
+
+    /// <summary>The raster size for the options: the size at the DPI, rounded up, or the width and height asked for.</summary>
+    internal (int Width, int Height) PixelSize(MetafileRenderOptions options)
+    {
+        double w, h;
+        Vector2 size = Size;
+        if (options.Width is int width && options.Height is int height)
+        {
+            (w, h) = (width, height);
+        }
+        else if (options.Width is int onlyWidth)
+        {
+            (w, h) = (onlyWidth, size.X > 0 ? Math.Ceiling(onlyWidth * (double)size.Y / size.X) : onlyWidth);
+        }
+        else if (options.Height is int onlyHeight)
+        {
+            (w, h) = (size.Y > 0 ? Math.Ceiling(onlyHeight * (double)size.X / size.Y) : onlyHeight, onlyHeight);
+        }
+        else
+        {
+            // A hair under a whole pixel is that pixel: the frame's 0.01 mm units rarely land exactly on one.
+            (w, h) = (Math.Ceiling((size.X * (double)options.Dpi / 72) - 1e-3), Math.Ceiling((size.Y * (double)options.Dpi / 72) - 1e-3));
+        }
+
+        return ((int)Math.Clamp(w, 1, int.MaxValue), (int)Math.Clamp(h, 1, int.MaxValue));
+    }
+
+    /// <summary>Rasterizes, collecting what playback skipped into <paramref name="report"/>.</summary>
+    internal Raster<TPixel> Rasterize<TPixel>(MetafileRenderOptions options, MetafileReport report)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        (int w, int h) = PixelSize(options);
+        EgamiContext context = options.Context ?? Context;
+        SafetyLimits limits = context.Limits;
+        if (w > limits.MaxWidth)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxWidth), limits.MaxWidth, w);
+        }
+
+        if (h > limits.MaxHeight)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxHeight), limits.MaxHeight, h);
+        }
+
+        if ((long)w * h > limits.MaxPixels)
+        {
+            throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels, (long)w * h);
+        }
+
+        Raster<TPixel> raster = Raster.Create<TPixel>(w, h, context);
+        using RasterCanvas<TPixel> canvas = raster.CreateCanvas(options.CanvasOptions ?? CanvasOptions.Default);
+        if (options.Background.A > 0)
+        {
+            canvas.Clear(options.Background);
+        }
+
+        Draw(canvas, new RectF(0, 0, w, h), options, report);
+        return raster;
+    }
+
+    /// <summary>Draws, collecting what playback skipped into <paramref name="report"/>.</summary>
+    internal void Draw(Canvas canvas, RectF? box, MetafileRenderOptions options, MetafileReport report)
+    {
+        RectF frame = Frame;
+        Matrix3x2 place;
+        if (box is RectF target)
+        {
+            if (!(frame.Width > 0 && frame.Height > 0 && target.Width > 0 && target.Height > 0))
+            {
+                return;
+            }
+
+            place = Matrix3x2.CreateTranslation(-frame.X, -frame.Y)
+                * Matrix3x2.CreateScale(target.Width / frame.Width, target.Height / frame.Height)
+                * Matrix3x2.CreateTranslation(target.X, target.Y);
+        }
+        else
+        {
+            place = Matrix3x2.CreateTranslation(-frame.X, -frame.Y);
+        }
+
+        if (!float.IsFinite(place.M11) || !float.IsFinite(place.M22) || !float.IsFinite(place.M31) || !float.IsFinite(place.M32))
+        {
+            return;
+        }
+
+        int count = canvas.Save();
+        try
+        {
+            canvas.Concat(place);
+            MetafilePlayer.Play(this, canvas, options, report);
+        }
+        finally
+        {
+            canvas.RestoreToCount(count);
+        }
     }
 
     /// <summary>The frame in points and the DPI of the recorded units.</summary>
