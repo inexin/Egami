@@ -6,8 +6,9 @@ using Egami.Pixels;
 namespace Egami.Formats.Tiff;
 
 /// <summary>
-/// JPEG (7), old-style JPEG (6) and WebP (50001) strips and tiles, each a whole stream for Egami's own decoders: JPEG through the
-/// 1.3 decoder with the page's JPEGTables, WebP through the 2.3.1 reader.
+/// JPEG (7), old-style JPEG (6), WebP (50001) and JPEG XL (50002, and DNG 1.7's 52546) strips and tiles, each a whole stream for
+/// Egami's own decoders: JPEG through the 1.3 decoder with the page's JPEGTables, WebP through the 2.3.1 reader, JPEG XL through
+/// the 2.9.3 one.
 /// </summary>
 internal static class TiffJpeg
 {
@@ -36,6 +37,12 @@ internal static class TiffJpeg
             {
                 input.SetFormat(Webp.WebpFormat.Info);
                 return Webp.WebpFormat.Info.Reader!.Read<TNatural>(input, options);
+            }
+
+            if (page.Compression is TiffCodes.JpegXl or TiffCodes.DngJpegXl)
+            {
+                input.SetFormat(Jxl.JxlFormat.Info);
+                return Jxl.JxlFormat.Info.Reader!.Read<TNatural>(input, ReaderOptions.Default with { ReadMetadata = false, Recovery = options.Recovery });
             }
 
             input.SetFormat(JpegFormat.Info);

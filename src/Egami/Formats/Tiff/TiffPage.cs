@@ -118,8 +118,11 @@ internal sealed class TiffPage
 
     public int SubV { get; private set; } = 1;
 
-    /// <summary>Gets whether the page is YCbCr in data units (subsampled, not JPEG).</summary>
-    public bool Subsampled => Photometric == 6 && (SubH, SubV) != (1, 1) && Compression is not (TiffCodes.Jpeg or TiffCodes.OldJpeg);
+    /// <summary>Gets whether the page is YCbCr in data units (subsampled, not JPEG or JPEG XL, whose decoders give RGB).</summary>
+    public bool Subsampled => Photometric == 6 && (SubH, SubV) != (1, 1) && !Encoded;
+
+    /// <summary>Gets whether each strip or tile is a whole JPEG, WebP or JPEG XL stream, decoded by its own reader.</summary>
+    public bool Encoded => Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl;
 
     public double[] Coefficients { get; private set; } = [0.299, 0.587, 0.114];
 
@@ -323,6 +326,12 @@ internal sealed class TiffPage
             throw new NotSupportedException($"TIFF: WebP compression of {page.Samples} samples of {page.Bits} bits is not read (only 8-bit RGB and RGBA).");
         }
 
+        if (page.Compression is TiffCodes.JpegXl or TiffCodes.DngJpegXl
+            && (page.Planar || page.Photometric is not (1 or 2 or 6) || page.Bits is not (8 or 16 or 32) || (page.Bits == 32 && !page.Float)))
+        {
+            throw new NotSupportedException($"TIFF: JPEG XL compression of {(page.Planar ? "planar " : string.Empty)}{page.Bits}-bit samples with photometric interpretation {page.Photometric} is not read (only chunky gray, RGB or YCbCr, 8 or 16-bit or float).");
+        }
+
         if (page.Subsampled && (page.Bits != 8 || page.Planar || page.Samples != 3))
         {
             throw new NotSupportedException("TIFF: subsampled YCbCr other than 8-bit, chunky and with three samples is not read.");
@@ -343,12 +352,12 @@ internal sealed class TiffPage
     {
         if (Compression is TiffCodes.None or TiffCodes.CcittRle or TiffCodes.CcittGroup3 or TiffCodes.CcittGroup4 or TiffCodes.Lzw
             or TiffCodes.OldJpeg or TiffCodes.Jpeg or TiffCodes.Deflate or TiffCodes.AdobeDeflate or TiffCodes.CcittRleWord
-            or TiffCodes.PackBits or TiffCodes.ThunderScan or TiffCodes.Webp)
+            or TiffCodes.PackBits or TiffCodes.ThunderScan or TiffCodes.Webp or TiffCodes.JpegXl or TiffCodes.DngJpegXl)
         {
             return;
         }
 
-        throw new NotSupportedException(Compression is TiffCodes.Zstd or TiffCodes.Lzma or TiffCodes.Lerc or TiffCodes.JpegXl
+        throw new NotSupportedException(Compression is TiffCodes.Zstd or TiffCodes.Lzma or TiffCodes.Lerc
             ? $"TIFF: compression {Compression} ({TiffCodes.Name(Compression)}) is not read yet; it is added on real demand."
             : $"TIFF: compression {Compression} ({TiffCodes.Name(Compression)}) is not read.");
     }

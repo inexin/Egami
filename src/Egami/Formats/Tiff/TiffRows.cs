@@ -100,8 +100,8 @@ internal sealed class TiffRows<TNatural> : RowSource
         }
     }
 
-    /// <summary>Gets whether units are whole JPEG or WebP streams, decoded by their own readers.</summary>
-    private bool Encoded => _page.Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg or TiffCodes.Webp;
+    /// <summary>Gets whether units are whole JPEG, WebP or JPEG XL streams, decoded by their own readers.</summary>
+    private bool Encoded => _page.Encoded;
 
     /// <summary>
     /// Returns whether a page's rows are read where they lie in the file's memory, with no copy: uncompressed, chunky, its bits in
@@ -111,7 +111,7 @@ internal sealed class TiffRows<TNatural> : RowSource
         && !page.Planar && !page.Reversed && !page.Subsampled && page.Predictor == 1 && (!image.File.BigEndian || page.Bits % 8 != 0 || page.Bits == 8);
 
     /// <summary>Returns whether a page is converted into a band of natural pixels rather than row by row from its raw samples.</summary>
-    private static bool Banded(TiffPage page) => page.Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg or TiffCodes.Webp || page.Subsampled;
+    private static bool Banded(TiffPage page) => page.Encoded || page.Subsampled;
 
     public override int StoredWidth => _pyramid?.Width ?? _page.Width;
 
@@ -135,7 +135,7 @@ internal sealed class TiffRows<TNatural> : RowSource
     internal static long WorkingBytesOf(TiffImage image, TiffPage page)
     {
         long natural = (long)page.Width * page.Layout.BytesPerPixel * page.UnitHeight;
-        long held = page.Compression is TiffCodes.Jpeg or TiffCodes.OldJpeg or TiffCodes.Webp
+        long held = page.Encoded
             ? natural + ((long)page.UnitWidth * page.UnitHeight * page.Layout.BytesPerPixel)
             : page.Subsampled ? natural + page.UnitBytes
             : InPlace(image, page) ? 0
@@ -350,7 +350,7 @@ internal sealed class TiffRows<TNatural> : RowSource
         return _chunky2;
     }
 
-    /// <summary>Decodes a JPEG or WebP strip or tile through its own reader and copies its pixels into the band.</summary>
+    /// <summary>Decodes a JPEG, WebP or JPEG XL strip or tile through its own reader and copies its pixels into the band.</summary>
     private void DecodeEncoded(long unit, int rows, int x0, int columns, Span<byte> target)
     {
         TiffPage page = _page;

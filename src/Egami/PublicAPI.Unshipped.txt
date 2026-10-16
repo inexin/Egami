@@ -3193,3 +3193,5 @@ Egami.Formats.Jxl.JxlWriterOptions.Lossless.get -> bool?
 Egami.Formats.Jxl.JxlWriterOptions.Lossless.init -> void
 static Egami.Formats.Jxl.JxlImage.RecompressJpeg(string! path, string! outputPath, Egami.EgamiContext? context = null) -> void
 static Egami.Formats.Jxl.JxlImage.RecompressJpeg(System.IO.Stream! stream, System.IO.Stream! output, Egami.EgamiContext? context = null) -> void
+Egami.Formats.Tiff.TiffCompression.DngJpegXl = 52546 -> Egami.Formats.Tiff.TiffCompression
+Egami.Formats.Tiff.TiffCompression.JpegXl = 50002 -> Egami.Formats.Tiff.TiffCompression

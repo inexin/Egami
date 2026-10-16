@@ -202,6 +202,9 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   a lossy compression is kept only while the pixels are unchanged. `ParallelCompression` compresses strips and tiles on up to
   `MaxParallelism` threads, with the same bytes. Files are within 1% of the reference library's size at the same settings, and libtiff,
   ImageMagick and Pillow read them all. JPEG compression takes CMYK too, written as libtiff writes separated JPEG.
+- JPEG XL strips and tiles (compression 50002, and DNG 1.7's 52546 for previews and other pages that are not camera RAW) are
+  read through Egami's JPEG XL decoder: chunky gray, RGB and YCbCr pages of 8 or 16-bit or float samples, lossless or lossy,
+  each unit as the same codestream decodes alone (`TiffCompression.JpegXl`, `TiffCompression.DngJpegXl`, read only).
 
 ### WebP
 

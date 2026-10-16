@@ -27,7 +27,8 @@ reduced-resolution pages and SubIFDs come too, each after the page it belongs to
 | ThunderScan | 4-bit gray |
 | SGILog, SGILog24 | LogL and LogLuv pages, as linear `GrayF32` or `RgbF32` |
 | WebP | Lossless and lossy, through Egami's WebP decoder |
-| ZSTD, LZMA, LERC, JPEG XL | Not yet: `NotSupportedException` names the code. Added on real demand |
+| JPEG XL (50002, and DNG 1.7's 52546) | Chunky gray, RGB and YCbCr pages of 8 or 16-bit or float samples, lossless and lossy, through Egami's JPEG XL decoder; each strip or tile as its codestream decodes alone. DNG's camera RAW pages (CFA, LinearRaw) are not read |
+| ZSTD, LZMA, LERC | Not yet: `NotSupportedException` names the code. Added on real demand |
 
 Each page loads in the pixel type that fits it. Depths Egami has no type for widen to the next: 2 and 4 bits to 8, 10 to 14 bits
 to 16, scaled so the maximum stays the maximum; 24 and 32-bit integers and 16 to 64-bit floats load as float types.

@@ -191,6 +191,12 @@ public enum TiffCompression
 
     /// <summary>WebP (50001).</summary>
     Webp = 50001,
+
+    /// <summary>JPEG XL (50002), each strip or tile a JPEG XL codestream or file; read only.</summary>
+    JpegXl = 50002,
+
+    /// <summary>JPEG XL under DNG 1.7's code (52546), for previews and other pages that are not camera RAW; read only.</summary>
+    DngJpegXl = 52546,
 }
 
 /// <summary>The horizontal differencing applied before LZW or Deflate, from the Predictor tag.</summary>

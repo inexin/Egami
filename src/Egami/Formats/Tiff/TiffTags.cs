@@ -113,6 +113,7 @@ internal static class TiffCodes
     internal const int Zstd = 50000;
     internal const int Webp = 50001;
     internal const int JpegXl = 50002;
+    internal const int DngJpegXl = 52546;
 
     /// <summary>Returns a compression code's name for messages.</summary>
     internal static string Name(int code) => code switch
@@ -136,7 +137,7 @@ internal static class TiffCodes
         Lzma => "LZMA",
         Zstd => "ZSTD",
         Webp => "WebP",
-        JpegXl => "JPEG XL",
+        JpegXl or DngJpegXl => "JPEG XL",
         _ => "an unknown scheme",
     };
 }
