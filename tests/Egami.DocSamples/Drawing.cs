@@ -486,4 +486,23 @@ public class Drawing
 
         Assert.Equal(0, avatar.GetPixel(2, 2).A);
     }
+
+    [Fact]
+    public void InkCanvas()
+    {
+        #region ink-canvas
+        // Plates for CMYK and a spot; an RGB photo converts through FOGRA39, the logo prints on its own plate.
+        Egami.Colors.InkSet inks = Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile.Fogra39)
+            .WithSpot("PANTONE 186 C", Egami.Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+        using InkRaster page = new(inks, 300, 200);
+        using (InkCanvas canvas = new(page))
+        {
+            canvas.Clear(Egami.Colors.InkColor.None);                                   // paper
+            canvas.FillRect(new RectF(0, 0, 300, 120), new Rgba8(80, 140, 200, 255));   // RGB: converted to CMYK
+            canvas.FillCircle(new Vector2(150, 100), 40, new SolidPaint(Egami.Colors.InkColor.Spot(inks[4], 1)));
+        }
+        #endregion
+
+        Assert.Equal(255, page.Plate("PANTONE 186 C")!.Row8(100)[150]);
+    }
 }

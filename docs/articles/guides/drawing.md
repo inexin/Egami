@@ -302,6 +302,15 @@ or relative, compact or spaced, to a precision (`SvgPathFormat`).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#pipeline)]
 
+## Printing inks
+
+`InkCanvas` draws into an `InkRaster`'s plates instead of RGB pixels. It shares the raster canvas's rasterizer, clips and layers,
+so shapes, strokes and text cover the same pixels; where the RGB canvas blends colours, it sets each plate. Ink paints print
+their inks by name, and RGB colours, gradients and images convert into the process inks as `InkCanvasOptions` says (the RGB
+encoding, intent and black point compensation). `InkCanvas.Clear(InkColor.None)` leaves blank paper.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#ink-canvas)]
+
 ## Other backends
 
 `Canvas` is abstract. Each public call is checked, tracked (transform, clip bounds, save stack) and then ends in one protected

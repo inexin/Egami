@@ -1,6 +1,23 @@
 #nullable enable
 Egami.Drawing.GradientStop.GradientStop(float offset, Egami.Colors.InkColor! ink) -> void
 Egami.Drawing.GradientStop.Ink.get -> Egami.Colors.InkColor?
+Egami.Drawing.InkCanvas
+Egami.Drawing.InkCanvas.Clear(Egami.Colors.InkColor! ink) -> void
+Egami.Drawing.InkCanvas.InkCanvas(Egami.InkRaster! raster, Egami.Drawing.InkCanvasOptions? options = null) -> void
+Egami.Drawing.InkCanvas.Options.get -> Egami.Drawing.InkCanvasOptions!
+Egami.Drawing.InkCanvas.Raster.get -> Egami.InkRaster!
+Egami.Drawing.InkCanvasOptions
+Egami.Drawing.InkCanvasOptions.<Clone>$() -> Egami.Drawing.InkCanvasOptions!
+Egami.Drawing.InkCanvasOptions.BlackPointCompensation.get -> bool
+Egami.Drawing.InkCanvasOptions.BlackPointCompensation.init -> void
+Egami.Drawing.InkCanvasOptions.Drawing.get -> Egami.Drawing.CanvasOptions!
+Egami.Drawing.InkCanvasOptions.Drawing.init -> void
+Egami.Drawing.InkCanvasOptions.Equals(Egami.Drawing.InkCanvasOptions? other) -> bool
+Egami.Drawing.InkCanvasOptions.InkCanvasOptions() -> void
+Egami.Drawing.InkCanvasOptions.Intent.get -> Egami.Colors.RenderingIntent
+Egami.Drawing.InkCanvasOptions.Intent.init -> void
+Egami.Drawing.InkCanvasOptions.RgbSource.get -> Egami.Colors.ColorProfile!
+Egami.Drawing.InkCanvasOptions.RgbSource.init -> void
 Egami.Drawing.Mesh.Inks.get -> System.ReadOnlyMemory<Egami.Colors.InkColor!>
 Egami.Drawing.Mesh.WithInks(System.ReadOnlySpan<Egami.Colors.InkColor!> inks) -> Egami.Drawing.Mesh!
 Egami.Drawing.Overprint
@@ -14,3 +31,9 @@ Egami.Drawing.Patch.WithInks(System.ReadOnlySpan<Egami.Colors.InkColor!> cornerI
 Egami.Drawing.SolidPaint.Ink.get -> Egami.Colors.InkColor?
 Egami.Drawing.SolidPaint.Ink.init -> void
 Egami.Drawing.SolidPaint.SolidPaint(Egami.Colors.InkColor! ink) -> void
+override Egami.Drawing.InkCanvasOptions.Equals(object? obj) -> bool
+override Egami.Drawing.InkCanvasOptions.GetHashCode() -> int
+override Egami.Drawing.InkCanvasOptions.ToString() -> string!
+static Egami.Drawing.InkCanvasOptions.Default.get -> Egami.Drawing.InkCanvasOptions!
+static Egami.Drawing.InkCanvasOptions.operator !=(Egami.Drawing.InkCanvasOptions? left, Egami.Drawing.InkCanvasOptions? right) -> bool
+static Egami.Drawing.InkCanvasOptions.operator ==(Egami.Drawing.InkCanvasOptions? left, Egami.Drawing.InkCanvasOptions? right) -> bool

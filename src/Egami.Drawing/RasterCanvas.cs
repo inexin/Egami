@@ -47,14 +47,23 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     }
 
     internal RasterCanvas(PixelPlane<TPixel> plane, EgamiContext context, CanvasOptions? options)
-        : base(plane.Width, plane.Height)
+        : this(new RasterTarget<TPixel>(plane), context, options)
+    {
+    }
+
+    /// <summary>Initializes a new instance over any target, such as an ink raster's planes; <typeparamref name="TPixel"/> is then only the type images are read in.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="ink-canvas"/>
+    /// </example>
+    internal RasterCanvas(RasterTarget target, EgamiContext context, CanvasOptions? options)
+        : base(target.Area.Width, target.Area.Height)
     {
         _context = context;
         Options = options ?? CanvasOptions.Default;
         _rasterizer = new CoverageRasterizer(context.Memory, context.MaxParallelism);
         _tools = new DrawTools(_rasterizer, _edges, Options, context);
-        _target = new RasterTarget<TPixel>(plane);
-        _clip = new ClipState(new Rect(0, 0, plane.Width, plane.Height), null);
+        _target = target;
+        _clip = new ClipState(target.Area, null);
     }
 
     /// <summary>Gets the canvas's settings.</summary>
