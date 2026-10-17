@@ -10,6 +10,9 @@ internal sealed record JxlLossySettings
     internal int Effort { get; init; } = 5;
 
     internal int Parallelism { get; init; } = Environment.ProcessorCount;
+
+    /// <summary>Gets the ISO of the photon noise the decoder adds, or 0 for none.</summary>
+    internal float PhotonNoiseIso { get; init; }
 }
 
 /// <summary>
@@ -115,18 +118,33 @@ internal sealed class JxlVarDctEncoder
     private float[][]? _patchReference;
     private int _patchWidth;
 
+    // The frame's upsampling (2 at libjxl's low-bitrate point) and the distance asked for, which sets the X matrix scale.
+    private readonly int _upsampling;
+    private readonly float _originalDistance;
+    private readonly (float Dx, float Db, float ExposedBlue) _pixelStats;
+    private readonly float[]? _noise;
+
     private int _globalScale;
     private int _quantDc;
     private int _xQmScale;
     private int _bQmScale;
     private int _epfIterations;
 
-    private JxlVarDctEncoder(JxlLinearImage image, JxlLossySettings settings, float intensityTarget)
+    private JxlVarDctEncoder(JxlLinearImage image, JxlLossySettings settings, float intensityTarget, int upsampling, float originalDistance)
     {
         _settings = settings;
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, settings.Parallelism) };
-        _width = image.Width;
-        _height = image.Height;
+        _upsampling = upsampling;
+        _originalDistance = originalDistance;
+        int fullWidth = Ceil(image.Width, 8) * 8, fullHeight = Ceil(image.Height, 8) * 8;
+        float[][] xyb = Pad(image, intensityTarget, fullWidth, fullHeight, _parallel);
+        if (Speed >= 7)
+        {
+            _pixelStats = PixelStats(xyb, fullWidth, fullHeight);
+        }
+
+        _width = Ceil(image.Width, upsampling);
+        _height = Ceil(image.Height, upsampling);
         _blocksX = Ceil(_width, 8);
         _blocksY = Ceil(_height, 8);
         _groupsX = Ceil(_width, GroupDim);
@@ -150,7 +168,197 @@ internal sealed class JxlVarDctEncoder
             _lfQuant[c] = new int[blocks];
         }
 
-        _xyb = Pad(image, intensityTarget, _blocksX * 8, _blocksY * 8, _parallel);
+        if (upsampling == 2)
+        {
+            // DownsampleImage2_Sharper of the padded planes, padded again to whole blocks.
+            int hw = fullWidth / 2, hh = fullHeight / 2;
+            int pw = _blocksX * 8, ph = _blocksY * 8;
+            for (int c = 0; c < 3; c++)
+            {
+                float[] small = DownsampleSharper(xyb[c], fullWidth, fullHeight, _parallel);
+                float[] padded = new float[pw * ph];
+                for (int y = 0; y < ph; y++)
+                {
+                    Span<float> row = padded.AsSpan(y * pw, pw);
+                    small.AsSpan(Math.Min(y, hh - 1) * hw, Math.Min(hw, pw)).CopyTo(row);
+                    row[Math.Min(hw, pw)..].Fill(row[Math.Min(hw, pw) - 1]);
+                }
+
+                xyb[c] = padded;
+            }
+        }
+
+        _xyb = xyb;
+        if (settings.PhotonNoiseIso > 0)
+        {
+            _noise = SimulatePhotonNoise(_width, _height, settings.PhotonNoiseIso);
+        }
+    }
+
+    /// <summary>
+    /// libjxl's SimulatePhotonNoise: the noise of a 35 mm sensor at <paramref name="iso"/> spread over the frame's pixels (read
+    /// noise, shot noise and response non-uniformity), as the noise LUT over intensity.
+    /// </summary>
+    internal static float[] SimulatePhotonNoise(int xsize, int ysize, float iso)
+    {
+        const float PhotonsPerLxSPerUm2 = 11260;
+        const float QuantumEfficiency = 0.20f;
+        const float NonUniformity = 0.005f;
+        const float ReadNoise = 3;
+        const float SensorAreaUm2 = 36000.0f * 24000;
+        const float Bias = 0.0037930732552754493f;
+        float biasCbrt = MathF.Cbrt(Bias);
+        float h18 = 10 / iso;
+        float pixelArea = SensorAreaUm2 / ((float)xsize * ysize);
+        float electrons18 = QuantumEfficiency * PhotonsPerLxSPerUm2 * h18 * pixelArea;
+        float[] lut = new float[8];
+        for (int i = 0; i < 8; i++)
+        {
+            float scaled = i / (8 - 2.0f);
+            float y = 2 * scaled;
+            float t = y - biasCbrt;
+            float linear = MathF.Max(0.0f, (t * t * t) + Bias);
+            float electrons = electrons18 * (linear / 0.18f);
+            float noise = MathF.Sqrt((ReadNoise * ReadNoise) + electrons + (NonUniformity * electrons * NonUniformity * electrons));
+            float linearNoise = noise * (0.18f / electrons18);
+            float cb = MathF.Cbrt(linear - Bias);
+            float derivative = (1.0f / 3) / (cb * cb);
+            lut[i] = Math.Clamp(linearNoise * derivative / (0.22f * MathF.Sqrt(2.0f) * 1.13f), 0.0f, 1023.4999f / 1024.0f);
+        }
+
+        return lut;
+    }
+
+    /// <summary>
+    /// libjxl's PixelStatsForChromacityAdjustment at effort 7, on the full padded XYB: the largest step of X between neighbours,
+    /// and of B − Y, and the largest exposed blue (B above 1.2 Y) weighted by its steps.
+    /// </summary>
+    private static (float Dx, float Db, float ExposedBlue) PixelStats(float[][] xyb, int width, int height)
+    {
+        float xmax = 0, ymax = 0;
+        float eb = 0, bx = 0, by = 0;
+        for (int ty = 1; ty < height; ty++)
+        {
+            int row = ty * width, prow = (ty - 1) * width;
+            for (int tx = 1; tx < width; tx++)
+            {
+                float cur = xyb[0][row + tx];
+                xmax = MathF.Max(xmax, MathF.Abs(cur - xyb[0][row + tx - 1]));
+                ymax = MathF.Max(ymax, MathF.Abs(cur - xyb[0][prow + tx]));
+                float cy = xyb[1][row + tx], cb = xyb[2][row + tx];
+                float exposed = (float)(cb - (cy * 1.2));
+                float diff = cb - cy;
+                float prevRow = xyb[2][prow + tx], prev = xyb[2][row + tx - 1];
+                float diffPrevRow = prevRow - xyb[1][prow + tx];
+                float diffPrev = prev - xyb[1][row + tx - 1];
+                bx = MathF.Max(bx, MathF.Abs(diff - diffPrev));
+                by = MathF.Max(by, MathF.Abs(diff - diffPrevRow));
+                if (exposed >= 0)
+                {
+                    exposed *= MathF.Abs(cb - prev) + MathF.Abs(cb - prevRow);
+                    eb = MathF.Max(eb, exposed);
+                }
+            }
+        }
+
+        return (MathF.Max(xmax, ymax), MathF.Max(bx, by), eb);
+    }
+
+    /// <summary>
+    /// libjxl's DownsampleImage2_Sharper: a 12×12 kernel fitted to the decoder's 2× upsampling, each result clamped to the range
+    /// of the 2×2 source pixels it covers widened by the second smallest step around it in the box-downsampled image.
+    /// </summary>
+    private static float[] DownsampleSharper(float[] input, int xsize, int ysize, ParallelOptions parallel)
+    {
+        int ow = (xsize + 1) / 2, oh = (ysize + 1) / 2;
+        float[] box = new float[ow * oh];
+        for (int y = 0; y < oh; y++)
+        {
+            for (int x = 0; x < ow; x++)
+            {
+                int cnt = 0;
+                float sum = 0;
+                for (int iy = 0; iy < 2 && iy + (2 * y) < ysize; iy++)
+                {
+                    for (int ix = 0; ix < 2 && ix + (2 * x) < xsize; ix++)
+                    {
+                        sum += input[(((2 * y) + iy) * xsize) + (2 * x) + ix];
+                        cnt++;
+                    }
+                }
+
+                box[(y * ow) + x] = sum / cnt;
+            }
+        }
+
+        float[] mask = new float[ow * oh];
+        for (int y = 0; y < oh; y++)
+        {
+            int n = (y > 0 ? y - 1 : y) * ow, row = y * ow, s = (y + 1 < oh ? y + 1 : y) * ow;
+            for (int x = 0; x < ow; x++)
+            {
+                float c = box[row + x];
+                float w = x > 0 ? box[row + x - 1] : c;
+                float e = x + 1 < ow ? box[row + x + 1] : c;
+                float min = float.MaxValue, min2 = float.MaxValue;
+                foreach (float v in (ReadOnlySpan<float>)[MathF.Abs(c - w), MathF.Abs(c - e), MathF.Abs(c - box[n + x]), MathF.Abs(c - box[s + x])])
+                {
+                    if (v < min2)
+                    {
+                        if (v < min)
+                        {
+                            min2 = min;
+                            min = v;
+                        }
+                        else
+                        {
+                            min2 = v;
+                        }
+                    }
+                }
+
+                mask[row + x] = min2;
+            }
+        }
+
+        float[] output = new float[ow * oh];
+        Parallel.For(0, oh, parallel, y =>
+        {
+            Span<int> rows = stackalloc int[12];
+            for (int ky = 0; ky < 12; ky++)
+            {
+                rows[ky] = Math.Clamp((y * 2) + ky - 5, 0, ysize - 1) * xsize;
+            }
+
+            for (int x = 0; x < ow; x++)
+            {
+                // libjxl starts the maximum at the smallest positive float.
+                float min = float.MaxValue, max = 1.17549435E-38f;
+                for (int ky = 5; ky + 5 < 12; ky++)
+                {
+                    for (int kx = 5; kx + 5 < 12; kx++)
+                    {
+                        float v = input[rows[ky] + Math.Clamp((x * 2) + kx - 5, 0, xsize - 1)];
+                        min = MathF.Min(min, v);
+                        max = MathF.Max(max, v);
+                    }
+                }
+
+                float sum = 0;
+                for (int ky = 0; ky < 12; ky++)
+                {
+                    for (int kx = 0; kx < 12; kx++)
+                    {
+                        sum += input[rows[ky] + Math.Clamp((x * 2) + kx - 5, 0, xsize - 1)] * SharperKernel[(ky * 12) + kx];
+                    }
+                }
+
+                float a = mask[(y * ow) + x];
+                output[(y * ow) + x] = sum < min - a ? min - a : sum > max + a ? max + a : sum;
+            }
+        });
+
+        return output;
     }
 
     private int Speed => Math.Clamp(_settings.Effort, 1, 7);
@@ -158,7 +366,16 @@ internal sealed class JxlVarDctEncoder
     /// <summary>Encodes the image as a bare codestream: the image header from <paramref name="header"/>, then one VarDCT frame.</summary>
     internal static byte[] Encode(JxlLinearImage image, JxlEncodeInput header, JxlLossySettings settings, float intensityTarget = 255)
     {
-        JxlVarDctEncoder e = new(image, settings, intensityTarget);
+        // libjxl's low-bitrate point: from distance 10 the frame is coded at half size, at a quarter of the distance plus 0.25.
+        float original = settings.Distance;
+        int upsampling = 1;
+        if (original >= 10)
+        {
+            upsampling = 2;
+            settings = settings with { Distance = (original * 0.25f) + 0.25f };
+        }
+
+        JxlVarDctEncoder e = new(image, settings, intensityTarget, upsampling, original);
         e.ChooseParameters();
         e.ComputeCoefficients();
         e.QuantizeLf();
@@ -205,6 +422,34 @@ internal sealed class JxlVarDctEncoder
     }
 
     private static int Ceil(int a, int b) => (a + b - 1) / b;
+
+    private static readonly float[] SharperKernel =
+    [
+        -0.000314256996835f, -0.000314256996835f, -0.000897597057705f, -0.000562751488849f, -0.000176807273646f, 0.001864627368902f,
+        0.001864627368902f, -0.000176807273646f, -0.000562751488849f, -0.000897597057705f, -0.000314256996835f, -0.000314256996835f,
+        -0.000314256996835f, -0.001527942804748f, -0.000121760530512f, 0.000191123989093f, 0.010193185932466f, 0.058637519197110f,
+        0.058637519197110f, 0.010193185932466f, 0.000191123989093f, -0.000121760530512f, -0.001527942804748f, -0.000314256996835f,
+        -0.000897597057705f, -0.000121760530512f, 0.000946363683751f, 0.007113577630288f, 0.000437956841058f, -0.000372823835211f,
+        -0.000372823835211f, 0.000437956841058f, 0.007113577630288f, 0.000946363683751f, -0.000121760530512f, -0.000897597057705f,
+        -0.000562751488849f, 0.000191123989093f, 0.007113577630288f, 0.044592622228814f, 0.000222278879007f, -0.162864473015945f,
+        -0.162864473015945f, 0.000222278879007f, 0.044592622228814f, 0.007113577630288f, 0.000191123989093f, -0.000562751488849f,
+        -0.000176807273646f, 0.010193185932466f, 0.000437956841058f, 0.000222278879007f, -0.000913092543974f, -0.017071696107902f,
+        -0.017071696107902f, -0.000913092543974f, 0.000222278879007f, 0.000437956841058f, 0.010193185932466f, -0.000176807273646f,
+        0.001864627368902f, 0.058637519197110f, -0.000372823835211f, -0.162864473015945f, -0.017071696107902f, 0.414660099370354f,
+        0.414660099370354f, -0.017071696107902f, -0.162864473015945f, -0.000372823835211f, 0.058637519197110f, 0.001864627368902f,
+        0.001864627368902f, 0.058637519197110f, -0.000372823835211f, -0.162864473015945f, -0.017071696107902f, 0.414660099370354f,
+        0.414660099370354f, -0.017071696107902f, -0.162864473015945f, -0.000372823835211f, 0.058637519197110f, 0.001864627368902f,
+        -0.000176807273646f, 0.010193185932466f, 0.000437956841058f, 0.000222278879007f, -0.000913092543974f, -0.017071696107902f,
+        -0.017071696107902f, -0.000913092543974f, 0.000222278879007f, 0.000437956841058f, 0.010193185932466f, -0.000176807273646f,
+        -0.000562751488849f, 0.000191123989093f, 0.007113577630288f, 0.044592622228814f, 0.000222278879007f, -0.162864473015945f,
+        -0.162864473015945f, 0.000222278879007f, 0.044592622228814f, 0.007113577630288f, 0.000191123989093f, -0.000562751488849f,
+        -0.000897597057705f, -0.000121760530512f, 0.000946363683751f, 0.007113577630288f, 0.000437956841058f, -0.000372823835211f,
+        -0.000372823835211f, 0.000437956841058f, 0.007113577630288f, 0.000946363683751f, -0.000121760530512f, -0.000897597057705f,
+        -0.000314256996835f, -0.001527942804748f, -0.000121760530512f, 0.000191123989093f, 0.010193185932466f, 0.058637519197110f,
+        0.058637519197110f, 0.010193185932466f, 0.000191123989093f, -0.000121760530512f, -0.001527942804748f, -0.000314256996835f,
+        -0.000314256996835f, -0.000314256996835f, -0.000897597057705f, -0.000562751488849f, -0.000176807273646f, 0.001864627368902f,
+        0.001864627368902f, -0.000176807273646f, -0.000562751488849f, -0.000897597057705f, -0.000314256996835f, -0.000314256996835f,
+    ];
 
     private static int CeilLog2(long x) => x <= 1 ? 0 : 64 - System.Numerics.BitOperations.LeadingZeroCount((ulong)(x - 1));
 
@@ -329,16 +574,21 @@ internal sealed class JxlVarDctEncoder
 
         Array.Fill(_epfSharpness, (byte)4);
 
+        // ComputeChromacityAdjustments: the X scale from the distance asked for, both raised for pixelized chroma at effort 7.
         _xQmScale = 3;
         foreach (float step in (ReadOnlySpan<float>)[2.5f, 5.5f, 9.5f])
         {
-            if (d > step)
+            if (_originalDistance > step)
             {
                 _xQmScale++;
             }
         }
 
-        _bQmScale = 2;
+        (float dx, float db, float exposedBlue) = _pixelStats;
+        int xAdd = dx >= 0.026f ? 3 : dx >= 0.022f ? 2 : dx >= 0.015f ? 1 : 0;
+        int bAdd = exposedBlue >= 0.13f ? 1 : 0;
+        _xQmScale = Math.Max(_xQmScale, 2 + xAdd);
+        _bQmScale = 2 + (db > 0.38f ? 2 + bAdd : db > 0.33f ? 1 + bAdd : db > 0.28f ? bAdd : 0);
         _epfIterations = _epfIterationsFor(d);
     }
 
@@ -687,6 +937,11 @@ internal sealed class JxlVarDctEncoder
             float sharp = filter.SharpLut[val];
             JxlFilters.Epf(planes, _width, _height, _width, filter, (bx, by) => sigmaBase / _quantField[(by * _blocksX) + bx] * sharp, parallel);
             AddPatches(planes, _width, 1);
+            if (_noise is not null && _upsampling == 1)
+            {
+                // libjxl's reconstruction renders the noise too, as a first frame.
+                JxlFeatures.RenderNoise(new JxlPlanes(_width, _height, planes), _noise, GroupDim, 0, 0, 0, 1);
+            }
             float[] error = new float[_blocksX * _blocksY];
             Parallel.For(0, _blocksY, _parallel, by =>
             {
@@ -1712,8 +1967,8 @@ internal sealed class JxlVarDctEncoder
         w.WriteBool(false);
         w.Write(0, 2); // regular frame
         w.Write(0, 1); // VarDCT
-        w.WriteU64(_patches is null ? 0UL : 2UL); // patches, or no flags
-        w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1); // upsampling
+        w.WriteU64((_patches is null ? 0UL : 2UL) | (_noise is null ? 0UL : 1UL)); // patches, noise
+        w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
         w.Write((ulong)_xQmScale, 3);
         w.Write((ulong)_bQmScale, 3);
         w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 3), 1); // one pass
@@ -1818,6 +2073,11 @@ internal sealed class JxlVarDctEncoder
         if (_patches is not null)
         {
             WritePatches(global);
+        }
+
+        foreach (float v in _noise ?? [])
+        {
+            global.Write((ulong)Math.Round(v * 1024.0f, MidpointRounding.AwayFromZero), 10);
         }
 
         global.WriteBool(true); // default LF dequantization

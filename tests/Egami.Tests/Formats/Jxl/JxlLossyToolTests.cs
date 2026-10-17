@@ -8,7 +8,8 @@ namespace Egami.Tests.Formats.Jxl;
 /// Phase 2.9.7 tasks 6 to 8: the lossy encoder's visual tools. Adaptive quantization gives flat areas finer steps than texture;
 /// chroma from luma finds the factor that predicts chroma from luma; the inverse Gaborish and the decoder's Gaborish leave
 /// smooth content where it was; the block-size search merges smooth areas into large DCTs and keeps detail in 8×8 transforms;
-/// effort 5 files, which use them all, decode; at effort 7 repeated glyphs become one patch and dots are found. Equality with libjxl's choices was checked with docker/jxldev in egami-compare,
+/// effort 5 files, which use them all, decode; at effort 7 repeated glyphs become one patch and dots are found;
+/// photon noise follows libjxl's model, and from distance 10 the frame is coded at half size. Equality with libjxl's choices was checked with docker/jxldev in egami-compare,
 /// the size against cjxl at efforts 5 to 7 is egami-compare's.
 /// </summary>
 public class JxlLossyToolTests
@@ -249,6 +250,44 @@ public class JxlLossyToolTests
         Assert.Equal(3, found.Count);
         Assert.All(found.Zip(dots), p => Assert.InRange(p.Second.X - p.First.Positions[0].X, 0, 3));
         Assert.All(found, p => Assert.True(p.Width <= 4 && p.Height <= 4 && p.Values[1].Max() > 0.1f));
+    }
+
+    [Fact]
+    public void PhotonNoiseMatchesLibjxl()
+    {
+        // libjxl 0.12.0's SimulatePhotonNoise for 768×512 at ISO 3200 and 100×80 at ISO 400 (docker/jxldev's noise_dump).
+        float[] big = [0.00136132655f, 0.0101088202f, 0.00522386003f, 0.00535636162f, 0.00634086551f, 0.00763785467f, 0.00906591304f, 0.0105560869f];
+        float[] small = [3.46504839e-06f, 0.00149894273f, 0.00250075758f, 0.00403045537f, 0.00559647148f, 0.0071707801f, 0.00874798372f, 0.0103264526f];
+        Assert.Equal(big, JxlVarDctEncoder.SimulatePhotonNoise(768, 512, 3200), (a, b) => MathF.Abs(a - b) <= 1e-6f * MathF.Max(1, b * 1e3f));
+        Assert.Equal(small, JxlVarDctEncoder.SimulatePhotonNoise(100, 80, 400), (a, b) => MathF.Abs(a - b) <= 1e-6f * MathF.Max(1, b * 1e3f));
+
+        using Raster<Rgb8> source = Raster.Load<Rgb8>(Path.Combine(Images, "ops", "egret.png"));
+        using MemoryStream file = new();
+        source.Save(file, JxlFormat.Info, new JxlWriterOptions { Lossless = false, Effort = 5, PhotonNoiseIso = 6400 });
+        using Raster<Rgb8> noisy = Raster.Load<Rgb8>(file.ToArray());
+        using Raster<Rgb8> clean = Raster.Load<Rgb8>(Save(source, 5));
+        double psnr = Psnr(clean, noisy);
+        Assert.InRange(psnr, 20, 60);
+    }
+
+    [Fact]
+    public void LowBitratesCodeAHalfSizeFrame()
+    {
+        using Raster<Rgb8> source = Raster.Load<Rgb8>(Path.Combine(Images, "ops", "egret.png"));
+        // As with cjxl, distance 10 on half the pixels (distance 2.75 there) is larger than 9.9 on all of them for this picture.
+        byte[] d10 = SaveAt(source, 10f);
+        byte[] d25 = SaveAt(source, 25f);
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(d10);
+        Assert.Equal((source.Width, source.Height), (back.Width, back.Height));
+        Assert.True(d25.Length < d10.Length, $"distance 25 {d25.Length} bytes, distance 10 {d10.Length}");
+        Assert.True(Psnr(source, back) > 22, $"PSNR {Psnr(source, back):F1}");
+    }
+
+    private static byte[] SaveAt(Raster<Rgb8> raster, float distance)
+    {
+        using MemoryStream file = new();
+        raster.Save(file, JxlFormat.Info, new JxlWriterOptions { Lossless = false, Effort = 5, Distance = distance });
+        return file.ToArray();
     }
 
     private static byte[] Save(Raster<Rgb8> raster, int effort)

@@ -311,7 +311,13 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 Icc = icc,
                 Orientation = orientation,
             };
-            JxlLossySettings settings = new() { Distance = options.EffectiveDistance, Effort = options.Effort, Parallelism = start.Context.MaxParallelism };
+            JxlLossySettings settings = new()
+            {
+                Distance = options.EffectiveDistance,
+                Effort = options.Effort,
+                Parallelism = start.Context.MaxParallelism,
+                PhotonNoiseIso = options.PhotonNoiseIso ?? 0,
+            };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
@@ -434,6 +440,7 @@ public sealed class JxlWriterOptions : WriterOptions
     private readonly int _effort = 5;
     private readonly int _quality = 90;
     private readonly float? _distance;
+    private readonly float? _photonNoiseIso;
 
     /// <summary>Gets the default options.</summary>
     public static new JxlWriterOptions Default { get; } = new();
@@ -499,6 +506,26 @@ public sealed class JxlWriterOptions : WriterOptions
             }
 
             _distance = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the ISO speed of film-like photon noise the decoder adds to lossy images, as cjxl --photon_noise_iso takes it (for
+    /// example 3200 for a grainy look); the noise depends on the image size like a 35 mm sensor's. Defaults to
+    /// <see langword="null"/>, no noise. Lossless files ignore it.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not a positive number up to 10⁷.</exception>
+    public float? PhotonNoiseIso
+    {
+        get => _photonNoiseIso;
+        init
+        {
+            if (value is float iso && !(iso > 0 && iso <= 1e7f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), iso, "The photon noise ISO must be above 0 and at most 10⁷.");
+            }
+
+            _photonNoiseIso = value;
         }
     }
 
