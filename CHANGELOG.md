@@ -244,7 +244,6 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   `DitherStrength`, `Serpentine`, `RefineIterations` (k-means polish), `ExactMatching` and a custom `ErrorDiffusionKernel`.
   `Posterize` takes every mode. Defaults are unchanged: every file 1.x wrote stays the same byte for byte.
 - `Raster.DominantColors`: the main colors with their shares, by k-means in Oklab seeded by Wu's palette, the same on every run.
-- Quantizing a 12-megapixel photo is 2.5 to 4 times faster than the reference library 3.1 with the same dither.
 
 ### Animation tools
 
@@ -291,7 +290,7 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   predictors, strips or tiles, classic or BigTIFF (`Layout`), and `Reduce` for the smallest exact form (1-bit, gray, palette).
   Each pixel type is written at its own depth. A TIFF source's compression, predictor, layout and byte order are kept unless set;
   a lossy compression is kept only while the pixels are unchanged. `ParallelCompression` compresses strips and tiles on up to
-  `MaxParallelism` threads, with the same bytes. Files are within 1% of the reference library's size at the same settings, and libtiff,
+  `MaxParallelism` threads, with the same bytes. libtiff,
   ImageMagick and Pillow read them all. JPEG compression takes CMYK too, written as libtiff writes separated JPEG.
 - JPEG XL strips and tiles (compression 50002, and DNG 1.7's 52546 for previews and other pages that are not camera RAW) are
   read through Egami's JPEG XL decoder: chunky gray, RGB and YCbCr pages of 8 or 16-bit or float samples, lossless or lossy,
@@ -304,9 +303,8 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   level (`YuvRaster.Load` returns the planes); animations compose every frame as libwebp's animation decoder does. Every kind
   streams through `RasterDecoder`, incrementally too, and an animation holds one canvas whatever its frame count.
 - `WebpWriterOptions`: `Lossless` (by default a WebP source keeps its kind and anything else is lossy), `Quality` and `Effort` with
-  cwebp's meanings, `AlphaQuality`, `KeepTransparentColors`, `SharpYuv`, `NearLossless`, `MixedFrames` and `FirstFrameOnly`. At
-  quality 75 and effort 4 lossy files are the reference library's size at the same quality, written twice as fast; lossless files are 4 to 9%
-  smaller than the reference library's at every effort. Animations store changed rectangles; a GIF or APNG converts with Load and Save.
+  cwebp's meanings, `AlphaQuality`, `KeepTransparentColors`, `SharpYuv`, `NearLossless`, `MixedFrames` and `FirstFrameOnly`.
+  Animations store changed rectangles; a GIF or APNG converts with Load and Save.
 - `WebpReaderOptions.UseBackgroundColor` starts animations from the ANIM color, and `FastUpsampling` repeats chroma samples.
   `WebpDetails` and `WebpFrameDetails` say what a file held and keep unknown chunks (`WebpChunk`, `WebpChunkPosition`) for round
   trips. ICC, EXIF and XMP are read and written; the resolution travels in EXIF.
@@ -385,8 +383,7 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   linear light as an option); only the overlap changes. `SourceOver` on stored values gives exactly what 1.0's `DrawImage` gives.
 - On 8-bit rasters the Porter–Duff operators, Plus, Modulate and the product-and-sum modes are exact integer math, equal bit for
   bit to the W3C formulas rounded to nearest; ColorDodge, ColorBurn, SoftLight and the non-separable modes are within a level,
-  with alpha exact. Every mode is within a level of SkiaSharp (two for Difference and Exclusion, where Skia rounds) and within
-  two levels of the reference library's modes.
+  with alpha exact. Every mode is within a level of SkiaSharp (two for Difference and Exclusion, where Skia rounds).
 - `BlendColor` blends one color over every pixel (tint with Multiply, colorize with Color). `DrawArithmetic` draws with SVG's
   arithmetic composite, k1·S·D + k2·S + k3·D + k4.
 - `Compositor.Blend` blends spans of any pixel type, with per-pixel coverage for antialiased edges or one color through coverage,
@@ -530,8 +527,8 @@ Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same previ
   `TextLayout.Decorations`; `TextLayout.ToPath` writes glyphs and decorations to an outline sink.
 - Gates: line breaks, line boxes, glyph origins, intrinsic widths, ellipses, hit tests, carets, selections and decoration ink
   equal headless Chromium 129's on a corpus of eleven scripts at five widths and the feature cases (the few differences are
-  Chromium's own, listed in the tests). Breaking 1 MB of mixed text takes 17 ms against the reference font library 2.1.3's 2.6 s;
-  a 2,000-word page at three widths 7.8 ms against 118 ms; 10,000 hit tests 19 ms against 196 ms.
+  Chromium's own, listed in the tests). Breaking 1 MB of mixed text takes 17 ms;
+  a 2,000-word page at three widths 7.8 ms; 10,000 hit tests 19 ms.
 - Fuzz target `paragraph`, and a robustness suite on the same harness.
 
 ### Egami.Drawing 1.0.1
@@ -596,9 +593,8 @@ OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's, in the sam
   `SubsetOptions.LayoutClosure` keeps it and the layout tables, for subsets that are shaped again.
 - Gates: glyphs, clusters, positions and flags equal hb-shape 14.5.1's on all 276 AOTS tests, 4,974 of HarfBuzz's 4,987
   in-house tests (the rest test fonts without outlines, the Zawgyi encoding, repeated axis tags, other shapers and output Egami
-  leaves out) and 24 corpus runs in 15 scripts; the closure equals HarfBuzz's on 1,116 cases. Shaping is faster than
-  the reference font library 2.1.3 on English, Arabic and Hindi pages (3.7, 7.5 and 13.4 against 41, 64 and 269 ms) and about half
-  HarfBuzzSharp's speed.
+  leaves out) and 24 corpus runs in 15 scripts; the closure equals HarfBuzz's on 1,116 cases. Shaping English, Arabic and
+  Hindi pages takes 3.7, 7.5 and 13.4 ms, about half HarfBuzzSharp's speed.
 - Fuzz targets `shaping` and `bidi`.
 - From the API review: a font with no glyph data (a subset made for shaping) loads with empty glyphs and a `Font.MissingTable`
   warning; `WithVariations` sets every axis of a repeated tag; the cmap subtable is chosen as HarfBuzz chooses it (a symbol
@@ -617,8 +613,7 @@ Web, variable and color fonts, in the same preview package. See [Variable fonts]
 - WOFF and WOFF2 load wherever TrueType and OpenType do (`Typeface.FromFile`, `FromMemory`, `FontLoader`, `FontCollection`
   directory scans): WOFF with the BCL's zlib, WOFF2 with its Brotli decoder and the glyf, loca and hmtx transforms, WOFF2
   collections too. `Typeface.Container` says which container a face came in; `GetWoffMetadata` and `GetWoffPrivateData` return the
-  extra blocks. Every decoded table equals fontTools' and the reference woff2 decoder's. Four WOFF2 files load in 15 to 21 ms
-  against the reference font library 2.1.3's 31 to 69.
+  extra blocks. Every decoded table equals fontTools' and the reference woff2 decoder's. Four WOFF2 files load in 15 to 21 ms.
 - Variable fonts: `Typeface.VariationAxes` (`VariationAxis`), `NamedInstances` (`NamedInstance`), `IsVariable`, `Variations`, and
   `WithVariations` and `WithNamedInstance`, which return a face at a position sharing the font's memory (positions are cached).
   `FontVariation` with `Weight`, `Width`, `Slant`, `Italic` and `OpticalSize`; avar 1 and 2; gvar with shared and private points,
@@ -670,7 +665,7 @@ Text quality, text on a path and color glyphs. See [Rendering quality](docs/arti
   a mean level of SkiaSharp's own drawing at 24 to 96 pixels, sbix and CBDT within 2. Aliased, LCD, light-hinted and synthetic text
   are recorded against SkiaSharp's nearest settings.
 - Speed (ms, 1 thread): a 2,000-word page in Roboto Flex at 16 pixels draws in 20 at its default and at weight 700, width 75 alike;
-  a page of 500 COLR v0 emoji in 2.7 cold and 1.6 warm against the reference drawing library 2.1.7's 60, and of COLR v1 emoji in 15 cold and
+  a page of 500 COLR v0 emoji in 2.7 cold and 1.6 warm, and of COLR v1 emoji in 15 cold and
   2.1 warm; plain text is within 10% of 2.7.1 (11.0 against 10.7 at 12 pixels).
 - Fixed: a curve under a transform so large that rounding split it again and again overflowed the stack.
 
@@ -685,8 +680,7 @@ and [the .egdr format](docs/articles/guides/egdr-format.md).
   meet without seams, each sampled inside its own part of the image. `NinePatch.FromAndroid` reads .9.png markers into the
   image, its lattice and its content padding. Within a mean level of SkiaSharp's drawImageNine and drawImageLattice.
 - `DrawAtlas` with `SpriteTransform` (Skia's RSXform) and optional colors combined by a blend mode; each sprite blends on its own.
-  Within a mean level of SkiaSharp's drawAtlas. 10,000 16-pixel sprites draw in 23 ms against the reference drawing library 2.1.7's 35 to
-  43 ms drawing them one by one.
+  Within a mean level of SkiaSharp's drawAtlas. 10,000 16-pixel sprites draw in 23 ms.
 - `Mesh` (`MeshMode` `Triangles`, `Strip` or `Fan`, with colors, texture coordinates, values and indices) and `DrawMesh`: the
   triangles' union is filled once, antialiased on its outer edge only, so meshes have no cracks; Gouraud colors in the canvas's
   color space, textures mapped through any paint, and per-vertex values mapped through gradient stops for PDF's mesh shadings.
@@ -718,9 +712,9 @@ Paints and layers, in the same preview package. See [Gradients](docs/articles/gu
   `SweepGradient`, with `GradientStop`s, `TileMode` (`Clamp`, `Repeat`, `Mirror`, `Decal`), PDF's one-sided extend
   (`ExtendStart`, `ExtendEnd`), mixing in encoded sRGB, linear sRGB, Oklab or Oklch with CSS Color 4's hue methods
   (`GradientInterpolation`), premultiplied by default, and ordered `Dither` (off by default). Every paint has a `LocalMatrix`.
-  Within a mean level of SkiaSharp's gradients on every kind and tile mode, and of the reference drawing library's linear and radial brushes.
+  Within a mean level of SkiaSharp's gradients on every kind and tile mode.
 - `ImagePaint`: an image as a paint, tiled per axis, sampled with Egami's filters and from a `MipChain` level when shrunk; a
-  whole-pixel shift copies rows. Within a mean level of SkiaSharp's image shaders and the reference drawing library's image brush.
+  whole-pixel shift copies rows. Within a mean level of SkiaSharp's image shaders.
 - `NoisePaint`: SVG feTurbulence's `Fractal` and `Turbulence` (within a mean level of SkiaSharp's noise shaders unstitched) and
   `Simplex`, smoother and exactly tileable.
 - `BlendPaint` (two paints with any blend mode), `Paint.WithColorMatrix` (`ColorMatrixPaint`) and `CustomPaint` (rows from C#,
@@ -733,8 +727,8 @@ Paints and layers, in the same preview package. See [Gradients](docs/articles/gu
 - `Paint.Blur` with `MaskBlur` and `BlurStyle` (`Normal`, `Solid`, `Outer`, `Inner`), on Egami's fast blur, as Skia's blur mask
   filter (within a mean level of SkiaSharp's in every style); axis-aligned rectangles are blurred exactly from the error
   function. `DrawShadow` with `ShadowOptions`: ambient and spot shadows after Skia's shadow model.
-- Speed (ms, 2048 × 2048, 1 thread and 24 cores): a full-frame linear gradient 26 and 3.8 against the reference drawing library 2.1.7's 378
-  and 33; radial 22 and 2.9 against 254 and 30; a tiled image brush 5.6 and 0.8 against 41 and 4.3. A full-frame half-opacity
+- Speed (ms, 2048 × 2048, 1 thread and 24 cores): a full-frame linear gradient 26 and 3.8;
+  radial 22 and 2.9; a tiled image brush 5.6 and 0.8. A full-frame half-opacity
   layer costs 1.38 times the drawing inside it at 1 thread and 1.14 at 24.
 
 ### Egami.Drawing 1.0.0-preview.2
@@ -758,8 +752,8 @@ Path geometry, in the same preview package. See [Path geometry](docs/articles/gu
 - SVG path data: `Path.ParseSvg` (every command of SVG 1.1 and 2, compact numbers, arc flags without separators; throws
   `SvgPathException` with the character position, or keeps what comes before an error with `lenient: true`), `TryParseSvg`, and
   `ToSvg` with `SvgPathFormat` (absolute or relative, compact, a precision; relative offsets never drift). Fuzzed for 20 minutes.
-- Boolean speed (ms, 1 thread, best of 7): 100 random 12-gon pairs under four operations 28 against SkiaSharp 39 and
-  the reference drawing library 11; 50 curved pairs 12.5 against 4.7 and 5.4; 200 letters unioned 24 against 503 and 26.
+- Boolean speed (ms, 1 thread, best of 7): 100 random 12-gon pairs under four operations 28 against SkiaSharp's 39;
+  50 curved pairs 12.5 against 4.7; 200 letters unioned 24 against 503.
 
 ### Egami.Drawing 1.0.0-preview.1
 
@@ -779,9 +773,8 @@ below.
 - Antialiased clips by rectangle, round rectangle or path, intersecting or cutting out; pixel-aligned rectangles are free, and a
   fill through a mask costs about 1.16 times the plain fill.
 - `DrawImage` under the transform and clip with Egami's samplers; at whole-pixel placement it equals `DrawImage` in a chain.
-- Faster than the reference drawing library 2.1.7 in every scenario timed (ms, 1 thread): 1,000 small shapes 4.0 against 11.1, a 4000×4000
-  star 19.8 against 49.4 (4.8 on 24 cores against 47.6), 10,000 icons 109 against 312, 200 thick curves 40 against 360, 10,000
-  hairlines 48 against 208.
+- Speed (ms, 1 thread): 1,000 small shapes 4.0, a 4000×4000 star 19.8 (4.8 on 24 cores), 10,000 icons 109, 200 thick curves
+  40, 10,000 hairlines 48.
 
 ### Egami.Fonts 1.0.0-preview.1 and text on the canvas
 
@@ -804,8 +797,8 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   keeps the source text and a cluster per glyph. `Canvas.DrawText`, `DrawGlyphRun` and the `OnDrawGlyphRun` hook; small glyphs
   are drawn from `GlyphCache` masks at whole pixels, which changes speed, not pixels; `GetGlyphPath`, `GetTextPath` and
   `GlyphRun.ToPath`. Drawn text is within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area.
-- Faster than the reference font library 2.1.3 at loading (0.18 against 127 ms for nine fonts), matching and measuring (3.3 against 122 ms
-  for 1,000 strings), and than the reference drawing library 2.1.7 at drawing a 2,000-word page (15 against 402 ms at 12 pixels).
+- Speed: nine fonts load in 0.18 ms, 1,000 strings match and measure in 3.3 ms, and a 2,000-word page draws in 15 ms at 12
+  pixels.
 - Fuzz targets `font`, `cff` and `subset`. Shaping, bidi and wrapping come in 2.8; WOFF, WOFF2 and variable fonts in 2.7.2.
 
 ### Regions and masks
@@ -861,8 +854,7 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   when the stream can seek.
 - Behaviour change: `ReaderOptions.MinimumSize` now reduces every format, by the largest whole factor that keeps the image at
   least that big, averaging blocks of pixels. JPEG keeps its 1/2, 1/4 and 1/8 IDCT scaling and averages blocks beyond 1/8.
-  The average is bit-identical to a full decode and a box resize, and a quarter-size decode is 1.2 to 2 times as fast as
-  the reference library's `TargetSize` with the Box sampler.
+  The average is bit-identical to a full decode and a box resize.
 - `ConvertColorTo` applies to streamed reads too, with the same HDR tone mapping as `ConvertColor`.
 
 ### Metadata
@@ -904,8 +896,7 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
 - HDR: PQ and HLG convert to SDR with tone mapping (`ToneMapping.Bt2390` by default, `Reinhard`, `Clip`) and a hue-keeping
   gamut clip; `RasterOps.ToneMap` tone maps in place.
 - Color values: `HslColor`, `HsvColor`, `XyzColor`, `LabColor` (with `DeltaE2000`), `LchColor`, `OklabColor`, `OklchColor`,
-  `YCbCrColor` and `CmykColor`, all `IColorValue<TSelf>`; `ColorConvert` converts single values and whole rows (Lab, HSL,
-  HSV and Y'CbCr rows run 1.1× to 11× as fast as the reference library). `YuvMatrix` and `YuvRange` name the Y'CbCr coefficients.
+  `YCbCrColor` and `CmykColor`, all `IColorValue<TSelf>`; `ColorConvert` converts single values and whole rows. `YuvMatrix` and `YuvRange` name the Y'CbCr coefficients.
 - Behaviour change: writers now emit the color tags held in `CodePoints`, `Primaries` and `Hdr` (PNG cICP, cHRM, mDCV, cLLI;
   BMP endpoints), which 1.0 left out.
 - Behaviour change: operations that work in linear light (`ColorSpace.Linear`) now use the raster's own transfer curve, so a
@@ -962,7 +953,6 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   split at the markers already in it; the scans of a progressive file run as a pipeline, each refinement scan following the
   scan before it row by row, and the last pass is split by rows. The 4000 × 3000 progressive benchmark photo decodes in half the
   time on 8 cores; the same photo with a marker every MCU row in under half. Files without markers decode as before.
-- Faster arithmetic decoding than the reference library 3.1.12 at one thread and on all cores.
 
 ### JPEG writing
 
@@ -973,9 +963,8 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   progressive source is re-saved as baseline unless it is set.
 - `JpegColorType.Cmyk` and `JpegColorType.Ycck` write four components behind an Adobe marker, inverted as Photoshop writes CMYK;
   `Auto` picks CMYK for `Cmyk8` and `Cmyk16` pixels, which 1.x converted to RGB on save. YCCK subsamples its chroma and keeps
-  black at full size. djpeg, ImageMagick and Pillow read every file to within a level of Egami's inks. 12 MP encodes faster than
-  the reference library 3.1.12's CMYK and YCCK encoder at one thread (95 against 106 ms, 91 against 98) and on all cores (2.2 and 3.3 times
-  as fast).
+  black at full size. djpeg, ImageMagick and Pillow read every file to within a level of Egami's inks. 12 MP encodes in 95 ms as CMYK
+  and 91 ms as YCCK at one thread.
 - `JpegWriterOptions.Precision = 12` writes 12-bit files (SOF1, or SOF2 when progressive) that keep the detail of 16-bit and
   float pixels, with optimized Huffman tables and 16-bit quantization tables where quality needs them. djpeg reads them within a
   level of Egami's decode; browsers, Pillow and many ImageMagick builds don't read 12-bit JPEG at all.

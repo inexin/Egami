@@ -90,8 +90,8 @@ public sealed partial class RasterOps
     }
 
     /// <summary>
-    /// Moves the image's four corners to four points, bending it in perspective: ImageMagick's Perspective distort and the reference library's
-    /// quad distortion. Corners are pixel edges, so the top-right corner of a 100-pixel-wide image is (100, 0).
+    /// Moves the image's four corners to four points, bending it in perspective: ImageMagick's Perspective
+    /// distort. Corners are pixel edges, so the top-right corner of a 100-pixel-wide image is (100, 0).
     /// </summary>
     /// <param name="topLeft">Where the top-left corner goes.</param>
     /// <param name="topRight">Where the top-right corner goes.</param>

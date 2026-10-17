@@ -108,12 +108,11 @@ multiplies the layer, as a PDF soft mask does.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#soft-mask)]
 
-### Coming from the reference drawing library's layer effects
+### Common layer effects
 
-the reference drawing library 3 names its layer effects; in Egami each is a `LayerOptions.Filter` or `Backdrop` chain, so any Egami
-operation works on a layer.
+In Egami each layer effect is a `LayerOptions.Filter` or `Backdrop` chain, so any Egami operation works on a layer.
 
-| the reference drawing library | Egami |
+| Effect | Egami |
 | --- | --- |
 | Gaussian or box blur effect | `Filter = o => o.Blur(sigma)` or `o.BoxBlur(radius)` |
 | Drop shadow | `Filter = o => o.DropShadow(dx, dy, sigma, color, new DropShadowOptions { Expand = false })` |
@@ -327,7 +326,6 @@ meshes.
 
 ## Accuracy and speed
 
-Fills are within a mean level of SkiaSharp's and closer than SkiaSharp's to the exact covered area; drawing is faster than
-the reference drawing library in every scenario timed, at one thread and all cores. Boolean operations, outlines, dashes, effects and SVG
-parsing give paths within a mean level of SkiaSharp's, and measured lengths agree within 1e-3. The figures are in the 2.6.1
+Fills are within a mean level of SkiaSharp's and closer than SkiaSharp's to the exact covered area.
+Boolean operations, outlines, dashes, effects and SVG parsing give paths within a mean level of SkiaSharp's, and measured lengths agree within 1e-3. The figures are in the 2.6.1
 and 2.6.2 release notes.

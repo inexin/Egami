@@ -71,7 +71,7 @@ public sealed record class CanvasOptions
 
     /// <summary>
     /// Gets where edges and paints blend. <see cref="ColorSpace.Encoded"/> (the default) blends the stored values, as Egami's other
-    /// operations, SkiaSharp and the reference drawing library do; <see cref="ColorSpace.Linear"/> blends in linear light, which keeps
+    /// operations and SkiaSharp do; <see cref="ColorSpace.Linear"/> blends in linear light, which keeps
     /// antialiased edges and translucent colors from darkening.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>

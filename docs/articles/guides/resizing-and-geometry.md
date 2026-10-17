@@ -113,7 +113,7 @@ Warps that keep the size (`Barrel`, `Swirl`, `Implode`, `Magnifier`, `Displace`,
 
 `Trim` cuts away the border: the edge rows and columns whose pixels all lie within a tolerance of the border color (the top-left
 pixel's, or one you give), by ImageMagick's `-fuzz` distance, so its rectangle equals ImageMagick's `-trim`. `EntropyCrop` keeps the
-busiest part of the image: the 16 × 16 tiles whose luminance entropy reaches a threshold, as the reference library's `EntropyCrop` does.
+busiest part of the image: the 16 × 16 tiles whose luminance entropy reaches a threshold.
 `Raster.TrimBounds` and `Raster.EntropyBounds` return the rectangles without changing anything.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Crops.cs#trim)]

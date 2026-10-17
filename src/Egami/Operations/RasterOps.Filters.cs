@@ -40,8 +40,8 @@ public sealed partial class RasterOps
     }
 
     /// <summary>
-    /// Replaces each channel with its median over the (2r + 1) square around the pixel, as ImageMagick's -statistic Median and
-    /// the reference library's MedianBlur do: removes salt-and-pepper noise while keeping edges. Works on stored values, so 8 and 16-bit
+    /// Replaces each channel with its median over the (2r + 1) square around the pixel, as ImageMagick's -statistic Median
+    /// does: removes salt-and-pepper noise while keeping edges. Works on stored values, so 8 and 16-bit
     /// results are exact; edges repeat the edge pixel. The cost per pixel does not grow with the radius on byte types.
     /// </summary>
     /// <param name="radius">The radius in pixels, from 0 (changes nothing) to 100.</param>

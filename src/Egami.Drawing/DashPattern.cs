@@ -56,7 +56,7 @@ public sealed record class DashPattern
 
     /// <summary>
     /// Returns the pattern with every length and the phase multiplied by a factor: give lengths in stroke widths and scale by the
-    /// width, as the reference library's pattern pens and Office's dash styles measure them.
+    /// width, as Office's dash styles measure them.
     /// </summary>
     /// <param name="factor">The factor, such as the stroke's width.</param>
     /// <returns>The scaled pattern.</returns>

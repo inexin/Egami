@@ -112,7 +112,7 @@ public sealed record PaletteOptions
 
     /// <summary>
     /// Gets how strongly the dither works, from 0 (none: the nearest color) to 1 (the default, full strength): the share of the
-    /// error that is diffused, or the height of the ordered pattern, as the reference library's DitherScale.
+    /// error that is diffused, or the height of the ordered pattern.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 1.</exception>
     public float DitherStrength
@@ -141,8 +141,8 @@ public sealed record PaletteOptions
 
     /// <summary>
     /// Gets whether each color is matched to its exact nearest palette color. By default a 64-level lookup table answers for each
-    /// small cube of colors at once, which is faster and can pick a color that is not quite the nearest (the reference library's Coarse
-    /// matching); the default keeps every 1.x output unchanged.
+    /// small cube of colors at once, which is faster and can pick a color that is not quite the nearest;
+    /// the default keeps every 1.x output unchanged.
     /// </summary>
     public bool ExactMatching { get; init; }
 

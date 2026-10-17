@@ -6,13 +6,10 @@ Egami.Svg, Egami.Css and Egami.Metafiles (see [docs/articles/packages.md](docs/a
 
 ## Hard rules
 
-- **Clean room.** Write code only from specifications, papers and the permissively licensed libraries in
-  [docs/references.md](docs/references.md). Never copy, port, translate or paraphrase code, tests, test images, docs or API names
-  from any other imaging library, in any version. Never use GPL, LGPL or AGPL code, or code without a license. If you translate
-  code closely from a listed permissive library, add its notice to `THIRD-PARTY-NOTICES.md` in the same change.
-- **Name no non-permissive library in the repo.** Comparisons with other .NET imaging libraries (closeness tests, benchmarks,
-  clone checks) live in the separate egami-compare repository, never here. Don't add new mentions in code, comments, tests or
-  docs.
+- **Clean room.** Write code from specifications, papers and the libraries listed in [docs/references.md](docs/references.md).
+  Never copy, port, translate or paraphrase code, tests, test images or docs from a project that is not MIT-licensed (or listed
+  as permissive in docs/references.md). Never use GPL, LGPL or AGPL code, or code without a license. If you translate code
+  closely from a listed library, add its notice to `THIRD-PARTY-NOTICES.md` in the same change.
 - **Managed .NET 10 only.** No P/Invoke, no native binaries, no wrappers around C or C++ libraries. .NET's own APIs (for example
   `ZLibStream`) are fine. No package references in `src/` other than the build-time `Microsoft.CodeAnalysis.PublicApiAnalyzers`.
 - **Never publish.** Don't push to NuGet, push tags, create releases or turn GitHub Actions on, unless the maintainer explicitly

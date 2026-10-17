@@ -58,8 +58,8 @@ public sealed record class LayerOptions
 
     /// <summary>
     /// Gets a chain of Egami operations run on what lies behind the layer when it starts; the result is the layer's first content,
-    /// so a blur here frosts the glass a translucent panel is drawn on, as Skia's backdrop filter and the reference drawing library's backdrop
-    /// effects do. Only the part inside the clip is used. <see langword="null"/> (the default) starts the layer as
+    /// so a blur here frosts the glass a translucent panel is drawn on, as Skia's backdrop filter
+    /// does. Only the part inside the clip is used. <see langword="null"/> (the default) starts the layer as
     /// <see cref="Isolated"/> says.
     /// </summary>
     public Action<RasterOps>? Backdrop { get; init; }

@@ -30,8 +30,8 @@ public sealed partial class RasterOps
 
     /// <summary>
     /// Crops to the busiest part of the image: the bounding box of the 16 × 16 tiles whose luminance entropy (the Shannon entropy
-    /// of the tile's 256-level histogram, over 8 bits) reaches <paramref name="threshold"/>, as the reference library's EntropyCrop does with
-    /// the same default. Frames are cropped to the union of their boxes; an image with no busy tile is left as it is.
+    /// of the tile's 256-level histogram, over 8 bits) reaches <paramref name="threshold"/>.
+    /// Frames are cropped to the union of their boxes; an image with no busy tile is left as it is.
     /// </summary>
     /// <param name="threshold">The entropy a tile needs, from 0 (every tile) to 1 (only uniformly random noise).</param>
     /// <returns>This builder.</returns>

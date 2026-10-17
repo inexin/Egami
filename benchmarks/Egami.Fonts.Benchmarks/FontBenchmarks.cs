@@ -4,7 +4,7 @@ using Egami.Fonts;
 
 namespace Egami.Fonts.Benchmarks;
 
-/// <summary>Loading, glyph lookup, outlines and measuring on the committed test fonts. the reference font library and SkiaSharp are timed in egami-compare.</summary>
+/// <summary>Loading, glyph lookup, outlines and measuring on the committed test fonts. Other libraries are timed in egami-compare.</summary>
 [MemoryDiagnoser]
 public class FontBenchmarks
 {

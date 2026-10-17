@@ -791,8 +791,8 @@ public sealed partial class RasterOps
     }
 
     /// <summary>
-    /// Composites the image over <paramref name="background"/> and makes it opaque, as ImageMagick's -alpha remove and the reference library's
-    /// BackgroundColor do. The background's own alpha is ignored. Saving a JPEG with a Background option uses the same arithmetic.
+    /// Composites the image over <paramref name="background"/> and makes it opaque, as ImageMagick's -alpha remove
+    /// does. The background's own alpha is ignored. Saving a JPEG with a Background option uses the same arithmetic.
     /// </summary>
     /// <param name="background">The color to show through transparent pixels.</param>
     /// <param name="colorSpace">Where pixels are blended. Defaults to <see cref="ColorSpace.Encoded"/>.</param>

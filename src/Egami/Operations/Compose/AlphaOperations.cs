@@ -94,8 +94,8 @@ internal sealed class CopyAlphaOperation(Mask mask) : IRasterOperation, IAreaTra
 }
 
 /// <summary>
-/// Composites every pixel over an opaque background color and makes it opaque (ImageMagick's -alpha remove, the reference library's
-/// BackgroundColor). 8-bit straight pixels on stored values take the exact integer kernel the JPEG writer's Background uses.
+/// Composites every pixel over an opaque background color and makes it opaque (ImageMagick's -alpha
+/// remove). 8-bit straight pixels on stored values take the exact integer kernel the JPEG writer's Background uses.
 /// </summary>
 internal sealed class FlattenOperation(Rgba8 background, bool linear, Colors.LinearCurve? curve = null) : IRasterOperation, ILinearLight, IRunsOnViews
 {

@@ -17,7 +17,7 @@ namespace Egami.Drawing.Geometry;
 /// where several meet, and consecutive pieces of one input curve are joined back into it. So results keep their lines,
 /// quadratics and cubics, outer contours run clockwise on screen and holes counterclockwise, and no contours cross. Written from
 /// the planar-arrangement and snap-rounding literature and Sederberg and Nishita's Bézier clipping (subdivision with bounds and
-/// flatness tests here, rather than fat-line clipping); no code from Skia or the reference library.
+/// flatness tests here, rather than fat-line clipping); no code from other libraries.
 /// </summary>
 internal static class PathBoolean
 {

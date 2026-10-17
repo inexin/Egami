@@ -57,7 +57,7 @@ public class WebpLossyAlphaTests
     [InlineData("edge-17x33")]
     public void Vp8ChunksHaveEvenSizes(string name)
     {
-        // libwebp pads the VP8 payload itself; the reference library 3.1 cannot read an odd VP8 chunk followed by its padding byte.
+        // libwebp pads the VP8 payload itself; some readers cannot read an odd VP8 chunk followed by its padding byte.
         using Raster<Rgba8> source = WebpTestImages.Get(name);
         foreach (int quality in new[] { 10, 75, 100 })
         {

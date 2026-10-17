@@ -220,7 +220,7 @@ public sealed partial class RasterOps
     }
 
     /// <summary>
-    /// Thresholds each pixel against the mean of the window around it (Bradley and Roth, 2007), as the reference library's AdaptiveThreshold: a
+    /// Thresholds each pixel against the mean of the window around it (Bradley and Roth, 2007): a
     /// pixel is dark when its luminance is more than <paramref name="limit"/> below its window's mean, so uneven lighting on a scanned
     /// page does not swallow text. Alpha is kept.
     /// </summary>

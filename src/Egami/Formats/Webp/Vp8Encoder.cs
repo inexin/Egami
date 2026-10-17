@@ -211,7 +211,7 @@ internal sealed partial class Vp8Encoder
             total += parts[i].Length;
         }
 
-        // An even size, as libwebp writes it: some readers (the reference library 3.1) lose their place after an odd VP8 chunk's padding byte.
+        // An even size, as libwebp writes it: some readers lose their place after an odd VP8 chunk's padding byte.
         byte[] frame = new byte[total + (total & 1)];
         uint tag = ((uint)p0.Length << 5) | (1 << 4);
         frame[0] = (byte)tag;

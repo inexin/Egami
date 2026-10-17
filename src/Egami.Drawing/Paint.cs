@@ -77,7 +77,7 @@ public abstract record class Paint : Egami.Fonts.Layout.ITextPaint
     /// Gets a value indicating whether colors are dithered when they are rounded to 8 bits: a 4×4 ordered pattern of less than half
     /// a level is added before rounding, which hides the banding of large soft gradients and never changes a flat area of an exact
     /// level. Only shaded paints on 8-bit targets dither; solid paints and deeper targets do not. Defaults to <see langword="false"/>,
-    /// as in Skia and the reference library.
+    /// as in Skia.
     /// </summary>
     public bool Dither { get; init; }
 
