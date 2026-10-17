@@ -121,7 +121,7 @@ public class FastBlurTests
         SameInsideArea("duck", new Rect(100, 80, 200, 150), o => o.Blur(7, ColorSpace.Encoded, BlurMethod.Fast));
     }
 
-    /// <summary>The 1.x Blur, Sharpen and BoxBlur pixels on the 1.2 corpus, so no 2.5.4 change moves them.</summary>
+    /// <summary>The 1.x Blur, Sharpen and BoxBlur pixels on the 1.2 corpus, so no 2.5.4 change moves them; 2.5.7 moved blur-150 by a level.</summary>
     [Theory]
     [InlineData("duck", "blur-2")]
     [InlineData("duck", "blur-25-linear")]
@@ -156,7 +156,8 @@ public class FastBlurTests
     {
         ["duck.blur-2"] = "98C0AD2C5C8B4F80",
         ["duck.blur-25-linear"] = "64A910FA4FB6B1CF",
-        ["egret.blur-150"] = "BFDF06E852B67209",
+        // Blur above σ 100 runs three boxes, which take the byte path from 2.5.7: within a level of the 1.x pixels (BytePathTests).
+        ["egret.blur-150"] = "6386814A0C6C9BBE",
         ["shapes.blur-0.7"] = "C8D5B5E234895E20",
         ["shapes.sharpen"] = "17539490832DCE75",
         ["zone.box-4"] = "6B8B1D44FC840016",

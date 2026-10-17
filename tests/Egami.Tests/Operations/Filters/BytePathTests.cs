@@ -49,6 +49,74 @@ public class BytePathTests
         Same(all, oneResult);
     }
 
+    [Theory]
+    [InlineData("bgra")]
+    [InlineData("argb")]
+    [InlineData("rgb")]
+    [InlineData("gray")]
+    [InlineData("grayalpha")]
+    [InlineData("alpha")]
+    public void OtherByteTypesWithinALevel(string type)
+    {
+        using Raster<Rgba8> source = Input("translucent");
+        foreach (string chain in new[] { "fast-20", "fast-uneven", "blur-150" })
+        {
+            int gap = type switch
+            {
+                "bgra" => TypedGap<Bgra8>(source, Chains[chain]),
+                "argb" => TypedGap<Argb8>(source, Chains[chain]),
+                "rgb" => TypedGap<Rgb8>(source, Chains[chain]),
+                "gray" => TypedGap<Gray8>(source, Chains[chain]),
+                "grayalpha" => TypedGap<GrayAlpha8>(source, Chains[chain]),
+                _ => TypedGap<Alpha8>(source, Chains[chain]),
+            };
+            Assert.True(gap <= 1, $"{type} {chain}: {gap} levels from the float path");
+        }
+    }
+
+    [Theory]
+    [InlineData(1, 1)]
+    [InlineData(5, 3)]
+    [InlineData(37, 23)]
+    [InlineData(300, 1)]
+    [InlineData(1, 300)]
+    [InlineData(71, 40)]
+    public void OddSizesWithinALevel(int width, int height)
+    {
+        foreach (string image in new[] { "duck", "translucent" })
+        {
+            using Raster<Rgba8> full = Input(image);
+            using Raster<Rgba8> source = full.Derive(o => o.Resize(width, height), Ct);
+            foreach (string chain in new[] { "fast-3", "fast-20", "blur-150" })
+            {
+                int gap = FloatGap(source, Chains[chain]);
+                Assert.True(gap <= 1, $"{image} {width}x{height} {chain}: {gap} levels from the float path");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("fast-20")]
+    [InlineData("fast-uneven")]
+    [InlineData("blur-150")]
+    public void SameOnOneThreadAndAllOnOpaquePixels(string chain)
+    {
+        SameOnOneThread("egret", Chains[chain]);
+    }
+
+    /// <summary><see cref="FilterAssert.FloatGap"/> on <typeparamref name="TPixel"/>: the same pixels as a float copy through the float path.</summary>
+    private static int TypedGap<TPixel>(Raster<Rgba8> source, Action<RasterOps> chain)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        using Raster<TPixel> typed = source.As<TPixel>();
+        using Raster<TPixel> bytes = typed.Derive(chain, Ct);
+        using Raster<RgbaF32> floats = typed.As<RgbaF32>();
+        using Raster<RgbaF32> floatResult = floats.Derive(chain, Ct);
+        using Raster<TPixel> reference = floatResult.As<TPixel>();
+        using Raster<Rgba8> a = reference.As<Rgba8>(), b = bytes.As<Rgba8>();
+        return PremultipliedDifference(a, b);
+    }
+
     private static readonly Dictionary<string, Action<RasterOps>> Chains = new()
     {
         ["fast-3"] = o => o.Blur(3, ColorSpace.Encoded, BlurMethod.Fast),

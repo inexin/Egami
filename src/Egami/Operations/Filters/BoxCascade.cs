@@ -37,6 +37,9 @@ internal sealed class BoxCascade
     /// <summary>Gets the weight of each pass's two outer taps, relative to the inner ones.</summary>
     internal ReadOnlySpan<float> Alphas => _alphas;
 
+    /// <summary>Gets each pass's normalising factor, 1 / (2r + 1 + 2α).</summary>
+    internal ReadOnlySpan<float> Norms => _norms;
+
     /// <summary>Returns the passes for a Gaussian of <paramref name="sigma"/>, which must be above 0.</summary>
     internal static BoxCascade For(double sigma)
     {

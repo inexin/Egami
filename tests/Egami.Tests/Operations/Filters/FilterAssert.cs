@@ -82,7 +82,11 @@ internal static class FilterAssert
         return PremultipliedDifference(reference, bytes);
     }
 
-    /// <summary>The largest difference of alpha or of a premultiplied color channel, in levels, so colors nobody sees do not count.</summary>
+    /// <summary>
+    /// The difference between two results in levels, as the byte paths' gate counts it: alpha and, where both pixels are at
+    /// least a quarter opaque, the straight colors; elsewhere the premultiplied colors, less the level that rounding the color and
+    /// alpha each by up to half a level can add. Colors nobody sees do not count.
+    /// </summary>
     internal static int PremultipliedDifference(Raster<Rgba8> expected, Raster<Rgba8> actual)
     {
         Assert.Equal((expected.Width, expected.Height), (actual.Width, actual.Height));
@@ -92,16 +96,21 @@ internal static class FilterAssert
             ReadOnlySpan<Rgba8> e = expected.Row(y), a = actual.Row(y);
             for (int x = 0; x < e.Length; x++)
             {
-                worst = Math.Max(worst, Math.Abs(e[x].A - a[x].A));
-                worst = Math.Max(worst, Gap(e[x].R, e[x].A, a[x].R, a[x].A));
-                worst = Math.Max(worst, Gap(e[x].G, e[x].A, a[x].G, a[x].A));
-                worst = Math.Max(worst, Gap(e[x].B, e[x].A, a[x].B, a[x].A));
+                int gap = Math.Abs(e[x].A - a[x].A);
+                bool seen = e[x].A >= 64 && a[x].A >= 64;
+                gap = Math.Max(gap, Gap(e[x].R, e[x].A, a[x].R, a[x].A, seen));
+                gap = Math.Max(gap, Gap(e[x].G, e[x].A, a[x].G, a[x].A, seen));
+                gap = Math.Max(gap, Gap(e[x].B, e[x].A, a[x].B, a[x].A, seen));
+                worst = Math.Max(worst, gap);
             }
         }
 
         return worst;
 
-        static int Gap(int c1, int a1, int c2, int a2) => (int)Math.Round(Math.Abs((c1 * a1) - (c2 * a2)) / 255.0);
+        static int Gap(int c1, int a1, int c2, int a2, bool seen)
+        {
+            return seen ? Math.Abs(c1 - c2) : (int)Math.Ceiling((Math.Abs((c1 * a1) - (c2 * a2)) / 255.0) - 1);
+        }
     }
 
     /// <summary>Asserts two rasters hold the same pixels, naming the first that differs.</summary>

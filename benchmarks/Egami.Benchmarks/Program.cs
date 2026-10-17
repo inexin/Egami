@@ -8,6 +8,19 @@ using Egami.Tests.Memory;
 
 // Run all:      dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --filter "*"
 // Run a class:  dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --filter "*PngDecode*"
+// Time the Phase 2.5.7 byte blur's stages at one thread: -- --blur-stages; run one stage n times, for a profiler: -- --blur-one <stage> <n>
+if (args is ["--blur-one", string only, string times])
+{
+    BlurStages.Run(only, int.Parse(times, System.Globalization.CultureInfo.InvariantCulture));
+    return;
+}
+
+if (args is ["--blur-stages"])
+{
+    BlurStages.Run();
+    return;
+}
+
 // Time the Phase 2.5.4 filter scenarios at one thread and all cores: -- --time-filters [name...]
 if (args is ["--time-filters", .. string[] names])
 {

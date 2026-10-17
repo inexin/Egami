@@ -59,6 +59,14 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
     public void Run<TPixel>(OperationInput<TPixel> input)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        // Byte types take the byte path for the three-pass cascades; one plain box costs less than the byte path's two sweeps.
+        if (!_linear && ByteBlur.Supports<TPixel>() && (_x.Radii.Length > 1 || _y.Radii.Length > 1))
+        {
+            IPixelMemorySource memory = (IPixelMemorySource?)input.Memory ?? input.Context.Memory;
+            ByteBlur.Run(input.Source, input.Destination, _x, _y, memory, input.Context.MaxParallelism, input.CancellationToken);
+            return;
+        }
+
         // Strips of columns, each from the top of the image to the bottom: every row of a strip is loaded with the columns the
         // horizontal passes reach on either side, filtered across, then pulled through the vertical passes and stored. Strips have
         // a fixed width and every running sum starts at the same place, so the result does not depend on the thread count.

@@ -185,6 +185,30 @@ public sealed class PixelPlane<TPixel>
         }
     }
 
+    /// <summary>
+    /// Returns the run of rows stored together that holds row <paramref name="y"/>, as one span: a whole block of a plane from a
+    /// memory source, else just the row. Filters that walk down columns use it to fetch a block once rather than every row.
+    /// </summary>
+    /// <param name="y">The row index, 0 to <see cref="Height"/> - 1.</param>
+    /// <param name="first">The first row of the run.</param>
+    /// <param name="count">The rows in the run, each <see cref="Width"/> pixels.</param>
+    /// <returns>The run's pixels, row by row.</returns>
+    internal Span<TPixel> RowRun(int y, out int first, out int count)
+    {
+        IMemoryOwner<byte>[]? blocks = _blocks;
+        if (blocks is not null && (uint)y < (uint)Height)
+        {
+            int block = y / _rowsPerBlock;
+            first = block * _rowsPerBlock;
+            count = Math.Min(_rowsPerBlock, Height - first);
+            return MemoryMarshal.Cast<byte, TPixel>(blocks[block].Memory.Span)[..(count * Width)];
+        }
+
+        first = y;
+        count = 1;
+        return Row(y);
+    }
+
     /// <summary>Gets a row of a wrapped plane, a view, or a block view, or throws for a disposed plane.</summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Span<TPixel> OtherRow(int y)
