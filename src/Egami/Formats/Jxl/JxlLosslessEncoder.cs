@@ -19,6 +19,11 @@ internal sealed record JxlEncodeInput
 
     internal bool AlphaPremultiplied { get; init; }
 
+    /// <summary>Gets whether the image has a black (K) extra channel, after alpha if there is one; only the lossy encoder writes it.</summary>
+    internal bool HasBlack { get; init; }
+
+    internal JxlBitDepth BlackBitDepth { get; init; } = new(16, 0);
+
     /// <summary>Gets the enumerated color encoding; ignored when <see cref="Icc"/> is set.</summary>
     internal JxlColorEncoding ColorEncoding { get; init; } = new();
 
@@ -118,9 +123,10 @@ internal static class JxlLosslessEncoder
         }
 
         WriteBitDepth(w, input.BitDepth);
-        bool sixteen = input.BitDepth.BitsPerSample <= 12 && (input.Alpha is null || input.AlphaBitDepth.BitsPerSample <= 12);
+        bool sixteen = input.BitDepth.BitsPerSample <= 12 && (input.Alpha is null || input.AlphaBitDepth.BitsPerSample <= 12)
+            && (!input.HasBlack || input.BlackBitDepth.BitsPerSample <= 12);
         w.WriteBool(sixteen);
-        w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 1, 12), input.Alpha is null ? 0u : 1u);
+        w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 1, 12), (input.Alpha is null ? 0u : 1u) + (input.HasBlack ? 1u : 0u));
         if (input.Alpha is not null)
         {
             if (input.AlphaBitDepth == new JxlBitDepth(8, 0) && !input.AlphaPremultiplied)
@@ -136,6 +142,15 @@ internal static class JxlLosslessEncoder
                 w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0);
                 w.WriteBool(input.AlphaPremultiplied);
             }
+        }
+
+        if (input.HasBlack)
+        {
+            w.WriteBool(false);
+            w.WriteEnum((uint)JxlExtraChannelType.Black);
+            WriteBitDepth(w, input.BlackBitDepth);
+            w.WriteU32(new JxlU32(0, 0, 3, 0, 4, 0, 1, 3), 0);
+            w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0);
         }
 
         w.WriteBool(input.Xyb);

@@ -32,7 +32,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         if (!jxl.WritesLossless(start.Metadata))
         {
             start.Refuse("JPEG XL", "Lossy encoding", "Save from a whole raster.");
-            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc);
+            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc);
             return new LossyEncoder<TPixel>(output, start, jxl);
         }
 
@@ -266,7 +266,11 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         private readonly JxlLinearRows _rows = new(start.Width, start.Height, start.Metadata.GetColorProfile(), TPixel.Layout);
+        private readonly int _alphaBits = TPixel.Layout.ChannelType == PixelChannelType.Unorm8 ? 8 : 16;
+        private readonly int[]? _alpha = TPixel.Layout.Alpha != AlphaKind.None ? new int[start.Width * start.Height] : null;
         private Cmyk16[]? _inks;
+        private Rgba8[]? _rgba8;
+        private Rgba16[]? _rgba16;
         private int _written;
 
         public override void WriteRow(ReadOnlySpan<TPixel> row)
@@ -287,6 +291,30 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 _rows.Add(row, _written);
             }
 
+            if (_alpha is not null)
+            {
+                // Straight alpha: premultiplied color was made straight by the color conversion.
+                int at = _written * start.Width;
+                if (_alphaBits == 8)
+                {
+                    _rgba8 ??= new Rgba8[start.Width];
+                    PixelConvert.Convert(row, _rgba8.AsSpan());
+                    for (int x = 0; x < start.Width; x++)
+                    {
+                        _alpha[at + x] = _rgba8[x].A;
+                    }
+                }
+                else
+                {
+                    _rgba16 ??= new Rgba16[start.Width];
+                    PixelConvert.Convert(row, _rgba16.AsSpan());
+                    for (int x = 0; x < start.Width; x++)
+                    {
+                        _alpha[at + x] = _rgba16[x].A;
+                    }
+                }
+            }
+
             _written++;
         }
 
@@ -302,6 +330,8 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
             JxlLinearImage image = _rows.Image;
             (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, image.IsGray);
             int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
+            int opaque = (1 << _alphaBits) - 1;
+            int[]? alpha = _alpha is not null && !Array.TrueForAll(_alpha, v => v == opaque) ? _alpha : null;
             JxlEncodeInput header = new()
             {
                 Width = start.Width,
@@ -310,6 +340,16 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 ColorEncoding = color,
                 Icc = icc,
                 Orientation = orientation,
+                BitDepth = TPixel.Layout.ChannelType switch
+                {
+                    PixelChannelType.Unorm8 => new JxlBitDepth(8, 0),
+                    PixelChannelType.Float16 => new JxlBitDepth(16, 5),
+                    PixelChannelType.Float32 => new JxlBitDepth(32, 8),
+                    _ => new JxlBitDepth(16, 0),
+                },
+                Alpha = alpha,
+                AlphaBitDepth = new JxlBitDepth(_alphaBits, 0),
+                HasBlack = image.Black is not null,
             };
             JxlLossySettings settings = new()
             {
@@ -317,6 +357,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 Effort = options.Effort,
                 Parallelism = start.Context.MaxParallelism,
                 PhotonNoiseIso = options.PhotonNoiseIso ?? 0,
+                SimplifyInvisible = !options.KeepTransparentColors,
             };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
@@ -528,6 +569,13 @@ public sealed class JxlWriterOptions : WriterOptions
             _photonNoiseIso = value;
         }
     }
+
+    /// <summary>
+    /// Gets whether lossy files keep the color of fully transparent pixels. <see langword="false"/> lets the encoder replace it
+    /// by that of the visible neighbours, which makes files smaller (libjxl does that by default); <see langword="true"/>, the
+    /// default as for WebP, keeps it as well as lossy coding does. Lossless files always keep it.
+    /// </summary>
+    public bool KeepTransparentColors { get; init; } = true;
 
     /// <summary>Gets the distance lossy data is written at: <see cref="Distance"/>, or <see cref="Quality"/> on cjxl's mapping, at least 0.1.</summary>
     internal float EffectiveDistance => _distance ?? MathF.Max(0.1f, DistanceFromQuality(_quality));

@@ -13,6 +13,9 @@ internal sealed record JxlLossySettings
 
     /// <summary>Gets the ISO of the photon noise the decoder adds, or 0 for none.</summary>
     internal float PhotonNoiseIso { get; init; }
+
+    /// <summary>Gets whether the color of fully transparent pixels may be replaced by that of their neighbours (libjxl's SimplifyInvisible).</summary>
+    internal bool SimplifyInvisible { get; init; }
 }
 
 /// <summary>
@@ -124,13 +127,19 @@ internal sealed class JxlVarDctEncoder
     private readonly (float Dx, float Db, float ExposedBlue) _pixelStats;
     private readonly float[]? _noise;
 
+    // The extra channels (alpha, then black), coded losslessly beside the VarDCT data: every stream of the frame by id, the
+    // tree for them and their tokens per stream; or none.
+    private JxlEncodeImage[]? _extraStreams;
+    private List<JxlTreeNode>? _extraTree;
+    private int _extraCount;
+
     private int _globalScale;
     private int _quantDc;
     private int _xQmScale;
     private int _bQmScale;
     private int _epfIterations;
 
-    private JxlVarDctEncoder(JxlLinearImage image, JxlLossySettings settings, float intensityTarget, int upsampling, float originalDistance)
+    private JxlVarDctEncoder(JxlLinearImage image, JxlLossySettings settings, float intensityTarget, int upsampling, float originalDistance, int[]? alpha)
     {
         _settings = settings;
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, settings.Parallelism) };
@@ -138,6 +147,11 @@ internal sealed class JxlVarDctEncoder
         _originalDistance = originalDistance;
         int fullWidth = Ceil(image.Width, 8) * 8, fullHeight = Ceil(image.Height, 8) * 8;
         float[][] xyb = Pad(image, intensityTarget, fullWidth, fullHeight, _parallel);
+        if (alpha is not null && settings.SimplifyInvisible)
+        {
+            SimplifyInvisible(xyb, alpha, image.Width, image.Height, fullWidth, fullHeight);
+        }
+
         if (Speed >= 7)
         {
             _pixelStats = PixelStats(xyb, fullWidth, fullHeight);
@@ -192,6 +206,91 @@ internal sealed class JxlVarDctEncoder
         if (settings.PhotonNoiseIso > 0)
         {
             _noise = SimulatePhotonNoise(_width, _height, settings.PhotonNoiseIso);
+        }
+    }
+
+    /// <summary>
+    /// libjxl's SimplifyInvisible for lossy color, on the XYB planes before padding: each fully transparent pixel takes a weighted
+    /// mean of its already simplified left neighbour, the one above right, and its visible neighbours (those at twice the
+    /// weight); the padding is then made again from the new edge.
+    /// </summary>
+    private static void SimplifyInvisible(float[][] xyb, int[] alpha, int w, int h, int stride, int paddedHeight)
+    {
+        for (int c = 0; c < 3; c++)
+        {
+            float[] p = xyb[c];
+            for (int y = 0; y < h; y++)
+            {
+                int row = y * stride, arow = y * w;
+                for (int x = 0; x < w; x++)
+                {
+                    if (alpha[arow + x] != 0)
+                    {
+                        continue;
+                    }
+
+                    float d = 0;
+                    float v = 0;
+                    if (x > 0)
+                    {
+                        v += p[row + x - 1];
+                        d++;
+                        if (alpha[arow + x - 1] > 0)
+                        {
+                            v += p[row + x - 1];
+                            d++;
+                        }
+                    }
+
+                    if (x + 1 < w)
+                    {
+                        if (y > 0)
+                        {
+                            v += p[row - stride + x + 1];
+                            d++;
+                        }
+
+                        if (alpha[arow + x + 1] > 0)
+                        {
+                            v += 2.0f * p[row + x + 1];
+                            d += 2.0f;
+                        }
+
+                        if (y > 0 && alpha[arow - w + x + 1] > 0)
+                        {
+                            v += 2.0f * p[row - stride + x + 1];
+                            d += 2.0f;
+                        }
+
+                        if (y + 1 < h && alpha[arow + w + x + 1] > 0)
+                        {
+                            v += 2.0f * p[row + stride + x + 1];
+                            d += 2.0f;
+                        }
+                    }
+
+                    if (y > 0 && alpha[arow - w + x] > 0)
+                    {
+                        v += 2.0f * p[row - stride + x];
+                        d += 2.0f;
+                    }
+
+                    if (y + 1 < h && alpha[arow + w + x] > 0)
+                    {
+                        v += 2.0f * p[row + stride + x];
+                        d += 2.0f;
+                    }
+
+                    p[row + x] = d > 1.0f ? v / d : v;
+                }
+
+                p.AsSpan(row + w, stride - w).Fill(p[row + w - 1]);
+            }
+
+            for (int y = h; y < paddedHeight; y++)
+            {
+                p.AsSpan((h - 1) * stride, stride).CopyTo(p.AsSpan(y * stride, stride));
+            }
         }
     }
 
@@ -375,7 +474,8 @@ internal sealed class JxlVarDctEncoder
             settings = settings with { Distance = (original * 0.25f) + 0.25f };
         }
 
-        JxlVarDctEncoder e = new(image, settings, intensityTarget, upsampling, original);
+        JxlVarDctEncoder e = new(image, settings, intensityTarget, upsampling, original, header.Alpha);
+        e.PrepareExtraChannels(image, header);
         e.ChooseParameters();
         e.ComputeCoefficients();
         e.QuantizeLf();
@@ -723,6 +823,67 @@ internal sealed class JxlVarDctEncoder
     }
 
     /// <summary>
+    /// Turns the alpha and black planes into the frame's extra channels: integers of their bit depth, box-averaged to the frame
+    /// size when it is coded at half size (libjxl's ec_resampling), then their Modular streams and tree.
+    /// </summary>
+    private void PrepareExtraChannels(JxlLinearImage image, JxlEncodeInput header)
+    {
+        List<(int[] Data, int Bits)> planes = [];
+        if (header.Alpha is not null)
+        {
+            planes.Add((header.Alpha, header.AlphaBitDepth.BitsPerSample));
+        }
+
+        if (image.Black is float[] black)
+        {
+            int max = (1 << header.BlackBitDepth.BitsPerSample) - 1;
+            planes.Add(([.. black.Select(v => (int)MathF.Round(Math.Clamp(v, 0, 1) * max))], header.BlackBitDepth.BitsPerSample));
+        }
+
+        _extraCount = planes.Count;
+        if (planes.Count == 0)
+        {
+            return;
+        }
+
+        List<JxlChannel> channels = [];
+        foreach ((int[] data, _) in planes)
+        {
+            JxlChannel ch = new(_width, _height, 0, 0);
+            if (_upsampling == 1)
+            {
+                data.CopyTo(ch.Data, 0);
+            }
+            else
+            {
+                int fw = image.Width, fh = image.Height;
+                for (int y = 0; y < _height; y++)
+                {
+                    for (int x = 0; x < _width; x++)
+                    {
+                        float sum = 0;
+                        int cnt = 0;
+                        for (int iy = 0; iy < 2 && (2 * y) + iy < fh; iy++)
+                        {
+                            for (int ix = 0; ix < 2 && (2 * x) + ix < fw; ix++)
+                            {
+                                sum += data[(((2 * y) + iy) * fw) + (2 * x) + ix];
+                                cnt++;
+                            }
+                        }
+
+                        ch.Data[(y * _width) + x] = (int)((sum / cnt) + 0.5f);
+                    }
+                }
+            }
+
+            channels.Add(ch);
+        }
+
+        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, planes.Max(p => p.Bits), Speed, _width, _height, _settings.Parallelism);
+    }
+
+    /// <summary>
     /// libjxl's FindBestPatchDictionary at effort 7: text-like patches, else from distance 3 dots, packed into a reference-only
     /// Modular frame (RoundtripPatchFrame: XYB quantized by factors from the distance, coded losslessly as Y, X and B − Y), whose
     /// reconstruction is then taken out of the image where each patch goes.
@@ -776,11 +937,18 @@ internal sealed class JxlVarDctEncoder
         }
 
         _patchWidth = rw;
-        JxlPatchBlending[] add = [new JxlPatchBlending(JxlPatchBlendMode.Add, 0, false)];
+        JxlPatchBlending[] add = [new JxlPatchBlending(JxlPatchBlendMode.Add, 0, false), .. Enumerable.Repeat(new JxlPatchBlending(JxlPatchBlendMode.None, 0, false), _extraCount)];
         _patches = [.. info.Select((p, i) => new JxlPatch(3, places[i].X, places[i].Y, p.Width, p.Height, [.. p.Positions.Select(t => new JxlPatchTarget(t.X, t.Y, add))]))];
 
         int groupShift = JxlModularEncoder.GroupShift(rw, rh);
         List<JxlChannel> channels = [new JxlChannel(rw, rh, 0, 0) { Data = cy }, new JxlChannel(rw, rh, 0, 0) { Data = cx }, new JxlChannel(rw, rh, 0, 0) { Data = cb }];
+
+        // The extra channels are in every frame: zero here, as libjxl's placeholders.
+        for (int i = 0; i < _extraCount; i++)
+        {
+            channels.Add(new JxlChannel(rw, rh, 0, 0));
+        }
+
         List<byte[]> sections = JxlModularEncoder.Encode(channels, 3, 8, Speed, rw, rh, groupShift, _settings.Parallelism, stored);
         JxlBitWriter w = new();
         w.WriteBool(false);
@@ -788,6 +956,11 @@ internal sealed class JxlVarDctEncoder
         w.Write(1, 1); // Modular
         w.WriteU64(0);
         w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1); // upsampling
+        for (int i = 0; i < _extraCount; i++)
+        {
+            w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1);
+        }
+
         w.Write((ulong)groupShift, 2);
         w.WriteBool(true); // the frame's own size
         JxlU32 dim = new(0, 8, 256, 11, 2304, 14, 18688, 30);
@@ -877,7 +1050,10 @@ internal sealed class JxlVarDctEncoder
                     tokens.Add(new JxlToken(6, PackSigned(p.Targets[j].Y - p.Targets[j - 1].Y)));
                 }
 
-                tokens.Add(new JxlToken(5, (uint)JxlPatchBlendMode.Add));
+                foreach (JxlPatchBlending b in p.Targets[j].Blending)
+                {
+                    tokens.Add(new JxlToken(5, (uint)b.Mode));
+                }
             }
         }
 
@@ -1969,11 +2145,20 @@ internal sealed class JxlVarDctEncoder
         w.Write(0, 1); // VarDCT
         w.WriteU64((_patches is null ? 0UL : 2UL) | (_noise is null ? 0UL : 1UL)); // patches, noise
         w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
+        for (int i = 0; i < _extraCount; i++)
+        {
+            w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
+        }
+
         w.Write((ulong)_xQmScale, 3);
         w.Write((ulong)_bQmScale, 3);
         w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 3), 1); // one pass
         w.WriteBool(false); // no crop
-        w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 3, 2), 0); // replace
+        for (int i = 0; i <= _extraCount; i++)
+        {
+            w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 3, 2), 0); // replace
+        }
+
         w.WriteBool(true); // last frame
         w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0); // no name
         // The restoration filters: all default is Gaborish with its default weights and one EPF iteration.
@@ -2032,14 +2217,40 @@ internal sealed class JxlVarDctEncoder
         // effort 3 (kFalconACMeta) and its fixed tree from effort 4 (kACMeta); merged on the stream id (MergeTrees).
         List<JxlTreeNode> dcTree = JxlModularEncoder.FixedTree(15, 6, Math.Max(dcPixels, 1), 8);
         List<JxlTreeNode> acmTree = effort >= 4 && acmPixels >= 1024 ? AcMetaTree() : [JxlTreeNode.Leaf(1)];
-        List<JxlTreeNode> tree = [new JxlTreeNode { Property = 1, SplitValue = acmStream0 - 1, Left = 1, Right = 1 + acmTree.Count }];
-        foreach (List<JxlTreeNode> sub in (List<JxlTreeNode>[])[acmTree, dcTree])
+        // With extra channels their own tree takes stream 0 and the group streams (above 3 per LF group).
+        List<JxlTreeNode> tree = [];
+        int Add(List<JxlTreeNode> sub)
         {
             int root = tree.Count;
             foreach (JxlTreeNode n in sub)
             {
                 tree.Add(n.Property < 0 ? n : n with { Left = n.Left + root, Right = n.Right + root });
             }
+
+            return root;
+        }
+
+        if (_extraTree is null)
+        {
+            tree.Add(new JxlTreeNode { Property = 1, SplitValue = acmStream0 - 1, Left = 1, Right = 1 + acmTree.Count });
+            Add(acmTree);
+            Add(dcTree);
+        }
+        else
+        {
+            tree.Add(default);
+            int high = Add(_extraTree);
+            int mid = tree.Count;
+            tree.Add(default);
+            int acm = Add(acmTree);
+            int low = tree.Count;
+            tree.Add(default);
+            int dc = Add(dcTree);
+            int whole = Add(_extraTree);
+            tree[0] = new JxlTreeNode { Property = 1, SplitValue = 3 * _lfGroups, Left = high, Right = mid };
+            tree[mid] = new JxlTreeNode { Property = 1, SplitValue = acmStream0 - 1, Left = acm, Right = low };
+            tree[low] = new JxlTreeNode { Property = 1, SplitValue = 0, Left = dc, Right = whole };
+            tree = Prune(tree);
         }
 
         List<List<JxlToken>> treeTokens = [[]];
@@ -2062,7 +2273,37 @@ internal sealed class JxlVarDctEncoder
         });
 
         List<List<JxlToken>> modularTokens = [.. streamTokens];
-        int[] widths = [.. streams.Select(s => s.Channels.Max(ch => ch.Width))];
+        List<int> widths = [.. streams.Select(s => s.Channels.Max(ch => ch.Width))];
+
+        // The extra channels' tokens, per stream id.
+        Dictionary<int, List<JxlToken>> extraTokens = [];
+        if (_extraStreams is not null)
+        {
+            int[] ids = [.. Enumerable.Range(0, _extraStreams.Length).Where(i => _extraStreams[i].Channels.Count > 0)];
+            List<JxlToken>[] parts = new List<JxlToken>[ids.Length];
+            Parallel.For(0, ids.Length, _parallel, k =>
+            {
+                JxlEncodeImage img = _extraStreams[ids[k]];
+                List<JxlToken> t = [];
+                for (int c = 0; c < img.CodedPrefix(GroupDim); c++)
+                {
+                    if (img.Channels[c].Width > 0 && img.Channels[c].Height > 0)
+                    {
+                        t.AddRange(JxlModularEncoder.Tokenize(img.Channels[c], c, ids[k], property, value, left, right, predictor, context, usesWp));
+                    }
+                }
+
+                parts[k] = t;
+            });
+            for (int k = 0; k < ids.Length; k++)
+            {
+                extraTokens[ids[k]] = parts[k];
+                modularTokens.Add(parts[k]);
+                JxlEncodeImage img = _extraStreams[ids[k]];
+                widths.Add(img.Channels.Take(img.CodedPrefix(GroupDim)).Select(ch => ch.Width).DefaultIfEmpty(0).Max());
+            }
+        }
+
 
         // The HF tokens of every pass group.
         List<JxlToken>[] acTokens = new List<JxlToken>[_groups];
@@ -2097,6 +2338,10 @@ internal sealed class JxlVarDctEncoder
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
         JxlEntropyCode code = JxlEntropyCode.Write(global, mp with { ImageWidths = widths }, context.Max() + 1, modularTokens);
+        if (_extraStreams is not null)
+        {
+            JxlModularEncoder.WriteStream(global, _extraStreams[0], code, extraTokens.GetValueOrDefault(0, []));
+        }
 
         // LF groups.
         JxlBitWriter[] lfGroups = new JxlBitWriter[_lfGroups];
@@ -2136,6 +2381,12 @@ internal sealed class JxlVarDctEncoder
         {
             JxlBitWriter w = new();
             acCode.WriteTokens(w, ac[g]);
+            int id = 1 + (3 * _lfGroups) + 17 + g;
+            if (_extraStreams is not null && extraTokens.TryGetValue(id, out List<JxlToken>? groupTokens))
+            {
+                JxlModularEncoder.WriteStream(w, _extraStreams[id], code, groupTokens);
+            }
+
             passGroups[g] = w;
         });
 
@@ -2154,6 +2405,65 @@ internal sealed class JxlVarDctEncoder
         sections.Add(Padded(hf));
         sections.AddRange(passGroups.Select(Padded));
         return sections;
+    }
+
+    /// <summary>
+    /// Drops the decisions a merged tree can no longer take the other way (the extra channels' tree tests the stream id too),
+    /// which libjxl's decoder refuses: each node's split must lie inside the range its ancestors leave for the property.
+    /// </summary>
+    private static List<JxlTreeNode> Prune(List<JxlTreeNode> tree)
+    {
+        List<JxlTreeNode> output = [];
+        Dictionary<int, (long Low, long High)> ranges = [];
+
+        int Visit(int node)
+        {
+            JxlTreeNode n = tree[node];
+            while (n.Property >= 0)
+            {
+                (long low, long high) = ranges.TryGetValue(n.Property, out var r) ? r : (int.MinValue, int.MaxValue);
+                if (n.SplitValue < low)
+                {
+                    n = tree[n.Left];
+                }
+                else if (n.SplitValue >= high)
+                {
+                    n = tree[n.Right];
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            int at = output.Count;
+            output.Add(n);
+            if (n.Property < 0)
+            {
+                return at;
+            }
+
+            bool had = ranges.TryGetValue(n.Property, out var saved);
+            (long lo, long hi) = had ? saved : (int.MinValue, int.MaxValue);
+            ranges[n.Property] = (n.SplitValue + 1, hi);
+            int left = Visit(n.Left);
+            ranges[n.Property] = (lo, n.SplitValue);
+            int right = Visit(n.Right);
+            if (had)
+            {
+                ranges[n.Property] = saved;
+            }
+            else
+            {
+                ranges.Remove(n.Property);
+            }
+
+            output[at] = n with { Left = left, Right = right };
+            return at;
+        }
+
+        Visit(0);
+        return output;
     }
 
     private static byte[] Padded(JxlBitWriter w)

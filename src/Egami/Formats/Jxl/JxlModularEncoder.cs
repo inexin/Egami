@@ -83,6 +83,37 @@ internal sealed class JxlModularEncoder
         return e.Run(channels, bitDepth);
     }
 
+    /// <summary>
+    /// Prepares the extra channels of a VarDCT frame (Phase 2.9.7), coded losslessly beside the VarDCT data: global palettes, the
+    /// channels larger than a group split into the groups' streams (with local palettes), and the tree for them; gives every
+    /// stream of the frame by id, the extra channels' alone filled.
+    /// </summary>
+    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int bitDepth, int effort, int width, int height, int parallelism)
+    {
+        int groups = Ceil(width, 256) * Ceil(height, 256);
+        int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
+        JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + groups, false, parallelism);
+        for (int i = 0; i < e._streams.Length; i++)
+        {
+            e._streams[i] = new JxlEncodeImage(bitDepth);
+        }
+
+        JxlEncodeImage gi = e._streams[0];
+        gi.Channels.AddRange(channels);
+        e.TryPalettes(gi, effort >= 2 || bitDepth > 8 ? 95 : 0);
+        int prefix = gi.CodedPrefix(e._groupDim);
+        if (prefix < gi.Channels.Count)
+        {
+            Parallel.For(0, e._groups, e._parallel, g => e.PrepareGroup(gi, g, prefix));
+            for (int c = prefix; c < gi.Channels.Count; c++)
+            {
+                gi.Channels[c].Data = [];
+            }
+        }
+
+        return (e._streams, e.BuildTree());
+    }
+
     private static int Ceil(int a, int b) => (a + b - 1) / b;
 
     private int GroupStream(int g) => 1 + (3 * _lfGroups) + 17 + g;
@@ -187,7 +218,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Writes a stream: its header (global tree, default WP parameters, transforms) and tokens, or nothing when it has no channels.</summary>
-    private static void WriteStream(JxlBitWriter w, JxlEncodeImage image, JxlEntropyCode code, List<JxlToken> tokens)
+    internal static void WriteStream(JxlBitWriter w, JxlEncodeImage image, JxlEntropyCode code, List<JxlToken> tokens)
     {
         if (image.Channels.Count == 0)
         {
