@@ -14,6 +14,9 @@ internal sealed record JxlLossySettings
     /// <summary>Gets the ISO of the photon noise the decoder adds, or 0 for none.</summary>
     internal float PhotonNoiseIso { get; init; }
 
+    /// <summary>Gets whether the frame is progressive as cjxl -p makes it: an LF frame and the HF in three passes.</summary>
+    internal bool Progressive { get; init; }
+
     /// <summary>Gets the distance alpha is coded at: 0 lossless, more for lossy Modular.</summary>
     internal float AlphaDistance { get; init; }
 
@@ -99,8 +102,14 @@ internal sealed class JxlVarDctEncoder
 
     // Each pass group's quantized coefficients, per channel, varblock after varblock in the coefficient layout.
     private readonly int[][][] _coeffs;
-    private readonly int[][] _orders = new int[NumOrders * 3][];
-    private int _usedOrders;
+    // Per pass: the coefficients (the whole set when there is one pass), the coefficient orders and which are sent.
+    private int[][][][] _passCoeffs = [];
+    private int[][][] _passOrders = [new int[NumOrders * 3][]];
+    private int[] _passUsed = [0];
+    private int _passes = 1;
+
+    // With Progressive: the LF frame (frame header, TOC and sections) that carries the LF image.
+    private byte[]? _lfFrame;
 
     // The block context map (HfBlockContext): the default one, or from effort 4 one clustered by the quantization field.
     private byte[] _blockContexts = DefaultBlockContexts;
@@ -482,6 +491,15 @@ internal sealed class JxlVarDctEncoder
         e.ChooseParameters();
         e.ComputeCoefficients();
         e.QuantizeLf();
+        if (settings.Progressive)
+        {
+            e.MakeProgressive();
+        }
+        else
+        {
+            e._passCoeffs = [e._coeffs];
+        }
+
         e.ComputeOrders();
         e.FindBlockEntropyModel();
         e.ChooseEpfSharpness(header);
@@ -504,6 +522,11 @@ internal sealed class JxlVarDctEncoder
         if (_patchFrame is not null)
         {
             w.Append(_patchFrame);
+        }
+
+        if (_lfFrame is not null)
+        {
+            w.Append(_lfFrame);
         }
 
         WriteFrameHeader(w);
@@ -826,6 +849,136 @@ internal sealed class JxlVarDctEncoder
     }
 
     /// <summary>
+    /// cjxl -p: the HF split into three passes by frequency (libjxl's progressive_passes_dc_vlf_lf_full_ac: each varblock's
+    /// coefficients within twice its LF size, then three times, then the rest), and, unless the frame is coded at half size
+    /// (libjxl refuses both), the LF image moved into an LF frame: lossy Modular XYB, squeezed, at 2% of the distance.
+    /// </summary>
+    private void MakeProgressive()
+    {
+        _passes = 3;
+        ReadOnlySpan<int> limits = [2, 3, 8];
+        _passCoeffs = new int[3][][][];
+        for (int p = 0; p < 3; p++)
+        {
+            _passCoeffs[p] = new int[_groups][][];
+        }
+
+        for (int g = 0; g < _groups; g++)
+        {
+            for (int p = 0; p < 3; p++)
+            {
+                _passCoeffs[p][g] = [new int[_coeffs[g][0].Length], new int[_coeffs[g][1].Length], new int[_coeffs[g][2].Length]];
+            }
+
+            (int x0, int y0, int gw, int gh) = GroupRect(g);
+            int offset = 0;
+            for (int y = 0; y < gh; y++)
+            {
+                for (int x = 0; x < gw; x++)
+                {
+                    int at = ((y0 + y) * _blocksX) + x0 + x;
+                    if (!_isFirst[at])
+                    {
+                        continue;
+                    }
+
+                    (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)_strategy[at]);
+                    int xs = Math.Max(w8, h8), ys = Math.Min(w8, h8);
+                    int size = w8 * h8 * 64;
+                    int done = 1;
+                    for (int p = 0; p < 3; p++)
+                    {
+                        int n = limits[p];
+                        for (int c = 0; c < 3; c++)
+                        {
+                            int[] src = _coeffs[g][c];
+                            int[] dst = _passCoeffs[p][g][c];
+                            for (int cy = 0; cy < ys * n; cy++)
+                            {
+                                for (int cx = 0; cx < xs * n; cx++)
+                                {
+                                    if (cx < xs * done && cy < ys * done)
+                                    {
+                                        continue;
+                                    }
+
+                                    int pos = offset + (cy * xs * 8) + cx;
+                                    dst[pos] = src[pos];
+                                }
+                            }
+                        }
+
+                        done = n;
+                    }
+
+                    offset += size;
+                }
+            }
+        }
+
+        if (_upsampling != 1)
+        {
+            return;
+        }
+
+        // The LF frame: Y, X and B - Y of the LF image, quantized by enc_modular's XYB factors (65536, 4096 and 4096 when squeezed).
+        int lw = _blocksX, lh = _blocksY, n2 = lw * lh;
+        float[] stored = [128.0f / 65536, 128.0f / 4096, 128.0f / 4096];
+        int[] cy2 = new int[n2], cx2 = new int[n2], cb2 = new int[n2];
+        for (int i = 0; i < n2; i++)
+        {
+            float x = _lf[0][i], y = _lf[1][i], b = _lf[2][i];
+            cy2[i] = (int)((y * 4096.0f) + (y < 0 ? -0.5f : 0.5f));
+            cx2[i] = (int)((x * 65536.0f) + (x < 0 ? -0.5f : 0.5f));
+            cb2[i] = (int)((b * 4096.0) + 0.5f) - cy2[i];
+        }
+
+        List<JxlChannel> channels = [new JxlChannel(lw, lh, 0, 0) { Data = cy2 }, new JxlChannel(lw, lh, 0, 0) { Data = cx2 }, new JxlChannel(lw, lh, 0, 0) { Data = cb2 }];
+        for (int i = 0; i < _extraCount; i++)
+        {
+            channels.Add(new JxlChannel(lw, lh, 0, 0));
+        }
+
+        float distance = MathF.Max(0.05f * 0.02f, _settings.Distance * 0.02f);
+        List<byte[]> sections = JxlModularEncoder.EncodeLossyXyb(channels, distance, Math.Min(9, Speed + 1), lw, lh, _settings.Parallelism, stored);
+        JxlBitWriter w = new();
+        w.WriteBool(false);
+        w.Write(1, 2); // LF frame
+        w.Write(1, 1); // Modular
+        w.WriteU64(0);
+        w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1); // upsampling
+        for (int i = 0; i < _extraCount; i++)
+        {
+            w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1);
+        }
+
+        w.Write(1, 2); // group size shift
+        w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 3), 1); // one pass
+        w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 0), 1); // LF level 1
+        w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0); // no name
+        w.WriteBool(false); // loop filter: Gaborish off, no EPF
+        w.WriteBool(false);
+        w.Write(0, 2);
+        w.WriteNoExtensions();
+        w.WriteNoExtensions();
+        w.WriteBool(false); // no TOC permutation
+        w.ZeroPadToByte();
+        JxlU32 tocSize = new(0, 10, 1024, 14, 17408, 22, 4211712, 30);
+        foreach (byte[] sec in sections)
+        {
+            w.WriteU32(tocSize, (uint)sec.Length);
+        }
+
+        w.ZeroPadToByte();
+        foreach (byte[] sec in sections)
+        {
+            w.Append(sec);
+        }
+
+        _lfFrame = w.ToArray();
+    }
+
+    /// <summary>
     /// Turns the alpha and black planes into the frame's extra channels: integers of their bit depth, box-averaged to the frame
     /// size when it is coded at half size (libjxl's ec_resampling), then their Modular streams and tree.
     /// </summary>
@@ -884,7 +1037,7 @@ internal sealed class JxlVarDctEncoder
         }
 
         float[] distances = [.. planes.Select((p, i) => i == 0 && header.Alpha is not null ? _settings.AlphaDistance : 0f)];
-        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], distances, Speed, _width, _height, _settings.Parallelism);
+        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], distances, Speed, _width, _height, _settings.Parallelism, _settings.Progressive ? 3 : 1);
     }
 
     /// <summary>
@@ -1923,6 +2076,19 @@ internal sealed class JxlVarDctEncoder
     /// </summary>
     private void ComputeOrders()
     {
+        _passOrders = new int[_passes][][];
+        _passUsed = new int[_passes];
+        for (int p = 0; p < _passes; p++)
+        {
+            _passOrders[p] = new int[NumOrders * 3][];
+            ComputeOrders(p);
+        }
+    }
+
+    /// <summary>libjxl's ComputeCoeffOrder for one pass, from that pass's coefficients.</summary>
+    private void ComputeOrders(int pass)
+    {
+        int[][][] coeffs = _passCoeffs[pass];
         uint used;
         uint customize;
         if (Speed <= 3)
@@ -1992,7 +2158,7 @@ internal sealed class JxlVarDctEncoder
                         int cy = Math.Min(w8, h8);
                         for (int c = 0; c < 3; c++)
                         {
-                            int[] p = _coeffs[g][c];
+                            int[] p = coeffs[g][c];
                             long[] zeros = numZeros[ord][c];
                             for (int k = 0; k < size; k++)
                             {
@@ -2058,18 +2224,18 @@ internal sealed class JxlVarDctEncoder
 
             for (int c = 0; c < 3; c++)
             {
-                _orders[(ord * 3) + c] = orders[c];
+                _passOrders[pass][(ord * 3) + c] = orders[c];
             }
         }
 
-        _usedOrders = (int)customize;
+        _passUsed[pass] = (int)customize;
     }
 
     /// <summary>Gets the order of a channel for an order id: the chosen one when it is sent, else the natural order.</summary>
-    private int[] Order(int orderId, int c) => (_usedOrders & (1 << orderId)) != 0 ? _orders[(orderId * 3) + c] : JxlHfPass.Natural(orderId);
+    private int[] Order(int orderId, int c, int pass) => (_passUsed[pass] & (1 << orderId)) != 0 ? _passOrders[pass][(orderId * 3) + c] : JxlHfPass.Natural(orderId);
 
     /// <summary>Tokenizes a pass group's coefficients (TokenizeCoefficients), Y, X then B for each varblock.</summary>
-    private List<JxlToken> TokenizeGroup(int g)
+    private List<JxlToken> TokenizeGroup(int g, int pass)
     {
         (int x0, int y0, int w, int h) = GroupRect(g);
         List<JxlToken> tokens = new(w * h * 3 * 16);
@@ -2104,9 +2270,9 @@ internal sealed class JxlVarDctEncoder
                 for (int k = 0; k < 3; k++)
                 {
                     int c = channels[k];
-                    ReadOnlySpan<int> block = _coeffs[g][c].AsSpan(offsets[c], size);
+                    ReadOnlySpan<int> block = _passCoeffs[pass][g][c].AsSpan(offsets[c], size);
                     offsets[c] += size;
-                    int[] order = Order(orderId, c);
+                    int[] order = Order(orderId, c, pass);
                     int nz = 0;
                     for (int i = covered; i < size; i++)
                     {
@@ -2147,16 +2313,31 @@ internal sealed class JxlVarDctEncoder
         w.WriteBool(false);
         w.Write(0, 2); // regular frame
         w.Write(0, 1); // VarDCT
-        w.WriteU64((_patches is null ? 0UL : 2UL) | (_noise is null ? 0UL : 1UL)); // patches, noise
-        w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
-        for (int i = 0; i < _extraCount; i++)
+        w.WriteU64((_patches is null ? 0UL : 2UL) | (_noise is null ? 0UL : 1UL) | (_lfFrame is null ? 0UL : 0x20UL)); // patches, noise, LF frame
+        if (_lfFrame is null)
         {
             w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
+            for (int i = 0; i < _extraCount; i++)
+            {
+                w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), (uint)_upsampling);
+            }
         }
 
         w.Write((ulong)_xQmScale, 3);
         w.Write((ulong)_bQmScale, 3);
-        w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 3), 1); // one pass
+        w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 3), (uint)_passes);
+        if (_passes == 3)
+        {
+            // libjxl's progressive_passes_dc_vlf_lf_full_ac: no shifts; the first pass for 4× and up, the second for 2×.
+            w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 3, 1), 2);
+            w.Write(0, 2);
+            w.Write(0, 2);
+            w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 4);
+            w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 2);
+            w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 0, 3), 0);
+            w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 0, 3), 1);
+        }
+
         w.WriteBool(false); // no crop
         for (int i = 0; i <= _extraCount; i++)
         {
@@ -2204,7 +2385,8 @@ internal sealed class JxlVarDctEncoder
         int[] metaCounts = new int[_lfGroups];
         for (int g = 0; g < _lfGroups; g++)
         {
-            List<JxlChannel> dc = LfChannels(g);
+            // With an LF frame the LF groups carry no LF image.
+            List<JxlChannel> dc = _lfFrame is null ? LfChannels(g) : [];
             dcPixels += dc.Sum(ch => (long)ch.Width * ch.Height);
             streams.Add((dcStream0 + g, dc));
         }
@@ -2279,7 +2461,7 @@ internal sealed class JxlVarDctEncoder
         });
 
         List<List<JxlToken>> modularTokens = [.. streamTokens];
-        List<int> widths = [.. streams.Select(s => s.Channels.Max(ch => ch.Width))];
+        List<int> widths = [.. streams.Select(s => s.Channels.Select(ch => ch.Width).DefaultIfEmpty(0).Max())];
 
         // The extra channels' tokens, per stream id.
         Dictionary<int, List<JxlToken>> extraTokens = [];
@@ -2311,9 +2493,9 @@ internal sealed class JxlVarDctEncoder
         }
 
 
-        // The HF tokens of every pass group.
-        List<JxlToken>[] acTokens = new List<JxlToken>[_groups];
-        Parallel.For(0, _groups, _parallel, g => acTokens[g] = TokenizeGroup(g));
+        // The HF tokens of every pass group, pass after pass.
+        List<JxlToken>[] acTokens = new List<JxlToken>[_groups * _passes];
+        Parallel.For(0, _groups * _passes, _parallel, i => acTokens[i] = TokenizeGroup(i % _groups, i / _groups));
 
         // LF global.
         JxlBitWriter global = new();
@@ -2354,8 +2536,12 @@ internal sealed class JxlVarDctEncoder
         Parallel.For(0, _lfGroups, _parallel, g =>
         {
             JxlBitWriter w = new();
-            w.Write((ulong)_lfPrecision, 2);
-            WriteStream(w, code, modularTokens[g]);
+            if (_lfFrame is null)
+            {
+                w.Write((ulong)_lfPrecision, 2);
+                WriteStream(w, code, modularTokens[g]);
+            }
+
             if (_extraStreams is not null && extraTokens.TryGetValue(1 + _lfGroups + g, out List<JxlToken>? lfTokens))
             {
                 // The extra channels squeezed 3 or more both ways.
@@ -2368,15 +2554,10 @@ internal sealed class JxlVarDctEncoder
             lfGroups[g] = w;
         });
 
-        // HF global: the default matrices, one HF preset, the orders and the HF distributions.
+        // HF global: the default matrices, one HF preset, then per pass the orders and the HF distributions.
         JxlBitWriter hf = new();
         hf.WriteBool(true);
         hf.Write(0, CeilLog2(_groups));
-        hf.WriteU32(new JxlU32(0x5F, 0, 0x13, 0, 0, 0, 0, 13), (uint)_usedOrders);
-        if (_usedOrders != 0)
-        {
-            WriteOrders(hf);
-        }
 
         // HistogramParams for the HF tokens: at most four clusters above effort 3 (libjxl's kFastest), then fast clustering.
         JxlHistogramParams acp = new()
@@ -2386,23 +2567,36 @@ internal sealed class JxlVarDctEncoder
             AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
             MaxHistograms = effort <= 2 ? 4 : int.MaxValue,
         };
-        List<List<JxlToken>> ac = [.. acTokens];
-        JxlEntropyCode acCode = JxlEntropyCode.Write(hf, acp, (NonZeroBuckets + ZeroDensityContexts) * _blockClusters, ac);
-        JxlBitWriter[] passGroups = new JxlBitWriter[_groups];
-        Parallel.For(0, _groups, _parallel, g =>
+        JxlEntropyCode[] acCodes = new JxlEntropyCode[_passes];
+        for (int pass = 0; pass < _passes; pass++)
         {
+            hf.WriteU32(new JxlU32(0x5F, 0, 0x13, 0, 0, 0, 0, 13), (uint)_passUsed[pass]);
+            if (_passUsed[pass] != 0)
+            {
+                WriteOrders(hf, pass);
+            }
+
+            List<List<JxlToken>> ac = [.. acTokens.Skip(pass * _groups).Take(_groups)];
+            acCodes[pass] = JxlEntropyCode.Write(hf, acp, (NonZeroBuckets + ZeroDensityContexts) * _blockClusters, ac);
+        }
+
+        // The extra channels not squeezed go with the last pass; squeezed ones with the pass of their shift.
+        JxlBitWriter[] passGroups = new JxlBitWriter[_groups * _passes];
+        Parallel.For(0, _groups * _passes, _parallel, i =>
+        {
+            int g = i % _groups, pass = i / _groups;
             JxlBitWriter w = new();
-            acCode.WriteTokens(w, ac[g]);
-            int id = 1 + (3 * _lfGroups) + 17 + g;
+            acCodes[pass].WriteTokens(w, acTokens[i]);
+            int id = 1 + (3 * _lfGroups) + 17 + i;
             if (_extraStreams is not null && extraTokens.TryGetValue(id, out List<JxlToken>? groupTokens))
             {
                 JxlModularEncoder.WriteStream(w, _extraStreams[id], code, groupTokens);
             }
 
-            passGroups[g] = w;
+            passGroups[i] = w;
         });
 
-        if (_groups == 1)
+        if (_groups == 1 && _passes == 1)
         {
             JxlBitWriter all = global;
             all.AppendBits(lfGroups[0]);
@@ -2614,12 +2808,12 @@ internal sealed class JxlVarDctEncoder
     }
 
     /// <summary>Writes the sent coefficient orders as Lehmer codes against the natural order (EncodeCoeffOrders), the LLF skipped.</summary>
-    private void WriteOrders(JxlBitWriter w)
+    private void WriteOrders(JxlBitWriter w, int pass)
     {
         List<JxlToken> tokens = [];
         for (int ord = 0; ord < NumOrders; ord++)
         {
-            if ((_usedOrders & (1 << ord)) == 0)
+            if ((_passUsed[pass] & (1 << ord)) == 0)
             {
                 continue;
             }
@@ -2635,7 +2829,7 @@ internal sealed class JxlVarDctEncoder
 
             for (int c = 0; c < 3; c++)
             {
-                int[] order = _orders[(ord * 3) + c];
+                int[] order = _passOrders[pass][(ord * 3) + c];
                 int[] perm = new int[size];
                 for (int i = 0; i < size; i++)
                 {

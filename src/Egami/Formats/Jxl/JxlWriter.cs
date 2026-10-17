@@ -412,6 +412,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 PhotonNoiseIso = options.PhotonNoiseIso ?? 0,
                 SimplifyInvisible = !options.KeepTransparentColors,
                 AlphaDistance = options.AlphaDistance,
+                Progressive = options.Progressive,
             };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings, _rows.IntensityTarget);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
@@ -632,6 +633,13 @@ public sealed class JxlWriterOptions : WriterOptions
     /// default as for WebP, keeps it as well as lossy coding does. Lossless files always keep it.
     /// </summary>
     public bool KeepTransparentColors { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether lossy files are progressive as cjxl -p makes them: the LF image in a frame of its own (squeezed, so a 1:8
+    /// and smaller preview comes first) and the HF coefficients in three passes by frequency, so a partial file shows a
+    /// coarse image that sharpens. Files grow slightly. Defaults to <see langword="false"/>. Lossless files ignore it.
+    /// </summary>
+    public bool Progressive { get; init; }
 
     /// <summary>
     /// Gets the distance alpha is written at in lossy files, on <see cref="Distance"/>'s scale: 0 (the default) keeps alpha

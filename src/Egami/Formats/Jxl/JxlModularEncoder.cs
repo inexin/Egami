@@ -47,6 +47,7 @@ internal sealed class JxlModularEncoder
     private readonly bool _color;
     private readonly ParallelOptions _parallel;
     private float[]? _lfDequant;
+    private int _lastPass;
 
     private JxlModularEncoder(int effort, int width, int height, int groupShift, int streams, bool color, int parallelism)
     {
@@ -87,14 +88,15 @@ internal sealed class JxlModularEncoder
     /// Prepares the extra channels of a VarDCT frame (Phase 2.9.7), coded losslessly beside the VarDCT data: global palettes, the
     /// channels larger than a group split into the groups' streams (with local palettes), and the tree for them; gives every
     /// stream of the frame by id, the extra channels' alone filled. A channel with a distance above 0 (in
-    /// <paramref name="distances"/>) makes them all go through libjxl's lossy Modular instead (squeezed and quantized).
+    /// <paramref name="distances"/>) makes them all go through libjxl's lossy Modular instead (squeezed and quantized). With
+    /// several <paramref name="passes"/>, the channels go with the last.
     /// </summary>
-    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism)
+    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1)
     {
         int bitDepth = bits.Max();
         int groups = Ceil(width, 256) * Ceil(height, 256);
         int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
-        JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + groups, false, parallelism);
+        JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + (passes * groups), false, parallelism) { _lastPass = (passes - 1) * groups };
         for (int i = 0; i < e._streams.Length; i++)
         {
             e._streams[i] = new JxlEncodeImage(bitDepth);
@@ -104,7 +106,9 @@ internal sealed class JxlModularEncoder
         gi.Channels.AddRange(channels);
         if (distances.Any(d => d > 0))
         {
-            return e.PrepareLossy(gi, bits, distances, lfGroups);
+            // enc_modular's extra channel quantizers: luma table, bit depth corrected.
+            float[] quantizers = [.. distances.Select((d, i) => 0.25f * d * (((1 << bits[i]) - 1) / 255.0f))];
+            return e.PrepareLossy(gi, (comp, shift) => (int)(quantizers[comp] * 0.35f * 1.1f * LumaTable[shift]), lfGroups);
         }
 
         e.TryPalettes(gi, effort >= 2 || bitDepth > 8 ? 95 : 0);
@@ -123,17 +127,137 @@ internal sealed class JxlModularEncoder
 
     private static int Ceil(int a, int b) => (a + b - 1) / b;
 
+    // enc_modular's squeeze quantization tables: luma (and extra channels), and Y, X and B - Y of XYB.
+    private static readonly float[] LumaTable = [163.84f, 81.92f, 40.96f, 20.48f, 10.24f, 5.12f, 2.56f, 1.28f, 0.64f, 0.32f, 0.16f, 0.08f, 0.04f, 0.02f, 0.01f, 0.005f];
+
+    private static readonly float[][] XybTable =
+    [
+        [163.84f, 81.92f, 40.96f, 20.48f, 10.24f, 5.12f, 2.56f, 1.28f, 0.64f, 0.32f, 0.16f, 0.08f, 0.04f, 0.02f, 0.01f, 0.005f],
+        [1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f],
+        [2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5f, 0.5f, 0.5f, 0.5f],
+    ];
+
+    /// <summary>
+    /// Encodes a lossy Modular XYB frame's channels (Y, X and B - Y as integers, then zero extra channels) as libjxl does for a
+    /// progressive LF frame: squeezed, quantized on the XYB tables at <paramref name="distance"/>, with the LF dequantization
+    /// multipliers (times 128) in <paramref name="lfDequant"/>; gives the sections in TOC order.
+    /// </summary>
+    internal static List<byte[]> EncodeLossyXyb(List<JxlChannel> channels, float distance, int effort, int width, int height, int parallelism, float[] lfDequant)
+    {
+        int groups = Ceil(width, 256) * Ceil(height, 256);
+        int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
+        JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + groups, false, parallelism) { _lfDequant = lfDequant };
+        for (int i = 0; i < e._streams.Length; i++)
+        {
+            e._streams[i] = new JxlEncodeImage(12);
+        }
+
+        JxlEncodeImage gi = e._streams[0];
+        gi.Channels.AddRange(channels);
+        float q0 = 0.25f * MathF.Pow(distance, 1.2f);
+        (_, List<JxlTreeNode> tree) = e.PrepareLossy(gi, (comp, shift) =>
+        {
+            if (comp >= 3)
+            {
+                return 1;
+            }
+
+            float q = q0 * 4.0f * XybTable[comp][shift];
+            return (int)(comp == 0 ? q * 1.5f : q);
+        }, lfGroups);
+        return e.WriteFrame(tree, lfGroups);
+    }
+
+    /// <summary>Codes the streams under <paramref name="tree"/> and gives the frame's sections: LF global, LF groups, HF global, groups.</summary>
+    private List<byte[]> WriteFrame(List<JxlTreeNode> tree, int lfGroups)
+    {
+        List<List<JxlToken>> treeTokens = [[]];
+        List<int> multipliers = [];
+        (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0], multipliers);
+        int[] multiplier = [.. multipliers];
+        bool usesWp = property.Any(p => p == 15) || property.Select((p, i) => p < 0 && predictor[i] == 6).Any(b => b);
+        List<(int Stream, int Channel)> units = Units();
+        List<JxlToken>[] parts = new List<JxlToken>[units.Count];
+        Parallel.For(0, units.Count, _parallel, u =>
+        {
+            (int st, int ch) = units[u];
+            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, multiplier);
+        });
+        List<List<JxlToken>> tokens = [.. _streams.Select(_ => new List<JxlToken>())];
+        int[] widths = new int[_streams.Length];
+        for (int u = 0; u < units.Count; u++)
+        {
+            (int st, int ch) = units[u];
+            tokens[st].AddRange(parts[u]);
+            widths[st] = Math.Max(widths[st], _streams[st].Channels[ch].Width);
+        }
+
+        JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
+        JxlBitWriter global = new();
+        global.WriteBool(_lfDequant is null);
+        foreach (float m in _lfDequant ?? [])
+        {
+            global.WriteF16(m);
+        }
+
+        global.WriteBool(true);
+        JxlEntropyCode treeCode = JxlEntropyCode.Write(global, p, 6, treeTokens);
+        treeCode.WriteTokens(global, treeTokens[0]);
+        JxlEntropyCode code = JxlEntropyCode.Write(global, p with { ImageWidths = widths }, context.Max() + 1, tokens);
+        WriteStream(global, _streams[0], code, tokens[0]);
+        List<JxlBitWriter> sections = [global];
+        for (int lf = 0; lf < lfGroups; lf++)
+        {
+            JxlBitWriter w = new();
+            WriteStream(w, _streams[1 + lfGroups + lf], code, tokens[1 + lfGroups + lf]);
+            sections.Add(w);
+        }
+
+        sections.Add(new JxlBitWriter());
+        for (int g = 0; g < _groups; g++)
+        {
+            JxlBitWriter w = new();
+            WriteStream(w, _streams[GroupStream(g)], code, tokens[GroupStream(g)]);
+            sections.Add(w);
+        }
+
+        if (_groups == 1)
+        {
+            JxlBitWriter all = sections[0];
+            for (int i = 1; i < sections.Count; i++)
+            {
+                all.AppendBits(sections[i]);
+            }
+
+            all.ZeroPadToByte();
+            return [all.ToArray()];
+        }
+
+        return [.. sections.Select(w =>
+        {
+            w.ZeroPadToByte();
+            return w.ToArray();
+        })];
+    }
+
     /// <summary>
     /// libjxl's lossy Modular for a VarDCT frame's extra channels: the default squeeze (cut where shifts would pass 8, or 11
     /// once both pass 3), each channel quantized by its distance and its shift on the luma table, the squeezed channels
     /// split into the global stream, the LF groups' (shifts of 3 and more both ways) and the groups'; coded under a tree that
     /// gives each stream's channel the gradient predictor and its quantizer as the residual multiplier.
     /// </summary>
-    private (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareLossy(JxlEncodeImage gi, int[] bits, float[] distances, int lfGroups)
+    private (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareLossy(JxlEncodeImage gi, Func<int, int, int> quantizer, int lfGroups)
     {
         int n = gi.Channels.Count;
         List<JxlSqueezeStep> steps = [];
         int w = gi.Channels[0].Width, h = gi.Channels[0].Height;
+        if (n > 2 && gi.Channels[1].Width == w && gi.Channels[1].Height == h)
+        {
+            // Channels 1 and 2 taken as chroma, squeezed first for 4:2:0 previews.
+            steps.Add(new JxlSqueezeStep(true, false, 1, 2));
+            steps.Add(new JxlSqueezeStep(false, false, 1, 2));
+        }
+
         if (w <= h && h > 8)
         {
             steps.Add(new JxlSqueezeStep(false, true, 0, n));
@@ -180,18 +304,18 @@ internal sealed class JxlModularEncoder
         List<int> component = [.. Enumerable.Range(0, n)];
         foreach (JxlSqueezeStep step in steps)
         {
+            int offset = step.InPlace ? step.Begin + step.Count : gi.Channels.Count;
             for (int c = step.Begin; c < step.Begin + step.Count; c++)
             {
                 (JxlChannel avg, JxlChannel res) = step.Horizontal ? SqueezeHorizontal(gi.Channels[c]) : SqueezeVertical(gi.Channels[c]);
                 gi.Channels[c] = avg;
-                int at = step.Begin + step.Count + (c - step.Begin);
+                int at = offset + (c - step.Begin);
                 gi.Channels.Insert(at, res);
                 component.Insert(at, component[c]);
             }
         }
 
         gi.Transforms.Add(new JxlSqueeze(truncated ? steps : []));
-        ReadOnlySpan<float> lumaTable = [163.84f, 81.92f, 40.96f, 20.48f, 10.24f, 5.12f, 2.56f, 1.28f, 0.64f, 0.32f, 0.16f, 0.08f, 0.04f, 0.02f, 0.01f, 0.005f];
         int[] quant = new int[gi.Channels.Count];
         for (int i = 0; i < gi.Channels.Count; i++)
         {
@@ -202,10 +326,7 @@ internal sealed class JxlModularEncoder
                 shift--;
             }
 
-            int comp = component[i];
-            float quantizer = 0.25f * distances[comp] * (((1 << bits[comp]) - 1) / 255.0f);
-            int q = (int)(quantizer * 0.35f * 1.1f * lumaTable[Math.Min(shift, 15)]);
-            q = Math.Max(q, 1);
+            int q = Math.Max(quantizer(component[i], Math.Min(shift, 15)), 1);
             quant[i] = q;
             if (q > 1)
             {
@@ -246,7 +367,9 @@ internal sealed class JxlModularEncoder
                     Array.Copy(fc.Data, ((cy + y) * fc.Width) + cx, part.Data, y * gw, gw);
                 }
 
-                int id = lf ? 1 + lfGroups + g : GroupStream(g);
+                // With three passes (cjxl -p), a channel squeezed twice goes in the first, once in the second.
+                int pass = _lastPass == 0 ? 0 : Math.Min(fc.HShift, fc.VShift) switch { 2 => 0, 1 => 1, _ => 2 };
+                int id = lf ? 1 + lfGroups + g : 1 + (3 * lfGroups) + 17 + (pass * _groups) + g;
                 _streams[id].Channels.Add(part);
                 (channelsOf.TryGetValue(id, out List<int>? list) ? list : channelsOf[id] = []).Add(c);
             }
@@ -416,7 +539,8 @@ internal sealed class JxlModularEncoder
         return (int)diff;
     }
 
-    private int GroupStream(int g) => 1 + (3 * _lfGroups) + 17 + g;
+    // The group streams of the last pass, which hold every channel not squeezed (all of them when there is one pass).
+    private int GroupStream(int g) => 1 + (3 * _lfGroups) + 17 + _lastPass + g;
 
     private List<byte[]> Run(List<JxlChannel> channels, int bitDepth)
     {

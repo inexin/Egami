@@ -153,8 +153,9 @@ internal static class JxlImageDecoder
     }
 
     /// <summary>
-    /// Decodes the last frame of a bare codestream the lossy encoder wrote, a VarDCT frame, to its XYB planes before the
-    /// restoration filters and patches, cropped to the frame, for the encoder's own reconstruction (Phase 2.9.7's EPF search).
+    /// Decodes the last frame of a bare codestream the lossy encoder wrote, a VarDCT frame (with its LF frame, if any), to its
+    /// XYB planes before the restoration filters and patches, cropped to the frame, for the encoder's own reconstruction (Phase
+    /// 2.9.7's EPF search).
     /// </summary>
     internal static float[][] DecodeXyb(byte[] codestream, int parallelism)
     {
@@ -163,9 +164,17 @@ internal static class JxlImageDecoder
         {
             (JxlFile file, byte[] data) = Open(input, ReaderOptions.Default);
             List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
+            JxlParallel parallel = new(Math.Max(1, parallelism), CancellationToken.None);
+            float[][]?[] lfFrames = new float[4][][];
+            foreach ((JxlFrameHeader lf, JxlToc toc, long offset) in sequence.Where(s => s.Header.Type == JxlFrameType.Lf))
+            {
+                JxlFrameDecoder lfDecoder = new(data, file.Header, lf, toc, offset, input.Limits) { Parallel = parallel };
+                lfFrames[lf.LfLevel - 1] = Render(lf, lfDecoder.Decode(lfFrames[lf.LfLevel]), file.Header, new JxlReference?[4], 0, 0, parallel).Planes[..3];
+            }
+
             JxlFrameHeader f = sequence[^1].Header;
-            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[^1].Toc, sequence[^1].Offset, input.Limits) { Parallel = new JxlParallel(Math.Max(1, parallelism), CancellationToken.None) };
-            JxlFrameChannels frame = decoder.Decode(null);
+            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[^1].Toc, sequence[^1].Offset, input.Limits) { Parallel = parallel };
+            JxlFrameChannels frame = decoder.Decode(lfFrames[f.LfLevel]);
             return [.. frame.ColorPlanes!.Select((plane, c) => Crop(plane, frame.ColorStrides[c], frame.Width, frame.Height))];
         }
         finally
