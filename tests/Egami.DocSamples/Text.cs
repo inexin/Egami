@@ -386,9 +386,10 @@ public class Text
         // Installed fonts, found without native calls and indexed on first use; a style is matched by the CSS rules.
         FontMatch? match = FontCollection.System.Match(GenericFamily.SansSerif, FontStyle.Bold);
 
-        // Your own fonts work the same way.
+        // Your own fonts work the same way; System is read-only, so add the installed fonts to your collection to have both.
         var fonts = new FontCollection();
         fonts.AddFile(FontFile);
+        fonts.AddSystemFonts();
         FontMatch noto = fonts.Match("Noto Sans", FontStyle.BoldItalic)!.Value;
         Font font = noto.ToFont(16);
         #endregion

@@ -142,6 +142,27 @@ public class MatchingTests
     }
 
     [Fact]
+    public void TheInstalledFontsAreReadOnlyAndCopyIntoYourOwn()
+    {
+        FontCollection system = FontCollection.System;
+        Assert.Throws<InvalidOperationException>(() => system.Add(TestFonts.Load("Roboto-Regular.ttf")));
+        Assert.Throws<InvalidOperationException>(() => system.AddFile(TestFonts.FontPath("Roboto-Regular.ttf")));
+        Assert.Throws<InvalidOperationException>(() => system.AddDirectory(Path.Combine(TestFonts.Root, "tests", "fonts")));
+        Assert.Throws<InvalidOperationException>(() => system.AddSystemFonts());
+
+        var fonts = new FontCollection();
+        fonts.Add(TestFonts.Load("Roboto-Regular.ttf"));
+        int faces = system.Sum(f => f.Styles.Count);
+        Assert.Equal(faces, fonts.AddSystemFonts());
+        Assert.Equal(faces + 1, fonts.Sum(f => f.Styles.Count));
+        Assert.NotNull(fonts.MatchTypeface("Roboto", FontStyle.Normal));
+        foreach (FontFamily family in system.Families.Take(3))
+        {
+            Assert.True(fonts.TryGetFamily(family.Name, out _));
+        }
+    }
+
+    [Fact]
     public void UnreadableFilesAreSkippedWithADiagnostic()
     {
         string dir = Directory.CreateTempSubdirectory("egami-fonts").FullName;

@@ -39,6 +39,17 @@ internal sealed class FaceEntry
         Instance = instance;
     }
 
+    private FaceEntry(FaceEntry face, FontFileSource source)
+    {
+        _source = source;
+        Index = face.Index;
+        Family = face.Family;
+        Style = face.Style;
+        Names = face.Names;
+        Range = face.Range;
+        Instance = face.Instance;
+    }
+
     /// <summary>Gets the axis ranges of a variable face's range entry, which matching can place anywhere on its axes.</summary>
     public VariableRange? Range { get; }
 
@@ -97,6 +108,26 @@ internal sealed class FaceEntry
     public NameSet Names { get; }
 
     public string? Path => _source?.Path;
+
+    /// <summary>
+    /// Returns this file-backed entry unloaded, for another collection that loads it with its own options; entries copied with
+    /// the same <paramref name="sources"/> share a file's bytes as before.
+    /// </summary>
+    public FaceEntry CopyUnloaded(Dictionary<FontFileSource, FontFileSource> sources)
+    {
+        if (_source is null)
+        {
+            return this;
+        }
+
+        if (!sources.TryGetValue(_source, out FontFileSource? source))
+        {
+            source = new FontFileSource(_source.Path);
+            sources.Add(_source, source);
+        }
+
+        return new FaceEntry(this, source);
+    }
 
     /// <summary>Loads the face on first use; faces of one file share its bytes.</summary>
     public Typeface GetTypeface(FontLoadOptions options)

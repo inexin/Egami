@@ -89,7 +89,8 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     /// <summary>
     /// Gets the fonts installed on this machine, found without native calls by scanning the platform's font directories (Windows:
     /// the Windows and per-user Fonts folders; macOS: the System, Library and user Fonts folders; Linux: the fontconfig dir
-    /// entries and the usual share/fonts folders). Indexed on first use; <see cref="Refresh"/> rescans.
+    /// entries and the usual share/fonts folders). Indexed on first use; <see cref="Refresh"/> rescans. It is read-only: to match
+    /// your own fonts beside the installed ones, call <see cref="AddSystemFonts"/> on a collection of your own.
     /// </summary>
     public static FontCollection System => s_system.Value;
 
@@ -146,9 +147,11 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
 
     /// <summary>Adds a loaded face.</summary>
     /// <param name="typeface">The face.</param>
+    /// <exception cref="InvalidOperationException">The collection is <see cref="System"/>, which is read-only.</exception>
     public void Add(Typeface typeface)
     {
         ArgumentNullException.ThrowIfNull(typeface);
+        ThrowIfSystem();
         Append(FaceEntry.Of(typeface));
     }
 
@@ -157,9 +160,11 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     /// <returns>The number of faces added.</returns>
     /// <exception cref="UnsupportedFormatException">The file is not a TrueType or OpenType font or collection.</exception>
     /// <exception cref="CorruptDataException">The file's headers cannot be read.</exception>
+    /// <exception cref="InvalidOperationException">The collection is <see cref="System"/>, which is read-only.</exception>
     public int AddFile(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
+        ThrowIfSystem();
         var found = new List<FaceEntry>();
         FaceIndexer.Index(path, found, Options);
         Append(found);
@@ -171,15 +176,36 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     /// <param name="recursive">Whether to look in subdirectories too.</param>
     /// <returns>The number of faces added.</returns>
     /// <exception cref="DirectoryNotFoundException">The directory does not exist.</exception>
+    /// <exception cref="InvalidOperationException">The collection is <see cref="System"/>, which is read-only.</exception>
     public int AddDirectory(string path, bool recursive = true)
     {
         ArgumentNullException.ThrowIfNull(path);
+        ThrowIfSystem();
         if (!Directory.Exists(path))
         {
             throw new DirectoryNotFoundException($"The directory '{path}' does not exist.");
         }
 
         List<FaceEntry> found = IndexFiles(FontFiles(path, recursive), Options);
+        Append(found);
+        return found.Count;
+    }
+
+    /// <summary>
+    /// Adds the installed fonts, as <see cref="System"/> has indexed them (indexing them first if it has not yet), so they can be
+    /// matched beside your own. The faces load with this collection's <see cref="Options"/>; <see cref="Refresh"/> on
+    /// <see cref="System"/> later does not change them.
+    /// </summary>
+    /// <returns>The number of faces added.</returns>
+    /// <exception cref="InvalidOperationException">The collection is <see cref="System"/>, which is read-only.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="match"/>
+    /// </example>
+    public int AddSystemFonts()
+    {
+        ThrowIfSystem();
+        var sources = new Dictionary<FontFileSource, FontFileSource>();
+        List<FaceEntry> found = [.. System.Entries.Select(e => e.CopyUnloaded(sources))];
         Append(found);
         return found.Count;
     }
@@ -479,6 +505,14 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
             results[i] = found;
         });
         return [.. results.SelectMany(r => r)];
+    }
+
+    private void ThrowIfSystem()
+    {
+        if (_isSystem)
+        {
+            throw new InvalidOperationException("FontCollection.System is read-only: add fonts to a FontCollection of your own, and call AddSystemFonts on it for the installed ones.");
+        }
     }
 
     private void Append(List<FaceEntry> added)

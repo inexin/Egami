@@ -167,8 +167,9 @@ box as `TextBounds`, the line count and the vertical metrics.
 ## Installed fonts and matching
 
 `FontCollection.System` finds the installed fonts without native calls, by scanning the platform's font folders (and fontconfig's
-dir entries on Linux), and indexes them on first use from the name and OS/2 tables only. A `FontCollection` of your own takes faces,
-files and folders. Families are found by typographic, legacy, full or PostScript name in any language, and
+dir entries on Linux), and indexes them on first use from the name and OS/2 tables only. It is read-only. A `FontCollection` of
+your own takes faces, files and folders, and `AddSystemFonts` copies the installed fonts into it, so your fonts and the machine's
+are matched together. Families are found by typographic, legacy, full or PostScript name in any language, and
 `FontFamily.Match` picks a face by the CSS Fonts 4 rules for a `FontStyle` (weight, width and `FontSlant`). The `FontMatch`
 records the `FontSynthesis` a lighter or upright face would need; `GenericFamily` names fixed per-platform lists.
 

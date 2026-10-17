@@ -2126,3 +2126,4 @@ static Egami.Fonts.CidSystemInfo.operator !=(Egami.Fonts.CidSystemInfo? left, Eg
 static Egami.Fonts.CidSystemInfo.operator ==(Egami.Fonts.CidSystemInfo? left, Egami.Fonts.CidSystemInfo? right) -> bool
 ~override Egami.Fonts.CharacterMapping.Equals(object obj) -> bool
 ~override Egami.Fonts.CharacterMapping.ToString() -> string
+Egami.Fonts.FontCollection.AddSystemFonts() -> int

@@ -435,6 +435,9 @@ Settled in the 1.0 API review, changes from 0.2.0:
 
 - Fixed: shaping a run longer than 65,536 characters threw on a thread that had shaped a short run before, because the shaper
   kept the short run's limits. Each run now gets limits from its own length.
+- Breaking: `FontCollection.System` is read-only; `Add`, `AddFile` and `AddDirectory` on it throw `InvalidOperationException`.
+  To match your own fonts beside the installed ones, call the new `FontCollection.AddSystemFonts` on a collection of your own:
+  it copies the installed-font index, and the faces load with that collection's options.
 - `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
   face on each call.
 
