@@ -480,6 +480,9 @@ internal sealed partial class Vp8Decoder : IDisposable
 
         if (workers == 1)
         {
+            // One thread: each row is reconstructed whole, then filtered, as libvpx does, so an intra macroblock finds the
+            // unfiltered pixels to its left in the frame and inter macroblocks need not keep copies of theirs.
+            _main.DeferFilter = true;
             for (int mby = 0; mby < MbHeight; mby++)
             {
                 DecodeVideoRow(mby, _main, null);
@@ -736,7 +739,7 @@ internal sealed partial class Vp8Decoder : IDisposable
 
             DecodeMacroblock(mbx, mby, _macroblocks![first + mbx], c, ref tokens);
             Vp8StageTimes.Lap(Vp8Stage.Reconstruct);
-            if (_filterType > 0)
+            if (_filterType > 0 && !c.DeferFilter)
             {
                 FilterMacroblock(mbx, mby, c);
                 Vp8StageTimes.Lap(Vp8Stage.Filter);
@@ -747,12 +750,24 @@ internal sealed partial class Vp8Decoder : IDisposable
                 Volatile.Write(ref progress[mby], mbx + 1);
             }
         }
+
+        if (_filterType > 0 && c.DeferFilter)
+        {
+            // In raster order as before; no reconstruction in the row reads a pixel the filter changes.
+            for (int mbx = 0; mbx < MbWidth; mbx++)
+            {
+                FilterMacroblock(mbx, mby, c);
+            }
+
+            Vp8StageTimes.Lap(Vp8Stage.Filter);
+        }
     }
 
     /// <summary>Sets up a row's left contexts and the left and top edges of its work buffers: 129 down the left, 127 above the first row.</summary>
     private static void StartRow(int mby, Row c)
     {
         Array.Clear(c.NzLeft);
+        c.LeftInter = false;
         Span<byte> wy = c.WorkY;
         Span<byte> wu = c.WorkU;
         Span<byte> wv = c.WorkV;
@@ -1118,8 +1133,31 @@ internal sealed partial class Vp8Decoder : IDisposable
         ref byte u0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkU), C0);
         ref byte v0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkV), C0);
 
-        // The left samples (and the corner) from the macroblock just reconstructed.
-        if (mbx > 0)
+        // The left samples (and the corner) from the macroblock just reconstructed: from the frame after an inter macroblock
+        // when the row is filtered only once it is whole (the frame holds them unfiltered then), else from the work buffers.
+        if (mbx > 0 && c.LeftInter && c.DeferFilter)
+        {
+            ref byte fy = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsY), c.RowY + (mbx * 16) - 4);
+            ref byte fu = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsU), c.RowC + (mbx * 8) - 4);
+            ref byte fv = ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsV), c.RowC + (mbx * 8) - 4);
+            _ = RowsY.Slice(c.RowY + (mbx * 16) - 4 + (15 * StrideY), 4);
+            _ = RowsU.Slice(c.RowC + (mbx * 8) - 4 + (7 * StrideC), 4);
+            _ = RowsV.Slice(c.RowC + (mbx * 8) - 4 + (7 * StrideC), 4);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, -S - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref y0, -S + 12)));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, -S - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref u0, -S + 4)));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, -S - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref v0, -S + 4)));
+            for (int j = 0; j < 16; j++)
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, (j * S) - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fy, j * StrideY)));
+            }
+
+            for (int j = 0; j < 8; j++)
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, (j * S) - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fu, j * StrideC)));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, (j * S) - 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fv, j * StrideC)));
+            }
+        }
+        else if (mbx > 0)
         {
             for (int j = -1; j < 16; j++)
             {
@@ -1133,6 +1171,7 @@ internal sealed partial class Vp8Decoder : IDisposable
             }
         }
 
+        c.LeftInter = false;
         if (mby > 0)
         {
             _topY.AsSpan(mbx * 16, 16).CopyTo(wy.Slice(Y0 - S, 16));
@@ -1268,15 +1307,21 @@ internal sealed partial class Vp8Decoder : IDisposable
         ref byte y0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkY), Y0);
         ref byte u0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkU), C0);
         ref byte v0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.WorkV), C0);
-        for (int j = 0; j < 16; j++)
+        c.LeftInter = true;
+        if (!c.DeferFilter)
         {
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, (j * S) + 12), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fy, (j * StrideY) + 12)));
-        }
+            // Filtered macroblock by macroblock, this one's right columns are changed before the next one is reconstructed:
+            // keep them unfiltered for an intra macroblock to its right.
+            for (int j = 0; j < 16; j++)
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref y0, (j * S) + 12), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fy, (j * StrideY) + 12)));
+            }
 
-        for (int j = 0; j < 8; j++)
-        {
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, (j * S) + 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fu, (j * StrideC) + 4)));
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, (j * S) + 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fv, (j * StrideC) + 4)));
+            for (int j = 0; j < 8; j++)
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref u0, (j * S) + 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fu, (j * StrideC) + 4)));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref v0, (j * S) + 4), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref fv, (j * StrideC) + 4)));
+            }
         }
 
         if (mby > 0)
@@ -1506,6 +1551,12 @@ internal sealed partial class Vp8Decoder : IDisposable
 
         /// <summary>Whether any block of the macroblock being reconstructed has a residual.</summary>
         internal bool AnyCoefficients;
+
+        /// <summary>Whether the row is filtered only once it is whole (one-thread video), not macroblock by macroblock.</summary>
+        internal bool DeferFilter;
+
+        /// <summary>Whether the macroblock to the left of the one being reconstructed was an inter macroblock.</summary>
+        internal bool LeftInter;
     }
 
     /// <summary>Receives the rows a call to <see cref="DecodeRow"/> made final: luma rows [from, to) and chroma rows [chromaFrom, chromaTo).</summary>
