@@ -30,6 +30,9 @@ internal sealed record JxlEncodeInput
     /// <summary>Gets an ICC profile to store instead of an enumerated encoding, or <see langword="null"/>.</summary>
     internal byte[]? Icc { get; init; }
 
+    /// <summary>Gets the cd/m² of the brightest light (ToneMapping's intensity_target): 255 for SDR, 10,000 for PQ, 1,000 for HLG.</summary>
+    internal float IntensityTarget { get; init; } = 255;
+
     /// <summary>Gets the EXIF orientation, 1 to 8.</summary>
     internal int Orientation { get; init; } = 1;
 
@@ -112,7 +115,7 @@ internal static class JxlLosslessEncoder
 
         // ImageMetadata, written out: lossless keeps its color space instead of XYB, and lossy names its own.
         w.WriteBool(false);
-        bool extra = input.Orientation != 1;
+        bool extra = input.Orientation != 1 || input.IntensityTarget != 255;
         w.WriteBool(extra);
         if (extra)
         {
@@ -157,7 +160,15 @@ internal static class JxlLosslessEncoder
         WriteColorEncoding(w, input);
         if (extra)
         {
-            w.WriteBool(true); // default tone mapping
+            bool tone = input.IntensityTarget == 255;
+            w.WriteBool(tone); // default tone mapping
+            if (!tone)
+            {
+                w.WriteF16(input.IntensityTarget);
+                w.WriteF16(0); // min_nits
+                w.WriteBool(false); // relative_to_max_display
+                w.WriteF16(0); // linear_below
+            }
         }
 
         w.WriteNoExtensions();

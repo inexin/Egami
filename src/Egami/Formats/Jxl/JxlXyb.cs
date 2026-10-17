@@ -135,11 +135,16 @@ internal static class JxlXyb
 
 /// <summary>
 /// Fills <see cref="JxlLinearImage"/> row by row, as a row encoder receives them: each row through the 2.1.2 transform from the
-/// raster's profile to linear sRGB (linear gray for gray rasters), and the black ink of CMYK rows.
+/// raster's profile to linear sRGB (linear gray for gray rasters), and the black ink of CMYK rows. PQ and HLG rows keep their
+/// highlights, as libjxl's encoder takes them: display light over the intensity target (10,000 cd/m² for PQ, 1,000 for HLG,
+/// after the HLG OOTF), then into sRGB primaries.
 /// </summary>
 internal sealed class JxlLinearRows
 {
     private readonly ColorTransform _transform;
+    private readonly ColorTransform? _primaries;
+    private readonly bool _pq;
+    private readonly float[] _luminances = [0.2627f, 0.6780f, 0.0593f];
     private readonly int _width;
     private readonly RgbF32[] _rgb;
     private readonly GrayF32[] _gray;
@@ -149,6 +154,21 @@ internal sealed class JxlLinearRows
     {
         _width = width;
         bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha || profile.Model == ColorModel.Gray;
+        if (profile.IsHdr && !gray && profile.Primaries is ColorPrimaries primaries)
+        {
+            // The signal is decoded here; the 2.1.2 transform only changes the linear primaries.
+            _pq = profile.Transfer!.Equals(TransferFunction.Pq);
+            IntensityTarget = _pq ? 10000 : 1000;
+            _primaries = ColorTransform.Create(ColorProfile.Create(primaries, TransferFunction.Linear), ColorProfile.LinearSrgb);
+            RgbF32[] unit = [new(1, 0, 0), new(0, 1, 0), new(0, 0, 1)];
+            RgbF32[] srgb = new RgbF32[3];
+            _primaries.Apply<RgbF32, RgbF32>(unit, srgb);
+            for (int i = 0; i < 3; i++)
+            {
+                _luminances[i] = (0.2126f * srgb[i].R) + (0.7152f * srgb[i].G) + (0.0722f * srgb[i].B);
+            }
+        }
+
         _transform = ColorTransform.Create(profile, gray ? ColorProfile.GrayLinear : ColorProfile.LinearSrgb);
         _rgb = new RgbF32[width];
         _gray = new GrayF32[width];
@@ -163,6 +183,22 @@ internal sealed class JxlLinearRows
 
     /// <summary>Gets the image the rows are written into.</summary>
     internal JxlLinearImage Image { get; }
+
+    /// <summary>SMPTE ST 2084's EOTF over 10,000 cd/m², or the HLG inverse OETF (scene light), of a signal.</summary>
+    private float Eotf(float e)
+    {
+        if (_pq)
+        {
+            double p = Math.Pow(Math.Max(e, 0), 4096.0 / (2523 * 128));
+            return (float)Math.Pow(Math.Max(p - (3424.0 / 4096), 0) / ((2413.0 / 4096 * 32) - (2392.0 / 4096 * 32 * p)), 16384.0 / 2610);
+        }
+
+        double v = Math.Max(e, 0);
+        return (float)(v <= 0.5 ? v * v / 3 : (Math.Exp((v - 0.55991073) / 0.17883277) + 0.28466892) / 12);
+    }
+
+    /// <summary>Gets the cd/m² that 1.0 in the planes stands for: 255 for SDR, as libjxl's SetIntensityTarget for PQ and HLG.</summary>
+    internal float IntensityTarget { get; } = 255;
 
     /// <summary>Converts row <paramref name="y"/> into the planes.</summary>
     internal void Add<TPixel>(ReadOnlySpan<TPixel> row, int y)
@@ -182,7 +218,31 @@ internal sealed class JxlLinearRows
             return;
         }
 
-        _transform.Apply<TPixel, RgbF32>(row, _rgb);
+        if (_primaries is not null)
+        {
+            PixelConvert.Convert(row, _rgb.AsSpan());
+            for (int x = 0; x < _width; x++)
+            {
+                RgbF32 p = _rgb[x];
+                float r = Eotf(p.R), g = Eotf(p.G), b = Eotf(p.B);
+                if (!_pq)
+                {
+                    // The HLG OOTF at 1,000 cd/m²: system gamma 1.2 on the scene luminance.
+                    float ys = (_luminances[0] * r) + (_luminances[1] * g) + (_luminances[2] * b);
+                    float k = ys > 0 ? MathF.Pow(ys, 0.2f) : 0;
+                    (r, g, b) = (r * k, g * k, b * k);
+                }
+
+                _rgb[x] = new RgbF32(r, g, b);
+            }
+
+            _primaries.Apply<RgbF32, RgbF32>(_rgb, _rgb);
+        }
+        else
+        {
+            _transform.Apply<TPixel, RgbF32>(row, _rgb);
+        }
+
         for (int x = 0; x < _width; x++)
         {
             (color[0][at + x], color[1][at + x], color[2][at + x]) = (_rgb[x].R, _rgb[x].G, _rgb[x].B);

@@ -32,12 +32,12 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         if (!jxl.WritesLossless(start.Metadata))
         {
             start.Refuse("JPEG XL", "Lossy encoding", "Save from a whole raster.");
-            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc);
+            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
             return new LossyEncoder<TPixel>(output, start, jxl);
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
-        SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc;
+        SaveKeeps keeps = SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap;
         SaveLosses.Report(start, "JPEG XL", keeps);
         return new Encoder<TPixel>(output, start, jxl);
     }
@@ -96,8 +96,11 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         return planes.ToInput(effort);
     }
 
-    /// <summary>Gets the color encoding to write: enumerated when the space is one JPEG XL names, else the ICC profile.</summary>
-    internal static (JxlColorEncoding Encoding, byte[]? Icc) ColorOf(RasterMetadata metadata, WriterOptions options, bool gray)
+    /// <summary>
+    /// Gets the color encoding to write: enumerated when the space is one JPEG XL names, else the ICC profile; a lossy file
+    /// (<paramref name="lossy"/>) also names Display P3 and Rec. 2020 by enum, as libjxl does from their ICC.
+    /// </summary>
+    internal static (JxlColorEncoding Encoding, byte[]? Icc) ColorOf(RasterMetadata metadata, WriterOptions options, bool gray, bool lossy = false)
     {
         if (metadata.CodePoints is ColorCodePoints codes && ColorProfile.FromCodePoints(codes) is ColorProfile coded)
         {
@@ -139,6 +142,16 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 return (new JxlColorEncoding { TransferFunction = 8 }, null);
             }
 
+            if (lossy && profile is not null && !gray && profile.IsEquivalentTo(ColorProfile.DisplayP3))
+            {
+                return (new JxlColorEncoding { Primaries = 11 }, null);
+            }
+
+            if (lossy && profile is not null && !gray && profile.IsEquivalentTo(ColorProfile.Rec2020))
+            {
+                return (new JxlColorEncoding { Primaries = 9, TransferFunction = 1 }, null);
+            }
+
             return (new JxlColorEncoding(), icc.ToArray());
         }
 
@@ -146,9 +159,9 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
     }
 
     /// <summary>Wraps the codestream in the container (ISO/IEC 18181-2) with jbrd, Exif and xml boxes, or returns it bare when there are none.</summary>
-    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, bool compressBoxes = false)
+    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, bool compressBoxes = false, byte[]? gainMap = null)
     {
-        if (exif is null && xmp is null && jbrd is null)
+        if (exif is null && xmp is null && jbrd is null && gainMap is null)
         {
             output.Write(codestream);
             return;
@@ -159,6 +172,11 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         if (jbrd is not null)
         {
             Box(output, "jbrd", jbrd);
+        }
+
+        if (gainMap is not null)
+        {
+            Box(output, "jhgm", gainMap);
         }
 
         if (exif is not null)
@@ -173,6 +191,39 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         }
 
         Box(output, "jxlc", codestream);
+    }
+
+    /// <summary>
+    /// Makes the jhgm box's bundle (libjxl's JxlGainMapBundle): version 0, the ISO 21496-1 metadata, no color encoding or ICC
+    /// profile of the alternate image, and the map as a lossless codestream, so it loads back as it was.
+    /// </summary>
+    internal static byte[] GainMapBundle(GainMap map, int effort, int parallelism)
+    {
+        byte[] iso = Jpeg.JpegGainMapWriter.Iso(map.Info);
+        byte[] pixels = map.Pixels;
+        int n = map.Width * map.Height;
+        int[][] planes = [.. Enumerable.Range(0, map.Channels).Select(c =>
+        {
+            int[] plane = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                plane[i] = pixels[(i * map.Channels) + c];
+            }
+
+            return plane;
+        })];
+        byte[] codestream = JxlLosslessEncoder.Encode(new JxlEncodeInput { Width = map.Width, Height = map.Height, Color = planes, Effort = effort, Parallelism = parallelism });
+        using MemoryStream bundle = new();
+        bundle.WriteByte(0);
+        Span<byte> size = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt16BigEndian(size, (ushort)iso.Length);
+        bundle.Write(size[..2]);
+        bundle.Write(iso);
+        bundle.WriteByte(0);
+        BinaryPrimitives.WriteUInt32BigEndian(size, 0);
+        bundle.Write(size);
+        bundle.Write(codestream);
+        return bundle.ToArray();
     }
 
     /// <summary>Writes a metadata box, or a brob box holding it Brotli compressed at quality 4, as cjxl does for recompressed JPEGs.</summary>
@@ -257,7 +308,8 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
             byte[] codestream = JxlLosslessEncoder.Encode(input);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
-            WriteFile(output, codestream, exif, xmp);
+            byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, options.Effort, start.Context.MaxParallelism);
+            WriteFile(output, codestream, exif, xmp, gainMap: gainMap);
         }
     }
 
@@ -328,7 +380,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
             RasterMetadata metadata = start.Metadata;
             bool strip = options.StripMetadata;
             JxlLinearImage image = _rows.Image;
-            (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, image.IsGray);
+            (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, image.IsGray, lossy: true);
             int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
             int opaque = (1 << _alphaBits) - 1;
             int[]? alpha = _alpha is not null && !Array.TrueForAll(_alpha, v => v == opaque) ? _alpha : null;
@@ -350,6 +402,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 Alpha = alpha,
                 AlphaBitDepth = new JxlBitDepth(_alphaBits, 0),
                 HasBlack = image.Black is not null,
+                IntensityTarget = _rows.IntensityTarget,
             };
             JxlLossySettings settings = new()
             {
@@ -360,10 +413,11 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 SimplifyInvisible = !options.KeepTransparentColors,
                 AlphaDistance = options.AlphaDistance,
             };
-            byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings);
+            byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings, _rows.IntensityTarget);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
-            WriteFile(output, codestream, exif, xmp);
+            byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, options.Effort, start.Context.MaxParallelism);
+            WriteFile(output, codestream, exif, xmp, gainMap: gainMap);
         }
     }
 
