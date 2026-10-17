@@ -275,6 +275,24 @@ public class ColorManagement
     }
 
     [Fact]
+    public void InkProof()
+    {
+        InkSet inks = InkSet.FromProfile(ColorProfile.Fogra39).WithSpot("PANTONE 186 C", InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+        using InkRaster page = new(inks, 200, 100);
+        page.Plate("PANTONE 186 C")!.Row8(10).Fill(255);
+
+        #region ink-proof
+        // How the plates look on screen, and whether they print within the press's total ink limit.
+        using Raster<Rgba8> proof = page.Proof<Rgba8>(new ProofOptions { SimulatePaper = true });
+        InkCoverage coverage = page.MeasureCoverage(limit: 3.0f);
+        bool tooMuchInk = coverage.MaxTotal > coverage.Limit;      // where: coverage.MaxAt; how often: coverage.ShareOver
+        #endregion
+
+        Assert.False(tooMuchInk);
+        Assert.True(proof.Row(10)[0].G < 100);
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);

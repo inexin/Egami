@@ -148,6 +148,14 @@ none.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#ink-tiff)]
 
+`InkRaster.Proof` shows the plates on screen: each spot's appearance, scaled by its tint, adds to the process inks (capped at full
+ink, as Ghostscript's and MuPDF's overprint simulation do), and the result converts through the ink set's profile to sRGB or another
+RGB or gray profile in `ProofOptions`. Technical inks such as varnish do not show. `SimulatePaper` shows the paper's own tone
+(absolute colorimetric). `MeasureCoverage` totals the printing inks per pixel against a limit (300% by default) and gives each
+plate's mean coverage.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#ink-proof)]
+
 Presses with more than four process inks have n-colour ICC profiles (2CLR to FCLR): `ColorProfile.FromIcc` reads them as
 `ColorModel.NColor`, with `ChannelCount` inks named by `ColorantNames`, and `InkSet.FromProfile` takes those inks with their
 colours as appearances. No pixel type holds them, so conversions to and from such a profile run on float spans:

@@ -1557,6 +1557,21 @@ Egami.Formats.Webp.WebpWriterOptions.SharpYuv.init -> void
 Egami.Formats.Webp.WebpWriterOptions.WebpWriterOptions() -> void
 Egami.Formats.WriterOptions.OmitSrgbProfile.get -> bool
 Egami.Formats.WriterOptions.OmitSrgbProfile.init -> void
+Egami.InkCoverage
+Egami.InkCoverage.<Clone>$() -> Egami.InkCoverage!
+Egami.InkCoverage.Deconstruct(out float MaxTotal, out Egami.Point? MaxAt, out float Limit, out double ShareOver, out System.Collections.Generic.IReadOnlyDictionary<string!, double>! PerPlate) -> void
+Egami.InkCoverage.Equals(Egami.InkCoverage? other) -> bool
+Egami.InkCoverage.InkCoverage(float MaxTotal, Egami.Point? MaxAt, float Limit, double ShareOver, System.Collections.Generic.IReadOnlyDictionary<string!, double>! PerPlate) -> void
+Egami.InkCoverage.Limit.get -> float
+Egami.InkCoverage.Limit.init -> void
+Egami.InkCoverage.MaxAt.get -> Egami.Point?
+Egami.InkCoverage.MaxAt.init -> void
+Egami.InkCoverage.MaxTotal.get -> float
+Egami.InkCoverage.MaxTotal.init -> void
+Egami.InkCoverage.PerPlate.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>!
+Egami.InkCoverage.PerPlate.init -> void
+Egami.InkCoverage.ShareOver.get -> double
+Egami.InkCoverage.ShareOver.init -> void
 Egami.InkDepth
 Egami.InkDepth.Unorm16 = 1 -> Egami.InkDepth
 Egami.InkDepth.Unorm8 = 0 -> Egami.InkDepth
@@ -1577,8 +1592,10 @@ Egami.InkRaster.Dispose() -> void
 Egami.InkRaster.Height.get -> int
 Egami.InkRaster.InkRaster(Egami.Colors.InkSet! inks, int width, int height, Egami.InkDepth depth = Egami.InkDepth.Unorm8, Egami.EgamiContext? context = null) -> void
 Egami.InkRaster.Inks.get -> Egami.Colors.InkSet!
+Egami.InkRaster.MeasureCoverage(float limit = 3) -> Egami.InkCoverage!
 Egami.InkRaster.Plate(string! name) -> Egami.InkPlate?
 Egami.InkRaster.Plates.get -> System.Collections.Generic.IReadOnlyList<Egami.InkPlate!>!
+Egami.InkRaster.Proof<TPixel>(Egami.ProofOptions? options = null) -> Egami.Raster<TPixel>!
 Egami.InkRaster.Save(string! path, Egami.InkTiffOptions? options = null) -> void
 Egami.InkRaster.Save(System.IO.Stream! stream, Egami.InkTiffOptions? options = null) -> void
 Egami.InkRaster.Width.get -> int
@@ -2345,6 +2362,16 @@ Egami.Pixels.YuvPackedFormat.Yuyv = 4 -> Egami.Pixels.YuvPackedFormat
 Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Full = 0 -> Egami.Pixels.YuvRange
 Egami.Pixels.YuvRange.Limited = 1 -> Egami.Pixels.YuvRange
+Egami.ProofOptions
+Egami.ProofOptions.<Clone>$() -> Egami.ProofOptions!
+Egami.ProofOptions.BlackPointCompensation.get -> bool
+Egami.ProofOptions.BlackPointCompensation.init -> void
+Egami.ProofOptions.Equals(Egami.ProofOptions? other) -> bool
+Egami.ProofOptions.ProofOptions() -> void
+Egami.ProofOptions.SimulatePaper.get -> bool
+Egami.ProofOptions.SimulatePaper.init -> void
+Egami.ProofOptions.Target.get -> Egami.Colors.ColorProfile!
+Egami.ProofOptions.Target.init -> void
 Egami.Quantization.DitherMode.Atkinson = 3 -> Egami.Quantization.DitherMode
 Egami.Quantization.DitherMode.Bayer16x16 = 14 -> Egami.Quantization.DitherMode
 Egami.Quantization.DitherMode.Bayer2x2 = 12 -> Egami.Quantization.DitherMode
@@ -2675,6 +2702,9 @@ override Egami.Formats.Webp.WebpReaderOptions.<Clone>$() -> Egami.Formats.Webp.W
 override Egami.Formats.Webp.WebpReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Webp.WebpReaderOptions.GetHashCode() -> int
 override Egami.Formats.Webp.WebpReaderOptions.ToString() -> string!
+override Egami.InkCoverage.Equals(object? obj) -> bool
+override Egami.InkCoverage.GetHashCode() -> int
+override Egami.InkCoverage.ToString() -> string!
 override Egami.InkPlate.ToString() -> string!
 override Egami.InkTiffOptions.Equals(object? obj) -> bool
 override Egami.InkTiffOptions.GetHashCode() -> int
@@ -2773,6 +2803,9 @@ override Egami.Pixels.RgbF32.Equals(object? obj) -> bool
 override Egami.Pixels.RgbF32.GetHashCode() -> int
 override Egami.Pixels.RgbF32.ToString() -> string!
 override Egami.Pixels.YuvColor.GetHashCode() -> int
+override Egami.ProofOptions.Equals(object? obj) -> bool
+override Egami.ProofOptions.GetHashCode() -> int
+override Egami.ProofOptions.ToString() -> string!
 override Egami.SpritePackOptions.Equals(object? obj) -> bool
 override Egami.SpritePackOptions.GetHashCode() -> int
 override Egami.SpritePackOptions.ToString() -> string!
@@ -3036,6 +3069,8 @@ static Egami.Formats.Webp.WebpReaderOptions.Default.get -> Egami.Formats.Webp.We
 static Egami.Formats.Webp.WebpReaderOptions.operator !=(Egami.Formats.Webp.WebpReaderOptions? left, Egami.Formats.Webp.WebpReaderOptions? right) -> bool
 static Egami.Formats.Webp.WebpReaderOptions.operator ==(Egami.Formats.Webp.WebpReaderOptions? left, Egami.Formats.Webp.WebpReaderOptions? right) -> bool
 static Egami.Formats.Webp.WebpWriterOptions.Default.get -> Egami.Formats.Webp.WebpWriterOptions!
+static Egami.InkCoverage.operator !=(Egami.InkCoverage? left, Egami.InkCoverage? right) -> bool
+static Egami.InkCoverage.operator ==(Egami.InkCoverage? left, Egami.InkCoverage? right) -> bool
 static Egami.InkRaster.Load(string! path, Egami.Colors.ColorProfile? profile = null, Egami.EgamiContext? context = null) -> Egami.InkRaster!
 static Egami.InkRaster.Load(System.IO.Stream! stream, Egami.Colors.ColorProfile? profile = null, Egami.EgamiContext? context = null) -> Egami.InkRaster!
 static Egami.InkTiffOptions.operator !=(Egami.InkTiffOptions? left, Egami.InkTiffOptions? right) -> bool
@@ -3247,6 +3282,9 @@ static Egami.Pixels.YuvColor.Jpeg.get -> Egami.Pixels.YuvColor
 static Egami.Pixels.YuvColor.operator !=(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.operator ==(Egami.Pixels.YuvColor left, Egami.Pixels.YuvColor right) -> bool
 static Egami.Pixels.YuvColor.TryFromH273(int matrixCoefficients, bool fullRange, Egami.Pixels.ChromaSiting siting, out Egami.Pixels.YuvColor color) -> bool
+static Egami.ProofOptions.Default.get -> Egami.ProofOptions!
+static Egami.ProofOptions.operator !=(Egami.ProofOptions? left, Egami.ProofOptions? right) -> bool
+static Egami.ProofOptions.operator ==(Egami.ProofOptions? left, Egami.ProofOptions? right) -> bool
 static Egami.Quantization.Palette.Build(Egami.Raster! image, Egami.Quantization.PaletteOptions? options = null) -> Egami.Quantization.Palette!
 static Egami.Quantization.Palette.FromColors(System.ReadOnlySpan<Egami.Pixels.Rgba8> colors, int? transparentIndex = null) -> Egami.Quantization.Palette!
 static Egami.Quantization.Palette.FromRaster(Egami.Raster! image, int maxColors = 256) -> Egami.Quantization.Palette!

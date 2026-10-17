@@ -61,7 +61,7 @@ public enum InkDepth
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="ink-raster"/>
 /// </example>
-public sealed class InkRaster : IDisposable
+public sealed partial class InkRaster : IDisposable
 {
     private readonly InkPlate[] _plates;
     private bool _disposed;
