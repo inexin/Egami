@@ -36,6 +36,7 @@ public class BytePathTests
     [Theory]
     [InlineData("fast-20")]
     [InlineData("fast-7-linear")]
+    [InlineData("blur-150-linear")]
     [InlineData("box-20")]
     [InlineData("shadow")]
     [InlineData("light-spot")]
@@ -59,7 +60,7 @@ public class BytePathTests
     public void OtherByteTypesWithinALevel(string type)
     {
         using Raster<Rgba8> source = Input("translucent");
-        foreach (string chain in new[] { "fast-20", "fast-uneven", "blur-150" })
+        foreach (string chain in new[] { "fast-20", "fast-uneven", "blur-150", "fast-7-linear" })
         {
             int gap = type switch
             {
@@ -124,6 +125,8 @@ public class BytePathTests
         ["fast-60"] = o => o.Blur(60, ColorSpace.Encoded, BlurMethod.Fast),
         ["fast-7-linear"] = o => o.Blur(7, ColorSpace.Linear, BlurMethod.Fast),
         ["fast-uneven"] = o => o.Blur(4.37f, ColorSpace.Encoded, BlurMethod.Fast),
+        ["fast-30-linear"] = o => o.Blur(30, ColorSpace.Linear, BlurMethod.Fast),
+        ["blur-150-linear"] = o => o.Blur(150, ColorSpace.Linear),
         ["box-4"] = o => o.BoxBlur(4),
         ["box-20"] = o => o.BoxBlur(20),
         ["blur-150"] = o => o.Blur(150),

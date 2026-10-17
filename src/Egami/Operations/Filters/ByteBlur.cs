@@ -34,13 +34,18 @@ internal static class ByteBlur
         return StoredRows<TPixel>.Bytes && !CmykInk.Is<TPixel>();
     }
 
-    /// <summary>Blurs <paramref name="source"/> into <paramref name="destination"/>, <paramref name="x"/> across and <paramref name="y"/> down.</summary>
-    internal static void Run<TPixel>(PixelPlane<TPixel> source, PixelPlane<TPixel> destination, BoxCascade x, BoxCascade y, IPixelMemorySource memory, int maxParallelism, CancellationToken cancellationToken)
+    /// <summary>
+    /// Blurs <paramref name="source"/> into <paramref name="destination"/>, <paramref name="x"/> across and <paramref name="y"/>
+    /// down, in linear light through <paramref name="curve"/> when there is one.
+    /// </summary>
+    internal static void Run<TPixel>(PixelPlane<TPixel> source, PixelPlane<TPixel> destination, BoxCascade x, BoxCascade y, Colors.LinearCurve? curve, IPixelMemorySource memory, int maxParallelism, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int width = source.Width, height = source.Height, channels = Unsafe.SizeOf<TPixel>(), alpha = StoredRows<TPixel>.AlphaByte;
         int[] translucent = new int[height + 1];
-        bool deep = false;
+
+        // Linear light needs the 16-bit plane too: a dark color's linear value is a small fraction of a level.
+        bool deep = curve is not null;
         for (int v = 0; v < height && alpha >= 0 && !deep; v++)
         {
             deep = !Opaque(MemoryMarshal.AsBytes(source.Row(v)), channels, alpha);
@@ -49,7 +54,7 @@ internal static class ByteBlur
         PixelPlane<Gray16>? plane = deep ? PixelPlane.Allocate<Gray16>(width * channels, height, memory) : null;
         try
         {
-            Layout layout = new(width, channels, alpha);
+            Layout layout = new(width, channels, alpha, curve is null ? null : [.. curve.LinearFrom8.Select(v => v * 255)], curve);
             int bands = (height + Band - 1) / Band;
             Chunks.Run(bands, (long)width * height * channels, maxParallelism, (start, end) =>
             {
@@ -117,7 +122,7 @@ internal static class ByteBlur
         }
 
         bool premultiply = false;
-        if (plane is not null)
+        if (plane is not null && alpha >= 0)
         {
             for (int j = 0; j < rows; j++)
             {
@@ -221,6 +226,13 @@ internal static class ByteBlur
     internal static void LoadColumns(Layout layout, ReadOnlySpan<byte> band, int x0, int count, bool premultiply, Span<float> columns)
     {
         int channels = layout.Channels, alpha = layout.Alpha, rowBytes = layout.RowBytes, stride = channels * Band;
+        float[]? linear = layout.Linear;
+        if (Fast && channels == 4 && count == 8 && linear is not null)
+        {
+            LoadLinear(band, x0, rowBytes, stride, alpha, premultiply, linear, columns);
+            return;
+        }
+
         if (Fast && channels == 4 && count == 8)
         {
             // Eight rows of eight pixels at a time, transposed: vector i is pixel i of every row, one 32-bit pixel per lane.
@@ -266,8 +278,63 @@ internal static class ByteBlur
                 float a = premultiply ? row[(i * channels) + alpha] * (1f / 255) : 1;
                 for (int k = 0; k < channels; k++)
                 {
-                    float v = row[(i * channels) + k];
+                    int b = row[(i * channels) + k];
+                    float v = k == alpha || linear is null ? b : linear[b];
                     columns[(i * stride) + (k * Band) + j] = k == alpha || !premultiply ? v : v * a;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// <see cref="LoadColumns"/>'s vector path for linear light: eight rows of eight pixels transposed, colors looked up in
+    /// <paramref name="linear"/> eight at a time.
+    /// </summary>
+    private static unsafe void LoadLinear(ReadOnlySpan<byte> band, int x0, int rowBytes, int stride, int alpha, bool premultiply, float[] linear, Span<float> columns)
+    {
+        if (band.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
+        {
+            throw new ArgumentException("The band is too short.", nameof(band));
+        }
+
+        ref byte from = ref Unsafe.Add(ref MemoryMarshal.GetReference(band), x0 * 4);
+        ref float to = ref MemoryMarshal.GetReference(columns);
+        Vector256<int> low = Vector256.Create(0xFF);
+        Vector256<float> unit = Vector256.Create(1f / 255);
+        Span<Vector256<float>> m = stackalloc Vector256<float>[8];
+        fixed (float* table = linear)
+        {
+            for (int half = 0; half < Band; half += 8)
+            {
+                ref byte rows = ref Unsafe.Add(ref from, half * rowBytes);
+                Vector256<float> m0 = Vector256.LoadUnsafe(ref rows).AsSingle();
+                Vector256<float> m1 = Vector256.LoadUnsafe(ref rows, (nuint)rowBytes).AsSingle();
+                Vector256<float> m2 = Vector256.LoadUnsafe(ref rows, (nuint)(2 * rowBytes)).AsSingle();
+                Vector256<float> m3 = Vector256.LoadUnsafe(ref rows, (nuint)(3 * rowBytes)).AsSingle();
+                Vector256<float> m4 = Vector256.LoadUnsafe(ref rows, (nuint)(4 * rowBytes)).AsSingle();
+                Vector256<float> m5 = Vector256.LoadUnsafe(ref rows, (nuint)(5 * rowBytes)).AsSingle();
+                Vector256<float> m6 = Vector256.LoadUnsafe(ref rows, (nuint)(6 * rowBytes)).AsSingle();
+                Vector256<float> m7 = Vector256.LoadUnsafe(ref rows, (nuint)(7 * rowBytes)).AsSingle();
+                Transpose(ref m0, ref m1, ref m2, ref m3, ref m4, ref m5, ref m6, ref m7);
+                m[0] = m0;
+                m[1] = m1;
+                m[2] = m2;
+                m[3] = m3;
+                m[4] = m4;
+                m[5] = m5;
+                m[6] = m6;
+                m[7] = m7;
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector256<int> pixel = m[i].AsInt32();
+                    ref float at = ref Unsafe.Add(ref to, (i * stride) + half);
+                    Vector256<float> a = Vector256.ConvertToSingle((pixel >>> (alpha * 8)) & low);
+                    Vector256<float> share = a * unit;
+                    for (int k = 0; k < 4; k++)
+                    {
+                        Vector256<float> c = k == alpha ? a : Avx2.GatherVector256(table, (pixel >>> (k * 8)) & low, 4);
+                        (k == alpha || !premultiply ? c : c * share).StoreUnsafe(ref at, (nuint)(k * Band));
+                    }
                 }
             }
         }
@@ -280,6 +347,12 @@ internal static class ByteBlur
     internal static void StoreColumns(Layout layout, Span<byte> band, Span<ushort> deep, int x0, int count, ReadOnlySpan<float> columns)
     {
         int channels = layout.Channels, rowBytes = layout.RowBytes, stride = channels * Band;
+        if (!deep.IsEmpty && Fast && channels == 4 && count == 8)
+        {
+            StoreDeep(deep, x0, rowBytes, stride, columns);
+            return;
+        }
+
         if (!deep.IsEmpty)
         {
             for (int j = 0; j < Band; j++)
@@ -346,6 +419,49 @@ internal static class ByteBlur
     }
 
     /// <summary>
+    /// <see cref="StoreColumns"/>'s vector path for 16-bit values: each column's four channels rounded to v × 256, saturating,
+    /// and interleaved into one 64-bit pixel per row.
+    /// </summary>
+    private static void StoreDeep(Span<ushort> deep, int x0, int rowBytes, int stride, ReadOnlySpan<float> columns)
+    {
+        if (deep.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
+        {
+            throw new ArgumentException("The band is too short.", nameof(deep));
+        }
+
+        ref float from = ref MemoryMarshal.GetReference(columns);
+        ref byte to = ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(deep), x0 * 4));
+        Vector256<float> scale = Vector256.Create(256f), half = Vector256.Create(0.5f);
+        for (int i = 0; i < 8; i++)
+        {
+            for (int part = 0; part < Band; part += 8)
+            {
+                ref float at = ref Unsafe.Add(ref from, (i * stride) + part);
+                Vector256<int> c0 = Vector256.ConvertToInt32((Vector256.LoadUnsafe(ref at) * scale) + half);
+                Vector256<int> c1 = Vector256.ConvertToInt32((Vector256.LoadUnsafe(ref at, Band) * scale) + half);
+                Vector256<int> c2 = Vector256.ConvertToInt32((Vector256.LoadUnsafe(ref at, 2 * Band) * scale) + half);
+                Vector256<int> c3 = Vector256.ConvertToInt32((Vector256.LoadUnsafe(ref at, 3 * Band) * scale) + half);
+                Vector256<ushort> top = Vector256.Create((ushort)(255 << 8));
+                Vector256<ushort> p01 = Vector256.Min(Avx2.PackUnsignedSaturate(c0, c1), top), p23 = Vector256.Min(Avx2.PackUnsignedSaturate(c2, c3), top);
+
+                // Per 128-bit half: rows 0 to 3 (4 to 7) of channels 0 and 1, then of 2 and 3; two unpacks interleave each row's four.
+                Vector256<ushort> even = Avx2.UnpackLow(p01, p23), odd = Avx2.UnpackHigh(p01, p23);
+                Vector256<ulong> rows01 = Avx2.UnpackLow(even, odd).AsUInt64(), rows23 = Avx2.UnpackHigh(even, odd).AsUInt64();
+                ref byte pixel = ref Unsafe.Add(ref to, ((part * rowBytes) + (i * 4)) * 2);
+                int step = rowBytes * 2;
+                Unsafe.WriteUnaligned(ref pixel, rows01.GetElement(0));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, step), rows01.GetElement(1));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 2 * step), rows23.GetElement(0));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 3 * step), rows23.GetElement(1));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 4 * step), rows01.GetElement(2));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 5 * step), rows01.GetElement(3));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 6 * step), rows23.GetElement(2));
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 7 * step), rows23.GetElement(3));
+            }
+        }
+    }
+
+    /// <summary>
     /// The vertical sweep over the group of columns from <paramref name="x0"/>, in place on the destination. A position is one row
     /// of the group, its values as floats in order. Rows are stored straight, alpha divided out where a translucent row is in reach.
     /// </summary>
@@ -355,7 +471,7 @@ internal static class ByteBlur
         int height = image.Height, channels = layout.Channels, alpha = layout.Alpha, reach = lanes.Reach;
         int count = Math.Min(Group, layout.Width - x0), length = count * channels, at = x0 * channels;
         Rows<TPixel> reader = new(image), writer = new(image), ahead = new(image);
-        Rows<Gray16> deep = plane is null ? default : new(plane);
+        Rows<Gray16> deep = plane is null ? default : new(plane), deepAhead = plane is null ? default : new(plane);
 
         // Rows are written back in place: a row is stored only after every row it reads was loaded, and rows past the bottom
         // all load the last row, which is stored last.
@@ -363,10 +479,11 @@ internal static class ByteBlur
         for (int s = -reach; s < height + reach; s++)
         {
             int v = Math.Clamp(s, 0, height - 1);
-            if (Sse.IsSupported && plane is null)
+            if (Sse.IsSupported)
             {
                 // The rows a group reads are a row apart in memory, too far for the hardware to guess; ask for them ahead.
-                Prefetch(ahead[Math.Min(v + Ahead, height - 1)].Slice(at, length));
+                int next = Math.Min(v + Ahead, height - 1);
+                Prefetch(plane is null ? ahead[next].Slice(at, length) : deepAhead[next].Slice(at * 2, length * 2));
             }
 
             Span<float> target = lanes.Input();
@@ -382,7 +499,14 @@ internal static class ByteBlur
             if (lanes.Advance(out int o))
             {
                 bool opaque = alpha < 0 || translucent[Math.Min(height, o + reach + 1)] == translucent[Math.Max(0, o - reach)];
-                Narrow(lanes.Output, writer[o].Slice(at, length), channels, opaque ? -1 : alpha, alpha);
+                if (layout.Curve is { } curve)
+                {
+                    Encode(lanes.Output, writer[o].Slice(at, length), channels, opaque ? -1 : alpha, alpha, curve);
+                }
+                else
+                {
+                    Narrow(lanes.Output, writer[o].Slice(at, length), channels, opaque ? -1 : alpha, alpha);
+                }
             }
         }
     }
@@ -504,6 +628,39 @@ internal static class ByteBlur
         }
     }
 
+    /// <summary>
+    /// Stores linear floats of 0..255 as encoded bytes through <paramref name="curve"/>, as <see cref="Narrow"/> does: colors
+    /// divided by alpha when <paramref name="divide"/> is the alpha channel, else alpha set opaque.
+    /// </summary>
+    private static void Encode(ReadOnlySpan<float> values, Span<byte> row, int channels, int divide, int alpha, Colors.LinearCurve curve)
+    {
+        byte[] table = curve.EncodeFrom16;
+        const float Top = 255 << 8;
+        for (int p = 0; p < row.Length; p += channels)
+        {
+            // Linear values of 0..255 times 256 index the table; colors over alpha are scaled to 0..255 first.
+            float scale = 256;
+            byte a8 = 255;
+            if (divide >= 0)
+            {
+                float a = values[p + divide];
+                a8 = Round(a);
+                if (a8 == 0)
+                {
+                    row.Slice(p, channels).Clear();
+                    continue;
+                }
+
+                scale = Top / a;
+            }
+
+            for (int k = 0; k < channels; k++)
+            {
+                row[p + k] = k == alpha ? a8 : table[(int)(Math.Clamp(values[p + k] * scale, 0f, Top) + 0.5f)];
+            }
+        }
+    }
+
     /// <summary>Rounds a value of 0..255 (with float overshoot) to a byte.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static byte Round(float value) => (byte)Math.Clamp((int)(value + 0.5f), 0, 255);
@@ -619,8 +776,11 @@ internal static class ByteBlur
         return Avx2.Shuffle(bytes, Vector256.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15)).AsSingle();
     }
 
-    /// <summary>The shape of a row of the image: its width, bytes per pixel and alpha byte (−1 for none).</summary>
-    internal readonly record struct Layout(int Width, int Channels, int Alpha)
+    /// <summary>
+    /// The shape of a row of the image: its width, bytes per pixel and alpha byte (−1 for none), and for linear light the curve
+    /// and each encoded byte's linear value × 255.
+    /// </summary>
+    internal readonly record struct Layout(int Width, int Channels, int Alpha, float[]? Linear = null, Colors.LinearCurve? Curve = null)
     {
         public int RowBytes => Width * Channels;
     }

@@ -15,6 +15,7 @@ internal sealed class LinearCurve
 
     private readonly TransferFunction? _curve;
     private readonly float[]? _encode;   // encoded × 255 at linear i / 4095, and a guard entry; null to compute
+    private byte[]? _encode16;
 
     private LinearCurve(TransferFunction? curve)
     {
@@ -76,6 +77,12 @@ internal sealed class LinearCurve
 
     public double FromLinear(double linear) => _curve is null ? Pixels.Srgb.FromLinear(linear) : _curve.FromLinear(linear);
 
+    /// <summary>
+    /// Gets the 8-bit encoding of each 16-bit linear value v / 65280 (a byte's range × 256), as <see cref="FromLinearTo8"/> gives
+    /// it: 65,281 entries, built on first use, for the byte paths of linear-light filters.
+    /// </summary>
+    internal byte[] EncodeFrom16 => _encode16 ??= BuildEncodeFrom16();
+
     /// <summary>Encodes a linear value to the nearest 8-bit value, through an interpolated table where the curve allows.</summary>
     public byte FromLinearTo8(float linear)
     {
@@ -104,5 +111,16 @@ internal sealed class LinearCurve
         int i = (int)x;
         float a = _encode[i];
         return (byte)(a + ((x - i) * (_encode[i + 1] - a)) + 0.5f);
+    }
+
+    private byte[] BuildEncodeFrom16()
+    {
+        byte[] table = new byte[(255 << 8) + 1];
+        for (int i = 0; i < table.Length; i++)
+        {
+            table[i] = FromLinearTo8(i / (float)(255 << 8));
+        }
+
+        return table;
     }
 }

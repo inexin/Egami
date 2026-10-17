@@ -60,10 +60,11 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         // Byte types take the byte path for the three-pass cascades; one plain box costs less than the byte path's two sweeps.
-        if (!_linear && ByteBlur.Supports<TPixel>() && (_x.Radii.Length > 1 || _y.Radii.Length > 1))
+        if (ByteBlur.Supports<TPixel>() && (_x.Radii.Length > 1 || _y.Radii.Length > 1))
         {
             IPixelMemorySource memory = (IPixelMemorySource?)input.Memory ?? input.Context.Memory;
-            ByteBlur.Run(input.Source, input.Destination, _x, _y, memory, input.Context.MaxParallelism, input.CancellationToken);
+            Colors.LinearCurve? curve = _linear ? _curve ?? Colors.LinearCurve.Srgb : null;
+            ByteBlur.Run(input.Source, input.Destination, _x, _y, curve, memory, input.Context.MaxParallelism, input.CancellationToken);
             return;
         }
 
