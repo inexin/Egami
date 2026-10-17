@@ -27,6 +27,9 @@ internal sealed class Vp8VideoDecoder : IDisposable
     private volatile bool _stopping;
     private Vp8FrameHeader _lastKey;
 
+    // The frame decoder, reused from frame to frame while the frame size stays (its arrays are sized for it).
+    private Vp8Decoder? _decoder;
+
     /// <summary>
     /// Starts a stream that decodes with up to <paramref name="threads"/> threads, macroblock rows in a wavefront, its frame
     /// buffers from <paramref name="memory"/> (Egami's pool by default) and its frame size within <paramref name="limits"/>.
@@ -132,7 +135,16 @@ internal sealed class Vp8VideoDecoder : IDisposable
         Vp8Decoder decoder;
         try
         {
-            decoder = Vp8Decoder.CreateVideo(data, offset, length, header, this);
+            if (_decoder is not null)
+            {
+                _decoder.Restart(data, offset, length, header);
+                decoder = _decoder;
+            }
+            else
+            {
+                decoder = _decoder = Vp8Decoder.CreateVideo(data, offset, length, header, this);
+            }
+
             decoder.DecodeFrame();
         }
         catch (CorruptDataException) when (Conceal)
@@ -146,7 +158,7 @@ internal sealed class Vp8VideoDecoder : IDisposable
             throw;
         }
 
-        int damaged = decoder.Damaged!.Count(d => d);
+        int damaged = decoder.DamagedCount;
         if (damaged > 0)
         {
             if (!Conceal)
@@ -359,6 +371,7 @@ internal sealed class Vp8VideoDecoder : IDisposable
         }
 
         FreeBuffers();
+        _decoder = null;
         Width = width;
         Height = height;
         for (int i = 0; i < 4; i++)

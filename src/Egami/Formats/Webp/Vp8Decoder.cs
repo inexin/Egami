@@ -33,18 +33,18 @@ internal sealed partial class Vp8Decoder : IDisposable
     // The 4 × 4 mode tree of RFC 6386 section 11.2, as pairs of children: positive is the next pair, otherwise minus the mode.
     internal static readonly sbyte[] BModeTree = [-Vp8Dsp.BDc, 2, -Vp8Dsp.BTm, 4, -Vp8Dsp.BVe, 6, 8, 12, -Vp8Dsp.BHe, 10, -Vp8Dsp.BRd, -Vp8Dsp.BVr, -Vp8Dsp.BLd, 14, -Vp8Dsp.BVl, 16, -Vp8Dsp.BHd, -Vp8Dsp.BHu];
 
-    private readonly byte[] _data;
+    private byte[] _data;
     private readonly Vp8StreamState _state;
     private Vp8BoolDecoder _modes;
     private readonly Vp8BoolDecoder[] _partitions;
-    private readonly int _partitionMask;
+    private int _partitionMask;
 
     // Frame header.
-    private readonly bool _segmentation;
-    private readonly bool _updateMap;
-    private readonly bool _useSkip;
-    private readonly int _skipProbability;
-    private readonly int _filterType;
+    private bool _segmentation;
+    private bool _updateMap;
+    private bool _useSkip;
+    private int _skipProbability;
+    private int _filterType;
     private readonly short[] _quant = new short[4 * 6];
     private readonly FilterInfo[] _filterInfo;
 
@@ -68,6 +68,22 @@ internal sealed partial class Vp8Decoder : IDisposable
     /// <summary>Gets, for a video frame, the macroblocks whose modes or tokens ran past the end of the data.</summary>
     internal bool[]? Damaged { get; private set; }
 
+    /// <summary>Gets how many of <see cref="Damaged"/> are set, counted as they are found.</summary>
+    internal int DamagedCount
+    {
+        get => _damagedCount;
+        private set => _damagedCount = value;
+    }
+
+    private int _damagedCount;
+
+    // A video frame decoded on several threads: each row's progress, the rows' work state and the workers' job, kept from frame
+    // to frame.
+    private int[]? _progress;
+    private Row[]? _rows;
+    private Action<int>? _rowJob;
+    private int _workerCount;
+
     // The planes being written: for a still the tail of the row above then the current macroblock row; for a video frame the whole
     // frame buffer.
     private readonly byte[]? _rentY;
@@ -76,13 +92,13 @@ internal sealed partial class Vp8Decoder : IDisposable
     private readonly GCHandle[]? _pins;
 
     // The planes being written, pinned: the rented rows of a still or the target frame buffer's planes.
-    private readonly unsafe byte* _planeY;
-    private readonly unsafe byte* _planeU;
-    private readonly unsafe byte* _planeV;
-    private readonly int _lengthY;
-    private readonly int _lengthC;
-    private readonly int _strideY;
-    private readonly int _strideC;
+    private unsafe byte* _planeY;
+    private unsafe byte* _planeU;
+    private unsafe byte* _planeV;
+    private int _lengthY;
+    private int _lengthC;
+    private int _strideY;
+    private int _strideC;
     private Snapshot? _snapshot;
     private bool _disposed;
 
@@ -91,11 +107,67 @@ internal sealed partial class Vp8Decoder : IDisposable
         _data = data;
         _state = state;
         _video = video;
-        Header = header;
         Width = header.Width;
         Height = header.Height;
         MbWidth = (Width + 15) >> 4;
         MbHeight = (Height + 15) >> 4;
+
+        _partitions = new Vp8BoolDecoder[8];
+        _filterInfo = new FilterInfo[video is null ? 8 : 4 * 4 * 4];
+        _modesAbove = new byte[MbWidth * 4];
+        _nzAbove = new byte[MbWidth * 9];
+        _topY = new byte[MbWidth * 16];
+        _topU = new byte[MbWidth * 8];
+        _topV = new byte[MbWidth * 8];
+        _main = new Row(MbWidth);
+        if (video is null)
+        {
+            _strideY = MbWidth * 16;
+            _strideC = MbWidth * 8;
+            _rentY = ArrayPool<byte>.Shared.Rent(_strideY * (Tail + 16));
+            _rentU = ArrayPool<byte>.Shared.Rent(_strideC * (ChromaTail + 8));
+            _rentV = ArrayPool<byte>.Shared.Rent(_strideC * (ChromaTail + 8));
+            _pins = [GCHandle.Alloc(_rentY, GCHandleType.Pinned), GCHandle.Alloc(_rentU, GCHandleType.Pinned), GCHandle.Alloc(_rentV, GCHandleType.Pinned)];
+            unsafe
+            {
+                _planeY = (byte*)_pins[0].AddrOfPinnedObject();
+                _planeU = (byte*)_pins[1].AddrOfPinnedObject();
+                _planeV = (byte*)_pins[2].AddrOfPinnedObject();
+            }
+
+            _lengthY = _rentY.Length;
+            _lengthC = Math.Min(_rentU.Length, _rentV.Length);
+            _main.RowY = Tail * _strideY;
+            _main.RowC = ChromaTail * _strideC;
+        }
+
+        Begin(data, offset, length, header);
+    }
+
+    /// <summary>
+    /// Starts the next video frame of the same size in this decoder, which keeps its arrays from frame to frame: a video decodes
+    /// with no allocation after its first key frame.
+    /// </summary>
+    internal void Restart(byte[] data, int offset, int length, Vp8FrameHeader header)
+    {
+        Array.Clear(_modesAbove);
+        Array.Clear(_nzAbove);
+        Begin(data, offset, length, header);
+    }
+
+    /// <summary>Reads the frame header and the first partition's frame fields, and points the decoder at the frame's planes.</summary>
+    private void Begin(byte[] data, int offset, int length, Vp8FrameHeader header)
+    {
+        Vp8StreamState state = _state;
+        Vp8VideoDecoder? video = _video;
+        _data = data;
+        Header = header;
+        _updateMap = false;
+        UpdateSegmentData = false;
+        UpdateFilterDeltas = false;
+        RefreshGolden = RefreshAlternate = false;
+        CopyToGolden = CopyToAlternate = 0;
+        ProbIntra = ProbLast = ProbGolden = 0;
 
         int firstStart = offset + (header.KeyFrame ? 10 : 3);
         int end = offset + length;
@@ -170,7 +242,6 @@ internal sealed partial class Vp8Decoder : IDisposable
 
         int partitions = 1 << br.GetValue(2);
         _partitionMask = partitions - 1;
-        _partitions = new Vp8BoolDecoder[partitions];
         int tokensStart = firstStart + header.FirstPartitionSize;
         int sizes = tokensStart;
         int partStart = tokensStart + (3 * (partitions - 1));
@@ -216,7 +287,6 @@ internal sealed partial class Vp8Decoder : IDisposable
             ParseInterProbabilities(ref br);
         }
 
-        _filterInfo = new FilterInfo[video is null ? 8 : 4 * 4 * 4];
         if (_filterType > 0)
         {
             if (video is null)
@@ -229,33 +299,7 @@ internal sealed partial class Vp8Decoder : IDisposable
             }
         }
 
-        _modesAbove = new byte[MbWidth * 4];
-        _nzAbove = new byte[MbWidth * 9];
-        _topY = new byte[MbWidth * 16];
-        _topU = new byte[MbWidth * 8];
-        _topV = new byte[MbWidth * 8];
-        _main = new Row(MbWidth);
-        if (video is null)
-        {
-            _strideY = MbWidth * 16;
-            _strideC = MbWidth * 8;
-            _rentY = ArrayPool<byte>.Shared.Rent(_strideY * (Tail + 16));
-            _rentU = ArrayPool<byte>.Shared.Rent(_strideC * (ChromaTail + 8));
-            _rentV = ArrayPool<byte>.Shared.Rent(_strideC * (ChromaTail + 8));
-            _pins = [GCHandle.Alloc(_rentY, GCHandleType.Pinned), GCHandle.Alloc(_rentU, GCHandleType.Pinned), GCHandle.Alloc(_rentV, GCHandleType.Pinned)];
-            unsafe
-            {
-                _planeY = (byte*)_pins[0].AddrOfPinnedObject();
-                _planeU = (byte*)_pins[1].AddrOfPinnedObject();
-                _planeV = (byte*)_pins[2].AddrOfPinnedObject();
-            }
-
-            _lengthY = _rentY.Length;
-            _lengthC = Math.Min(_rentU.Length, _rentV.Length);
-            _main.RowY = Tail * _strideY;
-            _main.RowC = ChromaTail * _strideC;
-        }
-        else
+        if (video is not null)
         {
             Vp8FrameBuffer target = video.Target!;
             _strideY = target.StrideY;
@@ -316,9 +360,9 @@ internal sealed partial class Vp8Decoder : IDisposable
                 return true;
             }
 
-            foreach (Vp8BoolDecoder p in _partitions)
+            for (int p = 0; p <= _partitionMask; p++)
             {
-                if (p.PastEnd)
+                if (_partitions[p].PastEnd)
                 {
                     return true;
                 }
@@ -453,8 +497,9 @@ internal sealed partial class Vp8Decoder : IDisposable
     internal void DecodeFrame()
     {
         Vp8VideoDecoder video = _video!;
-        _macroblocks = new Macroblock[MbWidth * MbHeight];
-        Damaged = new bool[MbWidth * MbHeight];
+        _macroblocks ??= new Macroblock[MbWidth * MbHeight];
+        Damaged ??= new bool[MbWidth * MbHeight];
+        DamagedCount = 0;
         Vp8StageTimes.Lap(Vp8Stage.Setup);
         for (int mby = 0; mby < MbHeight; mby++)
         {
@@ -464,7 +509,9 @@ internal sealed partial class Vp8Decoder : IDisposable
                 _macroblocks[(mby * MbWidth) + mbx] = ParseModes(mbx, mby);
 
                 // Modes read past the end of the frame: this macroblock's and every later one's are made up.
-                Damaged[(mby * MbWidth) + mbx] = _modes.PastEnd;
+                bool past = _modes.PastEnd;
+                Damaged[(mby * MbWidth) + mbx] = past;
+                DamagedCount += past ? 1 : 0;
             }
         }
 
@@ -490,21 +537,30 @@ internal sealed partial class Vp8Decoder : IDisposable
         }
         else
         {
-            int[] progress = new int[MbHeight];
-            Row[] rows = new Row[workers];
-            rows[0] = _main;
-            for (int w = 1; w < workers; w++)
+            // The progress, the rows and the job are made on the first frame decoded on several threads and kept.
+            _progress ??= new int[MbHeight];
+            Array.Clear(_progress);
+            if (_rows is null || _rows.Length < workers)
             {
-                rows[w] = new Row(MbWidth);
+                Row[] rows = new Row[workers];
+                rows[0] = _main;
+                for (int w = 1; w < workers; w++)
+                {
+                    rows[w] = _rows is not null && w < _rows.Length ? _rows[w] : new Row(MbWidth);
+                }
+
+                _rows = rows;
             }
 
-            video.RunWorkers(workers, w =>
+            _workerCount = workers;
+            _rowJob ??= w =>
             {
-                for (int mby = w; mby < MbHeight; mby += workers)
+                for (int mby = w; mby < MbHeight; mby += _workerCount)
                 {
-                    DecodeVideoRow(mby, rows[w], progress);
+                    DecodeVideoRow(mby, _rows![w], _progress);
                 }
-            });
+            };
+            video.RunWorkers(workers, _rowJob);
         }
 
         NextMbRow = MbHeight;
@@ -610,7 +666,13 @@ internal sealed partial class Vp8Decoder : IDisposable
         int dqy2Ac = br.GetOptionalSigned(4);
         int dquvDc = br.GetOptionalSigned(4);
         int dquvAc = br.GetOptionalSigned(4);
-        Quantizers = [baseQ, dqy1Dc, dqy2Dc, dqy2Ac, dquvDc, dquvAc];
+        int[] quantizers = Quantizers;
+        quantizers[0] = baseQ;
+        quantizers[1] = dqy1Dc;
+        quantizers[2] = dqy2Dc;
+        quantizers[3] = dqy2Ac;
+        quantizers[4] = dquvDc;
+        quantizers[5] = dquvAc;
         for (int s = 0; s < 4; s++)
         {
             int q = baseQ;
@@ -804,9 +866,10 @@ internal sealed partial class Vp8Decoder : IDisposable
         if (!mb.Skip)
         {
             anyNonZero = ParseResiduals(ref tokens, mbx, mb, c, out anyTokens);
-            if (tokens.PastEnd && Damaged is not null)
+            if (tokens.PastEnd && Damaged is not null && !Damaged[(mby * MbWidth) + mbx])
             {
                 Damaged[(mby * MbWidth) + mbx] = true;
+                Interlocked.Increment(ref _damagedCount);
             }
         }
         else

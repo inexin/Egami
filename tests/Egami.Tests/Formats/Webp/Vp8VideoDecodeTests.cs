@@ -47,6 +47,25 @@ public class Vp8VideoDecodeTests(ITestOutputHelper output)
     [MemberData(nameof(Files))]
     public void FramesMatchLibvpxOnEightThreads(string id) => FramesMatch(id, 8);
 
+    /// <summary>After its first key frame a video decodes on one thread with no allocation (the Phase 2.4.5 allocation gate).</summary>
+    [Fact]
+    public void FramesAfterTheFirstAllocateNothing()
+    {
+        foreach (string file in Directory.GetFiles(Vp8VideoCorpus.Clips, "*.ivf").Order(StringComparer.Ordinal))
+        {
+            List<byte[]> packets = Vp8VideoCorpus.ReadIvf(file);
+            using Vp8VideoDecoder video = new(1);
+            video.Decode(packets[0], 0, packets[0].Length);
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            for (int i = 1; i < packets.Count; i++)
+            {
+                video.Decode(packets[i], 0, packets[i].Length);
+            }
+
+            Assert.True(GC.GetAllocatedBytesForCurrentThread() == before, $"{Path.GetFileName(file)}: {GC.GetAllocatedBytesForCurrentThread() - before} bytes allocated after the first frame");
+        }
+    }
+
     private void FramesMatch(string id, int threads)
     {
         List<byte[]> packets = Vp8VideoCorpus.ReadIvf(Vp8VideoCorpus.IvfPath(id));

@@ -11,22 +11,22 @@ internal sealed partial class Vp8Decoder
     private readonly Vp8VideoDecoder? _video;
 
     /// <summary>Gets the frame tag: key frame, version, shown, size.</summary>
-    internal Vp8FrameHeader Header { get; }
+    internal Vp8FrameHeader Header { get; private set; }
 
-    internal bool UpdateSegmentData { get; }
+    internal bool UpdateSegmentData { get; private set; }
 
-    internal bool FilterSimple { get; }
+    internal bool FilterSimple { get; private set; }
 
-    internal int FilterLevel { get; }
+    internal int FilterLevel { get; private set; }
 
-    internal int Sharpness { get; }
+    internal int Sharpness { get; private set; }
 
-    internal bool FilterDeltas { get; }
+    internal bool FilterDeltas { get; private set; }
 
-    internal bool UpdateFilterDeltas { get; }
+    internal bool UpdateFilterDeltas { get; private set; }
 
     /// <summary>Gets the quantizer indices: the base, then the Y1 DC, Y2 DC, Y2 AC, UV DC and UV AC deltas.</summary>
-    internal int[] Quantizers { get; private set; } = [];
+    internal int[] Quantizers { get; } = new int[6];
 
     internal bool SegmentationEnabled => _segmentation;
 
@@ -48,9 +48,9 @@ internal sealed partial class Vp8Decoder
     /// <summary>Gets what goes into the alternate frame when it is not refreshed: 0 nothing, 1 the last frame, 2 the golden.</summary>
     internal int CopyToAlternate { get; private set; }
 
-    internal bool RefreshEntropy { get; }
+    internal bool RefreshEntropy { get; private set; }
 
-    internal bool RefreshLast { get; }
+    internal bool RefreshLast { get; private set; }
 
     internal int ProbIntra { get; private set; }
 
