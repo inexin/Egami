@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -26,9 +28,21 @@ internal static class JxlChromaFromLuma
         float x;
         if (fast)
         {
-            float ca = 0;
-            float cb = 0;
-            for (int i = 0; i < num; i++)
+            Vector256<float> va = Vector256<float>.Zero, vb = Vector256<float>.Zero;
+            Vector256<float> inv = Vector256.Create(InvColorFactor), bc = Vector256.Create(baseCorrelation);
+            int i = 0;
+            for (; i + 8 <= num; i += 8)
+            {
+                Vector256<float> m = Vector256.Create(valuesM.Slice(i, 8));
+                Vector256<float> a = inv * m;
+                Vector256<float> b = (bc * m) - Vector256.Create(valuesS.Slice(i, 8));
+                va = Vector256.FusedMultiplyAdd(a, a, va);
+                vb = Vector256.FusedMultiplyAdd(a, b, vb);
+            }
+
+            float ca = Vector256.Sum(va);
+            float cb = Vector256.Sum(vb);
+            for (; i < num; i++)
             {
                 float a = InvColorFactor * valuesM[i];
                 float b = (baseCorrelation * valuesM[i]) - valuesS[i];
@@ -73,7 +87,40 @@ internal static class JxlChromaFromLuma
         float firstPeps = 2 * DistanceMultiplierAc * num * (x + eps);
         float firstMeps = 2 * DistanceMultiplierAc * num * (x - eps);
         float fd = 0, fdpe = 0, fdme = 0;
-        for (int i = 0; i < num; i++)
+        int i = 0;
+        {
+            Vector256<float> vfd = Vector256<float>.Zero, vfdpe = Vector256<float>.Zero, vfdme = Vector256<float>.Zero;
+            Vector256<float> inv = Vector256.Create(InvColorFactor), bc = Vector256.Create(baseCorrelation);
+            Vector256<float> vx = Vector256.Create(x), vxp = Vector256.Create(x + eps), vxm = Vector256.Create(x - eps);
+            Vector256<float> one = Vector256.Create(1.0f), two3 = Vector256.Create(Coeff * 2.0f), thres = Vector256.Create(Thres);
+            for (; i + 8 <= num; i += 8)
+            {
+                Vector256<float> m = Vector256.Create(valuesM.Slice(i, 8));
+                Vector256<float> a = inv * m;
+                Vector256<float> b = (bc * m) - Vector256.Create(valuesS.Slice(i, 8));
+                Vector256<float> v = Vector256.FusedMultiplyAdd(a, vx, b);
+                Vector256<float> vpe = Vector256.FusedMultiplyAdd(a, vxp, b);
+                Vector256<float> vme = Vector256.FusedMultiplyAdd(a, vxm, b);
+                Vector256<float> av = Vector256.Abs(v);
+                Vector256<float> acoeffx2 = two3 * a;
+                Vector256<float> d = acoeffx2 * (av + one);
+                Vector256<float> dpe = acoeffx2 * (Vector256.Abs(vpe) + one);
+                Vector256<float> dme = acoeffx2 * (Vector256.Abs(vme) + one);
+                d = Vector256.ConditionalSelect(Vector256.LessThan(v, Vector256<float>.Zero), -d, d);
+                dpe = Vector256.ConditionalSelect(Vector256.LessThan(vpe, Vector256<float>.Zero), -dpe, dpe);
+                dme = Vector256.ConditionalSelect(Vector256.LessThan(vme, Vector256<float>.Zero), -dme, dme);
+                Vector256<float> keep = Vector256.LessThan(av, thres);
+                vfd += Vector256.ConditionalSelect(keep, d, Vector256<float>.Zero);
+                vfdpe += Vector256.ConditionalSelect(keep, dpe, Vector256<float>.Zero);
+                vfdme += Vector256.ConditionalSelect(keep, dme, Vector256<float>.Zero);
+            }
+
+            fd = Vector256.Sum(vfd);
+            fdpe = Vector256.Sum(vfdpe);
+            fdme = Vector256.Sum(vfdme);
+        }
+
+        for (; i < num; i++)
         {
             float a = InvColorFactor * valuesM[i];
             float b = (baseCorrelation * valuesM[i]) - valuesS[i];

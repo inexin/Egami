@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -244,15 +246,33 @@ internal static class JxlForwardDct
         }
 
         Span<float> coeffs = stackalloc float[16];
-        for (int k = 0; k < 16; k++)
+        if (System.Runtime.Intrinsics.X86.Fma.IsSupported)
         {
-            float sum = 0;
+            // Each lane one basis function, the samples in the same order: the same fused sums as below.
+            float[] bt = JxlDct.AfvBasisTransposed;
+            System.Runtime.Intrinsics.Vector256<float> lo = default, hi = default;
             for (int i = 0; i < 16; i++)
             {
-                sum = MathF.FusedMultiplyAdd(samples[i], JxlDct.AfvBasisValue((k * 16) + i), sum);
+                System.Runtime.Intrinsics.Vector256<float> sv = System.Runtime.Intrinsics.Vector256.Create(samples[i]);
+                lo = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(sv, System.Runtime.Intrinsics.Vector256.Create(bt, i * 16), lo);
+                hi = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(sv, System.Runtime.Intrinsics.Vector256.Create(bt, (i * 16) + 8), hi);
             }
 
-            coeffs[k] = sum;
+            lo.CopyTo(coeffs);
+            hi.CopyTo(coeffs[8..]);
+        }
+        else
+        {
+            for (int k = 0; k < 16; k++)
+            {
+                float sum = 0;
+                for (int i = 0; i < 16; i++)
+                {
+                    sum = MathF.FusedMultiplyAdd(samples[i], JxlDct.AfvBasisValue((k * 16) + i), sum);
+                }
+
+                coeffs[k] = sum;
+            }
         }
 
         // The other 4×4 of the AFV rows, and the 8×4 of the other rows.

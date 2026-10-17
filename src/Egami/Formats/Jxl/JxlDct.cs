@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -61,10 +63,14 @@ internal static partial class JxlDct
     /// <summary>Gets entry <paramref name="index"/> of the AFV basis (16 orthonormal vectors of 16 samples, one after another).</summary>
     internal static float AfvBasisValue(int index) => AfvBasis[index];
 
+    /// <summary>Gets the AFV basis transposed (sample i, then basis function k), for the forward transform on vectors.</summary>
+    internal static float[] AfvBasisTransposed { get; } = [.. Enumerable.Range(0, 256).Select(i => AfvBasis[((i % 16) * 16) + (i / 16)])];
+
     /// <summary>A 2D DCT of a <paramref name="width"/>×<paramref name="height"/> area at <paramref name="offset"/>, rows then columns.</summary>
+    [System.Runtime.CompilerServices.SkipLocalsInit]
     internal static void Dct2D(Span<float> data, int offset, int stride, int width, int height, bool forward)
     {
-        if (width * height <= 1 || Dct2DVector(data, offset, stride, width, height, forward))
+        if (width * height <= 1 || Dct2DVector(data, offset, stride, width, height, forward) || Dct2DSmall(data, offset, stride, width, height, forward))
         {
             return;
         }
@@ -486,11 +492,29 @@ internal static partial class JxlDct
         }
 
         Span<float> samples = stackalloc float[16];
-        for (int k = 0; k < 16; k++)
+        if (System.Runtime.Intrinsics.X86.Fma.IsSupported)
         {
-            for (int i = 0; i < 16; i++)
+            // Each lane one sample, the coefficients in the same order: the same fused sums as below.
+            System.Runtime.Intrinsics.Vector256<float> lo = default, hi = default;
+            for (int k = 0; k < 16; k++)
             {
-                samples[i] = MathF.FusedMultiplyAdd(coeffs[k], AfvBasis[(k * 16) + i], samples[i]);
+                System.Runtime.Intrinsics.Vector256<float> c = System.Runtime.Intrinsics.Vector256.Create(coeffs[k]);
+                lo = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(c, System.Runtime.Intrinsics.Vector256.Create(AfvBasis, k * 16), lo);
+                hi = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(c, System.Runtime.Intrinsics.Vector256.Create(AfvBasis, (k * 16) + 8), hi);
+            }
+
+            lo.CopyTo(samples);
+            hi.CopyTo(samples[8..]);
+        }
+        else
+        {
+            samples.Clear();
+            for (int k = 0; k < 16; k++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    samples[i] = MathF.FusedMultiplyAdd(coeffs[k], AfvBasis[(k * 16) + i], samples[i]);
+                }
             }
         }
 

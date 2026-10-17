@@ -143,6 +143,8 @@ internal sealed class JxlLinearRows
 {
     private readonly ColorTransform _transform;
     private readonly ColorTransform? _primaries;
+    private readonly float[]? _lut8;
+    private readonly Rgb8[]? _rgb8;
     private readonly bool _pq;
     private readonly float[] _luminances = [0.2627f, 0.6780f, 0.0593f];
     private readonly int _width;
@@ -170,6 +172,20 @@ internal sealed class JxlLinearRows
         }
 
         _transform = ColorTransform.Create(profile, gray ? ColorProfile.GrayLinear : ColorProfile.LinearSrgb);
+        if (!gray && _primaries is null && profile.Model == ColorModel.Rgb && layout.ChannelType == PixelChannelType.Unorm8 && layout.Alpha != AlphaKind.Premultiplied
+            && profile.IsEquivalentTo(ColorProfile.Srgb))
+        {
+            // 8-bit sRGB: each sample through a table of what the transform gives it (it works channel by channel here).
+            Rgb8[] levels = [.. Enumerable.Range(0, 256).Select(i => new Rgb8((byte)i, (byte)i, (byte)i))];
+            RgbF32[] linear = new RgbF32[256];
+            _transform.Apply<Rgb8, RgbF32>(levels, linear);
+            if (linear.All(p => p.R == p.G && p.G == p.B))
+            {
+                _lut8 = [.. linear.Select(p => p.R)];
+                _rgb8 = new Rgb8[width];
+            }
+        }
+
         _rgb = new RgbF32[width];
         _gray = new GrayF32[width];
         bool cmyk = profile.Model == ColorModel.Cmyk;
@@ -213,6 +229,19 @@ internal sealed class JxlLinearRows
             {
                 float l = _gray[x].L;
                 (color[0][at + x], color[1][at + x], color[2][at + x]) = (l, l, l);
+            }
+
+            return;
+        }
+
+        if (_lut8 is not null)
+        {
+            PixelConvert.Convert(row, _rgb8.AsSpan());
+            float[] lut = _lut8;
+            for (int x = 0; x < _width; x++)
+            {
+                Rgb8 p = _rgb8![x];
+                (color[0][at + x], color[1][at + x], color[2][at + x]) = (lut[p.R], lut[p.G], lut[p.B]);
             }
 
             return;

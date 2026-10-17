@@ -113,6 +113,25 @@ public class JxlXybTests
     }
 
     [Fact]
+    public void EightBitSrgbTableGivesTheTransformsValues()
+    {
+        // The lossy writer's table for 8-bit sRGB rows against the 2.1.2 transform on the same pixels: the same but for the
+        // transform's matrix, whose cross terms leave values near 1e-17 where the table has 0.
+        Random random = new(9);
+        Rgb8[] row = [.. Enumerable.Range(0, 333).Select(_ => new Rgb8((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256)))];
+        JxlLinearRows rows = new(row.Length, 1, ColorProfile.Srgb, Rgb8.Layout);
+        rows.Add<Rgb8>(row, 0);
+        RgbF32[] expected = new RgbF32[row.Length];
+        ColorTransform.Create(ColorProfile.Srgb, ColorProfile.LinearSrgb).Apply<Rgb8, RgbF32>(row, expected);
+        for (int x = 0; x < row.Length; x++)
+        {
+            Assert.Equal(expected[x].R, rows.Image.Color[0][x], 1e-6f);
+            Assert.Equal(expected[x].G, rows.Image.Color[1][x], 1e-6f);
+            Assert.Equal(expected[x].B, rows.Image.Color[2][x], 1e-6f);
+        }
+    }
+
+    [Fact]
     public void VectorAndScalarCubeRootsAgree()
     {
         int count = 64;

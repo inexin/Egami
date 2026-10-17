@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -24,7 +26,10 @@ internal sealed class JxlAcStrategySearch
         (JxlTransformType.Afv3, 4, 0.81779489591359944),
     ];
 
-    private static readonly double[] ChannelMul = [Math.Pow(8.2, 8.0), Math.Pow(1.0, 8.0), Math.Pow(1.03, 8.0)];
+    private static readonly float[] ChannelMul = [(float)Math.Pow(8.2, 8.0), (float)Math.Pow(1.0, 8.0), (float)Math.Pow(1.03, 8.0)];
+
+    // Per channel and order of transform: the inverse weights, with zeros where the LF image carries the coefficients.
+    private static readonly float[][][] Inverse = BuildInverse();
     private static readonly float[] MaskOffset = [12.0f, 0.0f, 4.0f];
 
     private readonly float[][] _xyb;
@@ -320,58 +325,66 @@ internal sealed class JxlAcStrategySearch
         }
 
         float entropy = 0;
-        double loss = 0;
+        Vector256<float> loss = Vector256<float>.Zero;
         bool transposed = JxlTransforms8.Transposed(t);
         int cw = Math.Max(w8, h8) * 8;
         int ch = Math.Min(w8, h8) * 8;
+        Vector256<float> quant = Vector256.Create(quantNorm16);
         for (int c = 0; c < 3; c++)
         {
             float[] matrix = _matrices.GetWide(c, t);
 
+            // libjxl's inverse weights, which are zero at the lowest frequencies the LF image carries.
+            float[] inv = InverseWeights(c, t);
             float[] block = s.Block[c];
             float[] blockY = s.Block[1];
-            float factor = cmap[c];
-            float entropySum = 0;
-            int nonZeros = 0;
-            for (int i = 0; i < size; i++)
+            Vector256<float> factor = Vector256.Create(cmap[c]);
+            Vector256<float> entropyV = Vector256<float>.Zero;
+            Vector256<float> zerosV = Vector256<float>.Zero;
+            Vector256<float> one = Vector256.Create(1.0f);
+            for (int i = 0; i < size; i += 8)
             {
-                // libjxl's inverse weights are zero at the lowest frequencies, which the LF image carries.
-                bool llf = i % cw < cw / 8 && i / cw < ch / 8;
-                float val = llf ? 0 : (block[i] - (blockY[i] * factor)) * (quantNorm16 / matrix[i]);
-                float rval = MathF.Round(val, MidpointRounding.ToEven);
-                s.Error[i] = matrix[i] * (val - rval);
-                float q = MathF.Abs(rval);
-                entropySum += MathF.Sqrt(q);
-                nonZeros += q == 0 ? 0 : 1;
+                Vector256<float> val = (Vector256.LoadUnsafe(ref block[i]) - (Vector256.LoadUnsafe(ref blockY[i]) * factor)) * (Vector256.LoadUnsafe(ref inv[i]) * quant);
+                Vector256<float> rval = Vector256.Round(val);
+                (Vector256.LoadUnsafe(ref matrix[i]) * (val - rval)).StoreUnsafe(ref s.Error[i]);
+                Vector256<float> q = Vector256.Abs(rval);
+                entropyV = Vector256.Sqrt(q) + entropyV;
+                zerosV += Vector256.ConditionalSelect(Vector256.Equals(q, Vector256<float>.Zero), Vector256<float>.Zero, one);
             }
 
-            // The error back in pixels, in the natural layout.
+            // The error back in pixels, in the natural layout (which untransposed coefficients already have).
             int width = w8 * 8;
+            float[] pixels = s.Error;
             if (transposed)
             {
-                for (int cy = 0; cy < ch; cy++)
+                // Coefficient layout (cx, cy) is natural (cy, cx).
+                pixels = s.Pixels;
+                if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
                 {
-                    for (int cx = 0; cx < cw; cx++)
+                    JxlDct.TransposeBlock(s.Error, cw, pixels, width, ch, cw);
+                }
+                else
+                {
+                    for (int cy = 0; cy < ch; cy++)
                     {
-                        // Coefficient layout (cx, cy) is natural (cy, cx).
-                        s.Pixels[(cx * width) + cy] = s.Error[(cy * cw) + cx];
+                        for (int cx = 0; cx < cw; cx++)
+                        {
+                            pixels[(cx * width) + cy] = s.Error[(cy * cw) + cx];
+                        }
                     }
                 }
             }
-            else
-            {
-                s.Error.AsSpan(0, size).CopyTo(s.Pixels);
-            }
 
-            JxlDct.Inverse(t, s.Pixels, 0, width);
-            float maskOffset = MaskOffset[c];
-            double lossc = 0;
+            JxlDct.Inverse(t, pixels, 0, width);
+            Vector256<float> maskOffset = Vector256.Create(MaskOffset[c]);
+            Vector256<float> lossc = Vector256<float>.Zero;
             for (int py = 0; py < h8 * 8; py++)
             {
-                int maskRow = (y + py) * _stride;
-                for (int px = 0; px < width; px++)
+                int maskRow = ((y + py) * _stride) + x;
+                int row = py * width;
+                for (int px = 0; px < width; px += 8)
                 {
-                    float v = (_mask1x1[maskRow + x + px] + maskOffset) * s.Pixels[(py * width) + px];
+                    Vector256<float> v = (Vector256.LoadUnsafe(ref _mask1x1[maskRow + px]) + maskOffset) * Vector256.LoadUnsafe(ref pixels[row + px]);
                     v *= v;
                     v *= v;
                     v *= v;
@@ -379,9 +392,9 @@ internal sealed class JxlAcStrategySearch
                 }
             }
 
-            loss += ChannelMul[c] * lossc;
-
-            entropy += _costDelta * entropySum;
+            loss += Vector256.Create(ChannelMul[c]) * lossc;
+            entropy += _costDelta * SumOfLanes(entropyV);
+            int nonZeros = (int)SumOfLanes(zerosV);
             int nbits = CeilLog2Nonzero((uint)nonZeros + 1) + 1;
             entropy += _zerosMul * (CeilLog2Nonzero((uint)nbits + 17) + nbits);
             if (c == 0 && numBlocks >= 2)
@@ -393,10 +406,53 @@ internal sealed class JxlAcStrategySearch
             }
         }
 
-        float lossScalar = (float)(Math.Pow(loss / size, 1.0 / 8.0) * size / quantNorm16);
+        float lossScalar = (float)(Math.Pow(SumOfLanes(loss) / size, 1.0f / 8.0f) * size / quantNorm16);
         entropy *= entropyMul;
         entropy += _infoLossMultiplier * lossScalar;
         return entropy;
+    }
+
+    /// <summary>Highway's SumOfLanes on AVX2: the two halves added, then pairs within, then the last two.</summary>
+    private static float SumOfLanes(Vector256<float> v)
+    {
+        Vector128<float> h = v.GetLower() + v.GetUpper();
+        Vector128<float> p = h + Vector128.Shuffle(h, Vector128.Create(2, 3, 0, 1));
+        return p.GetElement(0) + p.GetElement(1);
+    }
+
+    private static float[] InverseWeights(int c, JxlTransformType t) => Inverse[(int)t][c];
+
+    private static float[][][] BuildInverse()
+    {
+        JxlDequantMatrices m = JxlDequantMatrices.Defaults;
+        float[][][] all = new float[(int)JxlTransformType.Dct128x256 + 1][][];
+        for (int ti = 0; ti < all.Length; ti++)
+        {
+            JxlTransformType t = (JxlTransformType)ti;
+            (int w8, int h8) = JxlTransforms8.Size(t);
+            if (w8 > 8 || h8 > 8)
+            {
+                continue;
+            }
+
+            int cw = Math.Max(w8, h8) * 8;
+            int ch = Math.Min(w8, h8) * 8;
+            all[ti] = new float[3][];
+            for (int c = 0; c < 3; c++)
+            {
+                float[] matrix = m.GetWide(c, t);
+                float[] inv = new float[matrix.Length];
+                for (int i = 0; i < inv.Length; i++)
+                {
+                    bool llf = i % cw < cw / 8 && i / cw < ch / 8;
+                    inv[i] = llf ? 0 : 1.0f / matrix[i];
+                }
+
+                all[ti][c] = inv;
+            }
+        }
+
+        return all;
     }
 
     private static int CeilLog2Nonzero(uint x) => x <= 1 ? 0 : 32 - System.Numerics.BitOperations.LeadingZeroCount(x - 1);
@@ -409,25 +465,32 @@ internal sealed class JxlAcStrategySearch
         (int w8, int h8) = JxlTransforms8.Size(t);
         int width = w8 * 8;
         int height = h8 * 8;
+        bool transposed = JxlTransforms8.Transposed(t);
+
+        // Untransposed coefficients keep the natural layout: the transform runs in place in the output.
+        float[] work = transposed ? scratch : output;
         for (int y = 0; y < height; y++)
         {
-            plane.AsSpan(offset + (y * stride), width).CopyTo(scratch.AsSpan(y * width, width));
+            plane.AsSpan(offset + (y * stride), width).CopyTo(work.AsSpan(y * width, width));
         }
 
-        JxlForwardDct.Forward(t, scratch, 0, width);
-        if (JxlTransforms8.Transposed(t))
+        JxlForwardDct.Forward(t, work, 0, width);
+        if (transposed)
         {
-            for (int y = 0; y < height; y++)
+            if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
             {
-                for (int x = 0; x < width; x++)
+                JxlDct.TransposeBlock(scratch, width, output, height, height, width);
+            }
+            else
+            {
+                for (int y = 0; y < height; y++)
                 {
-                    output[(x * height) + y] = scratch[(y * width) + x];
+                    for (int x = 0; x < width; x++)
+                    {
+                        output[(x * height) + y] = scratch[(y * width) + x];
+                    }
                 }
             }
-        }
-        else
-        {
-            scratch.AsSpan(0, width * height).CopyTo(output);
         }
     }
 

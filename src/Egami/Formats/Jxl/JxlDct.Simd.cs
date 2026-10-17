@@ -50,6 +50,112 @@ internal static partial class JxlDct
         Store(r7, ref origin, 7 * stride);
     }
 
+    /// <summary>
+    /// Runs the forward or inverse 8×8 DCT in place as <see cref="Dct2DVector"/> does (rows, then columns, with the same
+    /// operations), the block kept in eight registers: the lossy encoder runs it for every block it tries.
+    /// </summary>
+    [SkipLocalsInit]
+    private static void Dct8x8(Span<float> data, int offset, int stride, bool forward)
+    {
+        ref float origin = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
+        if (offset + (7 * stride) + 8 > data.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
+
+        Span<Vector256<float>> r = stackalloc Vector256<float>[8];
+        for (int i = 0; i < 8; i++)
+        {
+            r[i] = Load(ref origin, i * stride);
+        }
+
+        Transpose(ref r[0], ref r[1], ref r[2], ref r[3], ref r[4], ref r[5], ref r[6], ref r[7]);
+        Dct8Vector(r, forward);
+        Transpose(ref r[0], ref r[1], ref r[2], ref r[3], ref r[4], ref r[5], ref r[6], ref r[7]);
+        Dct8Vector(r, forward);
+        for (int i = 0; i < 8; i++)
+        {
+            Store(r[i], ref origin, i * stride);
+        }
+    }
+
+    /// <summary>
+    /// Runs Dct2D on a 4×4, 4×8 or 8×4 area with vectors, rows then columns as the scalar path, each 1D transform run on all
+    /// rows (or columns) at once by <see cref="DctVector"/>, which keeps the scalar operations: the samples are the same.
+    /// </summary>
+    [SkipLocalsInit]
+    private static bool Dct2DSmall(Span<float> data, int offset, int stride, int width, int height, bool forward)
+    {
+        if (!Avx.IsSupported || width is not (4 or 8) || height is not (4 or 8) || (width == 8 && height == 8))
+        {
+            return false;
+        }
+
+        if (offset + ((height - 1) * stride) + width > data.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
+
+        Span<float> t = stackalloc float[64];
+        Span<Vector256<float>> v = stackalloc Vector256<float>[8];
+        Span<Vector256<float>> scratch = stackalloc Vector256<float>[8];
+        t.Clear();
+        ref float d = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
+        ref float tr = ref MemoryMarshal.GetReference(t);
+
+        // Rows: each vector one column x, its lanes the rows y.
+        for (int y = 0; y < height; y++)
+        {
+            ref float row = ref Unsafe.Add(ref d, y * stride);
+            for (int x = 0; x < width; x++)
+            {
+                Unsafe.Add(ref tr, (x * 8) + y) = Unsafe.Add(ref row, x);
+            }
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            v[x] = Vector256.LoadUnsafe(ref tr, (nuint)(x * 8));
+        }
+
+        DctVector(v[..width], scratch, forward);
+
+        // Columns: each vector one row y, its lanes the columns x.
+        for (int x = 0; x < width; x++)
+        {
+            v[x].StoreUnsafe(ref tr, (nuint)(x * 8));
+        }
+
+        Span<float> r = stackalloc float[64];
+        r.Clear();
+        ref float rr = ref MemoryMarshal.GetReference(r);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Unsafe.Add(ref rr, (y * 8) + x) = Unsafe.Add(ref tr, (x * 8) + y);
+            }
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            v[y] = Vector256.LoadUnsafe(ref rr, (nuint)(y * 8));
+        }
+
+        DctVector(v[..height], scratch, forward);
+        for (int y = 0; y < height; y++)
+        {
+            v[y].StoreUnsafe(ref rr, (nuint)(y * 8));
+            ref float row = ref Unsafe.Add(ref d, y * stride);
+            for (int x = 0; x < width; x++)
+            {
+                Unsafe.Add(ref row, x) = Unsafe.Add(ref rr, (y * 8) + x);
+            }
+        }
+
+        return true;
+    }
+
     private static Vector256<float> Load(ref float origin, int at) => Vector256.LoadUnsafe(ref origin, (nuint)at);
 
     private static void Store(Vector256<float> v, ref float origin, int at) => v.StoreUnsafe(ref origin, (nuint)at);
@@ -122,6 +228,7 @@ internal static partial class JxlDct
     /// Runs Dct2D with vectors when both sides are multiples of 8: the rows through a transposed copy and the columns in place,
     /// eight at a time, each with the scalar 1D transform's operations in the same order.
     /// </summary>
+    [System.Runtime.CompilerServices.SkipLocalsInit]
     private static bool Dct2DVector(Span<float> data, int offset, int stride, int width, int height, bool forward)
     {
         if (!Avx.IsSupported || width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0)
@@ -129,14 +236,22 @@ internal static partial class JxlDct
             return false;
         }
 
-        float[] transposed = System.Buffers.ArrayPool<float>.Shared.Rent(width * height);
+        if (width == 8 && height == 8)
+        {
+            Dct8x8(data, offset, stride, forward);
+            return true;
+        }
+
+        // Up to 64×64 the transposed copy lives on the stack; larger ones (the decoder's 128 and 256) come from the pool.
+        float[]? rented = width * height > 4096 ? System.Buffers.ArrayPool<float>.Shared.Rent(width * height) : null;
+        Span<float> transposed = rented is null ? stackalloc float[width * height] : rented;
         Span<Vector256<float>> lines = stackalloc Vector256<float>[Math.Max(width, height)];
         Span<Vector256<float>> scratch = stackalloc Vector256<float>[Math.Max(width, height)];
         try
         {
             // Rows: the block transposed (width rows of height samples), each column of that transformed, then transposed back.
             TransposeBlock(data[offset..], stride, transposed, height, height, width);
-            ref float t = ref MemoryMarshal.GetArrayDataReference(transposed);
+            ref float t = ref MemoryMarshal.GetReference(transposed);
             for (int y = 0; y < height; y += 8)
             {
                 for (int x = 0; x < width; x++)
@@ -171,14 +286,17 @@ internal static partial class JxlDct
         }
         finally
         {
-            System.Buffers.ArrayPool<float>.Shared.Return(transposed);
+            if (rented is not null)
+            {
+                System.Buffers.ArrayPool<float>.Shared.Return(rented);
+            }
         }
 
         return true;
     }
 
     /// <summary>Writes the <paramref name="rows"/>×<paramref name="columns"/> block at <paramref name="from"/> transposed to <paramref name="to"/>, by 8×8 tiles.</summary>
-    private static void TransposeBlock(ReadOnlySpan<float> from, int fromStride, Span<float> to, int toStride, int rows, int columns)
+    internal static void TransposeBlock(ReadOnlySpan<float> from, int fromStride, Span<float> to, int toStride, int rows, int columns)
     {
         ref float f = ref MemoryMarshal.GetReference(from);
         ref float o = ref MemoryMarshal.GetReference(to);

@@ -621,18 +621,17 @@ internal sealed partial class JxlVarDctEncoder
 
         Parallel.For(0, h, parallel, y =>
         {
-            float[][] row = [new float[w], new float[w], new float[w]];
+            // Converted in place in the padded row (the vector and scalar paths give the same bits wherever the row starts).
             for (int c = 0; c < 3; c++)
             {
-                image.Color[c].AsSpan(y * w, w).CopyTo(row[c]);
+                image.Color[c].AsSpan(y * w, w).CopyTo(xyb[c].AsSpan(y * width, w));
             }
 
-            JxlXyb.LinearToXyb(row, 0, w, intensityTarget);
+            JxlXyb.LinearToXyb(xyb, y * width, (y * width) + w, intensityTarget);
             for (int c = 0; c < 3; c++)
             {
                 Span<float> dst = xyb[c].AsSpan(y * width, width);
-                row[c].CopyTo(dst);
-                dst[w..].Fill(row[c][w - 1]);
+                dst[w..].Fill(dst[w - 1]);
             }
         });
 
@@ -841,7 +840,9 @@ internal sealed partial class JxlVarDctEncoder
         int stride = _blocksX * 8;
         int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
         int x1 = Math.Min(x0 + TileBlocks, _blocksX), y1 = Math.Min(y0 + TileBlocks, _blocksY);
-        List<float> yx = [], xs = [], yb = [], bs = [];
+        // A tile holds at most 64×64 coefficients a channel (its varblocks cover it once).
+        float[] yx = new float[64 * 64], xs = new float[64 * 64], yb = new float[64 * 64], bs = new float[64 * 64];
+        int n = 0;
         float[] scratch = new float[64 * 64];
         float[][] block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
         for (int y = y0; y < y1; y++)
@@ -881,21 +882,31 @@ internal sealed partial class JxlVarDctEncoder
                 float[] qmB = matrices.GetWide(2, t);
                 float q = useDct8 ? 1 : Scale * 128 * _quantField[at];
                 int size = w8 * h8 * 64;
+                if (n + size > yx.Length)
+                {
+                    Array.Resize(ref yx, n + size);
+                    Array.Resize(ref xs, n + size);
+                    Array.Resize(ref yb, n + size);
+                    Array.Resize(ref bs, n + size);
+                }
+
                 for (int i = 0; i < size; i++)
                 {
                     float qx = q / qmX[i];
                     float qb = q / qmB[i];
-                    yx.Add(block[1][i] * qx);
-                    xs.Add(block[0][i] * qx);
-                    yb.Add(block[1][i] * qb);
-                    bs.Add(block[2][i] * qb);
+                    yx[n + i] = block[1][i] * qx;
+                    xs[n + i] = block[0][i] * qx;
+                    yb[n + i] = block[1][i] * qb;
+                    bs[n + i] = block[2][i] * qb;
                 }
+
+                n += size;
             }
         }
 
         int tile = (ty * _tilesX) + tx;
-        _yToX[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.ToArray(), xs.ToArray(), 0f, fast);
-        _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.ToArray(), bs.ToArray(), 1f, fast);
+        _yToX[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.AsSpan(0, n), xs.AsSpan(0, n), 0f, fast);
+        _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.AsSpan(0, n), bs.AsSpan(0, n), 1f, fast);
     }
 
     /// <summary>
@@ -1555,26 +1566,33 @@ internal sealed partial class JxlVarDctEncoder
         (int w8, int h8) = JxlTransforms8.Size(t);
         int width = w8 * 8;
         int height = h8 * 8;
+        bool transposed = JxlTransforms8.Transposed(t);
+
+        // Untransposed coefficients keep the natural layout: the transform runs in place in the output.
+        float[] work = transposed ? scratch : output;
         for (int y = 0; y < height; y++)
         {
-            plane.AsSpan(offset + (y * stride), width).CopyTo(scratch.AsSpan(y * width, width));
+            plane.AsSpan(offset + (y * stride), width).CopyTo(work.AsSpan(y * width, width));
         }
 
-        JxlForwardDct.Forward(t, scratch, 0, width);
-        if (JxlTransforms8.Transposed(t))
+        JxlForwardDct.Forward(t, work, 0, width);
+        if (transposed)
         {
             // The coefficient layout is height wide: natural (x, y) is stored at (y, x).
-            for (int y = 0; y < height; y++)
+            if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
             {
-                for (int x = 0; x < width; x++)
+                JxlDct.TransposeBlock(scratch, width, output, height, height, width);
+            }
+            else
+            {
+                for (int y = 0; y < height; y++)
                 {
-                    output[(x * height) + y] = scratch[(y * width) + x];
+                    for (int x = 0; x < width; x++)
+                    {
+                        output[(x * height) + y] = scratch[(y * width) + x];
+                    }
                 }
             }
-        }
-        else
-        {
-            scratch.AsSpan(0, width * height).CopyTo(output);
         }
     }
 
