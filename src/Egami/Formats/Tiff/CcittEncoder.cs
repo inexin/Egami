@@ -30,8 +30,17 @@ internal static class CcittEncoder
     private static (int, int)[] Codes(string codes) =>
         [.. codes.Split(' ').Select(c => (Convert.ToInt32(c, 2), c.Length))];
 
-    /// <summary>Encodes <paramref name="rows"/> rows of <paramref name="width"/> pixels as Group 3 (1-D, an EOL before each row) or Group 4.</summary>
+    /// <summary>Encodes <paramref name="rows"/> rows of <paramref name="width"/> pixels as Group 3 (1-D, an EOL before each row) or Group 4 with EOFB, as TIFF stores them.</summary>
     public static byte[] Encode(ReadOnlySpan<byte> packed, int width, int rows, bool group4)
+    {
+        return Encode(packed, width, rows, group4, endOfLine: true, endOfBlock: group4);
+    }
+
+    /// <summary>
+    /// Encodes as Group 3 (1-D) or Group 4: <paramref name="endOfLine"/> puts an EOL before each Group 3 row, and
+    /// <paramref name="endOfBlock"/> ends the data with RTC (six EOLs) for Group 3 or EOFB (two EOLs) for Group 4.
+    /// </summary>
+    public static byte[] Encode(ReadOnlySpan<byte> packed, int width, int rows, bool group4, bool endOfLine, bool endOfBlock)
     {
         int rowBytes = (width + 7) / 8;
         BitWriter bits = new(Math.Max(64, packed.Length / 2));
@@ -53,16 +62,22 @@ internal static class CcittEncoder
             }
             else
             {
-                bits.Put(1, 12);
+                if (endOfLine)
+                {
+                    bits.Put(1, 12);
+                }
+
                 OneDimensional(ref bits, coding, count, width);
             }
         }
 
-        if (group4)
+        if (endOfBlock)
         {
-            // EOFB: two EOLs.
-            bits.Put(1, 12);
-            bits.Put(1, 12);
+            // EOFB is two EOLs, RTC six.
+            for (int i = 0; i < (group4 ? 2 : 6); i++)
+            {
+                bits.Put(1, 12);
+            }
         }
 
         return bits.ToArray();

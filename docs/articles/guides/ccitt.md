@@ -3,8 +3,8 @@
 Egami decodes raw CCITT fax data: modified Huffman and Group 3 (ITU-T T.4, one- and two-dimensional) and Group 4 (ITU-T T.6),
 the bi-level coding of fax machines, of many scanned PDFs and of TIFF compressions 2, 3 and 4. Raw data has no header, so its
 parameters come from outside: in a PDF they are the CCITTFaxDecode filter's DecodeParms dictionary, and `CcittFaxParameters`
-holds the same eight values with the same defaults. CCITT data is never written here; inside TIFF it is read and written by the
-TIFF format. Every CCITT stream of a 4,000-file PDF corpus, byte-aligned Group 4 among them, and of a matrix of every parameter
+holds the same eight values with the same defaults. `CcittFax.Encode` writes Group 4 and one-dimensional Group 3 for PDF
+images; inside TIFF CCITT data is read and written by the TIFF format. Every CCITT stream of a 4,000-file PDF corpus, byte-aligned Group 4 among them, and of a matrix of every parameter
 combination decodes bit for bit as PDFium and pdf.js decode it.
 
 ## As a PDF filter
@@ -25,6 +25,16 @@ does after every other filter.
 | `EndOfBlock` | true | The data ends with RTC (Group 3) or EOFB (Group 4); decoding stops there either way |
 | `BlackIs1` | false | The output's bit sense: 1 for black instead of 0 |
 | `DamagedRowsBeforeError` | 0 | With EOLs and K 0 or above, how many damaged rows are skipped to the next EOL |
+
+## Writing
+
+`CcittFax.Encode` is the filter's inverse: it takes packed rows in the same form `Decode` gives (black 0 unless `BlackIs1`)
+and writes them with the parameters' coding. K below 0 writes Group 4, which is usually the smallest coding for scanned text,
+often half of Flate's size; K 0 writes one-dimensional Group 3. `EndOfLine` puts an EOL before each Group 3 row and
+`EndOfBlock` ends the data with RTC or EOFB. Mixed Group 3 (K above 0) and `EncodedByteAlign` are not written. The same
+parameters then go in the image's DecodeParms, and `Decode` gives back the rows exactly.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Ccitt.cs#ccitt-encode)]
 
 ## As an image
 

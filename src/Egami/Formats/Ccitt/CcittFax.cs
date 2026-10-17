@@ -73,9 +73,9 @@ public sealed record CcittFaxParameters
 }
 
 /// <summary>
-/// Raw CCITT fax decoding as a PDF filter: Group 3 and Group 4 data (ITU-T T.4 and T.6) with PDF's CCITTFaxDecode parameters,
-/// byte-aligned Group 4 included, which a TIFF wrapper cannot express. To load the data as an image instead, use
-/// <see cref="CcittFormat"/>.
+/// Raw CCITT fax coding as a PDF filter: Group 3 and Group 4 data (ITU-T T.4 and T.6) with PDF's CCITTFaxDecode parameters,
+/// byte-aligned Group 4 included, which a TIFF wrapper cannot express. <see cref="Decode"/> reads it and <see cref="Encode"/>
+/// writes Group 4 and one-dimensional Group 3. To load the data as an image instead, use <see cref="CcittFormat"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Ccitt.cs" region="ccitt-filter"/>
@@ -134,6 +134,60 @@ public static class CcittFax
         }
 
         return packed;
+    }
+
+    /// <summary>
+    /// Encodes packed rows as CCITT fax data, the inverse of <see cref="Decode"/>: one bit a pixel, most significant bit first,
+    /// each row padded to whole bytes, black 0 and white 1 unless <see cref="CcittFaxParameters.BlackIs1"/>. The parameters
+    /// that describe the result are the ones a PDF's DecodeParms then carries.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="CcittFaxParameters.K"/> below 0 writes Group 4 (ITU-T T.6), the smallest coding for scanned text; 0 writes
+    /// one-dimensional Group 3 (modified Huffman rows). <see cref="CcittFaxParameters.EndOfLine"/> puts an EOL before each
+    /// Group 3 row, and <see cref="CcittFaxParameters.EndOfBlock"/> ends the data with RTC or EOFB. The row count is
+    /// <see cref="CcittFaxParameters.Rows"/> when it is above 0, else every whole row of <paramref name="rows"/>.
+    /// </remarks>
+    /// <param name="rows">The packed rows, <c>(Columns + 7) / 8</c> bytes each; padding bits are ignored.</param>
+    /// <param name="parameters">The coding to write: K, EndOfLine, EndOfBlock, Columns, Rows and BlackIs1 are used.</param>
+    /// <returns>The coded data.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="parameters"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A parameter is outside what it can mean, or <paramref name="rows"/> holds fewer rows than Rows.</exception>
+    /// <exception cref="NotSupportedException">K above 0 (mixed Group 3) or EncodedByteAlign is asked for: neither is written.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Ccitt.cs" region="ccitt-encode"/>
+    /// </example>
+    public static byte[] Encode(ReadOnlySpan<byte> rows, CcittFaxParameters parameters)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        parameters.Check(nameof(parameters));
+        if (parameters.K > 0)
+        {
+            throw new NotSupportedException("Mixed one- and two-dimensional Group 3 (K above 0) is not written; use K below 0 for Group 4 or 0 for Group 3.");
+        }
+
+        if (parameters.EncodedByteAlign)
+        {
+            throw new NotSupportedException("Byte-aligned CCITT data is not written.");
+        }
+
+        int rowBytes = (parameters.Columns + 7) / 8;
+        int count = parameters.Rows > 0 ? parameters.Rows : rows.Length / rowBytes;
+        if ((long)count * rowBytes > rows.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rows), rows.Length, $"{count} rows of {parameters.Columns} pixels need {(long)count * rowBytes} bytes.");
+        }
+
+        // The encoder takes black as 1 bits, as WhiteIsZero TIFF stores them.
+        ReadOnlySpan<byte> packed = rows[..(count * rowBytes)];
+        byte[]? flipped = null;
+        if (!parameters.BlackIs1)
+        {
+            flipped = packed.ToArray();
+            Invert(flipped, parameters.Columns);
+            packed = flipped;
+        }
+
+        return Tiff.CcittEncoder.Encode(packed, parameters.Columns, count, parameters.K < 0, parameters.EndOfLine, parameters.EndOfBlock);
     }
 
     /// <summary>

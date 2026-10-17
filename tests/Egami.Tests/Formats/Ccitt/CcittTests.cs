@@ -164,6 +164,46 @@ public class CcittTests
     }
 
     /// <summary>shapes.pbm's packed rows, 1 for black.</summary>
+    [Theory]
+    [InlineData(-1, false, true, false)]
+    [InlineData(-1, false, false, true)]
+    [InlineData(0, true, true, false)]
+    [InlineData(0, false, false, false)]
+    [InlineData(0, true, false, true)]
+    public void EncodeGivesBackThePicture(int k, bool endOfLine, bool endOfBlock, bool blackIs1)
+    {
+        (int width, int height, byte[] truth) = Picture();
+        int rowBytes = (width + 7) / 8;
+        byte padding = (byte)((width & 7) == 0 ? 0 : 0xFF >> (width & 7));
+        byte[] rows = [.. truth.Select((b, i) => blackIs1 ? b : (byte)(~b & (i % rowBytes == rowBytes - 1 ? ~padding : 0xFF)))];
+        CcittFaxParameters p = new() { K = k, EndOfLine = endOfLine, EndOfBlock = endOfBlock, Columns = width, BlackIs1 = blackIs1 };
+
+        byte[] coded = CcittFax.Encode(rows, p);
+        byte[] decoded = CcittFax.Decode(coded, p with { Rows = endOfBlock ? 0 : height }, out int count);
+
+        Assert.Equal(height, count);
+        Assert.Equal(rows, decoded);
+    }
+
+    [Fact]
+    public void GroupFourIsSmallerThanGroupThree()
+    {
+        (int width, _, byte[] truth) = Picture();
+        byte[] g4 = CcittFax.Encode(truth, new CcittFaxParameters { K = -1, Columns = width, BlackIs1 = true });
+        byte[] g3 = CcittFax.Encode(truth, new CcittFaxParameters { K = 0, Columns = width, BlackIs1 = true });
+        Assert.True(g4.Length < g3.Length, $"G4 {g4.Length} bytes, G3 {g3.Length}");
+    }
+
+    [Fact]
+    public void EncodeRefusesWhatItCannotWrite()
+    {
+        byte[] row = new byte[2];
+        Assert.Throws<NotSupportedException>(() => CcittFax.Encode(row, new CcittFaxParameters { K = 2, Columns = 16 }));
+        Assert.Throws<NotSupportedException>(() => CcittFax.Encode(row, new CcittFaxParameters { K = -1, EncodedByteAlign = true, Columns = 16 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CcittFax.Encode(row, new CcittFaxParameters { K = -1, Columns = 16, Rows = 2 }));
+        Assert.Throws<ArgumentNullException>(() => CcittFax.Encode(row, null!));
+    }
+
     private static (int Width, int Height, byte[] Bits) Picture()
     {
         byte[] pbm = File.ReadAllBytes(Path.Combine(Folder, "shapes.pbm"));

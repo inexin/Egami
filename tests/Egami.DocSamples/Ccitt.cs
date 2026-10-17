@@ -40,6 +40,36 @@ public class Ccitt
     }
 
     [Fact]
+    public void Encode()
+    {
+        using Raster<Gray8> scan = Raster.Create<Gray8>(301, 48, new Gray8(255));
+        scan.SetPixel(10, 10, new Gray8(0));
+
+        #region ccitt-encode
+        // A bi-level scan as a PDF image with /Filter /CCITTFaxDecode: pack its rows (0 black, 1 white), then write Group 4.
+        int rowBytes = (scan.Width + 7) / 8;
+        byte[] rows = new byte[rowBytes * scan.Height];
+        for (int y = 0; y < scan.Height; y++)
+        {
+            Span<Gray8> row = scan.Row(y);
+            for (int x = 0; x < scan.Width; x++)
+            {
+                if (row[x].L >= 128)
+                {
+                    rows[(y * rowBytes) + (x >> 3)] |= (byte)(0x80 >> (x & 7));
+                }
+            }
+        }
+
+        // These parameters are the image's DecodeParms: << /K -1 /Columns 301 /Rows 48 >>.
+        CcittFaxParameters parameters = new() { K = -1, Columns = scan.Width, Rows = scan.Height };
+        byte[] g4 = CcittFax.Encode(rows, parameters);
+        #endregion
+
+        Assert.Equal(rows, CcittFax.Decode(g4, parameters, out _));
+    }
+
+    [Fact]
     public void PdfImage()
     {
         using SampleFiles files = new();

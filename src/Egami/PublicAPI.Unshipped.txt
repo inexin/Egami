@@ -2985,6 +2985,7 @@ static Egami.Formats.Avif.AvifItem.operator ==(Egami.Formats.Avif.AvifItem? left
 static Egami.Formats.Avif.AvifReaderOptions.operator !=(Egami.Formats.Avif.AvifReaderOptions? left, Egami.Formats.Avif.AvifReaderOptions? right) -> bool
 static Egami.Formats.Avif.AvifReaderOptions.operator ==(Egami.Formats.Avif.AvifReaderOptions? left, Egami.Formats.Avif.AvifReaderOptions? right) -> bool
 static Egami.Formats.Ccitt.CcittFax.Decode(System.ReadOnlySpan<byte> data, Egami.Formats.Ccitt.CcittFaxParameters! parameters, out int rows, Egami.EgamiContext? context = null) -> byte[]!
+static Egami.Formats.Ccitt.CcittFax.Encode(System.ReadOnlySpan<byte> rows, Egami.Formats.Ccitt.CcittFaxParameters! parameters) -> byte[]!
 static Egami.Formats.Ccitt.CcittFaxParameters.operator !=(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool
 static Egami.Formats.Ccitt.CcittFaxParameters.operator ==(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool
 static Egami.Formats.Ccitt.CcittFormat.Info.get -> Egami.Formats.FormatInfo!

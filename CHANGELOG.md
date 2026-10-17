@@ -7,6 +7,12 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### CCITT fax encoding
+
+- `CcittFax.Encode` writes packed bi-level rows as Group 4 (ITU-T T.6) or one-dimensional Group 3 (T.4) with PDF's
+  CCITTFaxDecode parameters, the inverse of `CcittFax.Decode`, so a PDF optimizer can store scans as G4. It is the encoder
+  TIFF's compressions 3 and 4 already used; `Decode` gives the rows back bit for bit.
+
 ### Faster blur, shadow, lighting and emboss on 8-bit images
 
 - `Blur(σ, …, BlurMethod.Fast)` and `Blur` above σ 100 on 8-bit images (Rgba8, Bgra8, Rgb8, Gray8 and the rest of the
