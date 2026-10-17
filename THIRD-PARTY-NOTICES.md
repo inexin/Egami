@@ -323,7 +323,11 @@ the MA tree learning with its sample deduplication and property quantization (en
 choices of palettes, RCTs, fixed trees and settings at each effort (enc_modular, enc_palette, enc_rct; `JxlModularEncoder.cs`),
 the fast lossless encoder of effort 1 with its fixed tree, prefix codes and code-length search (enc_fast_lossless;
 `JxlFastLossless.cs`), the ICC profile transform (enc_icc_codec; `JxlIccEncoder.cs`) and, for the lossy encoder (2.9.7), the forward XYB: linear sRGB
-through the opsin absorbance matrix and bias, cone responses clamped at zero, cube root (enc_xyb, cms/opsin_params; `JxlXyb.cs`). Its JPEG recompression is translated
+through the opsin absorbance matrix and bias, cone responses clamped at zero, cube root (enc_xyb, cms/opsin_params; `JxlXyb.cs`), and its VarDCT frame: the
+quantizer's global scale and DC quantizer (quantizer, InitialQuantDC in enc_adaptive_quantization), the per-effort heuristics
+(enc_heuristics, enc_frame's chromacity and loop filter settings), coefficient quantization with its thresholds and the Y round
+trip (enc_group), the LF and HF metadata streams and their trees (enc_modular, enc_cache), coefficient orders and tokens
+(enc_coeff_order, enc_entropy_coder; `JxlVarDctEncoder.cs`). Its JPEG recompression is translated
 from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
 `JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
 (jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is

@@ -31,7 +31,9 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         JxlWriterOptions jxl = start.Options as JxlWriterOptions ?? JxlWriterOptions.Default;
         if (jxl.Lossless == false)
         {
-            throw new NotSupportedException("Egami writes JPEG XL losslessly only; a lossy encoder is planned for 2.9.7. Leave JxlWriterOptions.Lossless unset or set it to true.");
+            start.Refuse("JPEG XL", "Lossy encoding", "Save from a whole raster.");
+            SaveLosses.Report(start, "JPEG XL", SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc);
+            return new LossyEncoder<TPixel>(output, start, jxl);
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
@@ -259,6 +261,64 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         }
     }
 
+    /// <summary>Converts rows to linear light as they come and encodes them lossy at the end (Phase 2.9.7).</summary>
+    private sealed class LossyEncoder<TPixel>(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options) : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private readonly JxlLinearRows _rows = new(start.Width, start.Height, start.Metadata.GetColorProfile(), TPixel.Layout);
+        private Cmyk16[]? _inks;
+        private int _written;
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            if (_written == start.Height)
+            {
+                throw new InvalidOperationException($"The image has {start.Height} rows; no more can be written.");
+            }
+
+            if (_rows.HasBlack)
+            {
+                _inks ??= new Cmyk16[start.Width];
+                PixelConvert.Convert(row, _inks.AsSpan());
+                _rows.Add<Cmyk16>(_inks, _written);
+            }
+            else
+            {
+                _rows.Add(row, _written);
+            }
+
+            _written++;
+        }
+
+        public override void Complete()
+        {
+            if (_written != start.Height)
+            {
+                throw new InvalidOperationException($"The image has {start.Height} rows, but {_written} were written.");
+            }
+
+            RasterMetadata metadata = start.Metadata;
+            bool strip = options.StripMetadata;
+            JxlLinearImage image = _rows.Image;
+            (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, image.IsGray);
+            int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
+            JxlEncodeInput header = new()
+            {
+                Width = start.Width,
+                Height = start.Height,
+                Color = image.IsGray ? [[]] : [[], [], []],
+                ColorEncoding = color,
+                Icc = icc,
+                Orientation = orientation,
+            };
+            JxlLossySettings settings = new() { Distance = options.Distance ?? 1f, Effort = options.Effort, Parallelism = start.Context.MaxParallelism };
+            byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings);
+            byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
+            byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
+            WriteFile(output, codestream, exif, xmp);
+        }
+    }
+
     /// <summary>One row converted to the intermediate type the planes are filled from.</summary>
     private sealed class IntermediateRow(int width)
     {
@@ -372,6 +432,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
 public sealed class JxlWriterOptions : WriterOptions
 {
     private readonly int _effort = 5;
+    private readonly float? _distance;
 
     /// <summary>Gets the default options.</summary>
     public static new JxlWriterOptions Default { get; } = new();
@@ -394,9 +455,27 @@ public sealed class JxlWriterOptions : WriterOptions
     }
 
     /// <summary>
-    /// Gets whether to write lossless data. Defaults to <see langword="null"/>. Every file is lossless until a lossy encoder comes
-    /// in 2.9.7, so <see langword="false"/> is refused for now; from then, a raster not read from a lossless JPEG XL file will be
-    /// written lossy unless this is <see langword="true"/>.
+    /// Gets whether to write lossless data. Defaults to <see langword="null"/>, which writes lossless; <see langword="false"/>
+    /// writes a lossy VarDCT file in XYB at <see cref="Distance"/> and <see cref="Effort"/>, as cjxl does.
     /// </summary>
     public bool? Lossless { get; init; }
+
+    /// <summary>
+    /// Gets the Butteraugli-style distance lossy files are written at, as cjxl -d takes it: 1.0 is visually lossless, larger
+    /// values give smaller files with more visible loss, 0.1 to 25. Defaults to <see langword="null"/>, which is 1.0.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0.1 to 25.</exception>
+    public float? Distance
+    {
+        get => _distance;
+        init
+        {
+            if (value is float d && !(d >= 0.1f && d <= 25f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), d, "The distance must be from 0.1 to 25.");
+            }
+
+            _distance = value;
+        }
+    }
 }

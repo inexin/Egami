@@ -57,8 +57,14 @@ internal sealed class JxlDequantMatrices
         }
     }
 
+    /// <summary>Gets the default matrices (every entry its default parameters), as the encoder uses them.</summary>
+    internal static JxlDequantMatrices Defaults => DefaultSet.Value;
+
     /// <summary>Gets the JPEG quantization tables when the DCT8 matrix is raw with the JPEG denominator (for jbrd), else null.</summary>
     internal int[][]? JpegTables { get; private set; }
+
+    /// <summary>Gets the weights of a channel's matrix for a transform in the coefficient layout, wider than tall, as tokens are ordered.</summary>
+    internal float[] GetWide(int channel, JxlTransformType t) => _matrices[JxlTransforms8.MatrixIndex(t)][channel];
 
     /// <summary>Gets the weights of a channel's matrix for a transform, in its stored (possibly transposed) layout.</summary>
     internal float[] Get(int channel, JxlTransformType t) => JxlTransforms8.Transposed(t) ? _transposed[JxlTransforms8.MatrixIndex(t)][channel] : _matrices[JxlTransforms8.MatrixIndex(t)][channel];

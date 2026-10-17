@@ -30,6 +30,9 @@ internal sealed record JxlEncodeInput
 
     internal int Effort { get; init; } = 5;
 
+    /// <summary>Gets whether the image is XYB encoded (a lossy VarDCT image) rather than kept in its own color space.</summary>
+    internal bool Xyb { get; init; }
+
     /// <summary>Gets how many threads the encoder may use.</summary>
     internal int Parallelism { get; init; } = Environment.ProcessorCount;
 }
@@ -102,7 +105,7 @@ internal static class JxlLosslessEncoder
         w.Write(0x0AFF, 16);
         WriteSize(w, input.Width, input.Height);
 
-        // ImageMetadata, not all default: lossless keeps its color space instead of XYB.
+        // ImageMetadata, written out: lossless keeps its color space instead of XYB, and lossy names its own.
         w.WriteBool(false);
         bool extra = input.Orientation != 1;
         w.WriteBool(extra);
@@ -135,7 +138,7 @@ internal static class JxlLosslessEncoder
             }
         }
 
-        w.WriteBool(false); // not XYB
+        w.WriteBool(input.Xyb);
         WriteColorEncoding(w, input);
         if (extra)
         {

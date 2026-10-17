@@ -158,14 +158,6 @@ public class JxlEncodeTests
         }
     }
 
-    [Fact]
-    public void LossyIsRefusedUntilItExists()
-    {
-        using Raster<Rgb8> source = Noise<Rgb8>(8, 8, 1);
-        using MemoryStream file = new();
-        Assert.Throws<NotSupportedException>(() => source.Save(file, JxlFormat.Info, new JxlWriterOptions { Lossless = false }));
-    }
-
     private static void RoundTrip<T>()
         where T : unmanaged, IPixelType<T>
     {

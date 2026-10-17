@@ -29,50 +29,22 @@ internal static class JxlXyb
     /// </summary>
     internal static JxlLinearImage ToLinear(Raster raster)
     {
-        int count = raster.Width * raster.Height;
-        float[][] color = [new float[count], new float[count], new float[count]];
-        ColorProfile profile = raster.Metadata.GetColorProfile();
-        bool gray = raster.Layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
-        float[]? black = null;
-        if (gray)
+        JxlLinearRows rows = new(raster.Width, raster.Height, raster.Metadata.GetColorProfile(), raster.Layout);
+        using Raster<RgbaF32> floats = raster.As<RgbaF32>();
+        using Raster<Cmyk16>? inks = rows.HasBlack ? raster.As<Cmyk16>() : null;
+        for (int y = 0; y < raster.Height; y++)
         {
-            using Raster<GrayF32> linear = raster.ConvertColor<GrayF32>(ColorProfile.GrayLinear);
-            for (int y = 0, at = 0; y < raster.Height; y++)
+            if (inks is not null)
             {
-                foreach (GrayF32 p in linear.Row(y))
-                {
-                    (color[0][at], color[1][at], color[2][at]) = (p.L, p.L, p.L);
-                    at++;
-                }
+                rows.Add(inks.Row(y), y);
             }
-        }
-        else
-        {
-            using Raster<RgbF32> linear = raster.ConvertColor<RgbF32>(ColorProfile.LinearSrgb);
-            for (int y = 0, at = 0; y < raster.Height; y++)
+            else
             {
-                foreach (RgbF32 p in linear.Row(y))
-                {
-                    (color[0][at], color[1][at], color[2][at]) = (p.R, p.G, p.B);
-                    at++;
-                }
-            }
-
-            if (profile.Model == ColorModel.Cmyk)
-            {
-                black = new float[count];
-                using Raster<Cmyk16> inks = raster.As<Cmyk16>();
-                for (int y = 0, at = 0; y < raster.Height; y++)
-                {
-                    foreach (Cmyk16 p in inks.Row(y))
-                    {
-                        black[at++] = 1 - (p.K / 65535f);
-                    }
-                }
+                rows.Add(floats.Row(y), y);
             }
         }
 
-        return new JxlLinearImage(raster.Width, raster.Height, color, gray, black);
+        return rows.Image;
     }
 
     /// <summary>
@@ -158,6 +130,73 @@ internal static class JxlXyb
         }
 
         return Vector256.ConditionalSelect(Vector256.GreaterThan(x, Vector256<float>.Zero), y, Vector256<float>.Zero);
+    }
+}
+
+/// <summary>
+/// Fills <see cref="JxlLinearImage"/> row by row, as a row encoder receives them: each row through the 2.1.2 transform from the
+/// raster's profile to linear sRGB (linear gray for gray rasters), and the black ink of CMYK rows.
+/// </summary>
+internal sealed class JxlLinearRows
+{
+    private readonly ColorTransform _transform;
+    private readonly int _width;
+    private readonly RgbF32[] _rgb;
+    private readonly GrayF32[] _gray;
+    private readonly Cmyk16[]? _inks;
+
+    internal JxlLinearRows(int width, int height, ColorProfile profile, PixelLayoutInfo layout)
+    {
+        _width = width;
+        bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha || profile.Model == ColorModel.Gray;
+        _transform = ColorTransform.Create(profile, gray ? ColorProfile.GrayLinear : ColorProfile.LinearSrgb);
+        _rgb = new RgbF32[width];
+        _gray = new GrayF32[width];
+        bool cmyk = profile.Model == ColorModel.Cmyk;
+        _inks = cmyk ? new Cmyk16[width] : null;
+        int count = width * height;
+        Image = new JxlLinearImage(width, height, [new float[count], new float[count], new float[count]], gray, cmyk ? new float[count] : null);
+    }
+
+    /// <summary>Gets whether the rows carry a black ink, which <see cref="Add"/> then wants as CMYK pixels.</summary>
+    internal bool HasBlack => _inks is not null;
+
+    /// <summary>Gets the image the rows are written into.</summary>
+    internal JxlLinearImage Image { get; }
+
+    /// <summary>Converts row <paramref name="y"/> into the planes.</summary>
+    internal void Add<TPixel>(ReadOnlySpan<TPixel> row, int y)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        int at = y * _width;
+        float[][] color = Image.Color;
+        if (Image.IsGray)
+        {
+            _transform.Apply<TPixel, GrayF32>(row, _gray);
+            for (int x = 0; x < _width; x++)
+            {
+                float l = _gray[x].L;
+                (color[0][at + x], color[1][at + x], color[2][at + x]) = (l, l, l);
+            }
+
+            return;
+        }
+
+        _transform.Apply<TPixel, RgbF32>(row, _rgb);
+        for (int x = 0; x < _width; x++)
+        {
+            (color[0][at + x], color[1][at + x], color[2][at + x]) = (_rgb[x].R, _rgb[x].G, _rgb[x].B);
+        }
+
+        if (_inks is not null)
+        {
+            PixelConvert.Convert(row, _inks.AsSpan());
+            float[] black = Image.Black!;
+            for (int x = 0; x < _width; x++)
+            {
+                black[at + x] = 1 - (_inks[x].K / 65535f);
+            }
+        }
     }
 }
 

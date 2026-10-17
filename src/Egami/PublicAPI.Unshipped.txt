@@ -3457,3 +3457,5 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Operations.OperationReach.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
 ~override Egami.Pixels.YuvColor.ToString() -> string
+Egami.Formats.Jxl.JxlWriterOptions.Distance.get -> float?
+Egami.Formats.Jxl.JxlWriterOptions.Distance.init -> void
