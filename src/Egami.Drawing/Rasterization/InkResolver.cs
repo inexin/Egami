@@ -146,11 +146,7 @@ internal sealed class InkResolver
     /// <summary>Gets the intent and black point compensation of conversions into the process inks.</summary>
     internal ColorTransformOptions Options => _options;
 
-    /// <summary>Gets the conversion of the RGB source into the process inks as a link grid, for converting many colours.</summary>
-    internal LinkGrid RgbGrid => LinkGrid.For(_fromRgb);
 
-    /// <summary>Gets the conversion of the RGB source into the process inks.</summary>
-    internal ColorTransform FromRgb => _fromRgb;
 
     /// <summary>Gets the number of process planes, which come first.</summary>
     internal int ProcessPlanes => _process;
@@ -354,7 +350,7 @@ internal sealed class InkResolver
         }
 
         Span<float> process = n * _process <= 2048 ? stackalloc float[n * _process] : new float[n * _process];
-        RgbGrid.Apply(rgb, process);
+        _fromRgb.Apply(rgb, process);
         tints[..(n * Planes)].Clear();
         for (int i = 0; i < n; i++)
         {

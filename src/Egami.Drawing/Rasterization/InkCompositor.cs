@@ -235,12 +235,11 @@ internal sealed class InkSolidSink : RasterSink
     private readonly Paint _paint;
     private readonly bool[] _painted;
 
-    // Source-over or Source of 8-bit planes, every plane painted, outside a knockout group: plane by plane in place, with the
-    // arithmetic of InkCompositor's source-over (and Source as coverage between the backdrop and the colour).
+    // Source-over of 8-bit planes, every plane painted, outside a knockout group: plane by plane in place, with exactly the
+    // arithmetic of InkCompositor's source-over, so the values are the same; an opaque fully covered run (or a Source one, as
+    // Clear draws) is the colour itself.
     private readonly bool _fast;
     private readonly bool _source;
-    private readonly float _sourceAlpha;
-    private readonly float[] _premultiplied;
 
     internal InkSolidSink(InkTarget target, float[] tints, float alpha, Paint paint, ClipMask? mask, byte scale)
         : base(mask, scale)
@@ -251,93 +250,114 @@ internal sealed class InkSolidSink : RasterSink
         _paint = paint;
         _painted = target.Resolver.Painted(paint);
         _source = paint.BlendMode == BlendMode.Source;
-        _fast = (_source || paint.BlendMode == BlendMode.SourceOver) && !target.Wide && target.KnockoutBackdrop is null && Array.TrueForAll(_painted, p => p);
-        _sourceAlpha = Math.Clamp(alpha * paint.Opacity, 0, 1);
-        _premultiplied = new float[target.Inks + 1];
-        for (int p = 0; p < target.Inks; p++)
-        {
-            _premultiplied[p] = tints[p] * _sourceAlpha;
-        }
-
-        _premultiplied[target.Inks] = _sourceAlpha;
-
-        // Byte weights are exact when the alpha is a whole number of 255ths (as an 8-bit colour's is); else plain floats.
-        float levels = _sourceAlpha * 255;
-        _exact = _source || MathF.Abs(levels - MathF.Round(levels)) < 1e-3f;
-        _weight = (int)MathF.Round(levels);
+        _fast = !target.Wide && target.KnockoutBackdrop is null && Array.TrueForAll(_painted, p => p);
     }
 
-    private readonly bool _exact;
-    private readonly int _weight;
-
-    public override bool FillsDirectly => _fast && Plain;
+    // Source runs only for tints of 0 or 1, which the Compositor's complements give back exactly (Clear draws none).
+    public override bool FillsDirectly => _fast && Plain
+        && ((_source && Array.TrueForAll(_tints, t => t is 0 or 1)) || (_paint.BlendMode == BlendMode.SourceOver && _alpha * _paint.Opacity >= 1));
 
     protected override bool TryFill(int y, int x, int length)
     {
-        if (!_fast)
+        if (!FillsDirectly)
         {
             return false;
         }
 
-        if (_source || _sourceAlpha >= 1)
+        // Source, or opaque source-over at full coverage: the plane becomes the colour (premultiplied by the source alpha).
+        float a = _alpha * _paint.Opacity;
+        for (int p = 0; p < _target.Inks; p++)
         {
-            // The result is the colour itself.
-            for (int p = 0; p <= _target.Inks; p++)
-            {
-                _target.Row8(p, y, x, length).Fill(InkTarget.To8(_premultiplied[p]));
-            }
-
-            return true;
+            _target.Row8(p, y, x, length).Fill(InkTarget.To8(_tints[p] * a));
         }
 
-        if (!_exact)
-        {
-            return false;
-        }
-
-        byte weight = InkTarget.To8(_sourceAlpha);
-        for (int p = 0; p <= _target.Inks; p++)
-        {
-            PlaneMath.Lerp(_target.Row8(p, y, x, length), Colour(p), weight);
-        }
-
+        _target.Row8(_target.Inks, y, x, length).Fill(InkTarget.To8(a));
         return true;
     }
 
     protected override void Write(int y, int x, ReadOnlySpan<byte> coverage)
     {
-        if (!_fast || !_exact)
+        // Source through a clip: where coverage is full the plane becomes the colour and where none it stays, which the
+        // Compositor gives exactly; runs of partial coverage (the clip's edges) go the general way.
+        if (_fast && _source && Array.TrueForAll(_tints, t => t is 0 or 1))
+        {
+            float a = _alpha * _paint.Opacity;
+            for (int i = 0; i < coverage.Length;)
+            {
+                int end = i + 1;
+                bool partial = coverage[i] is not (0 or 255);
+                while (end < coverage.Length && (coverage[end] is not (0 or 255)) == partial)
+                {
+                    end++;
+                }
+
+                if (partial)
+                {
+                    InkCompositor.Composite(_target, y, x + i, end - i, _tints, 0, [_alpha], coverage[i..end], _paint.Opacity, _paint.BlendMode, _painted);
+                }
+                else
+                {
+                    for (int p = 0; p <= _target.Inks; p++)
+                    {
+                        byte value = InkTarget.To8(p < _target.Inks ? _tints[p] * a : a);
+                        Span<byte> row = _target.Row8(p, y, x + i, end - i);
+                        for (int j = 0; j < row.Length; j++)
+                        {
+                            if (coverage[i + j] == 255)
+                            {
+                                row[j] = value;
+                            }
+                        }
+                    }
+                }
+
+                i = end;
+            }
+
+            return;
+        }
+
+        if (!_fast || _paint.BlendMode != BlendMode.SourceOver)
         {
             InkCompositor.Composite(_target, y, x, coverage.Length, _tints, 0, [_alpha], coverage, _paint.Opacity, _paint.BlendMode, _painted, _target.KnockoutBackdrop as InkTarget);
             return;
         }
 
+        // InkCompositor's source-over, plane by plane: s = alpha · opacity · coverage, then t·s + d·(1 − s) (alpha: 1 for t).
         int n = coverage.Length;
-        byte[]? rented = null;
-        bool scale = !_source && _weight < 255;
-        Span<byte> scaled = !scale ? default : n <= 1024 ? stackalloc byte[n] : (rented = ArrayPool<byte>.Shared.Rent(n)).AsSpan(0, n);
-        for (int i = 0; i < scaled.Length; i++)
+        float[] rented = ArrayPool<float>.Shared.Rent(n);
+        try
         {
-            int w = (coverage[i] * _weight) + 128;
-            scaled[i] = (byte)((w + (w >> 8)) >> 8);
+            Span<float> s = rented.AsSpan(0, n);
+            float ao = _alpha * _paint.Opacity;
+            for (int i = 0; i < n; i++)
+            {
+                s[i] = ao * (coverage[i] / 255f);
+            }
+
+            for (int p = 0; p <= _target.Inks; p++)
+            {
+                float t = p < _target.Inks ? _tints[p] : 1;
+                Span<byte> row = _target.Row8(p, y, x, n);
+
+                // A run already at a colour a byte holds exactly (an unpainted spot, opaque paper's alpha) stays as it is.
+                byte exact = InkTarget.To8(t);
+                if (exact / 255f == t && n >= 16 && row.IndexOfAnyExcept(exact) < 0)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < n; i++)
+                {
+                    row[i] = InkTarget.To8((t * s[i]) + (row[i] / 255f * (1 - s[i])));
+                }
+            }
         }
-
-        ReadOnlySpan<byte> weights = scale ? scaled : coverage;
-
-        for (int p = 0; p <= _target.Inks; p++)
+        finally
         {
-            PlaneMath.Lerp(_target.Row8(p, y, x, n), Colour(p), weights);
-        }
-
-        if (rented is not null)
-        {
-            ArrayPool<byte>.Shared.Return(rented);
+            ArrayPool<float>.Shared.Return(rented);
         }
     }
-
-    // What a plane moves toward with full weight: the premultiplied colour for Source, the straight tint (1 for alpha) for
-    // source-over, whose weight carries the alpha.
-    private byte Colour(int p) => InkTarget.To8(_source ? _premultiplied[p] : p < _target.Inks ? _tints[p] : 1);
 }
 
 /// <summary>A shaded RGB paint: each run is shaded in straight RGBA, converted to the process inks, and composited.</summary>
@@ -419,65 +439,4 @@ internal sealed class InkGroupAlphaSink(InkTarget target, ISpanSink inner) : ISp
             ArrayPool<float>.Shared.Return(alpha);
         }
     }
-}
-
-/// <summary>8-bit plane arithmetic: d + (t − d)·w / 255 rounded, as (t·w + d·(255 − w)) / 255, exact in 16 bits.</summary>
-internal static class PlaneMath
-{
-    internal static void Lerp(Span<byte> row, byte target, ReadOnlySpan<byte> weights)
-    {
-        // A run already at the target (an unpainted spot, opaque paper's alpha) stays; checking is cheaper than writing, but
-        // not for a few pixels.
-        if (row.Length >= 16 && row.IndexOfAnyExcept(target) < 0)
-        {
-            return;
-        }
-
-        int i = 0;
-        if (System.Numerics.Vector.IsHardwareAccelerated)
-        {
-            System.Numerics.Vector<ushort> t = new(target), full = new(255), half = new(128);
-            for (; i <= row.Length - System.Numerics.Vector<byte>.Count; i += System.Numerics.Vector<byte>.Count)
-            {
-                System.Numerics.Vector.Widen(new System.Numerics.Vector<byte>(row[i..]), out System.Numerics.Vector<ushort> dl, out System.Numerics.Vector<ushort> dh);
-                System.Numerics.Vector.Widen(new System.Numerics.Vector<byte>(weights[i..]), out System.Numerics.Vector<ushort> wl, out System.Numerics.Vector<ushort> wh);
-                System.Numerics.Vector.Narrow(Divide((t * wl) + (dl * (full - wl)) + half), Divide((t * wh) + (dh * (full - wh)) + half)).CopyTo(row[i..]);
-            }
-        }
-
-        for (; i < row.Length; i++)
-        {
-            int v = (target * weights[i]) + (row[i] * (255 - weights[i])) + 128;
-            row[i] = (byte)((v + (v >> 8)) >> 8);
-        }
-    }
-
-    internal static void Lerp(Span<byte> row, byte target, byte weight)
-    {
-        if (row.Length >= 16 && row.IndexOfAnyExcept(target) < 0)
-        {
-            return;
-        }
-
-        int i = 0;
-        int add = (target * weight) + 128, keep = 255 - weight;
-        if (System.Numerics.Vector.IsHardwareAccelerated)
-        {
-            System.Numerics.Vector<ushort> a = new((ushort)add), k = new((ushort)keep);
-            for (; i <= row.Length - System.Numerics.Vector<byte>.Count; i += System.Numerics.Vector<byte>.Count)
-            {
-                System.Numerics.Vector.Widen(new System.Numerics.Vector<byte>(row[i..]), out System.Numerics.Vector<ushort> dl, out System.Numerics.Vector<ushort> dh);
-                System.Numerics.Vector.Narrow(Divide((dl * k) + a), Divide((dh * k) + a)).CopyTo(row[i..]);
-            }
-        }
-
-        for (; i < row.Length; i++)
-        {
-            int v = (row[i] * keep) + add;
-            row[i] = (byte)((v + (v >> 8)) >> 8);
-        }
-    }
-
-    // v / 255 for v = x + 128 ≤ 65153: (v + (v >> 8)) >> 8.
-    private static System.Numerics.Vector<ushort> Divide(System.Numerics.Vector<ushort> v) => (v + (v >> 8)) >> 8;
 }

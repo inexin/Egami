@@ -259,10 +259,9 @@ internal sealed class InkImageSink : RasterSink
         try
         {
             // Where each pixel samples: columns xa and xb of rows ya and yb (all equal for nearest), and the two fractions.
-            Vector2 start = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), _inverse), step = new(_inverse.M11, _inverse.M12);
             for (int i = 0; i < n; i++)
             {
-                Vector2 at = start + (step * i);
+                Vector2 at = Vector2.Transform(new Vector2(x + i + 0.5f, y + 0.5f), _inverse);
                 if (_nearest)
                 {
                     int sx = Math.Clamp((int)MathF.Floor(at.X), 0, w - 1), sy = Math.Clamp((int)MathF.Floor(at.Y), 0, h - 1);
@@ -279,37 +278,39 @@ internal sealed class InkImageSink : RasterSink
                 }
             }
 
-            // The source alpha times opacity and coverage: what the backdrop keeps is 1 − that.
-            float opacity = _paint.Opacity / 255f;
+            // The sampled alpha, then each plate's straight tint, composited with exactly InkCompositor's source-over:
+            // s = alpha · opacity · coverage, tint · s + d · (1 − s).
             int plates = _planeOf.Length;
-            Sample(_image.Alpha, index, weights, n, coverage, opacity, weights.AsSpan(), 2);
-            float[] sample = ArrayPool<float>.Shared.Rent(n);
+            float[] rented = ArrayPool<float>.Shared.Rent(n * 2);
             try
             {
+                Span<float> alpha = rented.AsSpan(0, n), sample = rented.AsSpan(n, n);
+                Sample(_image.Alpha, index, weights, n, alpha);
+                float opacity = _paint.Opacity;
+                for (int i = 0; i < n; i++)
+                {
+                    weights[(3 * i) + 2] = alpha[i] * opacity * (coverage[i] / 255f);
+                }
+
                 for (int s = 0; s <= plates; s++)
                 {
-                    Span<float> values = sample.AsSpan(0, n);
                     if (s < plates)
                     {
-                        Sample(_image.Plates[s], index, weights, n, coverage, opacity, values, -1);
+                        Sample(_image.Plates[s], index, weights, n, sample);
                     }
 
                     Span<byte> row = _target.Row8(s < plates ? _planeOf[s] : _target.Inks, y, x, n);
                     for (int i = 0; i < n; i++)
                     {
-                        // Premultiplied source-over: the sample (already times its alpha) times opacity and coverage, plus what
-                        // the backdrop keeps.
                         float k = weights[(3 * i) + 2];
-                        if (k > 0)
-                        {
-                            row[i] = InkTarget.To8((s < plates ? values[i] : k) + (row[i] / 255f * (1 - k)));
-                        }
+                        float tint = s == plates ? 1 : alpha[i] > 0 ? Math.Clamp(sample[i] / alpha[i], 0, 1) : 0;
+                        row[i] = InkTarget.To8((tint * k) + (row[i] / 255f * (1 - k)));
                     }
                 }
             }
             finally
             {
-                ArrayPool<float>.Shared.Return(sample);
+                ArrayPool<float>.Shared.Return(rented);
             }
         }
         finally
@@ -319,9 +320,8 @@ internal sealed class InkImageSink : RasterSink
         }
     }
 
-    // A plate's bilinear samples (0 to 1) times opacity and coverage, into values (every pixel, or with slot ≥ 0 into
-    // weights[3i + slot]); a row is fetched only when the pixel's rows change.
-    private static void Sample(InkPlate plate, int[] index, float[] weights, int n, ReadOnlySpan<byte> coverage, float opacity, Span<float> values, int slot)
+    // A plate's bilinear samples, 0 to 1, as Sample computes them; a row is fetched only when the pixel's rows change.
+    private static void Sample(InkPlate plate, int[] index, float[] weights, int n, Span<float> values)
     {
         int rowA = -1, rowB = -1;
         ReadOnlySpan<byte> a = default, b = default;
@@ -342,16 +342,9 @@ internal sealed class InkImageSink : RasterSink
 
             float tx = weights[3 * i], ty = weights[(3 * i) + 1];
             int xa = index[4 * i], xb = index[(4 * i) + 1];
-            float top = a[xa] + ((a[xb] - a[xa]) * tx), bottom = b[xa] + ((b[xb] - b[xa]) * tx);
-            float v = (top + ((bottom - top) * ty)) * opacity * coverage[i] / 255f;
-            if (slot < 0)
-            {
-                values[i] = v;
-            }
-            else
-            {
-                values[(3 * i) + slot] = v;
-            }
+            float aa = a[xa] / 255f, ab = a[xb] / 255f, ba = b[xa] / 255f, bb = b[xb] / 255f;
+            float top = aa + ((ab - aa) * tx), bottom = ba + ((bb - ba) * tx);
+            values[i] = top + ((bottom - top) * ty);
         }
     }
 
@@ -439,9 +432,7 @@ internal static class InkImages
             ColorProfile source = gray
                 ? Tagged(image, ColorModel.Gray) ?? ColorProfile.GraySrgb
                 : image.Metadata.IccProfile.IsEmpty && image.Metadata.CodePoints is null ? resolver.RgbSource : image.Metadata.GetColorProfile();
-            // The canvas's own RGB source converts through its link grid; another profile through one built for a big image.
-            ColorTransform transform = ReferenceEquals(source, resolver.RgbSource) && !gray ? resolver.FromRgb : ColorTransform.Create(source, resolver.Profile, resolver.Options);
-            LinkGrid? grid = gray ? null : ReferenceEquals(transform, resolver.FromRgb) ? resolver.RgbGrid : (long)image.Width * image.Height >= 200_000 ? LinkGrid.For(transform) : null;
+            ColorTransform transform = ColorTransform.Create(source, resolver.Profile, resolver.Options);
             using Raster<RgbaF32> rgba = image.As<RgbaF32>();
             int channels = gray ? 1 : 3;
             float[] input = new float[image.Width * channels];
@@ -463,14 +454,7 @@ internal static class InkImages
                     alpha[x] = Math.Clamp(pixels[x].A, 0, 1);
                 }
 
-                if (grid is null)
-                {
-                    transform.Apply(input, values);
-                }
-                else
-                {
-                    grid.Apply(input, values);
-                }
+                transform.Apply(input, values);
 
                 Write(plates, y, values, process, alpha);
             }
