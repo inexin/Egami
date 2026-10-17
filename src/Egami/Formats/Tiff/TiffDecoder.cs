@@ -166,6 +166,12 @@ internal sealed class TiffDecoder : IDisposable
     /// <summary>Inflates zlib data, as Adobe's TIFF note and code 8 have it; damaged data keeps what came before the damage.</summary>
     internal static unsafe int Inflate(ReadOnlySpan<byte> input, Span<byte> output)
     {
+        if (input.IsEmpty)
+        {
+            // An empty strip inflates to nothing (and pins to a null pointer, which a stream refuses).
+            return 0;
+        }
+
         fixed (byte* pointer = input)
         {
             using UnmanagedMemoryStream raw = new(pointer, input.Length);
