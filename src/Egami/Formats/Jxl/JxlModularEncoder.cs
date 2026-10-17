@@ -46,6 +46,7 @@ internal sealed class JxlModularEncoder
     private readonly JxlEncodeImage[] _streams;
     private readonly bool _color;
     private readonly ParallelOptions _parallel;
+    private float[]? _lfDequant;
 
     private JxlModularEncoder(int effort, int width, int height, int groupShift, int streams, bool color, int parallelism)
     {
@@ -67,9 +68,10 @@ internal sealed class JxlModularEncoder
 
     /// <summary>
     /// Encodes a frame's channels (one or three color channels, then the extra channels, all <paramref name="width"/> by
-    /// <paramref name="height"/> integers of <paramref name="bitDepth"/> bits) and gives its sections in TOC order.
+    /// <paramref name="height"/> integers of <paramref name="bitDepth"/> bits) and gives its sections in TOC order; a Modular XYB
+    /// frame names its LF dequantization multipliers (times 128) in <paramref name="lfDequant"/>.
     /// </summary>
-    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism)
+    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null)
     {
         int groupDim = 128 << groupShift;
         int groups = Ceil(width, groupDim) * Ceil(height, groupDim);
@@ -77,6 +79,7 @@ internal sealed class JxlModularEncoder
         int lfGroups = Ceil(width, lfDim) * Ceil(height, lfDim);
         int streams = 1 + (3 * lfGroups) + 17 + groups;
         JxlModularEncoder e = new(effort, width, height, groupShift, streams, colorChannels == 3, parallelism);
+        e._lfDequant = lfDequant;
         return e.Run(channels, bitDepth);
     }
 
@@ -144,9 +147,14 @@ internal sealed class JxlModularEncoder
 
         JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
 
-        // LF global: default LF dequantization, the global tree and the data distributions, then the global stream.
+        // LF global: the LF dequantization, the global tree and the data distributions, then the global stream.
         JxlBitWriter global = new();
-        global.WriteBool(true);
+        global.WriteBool(_lfDequant is null);
+        foreach (float m in _lfDequant ?? [])
+        {
+            global.WriteF16(m);
+        }
+
         global.WriteBool(true);
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, p, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);

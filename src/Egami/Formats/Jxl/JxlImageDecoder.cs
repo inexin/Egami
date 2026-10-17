@@ -153,8 +153,8 @@ internal static class JxlImageDecoder
     }
 
     /// <summary>
-    /// Decodes the one VarDCT frame of a bare codestream the lossy encoder wrote to its XYB planes before the restoration
-    /// filters, cropped to the frame, for the encoder's own reconstruction (Phase 2.9.7's EPF search).
+    /// Decodes the last frame of a bare codestream the lossy encoder wrote, a VarDCT frame, to its XYB planes before the
+    /// restoration filters and patches, cropped to the frame, for the encoder's own reconstruction (Phase 2.9.7's EPF search).
     /// </summary>
     internal static float[][] DecodeXyb(byte[] codestream, int parallelism)
     {
@@ -163,8 +163,8 @@ internal static class JxlImageDecoder
         {
             (JxlFile file, byte[] data) = Open(input, ReaderOptions.Default);
             List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
-            JxlFrameHeader f = sequence[0].Header;
-            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[0].Toc, sequence[0].Offset, input.Limits) { Parallel = new JxlParallel(Math.Max(1, parallelism), CancellationToken.None) };
+            JxlFrameHeader f = sequence[^1].Header;
+            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[^1].Toc, sequence[^1].Offset, input.Limits) { Parallel = new JxlParallel(Math.Max(1, parallelism), CancellationToken.None) };
             JxlFrameChannels frame = decoder.Decode(null);
             return [.. frame.ColorPlanes!.Select((plane, c) => Crop(plane, frame.ColorStrides[c], frame.Width, frame.Height))];
         }

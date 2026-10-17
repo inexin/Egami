@@ -105,8 +105,15 @@ internal sealed class JxlVarDctEncoder
     private JxlAdaptiveQuantization? _aq;
     private bool _gaborish;
 
-    // The XYB planes before Gaborish, cropped to the image, kept for the EPF search at efforts 6 and 7.
+    // The XYB planes before patches and Gaborish, cropped to the image, kept for the EPF search at efforts 6 and 7.
     private float[][]? _original;
+
+    // At effort 7, the patch dictionary: the patches, the reference-only Modular frame that holds them (its frame header, TOC
+    // and sections) and that frame as a decoder reconstructs it, row stride _patchWidth.
+    private JxlPatch[]? _patches;
+    private byte[]? _patchFrame;
+    private float[][]? _patchReference;
+    private int _patchWidth;
 
     private int _globalScale;
     private int _quantDc;
@@ -174,6 +181,11 @@ internal sealed class JxlVarDctEncoder
         }
 
         w.ZeroPadToByte();
+        if (_patchFrame is not null)
+        {
+            w.Append(_patchFrame);
+        }
+
         WriteFrameHeader(w);
         w.WriteBool(false); // no TOC permutation
         w.ZeroPadToByte();
@@ -246,24 +258,30 @@ internal sealed class JxlVarDctEncoder
         float quantDc = InitialQuantDc(d);
         // Gaborish from effort 5 above distance 0.5, as libjxl's LoopFilterFromParams.
         _gaborish = Speed >= 5 && d > 0.5f;
+        if (Speed >= 6 && d >= 0.5f && _epfIterationsFor(d) > 0)
+        {
+            _original = new float[3][];
+            for (int c = 0; c < 3; c++)
+            {
+                _original[c] = new float[_width * _height];
+                for (int y = 0; y < _height; y++)
+                {
+                    _xyb[c].AsSpan(y * _blocksX * 8, _width).CopyTo(_original[c].AsSpan(y * _width, _width));
+                }
+            }
+        }
+
+        if (Speed >= 7)
+        {
+            FindPatches();
+        }
+
         if (Speed >= 5)
         {
             // InitialQuantField on the image before Gaborish, at a lower distance when Gaborish is off.
             float iqfDistance = _gaborish ? d : d * 0.62f;
             _aq = JxlAdaptiveQuantization.Compute(_xyb, _blocksX * 8, _blocksY * 8, iqfDistance, _parallel);
             ComputeGlobalScaleAndQuant(quantDc, 0.39f / d, 0);
-            if (Speed >= 6 && d >= 0.5f && _epfIterationsFor(d) > 0)
-            {
-                _original = new float[3][];
-                for (int c = 0; c < 3; c++)
-                {
-                    _original[c] = new float[_width * _height];
-                    for (int y = 0; y < _height; y++)
-                    {
-                        _xyb[c].AsSpan(y * _blocksX * 8, _width).CopyTo(_original[c].AsSpan(y * _width, _width));
-                    }
-                }
-            }
 
             if (_gaborish)
             {
@@ -454,6 +472,172 @@ internal sealed class JxlVarDctEncoder
         _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.ToArray(), bs.ToArray(), 1f, fast);
     }
 
+    /// <summary>
+    /// libjxl's FindBestPatchDictionary at effort 7: text-like patches, else from distance 3 dots, packed into a reference-only
+    /// Modular frame (RoundtripPatchFrame: XYB quantized by factors from the distance, coded losslessly as Y, X and B − Y), whose
+    /// reconstruction is then taken out of the image where each patch goes.
+    /// </summary>
+    private void FindPatches()
+    {
+        float d = _settings.Distance;
+        int stride = _blocksX * 8;
+        List<JxlPatchCandidate> info = JxlPatchSearch.FindTextLike(_xyb, stride, _width, _height, _parallel);
+        if (info.Count == 0 && d >= 3)
+        {
+            info = JxlPatchSearch.FindDots(_xyb, stride, _blocksY * 8, _width, _height, _parallel);
+        }
+
+        if (info.Count == 0)
+        {
+            return;
+        }
+
+        info = [.. info.OrderByDescending(p => p.Width * p.Height)];
+        (float[][] reference, int rw, int rh, (int X, int Y)[] places) = JxlPatchSearch.Pack(info);
+
+        // The quantization: libjxl's factors, through the binary16 LF dequantization the frame carries (DequantMatricesSetCustomDC).
+        float[] factors = [65536.0f * (1.0f / (1.0f + (23.0f * d))), 4096.0f * (1.0f / (1.0f + (14.0f * d))), 4096.0f * (1.0f / (1.0f + (14.0f * d)))];
+        float[] stored = new float[3];
+        float[] inv = new float[3];
+        for (int c = 0; c < 3; c++)
+        {
+            stored[c] = (float)BitConverter.UInt16BitsToHalf(JxlBitWriter.F16Bits(1.0f / factors[c] * 128.0f));
+            inv[c] = 1.0f / (stored[c] * (1.0f / 128.0f));
+        }
+
+        int n = rw * rh;
+        int[] cy = new int[n], cx = new int[n], cb = new int[n];
+        for (int i = 0; i < n; i++)
+        {
+            float x = reference[0][i], y = reference[1][i], b = reference[2][i];
+            cy[i] = (int)((y * inv[1]) + (y < 0 ? -0.5f : 0.5f));
+            cx[i] = (int)((x * inv[0]) + (x < 0 ? -0.5f : 0.5f));
+            cb[i] = (int)((b * (double)inv[2]) + 0.5f) - cy[i];
+        }
+
+        // As the decoder reconstructs it (ModularXyb).
+        float mx = stored[0] / 128, my = stored[1] / 128, mb = stored[2] / 128;
+        _patchReference = [new float[n], new float[n], new float[n]];
+        for (int i = 0; i < n; i++)
+        {
+            _patchReference[0][i] = cx[i] * mx;
+            _patchReference[1][i] = cy[i] * my;
+            _patchReference[2][i] = (cb[i] + cy[i]) * mb;
+        }
+
+        _patchWidth = rw;
+        JxlPatchBlending[] add = [new JxlPatchBlending(JxlPatchBlendMode.Add, 0, false)];
+        _patches = [.. info.Select((p, i) => new JxlPatch(3, places[i].X, places[i].Y, p.Width, p.Height, [.. p.Positions.Select(t => new JxlPatchTarget(t.X, t.Y, add))]))];
+
+        int groupShift = JxlModularEncoder.GroupShift(rw, rh);
+        List<JxlChannel> channels = [new JxlChannel(rw, rh, 0, 0) { Data = cy }, new JxlChannel(rw, rh, 0, 0) { Data = cx }, new JxlChannel(rw, rh, 0, 0) { Data = cb }];
+        List<byte[]> sections = JxlModularEncoder.Encode(channels, 3, 8, Speed, rw, rh, groupShift, _settings.Parallelism, stored);
+        JxlBitWriter w = new();
+        w.WriteBool(false);
+        w.Write(2, 2); // reference only
+        w.Write(1, 1); // Modular
+        w.WriteU64(0);
+        w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1); // upsampling
+        w.Write((ulong)groupShift, 2);
+        w.WriteBool(true); // the frame's own size
+        JxlU32 dim = new(0, 8, 256, 11, 2304, 14, 18688, 30);
+        w.WriteU32(dim, (uint)rw);
+        w.WriteU32(dim, (uint)rh);
+        w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 3, 0), 3); // saved as reference 3
+        w.WriteBool(true); // before the color transform
+        w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0); // no name
+        w.WriteBool(false); // loop filter: Gaborish off, no EPF
+        w.WriteBool(false);
+        w.Write(0, 2);
+        w.WriteNoExtensions();
+        w.WriteNoExtensions();
+        w.WriteBool(false); // no TOC permutation
+        w.ZeroPadToByte();
+        JxlU32 size = new(0, 10, 1024, 14, 17408, 22, 4211712, 30);
+        foreach (byte[] s in sections)
+        {
+            w.WriteU32(size, (uint)s.Length);
+        }
+
+        w.ZeroPadToByte();
+        foreach (byte[] s in sections)
+        {
+            w.Append(s);
+        }
+
+        _patchFrame = w.ToArray();
+
+        // PatchDictionaryEncoder::SubtractFrom.
+        AddPatches(_xyb, stride, -1);
+    }
+
+    /// <summary>Adds (<paramref name="sign"/> 1) or takes out (−1) each patch's reconstruction where it goes in XYB planes of <paramref name="stride"/>.</summary>
+    private void AddPatches(float[][] planes, int stride, int sign)
+    {
+        if (_patches is null)
+        {
+            return;
+        }
+
+        foreach (JxlPatch p in _patches)
+        {
+            foreach (JxlPatchTarget t in p.Targets)
+            {
+                for (int y = 0; y < p.Height; y++)
+                {
+                    for (int x = 0; x < p.Width; x++)
+                    {
+                        int at = ((t.Y + y) * stride) + t.X + x;
+                        int from = ((p.Y0 + y) * _patchWidth) + p.X0 + x;
+                        for (int c = 0; c < 3; c++)
+                        {
+                            planes[c][at] += sign * _patchReference![c][from];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes the patch dictionary (PatchDictionaryEncoder::Encode): per patch its reference frame, place and size, how many
+    /// times it occurs, and each occurrence's position (the first, then offsets) and blend mode (add).
+    /// </summary>
+    private void WritePatches(JxlBitWriter w)
+    {
+        List<JxlToken> tokens = [new JxlToken(0, (uint)_patches!.Length)];
+        foreach (JxlPatch p in _patches)
+        {
+            tokens.Add(new JxlToken(1, (uint)p.Reference));
+            tokens.Add(new JxlToken(3, (uint)p.X0));
+            tokens.Add(new JxlToken(3, (uint)p.Y0));
+            tokens.Add(new JxlToken(2, (uint)(p.Width - 1)));
+            tokens.Add(new JxlToken(2, (uint)(p.Height - 1)));
+            tokens.Add(new JxlToken(7, (uint)(p.Targets.Length - 1)));
+            for (int j = 0; j < p.Targets.Length; j++)
+            {
+                if (j == 0)
+                {
+                    tokens.Add(new JxlToken(4, (uint)p.Targets[j].X));
+                    tokens.Add(new JxlToken(4, (uint)p.Targets[j].Y));
+                }
+                else
+                {
+                    tokens.Add(new JxlToken(6, PackSigned(p.Targets[j].X - p.Targets[j - 1].X)));
+                    tokens.Add(new JxlToken(6, PackSigned(p.Targets[j].Y - p.Targets[j - 1].Y)));
+                }
+
+                tokens.Add(new JxlToken(5, (uint)JxlPatchBlendMode.Add));
+            }
+        }
+
+        List<List<JxlToken>> streams = [tokens];
+        JxlEntropyCode code = JxlEntropyCode.Write(w, new JxlHistogramParams { Rle = true }, 10, streams);
+        code.WriteTokens(w, tokens);
+    }
+
+    private static uint PackSigned(int v) => v >= 0 ? (uint)v << 1 : ((uint)(-(v + 1)) << 1) | 1;
+
     /// <summary>The EPF iterations libjxl's LoopFilterFromParams gives a distance: one each from 0.7, 1.5 and 4.</summary>
     private static int _epfIterationsFor(float distance)
     {
@@ -502,6 +686,7 @@ internal sealed class JxlVarDctEncoder
 
             float sharp = filter.SharpLut[val];
             JxlFilters.Epf(planes, _width, _height, _width, filter, (bx, by) => sigmaBase / _quantField[(by * _blocksX) + bx] * sharp, parallel);
+            AddPatches(planes, _width, 1);
             float[] error = new float[_blocksX * _blocksY];
             Parallel.For(0, _blocksY, _parallel, by =>
             {
@@ -1527,7 +1712,7 @@ internal sealed class JxlVarDctEncoder
         w.WriteBool(false);
         w.Write(0, 2); // regular frame
         w.Write(0, 1); // VarDCT
-        w.WriteU64(0); // no flags
+        w.WriteU64(_patches is null ? 0UL : 2UL); // patches, or no flags
         w.WriteU32(new JxlU32(1, 0, 2, 0, 4, 0, 8, 0), 1); // upsampling
         w.Write((ulong)_xQmScale, 3);
         w.Write((ulong)_bQmScale, 3);
@@ -1630,6 +1815,11 @@ internal sealed class JxlVarDctEncoder
 
         // LF global.
         JxlBitWriter global = new();
+        if (_patches is not null)
+        {
+            WritePatches(global);
+        }
+
         global.WriteBool(true); // default LF dequantization
         global.WriteU32(new JxlU32(1, 11, 2049, 11, 4097, 12, 8193, 16), (uint)_globalScale);
         global.WriteU32(new JxlU32(16, 0, 1, 5, 1, 8, 1, 16), (uint)_quantDc);

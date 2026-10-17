@@ -8,7 +8,7 @@ namespace Egami.Tests.Formats.Jxl;
 /// Phase 2.9.7 tasks 6 to 8: the lossy encoder's visual tools. Adaptive quantization gives flat areas finer steps than texture;
 /// chroma from luma finds the factor that predicts chroma from luma; the inverse Gaborish and the decoder's Gaborish leave
 /// smooth content where it was; the block-size search merges smooth areas into large DCTs and keeps detail in 8×8 transforms;
-/// effort 5 files, which use them all, decode. Equality with libjxl's choices was checked with docker/jxldev in egami-compare,
+/// effort 5 files, which use them all, decode; at effort 7 repeated glyphs become one patch and dots are found. Equality with libjxl's choices was checked with docker/jxldev in egami-compare,
 /// the size against cjxl at efforts 5 to 7 is egami-compare's.
 /// </summary>
 public class JxlLossyToolTests
@@ -148,6 +148,107 @@ public class JxlLossyToolTests
         using Raster<Rgb8> back = Raster.Load<Rgb8>(e5);
         Assert.True(e5.Length < e4.Length, $"effort 5 {e5.Length} bytes, effort 4 {e4.Length}");
         Assert.True(Psnr(source, back) > 33);
+    }
+
+    [Fact]
+    public void RepeatedGlyphsBecomeOnePatch()
+    {
+        // A 7×9 glyph twelve times on a flat background, and once more in another shape.
+        int w = 256, h = 128;
+        float[][] xyb = [new float[w * h], new float[w * h], new float[w * h]];
+        Array.Fill(xyb[1], 0.5f);
+        Array.Fill(xyb[2], 0.5f);
+        static bool Ink(int x, int y) => x == 1 || y == 7 || (x == 5 && y < 8);
+        for (int i = 0; i < 12; i++)
+        {
+            int x0 = 16 + ((i % 6) * 32), y0 = 24 + ((i / 6) * 40);
+            for (int y = 0; y < 9; y++)
+            {
+                for (int x = 0; x < 7; x++)
+                {
+                    if (Ink(x, y))
+                    {
+                        xyb[1][((y0 + y) * w) + x0 + x] = 0.1f;
+                        xyb[2][((y0 + y) * w) + x0 + x] = 0.1f;
+                    }
+                }
+            }
+        }
+
+        List<JxlPatchCandidate> patches = JxlPatchSearch.FindTextLike(xyb, w, w, h, new ParallelOptions { MaxDegreeOfParallelism = 1 });
+        JxlPatchCandidate patch = Assert.Single(patches);
+        Assert.Equal((7, 9), (patch.Width, patch.Height));
+        Assert.Equal(12, patch.Positions.Count);
+        Assert.Contains((16, 24), patch.Positions);
+
+        (float[][] reference, int rw, int rh, (int X, int Y)[] places) = JxlPatchSearch.Pack(patches);
+        Assert.Equal((0, 0), places[0]);
+        Assert.True(rw >= 7 && rh == 9);
+        Assert.Equal(0.1f - 0.5f, reference[1][1], 1e-6f);
+        Assert.Equal(0f, reference[1][2]);
+    }
+
+    [Fact]
+    public void TextIsSmallerAtEffortSevenWithPatches()
+    {
+        using Raster<Rgb8> source = Raster.Create<Rgb8>(320, 160);
+        for (int y = 0; y < source.Height; y++)
+        {
+            source.Row(y).Fill(new Rgb8(250, 250, 250));
+        }
+
+        Random random = new(5);
+        bool[][] glyphs = [.. Enumerable.Range(0, 8).Select(_ => Enumerable.Range(0, 7 * 10).Select(_ => random.Next(3) == 0).ToArray())];
+        for (int line = 0; line < 10; line++)
+        {
+            for (int col = 0; col < 32; col++)
+            {
+                bool[] g = glyphs[random.Next(glyphs.Length)];
+                for (int y = 0; y < 10; y++)
+                {
+                    for (int x = 0; x < 7; x++)
+                    {
+                        if (g[(y * 7) + x])
+                        {
+                            source.Row(4 + (line * 15) + y)[2 + (col * 10) + x] = new Rgb8(20, 30, 40);
+                        }
+                    }
+                }
+            }
+        }
+
+        byte[] e6 = Save(source, 6);
+        byte[] e7 = Save(source, 7);
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(e7);
+        Assert.True(e7.Length < e6.Length * 0.8, $"effort 7 {e7.Length} bytes, effort 6 {e6.Length}");
+        Assert.True(Psnr(source, back) > 30, $"PSNR {Psnr(source, back):F1}");
+    }
+
+    [Fact]
+    public void GaussianDotsAreFound()
+    {
+        int w = 128, h = 64;
+        float[][] xyb = [new float[w * h], new float[w * h], new float[w * h]];
+        Array.Fill(xyb[1], 0.4f);
+        Array.Fill(xyb[2], 0.4f);
+        (int X, int Y)[] dots = [(20, 20), (70, 30), (100, 50)];
+        foreach ((int cx, int cy) in dots)
+        {
+            for (int y = cy - 4; y <= cy + 4; y++)
+            {
+                for (int x = cx - 4; x <= cx + 4; x++)
+                {
+                    float g = 0.5f * MathF.Exp(-0.5f * (((x - cx) * (x - cx)) + ((y - cy) * (y - cy))) / 0.5f);
+                    xyb[1][(y * w) + x] += g;
+                    xyb[2][(y * w) + x] += g;
+                }
+            }
+        }
+
+        List<JxlPatchCandidate> found = JxlPatchSearch.FindDots(xyb, w, h, w, h, new ParallelOptions { MaxDegreeOfParallelism = 1 });
+        Assert.Equal(3, found.Count);
+        Assert.All(found.Zip(dots), p => Assert.InRange(p.Second.X - p.First.Positions[0].X, 0, 3));
+        Assert.All(found, p => Assert.True(p.Width <= 4 && p.Height <= 4 && p.Values[1].Max() > 0.1f));
     }
 
     private static byte[] Save(Raster<Rgb8> raster, int effort)

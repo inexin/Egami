@@ -330,7 +330,10 @@ trip (enc_group), the LF and HF metadata streams and their trees (enc_modular, e
 (enc_coeff_order, enc_entropy_coder; `JxlVarDctEncoder.cs`), the per-block quantization adjustments (AdjustQuantBlockAC,
 AdjustQuantField), the adaptive quantization map with its masks and the inverse Gaborish (enc_adaptive_quantization,
 enc_gaborish, the Symmetric5 convolution; `JxlAdaptiveQuantization.cs`) the chroma-from-luma search (enc_chroma_from_luma;
-`JxlChromaFromLuma.cs`) and the block-size search with its entropy estimate and merges (enc_ac_strategy; `JxlAcStrategySearch.cs`). Its JPEG recompression is translated
+`JxlChromaFromLuma.cs`), the block-size search with its entropy estimate and merges (enc_ac_strategy; `JxlAcStrategySearch.cs`), the EPF
+sharpness search (ComputeARHeuristics in enc_heuristics) and the patch dictionary: text-like patches, Gaussian dot detection, the bin
+packing and the reference frame's quantization (enc_patch_dictionary, enc_detect_dots, enc_dot_dictionary, enc_linalg, enc_modular's
+XYB factors; `JxlPatchSearch.cs`). Its JPEG recompression is translated
 from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
 `JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
 (jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is

@@ -96,7 +96,10 @@ internal sealed class JxlBitWriter : IJxlBitSink
     }
 
     /// <summary>Writes a binary16 float, the mantissa truncated as libjxl's F16Coder does (the value must be finite and below 65536).</summary>
-    internal void WriteF16(float value)
+    internal void WriteF16(float value) => Write(F16Bits(value), 16);
+
+    /// <summary>Gets the binary16 bits <see cref="WriteF16"/> writes for <paramref name="value"/>.</summary>
+    internal static ushort F16Bits(float value)
     {
         uint bits32 = BitConverter.SingleToUInt32Bits(value);
         uint sign = bits32 >> 31;
@@ -109,8 +112,7 @@ internal sealed class JxlBitWriter : IJxlBitSink
 
         if (exp < -24)
         {
-            Write(0, 16);
-            return;
+            return 0;
         }
 
         uint biased;
@@ -127,7 +129,7 @@ internal sealed class JxlBitWriter : IJxlBitSink
             mantissa = mantissa32 >> 13;
         }
 
-        Write((sign << 15) | (biased << 10) | mantissa, 16);
+        return (ushort)((sign << 15) | (biased << 10) | mantissa);
     }
 
     internal void WriteEnum(uint value) => WriteU32(new JxlU32(0, 0, 1, 0, 2, 4, 18, 6), value);
