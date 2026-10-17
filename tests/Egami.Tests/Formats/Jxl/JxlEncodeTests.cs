@@ -182,6 +182,53 @@ public class JxlEncodeTests
         }
     }
 
+    [Theory]
+    [InlineData(2, 512, 512)]
+    [InlineData(5, 512, 512)]
+    [InlineData(7, 401, 300)]
+    [InlineData(2, 512, 256)]
+    public void GlobalStreamLeftToTheGroupsStillEndsWithTheAnsState(int effort, int width, int height)
+    {
+        // Noise defeats the global palette, so every channel is larger than a group and goes to the groups. libjxl writes the
+        // global stream's ANS state anyway and its decoder skips it; jxl-oxide reads it, and failed at the section's end.
+        Random random = new(effort);
+        List<JxlChannel> channels = [];
+        for (int c = 0; c < 3; c++)
+        {
+            JxlChannel ch = new(width, height, 0, 0);
+            for (int i = 0; i < ch.Data.Length; i++)
+            {
+                ch.Data[i] = random.Next(256);
+            }
+
+            channels.Add(ch);
+        }
+
+        int shift = JxlModularEncoder.GroupShift(width, height);
+        List<byte[]> sections = JxlModularEncoder.Encode(channels, 3, 8, effort, width, height, shift, 1);
+        Assert.True(sections.Count > 1);
+
+        // The LF global section ends with the state an empty ANS stream leaves, 0x130000 in 32 bits, then the zero padding:
+        // the last set bit is the state's bit 20.
+        byte[] global = sections[0];
+        int bits = global.Length * 8;
+        int last = bits - 1;
+        while (last >= 0 && ((global[last >> 3] >> (last & 7)) & 1) == 0)
+        {
+            last--;
+        }
+
+        int start = last - 20;
+        Assert.True(start >= 0 && start + 32 <= bits && start + 32 > bits - 8, "the state ends the section");
+        uint state = 0;
+        for (int b = 0; b < 32; b++)
+        {
+            state |= (uint)((global[(start + b) >> 3] >> ((start + b) & 7)) & 1) << b;
+        }
+
+        Assert.Equal(0x130000u, state);
+    }
+
     /// <summary>A smooth image with noise, converted from 16-bit RGBA so every type gets values its precision holds.</summary>
     private static Raster<T> Noise<T>(int width, int height, int seed)
         where T : unmanaged, IPixelType<T>

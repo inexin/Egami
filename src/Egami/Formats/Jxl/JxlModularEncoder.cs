@@ -179,7 +179,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Writes a stream: its header (global tree, default WP parameters, transforms) and tokens, or nothing when it has no channels.</summary>
-    private void WriteStream(JxlBitWriter w, JxlEncodeImage image, JxlEntropyCode code, List<JxlToken> tokens)
+    private static void WriteStream(JxlBitWriter w, JxlEncodeImage image, JxlEntropyCode code, List<JxlToken> tokens)
     {
         if (image.Channels.Count == 0)
         {
@@ -210,12 +210,9 @@ internal sealed class JxlModularEncoder
             }
         }
 
-        // A stream with nothing to code has no ANS state either.
-        int prefix = image.CodedPrefix(_groupDim);
-        if (image.Channels.Take(prefix).Any(c => c.Width > 0 && c.Height > 0))
-        {
-            code.WriteTokens(w, tokens);
-        }
+        // The ANS state follows even when every channel is left to the groups (as libjxl writes it): libjxl's decoder skips
+        // a stream with nothing to code, but jxl-oxide reads the state of every stream that has channels.
+        code.WriteTokens(w, tokens);
     }
 
     /// <summary>Copies a group's part of every channel larger than a group into its stream, then tries local palettes and RCTs.</summary>

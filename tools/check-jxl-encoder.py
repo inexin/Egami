@@ -1,6 +1,9 @@
 """The Phase 2.9.3 lossless encoder gate (task 17): every file Egami writes decodes bit-exact in djxl (libjxl 0.12.0) and in
 Egami, and at each effort from 1 to 7 its size is within 10% of cjxl's at the same effort (and its encode time within 2 times).
 
+jxl-oxide (0.12.6, in the same image) must decode each file to the same samples too: it reads the ANS state of every
+Modular stream that has channels, even one that leaves them all to the groups, where libjxl's decoder skips it.
+
 The sources are the corpus's lossless JPEG XL files and a few lossy ones, decoded by djxl to PAM (gray, RGB, with or without
 alpha, 8 or 16 bit), so cjxl and Egami get the same samples and no color profile. cjxl and djxl run in the egami-jxlref:2.9.3
 image; Egami's encoder runs in the benchmark project (dotnet run -c Release --project benchmarks/Egami.Benchmarks --
@@ -77,8 +80,9 @@ def run(names, effort, threads):
         if m:
             egami[m.group(1)] = (int(m.group(2)), float(m.group(3)), m.group(4))
 
-    # djxl decodes Egami's files; the samples must equal the source's.
-    docker(" && ".join(f"djxl {WORK}/{n}.egami-e{effort}.jxl {WORK}/{n}.egami-e{effort}.pam --quiet" for n in names))
+    # djxl and jxl-oxide decode Egami's files; the samples must equal the source's.
+    docker(" && ".join(f"djxl {WORK}/{n}.egami-e{effort}.jxl {WORK}/{n}.egami-e{effort}.pam --quiet && "
+                       f"jxl-oxide {WORK}/{n}.egami-e{effort}.jxl -f npy -o {WORK}/{n}.egami-e{effort}.npy -q" for n in names))
     for n in names:
         src = open(f"{WORK}/{n}.pam", "rb").read()
         back = open(f"{WORK}/{n}.egami-e{effort}.pam", "rb").read()
@@ -88,10 +92,12 @@ def run(names, effort, threads):
         cjxl_ms = pixels / 1e6 / speed[n] * 1000 if speed.get(n) else float("nan")
         ratio = size / theirs
         time = ms / cjxl_ms
-        ok = src == back and check == "exact in Egami" and ratio <= SIZE_GATE and time <= TIME_GATE
+        oxide = npy_matches(open(f"{WORK}/{n}.egami-e{effort}.npy", "rb").read(), src)
+        ok = src == back and oxide and check == "exact in Egami" and ratio <= SIZE_GATE and time <= TIME_GATE
         failed |= not ok
         print(f"e{effort} {threads:2}t {n:36} Egami {size:8} B {ms:8.1f} ms, cjxl {theirs:8} B {cjxl_ms:8.1f} ms, size {ratio:5.3f}x, "
-              f"time {time:5.2f}x, djxl {'exact' if src == back else 'DIFFERS'}, {check}{'' if ok else '  FAIL'}", flush=True)
+              f"time {time:5.2f}x, djxl {'exact' if src == back else 'DIFFERS'}, jxl-oxide {'exact' if oxide else 'DIFFERS'}, "
+              f"{check}{'' if ok else '  FAIL'}", flush=True)
     return failed
 
 
@@ -100,6 +106,19 @@ def pam_samples(data):
     header = data[:end].decode("ascii")
     fields = dict(line.split(" ", 1) for line in header.splitlines()[1:-1] if " " in line)
     return (int(fields["WIDTH"]), int(fields["HEIGHT"]), int(fields["DEPTH"]), int(fields["MAXVAL"])), data[end:]
+
+
+def npy_matches(npy, pam):
+    """Whether jxl-oxide's NumPy output (float32 samples, frames by rows by columns by channels) is the PAM's samples."""
+    (width, height, depth, maxval), samples = pam_samples(pam)
+    end = 10 + struct.unpack("<H", npy[8:10])[0]
+    header = npy[10:end].decode("ascii")
+    shape = tuple(int(v) for v in re.search(r"'shape': \(([^)]*)\)", header).group(1).split(",") if v.strip())
+    if "'<f4'" not in header or shape != (1, height, width, depth):
+        return False
+    floats = struct.unpack(f"<{width * height * depth}f", npy[end:end + width * height * depth * 4])
+    ints = struct.unpack(f">{width * height * depth}{'H' if maxval > 255 else 'B'}", samples[: width * height * depth * (2 if maxval > 255 else 1)])
+    return all(round(f * maxval) == i for f, i in zip(floats, ints))
 
 
 def pfm_floats(data):
