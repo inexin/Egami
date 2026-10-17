@@ -33,6 +33,7 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 
 - One topic per PR. Fill in the PR template, including the provenance section.
 - New public API needs XML docs and an update to `PublicAPI.Unshipped.txt` (`python tools/update-public-api.py` adds what the build reports). `PublicAPI.Shipped.txt` is the frozen 1.0 API: changing or removing anything in it is a breaking change and needs a maintainer's agreement first.
+- A public interface in a package at 1.0 or above (for example `IGlyphOutlineSink`, `IColorPaintVisitor`, `IFontFallbackResolver` and `ITextPaint` in Egami.Fonts) is frozen for the major version: a member added in 1.x comes as a default interface method, so code that implements the interface keeps compiling.
 - Changes to hot code (pixel conversion, codecs, operations) need benchmark results. They must not be slower or allocate more than `main`.
 - New test images must have a clear license and an entry in `tests/images/LICENSES`.
 

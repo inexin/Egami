@@ -442,6 +442,8 @@ Settled in the 1.0 API review, changes from 0.2.0:
   `GetIndicPositionalCategory` are internal. The shaper still uses them; they were shaping data rather than a public feature.
 - `default(Font)` has no typeface: its metrics, advances, `Shape` and `MeasureText` now throw `InvalidOperationException`
   instead of a `NullReferenceException` or `ArgumentNullException` from deeper in.
+- `IGlyphOutlineSink`, `IColorPaintVisitor`, `IFontFallbackResolver` and `ITextPaint` are frozen as they are; a member added
+  in 1.x comes as a default interface method, so your implementations keep compiling.
 - `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
   face on each call.
 
