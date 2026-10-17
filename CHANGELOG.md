@@ -431,8 +431,8 @@ equal to libwebp's.
 
 ### Egami.Fonts 1.0.0
 
-The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Glyph ids stay `ushort` for all of 1.x. Egami.Svg
-stays at 0.1 and goes to 1.0 once Egami.Css reaches 1.0. Settled in the 1.0 API review, changes from 0.2.0:
+The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Glyph ids stay `ushort` for all of 1.x.
+Settled in the 1.0 API review, changes from 0.2.0:
 
 - Fixed: shaping a run longer than 65,536 characters threw on a thread that had shaped a short run before, because the shaper
   kept the short run's limits. Each run now gets limits from its own length.
@@ -453,6 +453,20 @@ stays at 0.1 and goes to 1.0 once Egami.Css reaches 1.0. Settled in the 1.0 API 
 ### Egami.Drawing 1.1.1 and Egami.Metafiles 0.1.1
 
 - They depend on Egami.Fonts 1.0.0; nothing else changes.
+
+### Egami.Css 1.0.0
+
+The API is stable now: 1.x versions add to it without breaking your code. Changes from 0.2.0:
+
+- `CssAttribute`, `CssPage`, `CssRange` and `CssTransformOrigin` declare their `ToString`, so it is annotated as returning a
+  non-null string. The text is the same as before.
+- `ICssElement` is frozen as it is; a member added in 1.x comes as a default interface method, as `MatchesPseudoClass` already
+  is, so your element trees keep compiling.
+
+### Egami.Svg 1.0.0
+
+The API is stable now: 1.x versions add to it without breaking your code. It runs on Egami.Css 1.0.0 and Egami.Fonts 1.0.0;
+nothing else changed from 0.1.0.
 
 ### Egami.Drawing 1.1.0
 

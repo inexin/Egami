@@ -327,4 +327,13 @@ public sealed class ValueTests
         Assert.False(CssUrl.TryParse("url(a b)", out _));
         Assert.False(CssUrl.TryParse("'a.png'", out _));
     }
+
+    [Fact]
+    public void RecordToStringKeepsTheRecordFormat()
+    {
+        Assert.Equal("CssRange { Min = 100, Max = 900 }", new CssRange(100, 900).ToString());
+        Assert.Equal("CssPage { Name = chapter, IsFirst = True, IsLeft = False, IsBlank = False }", new CssPage("chapter", true, false).ToString());
+        Assert.Equal("CssAttribute { NamespaceUri = , LocalName = id, Value = a }", new CssAttribute(null, "id", "a").ToString());
+        Assert.Equal("CssTransformOrigin { X = 50%, Y = 50%, Z = 0px }", CssTransformOrigin.Center.ToString());
+    }
 }

@@ -9,7 +9,12 @@ namespace Egami.Css;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="fonts"/>
 /// </example>
-public readonly record struct CssRange(double Min, double Max);
+public readonly record struct CssRange(double Min, double Max)
+{
+    /// <summary>Formats the range as a record does, such as <c>CssRange { Min = 100, Max = 900 }</c>.</summary>
+    /// <returns>The text.</returns>
+    public override string ToString() => $"CssRange {{ Min = {Min}, Max = {Max} }}";
+}
 
 /// <summary>A range of code points from <c>unicode-range</c>, such as <c>U+0000-00FF</c>.</summary>
 /// <param name="Start">The first code point.</param>

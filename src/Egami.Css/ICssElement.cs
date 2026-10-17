@@ -8,7 +8,12 @@ namespace Egami.Css;
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="element"/>
 /// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711", Justification = "A DOM attribute, not a .NET attribute.")]
-public readonly record struct CssAttribute(string? NamespaceUri, string LocalName, string Value);
+public readonly record struct CssAttribute(string? NamespaceUri, string LocalName, string Value)
+{
+    /// <summary>Formats the attribute as a record does, such as <c>CssAttribute { NamespaceUri = , LocalName = id, Value = a }</c>.</summary>
+    /// <returns>The text.</returns>
+    public override string ToString() => $"CssAttribute {{ NamespaceUri = {NamespaceUri}, LocalName = {LocalName}, Value = {Value} }}";
+}
 
 /// <summary>
 /// An element that selectors match against: implemented by a document tree such as Egami.Svg's or an HTML DOM.

@@ -7,7 +7,7 @@ table and page properties documents use, `@page` with its margin boxes, and pars
 transforms, fonts and page sizes. Layout and the computed values of each property stay with the consumer: Egami.Css hands
 back component values, and the consumer reads them with the value parsers.
 
-Egami.Css is at 0.2 (0.2.0); its API may still change before 1.0.
+Egami.Css is at 1.0 (1.0.0) and its API is stable: 1.x versions add to it without breaking code that uses it.
 
 ## Parsing style sheets
 

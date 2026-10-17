@@ -91,7 +91,12 @@ public enum CssMarginBox
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="page"/>
 /// </example>
-public readonly record struct CssPage(string? Name, bool IsFirst, bool IsLeft, bool IsBlank = false);
+public readonly record struct CssPage(string? Name, bool IsFirst, bool IsLeft, bool IsBlank = false)
+{
+    /// <summary>Formats the page as a record does, such as <c>CssPage { Name = chapter, IsFirst = True, IsLeft = False, IsBlank = False }</c>.</summary>
+    /// <returns>The text.</returns>
+    public override string ToString() => $"CssPage {{ Name = {Name}, IsFirst = {IsFirst}, IsLeft = {IsLeft}, IsBlank = {IsBlank} }}";
+}
 
 /// <summary>One selector of an <c>@page</c> rule, such as <c>chapter:first</c>.</summary>
 /// <example>

@@ -501,6 +501,10 @@ public readonly record struct CssTransformOrigin(CssLength X, CssLength Y, CssLe
     /// <summary>Gets the initial value: <c>50% 50% 0</c>.</summary>
     public static CssTransformOrigin Center => new(new CssLength(50, CssUnit.Percent), new CssLength(50, CssUnit.Percent), CssLength.Zero);
 
+    /// <summary>Formats the origin as a record does, such as <c>CssTransformOrigin { X = 50%, Y = 50%, Z = 0px }</c>.</summary>
+    /// <returns>The text.</returns>
+    public override string ToString() => $"CssTransformOrigin {{ X = {X}, Y = {Y}, Z = {Z} }}";
+
     /// <summary>Parses a <c>transform-origin</c> value, such as <c>left top</c>, <c>50% 10px</c> or <c>right bottom 5px</c>.</summary>
     /// <param name="text">The CSS text.</param>
     /// <param name="origin">The origin.</param>
