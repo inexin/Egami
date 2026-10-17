@@ -109,6 +109,22 @@ public class BytePathTests
         SameOnOneThread("egret", Chains[chain]);
     }
 
+    [Theory]
+    [InlineData("emboss")]
+    [InlineData("emboss-color")]
+    public void EmbossBytesAreTheFloatRowsExactly(string chain)
+    {
+        foreach (string image in new[] { "duck", "translucent" })
+        {
+            using Raster<Rgba8> source = Input(image);
+            using Raster<Rgba8> bytes = source.Derive(Chains[chain], Ct);
+            using Raster<RgbaF32> floats = source.As<RgbaF32>();
+            using Raster<RgbaF32> floatResult = floats.Derive(Chains[chain], Ct);
+            using Raster<Rgba8> reference = floatResult.As<Rgba8>();
+            Same(reference, bytes);
+        }
+    }
+
     /// <summary><see cref="FilterAssert.FloatGap"/> on <typeparamref name="TPixel"/>: the same pixels as a float copy through the float path.</summary>
     private static int TypedGap<TPixel>(Raster<Rgba8> source, Action<RasterOps> chain)
         where TPixel : unmanaged, IPixelType<TPixel>
