@@ -152,6 +152,28 @@ internal static class JxlImageDecoder
         jbrd.Write(output, f, frame.VarDct!, file.Icc, file.Container.Exif, file.Container.Xmp);
     }
 
+    /// <summary>
+    /// Decodes the one VarDCT frame of a bare codestream the lossy encoder wrote to its XYB planes before the restoration
+    /// filters, cropped to the frame, for the encoder's own reconstruction (Phase 2.9.7's EPF search).
+    /// </summary>
+    internal static float[][] DecodeXyb(byte[] codestream, int parallelism)
+    {
+        EgamiInput input = new(new MemoryStream(codestream, writable: false), EgamiContext.Default, CancellationToken.None);
+        try
+        {
+            (JxlFile file, byte[] data) = Open(input, ReaderOptions.Default);
+            List<(JxlFrameHeader Header, JxlToc Toc, long Offset)> sequence = Sequence(file);
+            JxlFrameHeader f = sequence[0].Header;
+            JxlFrameDecoder decoder = new(data, file.Header, f, sequence[0].Toc, sequence[0].Offset, input.Limits) { Parallel = new JxlParallel(Math.Max(1, parallelism), CancellationToken.None) };
+            JxlFrameChannels frame = decoder.Decode(null);
+            return [.. frame.ColorPlanes!.Select((plane, c) => Crop(plane, frame.ColorStrides[c], frame.Width, frame.Height))];
+        }
+        finally
+        {
+            input.Dispose();
+        }
+    }
+
     /// <summary>Converts a decoded raster, every frame, to <typeparamref name="TPixel"/>.</summary>
     internal static Raster<TPixel> Convert<TPixel>(EgamiInput input, Raster natural)
         where TPixel : unmanaged, IPixelType<TPixel>

@@ -105,6 +105,9 @@ internal sealed class JxlVarDctEncoder
     private JxlAdaptiveQuantization? _aq;
     private bool _gaborish;
 
+    // The XYB planes before Gaborish, cropped to the image, kept for the EPF search at efforts 6 and 7.
+    private float[][]? _original;
+
     private int _globalScale;
     private int _quantDc;
     private int _xQmScale;
@@ -154,8 +157,15 @@ internal sealed class JxlVarDctEncoder
         e.QuantizeLf();
         e.ComputeOrders();
         e.FindBlockEntropyModel();
-        List<byte[]> sections = e.Sections();
+        e.ChooseEpfSharpness(header);
 
+        return e.Codestream(header);
+    }
+
+    /// <summary>Writes the codestream with the frame as it stands: image header, frame header, TOC and sections.</summary>
+    private byte[] Codestream(JxlEncodeInput header)
+    {
+        List<byte[]> sections = Sections();
         JxlBitWriter w = new();
         JxlLosslessEncoder.WriteImageHeader(w, header with { Xyb = true });
         if (header.Icc is not null)
@@ -164,7 +174,7 @@ internal sealed class JxlVarDctEncoder
         }
 
         w.ZeroPadToByte();
-        e.WriteFrameHeader(w);
+        WriteFrameHeader(w);
         w.WriteBool(false); // no TOC permutation
         w.ZeroPadToByte();
         JxlU32 size = new(0, 10, 1024, 14, 17408, 22, 4211712, 30);
@@ -242,6 +252,19 @@ internal sealed class JxlVarDctEncoder
             float iqfDistance = _gaborish ? d : d * 0.62f;
             _aq = JxlAdaptiveQuantization.Compute(_xyb, _blocksX * 8, _blocksY * 8, iqfDistance, _parallel);
             ComputeGlobalScaleAndQuant(quantDc, 0.39f / d, 0);
+            if (Speed >= 6 && d >= 0.5f && _epfIterationsFor(d) > 0)
+            {
+                _original = new float[3][];
+                for (int c = 0; c < 3; c++)
+                {
+                    _original[c] = new float[_width * _height];
+                    for (int y = 0; y < _height; y++)
+                    {
+                        _xyb[c].AsSpan(y * _blocksX * 8, _width).CopyTo(_original[c].AsSpan(y * _width, _width));
+                    }
+                }
+            }
+
             if (_gaborish)
             {
                 JxlAdaptiveQuantization.GaborishInverse(_xyb, _blocksX * 8, _blocksY * 8, _parallel);
@@ -298,14 +321,7 @@ internal sealed class JxlVarDctEncoder
         }
 
         _bQmScale = 2;
-        _epfIterations = 0;
-        foreach (float threshold in (ReadOnlySpan<float>)[0.7f, 1.5f, 4.0f])
-        {
-            if (d >= threshold)
-            {
-                _epfIterations++;
-            }
-        }
+        _epfIterations = _epfIterationsFor(d);
     }
 
     /// <summary>
@@ -436,6 +452,152 @@ internal sealed class JxlVarDctEncoder
         int tile = (ty * _tilesX) + tx;
         _yToX[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.ToArray(), xs.ToArray(), 0f, fast);
         _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.ToArray(), bs.ToArray(), 1f, fast);
+    }
+
+    /// <summary>The EPF iterations libjxl's LoopFilterFromParams gives a distance: one each from 0.7, 1.5 and 4.</summary>
+    private static int _epfIterationsFor(float distance)
+    {
+        int n = 0;
+        foreach (float threshold in (ReadOnlySpan<float>)[0.7f, 1.5f, 4.0f])
+        {
+            if (distance >= threshold)
+            {
+                n++;
+            }
+        }
+
+        return n;
+    }
+
+    /// <summary>
+    /// Chooses each block's EPF sharpness at efforts 6 and 7 (libjxl's ComputeARHeuristics): the frame is decoded with every
+    /// candidate sharpness (0, 2 and 7, or 0 and 4 above distance 4.5) and each block's masked error against the image before
+    /// Gaborish is measured; each block takes the best candidate unless its top or left neighbour's is as good, then, with
+    /// how often each value followed each pair of neighbours, the choice is made again weighting the errors by that
+    /// frequency, with no smoothing slightly favoured.
+    /// </summary>
+    private void ChooseEpfSharpness(JxlEncodeInput header)
+    {
+        if (_original is null)
+        {
+            return;
+        }
+
+        float d = _settings.Distance;
+        float clamped = MathF.Min(5.0f, d);
+        byte[] steps = d > 4.5f ? [0, 4] : [0, 2, 7];
+        float[][] reconstructed = JxlImageDecoder.DecodeXyb(Codestream(header), _settings.Parallelism);
+        JxlLoopFilter filter = new() { Gaborish = _gaborish, EpfIterations = _epfIterations };
+        float sigmaBase = filter.QuantMul * 65536f / _globalScale;
+        float[][] errors = new float[8][];
+        float[] mask = _aq!.Mask1x1;
+        JxlParallel parallel = new(Math.Max(1, _settings.Parallelism), CancellationToken.None);
+        foreach (byte val in steps)
+        {
+            float[][] planes = [.. reconstructed.Select(p => (float[])p.Clone())];
+            if (_gaborish)
+            {
+                JxlFilters.Gaborish(planes, _width, _height, _width, filter.GaborishWeights, parallel);
+            }
+
+            float sharp = filter.SharpLut[val];
+            JxlFilters.Epf(planes, _width, _height, _width, filter, (bx, by) => sigmaBase / _quantField[(by * _blocksX) + bx] * sharp, parallel);
+            float[] error = new float[_blocksX * _blocksY];
+            Parallel.For(0, _blocksY, _parallel, by =>
+            {
+                for (int bx = 0; bx < _blocksX; bx++)
+                {
+                    error[(by * _blocksX) + bx] = BlockL2Distance(_original, planes, mask, bx, by);
+                }
+            });
+            errors[val] = error;
+        }
+
+        const float FavorNoSmoothing = 0.99f;
+        for (int by = 0; by < _blocksY; by++)
+        {
+            for (int bx = 0; bx < _blocksX; bx++)
+            {
+                int at = (by * _blocksX) + bx;
+                byte top = by > 0 ? _epfSharpness[at - _blocksX] : (byte)0;
+                byte left = bx > 0 ? _epfSharpness[at - 1] : (byte)0;
+                float topError = errors[top][at];
+                float leftError = errors[left][at];
+                byte best = 0;
+                float bestError = float.MaxValue;
+                foreach (byte val in steps)
+                {
+                    float e = errors[val][at];
+                    if (val == 0)
+                    {
+                        e *= FavorNoSmoothing;
+                    }
+
+                    if (e < bestError)
+                    {
+                        best = val;
+                        bestError = e;
+                    }
+                }
+
+                _epfSharpness[at] = bestError < MathF.Min(topError, leftError) ? best : topError < leftError ? top : left;
+            }
+        }
+
+        // libjxl weighs each candidate again by how often it followed the same neighbours, but as an integer quotient of a count
+        // by a larger total, which is always 0: only no smoothing's own factor is left.
+        const float C3Base = 0.98017198824148288f;
+        const float C3Clamp = 0.85970338919928291f;
+        float c3 = MathF.Max(C3Clamp, MathF.Pow(C3Base, clamped));
+        for (int by = 0; by < _blocksY; by++)
+        {
+            for (int bx = 0; bx < _blocksX; bx++)
+            {
+                int at = (by * _blocksX) + bx;
+                byte top = by > 0 ? _epfSharpness[at - _blocksX] : (byte)0;
+                byte left = bx > 0 ? _epfSharpness[at - 1] : (byte)0;
+                byte best = 0;
+                float bestError = float.MaxValue;
+                foreach (byte val in steps)
+                {
+                    float e = val == 0 ? errors[val][at] * c3 : errors[val][at];
+                    if (e < bestError)
+                    {
+                        best = val;
+                        bestError = e;
+                    }
+                }
+
+                _epfSharpness[at] = best;
+            }
+        }
+
+    }
+
+    /// <summary>libjxl's ComputeBlockL2Distance: a block's squared XYB error weighted by the squared 1×1 mask, X counting most.</summary>
+    private float BlockL2Distance(float[][] a, float[][] b, float[] mask, int bx, int by)
+    {
+        int x0 = bx * 8, y0 = by * 8;
+        int x1 = Math.Min(x0 + 8, _width), y1 = Math.Min(y0 + 8, _height);
+        float e0 = 0, e1 = 0, e2 = 0;
+        int maskStride = _blocksX * 8;
+        for (int y = y0; y < y1; y++)
+        {
+            for (int x = x0; x < x1; x++)
+            {
+                float m = mask[(y * maskStride) + x];
+                float m2 = m * m;
+                int at = (y * _width) + x;
+                float d0 = a[0][at] - b[0][at];
+                float d1 = a[1][at] - b[1][at];
+                float d2 = a[2][at] - b[2][at];
+                e0 += m2 * d0 * d0;
+                e1 += m2 * d1 * d1;
+                e2 += m2 * d2 * d2;
+            }
+        }
+
+        return (float)((12.339445295782363 * e0) + (1.0 * e1) + (0.2 * e2));
     }
 
     /// <summary>libjxl's InitialQuantDC: the DC quantizer for a distance, with a gentler slope at high distances.</summary>
