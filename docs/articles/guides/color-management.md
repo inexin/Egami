@@ -141,6 +141,13 @@ holds the ink as it prints over paper, 0 for none to the maximum for full ink. E
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#ink-raster)]
 
+`InkRaster.Save` writes all the plates as one separated TIFF, with the ink names and the output profile; `InkRaster.Load` reads
+it back, and any other separated TIFF of 8 or 16-bit strips. `InkTiffOptions` picks the compression and whether to keep the
+alpha plane (off by default, as a RIP wants only the plates). TIFF has no place for a spot's appearance, so loaded spots have
+none.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#ink-tiff)]
+
 Presses with more than four process inks have n-colour ICC profiles (2CLR to FCLR): `ColorProfile.FromIcc` reads them as
 `ColorModel.NColor`, with `ChannelCount` inks named by `ColorantNames`, and `InkSet.FromProfile` takes those inks with their
 colours as appearances. No pixel type holds them, so conversions to and from such a profile run on float spans:

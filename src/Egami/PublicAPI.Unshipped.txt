@@ -1579,7 +1579,17 @@ Egami.InkRaster.InkRaster(Egami.Colors.InkSet! inks, int width, int height, Egam
 Egami.InkRaster.Inks.get -> Egami.Colors.InkSet!
 Egami.InkRaster.Plate(string! name) -> Egami.InkPlate?
 Egami.InkRaster.Plates.get -> System.Collections.Generic.IReadOnlyList<Egami.InkPlate!>!
+Egami.InkRaster.Save(string! path, Egami.InkTiffOptions? options = null) -> void
+Egami.InkRaster.Save(System.IO.Stream! stream, Egami.InkTiffOptions? options = null) -> void
 Egami.InkRaster.Width.get -> int
+Egami.InkTiffOptions
+Egami.InkTiffOptions.<Clone>$() -> Egami.InkTiffOptions!
+Egami.InkTiffOptions.Compression.get -> Egami.Formats.Tiff.TiffCompression
+Egami.InkTiffOptions.Compression.init -> void
+Egami.InkTiffOptions.Equals(Egami.InkTiffOptions? other) -> bool
+Egami.InkTiffOptions.IncludeAlpha.get -> bool
+Egami.InkTiffOptions.IncludeAlpha.init -> void
+Egami.InkTiffOptions.InkTiffOptions() -> void
 Egami.Metadata.ExifData.ReadThumbnail(Egami.EgamiContext? context = null) -> Egami.Raster<Egami.Pixels.Rgb8>?
 Egami.Metadata.ExifData.SetThumbnail(Egami.Raster! raster, int maxSide = 160, int quality = 75) -> void
 Egami.Metadata.IptcData
@@ -2666,6 +2676,9 @@ override Egami.Formats.Webp.WebpReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Webp.WebpReaderOptions.GetHashCode() -> int
 override Egami.Formats.Webp.WebpReaderOptions.ToString() -> string!
 override Egami.InkPlate.ToString() -> string!
+override Egami.InkTiffOptions.Equals(object? obj) -> bool
+override Egami.InkTiffOptions.GetHashCode() -> int
+override Egami.InkTiffOptions.ToString() -> string!
 override Egami.Metadata.IptcEntry.ToString() -> string!
 override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!
@@ -3023,6 +3036,10 @@ static Egami.Formats.Webp.WebpReaderOptions.Default.get -> Egami.Formats.Webp.We
 static Egami.Formats.Webp.WebpReaderOptions.operator !=(Egami.Formats.Webp.WebpReaderOptions? left, Egami.Formats.Webp.WebpReaderOptions? right) -> bool
 static Egami.Formats.Webp.WebpReaderOptions.operator ==(Egami.Formats.Webp.WebpReaderOptions? left, Egami.Formats.Webp.WebpReaderOptions? right) -> bool
 static Egami.Formats.Webp.WebpWriterOptions.Default.get -> Egami.Formats.Webp.WebpWriterOptions!
+static Egami.InkRaster.Load(string! path, Egami.Colors.ColorProfile? profile = null, Egami.EgamiContext? context = null) -> Egami.InkRaster!
+static Egami.InkRaster.Load(System.IO.Stream! stream, Egami.Colors.ColorProfile? profile = null, Egami.EgamiContext? context = null) -> Egami.InkRaster!
+static Egami.InkTiffOptions.operator !=(Egami.InkTiffOptions? left, Egami.InkTiffOptions? right) -> bool
+static Egami.InkTiffOptions.operator ==(Egami.InkTiffOptions? left, Egami.InkTiffOptions? right) -> bool
 static Egami.Metadata.IptcData.Parse(System.ReadOnlySpan<byte> iim, Egami.SafetyLimits? limits = null) -> Egami.Metadata.IptcData!
 static Egami.Metadata.IptcKey.operator !=(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool
 static Egami.Metadata.IptcKey.operator ==(Egami.Metadata.IptcKey left, Egami.Metadata.IptcKey right) -> bool

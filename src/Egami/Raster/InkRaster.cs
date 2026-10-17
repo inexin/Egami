@@ -6,6 +6,34 @@ using Egami.Pixels;
 
 namespace Egami;
 
+/// <summary>How an <see cref="InkRaster"/> is saved as a separated TIFF.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="ink-tiff"/>
+/// </example>
+public sealed record InkTiffOptions
+{
+    private readonly Formats.Tiff.TiffCompression _compression = Formats.Tiff.TiffCompression.Deflate;
+
+    /// <summary>
+    /// Gets the compression: <see cref="Formats.Tiff.TiffCompression.Deflate"/> (the default) or <see cref="Formats.Tiff.TiffCompression.Lzw"/>,
+    /// both with the horizontal predictor, <see cref="Formats.Tiff.TiffCompression.PackBits"/> or <see cref="Formats.Tiff.TiffCompression.None"/>.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Another compression.</exception>
+    public Formats.Tiff.TiffCompression Compression
+    {
+        get => _compression;
+        init => _compression = value is Formats.Tiff.TiffCompression.Deflate or Formats.Tiff.TiffCompression.Lzw or Formats.Tiff.TiffCompression.PackBits or Formats.Tiff.TiffCompression.None
+            ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Ink TIFFs use Deflate, LZW, PackBits or no compression.");
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the alpha plane is saved, as an associated alpha extra sample. Off by default: the plates
+    /// hold the ink as printed, which is what a RIP needs, and loading treats the page as covered. libtiff reads CMYK with alpha,
+    /// but not more than four inks with alpha.
+    /// </summary>
+    public bool IncludeAlpha { get; init; }
+}
+
 /// <summary>How many bits each plane of an <see cref="InkRaster"/> stores per pixel.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="ink-raster"/>
@@ -123,6 +151,65 @@ public sealed class InkRaster : IDisposable
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Saves the raster as one separated TIFF: a sample per plate (InkSet 1 for plain CMYK, else 2 with the ink names), stored
+    /// plane by plane, and the output profile embedded; the alpha plane too when <see cref="InkTiffOptions.IncludeAlpha"/> says
+    /// so. libtiff and RIPs read it. Spot appearances and kinds are not kept: TIFF has no place for them.
+    /// </summary>
+    /// <param name="path">The file to write.</param>
+    /// <param name="options">The compression and whether to keep alpha, or <see langword="null"/> for the defaults.</param>
+    /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="ink-tiff"/>
+    /// </example>
+    public void Save(string path, InkTiffOptions? options = null)
+    {
+        ThrowIfDisposed();
+        using FileStream stream = new(path, FileMode.Create, FileAccess.ReadWrite);
+        Save(stream, options);
+    }
+
+    /// <inheritdoc cref="Save(string, InkTiffOptions?)"/>
+    /// <param name="stream">The stream to write to, at its position.</param>
+    /// <param name="options">The compression and whether to keep alpha, or <see langword="null"/> for the defaults.</param>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="ink-tiff"/>
+    /// </example>
+    public void Save(Stream stream, InkTiffOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ThrowIfDisposed();
+        Formats.Tiff.InkTiff.Write(this, stream, options ?? new InkTiffOptions());
+    }
+
+    /// <summary>
+    /// Loads a separated TIFF (PhotometricInterpretation 5) as an ink raster: 8 or 16-bit strips, chunky or planar, uncompressed,
+    /// LZW, Deflate or PackBits. The inks are those of the file's embedded CMYK or n-colour profile (else
+    /// <paramref name="profile"/>, else FOGRA39), plus a spot, without appearance, for each ink it names that the profile lacks;
+    /// planes are matched by name. Without an alpha extra sample the page counts as covered (alpha at its maximum).
+    /// </summary>
+    /// <param name="path">The file to read.</param>
+    /// <param name="profile">The output profile when the file has none, or <see langword="null"/> for FOGRA39.</param>
+    /// <param name="context">The context to allocate from and whose limits apply, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    /// <returns>The raster. The caller must dispose it.</returns>
+    /// <exception cref="UnsupportedFormatException">The file is not a separated TIFF of a kind read here.</exception>
+    /// <exception cref="CorruptDataException">The file is damaged.</exception>
+    public static InkRaster Load(string path, ColorProfile? profile = null, EgamiContext? context = null)
+    {
+        using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return Load(stream, profile, context);
+    }
+
+    /// <inheritdoc cref="Load(string, ColorProfile?, EgamiContext?)"/>
+    /// <param name="stream">The stream to read, from its position.</param>
+    /// <param name="profile">The output profile when the file has none, or <see langword="null"/> for FOGRA39.</param>
+    /// <param name="context">The context to allocate from and whose limits apply, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>
+    public static InkRaster Load(Stream stream, ColorProfile? profile = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        return Formats.Tiff.InkTiff.Read(stream, profile, context ?? EgamiContext.Default);
     }
 
     /// <summary>Returns the planes' memory to the context's memory source. Plate rasters taken from it stop working.</summary>

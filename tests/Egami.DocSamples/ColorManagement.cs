@@ -258,6 +258,23 @@ public class ColorManagement
     }
 
     [Fact]
+    public void InkTiff()
+    {
+        InkSet inks = InkSet.FromProfile(ColorProfile.Fogra39).WithSpot("PANTONE 186 C", InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+        using InkRaster page = new(inks, 200, 100);
+        using MemoryStream file = new();
+
+        #region ink-tiff
+        // One separated TIFF with every plate and the ink names, Deflate by default; it loads back plate for plate.
+        page.Save(file, new InkTiffOptions { Compression = Egami.Formats.Tiff.TiffCompression.Lzw });
+        file.Position = 0;
+        using InkRaster loaded = InkRaster.Load(file);
+        #endregion
+
+        Assert.Equal(["Cyan", "Magenta", "Yellow", "Black", "PANTONE 186 C"], loaded.Plates.Select(p => p.Name));
+    }
+
+    [Fact]
     public void HdrInfo()
     {
         using Raster<Rgb16> raster = Raster.Create<Rgb16>(2, 2);
