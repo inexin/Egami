@@ -59,7 +59,7 @@ for that position. `Variations` gives a face's position.
 
 Everything a face returns is in font units with y up. `GetGlyph` maps a code point (with a variation selector, through cmap format
 14), `GetGlyphOutline` sends an outline to an `IGlyphOutlineSink`, and `GetAdvance`, `GetGlyphExtents` (a `GlyphExtents` box) and
-`GetKerning` give the numbers.
+`GetKerning` give the numbers. Glyph ids are `ushort` throughout, as OpenType caps a face at 65,535 glyphs.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#glyphs)]
 
@@ -74,7 +74,8 @@ Everything a face returns is in font units with y up. `GetGlyph` maps a code poi
 ## Text on a canvas
 
 A `Font` is a typeface at a size, the em in canvas units: pixels on a raster, points on a PDF page. `Font.FromPoints` sizes from
-points at a resolution. `Canvas.DrawText` puts the left end of the first line's alphabetic baseline at the origin.
+points at a resolution. `Canvas.DrawText` puts the left end of the first line's alphabetic baseline at the origin. `Font` is a
+value type; `default(Font)` has no typeface, and its metrics, shaping and measuring throw `InvalidOperationException`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#caption)]
 

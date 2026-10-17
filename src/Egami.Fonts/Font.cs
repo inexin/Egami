@@ -27,14 +27,23 @@ public enum FontSynthesis
 /// turns text into a positioned <see cref="GlyphRun"/>.
 /// </summary>
 /// <remarks>
+/// <para>
 /// There is no DPI: a 12-unit font on a raster is 12 pixels per em, and the canvas transform scales it like any other drawing. Use
 /// <see cref="FromPoints(Typeface, float, float)"/> to size from points at a resolution.
+/// </para>
+/// <para>
+/// <c>default(Font)</c> has no typeface: its <see cref="Typeface"/> is <see langword="null"/>, its <see cref="Scale"/> 0, and the
+/// members that need the face (metrics, advances, shaping and measuring) throw <see cref="InvalidOperationException"/>. Create
+/// fonts with the constructor or <see cref="FromPoints(Typeface, float, float)"/>.
+/// </para>
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="caption"/>
 /// </example>
 public readonly record struct Font
 {
+    private const string NoTypeface = "A Font needs a typeface: create it with the constructor or Font.FromPoints, not default(Font).";
+
     private readonly bool _noKerning;
     private readonly bool _noOpticalSizing;
     private readonly bool _noSubpixel;
@@ -61,7 +70,7 @@ public readonly record struct Font
         Size = size;
     }
 
-    /// <summary>Gets the face.</summary>
+    /// <summary>Gets the face; <see langword="null"/> only for <c>default(Font)</c>.</summary>
     public Typeface Typeface { get; }
 
     /// <summary>Gets the em size in canvas units.</summary>
@@ -129,11 +138,12 @@ public readonly record struct Font
     /// Gets the face glyphs are drawn and measured from: <see cref="Typeface"/>, or with <see cref="OpticalSizing"/> on a face with
     /// an opsz axis it does not set, the face at opsz = <see cref="Size"/>. A PDF writer embeds this face.
     /// </summary>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     public Typeface EffectiveTypeface
     {
         get
         {
-            Typeface face = Typeface ?? throw new InvalidOperationException("The font has no typeface; use a constructor, not default.");
+            Typeface face = Typeface ?? throw new InvalidOperationException(NoTypeface);
             return _noOpticalSizing ? face : face.AtOpticalSize(Size);
         }
     }
@@ -142,9 +152,11 @@ public readonly record struct Font
     public float Scale => Typeface is null ? 0 : Size / Typeface.UnitsPerEm;
 
     /// <summary>Gets the face's extents at this size, y up.</summary>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     public FontExtents Extents => Face.Extents.Scale(Scale);
 
     /// <summary>Gets the distance from one baseline to the next at this size.</summary>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     public float LineHeight => Face.Extents.LineHeight * Scale;
 
     private Typeface Face => EffectiveTypeface;
@@ -168,11 +180,13 @@ public readonly record struct Font
     /// <summary>Gets a glyph's advance at this size.</summary>
     /// <param name="glyph">The glyph id.</param>
     /// <returns>The advance in canvas units.</returns>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     public float GetAdvance(ushort glyph) => Face.GetAdvance(glyph) * Scale;
 
     /// <summary>Gets the box around a glyph's ink at this size, y up from the baseline, synthetic bold and italic included.</summary>
     /// <param name="glyph">The glyph id.</param>
     /// <returns>The box in canvas units.</returns>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     public GlyphExtents GetGlyphExtents(ushort glyph)
     {
         FontSynthesis synthesis = AppliedSynthesis;
@@ -205,12 +219,14 @@ public readonly record struct Font
     /// <returns>The run, with the text and a cluster per glyph; positions are relative to the first baseline's left end, y down.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="text"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="options"/> asks for fallback or a span in another font.</exception>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="caption"/>
     /// </example>
     public GlyphRun Shape(string text, ShapingOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(text);
+        _ = Typeface ?? throw new InvalidOperationException(NoTypeface);
         ShapingOptions o = options ?? ShapingOptions.Default;
         if (o.Fallback.Families.Count > 0 || o.Fallback.Resolver is not null)
         {
@@ -268,6 +284,7 @@ public readonly record struct Font
     /// <returns>The widest line's advance, the exact ink bounds, the line count and the vertical metrics.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="text"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="options"/> asks for fallback or a span in another font.</exception>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="measure"/>
     /// </example>
