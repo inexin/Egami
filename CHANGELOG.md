@@ -431,7 +431,8 @@ equal to libwebp's.
 
 ### Egami.Fonts 1.0.0
 
-Settled in the 1.0 API review, changes from 0.2.0:
+The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Glyph ids stay `ushort` for all of 1.x. Egami.Svg
+stays at 0.1 and goes to 1.0 once Egami.Css reaches 1.0. Settled in the 1.0 API review, changes from 0.2.0:
 
 - Fixed: shaping a run longer than 65,536 characters threw on a thread that had shaped a short run before, because the shaper
   kept the short run's limits. Each run now gets limits from its own length.
@@ -448,6 +449,10 @@ Settled in the 1.0 API review, changes from 0.2.0:
   in 1.x comes as a default interface method, so your implementations keep compiling.
 - `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
   face on each call.
+
+### Egami.Drawing 1.1.1 and Egami.Metafiles 0.1.1
+
+- They depend on Egami.Fonts 1.0.0; nothing else changes.
 
 ### Egami.Drawing 1.1.0
 

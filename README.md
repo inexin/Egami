@@ -16,8 +16,8 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET 10 that 
 - **Fonts, SVG, CSS and metafiles**: Egami.Fonts (fonts, shaping and paragraph layout), Egami.Svg, Egami.Css and
   Egami.Metafiles (WMF, EMF and EMF+); see [Packages](docs/articles/packages.md).
 
-> **Status:** early development. Nothing is published to NuGet yet. The core API (Egami 1.0) and Egami.Drawing are stable;
-> Egami.Fonts, Egami.Svg, Egami.Css and Egami.Metafiles are 0.x and may still change. Full documentation is in
+> **Status:** early development. Nothing is published to NuGet yet. The core API (Egami 1.0), Egami.Drawing and Egami.Fonts
+> are stable; Egami.Svg, Egami.Css and Egami.Metafiles are 0.x and may still change. Full documentation is in
 > [docs/](docs/index.md).
 
 ## Quick start

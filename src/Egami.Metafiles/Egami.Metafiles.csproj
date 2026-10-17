@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Egami.Metafiles</RootNamespace>
     <PackageId>Egami.Metafiles</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Description>Windows metafiles for Egami: plays WMF, EMF and EMF+ pictures onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output and rasterize on any OS, in managed code.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>

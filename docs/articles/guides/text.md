@@ -1,8 +1,8 @@
 # Fonts and text
 
 Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
-outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing is at 1.0 and its API
-is frozen; Egami.Fonts is at 0.1, and its API may still change before 1.0. Egami ships no font: text needs a face from a file, a stream,
+outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing and Egami.Fonts are at
+1.0 and their APIs are frozen. Egami ships no font: text needs a face from a file, a stream,
 memory or the installed fonts.
 
 ## Faces
