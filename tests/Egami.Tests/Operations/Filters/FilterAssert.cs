@@ -69,6 +69,41 @@ internal static class FilterAssert
         return worst;
     }
 
+    /// <summary>
+    /// Runs <paramref name="chain"/> on <paramref name="source"/> as it is and on a float copy, which always takes the float path,
+    /// and returns the largest difference between the two in levels (Phase 2.5.7's closeness gate for the byte paths).
+    /// </summary>
+    internal static int FloatGap(Raster<Rgba8> source, Action<RasterOps> chain)
+    {
+        using Raster<Rgba8> bytes = source.Derive(chain, Ct);
+        using Raster<RgbaF32> floats = source.As<RgbaF32>();
+        using Raster<RgbaF32> floatResult = floats.Derive(chain, Ct);
+        using Raster<Rgba8> reference = floatResult.As<Rgba8>();
+        return PremultipliedDifference(reference, bytes);
+    }
+
+    /// <summary>The largest difference of alpha or of a premultiplied color channel, in levels, so colors nobody sees do not count.</summary>
+    internal static int PremultipliedDifference(Raster<Rgba8> expected, Raster<Rgba8> actual)
+    {
+        Assert.Equal((expected.Width, expected.Height), (actual.Width, actual.Height));
+        int worst = 0;
+        for (int y = 0; y < expected.Height; y++)
+        {
+            ReadOnlySpan<Rgba8> e = expected.Row(y), a = actual.Row(y);
+            for (int x = 0; x < e.Length; x++)
+            {
+                worst = Math.Max(worst, Math.Abs(e[x].A - a[x].A));
+                worst = Math.Max(worst, Gap(e[x].R, e[x].A, a[x].R, a[x].A));
+                worst = Math.Max(worst, Gap(e[x].G, e[x].A, a[x].G, a[x].A));
+                worst = Math.Max(worst, Gap(e[x].B, e[x].A, a[x].B, a[x].A));
+            }
+        }
+
+        return worst;
+
+        static int Gap(int c1, int a1, int c2, int a2) => (int)Math.Round(Math.Abs((c1 * a1) - (c2 * a2)) / 255.0);
+    }
+
     /// <summary>Asserts two rasters hold the same pixels, naming the first that differs.</summary>
     internal static void Same<TPixel>(Raster<TPixel> expected, Raster<TPixel> actual)
         where TPixel : unmanaged, IPixelType<TPixel>, IEquatable<TPixel>
