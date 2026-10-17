@@ -519,6 +519,8 @@ internal sealed partial class Vp8Decoder : IDisposable
 
         // Rows that share a partition must go in order, so each thread takes every n-th row, n a power of two no more than the
         // partitions.
+        // Set every frame: the decoder lives from frame to frame, and the token partitions, so the workers, may change.
+        _main.DeferFilter = false;
         int workers = 1;
         while (workers * 2 <= Math.Min(Math.Min(video.Threads, Partitions), MbHeight))
         {

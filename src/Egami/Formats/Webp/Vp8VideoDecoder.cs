@@ -27,7 +27,7 @@ internal sealed class Vp8VideoDecoder : IDisposable
     private volatile bool _stopping;
     private Vp8FrameHeader _lastKey;
 
-    // The frame decoder, reused from frame to frame while the frame size stays (its arrays are sized for it).
+    // The frame decoder on one thread, reused from frame to frame while the frame size stays (its arrays are sized for it).
     private Vp8Decoder? _decoder;
 
     /// <summary>
@@ -142,7 +142,11 @@ internal sealed class Vp8VideoDecoder : IDisposable
             }
             else
             {
-                decoder = _decoder = Vp8Decoder.CreateVideo(data, offset, length, header, this);
+                decoder = Vp8Decoder.CreateVideo(data, offset, length, header, this);
+
+                // Kept on one thread only: reused under the wavefront it measured 1-3% slower on the grain clips, so several
+                // threads take a fresh decoder (its arrays) each frame, as before.
+                _decoder = Threads == 1 ? decoder : null;
             }
 
             decoder.DecodeFrame();
