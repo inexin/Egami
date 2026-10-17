@@ -187,7 +187,6 @@ public class InkCanvasTests
     {
         using InkRaster plates = new(Inks, 4, 4);
         using InkCanvas canvas = new(plates);
-        Assert.Throws<NotSupportedException>(() => canvas.FillRect(new RectF(0, 0, 4, 4), new SolidPaint(InkColor.Cmyk(1, 0, 0, 0)) { BlendMode = Operations.BlendMode.Multiply }));
         Assert.Throws<ArgumentException>(() => new InkCanvasOptions { RgbSource = ColorProfile.Fogra39 });
     }
 

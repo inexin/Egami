@@ -44,26 +44,25 @@ internal sealed class InkTarget : RasterTarget
             throw new NotSupportedException("Knockout and non-isolated layers on an ink canvas come with Egami 2.6.5's group work.");
         }
 
-        CheckMode(paint.BlendMode);
         switch (paint)
         {
             case InkImagePaint image:
                 return image.TryDeviceToImage(matrix, out Matrix3x2 inverse) ? new InkImageSink(this, image, inverse, mask, scale) : null;
             case Gradient gradient when gradient.Stops.Any(s => s.Ink is not null) && gradient.CreateGeometryFor(matrix) is GradientGeometry geometry:
-                return new InkGradientSink(this, gradient, geometry, paint.Opacity, paint.BlendMode, mask, scale);
+                return new InkGradientSink(this, gradient, geometry, paint, mask, scale);
             case MeshShadingPaint { Shader.Inks: InkColor[] inks } shading:
-                return new InkMeshSink(this, shading.Shader, inks, shading.Shader.VertexAlpha * paint.Opacity, paint.BlendMode, mask, scale);
+                return new InkMeshSink(this, shading.Shader, inks, paint, mask, scale);
         }
 
         if (paint is SolidPaint solid)
         {
             float[] tints = new float[Inks];
             float alpha = Resolver.Resolve(solid, tints);
-            return alpha <= 0 && paint.BlendMode == BlendMode.SourceOver ? null : new InkSolidSink(this, tints, alpha * paint.Opacity, paint.BlendMode, mask, scale);
+            return alpha <= 0 && paint.BlendMode == BlendMode.SourceOver ? null : new InkSolidSink(this, tints, alpha, paint, mask, scale);
         }
 
         PixelShader<RgbaF32>? shader = paint.CreatePixelShader<RgbaF32>(matrix, colorSpace);
-        return shader is null ? null : new InkShaderSink(this, shader, paint.Opacity, paint.BlendMode, mask, scale);
+        return shader is null ? null : new InkShaderSink(this, shader, paint, mask, scale);
     }
 
     internal override RasterTarget CreateLayer(Rect area, EgamiContext context)
@@ -92,45 +91,28 @@ internal sealed class InkTarget : RasterTarget
 
     internal override void WriteRow<T>(int y, int x, ReadOnlySpan<T> source) => throw new NotSupportedException("An ink canvas has no RGB pixels to write.");
 
-    /// <summary>Merges a layer of the same inks: source-over per plane with the layer's alpha, times opacity and the clip.</summary>
+    /// <summary>Merges a layer of the same inks with a blend mode, opacity and the clip: its plates as straight tints over these.</summary>
     internal override void Merge(RasterTarget layer, Rect area, ClipMask? mask, BlendMode mode, float opacity, ColorSpace colorSpace)
     {
-        CheckMode(mode);
         InkTarget from = (InkTarget)layer;
-        float[] k = new float[area.Width];
-        float[] alpha = new float[area.Width];
+        int n = area.Width, planes = Inks;
+        float[] tints = new float[n * planes];
+        float[] alpha = new float[n];
+        float[] plane = new float[n];
         for (int y = area.Y; y < area.Bottom; y++)
         {
-            ReadOnlySpan<byte> clip = mask is null ? default : mask.Row(y).Slice(area.X - mask.Bounds.X, area.Width);
-            from.ReadPlane(Inks, y, area.X, alpha);
-            for (int i = 0; i < k.Length; i++)
+            ReadOnlySpan<byte> clip = mask is null ? default : mask.Row(y).Slice(area.X - mask.Bounds.X, n);
+            from.ReadPlane(planes, y, area.X, alpha);
+            for (int p = 0; p < planes; p++)
             {
-                k[i] = opacity * (clip.IsEmpty ? 1 : clip[i] / 255f);
+                from.ReadPlane(p, y, area.X, plane);
+                for (int i = 0; i < n; i++)
+                {
+                    tints[(i * planes) + p] = alpha[i] > 0 ? Math.Clamp(plane[i] / alpha[i], 0, 1) : 0;
+                }
             }
 
-            float[] source = new float[area.Width];
-            for (int p = 0; p < _planes.Length; p++)
-            {
-                from.ReadPlane(p, y, area.X, source);
-                if (Wide)
-                {
-                    Span<ushort> d = Row16(p, y, area.X, area.Width);
-                    for (int i = 0; i < d.Length; i++)
-                    {
-                        float under = d[i] / 65535f;
-                        d[i] = To16((source[i] * k[i]) + (under * (1 - (alpha[i] * k[i]))));
-                    }
-                }
-                else
-                {
-                    Span<byte> d = Row8(p, y, area.X, area.Width);
-                    for (int i = 0; i < d.Length; i++)
-                    {
-                        float under = d[i] / 255f;
-                        d[i] = To8((source[i] * k[i]) + (under * (1 - (alpha[i] * k[i]))));
-                    }
-                }
-            }
+            InkCompositor.Composite(this, y, area.X, n, tints, planes, alpha, clip, opacity, mode, default);
         }
     }
 
@@ -205,6 +187,40 @@ internal sealed class InkTarget : RasterTarget
 
     internal Span<ushort> Row16(int plane, int y, int x, int length) => _planes[plane].Row16(y - Area.Y).Slice(x - Area.X, length);
 
+    /// <summary>Reads every plane's run, plane by plane (alpha last), as 0 to 1.</summary>
+    internal void ReadAll(int y, int x, int n, Span<float> values)
+    {
+        for (int p = 0; p < _planes.Length; p++)
+        {
+            ReadPlane(p, y, x, values.Slice(p * n, n));
+        }
+    }
+
+    /// <summary>Writes every plane's run from values laid out as <see cref="ReadAll"/> gives them.</summary>
+    internal void WriteAll(int y, int x, int n, ReadOnlySpan<float> values)
+    {
+        for (int p = 0; p < _planes.Length; p++)
+        {
+            ReadOnlySpan<float> v = values.Slice(p * n, n);
+            if (Wide)
+            {
+                Span<ushort> row = Row16(p, y, x, n);
+                for (int i = 0; i < n; i++)
+                {
+                    row[i] = To16(v[i]);
+                }
+            }
+            else
+            {
+                Span<byte> row = Row8(p, y, x, n);
+                for (int i = 0; i < n; i++)
+                {
+                    row[i] = To8(v[i]);
+                }
+            }
+        }
+    }
+
     /// <summary>Reads a plane's run as 0 to 1.</summary>
     internal void ReadPlane(int plane, int y, int x, Span<float> values)
     {
@@ -229,133 +245,4 @@ internal sealed class InkTarget : RasterTarget
     internal static byte To8(float v) => v > 0 ? v < 1 ? (byte)((v * 255) + 0.5f) : (byte)255 : (byte)0;
 
     internal static ushort To16(float v) => v > 0 ? v < 1 ? (ushort)((v * 65535) + 0.5f) : (ushort)65535 : (ushort)0;
-
-    private static void CheckMode(BlendMode mode)
-    {
-        if (mode is not (BlendMode.SourceOver or BlendMode.Source))
-        {
-            throw new NotSupportedException($"The blend mode {mode} on an ink canvas comes with Egami 2.6.5's blend mode work.");
-        }
-    }
-}
-
-/// <summary>
-/// Blends straight ink tints with an alpha through coverage, every plane at once: source-over leaves t·a + d·(1 − a) on each ink
-/// plane and a + d·(1 − a) on alpha, with a the paint's alpha times opacity and coverage; Source replaces by coverage.
-/// </summary>
-internal sealed class InkSolidSink(InkTarget target, float[] tints, float alpha, BlendMode mode, ClipMask? mask, byte scale) : RasterSink(mask, scale)
-{
-    protected override void Write(int y, int x, ReadOnlySpan<byte> coverage)
-    {
-        Span<float> a = stackalloc float[coverage.Length];
-        for (int i = 0; i < a.Length; i++)
-        {
-            a[i] = coverage[i] / 255f;
-        }
-
-        InkBlend.Blend(target, y, x, a, tints, alpha, mode);
-    }
-}
-
-/// <summary>Blends a shaded RGB paint: each run is shaded in straight RGBA, converted to the process inks, and blended like a solid.</summary>
-internal sealed class InkShaderSink(InkTarget target, PixelShader<RgbaF32> shader, float opacity, BlendMode mode, ClipMask? mask, byte scale) : RasterSink(mask, scale)
-{
-    public override bool FillsDirectly => Plain;
-
-    protected override void Write(int y, int x, ReadOnlySpan<byte> coverage) => Run(y, x, coverage.Length, coverage);
-
-    protected override bool TryFill(int y, int x, int length)
-    {
-        Run(y, x, length, default);
-        return true;
-    }
-
-    private void Run(int y, int x, int length, ReadOnlySpan<byte> coverage)
-    {
-        int inks = target.Inks;
-        Span<RgbaF32> colors = stackalloc RgbaF32[Shader.Chunk];
-        float[] tints = new float[Shader.Chunk * inks];
-        Span<float> a = stackalloc float[Shader.Chunk];
-        for (int i = 0; i < length; i += Shader.Chunk)
-        {
-            int n = Math.Min(Shader.Chunk, length - i);
-            shader.Shade(y, x + i, colors[..n]);
-            target.Resolver.ResolveRgb(colors[..n], tints.AsSpan(0, n * inks));
-            for (int j = 0; j < n; j++)
-            {
-                a[j] = colors[j].A * opacity * (coverage.IsEmpty ? 1 : coverage[i + j] / 255f);
-            }
-
-            InkBlend.BlendInterleaved(target, y, x + i, a[..n], tints.AsSpan(0, n * inks), mode);
-        }
-    }
-}
-
-/// <summary>The per-plane arithmetic of the ink sinks.</summary>
-internal static class InkBlend
-{
-    /// <summary>One colour (tints per plane, an alpha) through per-pixel coverage.</summary>
-    internal static void Blend(InkTarget target, int y, int x, ReadOnlySpan<float> coverage, ReadOnlySpan<float> tints, float alpha, BlendMode mode)
-    {
-        int n = coverage.Length;
-        for (int p = 0; p <= tints.Length; p++)
-        {
-            float t = p < tints.Length ? tints[p] : 1;   // the alpha plane takes 1, so it gains a·(1 − d)
-            if (target.Wide)
-            {
-                Span<ushort> d = target.Row16(p, y, x, n);
-                for (int i = 0; i < n; i++)
-                {
-                    d[i] = InkTarget.To16(Mix(t, alpha, d[i] / 65535f, coverage[i], mode));
-                }
-            }
-            else
-            {
-                Span<byte> d = target.Row8(p, y, x, n);
-                for (int i = 0; i < n; i++)
-                {
-                    d[i] = InkTarget.To8(Mix(t, alpha, d[i] / 255f, coverage[i], mode));
-                }
-            }
-        }
-    }
-
-    /// <summary>A run of colours, tints interleaved per pixel, each pixel's alpha already times opacity and coverage.</summary>
-    internal static void BlendInterleaved(InkTarget target, int y, int x, ReadOnlySpan<float> alpha, ReadOnlySpan<float> tints, BlendMode mode)
-    {
-        int n = alpha.Length, inks = target.Inks;
-        for (int p = 0; p <= inks; p++)
-        {
-            if (target.Wide)
-            {
-                Span<ushort> d = target.Row16(p, y, x, n);
-                for (int i = 0; i < n; i++)
-                {
-                    float t = p < inks ? tints[(i * inks) + p] : 1;
-                    d[i] = InkTarget.To16(Mix(t, 1, d[i] / 65535f, alpha[i], mode));
-                }
-            }
-            else
-            {
-                Span<byte> d = target.Row8(p, y, x, n);
-                for (int i = 0; i < n; i++)
-                {
-                    float t = p < inks ? tints[(i * inks) + p] : 1;
-                    d[i] = InkTarget.To8(Mix(t, 1, d[i] / 255f, alpha[i], mode));
-                }
-            }
-        }
-    }
-
-    // Source-over of a straight tint t at alpha a·c over the premultiplied value d; Source replaces by coverage c.
-    private static float Mix(float t, float a, float d, float c, BlendMode mode)
-    {
-        if (mode == BlendMode.Source)
-        {
-            return (t * a * c) + (d * (1 - c));
-        }
-
-        float s = a * c;
-        return (t * s) + (d * (1 - s));
-    }
 }

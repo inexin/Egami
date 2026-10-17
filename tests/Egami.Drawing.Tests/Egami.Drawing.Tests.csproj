@@ -20,4 +20,9 @@
     <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
   </ItemGroup>
 
+  <!-- Phase 2.6.5: the W3C blend reference, for the ink canvas's hand-computed blend checks. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Egami\Operations\Compose\BlendReference.cs" Link="Inks\BlendReference.cs" />
+  </ItemGroup>
+
 </Project>

@@ -20,6 +20,8 @@ Egami.Drawing.InkCanvasOptions.Intent.get -> Egami.Colors.RenderingIntent
 Egami.Drawing.InkCanvasOptions.Intent.init -> void
 Egami.Drawing.InkCanvasOptions.RgbSource.get -> Egami.Colors.ColorProfile!
 Egami.Drawing.InkCanvasOptions.RgbSource.init -> void
+Egami.Drawing.LayerOptions.ColorSpace.get -> Egami.Colors.ColorProfile?
+Egami.Drawing.LayerOptions.ColorSpace.init -> void
 Egami.Drawing.Mesh.Inks.get -> System.ReadOnlyMemory<Egami.Colors.InkColor!>
 Egami.Drawing.Mesh.WithInks(System.ReadOnlySpan<Egami.Colors.InkColor!> inks) -> Egami.Drawing.Mesh!
 Egami.Drawing.Overprint

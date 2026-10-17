@@ -1,4 +1,5 @@
 using Egami.Colors;
+using Egami.Drawing.Shading;
 using Egami.Pixels;
 
 namespace Egami.Drawing.Rasterization;
@@ -31,6 +32,9 @@ internal sealed class InkResolver
 
         Planes = _planeOf.Count(p => p >= 0);
         _process = inks.ProcessCount;
+        int c = ProcessPlane("Cyan"), m = ProcessPlane("Magenta"), y = ProcessPlane("Yellow");
+        CmyPlanes = c >= 0 && m >= 0 && y >= 0 ? [c, m, y] : null;
+        BlackPlane = ProcessPlane("Black");
         _fromRgb = ColorTransform.Create(rgbSource, inks.Profile, options);
     }
 
@@ -45,6 +49,101 @@ internal sealed class InkResolver
 
     /// <summary>Gets the intent and black point compensation of conversions into the process inks.</summary>
     internal ColorTransformOptions Options => _options;
+
+    /// <summary>Gets the number of process planes, which come first.</summary>
+    internal int ProcessPlanes => _process;
+
+    /// <summary>Gets the planes of Cyan, Magenta and Yellow, when the canvas has all three as process inks, for the non-separable blend modes.</summary>
+    internal int[]? CmyPlanes { get; private set; }
+
+    /// <summary>Gets the plane of Black, or −1.</summary>
+    internal int BlackPlane { get; private set; } = -1;
+
+    /// <summary>
+    /// Returns the planes a paint paints, as PDF's overprint has it: every plane with overprint off (an empty array, which means
+    /// all). With it on, the planes of the inks its colours name, and every process plane for an RGB colour, an image or an ink
+    /// the canvas lacks (which prints through the process inks); NonZero leaves out the zero components of a CMYK colour.
+    /// </summary>
+    internal bool[] Painted(Paint paint)
+    {
+        if (paint.Overprint == Overprint.Off)
+        {
+            return [];
+        }
+
+        bool[] painted = new bool[Planes];
+        switch (paint)
+        {
+            case SolidPaint { Ink: InkColor ink }:
+                Name(ink, painted, paint.Overprint == Overprint.NonZero && ink.IsCmyk);
+                break;
+            case Gradient gradient when gradient.Stops.Any(s => s.Ink is not null):
+                foreach (GradientStop stop in gradient.Stops)
+                {
+                    if (stop.Ink is InkColor stopInk)
+                    {
+                        Name(stopInk, painted, false);
+                    }
+                    else
+                    {
+                        AllProcess(painted);
+                    }
+                }
+
+                break;
+            case MeshShadingPaint { Shader.Inks: InkColor[] inks }:
+                foreach (InkColor vertex in inks)
+                {
+                    Name(vertex, painted, false);
+                }
+
+                break;
+            case InkImagePaint image:
+                foreach (InkPlate plate in image.Image.Plates)
+                {
+                    int plane = PlaneOf(plate.Name);
+                    if (plane >= 0)
+                    {
+                        painted[plane] = true;
+                    }
+                    else
+                    {
+                        AllProcess(painted);
+                    }
+                }
+
+                break;
+            default:
+                AllProcess(painted);
+                break;
+        }
+
+        return painted;
+    }
+
+    private void Name(InkColor ink, bool[] painted, bool skipZero)
+    {
+        foreach (InkTint t in ink.Inks)
+        {
+            int plane = PlaneOf(t.Colorant.Name);
+            if (plane < 0)
+            {
+                AllProcess(painted);
+            }
+            else if (!(skipZero && t.Tint == 0))
+            {
+                painted[plane] = true;
+            }
+        }
+    }
+
+    private void AllProcess(bool[] painted)
+    {
+        for (int i = 0; i < _process; i++)
+        {
+            painted[_planeOf[i]] = true;
+        }
+    }
 
     /// <summary>Returns the plane of the ink named <paramref name="name"/>, or −1 when the canvas has none (absent or disabled).</summary>
     internal int PlaneOf(string name) => _inks.IndexOf(name) is int i and >= 0 ? _planeOf[i] : -1;
@@ -165,6 +264,8 @@ internal sealed class InkResolver
         srgb.Apply([c.R, c.G, c.B], process);
         Clamp(process);
     }
+
+    private int ProcessPlane(string name) => _inks.IndexOf(name) is int i and >= 0 && i < _inks.ProcessCount ? _planeOf[i] : -1;
 
     private static void Clamp(Span<float> values)
     {

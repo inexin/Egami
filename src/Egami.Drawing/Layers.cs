@@ -18,6 +18,7 @@ public sealed record class LayerOptions
     private readonly float _opacity = 1;
     private readonly BlendMode _blendMode;
     private readonly RectF? _bounds;
+    private readonly Egami.Colors.ColorProfile? _colorSpace;
 
     /// <summary>
     /// Gets a rectangle, in local coordinates at the time of the call, that limits the layer: nothing drawn outside it shows, and
@@ -62,6 +63,21 @@ public sealed record class LayerOptions
     /// <see cref="Isolated"/> says.
     /// </summary>
     public Action<RasterOps>? Backdrop { get; init; }
+
+    /// <summary>
+    /// Gets the colour space the layer blends in on an <see cref="InkCanvas"/>, as a PDF transparency group's colour space: an RGB
+    /// or gray encoding keeps the layer's process part in that space, converted into the canvas's process inks when the layer
+    /// merges, while spots stay plates. <see langword="null"/> (the default) blends in the canvas's own inks. Other canvases ignore
+    /// it.
+    /// </summary>
+    /// <exception cref="ArgumentException">The encoding is neither RGB nor gray.</exception>
+    public Egami.Colors.ColorProfile? ColorSpace
+    {
+        get => _colorSpace;
+        init => _colorSpace = value is null || value.Model is Egami.Colors.ColorModel.Rgb or Egami.Colors.ColorModel.Gray
+            ? value
+            : throw new ArgumentException("A layer blends in an RGB or gray encoding.", nameof(value));
+    }
 
     /// <summary>Gets a soft mask the layer is multiplied by before it is merged, as a PDF soft mask. <see langword="null"/> (the default) for none.</summary>
     public SoftMask? Mask { get; init; }

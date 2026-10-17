@@ -51,9 +51,9 @@ public sealed record class InkCanvasOptions
 /// process inks through <see cref="InkCanvasOptions.RgbSource"/> and the ink set's profile.
 /// </summary>
 /// <remarks>
-/// This release draws with <see cref="BlendMode.SourceOver"/> and <see cref="BlendMode.Source"/>, every plate painted (overprint
-/// off), and isolated layers merged source-over. Other blend modes, overprint, group kinds and soft masks follow in later steps of
-/// Egami 2.6.5 and throw <see cref="NotSupportedException"/> until then.
+/// Every blend mode works as ISO 32000-2 has it for inks: on complements per plate, the non-separable ones on Cyan, Magenta and
+/// Yellow with Black from the backdrop, spots Normal where PDF allows only separable modes. Knockout and non-isolated layers
+/// follow in a later step of Egami 2.6.5 and throw <see cref="NotSupportedException"/> until then.
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="ink-canvas"/>

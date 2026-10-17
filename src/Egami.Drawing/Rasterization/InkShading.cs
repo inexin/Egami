@@ -38,17 +38,17 @@ internal sealed class InkGradientSink : RasterSink
     private readonly float[] _offsets;
     private readonly float[] _tints;     // per stop, every plane
     private readonly float[] _alphas;
-    private readonly float _opacity;
-    private readonly BlendMode _mode;
+    private readonly Paint _paint;
+    private readonly bool[] _painted;
 
-    internal InkGradientSink(InkTarget target, Gradient gradient, GradientGeometry geometry, float opacity, BlendMode mode, ClipMask? mask, byte scale)
+    internal InkGradientSink(InkTarget target, Gradient gradient, GradientGeometry geometry, Paint paint, ClipMask? mask, byte scale)
         : base(mask, scale)
     {
         _target = target;
         _geometry = geometry;
         _tiling = new GradientTiling(gradient.Tile, gradient.ExtendStart, gradient.ExtendEnd);
-        _opacity = opacity;
-        _mode = mode;
+        _paint = paint;
+        _painted = target.Resolver.Painted(paint);
         IReadOnlyList<GradientStop> stops = gradient.Stops;
         int planes = target.Inks;
         _offsets = new float[stops.Count];
@@ -93,10 +93,10 @@ internal sealed class InkGradientSink : RasterSink
                 tints[(i * planes) + p] = a + ((b - a) * f);
             }
 
-            alpha[i] = (_alphas[k] + ((_alphas[next] - _alphas[k]) * f)) * _opacity * (coverage[i] / 255f);
+            alpha[i] = _alphas[k] + ((_alphas[next] - _alphas[k]) * f);
         }
 
-        InkBlend.BlendInterleaved(_target, y, x, alpha, tints, _mode);
+        InkCompositor.Composite(_target, y, x, n, tints, planes, alpha, coverage, _paint.Opacity, _paint.BlendMode, _painted, _target.KnockoutBackdrop as InkTarget);
     }
 }
 
@@ -106,16 +106,16 @@ internal sealed class InkMeshSink : RasterSink
     private readonly InkTarget _target;
     private readonly MeshShader _shader;
     private readonly float[] _tints;   // per vertex, every plane
-    private readonly float _alpha;
-    private readonly BlendMode _mode;
+    private readonly Paint _paint;
+    private readonly bool[] _painted;
 
-    internal InkMeshSink(InkTarget target, MeshShader shader, InkColor[] inks, float alpha, BlendMode mode, ClipMask? mask, byte scale)
+    internal InkMeshSink(InkTarget target, MeshShader shader, InkColor[] inks, Paint paint, ClipMask? mask, byte scale)
         : base(mask, scale)
     {
         _target = target;
         _shader = shader;
-        _alpha = alpha;
-        _mode = mode;
+        _paint = paint;
+        _painted = target.Resolver.Painted(paint);
         int planes = target.Inks;
         _tints = new float[inks.Length * planes];
         for (int v = 0; v < inks.Length; v++)
@@ -142,10 +142,10 @@ internal sealed class InkMeshSink : RasterSink
                 tints[(i * planes) + p] = (w.W0 * _tints[(v.A * planes) + p]) + (w.W1 * _tints[(v.B * planes) + p]) + (w.W2 * _tints[(v.C * planes) + p]);
             }
 
-            alpha[i] = _alpha * (coverage[i] / 255f);
+            alpha[i] = _shader.VertexAlpha;
         }
 
-        InkBlend.BlendInterleaved(_target, y, x, alpha, tints, _mode);
+        InkCompositor.Composite(_target, y, x, n, tints, planes, alpha, coverage, _paint.Opacity, _paint.BlendMode, _painted, _target.KnockoutBackdrop as InkTarget);
     }
 }
 
@@ -161,8 +161,8 @@ internal sealed class InkImageSink : RasterSink
     private readonly bool _nearest;
     private readonly int[] _planeOf;          // source plate to target plane, −1 for none
     private readonly float[][] _missing;      // for a plate with no plane: its full-tint process tints, else empty
-    private readonly float _opacity;
-    private readonly BlendMode _mode;
+    private readonly Paint _paint;
+    private readonly bool[] _painted;
 
     internal InkImageSink(InkTarget target, InkImagePaint paint, Matrix3x2 inverse, ClipMask? mask, byte scale)
         : base(mask, scale)
@@ -171,8 +171,8 @@ internal sealed class InkImageSink : RasterSink
         _image = paint.Image;
         _inverse = inverse;
         _nearest = paint.Sampling.Filter == ResampleFilter.Nearest;
-        _opacity = paint.Opacity;
-        _mode = paint.BlendMode;
+        _paint = paint;
+        _painted = target.Resolver.Painted(paint);
         int plates = _image.Plates.Count;
         _planeOf = new int[plates];
         _missing = new float[plates][];
@@ -203,7 +203,7 @@ internal sealed class InkImageSink : RasterSink
             Vector2 at = Vector2.Transform(new Vector2(x + i + 0.5f, y + 0.5f), _inverse);
             Sample(at, sample);
             float a = sample[plates];
-            alpha[i] = a * _opacity * (coverage[i] / 255f);
+            alpha[i] = a;
             if (a <= 0)
             {
                 continue;
@@ -234,7 +234,7 @@ internal sealed class InkImageSink : RasterSink
             }
         }
 
-        InkBlend.BlendInterleaved(_target, y, x, alpha, tints, _mode);
+        InkCompositor.Composite(_target, y, x, n, tints, planes, alpha, coverage, _paint.Opacity, _paint.BlendMode, _painted, _target.KnockoutBackdrop as InkTarget);
     }
 
     // Premultiplied plates and alpha at an image position, in pixel units.
