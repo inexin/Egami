@@ -115,7 +115,7 @@ public class TiffJxlTests
                 int h = tiled ? unitHeight : Math.Min(unitHeight, Height - y0);
                 using Raster<T> part = source.Derive(ops => ops.Crop(new Rect(x0, y0, unitWidth, h)), TestContext.Current.CancellationToken);
                 using MemoryStream jxl = new();
-                part.Save(jxl, JxlFormat.Info, new JxlWriterOptions { Effort = 3 });
+                part.Save(jxl, JxlFormat.Info, new JxlWriterOptions { Lossless = true, Effort = 3 });
                 units.Add(jxl.ToArray());
                 using Raster<T> alone = Raster.Load<T>(new MemoryStream(jxl.ToArray()));
                 for (int y = 0; y < alone.Height && y0 + y < Height; y++)

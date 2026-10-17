@@ -5,8 +5,9 @@ using Egami.Pixels;
 namespace Egami.Tests.Formats.Jxl;
 
 /// <summary>
-/// Phase 2.9.7 task 4: lossy JPEG XL files (VarDCT in XYB, DCT8, one quantization value, effort 1 and 2) load back in Egami close
-/// to their source at every size, gray and color, and the same bytes come out at any thread count. Decoding in djxl and
+/// Phase 2.9.7 tasks 4 and 5: lossy JPEG XL files (VarDCT in XYB) load back in Egami close to their source at every size,
+/// effort, gray and color, the same bytes come out at any thread count, Quality follows cjxl's mapping to distance, and
+/// rasters are written lossy unless they come from a lossless JPEG XL file. Decoding in djxl and
 /// jxl-oxide to the same pixels and the size against cjxl at equal SSIMULACRA2 are egami-compare's JxlRateTests.
 /// </summary>
 public class JxlLossyEncodeTests
@@ -18,7 +19,7 @@ public class JxlLossyEncodeTests
     {
         using Raster<Rgb8> source = Raster.Load<Rgb8>(Path.Combine(Images, "ops", "duck.png"));
         byte[] lossy = Save(source, new JxlWriterOptions { Lossless = false, Effort = 1 });
-        byte[] lossless = Save(source, new JxlWriterOptions { Effort = 1 });
+        byte[] lossless = Save(source, new JxlWriterOptions { Lossless = true, Effort = 1 });
         using Raster<Rgb8> back = Raster.Load<Rgb8>(lossy);
         Assert.Equal((source.Width, source.Height), (back.Width, back.Height));
         double psnr = Psnr(source, back);
@@ -76,6 +77,71 @@ public class JxlLossyEncodeTests
         byte[] one = Save(source, new JxlWriterOptions { Lossless = false }, new EgamiContext { MaxParallelism = 1 });
         byte[] many = Save(source, new JxlWriterOptions { Lossless = false }, new EgamiContext { MaxParallelism = 8 });
         Assert.Equal(one, many);
+    }
+
+    [Fact]
+    public void PngIsWrittenLossyAndLosslessJxlStaysLossless()
+    {
+        using Raster<Rgb8> png = Raster.Load<Rgb8>(Path.Combine(Images, "ops", "duck.png"));
+        using Raster<Rgb8> lossy = Raster.Load<Rgb8>(Save(png, JxlWriterOptions.Default));
+        Assert.True(((JxlDetails)lossy.Metadata.FormatDetails!).IsXybEncoded);
+
+        using Raster<Rgb8> lossless = Raster.Load<Rgb8>(Path.Combine(Images, "jxl", "duck-lossless-e7.jxl"));
+        using Raster<Rgb8> again = Raster.Load<Rgb8>(Save(lossless, JxlWriterOptions.Default));
+        Assert.False(((JxlDetails)again.Metadata.FormatDetails!).IsXybEncoded);
+        for (int y = 0; y < lossless.Height; y++)
+        {
+            Assert.True(lossless.Row(y).SequenceEqual(again.Row(y)));
+        }
+
+        using Raster<Rgb8> forced = Raster.Load<Rgb8>(Save(lossless, new JxlWriterOptions { Lossless = false }));
+        Assert.True(((JxlDetails)forced.Metadata.FormatDetails!).IsXybEncoded);
+    }
+
+    [Theory]
+    [InlineData(100, 0)]
+    [InlineData(90, 1)]
+    [InlineData(75, 2.35)]
+    [InlineData(30, 6.4)]
+    [InlineData(10, 15.266667)]
+    [InlineData(0, 25)]
+    public void QualityFollowsCjxlsMapping(int quality, double distance)
+    {
+        Assert.Equal(distance, JxlWriterOptions.DistanceFromQuality(quality), 1e-4);
+    }
+
+    [Fact]
+    public void QualityAndDistanceGiveTheSameFile()
+    {
+        using Raster<Rgb8> source = Smooth(120, 90);
+        Assert.Equal(Save(source, new JxlWriterOptions { Distance = 2.35f }), Save(source, new JxlWriterOptions { Quality = 75 }));
+        Assert.Equal(Save(source, new JxlWriterOptions { Distance = 1 }), Save(source, JxlWriterOptions.Default));
+        Assert.Equal(Save(source, new JxlWriterOptions { Distance = 3, Quality = 20 }), Save(source, new JxlWriterOptions { Distance = 3 }));
+    }
+
+    [Fact]
+    public void QualityHundredIsLossless()
+    {
+        using Raster<Rgb8> source = Smooth(64, 48);
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(Save(source, new JxlWriterOptions { Quality = 100 }));
+        Assert.False(((JxlDetails)back.Metadata.FormatDetails!).IsXybEncoded);
+        Assert.Equal(99, Psnr(source, back));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    public void EveryEffortComesBack(int effort)
+    {
+        using Raster<Rgb8> source = Raster.Load<Rgb8>(Path.Combine(Images, "ops", "egret.png"));
+        using Raster<Rgb8> back = Raster.Load<Rgb8>(Save(source, new JxlWriterOptions { Lossless = false, Effort = effort }));
+        double psnr = Psnr(source, back);
+        Assert.True(psnr > 33, $"effort {effort}: PSNR {psnr:F2} dB");
     }
 
     [Fact]

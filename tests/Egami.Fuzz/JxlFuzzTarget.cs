@@ -25,7 +25,7 @@ internal static class JxlFuzzTarget
     {
         using Raster<Rgb8> pixel = Raster.Create<Rgb8>(1, 1, new Rgb8(10, 20, 30));
         using MemoryStream s = new();
-        pixel.Save(s, JxlFormat.Info, new JxlWriterOptions { Effort = 1 });
+        pixel.Save(s, JxlFormat.Info, new JxlWriterOptions { Lossless = true, Effort = 1 });
         return s.ToArray();
     });
 
@@ -215,7 +215,7 @@ internal static class JxlFuzzTarget
 
         int width = 1 + (data[1] % 48);
         int effort = 1 + (data[2] % 7);
-        JxlWriterOptions options = new() { Effort = effort };
+        JxlWriterOptions options = new() { Lossless = true, Effort = effort };
         switch (data[0] % 8)
         {
             case 0:

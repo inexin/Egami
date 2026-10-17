@@ -92,6 +92,14 @@ internal sealed class JxlVarDctEncoder
     private readonly int[][] _orders = new int[NumOrders * 3][];
     private int _usedOrders;
 
+    // The block context map (HfBlockContext): the default one, or from effort 4 one clustered by the quantization field.
+    private byte[] _blockContexts = DefaultBlockContexts;
+    private int _blockClusters = DefaultBlockClusters;
+    private int[] _qfThresholds = [];
+
+    // The LF image's extra precision bits (1 from effort 4, where LF values are quantized against the WP predictor).
+    private int _lfPrecision;
+
     private int _globalScale;
     private int _quantDc;
     private int _xQmScale;
@@ -138,6 +146,7 @@ internal sealed class JxlVarDctEncoder
         e.ComputeCoefficients();
         e.QuantizeLf();
         e.ComputeOrders();
+        e.FindBlockEntropyModel();
         List<byte[]> sections = e.Sections();
 
         JxlBitWriter w = new();
@@ -498,32 +507,258 @@ internal sealed class JxlVarDctEncoder
     }
 
     /// <summary>
-    /// Quantizes the LF image (AddVarDCTDC at effort 1 to 3): each channel rounded at its step, X and B after taking out the
-    /// LF chroma from luma of the quantized Y.
+    /// Quantizes the LF image (AddVarDCTDC): each channel at its step, X and B after taking out the LF chroma from luma of the
+    /// quantized Y. Up to effort 3 values are rounded; from effort 4 they get an extra bit of precision and are quantized
+    /// against the weighted predictor (QuantizeWP): a residual inside the dead zone becomes zero and one beyond ±2 even.
     /// </summary>
     private void QuantizeLf()
     {
-        float yStep = DcStep(1);
+        bool nonlinear = Speed >= 4;
+        _lfPrecision = nonlinear ? 1 : 0;
+        float mul = 1 << _lfPrecision;
+        float yStep = DcStep(1) / mul;
         float[] dcFactors = [0f, 0f, 1f];
-        Parallel.For(0, _blocksY, _parallel, y =>
+        if (!nonlinear)
         {
-            int row = y * _blocksX;
-            float invY = InvDcStep(1);
-            for (int x = 0; x < _blocksX; x++)
+            Parallel.For(0, _blocksY, _parallel, y =>
             {
-                _lfQuant[1][row + x] = (int)MathF.Round(_lf[1][row + x] * invY, MidpointRounding.AwayFromZero);
-            }
-
-            foreach (int c in (ReadOnlySpan<int>)[0, 2])
-            {
-                float inv = InvDcStep(c);
+                int row = y * _blocksX;
+                float invY = InvDcStep(1);
                 for (int x = 0; x < _blocksX; x++)
                 {
-                    float v = _lf[c][row + x] - (_lfQuant[1][row + x] * (yStep * dcFactors[c]));
-                    _lfQuant[c][row + x] = (int)MathF.Round(v * inv, MidpointRounding.AwayFromZero);
+                    _lfQuant[1][row + x] = (int)MathF.Round(_lf[1][row + x] * invY, MidpointRounding.AwayFromZero);
+                }
+
+                foreach (int c in (ReadOnlySpan<int>)[0, 2])
+                {
+                    float inv = InvDcStep(c);
+                    for (int x = 0; x < _blocksX; x++)
+                    {
+                        float v = _lf[c][row + x] - (_lfQuant[1][row + x] * (yStep * dcFactors[c]));
+                        _lfQuant[c][row + x] = (int)MathF.Round(v * inv, MidpointRounding.AwayFromZero);
+                    }
+                }
+            });
+            return;
+        }
+
+        Parallel.For(0, _lfGroups, _parallel, g =>
+        {
+            (int x0, int y0, int w, int h) = LfGroupRect(g);
+            int[] yq = new int[w * h];
+            foreach (int c in (ReadOnlySpan<int>)[1, 0, 2])
+            {
+                float inv = InvDcStep(c) * mul;
+                int[] q = new int[w * h];
+                JxlWeightedPredictor wp = new(w, new JxlWpParams());
+                for (int y = 0; y < h; y++)
+                {
+                    for (int x = 0; x < w; x++)
+                    {
+                        int at = (y * w) + x;
+                        float value = _lf[c][((y0 + y) * _blocksX) + x0 + x];
+                        if (c != 1)
+                        {
+                            value -= yq[at] * (yStep * dcFactors[c]);
+                        }
+
+                        int west = x > 0 ? q[at - 1] : y > 0 ? q[at - w] : 0;
+                        int n = y > 0 ? q[at - w] : west;
+                        int nw = x > 0 && y > 0 ? q[at - w - 1] : west;
+                        int ne = x + 1 < w && y > 0 ? q[at - w + 1] : n;
+                        int nn = y > 1 ? q[at - (2 * w)] : n;
+                        int guess = (int)((wp.Predict(n, nw, ne, west, nn) + 3) >> 3);
+                        float svalue = (value * inv) - guess;
+                        if (svalue > -0.62f && svalue < 0.62f)
+                        {
+                            svalue = 0;
+                        }
+
+                        int residual = (int)MathF.Round(svalue, MidpointRounding.AwayFromZero);
+                        if (residual is > 2 or < -2)
+                        {
+                            residual = (int)MathF.Round(svalue * 0.5f, MidpointRounding.AwayFromZero) * 2;
+                        }
+
+                        q[at] = residual + guess;
+                        wp.Record(q[at]);
+                    }
+                }
+
+                if (c == 1)
+                {
+                    q.CopyTo(yq, 0);
+                }
+
+                for (int y = 0; y < h; y++)
+                {
+                    q.AsSpan(y * w, w).CopyTo(_lfQuant[c].AsSpan(((y0 + y) * _blocksX) + x0, w));
                 }
             }
         });
+    }
+
+    /// <summary>
+    /// Clusters the block contexts by the quantization field and transform from effort 4 (FindBestBlockEntropyModel): on large
+    /// images the field is cut into segments of equal counts, and the least used (segment, order) pairs are merged until a few
+    /// clusters remain, chroma sharing at most a handful.
+    /// </summary>
+    private void FindBlockEntropyModel()
+    {
+        if (Speed < 4)
+        {
+            return;
+        }
+
+        long tot = (long)_blocksX * _blocksY;
+        long sizeForCtxModel = (long)((1 << 10) * _settings.Distance);
+        if (tot < sizeForCtxModel)
+        {
+            return;
+        }
+
+        long[] qfCounts = new long[256];
+        long[][] qfOrdCounts = new long[NumOrders][];
+        for (int i = 0; i < NumOrders; i++)
+        {
+            qfOrdCounts[i] = new long[256];
+        }
+
+        for (int y = 0; y < _blocksY; y++)
+        {
+            for (int x = 0; x < _blocksX; x++)
+            {
+                int at = (y * _blocksX) + x;
+                int t = _strategy[at] >= 0 ? _strategy[at] : FirstStrategy(x, y);
+                int ord = JxlTransforms8.OrderId((JxlTransformType)t);
+                int qf = _quantField[at] - 1;
+                qfCounts[qf]++;
+                qfOrdCounts[ord][qf]++;
+            }
+        }
+
+        long sizeForQfSplit = (long)((1 << 13) * _settings.Distance);
+        int segments = tot < sizeForQfSplit ? 1 : 2;
+        List<int> qft = [];
+        long cumsum = 0;
+        int next = 1;
+        int lastCut = 256;
+        long cut = tot * next / segments;
+        for (int j = 0; j < 256; j++)
+        {
+            cumsum += qfCounts[j];
+            if (cumsum > cut)
+            {
+                if (j != 0)
+                {
+                    qft.Add(j);
+                }
+
+                lastCut = j;
+                while (cumsum > cut)
+                {
+                    next++;
+                    cut = tot * next / segments;
+                }
+            }
+            else if (next > qft.Count + 1)
+            {
+                if (j - 1 == lastCut && j != 0)
+                {
+                    qft.Add(j);
+                }
+            }
+        }
+
+        int segs = qft.Count + 1;
+        long[] counts = new long[NumOrders * segs];
+        int pos = 0;
+        for (int j = 0; j < 256; j++)
+        {
+            if (pos < qft.Count && j == qft[pos])
+            {
+                pos++;
+            }
+
+            for (int i = 0; i < NumOrders; i++)
+            {
+                counts[pos + (i * segs)] += qfOrdCounts[i][j];
+            }
+        }
+
+        // Repeatedly merge the least used pair (libjxl sorts with std::sort, which leaves ties of unused pairs in no set order;
+        // a stable sort is used here).
+        int n = segs * NumOrders;
+        int[] remap = [.. Enumerable.Range(0, n)];
+        List<int> clusters = [.. remap];
+        int nbClusters = (int)Math.Clamp(tot / sizeForCtxModel / 2, 2, 9);
+        int nbChroma = (int)Math.Clamp(tot / sizeForCtxModel / 3, 1, 5);
+        while (clusters.Count > nbClusters)
+        {
+            clusters = [.. clusters.OrderByDescending(a => counts[a])];
+            counts[clusters[^2]] += counts[clusters[^1]];
+            counts[clusters[^1]] = 0;
+            remap[clusters[^1]] = clusters[^2];
+            clusters.RemoveAt(clusters.Count - 1);
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            while (remap[remap[i]] != remap[i])
+            {
+                remap[i] = remap[remap[i]];
+            }
+        }
+
+        int[] relabel = new int[n];
+        Array.Fill(relabel, n);
+        int num = 0;
+        for (int i = 0; i < n; i++)
+        {
+            if (relabel[remap[i]] == n)
+            {
+                relabel[remap[i]] = num++;
+            }
+
+            remap[i] = relabel[remap[i]];
+        }
+
+        byte[] map = new byte[n * 3];
+        for (int i = 0; i < n; i++)
+        {
+            map[i] = (byte)remap[i];
+        }
+
+        for (int i = n; i < n * 3; i++)
+        {
+            map[i] = (byte)(num + Math.Clamp(remap[i % n], 0, nbChroma - 1));
+        }
+
+        _blockContexts = map;
+        _blockClusters = map.Max() + 1;
+        _qfThresholds = [.. qft];
+    }
+
+    /// <summary>Gets the transform of the varblock a block belongs to when it is not the varblock's first block.</summary>
+    private int FirstStrategy(int x, int y)
+    {
+        for (int yy = y; yy >= 0; yy--)
+        {
+            for (int xx = x; xx >= 0; xx--)
+            {
+                int t = _strategy[(yy * _blocksX) + xx];
+                if (t >= 0)
+                {
+                    (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)t);
+                    if (xx + w8 > x && yy + h8 > y)
+                    {
+                        return t;
+                    }
+                }
+            }
+        }
+
+        return 0;
     }
 
     /// <summary>
@@ -631,6 +866,15 @@ internal sealed class JxlVarDctEncoder
                 int logCovered = System.Numerics.BitOperations.Log2((uint)covered);
                 int size = covered * 64;
                 int orderId = JxlTransforms8.OrderId(t);
+                int qfIndex = 0;
+                foreach (int threshold in _qfThresholds)
+                {
+                    if (_quantField[at] > threshold)
+                    {
+                        qfIndex++;
+                    }
+                }
+
                 for (int k = 0; k < 3; k++)
                 {
                     int c = channels[k];
@@ -651,10 +895,10 @@ internal sealed class JxlVarDctEncoder
                         row[x + dx] = shifted;
                     }
 
-                    int blockCtx = DefaultBlockContexts[(k * NumOrders) + orderId];
+                    int blockCtx = _blockContexts[(((k * NumOrders) + orderId) * (_qfThresholds.Length + 1)) + qfIndex];
                     int nzIndex = predicted >= 8 ? 4 + (Math.Min(predicted, 64) / 2) : predicted;
-                    tokens.Add(new JxlToken(blockCtx + (nzIndex * DefaultBlockClusters), (uint)nz));
-                    int baseCtx = (blockCtx * ZeroDensityContexts) + (NonZeroBuckets * DefaultBlockClusters);
+                    tokens.Add(new JxlToken(blockCtx + (nzIndex * _blockClusters), (uint)nz));
+                    int baseCtx = (blockCtx * ZeroDensityContexts) + (NonZeroBuckets * _blockClusters);
                     int prev = nz > size / 16 ? 0 : 1;
                     for (int i = covered; i < size && nz != 0; i++)
                     {
@@ -727,14 +971,18 @@ internal sealed class JxlVarDctEncoder
             streams.Add((acmStream0 + g, meta));
         }
 
-        // libjxl's trees: the fixed WP tree for the LF image (kWPFixedDC) and the left predictor for the HF metadata
-        // (kFalconACMeta), merged on the stream id.
+        // libjxl's trees: the fixed WP tree for the LF image (kWPFixedDC), and for the HF metadata the left predictor up to
+        // effort 3 (kFalconACMeta) and its fixed tree from effort 4 (kACMeta); merged on the stream id (MergeTrees).
         List<JxlTreeNode> dcTree = JxlModularEncoder.FixedTree(15, 6, Math.Max(dcPixels, 1), 8);
-        List<JxlTreeNode> tree = [new JxlTreeNode { Property = 1, SplitValue = acmStream0 - 1, Left = 1, Right = 2 }, JxlTreeNode.Leaf(1)];
-        int dcRoot = tree.Count;
-        foreach (JxlTreeNode n in dcTree)
+        List<JxlTreeNode> acmTree = effort >= 4 && acmPixels >= 1024 ? AcMetaTree() : [JxlTreeNode.Leaf(1)];
+        List<JxlTreeNode> tree = [new JxlTreeNode { Property = 1, SplitValue = acmStream0 - 1, Left = 1, Right = 1 + acmTree.Count }];
+        foreach (List<JxlTreeNode> sub in (List<JxlTreeNode>[])[acmTree, dcTree])
         {
-            tree.Add(n.Property < 0 ? n : n with { Left = n.Left + dcRoot, Right = n.Right + dcRoot });
+            int root = tree.Count;
+            foreach (JxlTreeNode n in sub)
+            {
+                tree.Add(n.Property < 0 ? n : n with { Left = n.Left + root, Right = n.Right + root });
+            }
         }
 
         List<List<JxlToken>> treeTokens = [[]];
@@ -768,15 +1016,16 @@ internal sealed class JxlVarDctEncoder
         global.WriteBool(true); // default LF dequantization
         global.WriteU32(new JxlU32(1, 11, 2049, 11, 4097, 12, 8193, 16), (uint)_globalScale);
         global.WriteU32(new JxlU32(16, 0, 1, 5, 1, 8, 1, 16), (uint)_quantDc);
-        global.WriteBool(true); // default block context map
+        WriteBlockContexts(global);
         global.WriteBool(true); // default chroma from luma
         global.WriteBool(true); // global tree
-        // HistogramParams::ForModular for VarDCT data: fast clustering, the fastest ANS strategy above effort 2.
+        // HistogramParams::ForModular for VarDCT data: fast clustering, approximate ANS histograms, and a hybrid integer search
+        // when the LF image has extra precision.
         JxlHistogramParams mp = new()
         {
             Clustering = JxlHistogramParams.ClusteringKind.Fast,
-            AnsStrategy = effort <= 1 ? JxlHistogramParams.AnsKind.Fast : JxlHistogramParams.AnsKind.Approximate,
-            UintMethod = JxlHistogramParams.UintKind.None,
+            AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
+            UintMethod = _lfPrecision != 0 ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
         };
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
@@ -787,7 +1036,7 @@ internal sealed class JxlVarDctEncoder
         Parallel.For(0, _lfGroups, _parallel, g =>
         {
             JxlBitWriter w = new();
-            w.Write(0, 2); // no extra LF precision
+            w.Write((ulong)_lfPrecision, 2);
             WriteStream(w, code, modularTokens[g]);
             (_, _, int bw, int bh) = LfGroupRect(g);
             w.Write((ulong)(metaCounts[g] - 1), CeilLog2((long)bw * bh));
@@ -814,7 +1063,7 @@ internal sealed class JxlVarDctEncoder
             MaxHistograms = effort <= 2 ? 4 : int.MaxValue,
         };
         List<List<JxlToken>> ac = [.. acTokens];
-        JxlEntropyCode acCode = JxlEntropyCode.Write(hf, acp, (NonZeroBuckets + ZeroDensityContexts) * DefaultBlockClusters, ac);
+        JxlEntropyCode acCode = JxlEntropyCode.Write(hf, acp, (NonZeroBuckets + ZeroDensityContexts) * _blockClusters, ac);
         JxlBitWriter[] passGroups = new JxlBitWriter[_groups];
         Parallel.For(0, _groups, _parallel, g =>
         {
@@ -914,6 +1163,65 @@ internal sealed class JxlVarDctEncoder
         acs.CopyTo(blocks.Data, 0);
         qf.CopyTo(blocks.Data, acs.Count);
         return [xfy, bfy, blocks, epf];
+    }
+
+    /// <summary>Writes the block context map (EncodeBlockCtxMap): the default bit, or the thresholds and the clustered map.</summary>
+    private void WriteBlockContexts(JxlBitWriter w)
+    {
+        if (ReferenceEquals(_blockContexts, DefaultBlockContexts))
+        {
+            w.WriteBool(true);
+            return;
+        }
+
+        w.WriteBool(false);
+        for (int c = 0; c < 3; c++)
+        {
+            w.Write(0, 4); // no LF thresholds
+        }
+
+        w.Write((ulong)_qfThresholds.Length, 4);
+        foreach (int t in _qfThresholds)
+        {
+            w.WriteU32(new JxlU32(0, 2, 4, 3, 12, 5, 44, 8), (uint)(t - 1));
+        }
+
+        JxlEntropyCode.WriteContextMap(w, _blockContexts, _blockClusters);
+    }
+
+    /// <summary>libjxl's kACMeta tree for the HF metadata: gradient for the chroma-from-luma factors, splits on the left value for the rest.</summary>
+    private static List<JxlTreeNode> AcMetaTree()
+    {
+        return
+        [
+            JxlTreeNode.Split(0, 1, 1),
+            JxlTreeNode.Split(0, 2, 3),
+            JxlTreeNode.Split(0, 0, 5),
+            JxlTreeNode.Split(6, 3, 21),
+            JxlTreeNode.Split(2, 0, 7),
+            JxlTreeNode.Leaf(5),
+            JxlTreeNode.Leaf(5),
+            JxlTreeNode.Split(7, 5, 9),
+            JxlTreeNode.Split(7, 5, 15),
+            JxlTreeNode.Split(7, 11, 11),
+            JxlTreeNode.Split(7, 3, 13),
+            JxlTreeNode.Leaf(1),
+            JxlTreeNode.Leaf(1),
+            JxlTreeNode.Leaf(1),
+            JxlTreeNode.Leaf(1),
+            JxlTreeNode.Split(7, 11, 17),
+            JxlTreeNode.Split(7, 3, 19),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Split(7, 3, 23),
+            JxlTreeNode.Split(7, 3, 25),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Leaf(0),
+            JxlTreeNode.Leaf(0),
+        ];
     }
 
     /// <summary>Writes the coefficient orders as Lehmer codes against the natural order (EncodeCoeffOrders).</summary>

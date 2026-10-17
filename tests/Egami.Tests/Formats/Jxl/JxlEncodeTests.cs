@@ -146,7 +146,7 @@ public class JxlEncodeTests
         source.Metadata.Exif = new ExifData { Orientation = ImageOrientation.Rotate90 };
         source.Metadata.Xmp = "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray();
         using MemoryStream file = new();
-        source.Save(file, JxlFormat.Info);
+        source.Save(file, JxlFormat.Info, new JxlWriterOptions { Lossless = true });
         using Raster<Rgba8> back = Raster.Load<Rgba8>(file.ToArray());
         Assert.Equal(source.Metadata.IccProfile.ToArray(), back.Metadata.IccProfile.ToArray());
         Assert.Equal(ImageOrientation.Rotate90, back.Metadata.Exif?.Orientation);
@@ -165,7 +165,7 @@ public class JxlEncodeTests
         {
             using Raster<T> source = Noise<T>(70, 45, effort);
             using MemoryStream file = new();
-            source.Save(file, JxlFormat.Info, new JxlWriterOptions { Effort = effort });
+            source.Save(file, JxlFormat.Info, new JxlWriterOptions { Lossless = true, Effort = effort });
             using Raster<T> back = Raster.Load<T>(file.ToArray());
             for (int y = 0; y < source.Height; y++)
             {

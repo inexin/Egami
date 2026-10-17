@@ -31,7 +31,7 @@ public class JxlInteropFiles
         using Raster<RgbF32> rgbF = rgba.As<RgbF32>();
         foreach (int effort in (int[])[1, 2, 3, 5, 7])
         {
-            JxlWriterOptions options = new() { Effort = effort };
+            JxlWriterOptions options = new() { Lossless = true, Effort = effort };
             Write(directory, $"rgb8-e{effort}", rgb, options);
             Write(directory, $"rgba8-e{effort}", rgba, options);
             Write(directory, $"gray8-e{effort}", gray, options);
@@ -46,14 +46,14 @@ public class JxlInteropFiles
         using Raster<Rgb8> tagged = rgba.As<Rgb8>();
         tagged.Metadata.IccProfile = ColorProfile.DisplayP3.ToIcc();
         tagged.Metadata.ColorSpace = ColorSpaceHint.EmbeddedIcc;
-        Write(directory, "icc-p3", tagged, JxlWriterOptions.Default);
+        Write(directory, "icc-p3", tagged, new JxlWriterOptions { Lossless = true });
         using Raster<Rgb8> exif = rgba.As<Rgb8>();
         exif.Metadata.Exif = new ExifData { Orientation = ImageOrientation.Rotate90 };
         exif.Metadata.Xmp = "<x:xmpmeta xmlns:x='adobe:ns:meta/'/>"u8.ToArray();
-        Write(directory, "exif-xmp-orientation", exif, JxlWriterOptions.Default);
+        Write(directory, "exif-xmp-orientation", exif, new JxlWriterOptions { Lossless = true });
         using Raster<Rgb8> linear = rgba.As<Rgb8>();
         linear.Metadata.ColorSpace = ColorSpaceHint.Linear;
-        Write(directory, "linear", linear, JxlWriterOptions.Default);
+        Write(directory, "linear", linear, new JxlWriterOptions { Lossless = true });
     }
 
     private static void Write<T>(string directory, string name, Raster<T> raster, JxlWriterOptions options)

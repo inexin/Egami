@@ -29,7 +29,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         JxlWriterOptions jxl = start.Options as JxlWriterOptions ?? JxlWriterOptions.Default;
-        if (jxl.Lossless == false)
+        if (!jxl.WritesLossless(start.Metadata))
         {
             start.Refuse("JPEG XL", "Lossy encoding", "Save from a whole raster.");
             SaveLosses.Report(start, "JPEG XL", SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc);
@@ -311,7 +311,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 Icc = icc,
                 Orientation = orientation,
             };
-            JxlLossySettings settings = new() { Distance = options.Distance ?? 1f, Effort = options.Effort, Parallelism = start.Context.MaxParallelism };
+            JxlLossySettings settings = new() { Distance = options.EffectiveDistance, Effort = options.Effort, Parallelism = start.Context.MaxParallelism };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
@@ -432,15 +432,18 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
 public sealed class JxlWriterOptions : WriterOptions
 {
     private readonly int _effort = 5;
+    private readonly int _quality = 90;
     private readonly float? _distance;
 
     /// <summary>Gets the default options.</summary>
     public static new JxlWriterOptions Default { get; } = new();
 
     /// <summary>
-    /// Gets how hard the encoder works, 1 (fastest) to 7 (smallest files), on libjxl's effort scale, so the same number gives
-    /// about the same file size as cjxl -e: 1 is libjxl's fast lossless path, 2 and 3 use fixed trees, 4 and up learn the tree,
-    /// and 5 and up also try local palettes and color transforms. Defaults to 5.
+    /// Gets how hard the encoder works, 1 (fastest) to 7 (smallest files), on libjxl's effort scale for both kinds, so the same
+    /// number gives about the same file as cjxl -e. Lossless: 1 is libjxl's fast lossless path, 2 and 3 use fixed trees, 4 and
+    /// up learn the tree, and 5 and up also try local palettes and color transforms. Lossy: 1 to 3 use 8×8 DCTs and one
+    /// quantization value, 4 adds finer LF and context modeling, 5 adaptive quantization, chroma from luma, Gaborish and simple
+    /// block sizes, 6 the full block-size search, and 7 patches for repeated shapes such as text. Defaults to 5.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 7.</exception>
     public int Effort
@@ -455,14 +458,34 @@ public sealed class JxlWriterOptions : WriterOptions
     }
 
     /// <summary>
-    /// Gets whether to write lossless data. Defaults to <see langword="null"/>, which writes lossless; <see langword="false"/>
-    /// writes a lossy VarDCT file in XYB at <see cref="Distance"/> and <see cref="Effort"/>, as cjxl does.
+    /// Gets whether to write lossless (Modular, every sample exact) or lossy (VarDCT in XYB) data, or <see langword="null"/>
+    /// (the default) to keep the kind of the JPEG XL file the raster was read from (lossless for a Modular file without XYB),
+    /// and write lossy otherwise, as cjxl does for PNG input. <see cref="Quality"/> 100 with no <see cref="Distance"/> also
+    /// writes lossless unless this is <see langword="false"/>.
     /// </summary>
     public bool? Lossless { get; init; }
 
     /// <summary>
+    /// Gets the lossy quality, 0 (smallest) to 100 (best), on cjxl's -q scale, so the same number gives about the same file:
+    /// 90 is distance 1.0 (visually lossless), each step below 100 adds 0.09 down to 30, and the distance grows faster below.
+    /// 100 is lossless. <see cref="Distance"/>, when set, takes its place. Defaults to 90.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 100.</exception>
+    public int Quality
+    {
+        get => _quality;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 0);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);
+            _quality = value;
+        }
+    }
+
+    /// <summary>
     /// Gets the Butteraugli-style distance lossy files are written at, as cjxl -d takes it: 1.0 is visually lossless, larger
-    /// values give smaller files with more visible loss, 0.1 to 25. Defaults to <see langword="null"/>, which is 1.0.
+    /// values give smaller files with more visible loss, 0.1 to 25. Defaults to <see langword="null"/>, which takes the distance
+    /// from <see cref="Quality"/>.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 0.1 to 25.</exception>
     public float? Distance
@@ -477,5 +500,32 @@ public sealed class JxlWriterOptions : WriterOptions
 
             _distance = value;
         }
+    }
+
+    /// <summary>Gets the distance lossy data is written at: <see cref="Distance"/>, or <see cref="Quality"/> on cjxl's mapping, at least 0.1.</summary>
+    internal float EffectiveDistance => _distance ?? MathF.Max(0.1f, DistanceFromQuality(_quality));
+
+    /// <summary>libjxl's JxlEncoderDistanceFromQuality: 0.1 + (100 − q) × 0.09 from 30 up, a parabola below, 0 at 100.</summary>
+    internal static float DistanceFromQuality(float quality)
+    {
+        return quality >= 100 ? 0
+            : quality >= 30 ? 0.1f + ((100 - quality) * 0.09f)
+            : (53.0f / 3000.0f * quality * quality) - (23.0f / 20.0f * quality) + 25.0f;
+    }
+
+    /// <summary>Gets whether a raster with this metadata is written lossless (see <see cref="Lossless"/>).</summary>
+    internal bool WritesLossless(RasterMetadata metadata)
+    {
+        if (Lossless is bool lossless)
+        {
+            return lossless;
+        }
+
+        if (_distance is null && _quality == 100)
+        {
+            return true;
+        }
+
+        return metadata.FormatDetails is JxlDetails jxl && !jxl.IsXybEncoded && !jxl.HasJpegReconstruction;
     }
 }
