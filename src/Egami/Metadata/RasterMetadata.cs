@@ -356,6 +356,11 @@ public sealed class RasterMetadata
         try
         {
             result = Colors.ColorProfile.FromIcc(icc.Span);
+            if (result.Model == Colors.ColorModel.NColor)
+            {
+                // No pixel type holds an n-colour profile's inks, so it cannot say what a raster's pixels mean.
+                throw new UnsupportedFormatException($"'{result.Name}' is a {result.ChannelCount}-colour ink profile, which describes no pixel type.");
+            }
         }
         catch (EgamiException e)
         {

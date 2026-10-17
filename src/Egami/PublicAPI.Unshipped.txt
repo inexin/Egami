@@ -275,6 +275,7 @@ Egami.Colors.ColorConvert
 Egami.Colors.ColorModel
 Egami.Colors.ColorModel.Cmyk = 2 -> Egami.Colors.ColorModel
 Egami.Colors.ColorModel.Gray = 1 -> Egami.Colors.ColorModel
+Egami.Colors.ColorModel.NColor = 3 -> Egami.Colors.ColorModel
 Egami.Colors.ColorModel.Rgb = 0 -> Egami.Colors.ColorModel
 Egami.Colors.ColorPrimaries
 Egami.Colors.ColorPrimaries.<Clone>$() -> Egami.Colors.ColorPrimaries!
@@ -292,6 +293,8 @@ Egami.Colors.ColorPrimaries.Red.init -> void
 Egami.Colors.ColorPrimaries.White.get -> Egami.Colors.Chromaticity
 Egami.Colors.ColorPrimaries.White.init -> void
 Egami.Colors.ColorProfile
+Egami.Colors.ColorProfile.ChannelCount.get -> int
+Egami.Colors.ColorProfile.ColorantNames.get -> System.Collections.Generic.IReadOnlyList<string!>?
 Egami.Colors.ColorProfile.Icc.get -> Egami.Colors.IccData?
 Egami.Colors.ColorProfile.IsEquivalentTo(Egami.Colors.ColorProfile! other) -> bool
 Egami.Colors.ColorProfile.IsHdr.get -> bool
@@ -303,10 +306,13 @@ Egami.Colors.ColorProfile.ToIcc() -> byte[]!
 Egami.Colors.ColorProfile.Transfer.get -> Egami.Colors.TransferFunction?
 Egami.Colors.ColorProfile.White.get -> Egami.Colors.Chromaticity
 Egami.Colors.ColorTransform
+Egami.Colors.ColorTransform.Apply(System.ReadOnlySpan<float> source, System.Span<float> destination) -> void
 Egami.Colors.ColorTransform.Apply<TFrom, TTo>(System.ReadOnlySpan<TFrom> source, System.Span<TTo> destination) -> void
 Egami.Colors.ColorTransform.Apply<TPixel>(System.Span<TPixel> pixels) -> void
+Egami.Colors.ColorTransform.InputChannels.get -> int
 Egami.Colors.ColorTransform.IsIdentity.get -> bool
 Egami.Colors.ColorTransform.Options.get -> Egami.Colors.ColorTransformOptions!
+Egami.Colors.ColorTransform.OutputChannels.get -> int
 Egami.Colors.ColorTransform.Source.get -> Egami.Colors.ColorProfile!
 Egami.Colors.ColorTransform.Target.get -> Egami.Colors.ColorProfile!
 Egami.Colors.ColorTransformOptions

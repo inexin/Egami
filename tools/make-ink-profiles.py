@@ -103,9 +103,9 @@ def gauss(a, y):
 
 
 def separate(inks, xyz):
-    """XYZ to tints, smoothly, so the B2A table interpolates well. Black takes the part of the grey component above a
-    threshold; with seven inks, Orange, Green and Violet then take half of what the two process inks around them share;
-    Cyan, Magenta and Yellow (Warm Red for the duotone) make up the rest exactly."""
+    """XYZ to tints, smoothly, so the B2A table interpolates well. A duotone takes the closest match of its two inks. With
+    seven, Black takes the part of the grey component above a threshold, then Orange, Green and Violet half of what the two
+    process inks around them share, and Cyan, Magenta and Yellow make up the rest exactly."""
     lin = icc.mul(icc.inv(icc.SRGB_D50), xyz)
     target = [-math.log(min(1.0, max(1e-4, v))) for v in lin]
     names = [n for n, _ in inks]
@@ -115,7 +115,8 @@ def separate(inks, xyz):
     g = min(1.0, (1 - math.exp(-grey)) / inks[black][1][0])
     t[black] = (1.12 - math.sqrt(1.12 ** 2 - 4 * 0.12 * g)) / (2 * 0.12)   # gain(k) = g, solved for k
     if len(inks) == 2:
-        return solve(inks, target, [1 - black], t)
+        # Two inks: the closest match of both, so a colour the inks can print separates back to the same tints.
+        return solve(inks, target, [0, 1], [0.0, 0.0])
     cmy = [names.index(n) for n in ("Cyan", "Magenta", "Yellow")]
     t = solve(inks, target, cmy, t)
     c, m, y = (t[i] for i in cmy)

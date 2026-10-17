@@ -48,6 +48,12 @@ public sealed class ColorTransform
     /// <summary>Gets a value indicating whether the two encodings mean the same colors, so applying the transform changes nothing.</summary>
     public bool IsIdentity => _compiled is IdentityTransform;
 
+    /// <summary>Gets the channels of each color converted from: the source's <see cref="ColorProfile.ChannelCount"/>.</summary>
+    public int InputChannels => _compiled.InputChannels;
+
+    /// <summary>Gets the channels of each color converted to: the target's <see cref="ColorProfile.ChannelCount"/>.</summary>
+    public int OutputChannels => _compiled.OutputChannels;
+
     /// <summary>Compiles the conversion from <paramref name="source"/> to <paramref name="target"/>, or returns it from the cache.</summary>
     /// <param name="source">The encoding of the pixels given.</param>
     /// <param name="target">The encoding to convert to.</param>
@@ -96,6 +102,11 @@ public sealed class ColorTransform
             throw new ArgumentException("The destination is shorter than the source.", nameof(destination));
         }
 
+        if (InputChannels is not (1 or 3 or 4) || OutputChannels is not (1 or 3 or 4))
+        {
+            throw new InvalidOperationException($"No pixel type holds the {Math.Max(InputChannels, OutputChannels)} inks of an n-colour profile; convert with Apply(ReadOnlySpan<float>, Span<float>).");
+        }
+
         if (Bytes<TFrom>(_compiled.InputChannels) is ByteLayout inLayout && Bytes<TTo>(_compiled.OutputChannels) is ByteLayout outLayout)
         {
             ApplyBytes(source, inLayout, destination[..source.Length], outLayout);
@@ -103,6 +114,46 @@ public sealed class ColorTransform
         }
 
         ApplyFloats(source, destination[..source.Length]);
+    }
+
+    /// <summary>
+    /// Converts colors stored as floats, <see cref="InputChannels"/> per color in and <see cref="OutputChannels"/> out, each 0 to 1
+    /// (inks as tints): the way to convert from or to an n-colour profile, which no pixel type holds, and for any other values
+    /// that are not pixels. Inputs are clamped to 0 to 1; outputs keep any value the conversion gives.
+    /// </summary>
+    /// <param name="source">The colors, a whole number of <see cref="InputChannels"/> values each.</param>
+    /// <param name="destination">Where to write them: <see cref="OutputChannels"/> values for each color in <paramref name="source"/>.</param>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="source"/> is not a whole number of colors, or <paramref name="destination"/> is too short.
+    /// </exception>
+    public void Apply(ReadOnlySpan<float> source, Span<float> destination)
+    {
+        int ins = InputChannels, outs = OutputChannels;
+        if (source.Length % ins != 0)
+        {
+            throw new ArgumentException($"The source holds {source.Length} values, not a whole number of {ins}-channel colors.", nameof(source));
+        }
+
+        int count = source.Length / ins;
+        if (destination.Length < (long)count * outs)
+        {
+            throw new ArgumentException($"The destination needs {(long)count * outs} values for {count} colors.", nameof(destination));
+        }
+
+        // Clamped in chunks, so out-of-range inputs mean the same on every path.
+        Span<float> chunk = stackalloc float[Chunk * 15];
+        for (int start = 0; start < count; start += Chunk)
+        {
+            int n = Math.Min(Chunk, count - start);
+            ReadOnlySpan<float> from = source.Slice(start * ins, n * ins);
+            for (int i = 0; i < from.Length; i++)
+            {
+                float v = from[i];
+                chunk[i] = v > 0f ? v < 1f ? v : 1f : 0f;
+            }
+
+            _compiled.Apply(chunk[..(n * ins)], destination.Slice(start * outs, n * outs), n);
+        }
     }
 
     /// <summary>The model a pixel type's channels are in: RGB, gray, CMYK, or none for an alpha mask.</summary>

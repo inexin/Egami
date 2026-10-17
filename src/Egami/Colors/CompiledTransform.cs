@@ -45,7 +45,13 @@ internal abstract class CompiledTransform
         }
 
         ColorPipeline pipeline = ColorPipeline.Create(from, to, options, sourcePeakNits);
-        return pipeline.GetLinearForm() is LinearForm form ? new MatrixTransform(form, pipeline.InputChannels, pipeline.OutputChannels) : new GridTransform(pipeline);
+        if (pipeline.GetLinearForm() is LinearForm form)
+        {
+            return new MatrixTransform(form, pipeline.InputChannels, pipeline.OutputChannels);
+        }
+
+        // A grid over two or more than four inputs would be too coarse or too large: n-colour sources run the pipeline itself.
+        return pipeline.InputChannels is 1 or 3 or 4 ? new GridTransform(pipeline) : new DirectTransform(pipeline);
     }
 
     /// <summary>Converts colors stored as interleaved floats: <see cref="InputChannels"/> per color in, <see cref="OutputChannels"/> out.</summary>
@@ -100,12 +106,7 @@ internal abstract class CompiledTransform
         return true;
     }
 
-    internal static int Channels(ColorProfile profile) => profile.Model switch
-    {
-        ColorModel.Gray => 1,
-        ColorModel.Cmyk => 4,
-        _ => 3,
-    };
+    internal static int Channels(ColorProfile profile) => profile.ChannelCount;
 
     /// <summary>Rounds a normalized value to 8 bits, clamping, as every 8-bit write in Egami does.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -114,6 +115,53 @@ internal abstract class CompiledTransform
     // The byte offset of channel c within a pixel.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected static int Offset(ByteLayout layout, int channels, int c) => layout.Reversed && channels == 3 ? 2 - c : c;
+}
+
+/// <summary>
+/// The reference pipeline run for every color, in double precision: for n-colour sources (2 or 5 to 15 inks), where a sampled
+/// grid would be too coarse or too large. Slower than a grid, and exact.
+/// </summary>
+internal sealed class DirectTransform(ColorPipeline pipeline) : CompiledTransform(pipeline.InputChannels, pipeline.OutputChannels)
+{
+    public override void Apply(ReadOnlySpan<float> source, Span<float> destination, int count)
+    {
+        int ins = InputChannels, outs = OutputChannels;
+        Span<double> input = stackalloc double[ins];
+        Span<double> output = stackalloc double[outs];
+        for (int i = 0; i < count; i++)
+        {
+            for (int c = 0; c < ins; c++)
+            {
+                input[c] = source[(i * ins) + c];
+            }
+
+            pipeline.Evaluate(input, output);
+            for (int c = 0; c < outs; c++)
+            {
+                destination[(i * outs) + c] = (float)output[c];
+            }
+        }
+    }
+
+    public override void Apply(ReadOnlySpan<byte> source, ByteLayout sourceLayout, Span<byte> destination, ByteLayout destinationLayout, int count)
+    {
+        int ins = InputChannels, outs = OutputChannels;
+        Span<double> input = stackalloc double[ins];
+        Span<double> output = stackalloc double[outs];
+        for (int i = 0; i < count; i++)
+        {
+            for (int c = 0; c < ins; c++)
+            {
+                input[c] = source[(i * sourceLayout.Stride) + Offset(sourceLayout, ins, c)] / 255.0;
+            }
+
+            pipeline.Evaluate(input, output);
+            for (int c = 0; c < outs; c++)
+            {
+                destination[(i * destinationLayout.Stride) + Offset(destinationLayout, outs, c)] = To8((float)output[c]);
+            }
+        }
+    }
 }
 
 /// <summary>Profiles that mean the same colors: values are copied.</summary>

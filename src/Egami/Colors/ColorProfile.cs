@@ -1,6 +1,6 @@
 namespace Egami.Colors;
 
-/// <summary>Whether a color encoding has three RGB channels, one gray channel, or four CMYK inks.</summary>
+/// <summary>Whether a color encoding has three RGB channels, one gray channel, four CMYK inks, or the inks of an n-colour press.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ColorManagement.cs" region="profiles"/>
 /// </example>
@@ -14,6 +14,14 @@ public enum ColorModel
 
     /// <summary>Cyan, magenta, yellow and black inks.</summary>
     Cmyk,
+
+    /// <summary>
+    /// Two to fifteen inks of an n-colour output profile (ICC's 2CLR to FCLR), such as a hexachrome or seven-colour press:
+    /// <see cref="ColorProfile.ChannelCount"/> says how many, and <see cref="ColorProfile.ColorantNames"/> names them. No pixel
+    /// type holds them: convert with <see cref="ColorTransform.Apply(ReadOnlySpan{float}, Span{float})"/> or draw into an
+    /// <see cref="InkRaster"/>.
+    /// </summary>
+    NColor,
 }
 
 /// <summary>
@@ -78,6 +86,21 @@ public sealed class ColorProfile
 
     /// <summary>Gets the color model.</summary>
     public ColorModel Model { get; }
+
+    /// <summary>Gets the number of channels: 3 for RGB, 1 for gray, 4 for CMYK, 2 to 15 for an n-colour profile.</summary>
+    public int ChannelCount => Model switch
+    {
+        ColorModel.Rgb => 3,
+        ColorModel.Gray => 1,
+        ColorModel.Cmyk => 4,
+        _ => IccModel!.Channels,
+    };
+
+    /// <summary>
+    /// Gets the names of an output profile's inks, from its colorant table (<c>clrt</c>), in channel order; <see langword="null"/>
+    /// when the profile has none.
+    /// </summary>
+    public IReadOnlyList<string>? ColorantNames => IccModel?.ColorantTable?.Select(c => c.Name).ToArray();
 
     /// <summary>
     /// Gets the primaries of an RGB encoding, or <see langword="null"/> for gray, CMYK, and ICC profiles that convert through

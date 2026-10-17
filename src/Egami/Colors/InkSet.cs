@@ -38,20 +38,42 @@ public sealed class InkSet : IReadOnlyList<Colorant>
     /// <returns>The ink.</returns>
     public Colorant this[int index] => _inks[index];
 
-    /// <summary>Returns the set of an output profile's process inks: Cyan, Magenta, Yellow and Black for a CMYK profile.</summary>
+    /// <summary>
+    /// Returns the set of an output profile's process inks: Cyan, Magenta, Yellow and Black for a CMYK profile; for an n-colour
+    /// profile the inks its colorant table names, each with its Lab colour at full tint as its appearance (Ink 1, Ink 2 and so on,
+    /// without appearances, when the table is missing or its names cannot serve, being empty, repeated, All or None).
+    /// </summary>
     /// <param name="profile">The output profile, such as <see cref="ColorProfile.Fogra39"/>.</param>
     /// <returns>The set.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="profile"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">The profile is not a CMYK profile: RGB and gray encodings have no inks.</exception>
+    /// <exception cref="ArgumentException">The profile is not a CMYK or n-colour profile: RGB and gray encodings have no inks.</exception>
     public static InkSet FromProfile(ColorProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
         Colorant[] process = profile.Model switch
         {
             ColorModel.Cmyk => [Colorant.Cyan, Colorant.Magenta, Colorant.Yellow, Colorant.Black],
+            ColorModel.NColor => NColorInks(profile),
             _ => throw new ArgumentException($"{profile.Name} is not an output profile with inks.", nameof(profile)),
         };
         return new InkSet(profile, process.Length, process, new bool[process.Length]);
+    }
+
+    private static Colorant[] NColorInks(ColorProfile profile)
+    {
+        (string Name, Vector3d Xyz)[]? table = profile.IccModel?.ColorantTable;
+        if (table is not null && table.Select(c => c.Name).Distinct(StringComparer.Ordinal).Count() == table.Length
+            && table.All(c => c.Name.Length <= Colorant.MaxNameLength && c.Name is not ("All" or "None")))
+        {
+            return [.. table.Select(c =>
+            {
+                Vector3d lab = Cie.XyzToLab(c.Xyz, Cie.D50);
+                InkAppearance appearance = InkAppearance.Lab(new LabColor((float)Math.Clamp(lab.X, 0, 100), (float)lab.Y, (float)lab.Z));
+                return Colorant.Process(c.Name, appearance);
+            })];
+        }
+
+        return [.. Enumerable.Range(1, profile.ChannelCount).Select(i => Colorant.Process($"Ink {i}", null))];
     }
 
     /// <summary>Returns this set with a spot or technical ink added after the others.</summary>

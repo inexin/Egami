@@ -141,6 +141,11 @@ holds the ink as it prints over paper, 0 for none to the maximum for full ink. E
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#ink-raster)]
 
+Presses with more than four process inks have n-colour ICC profiles (2CLR to FCLR): `ColorProfile.FromIcc` reads them as
+`ColorModel.NColor`, with `ChannelCount` inks named by `ColorantNames`, and `InkSet.FromProfile` takes those inks with their
+colours as appearances. No pixel type holds them, so conversions to and from such a profile run on float spans:
+`ColorTransform.Apply(ReadOnlySpan<float>, Span<float>)` takes `InputChannels` values per color and writes `OutputChannels`.
+
 ## Code points
 
 `ColorCodePoints` holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami

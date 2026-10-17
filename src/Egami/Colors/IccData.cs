@@ -41,16 +41,21 @@ public sealed class IccData
     public string ConnectionSpace { get; private set; } = "";
 
     /// <summary>
-    /// Gets the color model of the data space, or <see langword="null"/> when it is not RGB, gray or CMYK (Egami converts only
-    /// those).
+    /// Gets the color model of the data space, or <see langword="null"/> when it is not RGB, gray, CMYK or 2 to 15 colorants
+    /// (2CLR to FCLR), the spaces Egami converts.
     /// </summary>
     public ColorModel? Model => DataSpace switch
     {
         "RGB" => ColorModel.Rgb,
         "GRAY" => ColorModel.Gray,
         "CMYK" => ColorModel.Cmyk,
+        _ when NColorChannels > 0 => ColorModel.NColor,
         _ => null,
     };
+
+    /// <summary>Gets the colorant count of an n-colour data space (2CLR to FCLR), or 0 for any other.</summary>
+    internal int NColorChannels => DataSpace is [char first, 'C', 'L', 'R'] && first is >= '2' and <= '9' or >= 'A' and <= 'F'
+        ? Convert.ToInt32(first.ToString(), 16) : 0;
 
     /// <summary>Gets the rendering intent the header suggests.</summary>
     public RenderingIntent RenderingIntent { get; private set; }

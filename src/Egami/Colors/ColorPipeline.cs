@@ -47,6 +47,13 @@ internal sealed class ColorPipeline
     /// </summary>
     public static ColorPipeline ToConnectionSpace(ColorProfile from, RenderingIntent intent, bool blackPointCompensation) => Build(from, null, intent, blackPointCompensation, null, 1000);
 
+    /// <summary>
+    /// Builds a pipeline from connection space XYZ (D50) to <paramref name="to"/>'s device values through its tables for the
+    /// intent, with no compensation: for checking a profile's round trips.
+    /// </summary>
+    internal static ColorPipeline FromConnectionSpace(ColorProfile to, RenderingIntent intent) =>
+        new(new ToPcs.Connection(), FromPcs.Create(to, intent), new Vector3d(1, 1, 1), default, HdrStep.None);
+
     // A null target is the connection space itself, as an abstract version 4 profile: D50 white, black 0.
     private static ColorPipeline Build(ColorProfile from, ColorProfile? to, RenderingIntent intent, bool blackPointCompensation, ColorTransformOptions? options, double sourcePeakNits)
     {
@@ -132,7 +139,8 @@ internal sealed class ColorPipeline
             return HasMatrix(profile) ? DarkerColorant(profile, RenderingIntent.RelativeColorimetric) : PerceptualBlack;
         }
 
-        if (intent == RenderingIntent.RelativeColorimetric && profile.Model == ColorModel.Cmyk && profile.Icc?.ProfileClass == IccProfileClass.Output)
+        // Little CMS 2.19 does this for n-colour output profiles too.
+        if (intent == RenderingIntent.RelativeColorimetric && profile.Model is ColorModel.Cmyk or ColorModel.NColor && profile.Icc?.ProfileClass == IccProfileClass.Output)
         {
             return BlackThroughPerceptual(profile);
         }
@@ -238,6 +246,12 @@ internal sealed class ColorPipeline
     {
         if (!SupportsAsInput(profile, intent))
         {
+            return default;
+        }
+
+        if (profile.Model == ColorModel.NColor)
+        {
+            // Little CMS knows no darkest colorant combination for n-colour spaces, so it finds no black point.
             return default;
         }
 
@@ -351,6 +365,12 @@ internal sealed class ColorPipeline
 
         /// <summary>Gets the curves and the matrix from linear device values to XYZ, when the profile is that simple.</summary>
         public virtual (TransferFunction[] Curves, Matrix3d Matrix)? Linear => null;
+
+        /// <summary>The connection space itself: XYZ in as it comes.</summary>
+        public sealed class Connection() : ToPcs(3)
+        {
+            public override Vector3d Run(ReadOnlySpan<double> device) => new(device[0], device[1], device[2]);
+        }
 
         /// <summary>
         /// A built-in or created encoding: its curve (scaled to the reference white, and tone mapped on max(R, G, B) for HDR to
@@ -676,8 +696,8 @@ internal static class IccStages
 
     /// <summary>
     /// Interpolates a CLUT as Little CMS does, with inputs and outputs at the table's 16-bit precision: linear for one input,
-    /// tetrahedral (or trilinear) for three, and for four, linear along the first input between tetrahedral interpolations of
-    /// the other three.
+    /// bilinear for two, tetrahedral (or trilinear) for three, and for four to fifteen, linear along the first input between
+    /// interpolations of the others, down to tetrahedral over the last three.
     /// </summary>
     public static void Interpolate(IccClut clut, ReadOnlySpan<double> values, Span<double> output, bool trilinear = false)
     {
@@ -710,28 +730,58 @@ internal static class IccStages
             case 3:
                 Tetrahedral(table, 0, grid[0], grid[1], grid[2], outputs, input[0], input[1], input[2], output);
                 break;
-            case 4:
-                {
-                    (int k, double r) = Cell(input[0], grid[0]);
-                    int stride = grid[1] * grid[2] * grid[3] * outputs;
-                    Span<double> high = stackalloc double[outputs];
-                    Tetrahedral(table, k * stride, grid[1], grid[2], grid[3], outputs, input[1], input[2], input[3], output);
-                    Tetrahedral(table, (k + 1) * stride, grid[1], grid[2], grid[3], outputs, input[1], input[2], input[3], high);
-                    for (int o = 0; o < outputs; o++)
-                    {
-                        output[o] += (high[o] - output[o]) * r;
-                    }
-
-                    break;
-                }
-
+            case 2:
+                Bilinear(table, grid[0], grid[1], outputs, input[0], input[1], output);
+                break;
             default:
-                throw new NotSupportedException($"A CLUT with {grid.Length} inputs.");
+                Linear(table, grid, 0, 0, outputs, input, output);
+                break;
         }
 
         for (int o = 0; o < outputs; o++)
         {
             output[o] = Math.Round(output[o] * 65535) / 65535;
+        }
+    }
+
+    // Four or more inputs: linear along input `dim` between the sub-tables at its cell's two ends, each interpolated over the
+    // remaining inputs the same way, until three remain.
+    private static void Linear(float[] t, int[] grid, int dim, int origin, int outputs, ReadOnlySpan<double> input, Span<double> output)
+    {
+        if (grid.Length - dim == 3)
+        {
+            Tetrahedral(t, origin, grid[dim], grid[dim + 1], grid[dim + 2], outputs, input[dim], input[dim + 1], input[dim + 2], output);
+            return;
+        }
+
+        int stride = outputs;
+        for (int i = dim + 1; i < grid.Length; i++)
+        {
+            stride *= grid[i];
+        }
+
+        (int k, double r) = Cell(input[dim], grid[dim]);
+        Span<double> high = stackalloc double[outputs];
+        Linear(t, grid, dim + 1, origin + (k * stride), outputs, input, output);
+        Linear(t, grid, dim + 1, origin + ((k + 1) * stride), outputs, input, high);
+        for (int o = 0; o < outputs; o++)
+        {
+            output[o] += (high[o] - output[o]) * r;
+        }
+    }
+
+    private static void Bilinear(float[] t, int nx, int ny, int outputs, double x, double y, Span<double> output)
+    {
+        (int ix, double rx) = Cell(x, nx);
+        (int iy, double ry) = Cell(y, ny);
+        int sy = outputs, sx = ny * outputs;
+        int c00 = (ix * sx) + (iy * sy);
+        for (int o = 0; o < outputs; o++)
+        {
+            int c = c00 + o;
+            double d0 = t[c] + ((t[c + sx] - t[c]) * rx);
+            double d1 = t[c + sy] + ((t[c + sx + sy] - t[c + sy]) * rx);
+            output[o] = d0 + ((d1 - d0) * ry);
         }
     }
 

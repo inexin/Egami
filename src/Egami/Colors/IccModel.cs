@@ -365,8 +365,12 @@ internal sealed class IccModel
     {
         ColorModel.Rgb => 3,
         ColorModel.Gray => 1,
-        _ => 4,
+        ColorModel.Cmyk => 4,
+        _ => Data.NColorChannels,
     };
+
+    /// <summary>Gets the colorant table (clrt): each ink's name and its connection space XYZ at full tint; null when absent or unreadable.</summary>
+    public (string Name, Vector3d Xyz)[]? ColorantTable { get; private set; }
 
     public bool PcsIsLab { get; private set; }
 
@@ -406,7 +410,7 @@ internal sealed class IccModel
     {
         if (Data.Model is not ColorModel model)
         {
-            throw new UnsupportedFormatException($"ICC profiles with data space '{Data.DataSpace}' are not supported; Egami converts RGB, gray and CMYK.");
+            throw new UnsupportedFormatException($"ICC profiles with data space '{Data.DataSpace}' are not supported; Egami converts RGB, gray, CMYK and 2 to 15 colorants.");
         }
 
         if (Data.ProfileClass is not (IccProfileClass.Input or IccProfileClass.Display or IccProfileClass.Output or IccProfileClass.ColorSpace))
@@ -459,9 +463,50 @@ internal sealed class IccModel
             {
                 ColorModel.Rgb => "an RGB profile needs either rXYZ, gXYZ, bXYZ with rTRC, gTRC, bTRC, or an A2B0 table",
                 ColorModel.Gray => "a gray profile needs either kTRC or an A2B0 table",
-                _ => "a CMYK profile needs an A2B0 table",
+                ColorModel.Cmyk => "a CMYK profile needs an A2B0 table",
+                _ => "an n-colour profile needs an A2B0 table",
             });
         }
+
+        if (Data.TryGetTag("clrt", out IccTag clrt))
+        {
+            ColorantTable = ReadColorants(clrt);
+        }
+    }
+
+    // colorantTableType: a count, then per colorant a 32-byte name (ASCII, null-terminated) and its PCS value as three 16-bit
+    // numbers in the profile's PCS encoding (legacy Lab before version 4). A table that is cut short, has the wrong count or an
+    // empty name is ignored: the names are a convenience, not needed to convert.
+    private (string Name, Vector3d Xyz)[]? ReadColorants(IccTag tag)
+    {
+        ReadOnlySpan<byte> d = tag.Data.Span;
+        if (tag.Type != "clrt" || d.Length < 12)
+        {
+            return null;
+        }
+
+        uint count = BinaryPrimitives.ReadUInt32BigEndian(d[8..]);
+        if (count != Channels || d.Length < 12 + (count * 38))
+        {
+            return null;
+        }
+
+        var table = new (string Name, Vector3d Xyz)[count];
+        for (int i = 0; i < count; i++)
+        {
+            ReadOnlySpan<byte> entry = d.Slice(12 + (i * 38), 38);
+            int end = entry[..32].IndexOf((byte)0);
+            string name = System.Text.Encoding.Latin1.GetString(entry[..(end < 0 ? 32 : end)]).Trim();
+            if (name.Length == 0)
+            {
+                return null;
+            }
+
+            Vector3d n = new(BinaryPrimitives.ReadUInt16BigEndian(entry[32..]) / 65535.0, BinaryPrimitives.ReadUInt16BigEndian(entry[34..]) / 65535.0, BinaryPrimitives.ReadUInt16BigEndian(entry[36..]) / 65535.0);
+            table[i] = (name, IccStages.DecodePcs(n, PcsIsLab, Data.Version.Major < 4));
+        }
+
+        return table;
     }
 
     private static Vector3d Xyz(IccTag tag)
