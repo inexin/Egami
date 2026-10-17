@@ -66,6 +66,7 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     private readonly bool _isSystem;
     private List<FaceEntry> _entries = [];
     private NameIndex? _index;
+    private FamilyList? _families;
     private bool _indexed;
 
     /// <summary>Initializes an empty collection.</summary>
@@ -101,9 +102,16 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
         get
         {
             List<FaceEntry> entries = Entries;
-            return [.. entries.GroupBy(e => e.Family, StringComparer.OrdinalIgnoreCase)
-                .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(g => new FontFamily(g.First().Family, [.. g], Options))];
+            FamilyList? families = Volatile.Read(ref _families);
+            if (families is null || !ReferenceEquals(families.Entries, entries))
+            {
+                families = new FamilyList(entries, [.. entries.GroupBy(e => e.Family, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => new FontFamily(g.First().Family, [.. g], Options))]);
+                Volatile.Write(ref _families, families);
+            }
+
+            return families.Families;
         }
     }
 
@@ -237,6 +245,9 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     /// <param name="style">The style wanted.</param>
     /// <returns>The face, or <see langword="null"/> when no face has the name.</returns>
     public Typeface? MatchTypeface(string familyName, FontStyle style) => Match(familyName, style)?.Typeface;
+
+    /// <summary>The families of one snapshot of the faces, sorted by name, kept until the next Add or Refresh.</summary>
+    private sealed record FamilyList(List<FaceEntry> Entries, IReadOnlyList<FontFamily> Families);
 
     /// <summary>The families of one snapshot of the faces, by every name in lookup order, built on first lookup.</summary>
     private sealed class NameIndex

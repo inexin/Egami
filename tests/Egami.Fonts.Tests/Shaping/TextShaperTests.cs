@@ -126,6 +126,19 @@ public sealed class TextShaperTests
     }
 
     [Fact]
+    public void ALongRunAfterAShortOneOnTheSameThreadIsShaped()
+    {
+        Font font = new(Noto, 20);
+        GlyphBuffer glyphs = new();
+        TextShaper.ShapeRun("office", 0, 6, font, default, glyphs);
+
+        // The short run's limits must not carry over to the next run in the thread's reused buffer.
+        string text = new('a', 100_000);
+        TextShaper.ShapeRun(text, 0, text.Length, font, default, glyphs);
+        Assert.Equal(100_000, glyphs.Count);
+    }
+
+    [Fact]
     public void LanguageTagsMapAsHarfBuzz()
     {
         Assert.Equal([ShapeMapBuilder.Tag("URD ")], LanguageTags.FromBcp47("ur"));

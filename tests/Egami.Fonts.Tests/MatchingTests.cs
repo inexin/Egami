@@ -129,6 +129,19 @@ public class MatchingTests
     }
 
     [Fact]
+    public void FamiliesAreKeptUntilTheNextAdd()
+    {
+        var fonts = new FontCollection();
+        fonts.Add(TestFonts.Load("Roboto-Regular.ttf"));
+        IReadOnlyList<FontFamily> families = fonts.Families;
+        Assert.Same(families, fonts.Families);
+
+        fonts.Add(TestFonts.Load("NotoSans-Regular.ttf"));
+        Assert.NotSame(families, fonts.Families);
+        Assert.Equal(2, fonts.Count);
+    }
+
+    [Fact]
     public void UnreadableFilesAreSkippedWithADiagnostic()
     {
         string dir = Directory.CreateTempSubdirectory("egami-fonts").FullName;

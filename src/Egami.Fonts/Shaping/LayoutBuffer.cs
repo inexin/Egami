@@ -175,6 +175,10 @@ internal sealed class LayoutBuffer
         ScratchFlags = 0;
         Serial = 0;
         RandomState = 1;
+
+        // HarfBuzz's reset restores the default limits; Enter sets them for the next text.
+        MaxLen = int.MaxValue;
+        MaxOps = int.MaxValue;
     }
 
     /// <summary>Adds a character at the end, before shaping.</summary>

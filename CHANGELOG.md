@@ -429,6 +429,15 @@ equal to libwebp's.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
+### Egami.Fonts 1.0.0
+
+Settled in the 1.0 API review, changes from 0.2.0:
+
+- Fixed: shaping a run longer than 65,536 characters threw on a thread that had shaped a short run before, because the shaper
+  kept the short run's limits. Each run now gets limits from its own length.
+- `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
+  face on each call.
+
 ### Egami.Drawing 1.1.0
 
 - `InkCanvas` draws on an `InkRaster` with every `Canvas` call (`InkCanvasOptions`: what RGB means, intent, black point
