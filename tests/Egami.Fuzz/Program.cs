@@ -55,6 +55,8 @@ using DrawingPath = Egami.Drawing.Path;
 // and JPEG recompression, whose round trips must be exact.
 // The avif, avifbox and av1 targets (Phase 2.9.2, AvifFuzzTarget.cs) load AVIF files every way (stills, grids, overlays, gain
 // maps, sequences, YUV planes, items), reach the HEIF box reader directly, and feed raw OBU streams to the AV1 decoder.
+// The inktiff target (Phase 2.6.5) loads separated TIFFs as plates, which must save and load again to the same plates; the
+// icc target also builds the ink set of an n-colour profile and converts through it both ways.
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
 // computes them over a small tree and runs every value parser; Egami.Css never throws on input. The svg target (SvgFuzzTarget.cs)
 // loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly.
@@ -168,6 +170,7 @@ static Action<Stream> Target(string name) => name switch
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
     "egdr" => LoadDrawing,
+    "inktiff" => LoadInkTiff,
     "shaping" => ShapeFont,
     "bidi" => ResolveBidi,
     "radiance" => LoadRadiance,
@@ -186,7 +189,7 @@ static Action<Stream> Target(string name) => name switch
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, shaping, bidi, css, paragraph, svg, wmf, emf, emfplus."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, paragraph, svg, wmf, emf, emfplus."),
 };
 
 static EgamiContext Context()
@@ -800,9 +803,56 @@ static void ParseIcc(Stream stream)
     {
         ColorProfile profile = ColorProfile.FromIcc(icc);
         _ = (profile.Primaries, profile.White, profile.Transfer?.ToLinear(0.5), profile.IsEquivalentTo(ColorProfile.Srgb));
+        if (profile.Model is ColorModel.NColor or ColorModel.Cmyk)
+        {
+            InkSet inks = InkSet.FromProfile(profile);
+            float[] tints = new float[profile.ChannelCount * 2], rgb = new float[6];
+            Array.Fill(tints, 0.5f);
+            tints[0] = 1;
+            ColorTransform.Create(profile, ColorProfile.Srgb).Apply(tints, rgb);
+            ColorTransform.Create(ColorProfile.Srgb, profile, new ColorTransformOptions { BlackPointCompensation = true }).Apply(rgb, tints);
+            _ = (inks.Count, profile.ColorantNames);
+        }
     }
     catch (EgamiException)
     {
+    }
+}
+
+static void LoadInkTiff(Stream stream)
+{
+    EgamiContext context = Context();
+    byte[] data = ReadAll(stream);
+    InkRaster plates;
+    try
+    {
+        plates = InkRaster.Load(new MemoryStream(data), null, context);
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    using (plates)
+    {
+        using MemoryStream saved = new();
+        plates.Save(saved, new InkTiffOptions { IncludeAlpha = true });
+        saved.Position = 0;
+        using InkRaster again = InkRaster.Load(saved, null, context);
+        for (int p = 0; p < plates.Plates.Count; p++)
+        {
+            for (int y = 0; y < plates.Height; y++)
+            {
+                bool same = plates.Depth == InkDepth.Unorm8 ? plates.Plates[p].Row8(y).SequenceEqual(again.Plates[p].Row8(y)) : plates.Plates[p].Row16(y).SequenceEqual(again.Plates[p].Row16(y));
+                if (!same || plates.Plates[p].Name != again.Plates[p].Name)
+                {
+                    throw new InvalidOperationException($"Plate {p} row {y} changed in a save and load.");
+                }
+            }
+        }
+
+        _ = plates.MeasureCoverage();
+        using Raster<Rgba8> proof = plates.Proof<Rgba8>();
     }
 }
 
