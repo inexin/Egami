@@ -270,3 +270,48 @@ internal sealed class InkShaderSink(InkTarget target, PixelShader<RgbaF32> shade
         }
     }
 }
+
+/// <summary>
+/// Draws into a non-isolated layer that merges with a blend mode: each run is drawn once onto nothing, to learn the alpha it has
+/// alone, which joins the layer's group alpha, and then drawn as usual.
+/// </summary>
+internal sealed class InkGroupAlphaSink(InkTarget target, ISpanSink inner) : ISpanSink
+{
+    public bool FillsDirectly => false;
+
+    public void Fill(int y, int x, int length, byte coverage, Span<byte> scratch)
+    {
+        Span<byte> row = scratch[..length];
+        row.Fill(coverage);
+        Blend(y, x, row);
+    }
+
+    public void Blend(int y, int x, Span<byte> coverage)
+    {
+        int n = coverage.Length, planes = target.Inks;
+        float[] saved = ArrayPool<float>.Shared.Rent(n * (planes + 1));
+        float[] blank = ArrayPool<float>.Shared.Rent(n * (planes + 1));
+        byte[] alone = ArrayPool<byte>.Shared.Rent(n);
+        float[] alpha = ArrayPool<float>.Shared.Rent(n);
+        try
+        {
+            Span<float> run = saved.AsSpan(0, n * (planes + 1));
+            target.ReadAll(y, x, n, run);
+            blank.AsSpan(0, n * (planes + 1)).Clear();
+            target.WriteAll(y, x, n, blank.AsSpan(0, n * (planes + 1)));
+            coverage.CopyTo(alone);
+            inner.Blend(y, x, alone.AsSpan(0, n));
+            target.ReadPlane(planes, y, x, alpha.AsSpan(0, n));
+            target.WriteAll(y, x, n, run);
+            inner.Blend(y, x, coverage);
+            target.AddGroupAlpha(y, x, alpha.AsSpan(0, n));
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(saved);
+            ArrayPool<float>.Shared.Return(blank);
+            ArrayPool<byte>.Shared.Return(alone);
+            ArrayPool<float>.Shared.Return(alpha);
+        }
+    }
+}

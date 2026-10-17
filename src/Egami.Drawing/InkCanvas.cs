@@ -52,8 +52,10 @@ public sealed record class InkCanvasOptions
 /// </summary>
 /// <remarks>
 /// Every blend mode works as ISO 32000-2 has it for inks: on complements per plate, the non-separable ones on Cyan, Magenta and
-/// Yellow with Black from the backdrop, spots Normal where PDF allows only separable modes. Knockout and non-isolated layers
-/// follow in a later step of Egami 2.6.5 and throw <see cref="NotSupportedException"/> until then.
+/// Yellow with Black from the backdrop, spots Normal where PDF allows only separable modes. <see cref="Paint.Overprint"/> picks
+/// the plates a paint prints. Layers are isolated or not, knockout or not, take soft masks, and with
+/// <see cref="LayerOptions.ColorSpace"/> blend their process part in RGB or gray, converted into the inks as they merge. Layer
+/// filters run on RGB pixels and are not taken here.
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="ink-canvas"/>

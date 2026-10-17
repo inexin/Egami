@@ -39,11 +39,12 @@ internal sealed class InkTarget : RasterTarget
 
     internal override ISpanSink? CreateSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
     {
-        if (KnockoutBackdrop is not null || GroupAlpha is not null)
-        {
-            throw new NotSupportedException("Knockout and non-isolated layers on an ink canvas come with Egami 2.6.5's group work.");
-        }
+        ISpanSink? sink = CreatePaintSink(paint, matrix, colorSpace, mask, scale);
+        return sink is not null && GroupAlpha is not null ? new InkGroupAlphaSink(this, sink) : sink;
+    }
 
+    private ISpanSink? CreatePaintSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
+    {
         switch (paint)
         {
             case InkImagePaint image:
@@ -68,9 +69,66 @@ internal sealed class InkTarget : RasterTarget
     internal override RasterTarget CreateLayer(Rect area, EgamiContext context)
         => new InkTarget(new InkRaster(_raster.Inks, area.Width, area.Height, _raster.Depth, context), Resolver, area, owned: true);
 
+    /// <summary>A layer of the same inks, or with <see cref="LayerOptions.ColorSpace"/> one that blends its process part in that space.</summary>
+    internal override RasterTarget CreateLayer(Rect area, EgamiContext context, LayerOptions options)
+    {
+        if (options.ColorSpace is not ColorProfile space || Resolver.Space is not null)
+        {
+            return CreateLayer(area, context);
+        }
+
+        (InkResolver resolver, InkSet layout) = Resolver.ForSpace(space);
+        return new InkTarget(new InkRaster(layout, area.Width, area.Height, _raster.Depth, context), resolver, area, owned: true);
+    }
+
+    internal override void ReadAlpha(int y, int x, Span<float> alpha) => ReadPlane(Inks, y, x, alpha);
+
+    /// <summary>
+    /// Turns a non-isolated layer into the group result PDF composites, per plane in complement space:
+    /// C = Cn + (Cn − C0)·(α0 / αg − α0), with the group alpha αg.
+    /// </summary>
+    internal override void RemoveGroupBackdrop()
+    {
+        if (GroupBackdrop is not InkTarget backdrop || GroupAlpha is not float[] g)
+        {
+            return;
+        }
+
+        int n = Area.Width, planes = Inks;
+        float[] now = new float[n * (planes + 1)], first = new float[n * (planes + 1)];
+        for (int y = Area.Y; y < Area.Bottom; y++)
+        {
+            ReadAll(y, Area.X, n, now);
+            backdrop.ReadAll(y, Area.X, n, first);
+            int at = (y - Area.Y) * n;
+            for (int i = 0; i < n; i++)
+            {
+                float ag = g[at + i], an = now[(planes * n) + i], a0 = first[(planes * n) + i];
+                float f = ag > 0 ? (a0 / ag) - a0 : 0;
+                for (int p = 0; p < planes; p++)
+                {
+                    float cn = an > 0 ? 1 - (now[(p * n) + i] / an) : 1;
+                    float c0 = a0 > 0 ? 1 - (first[(p * n) + i] / a0) : 1;
+                    float c = Math.Clamp(cn + ((cn - c0) * f), 0, 1);
+                    now[(p * n) + i] = ag > 0 ? ag * (1 - c) : 0;
+                }
+
+                now[(planes * n) + i] = Math.Max(ag, 0);
+            }
+
+            WriteAll(y, Area.X, n, now);
+        }
+    }
+
     internal override void CopyFrom(RasterTarget source, Rect area)
     {
         InkTarget from = (InkTarget)source;
+        if (!ReferenceEquals(from.Resolver, Resolver))
+        {
+            CopyConverted(from, area);
+            return;
+        }
+
         for (int p = 0; p < _planes.Length; p++)
         {
             for (int y = area.Y; y < area.Bottom; y++)
@@ -91,28 +149,71 @@ internal sealed class InkTarget : RasterTarget
 
     internal override void WriteRow<T>(int y, int x, ReadOnlySpan<T> source) => throw new NotSupportedException("An ink canvas has no RGB pixels to write.");
 
-    /// <summary>Merges a layer of the same inks with a blend mode, opacity and the clip: its plates as straight tints over these.</summary>
+    /// <summary>
+    /// Merges a layer with a blend mode, opacity and the clip: its plates as straight tints over these; a layer that blended in
+    /// another space converts into these inks first, its spots as they are.
+    /// </summary>
     internal override void Merge(RasterTarget layer, Rect area, ClipMask? mask, BlendMode mode, float opacity, ColorSpace colorSpace)
     {
         InkTarget from = (InkTarget)layer;
-        int n = area.Width, planes = Inks;
+        bool convert = !ReferenceEquals(from.Resolver, Resolver) && from.Resolver.Space is not null;
+        int n = area.Width, planes = Inks, theirs = from.Inks;
         float[] tints = new float[n * planes];
+        float[] own = new float[theirs];
+        float[] values = new float[n * (theirs + 1)];
         float[] alpha = new float[n];
-        float[] plane = new float[n];
         for (int y = area.Y; y < area.Bottom; y++)
         {
             ReadOnlySpan<byte> clip = mask is null ? default : mask.Row(y).Slice(area.X - mask.Bounds.X, n);
-            from.ReadPlane(planes, y, area.X, alpha);
-            for (int p = 0; p < planes; p++)
+            from.ReadAll(y, area.X, n, values);
+            for (int i = 0; i < n; i++)
             {
-                from.ReadPlane(p, y, area.X, plane);
-                for (int i = 0; i < n; i++)
+                float a = values[(theirs * n) + i];
+                alpha[i] = a;
+                Span<float> to = tints.AsSpan(i * planes, planes);
+                Span<float> straight = convert ? own : to;
+                for (int p = 0; p < theirs; p++)
                 {
-                    tints[(i * planes) + p] = alpha[i] > 0 ? Math.Clamp(plane[i] / alpha[i], 0, 1) : 0;
+                    straight[p] = a > 0 ? Math.Clamp(values[(p * n) + i] / a, 0, 1) : 0;
+                }
+
+                if (convert)
+                {
+                    from.Resolver.ToCanvas(own, to);
                 }
             }
 
             InkCompositor.Composite(this, y, area.X, n, tints, planes, alpha, clip, opacity, mode, default);
+        }
+    }
+
+    // A non-isolated layer in another space starts as the backdrop converted into that space.
+    private void CopyConverted(InkTarget from, Rect area)
+    {
+        int n = area.Width, theirs = from.Inks, planes = Inks;
+        float[] values = new float[n * (theirs + 1)], result = new float[n * (planes + 1)];
+        float[] straight = new float[theirs], mine = new float[planes];
+        for (int y = area.Y; y < area.Bottom; y++)
+        {
+            from.ReadAll(y, area.X, n, values);
+            for (int i = 0; i < n; i++)
+            {
+                float a = values[(theirs * n) + i];
+                for (int p = 0; p < theirs; p++)
+                {
+                    straight[p] = a > 0 ? Math.Clamp(values[(p * n) + i] / a, 0, 1) : 0;
+                }
+
+                Resolver.FromCanvas(straight, mine);
+                for (int p = 0; p < planes; p++)
+                {
+                    result[(p * n) + i] = mine[p] * a;
+                }
+
+                result[(planes * n) + i] = a;
+            }
+
+            WriteAll(y, area.X, n, result);
         }
     }
 

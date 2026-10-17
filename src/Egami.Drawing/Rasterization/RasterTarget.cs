@@ -48,7 +48,7 @@ internal abstract class RasterTarget(Rect area) : IDisposable
     /// Turns a non-isolated layer into the group result PDF composites: the backdrop's contribution removed by
     /// C = Cn + (Cn − C0)·(α0 / αg − α0), with the group alpha αg.
     /// </summary>
-    internal void RemoveGroupBackdrop()
+    internal virtual void RemoveGroupBackdrop()
     {
         if (GroupBackdrop is not RasterTarget backdrop || GroupAlpha is not float[] g)
         {
@@ -92,6 +92,20 @@ internal abstract class RasterTarget(Rect area) : IDisposable
 
     /// <summary>Returns an empty layer over <paramref name="area"/> in this canvas's layer pixel type.</summary>
     internal abstract RasterTarget CreateLayer(Rect area, EgamiContext context);
+
+    /// <summary>Returns an empty layer for a call to SaveLayer with <paramref name="options"/>; by default the same as any layer.</summary>
+    internal virtual RasterTarget CreateLayer(Rect area, EgamiContext context, LayerOptions options) => CreateLayer(area, context);
+
+    /// <summary>Reads a run of alpha values from device (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    internal virtual void ReadAlpha(int y, int x, Span<float> alpha)
+    {
+        PremulRgbaF32[] row = new PremulRgbaF32[alpha.Length];
+        ReadRow<PremulRgbaF32>(y, x, row);
+        for (int i = 0; i < row.Length; i++)
+        {
+            alpha[i] = row[i].A;
+        }
+    }
 
     /// <summary>Copies the pixels of <paramref name="area"/> (device coordinates, inside both) from <paramref name="source"/>.</summary>
     internal abstract void CopyFrom(RasterTarget source, Rect area);

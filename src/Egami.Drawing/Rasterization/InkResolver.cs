@@ -19,6 +19,13 @@ internal sealed class InkResolver
     private readonly ColorTransformOptions _options;
     private readonly Dictionary<InkAppearanceKind, ColorTransform> _appearance = [];
 
+    // A layer that blends in an RGB or gray space: the canvas's resolver, and the transforms between its inks and that space.
+    private readonly InkResolver? _canvas;
+    private readonly ColorProfile? _space;
+    private readonly ColorTransform? _toSpace;
+    private readonly ColorTransform? _fromSpace;
+    private readonly ColorTransform? _rgbToSpace;
+
     internal InkResolver(InkSet inks, ColorProfile rgbSource, ColorTransformOptions options)
     {
         _inks = inks;
@@ -36,6 +43,95 @@ internal sealed class InkResolver
         CmyPlanes = c >= 0 && m >= 0 && y >= 0 ? [c, m, y] : null;
         BlackPlane = ProcessPlane("Black");
         _fromRgb = ColorTransform.Create(rgbSource, inks.Profile, options);
+    }
+
+    /// <summary>
+    /// A resolver for a layer that blends in <paramref name="space"/>: planes 0 to 2 hold its colour as the complements of red,
+    /// green and blue (of gray thrice), so blending on complements blends the colour itself; spots keep their own planes after
+    /// a fourth, unused one.
+    /// </summary>
+    private InkResolver(InkResolver canvas, ColorProfile space, InkSet layout)
+        : this(layout, canvas.RgbSource, canvas.Options)
+    {
+        _canvas = canvas;
+        _space = space;
+        _toSpace = ColorTransform.Create(canvas.Profile, space, canvas.Options);
+        _fromSpace = ColorTransform.Create(space, canvas.Profile, canvas.Options);
+        _rgbToSpace = ColorTransform.Create(canvas.RgbSource, space, canvas.Options);
+        CmyPlanes = [0, 1, 2];
+        BlackPlane = -1;
+    }
+
+    /// <summary>Gets the space a group layer blends in, or <see langword="null"/> for the canvas's inks.</summary>
+    internal ColorProfile? Space => _space;
+
+    /// <summary>Returns the resolver and the layout of a layer that blends in <paramref name="space"/>.</summary>
+    internal (InkResolver Resolver, InkSet Layout) ForSpace(ColorProfile space)
+    {
+        InkSet layout = InkSet.FromProfile(ColorProfile.Fogra39);
+        for (int i = _process; i < _inks.Count; i++)
+        {
+            if (!_inks.IsDisabled(i))
+            {
+                layout = layout.WithSpot(_inks[i]);
+            }
+        }
+
+        return (new InkResolver(this, space, layout), layout);
+    }
+
+    /// <summary>Turns a canvas colour (straight tints on the canvas's planes) into this group layer's planes.</summary>
+    internal void FromCanvas(ReadOnlySpan<float> canvas, Span<float> layer)
+    {
+        InkResolver c = _canvas!;
+        Span<float> process = stackalloc float[c._process];
+        for (int i = 0; i < c._process; i++)
+        {
+            process[i] = canvas[c._planeOf[i]];
+        }
+
+        Span<float> colour = stackalloc float[_space!.ChannelCount];
+        _toSpace!.Apply(process, colour);
+        SetColour(colour, layer);
+        for (int j = 0; j < Planes - 4; j++)
+        {
+            layer[4 + j] = canvas[c._process + j];
+        }
+    }
+
+    /// <summary>Turns this group layer's straight planes into a canvas colour.</summary>
+    internal void ToCanvas(ReadOnlySpan<float> layer, Span<float> canvas)
+    {
+        InkResolver c = _canvas!;
+        Span<float> colour = stackalloc float[_space!.ChannelCount];
+        for (int k = 0; k < colour.Length; k++)
+        {
+            colour[k] = 1 - layer[k];
+        }
+
+        Span<float> process = stackalloc float[c._process];
+        _fromSpace!.Apply(colour, process);
+        canvas.Clear();
+        for (int i = 0; i < c._process; i++)
+        {
+            canvas[c._planeOf[i]] = Math.Clamp(process[i], 0, 1);
+        }
+
+        for (int j = 0; j < Planes - 4; j++)
+        {
+            canvas[c._process + j] = layer[4 + j];
+        }
+    }
+
+    // A colour in the group's space as complements on planes 0 to 2.
+    private static void SetColour(ReadOnlySpan<float> colour, Span<float> layer)
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            layer[k] = 1 - Math.Clamp(colour[colour.Length == 1 ? 0 : k], 0, 1);
+        }
+
+        layer[3] = 0;
     }
 
     /// <summary>Gets the number of planes, alpha not counted.</summary>
@@ -69,6 +165,18 @@ internal sealed class InkResolver
         if (paint.Overprint == Overprint.Off)
         {
             return [];
+        }
+
+        if (_canvas is InkResolver canvas)
+        {
+            bool[] own = canvas.Painted(paint), mapped = new bool[Planes];
+            mapped[0] = mapped[1] = mapped[2] = own.Take(canvas._process).Any(p => p);
+            for (int j = 0; j < Planes - 4; j++)
+            {
+                mapped[4 + j] = own[canvas._process + j];
+            }
+
+            return mapped;
         }
 
         bool[] painted = new bool[Planes];
@@ -152,6 +260,14 @@ internal sealed class InkResolver
     internal float Resolve(SolidPaint paint, Span<float> tints)
     {
         tints.Clear();
+        if (_canvas is not null && paint.Ink is null)
+        {
+            Span<float> colour = stackalloc float[_space!.ChannelCount];
+            _rgbToSpace!.Apply([paint.Color.R, paint.Color.G, paint.Color.B], colour);
+            SetColour(colour, tints);
+            return Math.Clamp(paint.Color.A, 0, 1);
+        }
+
         if (paint.Ink is not InkColor ink)
         {
             Span<float> process = stackalloc float[_process];
@@ -172,6 +288,14 @@ internal sealed class InkResolver
     internal void Resolve(InkColor ink, Span<float> tints)
     {
         tints.Clear();
+        if (_canvas is InkResolver canvas)
+        {
+            Span<float> own = stackalloc float[canvas.Planes];
+            canvas.Resolve(ink, own);
+            FromCanvas(own, tints);
+            return;
+        }
+
         List<InkTint>? missing = null;
         foreach (InkTint t in ink.Inks)
         {
@@ -204,6 +328,19 @@ internal sealed class InkResolver
     internal void ResolveRgb(ReadOnlySpan<RgbaF32> colors, Span<float> tints)
     {
         int n = colors.Length;
+        if (_canvas is not null)
+        {
+            Span<float> colour = stackalloc float[_space!.ChannelCount];
+            tints[..(n * Planes)].Clear();
+            for (int i = 0; i < n; i++)
+            {
+                _rgbToSpace!.Apply([colors[i].R, colors[i].G, colors[i].B], colour);
+                SetColour(colour, tints.Slice(i * Planes, Planes));
+            }
+
+            return;
+        }
+
         Span<float> rgb = n <= 256 ? stackalloc float[n * 3] : new float[n * 3];
         for (int i = 0; i < n; i++)
         {
