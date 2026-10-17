@@ -58,6 +58,9 @@ internal static partial class JxlDct
     /// <summary>Gets the LLF scale for coefficient <paramref name="c"/> of a varblock side of 2^(5 - <paramref name="logb"/>) blocks.</summary>
     internal static float Scale(int c, int logb) => ScaleF[c << logb];
 
+    /// <summary>Gets entry <paramref name="index"/> of the AFV basis (16 orthonormal vectors of 16 samples, one after another).</summary>
+    internal static float AfvBasisValue(int index) => AfvBasis[index];
+
     /// <summary>A 2D DCT of a <paramref name="width"/>×<paramref name="height"/> area at <paramref name="offset"/>, rows then columns.</summary>
     internal static void Dct2D(Span<float> data, int offset, int stride, int width, int height, bool forward)
     {
