@@ -537,6 +537,9 @@ internal sealed partial class JxlVarDctEncoder
     }
 
     /// <summary>Writes the codestream with the frame as it stands: image header, frame header, TOC and sections.</summary>
+    // Whether Sections codes a draft for the encoder's own decoding (see ChooseEpfSharpness).
+    private bool _draft;
+
     private byte[] Codestream(JxlEncodeInput header)
     {
         List<byte[]> sections = Sections();
@@ -1314,15 +1317,31 @@ internal sealed partial class JxlVarDctEncoder
         float d = _settings.Distance;
         float clamped = MathF.Min(5.0f, d);
         byte[] steps = d > 4.5f ? [0, 4] : [0, 2, 7];
+        // Decoded from a draft: one distribution for each kind of data, which decodes to the same samples, coded cheaply.
+        _draft = true;
         float[][] reconstructed = JxlImageDecoder.DecodeXyb(Codestream(header), _settings.Parallelism);
+        _draft = false;
         JxlLoopFilter filter = new() { Gaborish = _gaborish, EpfIterations = _epfIterations };
         float sigmaBase = filter.QuantMul * 65536f / _globalScale;
         float[][] errors = new float[8][];
         float[] mask = _aq!.Mask1x1;
         JxlParallel parallel = new(Math.Max(1, _settings.Parallelism), CancellationToken.None);
+        float[][] planes = [.. reconstructed.Select(p => GC.AllocateUninitializedArray<float>(p.Length))];
         foreach (byte val in steps)
         {
-            float[][] planes = [.. reconstructed.Select(p => (float[])p.Clone())];
+            // Each candidate filters a copy of the reconstruction (the filters may swap the arrays).
+            for (int c = 0; c < 3; c++)
+            {
+                planes[c] = planes[c].Length == reconstructed[c].Length ? planes[c] : GC.AllocateUninitializedArray<float>(reconstructed[c].Length);
+            }
+
+            Parallel.For(0, _height, _parallel, y =>
+            {
+                for (int c = 0; c < 3; c++)
+                {
+                    Array.Copy(reconstructed[c], y * _width, planes[c], y * _width, _width);
+                }
+            });
             if (_gaborish)
             {
                 JxlFilters.Gaborish(planes, _width, _height, _width, filter.GaborishWeights, parallel);
@@ -1504,7 +1523,9 @@ internal sealed partial class JxlVarDctEncoder
         Parallel.For(0, _groups, _parallel, g =>
         {
             (int gx0, int gy0, int gw, int gh) = GroupRect(g);
-            List<int>[] lists = [new(gw * gh * 64), new(gw * gh * 64), new(gw * gh * 64)];
+            // The varblocks cover the group once: its coefficients fill these exactly.
+            int[][] outCoeffs = [new int[gw * gh * 64], new int[gw * gh * 64], new int[gw * gh * 64]];
+            int filled = 0;
             float[] pixels = new float[64 * 64];
             float[][] coeffs = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
             int[][] quantized = [new int[64 * 64], new int[64 * 64], new int[64 * 64]];
@@ -1551,12 +1572,14 @@ internal sealed partial class JxlVarDctEncoder
                     _quantField[at] = quant;
                     for (int c = 0; c < 3; c++)
                     {
-                        lists[c].AddRange(quantized[c].AsSpan(0, size));
+                        Array.Copy(quantized[c], 0, outCoeffs[c], filled, size);
                     }
+
+                    filled += size;
                 }
             }
 
-            _coeffs[g] = [.. lists.Select(l => l.ToArray())];
+            _coeffs[g] = outCoeffs;
         });
     }
 
@@ -2191,10 +2214,12 @@ internal sealed partial class JxlVarDctEncoder
             double fraction = customize == 1 ? 0.5 : 1.0;
             ulong threshold = (ulong)((ulong.MaxValue >> 32) * fraction);
             ulong s0 = 0x94D049BB133111EB, s1 = 0xBF58476D1CE4E5B9;
+
+            // The sampled varblocks first (the generator runs over every varblock in order), then their zeros counted per group.
+            bool[] sampled = new bool[_strategy.Length];
             for (int g = 0; g < _groups; g++)
             {
                 (int gx0, int gy0, int gw, int gh) = GroupRect(g);
-                int offset = 0;
                 for (int by = gy0; by < gy0 + gh; by++)
                 {
                     for (int bx = gx0; bx < gx0 + gw; bx++)
@@ -2212,40 +2237,100 @@ internal sealed partial class JxlVarDctEncoder
                         a ^= a << 23;
                         a ^= b ^ (a >> 18) ^ (b >> 5);
                         s1 = a;
-                        if ((bits >> 32) > threshold)
+                        sampled[at] = (bits >> 32) <= threshold;
+                    }
+                }
+            }
+
+            long[][][][] perGroup = new long[_groups][][][];
+            Parallel.For(0, _groups, _parallel, g =>
+            {
+                long[][][] local = new long[NumOrders][][];
+                (int gx0, int gy0, int gw, int gh) = GroupRect(g);
+                int offset = 0;
+                for (int by = gy0; by < gy0 + gh; by++)
+                {
+                    for (int bx = gx0; bx < gx0 + gw; bx++)
+                    {
+                        int at = (by * _blocksX) + bx;
+                        if (!_isFirst[at])
                         {
                             continue;
                         }
 
+                        if (!sampled[at])
+                        {
+                            continue;
+                        }
+
+                        // The offset moves on with the sampled varblocks only, as in libjxl.
                         JxlTransformType t = (JxlTransformType)_strategy[at];
                         (int w8, int h8) = JxlTransforms8.Size(t);
                         int size = w8 * h8 * 64;
-                        int ord = JxlTransforms8.OrderId(t);
-                        numZeros[ord] ??= [new long[size], new long[size], new long[size]];
-                        int cx = Math.Max(w8, h8);
-                        int cy = Math.Min(w8, h8);
-                        for (int c = 0; c < 3; c++)
                         {
-                            int[] p = coeffs[g][c];
-                            long[] zeros = numZeros[ord][c];
-                            for (int k = 0; k < size; k++)
+                            int ord = JxlTransforms8.OrderId(t);
+                            local[ord] ??= [new long[size], new long[size], new long[size]];
+                            for (int c = 0; c < 3; c++)
                             {
-                                if (offset + k < p.Length && p[offset + k] == 0)
+                                int[] p = coeffs[g][c];
+                                long[] zeros = local[ord][c];
+                                int n = Math.Min(size, p.Length - offset);
+                                for (int k = 0; k < n; k++)
                                 {
-                                    zeros[k]++;
-                                }
-                            }
-
-                            for (int iy = 0; iy < cy; iy++)
-                            {
-                                for (int ix = 0; ix < cx; ix++)
-                                {
-                                    zeros[(iy * 8 * cx) + ix] = -1;
+                                    if (p[offset + k] == 0)
+                                    {
+                                        zeros[k]++;
+                                    }
                                 }
                             }
                         }
 
                         offset += size;
+                    }
+                }
+
+                perGroup[g] = local;
+            });
+
+            for (int g = 0; g < _groups; g++)
+            {
+                for (int ord = 0; ord < NumOrders; ord++)
+                {
+                    if (perGroup[g][ord] is not long[][] local)
+                    {
+                        continue;
+                    }
+
+                    numZeros[ord] ??= [new long[local[0].Length], new long[local[0].Length], new long[local[0].Length]];
+                    for (int c = 0; c < 3; c++)
+                    {
+                        for (int k = 0; k < local[c].Length; k++)
+                        {
+                            numZeros[ord][c][k] += local[c][k];
+                        }
+                    }
+                }
+            }
+
+            // The LF positions count as -1 (libjxl sets them after every sampled varblock).
+            for (int ord = 0; ord < NumOrders; ord++)
+            {
+                if (numZeros[ord] is not long[][] zerosOf)
+                {
+                    continue;
+                }
+
+                (int w8, int h8) = JxlTransforms8.Size(Enum.GetValues<JxlTransformType>().First(t => JxlTransforms8.OrderId(t) == ord));
+                int cx = Math.Max(w8, h8);
+                int cy = Math.Min(w8, h8);
+                foreach (long[] zeros in zerosOf)
+                {
+                    for (int iy = 0; iy < cy; iy++)
+                    {
+                        for (int ix = 0; ix < cx; ix++)
+                        {
+                            zeros[(iy * 8 * cx) + ix] = -1;
+                        }
                     }
                 }
             }
@@ -2444,6 +2529,7 @@ internal sealed partial class JxlVarDctEncoder
     private List<byte[]> Sections()
     {
         int effort = Speed;
+        int maxHistograms = _draft ? 1 : int.MaxValue;
 
         // The Modular streams: each LF group's LF image and HF metadata, under one tree joined on the stream id.
         int dcStream0 = 1;
@@ -2590,7 +2676,8 @@ internal sealed partial class JxlVarDctEncoder
         {
             Clustering = JxlHistogramParams.ClusteringKind.Fast,
             AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
-            UintMethod = _lfPrecision != 0 ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
+            UintMethod = _lfPrecision != 0 && !_draft ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
+            MaxHistograms = maxHistograms,
         };
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
@@ -2634,7 +2721,7 @@ internal sealed partial class JxlVarDctEncoder
             Clustering = JxlHistogramParams.ClusteringKind.Fast,
             UintMethod = JxlHistogramParams.UintKind.None,
             AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
-            MaxHistograms = effort <= 2 ? 4 : int.MaxValue,
+            MaxHistograms = Math.Min(maxHistograms, effort <= 2 ? 4 : int.MaxValue),
         };
         JxlEntropyCode[] acCodes = new JxlEntropyCode[_passes];
         for (int pass = 0; pass < _passes; pass++)

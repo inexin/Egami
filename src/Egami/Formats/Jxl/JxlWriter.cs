@@ -448,6 +448,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         private readonly JxlChunkedFrame _frame;
         private readonly int _alphaBits = TPixel.Layout.ChannelType == PixelChannelType.Unorm8 ? 8 : 16;
         private readonly List<TPixel[]> _rows = [];
+        private readonly ParallelOptions _parallel;
         private int _first;
         private int _written;
         private int _chunkRow;
@@ -455,6 +456,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         internal ChunkedLossyEncoder(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options, JxlLossySettings settings)
         {
             (_output, _start, _options) = (output, start, options);
+            _parallel = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, start.Context.MaxParallelism) };
             _profile = start.Metadata.GetColorProfile();
             JxlLinearRows probe = new(1, 1, _profile, TPixel.Layout);
             RasterMetadata metadata = start.Metadata;
@@ -528,13 +530,14 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 int pw = right - left, ph = bottom - top;
                 JxlLinearRows rows = new(pw, ph, _profile, TPixel.Layout);
                 int[]? alpha = TPixel.Layout.HasAlpha ? new int[pw * ph] : null;
-                Cmyk16[]? inks = rows.HasBlack ? new Cmyk16[pw] : null;
-                Rgba16[]? rgba = alpha is not null ? new Rgba16[pw] : null;
-                for (int y = top; y < bottom; y++)
+                bool black = rows.HasBlack;
+                int first = _first;
+                Parallel.For(top, bottom, _parallel, y =>
                 {
-                    ReadOnlySpan<TPixel> row = _rows[y - _first].AsSpan(left, pw);
-                    if (inks is not null)
+                    ReadOnlySpan<TPixel> row = _rows[y - first].AsSpan(left, pw);
+                    if (black)
                     {
+                        Cmyk16[] inks = new Cmyk16[pw];
                         PixelConvert.Convert(row, inks.AsSpan());
                         rows.Add<Cmyk16>(inks, y - top);
                     }
@@ -543,16 +546,17 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                         rows.Add(row, y - top);
                     }
 
-                    if (rgba is not null)
+                    if (alpha is not null)
                     {
+                        Rgba16[] rgba = new Rgba16[pw];
                         PixelConvert.Convert(row, rgba.AsSpan());
                         int at = (y - top) * pw;
                         for (int x = 0; x < pw; x++)
                         {
-                            alpha![at + x] = _alphaBits == 8 ? (rgba[x].A + 128) / 257 : rgba[x].A;
+                            alpha[at + x] = _alphaBits == 8 ? (rgba[x].A + 128) / 257 : rgba[x].A;
                         }
                     }
-                }
+                });
 
                 int index = (cy * _frame.LfGroupsX) + cx;
                 JxlVarDctEncoder.EncodeChunk(_frame, index, rows.Image, (x0 - left, y0 - top, right - x1, bottom - y1), alpha, _alphaBits, rows.Image.Black);
@@ -786,8 +790,9 @@ public sealed class JxlWriterOptions : WriterOptions
 
     /// <summary>
     /// Gets the distance alpha is written at in lossy files, on <see cref="Distance"/>'s scale: 0 (the default) keeps alpha
-    /// exact, larger values (up to 25) code it lossy through Modular's squeeze, smaller but with softer edges. Lossless files
-    /// keep alpha exact.
+    /// exact, larger values (up to 25) code it lossy through Modular's squeeze, smaller but with softer edges. From a distance
+    /// of 10 the whole image, alpha included, is coded at half size as cjxl codes it, so alpha is exact only below that.
+    /// Lossless files keep alpha exact.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 25.</exception>
     public float AlphaDistance

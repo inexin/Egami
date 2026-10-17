@@ -144,10 +144,9 @@ internal static class JxlFilters
     /// </summary>
     internal static void Epf(float[][] planes, int width, int height, int stride, JxlLoopFilter lf, Func<int, int, float> sigmaOfBlock, JxlParallel parallel)
     {
-        // Pooled, as Gaborish's buffer; whichever three arrays end up outside planes go back.
+        // Uninitialized, as pooled arrays were (the steps write every sample they read back), and of the planes' exact size.
         int length = planes[0].Length;
-        float[][] scratch = [ArrayPool<float>.Shared.Rent(length), ArrayPool<float>.Shared.Rent(length), ArrayPool<float>.Shared.Rent(length)];
-        float[][] rented = [.. scratch];
+        float[][] scratch = [GC.AllocateUninitializedArray<float>(length), GC.AllocateUninitializedArray<float>(length), GC.AllocateUninitializedArray<float>(length)];
         if (lf.EpfIterations == 3)
         {
             EpfStep(0, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
@@ -160,25 +159,6 @@ internal static class JxlFilters
         {
             EpfStep(2, planes, scratch, width, height, stride, lf, sigmaOfBlock, parallel);
             Swap(planes, scratch);
-        }
-
-        for (int c = 0; c < 3; c++)
-        {
-            if (planes[c].Length != length)
-            {
-                // A pooled array may be longer than asked for; the planes keep their exact size.
-                float[] exact = scratch[c].Length == length ? scratch[c] : new float[length];
-                Array.Copy(planes[c], exact, length);
-                (planes[c], scratch[c]) = (exact, planes[c]);
-            }
-        }
-
-        foreach (float[] a in scratch)
-        {
-            if (rented.Contains(a))
-            {
-                ArrayPool<float>.Shared.Return(a);
-            }
         }
     }
 

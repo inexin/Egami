@@ -141,4 +141,35 @@ public class Jxl
         Assert.True(File.Exists("hdr-as-sdr.jpg"));
         Assert.True(File.Exists("duck-lossless.jxl"));
     }
+
+    [Fact]
+    public void SaveLossy()
+    {
+        using SampleFiles files = new();
+
+        #region save-lossy
+        // Lossy JPEG XL at cjxl's default: quality 90, which is distance 1.0 (visually lossless).
+        using Raster photo = Raster.Load("duck.png");
+        photo.Save("duck-lossy.jxl", new JxlWriterOptions { Lossless = false });
+
+        // A distance as cjxl -d takes it instead of a quality, and more effort for a smaller file.
+        photo.Save("duck-small.jxl", new JxlWriterOptions { Lossless = false, Distance = 2.5f, Effort = 7 });
+        #endregion
+
+        #region save-lossy-alpha
+        // Alpha stays exact in lossy files by default, and fully transparent pixels keep their color.
+        using Raster<Rgba8> logo = Raster.Load<Rgba8>("duck.png");
+        logo.Save("logo.jxl", new JxlWriterOptions { Lossless = false, Quality = 85 });
+
+        // Smaller: alpha coded lossy too, and the color under transparent pixels left to the encoder (as cjxl does).
+        logo.Save("logo-small.jxl", new JxlWriterOptions { Lossless = false, AlphaDistance = 1, KeepTransparentColors = false });
+        #endregion
+
+        long png = new FileInfo("duck.png").Length;
+        Assert.True(new FileInfo("duck-lossy.jxl").Length < png);
+        Assert.True(new FileInfo("duck-small.jxl").Length < new FileInfo("duck-lossy.jxl").Length);
+        using Raster back = Raster.Load("logo.jxl");
+        Assert.Equal((photo.Width, photo.Height), (back.Width, back.Height));
+        Assert.True(File.Exists("logo-small.jxl"));
+    }
 }

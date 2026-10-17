@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Runtime.Intrinsics;
 
 using Egami.Colors;
@@ -144,13 +145,10 @@ internal sealed class JxlLinearRows
     private readonly ColorTransform _transform;
     private readonly ColorTransform? _primaries;
     private readonly float[]? _lut8;
-    private readonly Rgb8[]? _rgb8;
     private readonly bool _pq;
     private readonly float[] _luminances = [0.2627f, 0.6780f, 0.0593f];
     private readonly int _width;
-    private readonly RgbF32[] _rgb;
-    private readonly GrayF32[] _gray;
-    private readonly Cmyk16[]? _inks;
+    private readonly bool _cmyk;
 
     internal JxlLinearRows(int width, int height, ColorProfile profile, PixelLayoutInfo layout)
     {
@@ -182,20 +180,16 @@ internal sealed class JxlLinearRows
             if (linear.All(p => p.R == p.G && p.G == p.B))
             {
                 _lut8 = [.. linear.Select(p => p.R)];
-                _rgb8 = new Rgb8[width];
             }
         }
 
-        _rgb = new RgbF32[width];
-        _gray = new GrayF32[width];
-        bool cmyk = profile.Model == ColorModel.Cmyk;
-        _inks = cmyk ? new Cmyk16[width] : null;
+        _cmyk = profile.Model == ColorModel.Cmyk;
         int count = width * height;
-        Image = new JxlLinearImage(width, height, [new float[count], new float[count], new float[count]], gray, cmyk ? new float[count] : null);
+        Image = new JxlLinearImage(width, height, [new float[count], new float[count], new float[count]], gray, _cmyk ? new float[count] : null);
     }
 
     /// <summary>Gets whether the rows carry a black ink, which <see cref="Add"/> then wants as CMYK pixels.</summary>
-    internal bool HasBlack => _inks is not null;
+    internal bool HasBlack => _cmyk;
 
     /// <summary>Gets the image the rows are written into.</summary>
     internal JxlLinearImage Image { get; }
@@ -216,7 +210,7 @@ internal sealed class JxlLinearRows
     /// <summary>Gets the cd/m² that 1.0 in the planes stands for: 255 for SDR, as libjxl's SetIntensityTarget for PQ and HLG.</summary>
     internal float IntensityTarget { get; } = 255;
 
-    /// <summary>Converts row <paramref name="y"/> into the planes.</summary>
+    /// <summary>Converts row <paramref name="y"/> into the planes; rows may be added from several threads at once.</summary>
     internal void Add<TPixel>(ReadOnlySpan<TPixel> row, int y)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -224,35 +218,41 @@ internal sealed class JxlLinearRows
         float[][] color = Image.Color;
         if (Image.IsGray)
         {
-            _transform.Apply<TPixel, GrayF32>(row, _gray);
+            GrayF32[] gray = ArrayPool<GrayF32>.Shared.Rent(_width);
+            _transform.Apply<TPixel, GrayF32>(row, gray.AsSpan(0, _width));
             for (int x = 0; x < _width; x++)
             {
-                float l = _gray[x].L;
+                float l = gray[x].L;
                 (color[0][at + x], color[1][at + x], color[2][at + x]) = (l, l, l);
             }
 
+            ArrayPool<GrayF32>.Shared.Return(gray);
             return;
         }
 
         if (_lut8 is not null)
         {
-            PixelConvert.Convert(row, _rgb8.AsSpan());
+            Rgb8[] rgb8 = ArrayPool<Rgb8>.Shared.Rent(_width);
+            PixelConvert.Convert(row, rgb8.AsSpan(0, _width));
             float[] lut = _lut8;
             for (int x = 0; x < _width; x++)
             {
-                Rgb8 p = _rgb8![x];
+                Rgb8 p = rgb8[x];
                 (color[0][at + x], color[1][at + x], color[2][at + x]) = (lut[p.R], lut[p.G], lut[p.B]);
             }
 
+            ArrayPool<Rgb8>.Shared.Return(rgb8);
             return;
         }
 
+        RgbF32[] pooled = ArrayPool<RgbF32>.Shared.Rent(_width);
+        Span<RgbF32> rgb = pooled.AsSpan(0, _width);
         if (_primaries is not null)
         {
-            PixelConvert.Convert(row, _rgb.AsSpan());
+            PixelConvert.Convert(row, rgb);
             for (int x = 0; x < _width; x++)
             {
-                RgbF32 p = _rgb[x];
+                RgbF32 p = rgb[x];
                 float r = Eotf(p.R), g = Eotf(p.G), b = Eotf(p.B);
                 if (!_pq)
                 {
@@ -262,29 +262,33 @@ internal sealed class JxlLinearRows
                     (r, g, b) = (r * k, g * k, b * k);
                 }
 
-                _rgb[x] = new RgbF32(r, g, b);
+                rgb[x] = new RgbF32(r, g, b);
             }
 
-            _primaries.Apply<RgbF32, RgbF32>(_rgb, _rgb);
+            _primaries.Apply<RgbF32, RgbF32>(rgb, rgb);
         }
         else
         {
-            _transform.Apply<TPixel, RgbF32>(row, _rgb);
+            _transform.Apply<TPixel, RgbF32>(row, rgb);
         }
 
         for (int x = 0; x < _width; x++)
         {
-            (color[0][at + x], color[1][at + x], color[2][at + x]) = (_rgb[x].R, _rgb[x].G, _rgb[x].B);
+            (color[0][at + x], color[1][at + x], color[2][at + x]) = (rgb[x].R, rgb[x].G, rgb[x].B);
         }
 
-        if (_inks is not null)
+        ArrayPool<RgbF32>.Shared.Return(pooled);
+        if (_cmyk)
         {
-            PixelConvert.Convert(row, _inks.AsSpan());
+            Cmyk16[] inks = ArrayPool<Cmyk16>.Shared.Rent(_width);
+            PixelConvert.Convert(row, inks.AsSpan(0, _width));
             float[] black = Image.Black!;
             for (int x = 0; x < _width; x++)
             {
-                black[at + x] = 1 - (_inks[x].K / 65535f);
+                black[at + x] = 1 - (inks[x].K / 65535f);
             }
+
+            ArrayPool<Cmyk16>.Shared.Return(inks);
         }
     }
 }

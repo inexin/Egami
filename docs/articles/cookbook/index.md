@@ -687,7 +687,31 @@ arithmetic-coded, lossless, hierarchical, 12-bit and CMYK JPEGs, and 4:1:1 sampl
 Every pixel comes back exactly, in the raster's own precision: 8 or 16-bit, half or single float, gray or RGB, with alpha
 when it is not opaque everywhere. The effort follows cjxl's: 1 is its fast path, 7 learns a context tree and tries palettes
 and color transforms, for files within a few bytes of cjxl's. The ICC profile (or an enumerated sRGB, linear or HDR space),
-EXIF, XMP and orientation are kept. A lossy encoder comes in 2.9.7.
+EXIF, XMP and orientation are kept.
+
+## Save a lossy JPEG XL file
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save-lossy)]
+
+Lossy files are VarDCT in XYB, as cjxl writes them for PNG input, and come out within 5% of cjxl's size and Butteraugli score at the
+same settings (libjxl 0.12.0). Pick either a quality or a distance: `Quality` is cjxl's `-q` (90 by default, 100 lossless) and
+`Distance` its `-d`, where 1.0 is visually lossless and each step up gives a smaller file with more visible loss; a distance,
+when set, wins. `Effort` 1 to 7 is cjxl's `-e`: 6 adds the full block-size search and a per-block edge-preserving
+filter strength, 7 patches for repeated shapes such as text. `Progressive` and `PhotonNoiseIso` do what cjxl's `-p` and `--photon_noise_iso` do.
+Large images are coded in 2048-pixel chunks, as cjxl does, so memory stays bounded.
+
+A JPEG source is better recompressed than re-encoded: [Recompress a JPEG into JPEG XL without
+loss](#recompress-a-jpeg-into-jpeg-xl-without-loss) keeps its pixels exactly and the original file recoverable, where lossy
+encoding its decoded pixels loses detail a second time.
+
+## Keep alpha exact in a lossy JPEG XL file
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#save-lossy-alpha)]
+
+Alpha is an extra channel coded apart from the color, exact by default, so cut-outs keep their edges (below distance 10;
+from there cjxl and Egami code the whole image at half size). `AlphaDistance` above 0
+codes it lossy as cjxl's `--alpha_distance` does. Fully transparent pixels keep their color unless `KeepTransparentColors` is
+false, which lets the encoder replace it, as libjxl does by default, for a smaller file.
 
 ## Read an HDR JPEG XL file as SDR
 

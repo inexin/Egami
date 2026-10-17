@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -62,7 +64,7 @@ internal sealed class JxlAdaptiveQuantization
     internal float[] Mask { get; }
 
     /// <summary>Gets the per-pixel masking (the blurred inverse Laplacian) the block-size search and the EPF heuristics use.</summary>
-    internal float[] Mask1x1 { get; }
+    internal float[] Mask1x1 { get; private set; }
 
     /// <summary>
     /// Computes libjxl's InitialQuantField for XYB planes padded to whole blocks (row stride <paramref name="xsize"/>):
@@ -473,8 +475,9 @@ internal sealed class JxlAdaptiveQuantization
         ReadOnlySpan<float> k = [0.364911248f, 0.05f, 0.1688888021f, 0.221069183f, 0.306563504f];
         double sum = 1.0 + (4 * (k[0] + k[1] + k[2] + k[4] + (2 * k[3])));
         float normalize = (float)(1.0 / Math.Max(sum, 1e-5));
-        float[] src = (float[])Mask1x1.Clone();
-        Symmetric5(src, Mask1x1, _xsize, _ysize, [normalize, normalize * k[0], normalize * k[2], normalize * k[1], normalize * k[4], normalize * k[3]], parallel);
+        float[] dst = GC.AllocateUninitializedArray<float>(Mask1x1.Length);
+        Symmetric5(Mask1x1, dst, _xsize, _ysize, [normalize, normalize * k[0], normalize * k[2], normalize * k[1], normalize * k[4], normalize * k[3]], parallel);
+        Mask1x1 = dst;
     }
 
     /// <summary>
@@ -489,7 +492,27 @@ internal sealed class JxlAdaptiveQuantization
         {
             int ym1 = Mirror(y - 1, ysize) * xsize, yp1 = Mirror(y + 1, ysize) * xsize, ym2 = Mirror(y - 2, ysize) * xsize, yp2 = Mirror(y + 2, ysize) * xsize;
             int y0 = y * xsize;
-            for (int x = 0; x < xsize; x++)
+            int lanes = Vector256<float>.Count;
+            int inner = xsize >= 4 + lanes ? 2 + ((xsize - 4) / lanes * lanes) : 2;
+            if (inner > 2)
+            {
+                // Away from the left and right edges, several pixels at a time with the same operations in the same order.
+                Vector256<float> vc = Vector256.Create(wc), vr = Vector256.Create(wr), vR = Vector256.Create(wR);
+                Vector256<float> vd = Vector256.Create(wd), vD = Vector256.Create(wD), vL = Vector256.Create(wL);
+                ref float s = ref src[0];
+                for (int x = 2; x < inner; x += lanes)
+                {
+                    Vector256<float> v = vc * L(ref s, y0 + x);
+                    v += vr * (L(ref s, y0 + x - 1) + L(ref s, y0 + x + 1) + L(ref s, ym1 + x) + L(ref s, yp1 + x));
+                    v += vR * (L(ref s, y0 + x - 2) + L(ref s, y0 + x + 2) + L(ref s, ym2 + x) + L(ref s, yp2 + x));
+                    v += vd * (L(ref s, ym1 + x - 1) + L(ref s, ym1 + x + 1) + L(ref s, yp1 + x - 1) + L(ref s, yp1 + x + 1));
+                    v += vD * (L(ref s, ym2 + x - 2) + L(ref s, ym2 + x + 2) + L(ref s, yp2 + x - 2) + L(ref s, yp2 + x + 2));
+                    v += vL * (L(ref s, ym1 + x - 2) + L(ref s, ym1 + x + 2) + L(ref s, yp1 + x - 2) + L(ref s, yp1 + x + 2) + L(ref s, ym2 + x - 1) + L(ref s, ym2 + x + 1) + L(ref s, yp2 + x - 1) + L(ref s, yp2 + x + 1));
+                    v.CopyTo(dst, y0 + x);
+                }
+            }
+
+            for (int x = 0; x < xsize; x = x == 1 && inner > 2 ? inner : x + 1)
             {
                 int xm1 = Mirror(x - 1, xsize), xp1 = Mirror(x + 1, xsize), xm2 = Mirror(x - 2, xsize), xp2 = Mirror(x + 2, xsize);
                 float v = wc * src[y0 + x];
@@ -507,6 +530,8 @@ internal sealed class JxlAdaptiveQuantization
     /// libjxl's GaborishInverse: sharpens each plane so that the decoder's Gaborish blur gives it back, with weights tuned on
     /// Butteraugli rather than an exact inverse.
     /// </summary>
+    private static Vector256<float> L(ref float origin, int at) => Vector256.LoadUnsafe(ref origin, (nuint)at);
+
     internal static void GaborishInverse(float[][] planes, int xsize, int ysize, ParallelOptions parallel)
     {
         ReadOnlySpan<float> k = [-0.09495815671340026f, -0.041031725066768575f, 0.013710004822696948f, 0.006510206083837737f, -0.0014789063378272242f];
@@ -515,8 +540,15 @@ internal sealed class JxlAdaptiveQuantization
         float[] weights = [normalize, normalize * k[0], normalize * k[2], normalize * k[1], normalize * k[4], normalize * k[3]];
         for (int c = 0; c < 3; c++)
         {
-            float[] src = (float[])planes[c].Clone();
-            Symmetric5(src, planes[c], xsize, ysize, weights, parallel);
+            // Into a new plane, which takes the old one's place (every sample is written).
+            float[] dst = GC.AllocateUninitializedArray<float>(planes[c].Length);
+            if (dst.Length != xsize * ysize)
+            {
+                planes[c].AsSpan().CopyTo(dst);
+            }
+
+            Symmetric5(planes[c], dst, xsize, ysize, weights, parallel);
+            planes[c] = dst;
         }
     }
 

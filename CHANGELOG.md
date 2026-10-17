@@ -117,7 +117,19 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   The color space goes in enumerated when it is sRGB, linear, PQ or HLG, else as the ICC profile; EXIF and XMP go in boxes,
   the orientation in the codestream too. Encoding runs on up to `MaxParallelism` threads with the same file at every count,
   within 1.75 times cjxl's time on one thread and about as fast as cjxl on all cores.
-  `JxlWriterOptions.Lossless` is reserved for the lossy encoder of 2.9.7; `false` is refused until then.
+- `Raster.Save` writes lossy JPEG XL too: VarDCT in XYB as libjxl 0.12.0's encoder makes it at efforts 1 to 7, with files
+  within 5% of cjxl's size and Butteraugli score at the same settings and decoding in djxl. `JxlWriterOptions.Lossless` picks
+  the kind; by default a JPEG XL source keeps its own and anything else is written lossy, as cjxl does for PNG. `Quality` is
+  cjxl's `-q` (90, distance 1.0, by default) and `Distance` its `-d` (0.1 to 25); from distance 10 the image is coded at half
+  size, as cjxl codes it. Effort 5 and up add adaptive quantization, chroma from luma and Gaborish, 6 the full block-size
+  search and per-block edge-preserving filter strength, 7 patches for text and repeated shapes.
+- Lossy files keep alpha exact (`AlphaDistance` codes it lossy through squeeze) and the color under transparent pixels
+  (`KeepTransparentColors` false lets the encoder replace it, as libjxl does by default); CMYK keeps its black channel. sRGB,
+  Display P3, Rec. 2020, PQ and HLG go in as enumerated spaces (HDR with its intensity target), other profiles as ICC, and a
+  gain map as a jhgm box. `Progressive` writes cjxl `-p`'s LF frame and three HF passes, `PhotonNoiseIso` its film-like noise.
+- Large lossy images are coded in 2048-pixel chunks as cjxl codes them, so a 16,384 × 16,384 image encodes in about 2.5 GB.
+  Encoding runs on up to `MaxParallelism` threads with the same file at every count, within 1.9 times cjxl's time on all
+  cores and 2.5 times on one thread.
 - `JxlImage.RecompressJpeg` recompresses a JPEG into JPEG XL without loss, as cjxl does: the JPEG's coefficients become a
   VarDCT frame with chroma from luma, and a jbrd box keeps what rebuilding the file needs, so `ReconstructJpeg` (and djxl)
   give the original back byte for byte. Files come out 0.82 of the JPEGs' size, within 0.1% of cjxl's (libjxl 0.12.0), and
