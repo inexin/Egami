@@ -7,6 +7,18 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Faster blur, shadow, lighting and emboss on 8-bit images
+
+- `Blur(σ, …, BlurMethod.Fast)` and `Blur` above σ 100 on 8-bit images (Rgba8, Bgra8, Rgb8, Gray8 and the rest of the
+  whole-byte types) run each axis as one streaming sweep, rows in vector lanes, in encoded or linear light: 1.4 to 2.5 times
+  faster at one thread (a 4000 × 3000 photo at σ 20 in about 105 ms, at σ 60 about 120 ms). Results move by at most one level
+  from 1.x; they are still the same at any thread count.
+- `DropShadow` reads alpha from its byte and blurs its alpha plane the same way: σ 10 on a 1000 × 1000 logo in 10 ms at one
+  thread, down from 48.
+- `Lighting` takes the spot cone and specular shine from a power table and writes Rgba8 and Bgra8 bytes directly: on a
+  2000 × 2000 logo a distant light takes 15 ms (was 27) and a specular spot 38 ms (was 70), within a level of before.
+- `Emboss` reads and writes Rgba8 and Bgra8 bytes directly, twice as fast with the same pixels.
+
 ### Windows metafiles (new package Egami.Metafiles 0.1)
 
 - `Metafile` reads WMF (placeable or not), EMF and EMF+ files and their gzip forms WMZ and EMZ, and plays them onto any

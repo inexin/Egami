@@ -45,7 +45,8 @@ internal static class ByteBlur
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int width = source.Width, height = source.Height, channels = Unsafe.SizeOf<TPixel>(), alpha = StoredRows<TPixel>.AlphaByte;
-        int[] translucent = new int[height + 1];
+        int[] translucent = ArrayPool<int>.Shared.Rent(height + 1);
+        translucent.AsSpan(0, height + 1).Clear();
 
         // Linear light needs the 16-bit plane too: a dark color's linear value is a small fraction of a level.
         bool deep = curve is not null;
@@ -57,7 +58,7 @@ internal static class ByteBlur
         PixelPlane<Gray16>? plane = deep ? PixelPlane.Allocate<Gray16>(width * channels, height, memory) : null;
         try
         {
-            Layout layout = new(width, channels, alpha, curve is null ? null : [.. curve.LinearFrom8.Select(v => v * 255)], curve);
+            Layout layout = new(width, channels, alpha, curve?.LinearFrom8Times255, curve);
             int bands = (height + Band - 1) / Band;
             Chunks.Run(bands, (long)width * height * channels, maxParallelism, (start, end) =>
             {
@@ -97,6 +98,7 @@ internal static class ByteBlur
         finally
         {
             plane?.Dispose();
+            ArrayPool<int>.Shared.Return(translucent);
         }
     }
 

@@ -36,8 +36,8 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     private readonly float _scale;
     private readonly bool _luminance;
     private readonly BlendMode? _blend;
-    private readonly float[] _spotPower;
-    private readonly float[] _shinePower;
+    private readonly float[]? _spotPower;
+    private readonly float[]? _shinePower;
     private Vector3 _position;
 
     internal LightingOperation(Light light, LightingModel model, LightingOptions options)
@@ -71,8 +71,8 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         _scale = options.SurfaceScale;
         _luminance = options.Height == HeightSource.Luminance;
         _blend = options.Blend;
-        _spotPower = PowerTable(_exponent);
-        _shinePower = PowerTable(_shininess);
+        _spotPower = _kind == LightKind.Spot ? PowerTable(_exponent) : null;
+        _shinePower = _specular ? PowerTable(_shininess) : null;
     }
 
     private enum LightKind
@@ -457,6 +457,22 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     /// </summary>
     internal static float[] PowerTable(float e)
     {
+        // A handful of exponents are ever in use, so tables are kept by exponent and the cache simply emptied if it fills.
+        if (Powers.TryGetValue(e, out float[]? known))
+        {
+            return known;
+        }
+
+        if (Powers.Count >= 64)
+        {
+            Powers.Clear();
+        }
+
+        return Powers.GetOrAdd(e, BuildPowerTable);
+    }
+
+    private static float[] BuildPowerTable(float e)
+    {
         float[] table = new float[PowerSteps + 2];
         for (int i = 0; i <= PowerSteps; i++)
         {
@@ -466,6 +482,8 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         table[PowerSteps + 1] = table[PowerSteps];
         return table;
     }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<float, float[]> Powers = new();
 
     /// <summary>The steps of <see cref="PowerTable"/>: interpolating between them is within 0.03 of a level of x^e for e up to 128.</summary>
     private const int PowerSteps = 4096;
