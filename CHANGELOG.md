@@ -167,6 +167,22 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   takes at most 1.5 times libvpx's time at 720p and 1080p on one thread and on all cores.
 - Lossy WebP decodes about 30% faster: the VP8 token loop keeps its decoder state in registers and the loop filter works in
   saturating 8-bit lanes, with the same pixels as before.
+
+### VP8 decode speed
+
+No API changes. Every frame decodes as before: equal to libvpx 1.14.1's on its 59 test vectors and the VP8 clips, and lossy WebP
+equal to libwebp's.
+
+- One-thread VP8 video decodes about 8% faster on the 1080p speed-gate clips and 20% faster on Egami.Video's film-grain clips.
+  Against libvpx 1.14.1 (its SIMD build, one thread) it now takes 1.28–1.40 times libvpx's time on the 720p and 1080p gate clips
+  and 1.43 times on the grain clips, down from 1.32–1.50 and 1.53–1.67. All-core decoding is no slower. Intra prediction fills
+  whole rows with vector stores; one-thread decoding reconstructs a macroblock row before filtering it, as libvpx does, so
+  inter macroblocks no longer keep copies of their edges; residuals are added two blocks at a time in 16-bit lanes; each
+  coefficient's sign is decoded without a branch.
+- One-thread video decoding allocates nothing per frame after the first key frame: the frame decoder and its arrays are kept
+  from frame to frame (they took 85 KB a frame at 720p and 183 KB at 1080p).
+- Lossy WebP decodes 9–18% faster from the same changes (a 2048 × 1536 photo in 25 ms instead of 29 ms on one thread).
+
 ### Radiance, OpenEXR and HDR gain maps
 
 - `RadianceFormat` reads Radiance pictures (RGBE and XYZE, flat, old and new run-length scanlines, all eight scan orders) to
