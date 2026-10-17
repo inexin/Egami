@@ -431,10 +431,7 @@ public enum JoiningGroup
 }
 
 /// <summary>A code point's Indic_Syllabic_Category, its role in an Indic syllable.</summary>
-/// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/Unicode.cs" region="properties"/>
-/// </example>
-public enum IndicSyllabicCategory
+internal enum IndicSyllabicCategory
 {
     /// <summary>Indic_Syllabic_Category Other.</summary>
     Other = 0,
@@ -549,10 +546,7 @@ public enum IndicSyllabicCategory
 }
 
 /// <summary>A code point's Indic_Positional_Category, where a dependent mark sits relative to its base.</summary>
-/// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/Unicode.cs" region="properties"/>
-/// </example>
-public enum IndicPositionalCategory
+internal enum IndicPositionalCategory
 {
     /// <summary>Indic_Positional_Category Not_Applicable.</summary>
     NotApplicable = 0,

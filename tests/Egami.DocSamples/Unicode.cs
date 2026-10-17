@@ -16,8 +16,6 @@ public class Unicode
         BidiClass bidi = UnicodeData.GetBidiClass('\u0627');                      // ArabicLetter
         JoiningType joining = UnicodeData.GetJoiningType('\u0628');               // DualJoining
         JoiningGroup group = UnicodeData.GetJoiningGroup('\u0628');               // Beh
-        IndicSyllabicCategory role = UnicodeData.GetIndicSyllabicCategory('\u094D'); // Virama
-        IndicPositionalCategory position = UnicodeData.GetIndicPositionalCategory('\u093F'); // Left
         VerticalOrientation upright = UnicodeData.GetVerticalOrientation('\u6F22');   // Upright
         EastAsianWidth width = UnicodeData.GetEastAsianWidth('\u6F22');               // Wide
         bool emoji = UnicodeData.IsEmojiPresentation(0x1F600);                    // true
@@ -30,8 +28,6 @@ public class Unicode
         Assert.Equal(BidiClass.ArabicLetter, bidi);
         Assert.Equal(JoiningType.DualJoining, joining);
         Assert.Equal(JoiningGroup.Beh, group);
-        Assert.Equal(IndicSyllabicCategory.Virama, role);
-        Assert.Equal(IndicPositionalCategory.Left, position);
         Assert.Equal(VerticalOrientation.Upright, upright);
         Assert.Equal(EastAsianWidth.Wide, width);
         Assert.True(emoji);

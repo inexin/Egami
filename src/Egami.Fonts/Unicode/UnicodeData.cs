@@ -99,13 +99,13 @@ public static class UnicodeData
     /// <param name="codePoint">A code point, 0 to 0x10FFFF.</param>
     /// <returns>The category.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="codePoint"/> is outside 0 to 0x10FFFF.</exception>
-    public static IndicSyllabicCategory GetIndicSyllabicCategory(int codePoint) => (IndicSyllabicCategory)UnicodeTables.RecordIndicSyllabicCategory[Record(Check(codePoint))];
+    internal static IndicSyllabicCategory GetIndicSyllabicCategory(int codePoint) => (IndicSyllabicCategory)UnicodeTables.RecordIndicSyllabicCategory[Record(Check(codePoint))];
 
     /// <summary>Gets a code point's Indic_Positional_Category.</summary>
     /// <param name="codePoint">A code point, 0 to 0x10FFFF.</param>
     /// <returns>The category.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="codePoint"/> is outside 0 to 0x10FFFF.</exception>
-    public static IndicPositionalCategory GetIndicPositionalCategory(int codePoint) => (IndicPositionalCategory)UnicodeTables.RecordIndicPositionalCategory[Record(Check(codePoint))];
+    internal static IndicPositionalCategory GetIndicPositionalCategory(int codePoint) => (IndicPositionalCategory)UnicodeTables.RecordIndicPositionalCategory[Record(Check(codePoint))];
 
     /// <summary>Gets a code point's Vertical_Orientation (UAX #50).</summary>
     /// <param name="codePoint">A code point, 0 to 0x10FFFF.</param>

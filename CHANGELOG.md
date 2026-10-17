@@ -438,6 +438,8 @@ Settled in the 1.0 API review, changes from 0.2.0:
 - Breaking: `FontCollection.System` is read-only; `Add`, `AddFile` and `AddDirectory` on it throw `InvalidOperationException`.
   To match your own fonts beside the installed ones, call the new `FontCollection.AddSystemFonts` on a collection of your own:
   it copies the installed-font index, and the faces load with that collection's options.
+- Breaking: `IndicSyllabicCategory`, `IndicPositionalCategory` and `UnicodeData.GetIndicSyllabicCategory` and
+  `GetIndicPositionalCategory` are internal. The shaper still uses them; they were shaping data rather than a public feature.
 - `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
   face on each call.
 
