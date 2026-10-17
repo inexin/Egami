@@ -1,7 +1,7 @@
 # The .egdr format
 
 An Egami drawing file holds a recorded `Picture`: the calls a `PictureRecorder` kept, and the images, paths and nested drawings
-they use. `Picture.Save` writes it and `Picture.Load` reads it; this page is the format's specification, version 1.0, for
+they use. `Picture.Save` writes it and `Picture.Load` reads it; this page is the format's specification, version 1.1, for
 anyone writing a reader or writer of their own. See [Drawing](drawing.md#recorded-drawings) for the API.
 
 ## Layout
@@ -15,10 +15,10 @@ A file is a 12-byte header followed by chunks:
 | --- | --- | --- |
 | 0 to 7 | Signature | `89 45 47 44 52 0D 0A 1A` (`\x89EGDR\r\n\x1A`, after PNG's: it catches text-mode transfers and stops `type`) |
 | 8 to 9 | Major version | `u16`, 1. A reader rejects a major version it does not know. |
-| 10 to 11 | Minor version | `u16`, 0. A reader accepts any minor version of its major version. |
+| 10 to 11 | Minor version | `u16`, 1. A reader accepts any minor version of its major version. |
 
 Each chunk is a 4-byte ASCII type, a `u32` payload length, and the payload. A reader skips the payload of a chunk type it does
-not know, which is how later minor versions add to the format. The chunk types of version 1.0:
+not know, which is how later minor versions add to the format. The chunk types of version 1.1:
 
 | Type | Payload | Defines |
 | --- | --- | --- |
@@ -26,6 +26,7 @@ not know, which is how later minor versions add to the format. The chunk types o
 | `PATH` | A path, below | The next path, numbered from 0 |
 | `DRAW` | A drawing, below | The next drawing, numbered from 0 |
 | `ENCI` | An encoded image file (a JPEG, a PNG, any format Egami reads), its bytes as they were given | The next encoded image, numbered from 0 |
+| `INKS` | Ink entries, below (since 1.1) | Nothing: it annotates the `DRAW` chunk right after it |
 | `DEND` | Empty | The end. The file's drawing is the last `DRAW` chunk before it. |
 
 A chunk refers to images, paths and drawings by number, and only to ones defined by earlier chunks, so a file is read in one pass
@@ -141,6 +142,25 @@ InterpolationSpace and HueMethod. A simplex noise uses its x frequency.
 
 A `CustomPaint` runs C# and has no kind: saving a drawing that uses one throws, and so does saving a layer with a filter, a
 backdrop or a soft mask, naming the call.
+
+## Inks
+
+A drawing made with ink colours (`InkColor`), overprint or layers with a `ColorSpace` keeps them in an `INKS` chunk written just
+before its `DRAW` chunk, which holds every colour as its sRGB appearance. A 1.0 reader skips `INKS` and draws the appearances;
+an ink canvas reading 1.1 prints the inks. The payload is an entry count `u32`, then each entry: the byte offset `u32` in the
+next `DRAW` chunk's payload that it is about, its kind `u8`, a data length `u32` and the data. Each offset appears once and must
+be the start of what its kind names:
+
+| Kind | At | Data |
+| --- | --- | --- |
+| 1 | A color: a SolidPaint's, a stop's, a mesh vertex's or a patch corner's | An ink colour |
+| 2 | A paint's kind `u8` | Overprint `u8`: 1 on, 2 nonzero (absent means off) |
+| 3 | A SaveLayer opcode | The layer's colour space as an ICC profile |
+
+An ink colour is a flags `u8` (1 for a process CMYK colour, whose four inks are Cyan, Magenta, Yellow and Black in that order),
+an ink count `u32`, and per ink: its name as a string, ColorantKind `u8` (0 process, 1 spot, 2 technical), an appearance `u8`
+(0 none, 1 CMYK, 2 sRGB, 3 Lab D50) with four `f32` when there is one (RGB and Lab leave the fourth 0), and its tint `f32`. A
+mesh's or patch's vertices have inks all or none.
 
 ## Reading untrusted files
 

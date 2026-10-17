@@ -95,5 +95,7 @@ internal sealed class TraceCanvas(float width, float height) : Egami.Drawing.Can
 
     private static string S(Stroke? s) => s is null ? "fill" : F($"stroke {s.Width} {s.Cap} {s.Join} {s.MiterLimit}") + (s.Dash is null ? string.Empty : F($" dash [{string.Join(' ', s.Dash.Intervals.Select(v => v.ToString(CultureInfo.InvariantCulture)))}] {s.Dash.Phase}"));
 
-    private static string P(Paint p) => p is SolidPaint s ? F($"solid {s.Color.R} {s.Color.G} {s.Color.B} {s.Color.A} {p.BlendMode} {p.Opacity} {p.Antialias}") : p.GetType().Name;
+    private static string P(Paint p) => (p is SolidPaint s ? F($"solid {s.Color.R} {s.Color.G} {s.Color.B} {s.Color.A} {p.BlendMode} {p.Opacity} {p.Antialias}") : p.GetType().Name)
+        + (p is SolidPaint { Ink: Egami.Colors.InkColor ink } ? " inks " + string.Join(", ", ink.Inks.Select(i => F($"{i.Colorant.Name} {i.Tint}"))) : string.Empty)
+        + (p.Overprint == Overprint.Off ? string.Empty : $" overprint {p.Overprint}");
 }

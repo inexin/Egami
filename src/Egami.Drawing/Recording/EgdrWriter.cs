@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using Egami.Colors;
 using Egami.Fonts;
 using Egami.Operations;
 using Egami.Pixels;
@@ -12,7 +13,7 @@ namespace Egami.Drawing.Recording;
 internal static class Egdr
 {
     internal const ushort Major = 1;
-    internal const ushort Minor = 0;
+    internal const ushort Minor = 1;
 
     /// <summary>The deepest nesting of pictures a file may hold, counting picture paints.</summary>
     internal const int MaxNesting = 64;
@@ -29,6 +30,25 @@ internal static class Egdr
     internal static readonly uint DrawingChunk = Tag("DRAW");
     internal static readonly uint End = Tag("DEND");
     internal static readonly uint EncodedImageChunk = Tag("ENCI");
+
+    /// <summary>
+    /// What an ink canvas needs beyond the appearances in the DRAW chunk that follows it (minor version 1): entries keyed by a
+    /// byte offset in that chunk's payload. Older readers skip it and draw the appearances.
+    /// </summary>
+    internal static readonly uint InksChunk = Tag("INKS");
+
+    /// <summary>The kinds of entry in an INKS chunk.</summary>
+    internal enum InkEntry : byte
+    {
+        /// <summary>The colour (16 bytes) at the offset is these inks.</summary>
+        Color = 1,
+
+        /// <summary>The paint whose kind byte is at the offset overprints so.</summary>
+        Overprint = 2,
+
+        /// <summary>The layer whose SaveLayer op is at the offset blends in this ICC profile.</summary>
+        LayerSpace = 3,
+    }
 
     internal enum Op : byte
     {
@@ -170,7 +190,7 @@ internal sealed class EgdrWriter
             return index;
         }
 
-        // Everything a call refers to is written before the picture's own chunk.
+        // Everything a call refers to is written before the picture's own chunk; the inks go just before it.
         Buffer b = new();
         b.Rect(picture.Bounds);
         ReadOnlySpan<DrawingCall> calls = picture.Calls;
@@ -185,6 +205,21 @@ internal sealed class EgdrWriter
             {
                 throw new NotSupportedException($"Call {i} of the picture cannot be saved: {e.Message}", e);
             }
+        }
+
+        if (b.Marks is { Count: > 0 } marks)
+        {
+            Buffer inks = new();
+            inks.U32((uint)marks.Count);
+            foreach ((int offset, Egdr.InkEntry kind, byte[] data) in marks)
+            {
+                inks.U32((uint)offset);
+                inks.U8((byte)kind);
+                inks.U32((uint)data.Length);
+                inks.Bytes(data);
+            }
+
+            Chunk(Egdr.InksChunk, inks.Span);
         }
 
         Chunk(Egdr.DrawingChunk, b.Span);
@@ -224,12 +259,18 @@ internal sealed class EgdrWriter
                 b.Op(Egdr.Op.Restore);
                 break;
             case SaveLayerCall c:
-                b.Op(Egdr.Op.SaveLayer);
                 LayerOptions o = c.Options;
                 if (o.Filter is not null || o.Backdrop is not null || o.Mask is not null)
                 {
                     throw new NotSupportedException("a layer's filter, backdrop and soft mask are C# code, which a file cannot hold.");
                 }
+
+                if (o.ColorSpace is ColorProfile space)
+                {
+                    b.Mark(Egdr.InkEntry.LayerSpace, space.ToIcc());
+                }
+
+                b.Op(Egdr.Op.SaveLayer);
 
                 b.F32(o.Opacity);
                 b.U8((byte)o.BlendMode);
@@ -428,9 +469,9 @@ internal sealed class EgdrWriter
                     }
 
                     b.U8((byte)((m.Colors.IsEmpty ? 0 : 1) | (m.TexCoords.IsEmpty ? 0 : 2) | (m.Values.IsEmpty ? 0 : 4) | (m.Indices.IsEmpty ? 0 : 8)));
-                    foreach (RgbaF32 color in m.Colors.Span)
+                    for (int v = 0; v < m.Colors.Length; v++)
                     {
-                        b.Color(color);
+                        b.Color(m.Colors.Span[v], m.Inks.IsEmpty ? null : m.Inks.Span[v]);
                     }
 
                     foreach (Vector2 t in m.TexCoords.Span)
@@ -470,9 +511,9 @@ internal sealed class EgdrWriter
                     }
 
                     b.U8((byte)((p.CornerColors.IsEmpty ? 0 : 1) | (p.CornerTexCoords.IsEmpty ? 0 : 2) | (p.CornerValues.IsEmpty ? 0 : 4)));
-                    foreach (RgbaF32 color in p.CornerColors.Span)
+                    for (int v = 0; v < p.CornerColors.Length; v++)
                     {
-                        b.Color(color);
+                        b.Color(p.CornerColors.Span[v], p.CornerInks.IsEmpty ? null : p.CornerInks.Span[v]);
                     }
 
                     foreach (Vector2 t in p.CornerTexCoords.Span)
@@ -584,12 +625,17 @@ internal sealed class EgdrWriter
     private Buffer PaintBytes(Paint paint)
     {
         Buffer b = new();
+        if (paint.Overprint != Overprint.Off)
+        {
+            b.Mark(Egdr.InkEntry.Overprint, [(byte)paint.Overprint]);
+        }
+
         switch (paint)
         {
             case SolidPaint s:
                 b.U8((byte)Egdr.PaintKind.Solid);
                 Common(b, paint);
-                b.Color(s.Color);
+                b.Color(s.Color, s.Ink);
                 break;
             case LinearGradient g:
                 b.U8((byte)Egdr.PaintKind.Linear);
@@ -723,6 +769,50 @@ internal sealed class EgdrWriter
     private sealed class Buffer
     {
         private byte[] _bytes = new byte[64];
+
+        /// <summary>Gets the INKS entries for this buffer's bytes, by offset; <see langword="null"/> when there are none.</summary>
+        internal List<(int Offset, Egdr.InkEntry Kind, byte[] Data)>? Marks { get; private set; }
+
+        /// <summary>Notes an INKS entry for what is written next.</summary>
+        internal void Mark(Egdr.InkEntry kind, byte[] data) => (Marks ??= []).Add((_length, kind, data));
+
+        internal void Bytes(ReadOnlySpan<byte> data) => data.CopyTo(Take(data.Length));
+
+        /// <summary>A colour; with <paramref name="ink"/>, an INKS entry saying which inks it is.</summary>
+        internal void Color(RgbaF32 c, InkColor? ink)
+        {
+            if (ink is not null)
+            {
+                Mark(Egdr.InkEntry.Color, InkBytes(ink));
+            }
+
+            Color(c);
+        }
+
+        // An ink colour: a CMYK flag, then each ink's name, kind, appearance and tint.
+        private static byte[] InkBytes(InkColor ink)
+        {
+            Buffer b = new();
+            b.U8((byte)(ink.IsCmyk ? 1 : 0));
+            b.U32((uint)ink.Inks.Count);
+            foreach (InkTint t in ink.Inks)
+            {
+                b.String(t.Colorant.Name);
+                b.U8((byte)t.Colorant.Kind);
+                b.U8((byte)(t.Colorant.Appearance is InkAppearance a ? (int)a.Kind + 1 : 0));
+                if (t.Colorant.Appearance is InkAppearance appearance)
+                {
+                    b.F32(appearance.Values.X);
+                    b.F32(appearance.Values.Y);
+                    b.F32(appearance.Values.Z);
+                    b.F32(appearance.Values.W);
+                }
+
+                b.F32(t.Tint);
+            }
+
+            return b.Span.ToArray();
+        }
         private int _length;
 
         internal ReadOnlySpan<byte> Span => _bytes.AsSpan(0, _length);
@@ -786,7 +876,7 @@ internal sealed class EgdrWriter
             foreach (GradientStop s in stops)
             {
                 F32(s.Offset);
-                Color(s.Color);
+                Color(s.Color, s.Ink);
             }
         }
 
@@ -836,7 +926,18 @@ internal sealed class EgdrWriter
             }
         }
 
-        internal void Append(Buffer other) => other.Span.CopyTo(Take(other._length));
+        internal void Append(Buffer other)
+        {
+            if (other.Marks is not null)
+            {
+                foreach ((int offset, Egdr.InkEntry kind, byte[] data) in other.Marks)
+                {
+                    (Marks ??= []).Add((_length + offset, kind, data));
+                }
+            }
+
+            other.Span.CopyTo(Take(other._length));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Span<byte> Take(int n)

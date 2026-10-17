@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Numerics;
 
+using Egami.Colors;
 using Egami.Formats.Png;
 using Egami.Operations;
 using Egami.Pixels;
@@ -64,6 +65,7 @@ internal sealed class EgdrReader
     private Picture Chunks(byte[] data)
     {
         int at = 12;
+        Dictionary<int, (Egdr.InkEntry Kind, byte[] Data)>? inks = null;
         while (true)
         {
             if (data.Length - at < 8)
@@ -100,10 +102,15 @@ internal sealed class EgdrReader
             {
                 _paths.Add(new Cursor(payload, at, this).ReadPath());
             }
+            else if (type == Egdr.InksChunk)
+            {
+                inks = new Cursor(payload, at, this).ReadInks();
+            }
             else if (type == Egdr.DrawingChunk)
             {
-                Cursor cursor = new(payload, at, this);
+                Cursor cursor = new(payload, at, this) { Inks = inks };
                 _pictures.Add(cursor.ReadPicture());
+                inks = null;
             }
 
             // Any other chunk type comes from a later minor version and is skipped.
@@ -128,6 +135,92 @@ internal sealed class EgdrReader
     {
         private int _at;
         private int _depth;
+
+        /// <summary>Gets the entries of the INKS chunk before this DRAW chunk, by offset, or <see langword="null"/>.</summary>
+        internal Dictionary<int, (Egdr.InkEntry Kind, byte[] Data)>? Inks { get; init; }
+
+        /// <summary>Reads an INKS chunk: entries by offset in the DRAW chunk that follows.</summary>
+        internal Dictionary<int, (Egdr.InkEntry Kind, byte[] Data)> ReadInks()
+        {
+            int count = Count(9);
+            Dictionary<int, (Egdr.InkEntry, byte[])> entries = new(count);
+            for (int i = 0; i < count; i++)
+            {
+                int offset = (int)Math.Min(U32(), int.MaxValue);
+                Egdr.InkEntry kind = Enum<Egdr.InkEntry>();
+                byte[] data = Take(Count(1)).ToArray();
+                if (!entries.TryAdd(offset, (kind, data)))
+                {
+                    throw Problem($"two ink entries share offset {offset}.");
+                }
+            }
+
+            End();
+            return entries;
+        }
+
+        // The entry of a kind at an offset of this chunk, or null.
+        private byte[]? Entry(int at, Egdr.InkEntry kind)
+        {
+            if (Inks is null || !Inks.TryGetValue(at, out var entry))
+            {
+                return null;
+            }
+
+            _inksUsed++;
+            return entry.Kind == kind ? entry.Data : throw Problem($"the ink entry at {at} is not a {kind} entry.");
+        }
+
+        private int _inksUsed;
+
+        // The colour at the cursor, and its inks when the INKS chunk names them.
+        private (RgbaF32 Color, InkColor? Ink) ReadInkColor()
+        {
+            int at = _at;
+            RgbaF32 color = ReadColor();
+            return (color, Entry(at, Egdr.InkEntry.Color) is byte[] data ? new Cursor(data, offset + at, reader).ReadInk() : null);
+        }
+
+        private InkColor ReadInk()
+        {
+            bool cmyk = Bool();
+            InkTint[] inks = new InkTint[Count(10)];
+            for (int i = 0; i < inks.Length; i++)
+            {
+                string name = ReadString();
+                ColorantKind kind = Enum<ColorantKind>();
+                byte look = U8();
+                InkAppearance? appearance = look switch
+                {
+                    0 => null,
+                    1 => InkAppearance.Cmyk(F32(), F32(), F32(), F32()),
+                    2 => Rgb(F32(), F32(), F32(), F32()),
+                    3 => Lab(F32(), F32(), F32(), F32()),
+                    _ => throw Problem($"{look} is not an ink appearance."),
+                };
+                Colorant colorant = kind switch
+                {
+                    ColorantKind.Process => Colorant.Process(name, appearance),
+                    ColorantKind.Spot => Colorant.Spot(name, appearance),
+                    _ => Colorant.Technical(name),
+                };
+                inks[i] = new InkTint(colorant, F32());
+            }
+
+            End();
+            if (cmyk)
+            {
+                return inks.Length == 4 && inks.Select(t => t.Colorant).SequenceEqual([Colorant.Cyan, Colorant.Magenta, Colorant.Yellow, Colorant.Black])
+                    ? InkColor.Cmyk(inks[0].Tint, inks[1].Tint, inks[2].Tint, inks[3].Tint)
+                    : throw Problem("a CMYK ink colour does not name the four process inks.");
+            }
+
+            return InkColor.Mix(inks);
+
+            static InkAppearance Rgb(float r, float g, float b, float unused) => InkAppearance.Rgb(r, g, b);
+
+            static InkAppearance Lab(float l, float a, float b, float unused) => InkAppearance.Lab(new LabColor(l, a, b));
+        }
         private long _expanded;
 
         internal Path ReadPath()
@@ -178,6 +271,11 @@ internal sealed class EgdrReader
             }
 
             End();
+            if (Inks is not null && _inksUsed != Inks.Count)
+            {
+                throw Problem("an ink entry points at nothing in the picture.");
+            }
+
             if (_marked != 0)
             {
                 throw Problem("a picture's marked content does not end.");
@@ -199,6 +297,7 @@ internal sealed class EgdrReader
 
         private DrawingCall ReadCall()
         {
+            int opAt = _at;
             Egdr.Op op = Enum<Egdr.Op>();
             switch (op)
             {
@@ -217,7 +316,8 @@ internal sealed class EgdrReader
                         }
 
                         RectF? bounds = Bool() ? ReadRect() : null;
-                        return new SaveLayerCall(new LayerOptions { Opacity = opacity, BlendMode = mode, Isolated = (group & 1) != 0, Knockout = (group & 2) != 0, Bounds = bounds });
+                        ColorProfile? space = Entry(opAt, Egdr.InkEntry.LayerSpace) is byte[] icc ? ColorProfile.FromIcc(icc) : null;
+                        return new SaveLayerCall(new LayerOptions { Opacity = opacity, BlendMode = mode, Isolated = (group & 1) != 0, Knockout = (group & 2) != 0, Bounds = bounds, ColorSpace = space });
                     }
 
                 case Egdr.Op.SetMatrix:
@@ -463,9 +563,10 @@ internal sealed class EgdrReader
             }
 
             RgbaF32[] colors = (flags & 1) != 0 ? new RgbaF32[CheckCount(n, 16)] : [];
+            InkColor?[] inks = new InkColor?[colors.Length];
             for (int i = 0; i < colors.Length; i++)
             {
-                colors[i] = ReadColor();
+                (colors[i], inks[i]) = ReadInkColor();
             }
 
             Vector2[] tex = (flags & 2) != 0 ? new Vector2[CheckCount(n, 8)] : [];
@@ -492,7 +593,8 @@ internal sealed class EgdrReader
             }
 
             reader.Spend(n * 40L);
-            return new Mesh(mode, positions, colors, tex, values, indices);
+            Mesh mesh = new(mode, positions, colors, tex, values, indices);
+            return WithInks(inks) is InkColor[] all ? mesh.WithInks(all) : mesh;
         }
 
         private Patch ReadPatch()
@@ -510,14 +612,29 @@ internal sealed class EgdrReader
                 throw Problem("a patch has unknown flags.");
             }
 
-            RgbaF32[] colors = (flags & 1) != 0 ? [ReadColor(), ReadColor(), ReadColor(), ReadColor()] : [];
+            RgbaF32[] colors = (flags & 1) != 0 ? new RgbaF32[4] : [];
+            InkColor?[] inks = new InkColor?[colors.Length];
+            for (int i = 0; i < colors.Length; i++)
+            {
+                (colors[i], inks[i]) = ReadInkColor();
+            }
+
             Vector2[] tex = (flags & 2) != 0 ? [ReadPoint(), ReadPoint(), ReadPoint(), ReadPoint()] : [];
             float[] values = (flags & 4) != 0 ? [F32(), F32(), F32(), F32()] : [];
-            return kind == PatchKind.Coons ? Egami.Drawing.Patch.Coons(points, colors, tex, values) : Egami.Drawing.Patch.Tensor(points, colors, tex, values);
+            Patch patch = kind == PatchKind.Coons ? Egami.Drawing.Patch.Coons(points, colors, tex, values) : Egami.Drawing.Patch.Tensor(points, colors, tex, values);
+            return WithInks(inks) is InkColor[] all ? patch.WithInks(all) : patch;
+        }
+
+        // Vertex inks: all or none.
+        private InkColor[]? WithInks(InkColor?[] inks)
+        {
+            int named = inks.Count(i => i is not null);
+            return named == 0 ? null : named == inks.Length ? [.. inks.Select(i => i!)] : throw Problem("only some vertices have inks.");
         }
 
         private Paint ReadPaint()
         {
+            int at = _at;
             Egdr.PaintKind kind = Enum<Egdr.PaintKind>();
             BlendMode mode = Enum<BlendMode>();
             float opacity = F32();
@@ -533,7 +650,11 @@ internal sealed class EgdrReader
             switch (kind)
             {
                 case Egdr.PaintKind.Solid:
-                    paint = new SolidPaint(ReadColor());
+                    {
+                        (RgbaF32 color, InkColor? ink) = ReadInkColor();
+                        paint = ink is null ? new SolidPaint(color) : new SolidPaint(ink);
+                    }
+
                     break;
                 case Egdr.PaintKind.Linear:
                     {
@@ -628,7 +749,8 @@ internal sealed class EgdrReader
                     throw Problem($"unknown paint kind {(byte)kind}.");
             }
 
-            return paint with { BlendMode = mode, Opacity = opacity, Antialias = (flags & 1) != 0, Dither = (flags & 2) != 0, LocalMatrix = local, Blur = blur };
+            Overprint overprint = Entry(at, Egdr.InkEntry.Overprint) is [byte o] ? (Overprint)o : Overprint.Off;
+            return paint with { BlendMode = mode, Opacity = opacity, Antialias = (flags & 1) != 0, Dither = (flags & 2) != 0, LocalMatrix = local, Blur = blur, Overprint = overprint };
         }
 
         /// <summary>A paint inside a paint; nesting counts toward the same depth limit as pictures.</summary>
@@ -719,7 +841,8 @@ internal sealed class EgdrReader
             for (int i = 0; i < stops.Length; i++)
             {
                 float offset = F32();
-                stops[i] = new GradientStop(offset, ReadColor());
+                (RgbaF32 color, InkColor? ink) = ReadInkColor();
+                stops[i] = ink is null ? new GradientStop(offset, color) : new GradientStop(offset, ink);
             }
 
             return stops;
