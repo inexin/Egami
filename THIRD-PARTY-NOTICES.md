@@ -335,7 +335,8 @@ sharpness search (ComputeARHeuristics in enc_heuristics) and the patch dictionar
 packing and the reference frame's quantization (enc_patch_dictionary, enc_detect_dots, enc_dot_dictionary, enc_linalg, enc_modular's
 XYB factors; `JxlPatchSearch.cs`), the photon noise model (enc_photon_noise), the 2× downsampling at low bitrates with its sharper
 kernel (DownsampleImage2_Sharper in enc_heuristics, enc_frame's resampling point) and the pixel-based chroma matrix scales
-(enc_frame's PixelStatsForChromacityAdjustment). Its JPEG recompression is translated
+(enc_frame's PixelStatsForChromacityAdjustment), SimplifyInvisible (enc_frame) and lossy Modular extra channels: the forward squeeze
+with its default steps and their cut, and the quantization tables (modular/transform/enc_squeeze, enc_modular). Its JPEG recompression is translated
 from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
 `JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
 (jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is

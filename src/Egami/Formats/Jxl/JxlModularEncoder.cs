@@ -86,10 +86,12 @@ internal sealed class JxlModularEncoder
     /// <summary>
     /// Prepares the extra channels of a VarDCT frame (Phase 2.9.7), coded losslessly beside the VarDCT data: global palettes, the
     /// channels larger than a group split into the groups' streams (with local palettes), and the tree for them; gives every
-    /// stream of the frame by id, the extra channels' alone filled.
+    /// stream of the frame by id, the extra channels' alone filled. A channel with a distance above 0 (in
+    /// <paramref name="distances"/>) makes them all go through libjxl's lossy Modular instead (squeezed and quantized).
     /// </summary>
-    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int bitDepth, int effort, int width, int height, int parallelism)
+    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism)
     {
+        int bitDepth = bits.Max();
         int groups = Ceil(width, 256) * Ceil(height, 256);
         int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
         JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + groups, false, parallelism);
@@ -100,6 +102,11 @@ internal sealed class JxlModularEncoder
 
         JxlEncodeImage gi = e._streams[0];
         gi.Channels.AddRange(channels);
+        if (distances.Any(d => d > 0))
+        {
+            return e.PrepareLossy(gi, bits, distances, lfGroups);
+        }
+
         e.TryPalettes(gi, effort >= 2 || bitDepth > 8 ? 95 : 0);
         int prefix = gi.CodedPrefix(e._groupDim);
         if (prefix < gi.Channels.Count)
@@ -115,6 +122,299 @@ internal sealed class JxlModularEncoder
     }
 
     private static int Ceil(int a, int b) => (a + b - 1) / b;
+
+    /// <summary>
+    /// libjxl's lossy Modular for a VarDCT frame's extra channels: the default squeeze (cut where shifts would pass 8, or 11
+    /// once both pass 3), each channel quantized by its distance and its shift on the luma table, the squeezed channels
+    /// split into the global stream, the LF groups' (shifts of 3 and more both ways) and the groups'; coded under a tree that
+    /// gives each stream's channel the gradient predictor and its quantizer as the residual multiplier.
+    /// </summary>
+    private (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareLossy(JxlEncodeImage gi, int[] bits, float[] distances, int lfGroups)
+    {
+        int n = gi.Channels.Count;
+        List<JxlSqueezeStep> steps = [];
+        int w = gi.Channels[0].Width, h = gi.Channels[0].Height;
+        if (w <= h && h > 8)
+        {
+            steps.Add(new JxlSqueezeStep(false, true, 0, n));
+            h = (h + 1) / 2;
+        }
+
+        while (w > 8 || h > 8)
+        {
+            if (w > 8)
+            {
+                steps.Add(new JxlSqueezeStep(true, true, 0, n));
+                w = (w + 1) / 2;
+            }
+
+            if (h > 8)
+            {
+                steps.Add(new JxlSqueezeStep(false, true, 0, n));
+                h = (h + 1) / 2;
+            }
+        }
+
+        bool truncated = false;
+        int hs = 0, vs = 0;
+        for (int i = 0; i < steps.Count; i++)
+        {
+            if (steps[i].Horizontal)
+            {
+                hs++;
+            }
+            else
+            {
+                vs++;
+            }
+
+            int boost = Math.Min(hs, vs) >= 3 ? 3 : 0;
+            if (Math.Max(hs, vs) > 8 + boost)
+            {
+                steps.RemoveRange(Math.Max(0, i - 1), steps.Count - Math.Max(0, i - 1));
+                truncated = true;
+                break;
+            }
+        }
+
+        List<int> component = [.. Enumerable.Range(0, n)];
+        foreach (JxlSqueezeStep step in steps)
+        {
+            for (int c = step.Begin; c < step.Begin + step.Count; c++)
+            {
+                (JxlChannel avg, JxlChannel res) = step.Horizontal ? SqueezeHorizontal(gi.Channels[c]) : SqueezeVertical(gi.Channels[c]);
+                gi.Channels[c] = avg;
+                int at = step.Begin + step.Count + (c - step.Begin);
+                gi.Channels.Insert(at, res);
+                component.Insert(at, component[c]);
+            }
+        }
+
+        gi.Transforms.Add(new JxlSqueeze(truncated ? steps : []));
+        ReadOnlySpan<float> lumaTable = [163.84f, 81.92f, 40.96f, 20.48f, 10.24f, 5.12f, 2.56f, 1.28f, 0.64f, 0.32f, 0.16f, 0.08f, 0.04f, 0.02f, 0.01f, 0.005f];
+        int[] quant = new int[gi.Channels.Count];
+        for (int i = 0; i < gi.Channels.Count; i++)
+        {
+            JxlChannel ch = gi.Channels[i];
+            int shift = Math.Min(16, ch.HShift + ch.VShift);
+            if (shift > 0)
+            {
+                shift--;
+            }
+
+            int comp = component[i];
+            float quantizer = 0.25f * distances[comp] * (((1 << bits[comp]) - 1) / 255.0f);
+            int q = (int)(quantizer * 0.35f * 1.1f * lumaTable[Math.Min(shift, 15)]);
+            q = Math.Max(q, 1);
+            quant[i] = q;
+            if (q > 1)
+            {
+                int[] d = ch.Data;
+                for (int k = 0; k < d.Length; k++)
+                {
+                    d[k] = d[k] < 0 ? -((-d[k] + (q / 2)) / q) * q : ((d[k] + (q / 2)) / q) * q;
+                }
+            }
+        }
+
+        // The streams: the global prefix, then channels squeezed 3 or more both ways by LF group, the rest by group.
+        int prefix = gi.CodedPrefix(_groupDim);
+        Dictionary<int, List<int>> channelsOf = new() { [0] = [.. Enumerable.Range(0, prefix)] };
+        int lfDim = _groupDim * 8;
+        int lfGroupsX = Ceil(_width, lfDim);
+        for (int c = prefix; c < gi.Channels.Count; c++)
+        {
+            JxlChannel fc = gi.Channels[c];
+            bool lf = fc.HShift >= 3 && fc.VShift >= 3;
+            int dim = lf ? lfDim : _groupDim;
+            int count = lf ? lfGroups : _groups;
+            int perRow = lf ? lfGroupsX : _groupsX;
+            for (int g = 0; g < count; g++)
+            {
+                int cx = g % perRow * dim >> fc.HShift;
+                int cy = g / perRow * dim >> fc.VShift;
+                int gw = Math.Min(dim >> fc.HShift, fc.Width - cx);
+                int gh = Math.Min(dim >> fc.VShift, fc.Height - cy);
+                if (gw <= 0 || gh <= 0)
+                {
+                    continue;
+                }
+
+                JxlChannel part = new(gw, gh, fc.HShift, fc.VShift);
+                for (int y = 0; y < gh; y++)
+                {
+                    Array.Copy(fc.Data, ((cy + y) * fc.Width) + cx, part.Data, y * gw, gw);
+                }
+
+                int id = lf ? 1 + lfGroups + g : GroupStream(g);
+                _streams[id].Channels.Add(part);
+                (channelsOf.TryGetValue(id, out List<int>? list) ? list : channelsOf[id] = []).Add(c);
+            }
+        }
+
+        for (int c = prefix; c < gi.Channels.Count; c++)
+        {
+            gi.Channels[c].Data = [];
+        }
+
+        // The tree: the stream id, then the channel index within the stream, to a gradient leaf with that channel's quantizer.
+        List<JxlTreeNode> tree = [];
+        int[] ids = [.. channelsOf.Keys.Where(id => _streams[id].Channels.Count > 0).Order()];
+        if (ids.Length == 0)
+        {
+            return (_streams, [JxlTreeNode.Leaf(5)]);
+        }
+
+        int Build(int lo, int hi, Func<int, int> key, Func<int, int> leaf, int property)
+        {
+            int at = tree.Count;
+            tree.Add(default);
+            if (lo == hi)
+            {
+                tree[at] = default;
+                tree.RemoveAt(at);
+                return leaf(lo);
+            }
+
+            int mid = (lo + hi + 1) / 2;
+            int left = Build(mid, hi, key, leaf, property);
+            int right = Build(lo, mid - 1, key, leaf, property);
+            tree[at] = new JxlTreeNode { Property = property, SplitValue = key(mid - 1), Left = left, Right = right };
+            return at;
+        }
+
+        int StreamLeaf(int k)
+        {
+            List<int> list = channelsOf[ids[k]];
+            if (list.Count == 0)
+            {
+                tree.Add(JxlTreeNode.Leaf(5));
+                return tree.Count - 1;
+            }
+
+            return Build(0, list.Count - 1, i => i, i =>
+            {
+                tree.Add(new JxlTreeNode { Property = -1, Predictor = 5, Multiplier = quant[list[i]] });
+                return tree.Count - 1;
+            }, 0);
+        }
+
+        Build(0, ids.Length - 1, k => ids[k], StreamLeaf, 1);
+        return (_streams, tree);
+    }
+
+    /// <summary>libjxl's FwdHSqueeze: averages of pairs, and their differences less the smooth tendency.</summary>
+    private static (JxlChannel Average, JxlChannel Residual) SqueezeHorizontal(JxlChannel input)
+    {
+        int ow = (input.Width + 1) / 2, rw = input.Width - ow;
+        JxlChannel avg = new(ow, input.Height, input.HShift + 1, input.VShift);
+        JxlChannel res = new(rw, input.Height, input.HShift + 1, input.VShift);
+        for (int y = 0; y < input.Height; y++)
+        {
+            ReadOnlySpan<int> p = input.Row(y);
+            Span<int> o = avg.Row(y);
+            Span<int> r = res.Row(y);
+            for (int x = 0; x < rw; x++)
+            {
+                int a = p[x * 2], b = p[(x * 2) + 1];
+                int average = Average(a, b);
+                o[x] = average;
+                int next = average;
+                if (x + 1 < rw)
+                {
+                    next = Average(p[(x * 2) + 2], p[(x * 2) + 3]);
+                }
+                else if ((input.Width & 1) != 0)
+                {
+                    next = p[(x * 2) + 2];
+                }
+
+                int left = x > 0 ? p[(x * 2) - 1] : average;
+                r[x] = a - b - Tendency(left, average, next);
+            }
+
+            if ((input.Width & 1) != 0)
+            {
+                o[ow - 1] = p[(ow - 1) * 2];
+            }
+        }
+
+        return (avg, res);
+    }
+
+    /// <summary>libjxl's FwdVSqueeze, the same down the columns.</summary>
+    private static (JxlChannel Average, JxlChannel Residual) SqueezeVertical(JxlChannel input)
+    {
+        int w = input.Width, oh = (input.Height + 1) / 2, rh = input.Height - oh;
+        JxlChannel avg = new(w, oh, input.HShift, input.VShift + 1);
+        JxlChannel res = new(w, rh, input.HShift, input.VShift + 1);
+        int[] p = input.Data;
+        for (int y = 0; y < rh; y++)
+        {
+            int row = 2 * y * w;
+            for (int x = 0; x < w; x++)
+            {
+                int a = p[row + x], b = p[row + w + x];
+                int average = Average(a, b);
+                avg.Data[(y * w) + x] = average;
+                int next = average;
+                if (y + 1 < rh)
+                {
+                    next = Average(p[row + (2 * w) + x], p[row + (3 * w) + x]);
+                }
+                else if ((input.Height & 1) != 0)
+                {
+                    next = p[row + (2 * w) + x];
+                }
+
+                int top = y > 0 ? p[row - w + x] : average;
+                res.Data[(y * w) + x] = a - b - Tendency(top, average, next);
+            }
+        }
+
+        if ((input.Height & 1) != 0)
+        {
+            Array.Copy(p, (input.Height - 1) * w, avg.Data, (oh - 1) * w, w);
+        }
+
+        return (avg, res);
+    }
+
+    private static int Average(int x, int y) => (x + y + (x > y ? 1 : 0)) >> 1;
+
+    /// <summary>The smooth tendency (libjxl's SmoothTendency, H.6.2.2).</summary>
+    private static int Tendency(int b, int a, int n)
+    {
+        long diff = 0;
+        if (b >= a && a >= n)
+        {
+            diff = ((4L * b) - (3L * n) - a + 6) / 12;
+            if (diff - (diff & 1) > 2L * (b - a))
+            {
+                diff = (2L * (b - a)) + 1;
+            }
+
+            if (diff + (diff & 1) > 2L * (a - n))
+            {
+                diff = 2L * (a - n);
+            }
+        }
+        else if (b <= a && a <= n)
+        {
+            diff = ((4L * b) - (3L * n) - a - 6) / 12;
+            if (diff + (diff & 1) < 2L * (b - a))
+            {
+                diff = (2L * (b - a)) - 1;
+            }
+
+            if (diff - (diff & 1) < 2L * (a - n))
+            {
+                diff = 2L * (a - n);
+            }
+        }
+
+        return (int)diff;
+    }
 
     private int GroupStream(int g) => 1 + (3 * _lfGroups) + 17 + g;
 
@@ -237,6 +537,18 @@ internal sealed class JxlModularEncoder
                     w.Write(0, 2);
                     w.WriteU32(beginC, (uint)rct.Begin);
                     w.WriteU32(new JxlU32(6, 0, 0, 2, 2, 4, 10, 6), (uint)rct.Type);
+                    break;
+                case JxlSqueeze squeeze:
+                    w.Write(2, 2);
+                    w.WriteU32(new JxlU32(0, 0, 1, 4, 9, 6, 41, 8), (uint)squeeze.Steps.Count);
+                    foreach (JxlSqueezeStep step in squeeze.Steps)
+                    {
+                        w.WriteBool(step.Horizontal);
+                        w.WriteBool(step.InPlace);
+                        w.WriteU32(beginC, (uint)step.Begin);
+                        w.WriteU32(new JxlU32(1, 0, 2, 0, 3, 0, 4, 4), (uint)step.Count);
+                    }
+
                     break;
                 case JxlPalette palette:
                     w.Write(1, 2);
@@ -1191,7 +1503,10 @@ internal sealed class JxlModularEncoder
     /// Writes the tree's tokens in breadth-first order (TokenizeTree) and gives it back as the decoder will lay it out: each
     /// node's property (−1 for a leaf), split value, children, predictor and leaf context.
     /// </summary>
-    internal static (int[] Property, int[] Value, int[] Left, int[] Right, int[] Predictor, int[] Context) TokenizeTree(List<JxlTreeNode> tree, List<JxlToken> tokens)
+    internal static (int[] Property, int[] Value, int[] Left, int[] Right, int[] Predictor, int[] Context) TokenizeTree(List<JxlTreeNode> tree, List<JxlToken> tokens) => TokenizeTree(tree, tokens, null);
+
+    /// <summary>Tokenizes the tree as <see cref="TokenizeTree(List{JxlTreeNode}, List{JxlToken})"/>, also giving each node's residual multiplier.</summary>
+    internal static (int[] Property, int[] Value, int[] Left, int[] Right, int[] Predictor, int[] Context) TokenizeTree(List<JxlTreeNode> tree, List<JxlToken> tokens, List<int>? multipliers)
     {
         List<int> property = [];
         List<int> value = [];
@@ -1211,8 +1526,13 @@ internal sealed class JxlModularEncoder
             {
                 tokens.Add(new JxlToken(2, (uint)node.Predictor));
                 tokens.Add(new JxlToken(3, 0));
-                tokens.Add(new JxlToken(4, 0));
-                tokens.Add(new JxlToken(5, 0));
+
+                // The multiplier is (mul_bits + 1) << mul_log.
+                int mul = Math.Max(1, node.Multiplier);
+                int log = System.Numerics.BitOperations.TrailingZeroCount(mul);
+                tokens.Add(new JxlToken(4, (uint)log));
+                tokens.Add(new JxlToken(5, (uint)((mul >> log) - 1)));
+                multipliers?.Add(mul);
                 property.Add(-1);
                 value.Add(0);
                 left.Add(0);
@@ -1228,6 +1548,7 @@ internal sealed class JxlModularEncoder
             right.Add(property.Count + q.Count + 1);
             predictor.Add(0);
             context.Add(-1);
+            multipliers?.Add(1);
             q.Enqueue(node.Left);
             q.Enqueue(node.Right);
             tokens.Add(new JxlToken(0, JxlTreeLearner.PackSigned(node.SplitValue)));
@@ -1257,11 +1578,11 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Codes one channel as residual tokens through the tree (ModularCompress's per-channel loop).</summary>
-    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp)
+    internal static List<JxlToken> Tokenize(JxlChannel ch, int c, int stream, int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context, bool usesWp, int[]? multiplier = null)
     {
         if (SingleProperty(property, value, left, right, c, stream, out int only, out int range) is int[] lut)
         {
-            return TokenizeLookup(ch, only, lut, range, predictor, context);
+            return TokenizeLookup(ch, only, lut, range, predictor, context, multiplier);
         }
 
         List<JxlToken> tokens = new(ch.Width * ch.Height);
@@ -1288,6 +1609,11 @@ internal sealed class JxlModularEncoder
 
                 long guess = JxlModularDecoder.Predict(predictor[node], (int)near[1], (int)near[2], (int)near[3], (int)near[4], (int)near[5], (int)near[6], (int)near[7], near[0]);
                 int residual = unchecked(d[row + x] - (int)guess);
+                if (multiplier is not null && multiplier[node] > 1)
+                {
+                    residual /= multiplier[node];
+                }
+
                 tokens.Add(new JxlToken(context[node], JxlTreeLearner.PackSigned(residual)));
                 wp?.Record(d[row + x]);
             }
@@ -1355,7 +1681,7 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>Codes one channel through a lookup table on one property, as libjxl's gradient-only and WP-only paths do.</summary>
-    private static List<JxlToken> TokenizeLookup(JxlChannel ch, int only, int[] lut, int range, int[] predictor, int[] context)
+    private static List<JxlToken> TokenizeLookup(JxlChannel ch, int only, int[] lut, int range, int[] predictor, int[] context, int[]? multiplier)
     {
         int width = ch.Width;
         int height = ch.Height;
@@ -1397,7 +1723,13 @@ internal sealed class JxlModularEncoder
                     guess = JxlModularDecoder.Predict(pr, w, n, nw, ne, nn, ww, nee, wpPrediction);
                 }
 
-                tokens.Add(new JxlToken(context[leaf], JxlTreeLearner.PackSigned(unchecked(d[at] - (int)guess))));
+                int residual = unchecked(d[at] - (int)guess);
+                if (multiplier is not null && multiplier[leaf] > 1)
+                {
+                    residual /= multiplier[leaf];
+                }
+
+                tokens.Add(new JxlToken(context[leaf], JxlTreeLearner.PackSigned(residual)));
                 wp?.Record(d[at]);
             }
         }

@@ -14,6 +14,9 @@ internal sealed record JxlLossySettings
     /// <summary>Gets the ISO of the photon noise the decoder adds, or 0 for none.</summary>
     internal float PhotonNoiseIso { get; init; }
 
+    /// <summary>Gets the distance alpha is coded at: 0 lossless, more for lossy Modular.</summary>
+    internal float AlphaDistance { get; init; }
+
     /// <summary>Gets whether the color of fully transparent pixels may be replaced by that of their neighbours (libjxl's SimplifyInvisible).</summary>
     internal bool SimplifyInvisible { get; init; }
 }
@@ -880,7 +883,8 @@ internal sealed class JxlVarDctEncoder
             channels.Add(ch);
         }
 
-        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, planes.Max(p => p.Bits), Speed, _width, _height, _settings.Parallelism);
+        float[] distances = [.. planes.Select((p, i) => i == 0 && header.Alpha is not null ? _settings.AlphaDistance : 0f)];
+        (_extraStreams, _extraTree) = JxlModularEncoder.PrepareExtraChannels(channels, [.. planes.Select(p => p.Bits)], distances, Speed, _width, _height, _settings.Parallelism);
     }
 
     /// <summary>
@@ -2254,7 +2258,9 @@ internal sealed class JxlVarDctEncoder
         }
 
         List<List<JxlToken>> treeTokens = [[]];
-        (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = JxlModularEncoder.TokenizeTree(tree, treeTokens[0]);
+        List<int> multipliers = [];
+        (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = JxlModularEncoder.TokenizeTree(tree, treeTokens[0], multipliers);
+        int[] multiplier = [.. multipliers];
         bool usesWp = property.Any(p => p == 15) || property.Select((p, i) => p < 0 && predictor[i] == 6).Any(b => b);
         List<JxlToken>[] streamTokens = new List<JxlToken>[streams.Count];
         Parallel.For(0, streams.Count, _parallel, s =>
@@ -2289,7 +2295,7 @@ internal sealed class JxlVarDctEncoder
                 {
                     if (img.Channels[c].Width > 0 && img.Channels[c].Height > 0)
                     {
-                        t.AddRange(JxlModularEncoder.Tokenize(img.Channels[c], c, ids[k], property, value, left, right, predictor, context, usesWp));
+                        t.AddRange(JxlModularEncoder.Tokenize(img.Channels[c], c, ids[k], property, value, left, right, predictor, context, usesWp, multiplier));
                     }
                 }
 
@@ -2350,6 +2356,12 @@ internal sealed class JxlVarDctEncoder
             JxlBitWriter w = new();
             w.Write((ulong)_lfPrecision, 2);
             WriteStream(w, code, modularTokens[g]);
+            if (_extraStreams is not null && extraTokens.TryGetValue(1 + _lfGroups + g, out List<JxlToken>? lfTokens))
+            {
+                // The extra channels squeezed 3 or more both ways.
+                JxlModularEncoder.WriteStream(w, _extraStreams[1 + _lfGroups + g], code, lfTokens);
+            }
+
             (_, _, int bw, int bh) = LfGroupRect(g);
             w.Write((ulong)(metaCounts[g] - 1), CeilLog2((long)bw * bh));
             WriteStream(w, code, modularTokens[_lfGroups + g]);

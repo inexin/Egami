@@ -6,7 +6,8 @@ using Egami.Pixels;
 namespace Egami.Tests.Formats.Jxl;
 
 /// <summary>
-/// Phase 2.9.7 task 11: lossy files keep alpha through Modular, exactly by default, at every effort and across groups; a
+/// Phase 2.9.7 task 11: lossy files keep alpha through Modular, exactly by default, at every effort and across groups, or
+/// lossy (squeezed and quantized) at AlphaDistance; a
 /// premultiplied raster is made straight first; KeepTransparentColors = false lets fully transparent pixels take their
 /// neighbours' color; a CMYK raster keeps its black channel. djxl's decode of such files is checked in egami-compare.
 /// </summary>
@@ -126,6 +127,39 @@ public class JxlLossyAlphaTests
         Raster<Cmyk8> back = (Raster<Cmyk8>)loaded;
         Assert.InRange(back.Row(10)[10].K, 0, 1);
         Assert.InRange(back.Row(10)[50].K, 199, 201);
+    }
+
+    [Theory]
+    [InlineData(1f)]
+    [InlineData(4f)]
+    public void LossyAlphaIsSmallAndClose(float distance)
+    {
+        using Raster<Rgba8> source = WithAlpha(600, 300);
+        byte[] exact = Save(source, new JxlWriterOptions { Lossless = false });
+        byte[] lossy = Save(source, new JxlWriterOptions { Lossless = false, AlphaDistance = distance });
+        Assert.True(lossy.Length < exact.Length, $"lossy alpha {lossy.Length} bytes, exact {exact.Length}");
+        using Raster<Rgba8> back = Raster.Load<Rgba8>(lossy);
+        double se = 0;
+        for (int y = 0; y < source.Height; y++)
+        {
+            for (int x = 0; x < source.Width; x++)
+            {
+                double d = back.Row(y)[x].A - source.Row(y)[x].A;
+                se += d * d;
+            }
+        }
+
+        double rmse = Math.Sqrt(se / (source.Width * source.Height));
+        Assert.InRange(rmse, 0.01, 4 * distance);
+    }
+
+    [Fact]
+    public void AlphaDistanceIsChecked()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new JxlWriterOptions { AlphaDistance = -1 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new JxlWriterOptions { AlphaDistance = 26 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new JxlWriterOptions { AlphaDistance = float.NaN });
+        Assert.Equal(25f, new JxlWriterOptions { AlphaDistance = 25 }.AlphaDistance);
     }
 
     private static Raster<Rgba8> WithAlpha(int w, int h)

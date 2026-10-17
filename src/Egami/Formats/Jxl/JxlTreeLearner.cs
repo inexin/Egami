@@ -17,6 +17,9 @@ internal struct JxlTreeNode
     internal int Right;
     internal int Predictor;
 
+    /// <summary>A leaf's residual multiplier: 0 or 1 for none, else what the coded residuals are multiplied by.</summary>
+    internal int Multiplier;
+
     internal static JxlTreeNode Leaf(int predictor) => new() { Property = -1, Predictor = predictor };
 
     internal static JxlTreeNode Split(int property, int value, int left) => new() { Property = property, SplitValue = value, Left = left, Right = left + 1 };

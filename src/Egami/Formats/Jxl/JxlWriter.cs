@@ -358,6 +358,7 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 Parallelism = start.Context.MaxParallelism,
                 PhotonNoiseIso = options.PhotonNoiseIso ?? 0,
                 SimplifyInvisible = !options.KeepTransparentColors,
+                AlphaDistance = options.AlphaDistance,
             };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
@@ -482,6 +483,7 @@ public sealed class JxlWriterOptions : WriterOptions
     private readonly int _quality = 90;
     private readonly float? _distance;
     private readonly float? _photonNoiseIso;
+    private readonly float _alphaDistance;
 
     /// <summary>Gets the default options.</summary>
     public static new JxlWriterOptions Default { get; } = new();
@@ -576,6 +578,26 @@ public sealed class JxlWriterOptions : WriterOptions
     /// default as for WebP, keeps it as well as lossy coding does. Lossless files always keep it.
     /// </summary>
     public bool KeepTransparentColors { get; init; } = true;
+
+    /// <summary>
+    /// Gets the distance alpha is written at in lossy files, on <see cref="Distance"/>'s scale: 0 (the default) keeps alpha
+    /// exact, larger values (up to 25) code it lossy through Modular's squeeze, smaller but with softer edges. Lossless files
+    /// keep alpha exact.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 25.</exception>
+    public float AlphaDistance
+    {
+        get => _alphaDistance;
+        init
+        {
+            if (!(value >= 0 && value <= 25))
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The alpha distance must be from 0 to 25.");
+            }
+
+            _alphaDistance = value;
+        }
+    }
 
     /// <summary>Gets the distance lossy data is written at: <see cref="Distance"/>, or <see cref="Quality"/> on cjxl's mapping, at least 0.1.</summary>
     internal float EffectiveDistance => _distance ?? MathF.Max(0.1f, DistanceFromQuality(_quality));
