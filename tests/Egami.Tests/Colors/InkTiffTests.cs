@@ -96,6 +96,22 @@ public class InkTiffTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new InkTiffOptions { Compression = TiffCompression.Jpeg });
     }
 
+    [Fact]
+    public void FuzzFindingsFailCleanly()
+    {
+        // Task 16's inktiff findings: more inks than a raster holds, and no samples per pixel, once threw ArgumentException.
+        foreach (string file in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "images", "fuzz", "inktiff-regressions")))
+        {
+            try
+            {
+                using InkRaster loaded = InkRaster.Load(new MemoryStream(File.ReadAllBytes(file)));
+            }
+            catch (EgamiException)
+            {
+            }
+        }
+    }
+
     // Every value the depth holds somewhere, alpha varying (or full), each plane different, and premultiplied as stored.
     private static InkRaster Pattern(InkSet inks, InkDepth depth, bool opaque)
     {

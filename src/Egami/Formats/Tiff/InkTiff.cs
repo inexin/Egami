@@ -172,6 +172,11 @@ internal static class InkTiff
             throw input.Corrupt(ifd.Offset, $"The image size {width}×{height} is invalid.");
         }
 
+        if (samples < 1)
+        {
+            throw input.Corrupt(ifd.Offset, "The image has no samples per pixel.");
+        }
+
         ulong[] bits = ifd.TryGet(TiffTags.BitsPerSample, out TiffEntry bitsEntry) ? file.Integers(bitsEntry, 1024) : [1];
         int depth = (int)bits[0];
         if (depth is not (8 or 16) || bits.Any(b => b != bits[0]) || file.Integer(ifd, TiffTags.SampleFormat, 1) != 1)
@@ -240,9 +245,21 @@ internal static class InkTiff
         {
             if (!inks.Contains(name))
             {
-                inks = name is "All" or "None" || Colorant.IsCmykName(name) || name.Length > Colorant.MaxNameLength
-                    ? throw input.Corrupt(ifd.Offset, $"The ink name '{name}' cannot name a spot.")
-                    : inks.WithSpot(name, null);
+                if (inks.Count >= InkSet.MaxInks)
+                {
+                    throw new UnsupportedFormatException($"TIFF: the file has more inks than an ink raster holds ({InkSet.MaxInks}).");
+                }
+
+                try
+                {
+                    inks = name is "All" or "None" || Colorant.IsCmykName(name) || name.Length > Colorant.MaxNameLength
+                        ? throw input.Corrupt(ifd.Offset, $"The ink name '{name}' cannot name a spot.")
+                        : inks.WithSpot(name, null);
+                }
+                catch (ArgumentException e)
+                {
+                    throw input.Corrupt(ifd.Offset, $"The ink name '{name}' cannot name a spot: {e.Message}");
+                }
             }
         }
 
