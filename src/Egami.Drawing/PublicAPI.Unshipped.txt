@@ -3,6 +3,8 @@ Egami.Drawing.GradientStop.GradientStop(float offset, Egami.Colors.InkColor! ink
 Egami.Drawing.GradientStop.Ink.get -> Egami.Colors.InkColor?
 Egami.Drawing.InkCanvas
 Egami.Drawing.InkCanvas.Clear(Egami.Colors.InkColor! ink) -> void
+Egami.Drawing.InkCanvas.DrawImage(Egami.InkRaster! image, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
+Egami.Drawing.InkCanvas.DrawImage(Egami.InkRaster! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Drawing.InkCanvas.InkCanvas(Egami.InkRaster! raster, Egami.Drawing.InkCanvasOptions? options = null) -> void
 Egami.Drawing.InkCanvas.Options.get -> Egami.Drawing.InkCanvasOptions!
 Egami.Drawing.InkCanvas.Raster.get -> Egami.InkRaster!

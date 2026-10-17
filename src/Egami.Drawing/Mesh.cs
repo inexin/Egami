@@ -162,6 +162,13 @@ public sealed class Mesh
         return mesh;
     }
 
+    /// <summary>Returns a copy of this mesh carrying vertex inks, its colours left as they are (a patch's tessellation).</summary>
+    internal Mesh AttachInks(InkColor[] inks)
+    {
+        Mesh mesh = new(Mode, _positions, _colors, _texCoords, _values, _indices) { _inks = inks };
+        return mesh;
+    }
+
     /// <summary>Returns the vertex indices of triangle <paramref name="t"/>, in the order the mode gives them.</summary>
     internal (int A, int B, int C) Triangle(int t)
     {

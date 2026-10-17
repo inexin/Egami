@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Numerics;
 
+using Egami.Colors;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -28,6 +29,7 @@ internal sealed class MeshShader : Shader, IDisposable
     private readonly bool _colorsOnly;
     private readonly float _alpha;
     private readonly BlendMode _blend;
+    private InkColor[]? _inks;
 
     private MeshShader(Rect area, int[] owner, Triangle[] triangles, PremulRgbaF32[]? colors, float[]? values, GradientRamp? ramp, bool linear, Shader? paint, bool colorsOnly, float alpha, BlendMode blend)
     {
@@ -98,7 +100,10 @@ internal sealed class MeshShader : Shader, IDisposable
                 }
             }
 
-            return new MeshShader(area, owner, triangles, colors, values, ramp, linear, shader, colorsOnly, alpha, colorBlend);
+            return new MeshShader(area, owner, triangles, colors, values, ramp, linear, shader, colorsOnly, alpha, colorBlend)
+            {
+                _inks = mesh.Inks.IsEmpty ? null : mesh.Inks.ToArray(),
+            };
         }
         catch
         {
@@ -108,6 +113,28 @@ internal sealed class MeshShader : Shader, IDisposable
     }
 
     public void Dispose() => ArrayPool<int>.Shared.Return(_owner);
+
+    /// <summary>Gets the mesh's vertex inks, for an ink canvas, or <see langword="null"/>.</summary>
+    internal InkColor[]? Inks => _inks;
+
+    /// <summary>Gets the alpha a solid paint gives the vertex colours.</summary>
+    internal float VertexAlpha => _alpha;
+
+    /// <summary>Returns the vertices of the triangle that owns device pixel (<paramref name="x"/>, <paramref name="y"/>) and their weights at its center, or false for none.</summary>
+    internal bool TryWeights(int y, int x, out (int A, int B, int C) vertices, out (float W0, float W1, float W2) weights)
+    {
+        int o = y >= _area.Y && y < _area.Bottom && x >= _area.X && x < _area.Right ? _owner[((y - _area.Y) * _area.Width) + x - _area.X] : -1;
+        if (o < 0)
+        {
+            (vertices, weights) = (default, default);
+            return false;
+        }
+
+        Triangle t = _triangles[o];
+        vertices = (t.A, t.B, t.C);
+        weights = t.Weights(x + 0.5f, y + 0.5f);
+        return true;
+    }
 
     public override void Shade(int y, int x, Span<PremulRgbaF32> row)
     {

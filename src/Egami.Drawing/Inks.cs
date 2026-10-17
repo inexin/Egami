@@ -36,4 +36,26 @@ internal static class Inks
         RgbaF32 c = appearance.ToLab().ToRgbaF32();
         return new RgbaF32(Math.Clamp(c.R, 0, 1), Math.Clamp(c.G, 0, 1), Math.Clamp(c.B, 0, 1), 1);
     }
+
+    /// <summary>A weighted mix of ink colours: every ink any of them names, its tint the weighted sum (0 where a colour lacks it).</summary>
+    public static InkColor Blend(ReadOnlySpan<InkColor> colors, ReadOnlySpan<float> weights)
+    {
+        List<Colorant> order = [];
+        Dictionary<string, float> tints = new(StringComparer.Ordinal);
+        for (int i = 0; i < colors.Length; i++)
+        {
+            foreach (InkTint t in colors[i].Inks)
+            {
+                if (!tints.ContainsKey(t.Colorant.Name))
+                {
+                    order.Add(t.Colorant);
+                    tints[t.Colorant.Name] = 0;
+                }
+
+                tints[t.Colorant.Name] += weights[i] * t.Tint;
+            }
+        }
+
+        return InkColor.Mix([.. order.Select(c => new InkTint(c, Math.Clamp(tints[c.Name], 0, 1)))]);
+    }
 }

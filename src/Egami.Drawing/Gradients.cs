@@ -297,6 +297,9 @@ public abstract record class Gradient : Paint
     /// <summary>Returns the device-to-t mapping, or <see langword="null"/> when the gradient's geometry has no extent.</summary>
     internal abstract GradientGeometry? CreateGeometry(Matrix3x2 inverse);
 
+    /// <summary>Returns the device-to-t mapping under a canvas transform, or <see langword="null"/> when there is none.</summary>
+    internal GradientGeometry? CreateGeometryFor(Matrix3x2 toDevice) => TryInverse(toDevice, out Matrix3x2 inverse) ? CreateGeometry(inverse) : null;
+
     /// <summary>A gradient with no extent, as Skia draws one: nothing for Decal, the mean color for Repeat and Mirror, the last color for Clamp.</summary>
     private PremulShader? Degenerate(GradientRamp ramp) => _tile switch
     {

@@ -89,6 +89,56 @@ public sealed class InkCanvas : Canvas
     /// <exception cref="ArgumentNullException"><paramref name="ink"/> is <see langword="null"/>.</exception>
     public void Clear(InkColor ink) => DrawPaint(new SolidPaint(ink ?? throw new ArgumentNullException(nameof(ink))) { BlendMode = BlendMode.Source });
 
+    /// <summary>
+    /// Draws another ink raster's plates into a rectangle, mapped by name: a plate this canvas also has prints on it, any other
+    /// through its colorant's appearance into the process inks. Sampled nearest or bilinear (any other filter samples bilinear),
+    /// with the image's edges clamped; the paint gives the blend mode, opacity, overprint and antialiasing.
+    /// </summary>
+    /// <param name="image">The plates to draw.</param>
+    /// <param name="destination">Where they go, in local coordinates.</param>
+    /// <param name="sampling">How the plates are sampled, or <see langword="null"/> for bilinear.</param>
+    /// <param name="paint">The blend mode, opacity, overprint and antialiasing, or <see langword="null"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="ink-canvas"/>
+    /// </example>
+    public void DrawImage(InkRaster image, RectF destination, SamplingOptions? sampling = null, Paint? paint = null)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        DrawImage(image, new RectF(0, 0, image.Width, image.Height), destination, sampling, paint);
+    }
+
+    /// <summary>Draws part of another ink raster's plates into a rectangle; see <see cref="DrawImage(InkRaster, RectF, SamplingOptions?, Paint?)"/>.</summary>
+    /// <param name="image">The plates to draw.</param>
+    /// <param name="source">The part of the image, in its pixels.</param>
+    /// <param name="destination">Where it goes, in local coordinates.</param>
+    /// <param name="sampling">How the plates are sampled, or <see langword="null"/> for bilinear.</param>
+    /// <param name="paint">The blend mode, opacity, overprint and antialiasing, or <see langword="null"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="ink-canvas"/>
+    /// </example>
+    public void DrawImage(InkRaster image, RectF source, RectF destination, SamplingOptions? sampling = null, Paint? paint = null)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        if (source.IsEmpty || destination.IsEmpty)
+        {
+            return;
+        }
+
+        Matrix3x2 imageToLocal = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height)
+            * Matrix3x2.CreateTranslation(destination.X, destination.Y);
+        InkImagePaint fill = new(image, sampling ?? new SamplingOptions { Filter = ResampleFilter.Bilinear })
+        {
+            LocalMatrix = imageToLocal,
+            BlendMode = paint?.BlendMode ?? BlendMode.SourceOver,
+            Opacity = paint?.Opacity ?? 1,
+            Overprint = paint?.Overprint ?? Overprint.Off,
+            Antialias = paint?.Antialias ?? true,
+        };
+        FillRect(destination, fill);
+    }
+
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {

@@ -22,6 +22,7 @@ internal sealed class InkResolver
     {
         _inks = inks;
         _options = options;
+        RgbSource = rgbSource;
         _planeOf = new int[inks.Count];
         for (int i = 0, plane = 0; i < inks.Count; i++)
         {
@@ -35,6 +36,18 @@ internal sealed class InkResolver
 
     /// <summary>Gets the number of planes, alpha not counted.</summary>
     internal int Planes { get; }
+
+    /// <summary>Gets the process profile.</summary>
+    internal ColorProfile Profile => _inks.Profile;
+
+    /// <summary>Gets what untagged RGB means.</summary>
+    internal ColorProfile RgbSource { get; }
+
+    /// <summary>Gets the intent and black point compensation of conversions into the process inks.</summary>
+    internal ColorTransformOptions Options => _options;
+
+    /// <summary>Returns the plane of the ink named <paramref name="name"/>, or −1 when the canvas has none (absent or disabled).</summary>
+    internal int PlaneOf(string name) => _inks.IndexOf(name) is int i and >= 0 ? _planeOf[i] : -1;
 
     /// <summary>Writes a solid paint's tints; returns its alpha (an ink colour is opaque, an RGB one has its own).</summary>
     internal float Resolve(SolidPaint paint, Span<float> tints)

@@ -314,7 +314,24 @@ public sealed class Patch
             }
         }
 
-        return new Mesh(MeshMode.Triangles, positions, colors, tex, values, indices);
+        Mesh mesh = new(MeshMode.Triangles, positions, colors, tex, values, indices);
+        if (_inks is InkColor[] corners)
+        {
+            InkColor[] inks = new InkColor[count];
+            for (int j = 0; j <= nv; j++)
+            {
+                float v = (float)j / nv;
+                for (int i = 0; i <= nu; i++)
+                {
+                    float u = (float)i / nu;
+                    inks[(j * (nu + 1)) + i] = Inks.Blend(corners, [(1 - u) * (1 - v), u * (1 - v), u * v, (1 - u) * v]);
+                }
+            }
+
+            mesh = mesh.AttachInks(inks);
+        }
+
+        return mesh;
     }
 
     /// <summary>The grid size: from the net's second differences along each direction and its twist, in device pixels, and the corner data's twist.</summary>

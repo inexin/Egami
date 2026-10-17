@@ -45,6 +45,16 @@ internal sealed class InkTarget : RasterTarget
         }
 
         CheckMode(paint.BlendMode);
+        switch (paint)
+        {
+            case InkImagePaint image:
+                return image.TryDeviceToImage(matrix, out Matrix3x2 inverse) ? new InkImageSink(this, image, inverse, mask, scale) : null;
+            case Gradient gradient when gradient.Stops.Any(s => s.Ink is not null) && gradient.CreateGeometryFor(matrix) is GradientGeometry geometry:
+                return new InkGradientSink(this, gradient, geometry, paint.Opacity, paint.BlendMode, mask, scale);
+            case MeshShadingPaint { Shader.Inks: InkColor[] inks } shading:
+                return new InkMeshSink(this, shading.Shader, inks, shading.Shader.VertexAlpha * paint.Opacity, paint.BlendMode, mask, scale);
+        }
+
         if (paint is SolidPaint solid)
         {
             float[] tints = new float[Inks];
@@ -149,16 +159,27 @@ internal sealed class InkTarget : RasterTarget
         }
     }
 
-    /// <summary>Draws an image as an image paint over its destination, so it is shaded, converted and blended like any paint.</summary>
+    /// <summary>
+    /// Draws an image as plates: converted to the process inks through its profile (CMYK in the canvas's own profile, or untagged,
+    /// unchanged), then sampled and blended like an ink image.
+    /// </summary>
     internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
+    {
+        using InkRaster plates = InkImages.ToPlates(image, Resolver, _raster.Depth, tools.Context);
+        DrawInks(tools, plates, source, destination, matrix, sampling, paint, clip, mask);
+    }
+
+    /// <summary>Draws an ink image's plates over a destination, mapped by name.</summary>
+    internal void DrawInks(DrawTools tools, InkRaster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
     {
         Matrix3x2 imageToLocal = Matrix3x2.CreateTranslation(-source.X, -source.Y) * Matrix3x2.CreateScale(destination.Width / source.Width, destination.Height / source.Height)
             * Matrix3x2.CreateTranslation(destination.X, destination.Y);
-        ImagePaint fill = new(image, TileMode.Clamp, TileMode.Clamp, sampling)
+        InkImagePaint fill = new(image, sampling)
         {
             LocalMatrix = imageToLocal,
             BlendMode = paint?.BlendMode ?? BlendMode.SourceOver,
             Opacity = paint?.Opacity ?? 1,
+            Overprint = paint?.Overprint ?? Overprint.Off,
         };
         EdgeList edges = tools.Edges;
         edges.Clear();
