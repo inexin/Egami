@@ -31,9 +31,16 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
         JxlWriterOptions jxl = start.Options as JxlWriterOptions ?? JxlWriterOptions.Default;
         if (!jxl.WritesLossless(start.Metadata))
         {
-            start.Refuse("JPEG XL", "Lossy encoding", "Save from a whole raster.");
+            // Large images go in chunks as libjxl's streaming mode codes them, so they can also come as rows.
+            JxlLossySettings settings = LossySettings(jxl, start.Context.MaxParallelism);
+            bool chunked = JxlChunkedFrame.Applies(start.Width, start.Height, settings, TPixel.Layout.HasAlpha && jxl.AlphaDistance > 0);
+            if (!chunked)
+            {
+                start.Refuse("JPEG XL", "Lossy encoding of an image this small, at this distance, or with these options", "Save from a whole raster.");
+            }
+
             SaveLosses.Report(start, "JPEG XL", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Float | SaveKeeps.Cmyk | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
-            return new LossyEncoder<TPixel>(output, start, jxl);
+            return chunked ? new ChunkedLossyEncoder<TPixel>(output, start, jxl, settings) : new LossyEncoder<TPixel>(output, start, jxl);
         }
 
         start.Refuse("JPEG XL", "Lossless encoding", "Save from a whole raster.");
@@ -404,21 +411,157 @@ internal sealed class JxlWriter : IFormatWriter, IRowFormatWriter
                 HasBlack = image.Black is not null,
                 IntensityTarget = _rows.IntensityTarget,
             };
-            JxlLossySettings settings = new()
-            {
-                Distance = options.EffectiveDistance,
-                Effort = options.Effort,
-                Parallelism = start.Context.MaxParallelism,
-                PhotonNoiseIso = options.PhotonNoiseIso ?? 0,
-                SimplifyInvisible = !options.KeepTransparentColors,
-                AlphaDistance = options.AlphaDistance,
-                Progressive = options.Progressive,
-            };
+            JxlLossySettings settings = LossySettings(options, start.Context.MaxParallelism);
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings, _rows.IntensityTarget);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
             byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, options.Effort, start.Context.MaxParallelism);
             WriteFile(output, codestream, exif, xmp, gainMap: gainMap);
+        }
+    }
+
+    /// <summary>Gets the lossy encoder's settings from the options.</summary>
+    private static JxlLossySettings LossySettings(JxlWriterOptions options, int parallelism) => new()
+    {
+        Distance = options.EffectiveDistance,
+        Effort = options.Effort,
+        Parallelism = parallelism,
+        PhotonNoiseIso = options.PhotonNoiseIso ?? 0,
+        SimplifyInvisible = !options.KeepTransparentColors,
+        AlphaDistance = options.AlphaDistance,
+        Progressive = options.Progressive,
+    };
+
+    /// <summary>
+    /// Encodes a large image lossy in chunks (Phase 2.9.7 task 14): rows are kept only until the LF groups they touch, with a
+    /// block of border, are coded, so memory stays within a band of 2,064 rows however tall the image is.
+    /// </summary>
+    private sealed class ChunkedLossyEncoder<TPixel> : RowEncoder<TPixel>
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        private const int Chunk = 2048;
+        private const int Border = 8;
+        private readonly Stream _output;
+        private readonly EncodeStart<TPixel> _start;
+        private readonly JxlWriterOptions _options;
+        private readonly ColorProfile _profile;
+        private readonly JxlChunkedFrame _frame;
+        private readonly int _alphaBits = TPixel.Layout.ChannelType == PixelChannelType.Unorm8 ? 8 : 16;
+        private readonly List<TPixel[]> _rows = [];
+        private int _first;
+        private int _written;
+        private int _chunkRow;
+
+        internal ChunkedLossyEncoder(Stream output, EncodeStart<TPixel> start, JxlWriterOptions options, JxlLossySettings settings)
+        {
+            (_output, _start, _options) = (output, start, options);
+            _profile = start.Metadata.GetColorProfile();
+            JxlLinearRows probe = new(1, 1, _profile, TPixel.Layout);
+            RasterMetadata metadata = start.Metadata;
+            (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, probe.Image.IsGray, lossy: true);
+            int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
+            JxlEncodeInput header = new()
+            {
+                Width = start.Width,
+                Height = start.Height,
+                Color = probe.Image.IsGray ? [[]] : [[], [], []],
+                ColorEncoding = color,
+                Icc = icc,
+                Orientation = orientation,
+                BitDepth = TPixel.Layout.ChannelType switch
+                {
+                    PixelChannelType.Unorm8 => new JxlBitDepth(8, 0),
+                    PixelChannelType.Float16 => new JxlBitDepth(16, 5),
+                    PixelChannelType.Float32 => new JxlBitDepth(32, 8),
+                    _ => new JxlBitDepth(16, 0),
+                },
+                Alpha = TPixel.Layout.HasAlpha ? [] : null,
+                AlphaBitDepth = new JxlBitDepth(_alphaBits, 0),
+                HasBlack = probe.HasBlack,
+                IntensityTarget = probe.IntensityTarget,
+            };
+            int extras = (TPixel.Layout.HasAlpha ? 1 : 0) + (probe.HasBlack ? 1 : 0);
+            _frame = new JxlChunkedFrame(start.Width, start.Height, header, settings, probe.IntensityTarget, extras);
+        }
+
+        public override void WriteRow(ReadOnlySpan<TPixel> row)
+        {
+            if (_written == _start.Height)
+            {
+                throw new InvalidOperationException($"The image has {_start.Height} rows; no more can be written.");
+            }
+
+            _rows.Add(row.ToArray());
+            _written++;
+            while (_chunkRow * Chunk < _start.Height && _written >= Math.Min(_start.Height, ((_chunkRow + 1) * Chunk) + Border))
+            {
+                EncodeChunkRow(_chunkRow++);
+            }
+        }
+
+        public override void Complete()
+        {
+            if (_written != _start.Height)
+            {
+                throw new InvalidOperationException($"The image has {_start.Height} rows, but {_written} were written.");
+            }
+
+            byte[] codestream = _frame.Finish();
+            RasterMetadata metadata = _start.Metadata;
+            bool strip = _options.StripMetadata;
+            byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
+            byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
+            byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, _options.Effort, _start.Context.MaxParallelism);
+            WriteFile(_output, codestream, exif, xmp, gainMap: gainMap);
+        }
+
+        /// <summary>Codes the LF groups of chunk row <paramref name="cy"/>, then lets go of the rows no later chunk needs.</summary>
+        private void EncodeChunkRow(int cy)
+        {
+            int width = _start.Width, height = _start.Height;
+            int y0 = cy * Chunk, y1 = Math.Min(height, y0 + Chunk);
+            int top = Math.Max(0, y0 - Border), bottom = Math.Min(height, y1 + Border);
+            for (int cx = 0; cx * Chunk < width; cx++)
+            {
+                int x0 = cx * Chunk, x1 = Math.Min(width, x0 + Chunk);
+                int left = Math.Max(0, x0 - Border), right = Math.Min(width, x1 + Border);
+                int pw = right - left, ph = bottom - top;
+                JxlLinearRows rows = new(pw, ph, _profile, TPixel.Layout);
+                int[]? alpha = TPixel.Layout.HasAlpha ? new int[pw * ph] : null;
+                Cmyk16[]? inks = rows.HasBlack ? new Cmyk16[pw] : null;
+                Rgba16[]? rgba = alpha is not null ? new Rgba16[pw] : null;
+                for (int y = top; y < bottom; y++)
+                {
+                    ReadOnlySpan<TPixel> row = _rows[y - _first].AsSpan(left, pw);
+                    if (inks is not null)
+                    {
+                        PixelConvert.Convert(row, inks.AsSpan());
+                        rows.Add<Cmyk16>(inks, y - top);
+                    }
+                    else
+                    {
+                        rows.Add(row, y - top);
+                    }
+
+                    if (rgba is not null)
+                    {
+                        PixelConvert.Convert(row, rgba.AsSpan());
+                        int at = (y - top) * pw;
+                        for (int x = 0; x < pw; x++)
+                        {
+                            alpha![at + x] = _alphaBits == 8 ? (rgba[x].A + 128) / 257 : rgba[x].A;
+                        }
+                    }
+                }
+
+                int index = (cy * _frame.LfGroupsX) + cx;
+                JxlVarDctEncoder.EncodeChunk(_frame, index, rows.Image, (x0 - left, y0 - top, right - x1, bottom - y1), alpha, _alphaBits, rows.Image.Black);
+            }
+
+            int keep = Math.Max(0, y1 - Border);
+            int drop = Math.Min(_rows.Count, keep - _first);
+            _rows.RemoveRange(0, drop);
+            _first += drop;
         }
     }
 

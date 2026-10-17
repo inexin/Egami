@@ -48,6 +48,7 @@ internal sealed class JxlModularEncoder
     private readonly ParallelOptions _parallel;
     private float[]? _lfDequant;
     private int _lastPass;
+    private bool _chunk;
 
     private JxlModularEncoder(int effort, int width, int height, int groupShift, int streams, bool color, int parallelism)
     {
@@ -89,14 +90,15 @@ internal sealed class JxlModularEncoder
     /// channels larger than a group split into the groups' streams (with local palettes), and the tree for them; gives every
     /// stream of the frame by id, the extra channels' alone filled. A channel with a distance above 0 (in
     /// <paramref name="distances"/>) makes them all go through libjxl's lossy Modular instead (squeezed and quantized). With
-    /// several <paramref name="passes"/>, the channels go with the last.
+    /// several <paramref name="passes"/>, the channels go with the last. A <paramref name="chunk"/> of a larger frame takes
+    /// no global palettes, puts every channel in the groups and learns no decision on the stream.
     /// </summary>
-    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1)
+    internal static (JxlEncodeImage[] Streams, List<JxlTreeNode> Tree) PrepareExtraChannels(List<JxlChannel> channels, int[] bits, float[] distances, int effort, int width, int height, int parallelism, int passes = 1, bool chunk = false)
     {
         int bitDepth = bits.Max();
         int groups = Ceil(width, 256) * Ceil(height, 256);
         int lfGroups = Ceil(width, 2048) * Ceil(height, 2048);
-        JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + (passes * groups), false, parallelism) { _lastPass = (passes - 1) * groups };
+        JxlModularEncoder e = new(effort, width, height, 1, 1 + (3 * lfGroups) + 17 + (passes * groups), false, parallelism) { _lastPass = (passes - 1) * groups, _chunk = chunk };
         for (int i = 0; i < e._streams.Length; i++)
         {
             e._streams[i] = new JxlEncodeImage(bitDepth);
@@ -111,8 +113,13 @@ internal sealed class JxlModularEncoder
             return e.PrepareLossy(gi, (comp, shift) => (int)(quantizers[comp] * 0.35f * 1.1f * LumaTable[shift]), lfGroups);
         }
 
-        e.TryPalettes(gi, effort >= 2 || bitDepth > 8 ? 95 : 0);
-        int prefix = gi.CodedPrefix(e._groupDim);
+        // A chunk of a larger frame (libjxl's streaming mode) has no global palettes, and every channel goes to the groups.
+        if (!chunk)
+        {
+            e.TryPalettes(gi, effort >= 2 || bitDepth > 8 ? 95 : 0);
+        }
+
+        int prefix = chunk ? 0 : gi.CodedPrefix(e._groupDim);
         if (prefix < gi.Channels.Count)
         {
             Parallel.For(0, e._groups, e._parallel, g => e.PrepareGroup(gi, g, prefix));
@@ -1339,7 +1346,7 @@ internal sealed class JxlModularEncoder
         float repeats = 0.5f * _effort switch { >= 7 => 1f, 6 => 0.7f, 5 => 0.5f, _ => 0.3f };
         float threshold = 75 + (14 * (10 - _effort));
         List<int> order = [.. PropertyOrder];
-        if (_streams.Length < 30)
+        if (_streams.Length < 30 || _chunk)
         {
             // Few groups: the group is no use as a property.
             order.RemoveAt(1);

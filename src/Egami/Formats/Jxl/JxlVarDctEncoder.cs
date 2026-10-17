@@ -31,7 +31,7 @@ internal sealed record JxlLossySettings
 /// its forward transform (<see cref="JxlForwardDct"/>), its coefficients quantized by the quantization field and the default
 /// weights, the LF image and the HF metadata through Modular streams, and the HF coefficients as tokens.
 /// </summary>
-internal sealed class JxlVarDctEncoder
+internal sealed partial class JxlVarDctEncoder
 {
     private const int GroupDim = 256;
     private const int GroupBlocks = GroupDim / 8;
@@ -151,12 +151,14 @@ internal sealed class JxlVarDctEncoder
     private int _bQmScale;
     private int _epfIterations;
 
-    private JxlVarDctEncoder(JxlLinearImage image, JxlLossySettings settings, float intensityTarget, int upsampling, float originalDistance, int[]? alpha)
+    private JxlVarDctEncoder(JxlLinearImage image, JxlLossySettings settings, float intensityTarget, int upsampling, float originalDistance, int[]? alpha, JxlChunkedFrame? frame = null, int chunk = 0, (int L, int T, int R, int B) border = default)
     {
         _settings = settings;
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, settings.Parallelism) };
         _upsampling = upsampling;
         _originalDistance = originalDistance;
+        _frame = frame;
+        _chunk = chunk;
         int fullWidth = Ceil(image.Width, 8) * 8, fullHeight = Ceil(image.Height, 8) * 8;
         float[][] xyb = Pad(image, intensityTarget, fullWidth, fullHeight, _parallel);
         if (alpha is not null && settings.SimplifyInvisible)
@@ -164,13 +166,36 @@ internal sealed class JxlVarDctEncoder
             SimplifyInvisible(xyb, alpha, image.Width, image.Height, fullWidth, fullHeight);
         }
 
+        // A chunk keeps its border (up to a block each way) for the inverse Gaborish and adaptive quantization, and codes
+        // only what is inside it.
+        int innerWidth = image.Width - border.L - border.R, innerHeight = image.Height - border.T - border.B;
+        if (frame is not null)
+        {
+            _bordered = xyb;
+            _borderStride = fullWidth;
+            _borderRows = fullHeight;
+            (_borderLeft, _borderTop) = (border.L, border.T);
+            int iw = Ceil(innerWidth, 8) * 8, ih = Ceil(innerHeight, 8) * 8;
+            float[][] inner = [new float[iw * ih], new float[iw * ih], new float[iw * ih]];
+            for (int c = 0; c < 3; c++)
+            {
+                for (int y = 0; y < ih; y++)
+                {
+                    xyb[c].AsSpan(((y + border.T) * fullWidth) + border.L, iw).CopyTo(inner[c].AsSpan(y * iw, iw));
+                }
+            }
+
+            xyb = inner;
+            (fullWidth, fullHeight) = (iw, ih);
+        }
+
         if (Speed >= 7)
         {
             _pixelStats = PixelStats(xyb, fullWidth, fullHeight);
         }
 
-        _width = Ceil(image.Width, upsampling);
-        _height = Ceil(image.Height, upsampling);
+        _width = Ceil(innerWidth, upsampling);
+        _height = Ceil(innerHeight, upsampling);
         _blocksX = Ceil(_width, 8);
         _blocksY = Ceil(_height, 8);
         _groupsX = Ceil(_width, GroupDim);
@@ -215,7 +240,11 @@ internal sealed class JxlVarDctEncoder
         }
 
         _xyb = xyb;
-        if (settings.PhotonNoiseIso > 0)
+        if (frame is not null)
+        {
+            _noise = frame.Noise;
+        }
+        else if (settings.PhotonNoiseIso > 0)
         {
             _noise = SimulatePhotonNoise(_width, _height, settings.PhotonNoiseIso);
         }
@@ -642,8 +671,9 @@ internal sealed class JxlVarDctEncoder
             }
         }
 
-        if (Speed >= 7)
+        if (Speed >= 7 && _frame is null)
         {
+            // Patches need the whole image: libjxl looks for none in chunks.
             FindPatches();
         }
 
@@ -651,10 +681,30 @@ internal sealed class JxlVarDctEncoder
         {
             // InitialQuantField on the image before Gaborish, at a lower distance when Gaborish is off.
             float iqfDistance = _gaborish ? d : d * 0.62f;
-            _aq = JxlAdaptiveQuantization.Compute(_xyb, _blocksX * 8, _blocksY * 8, iqfDistance, _parallel);
+            if (_bordered is not null)
+            {
+                _aq = JxlAdaptiveQuantization.Compute(_bordered, _borderStride, _borderRows, iqfDistance, _parallel).Crop(_borderLeft / 8, _borderTop / 8, _blocksX, _blocksY);
+            }
+            else
+            {
+                _aq = JxlAdaptiveQuantization.Compute(_xyb, _blocksX * 8, _blocksY * 8, iqfDistance, _parallel);
+            }
+
             ComputeGlobalScaleAndQuant(quantDc, 0.39f / d, 0);
 
-            if (_gaborish)
+            if (_gaborish && _bordered is not null)
+            {
+                JxlAdaptiveQuantization.GaborishInverse(_bordered, _borderStride, _borderRows, _parallel);
+                int iw = _blocksX * 8;
+                for (int c = 0; c < 3; c++)
+                {
+                    for (int y = 0; y < _blocksY * 8; y++)
+                    {
+                        _bordered[c].AsSpan(((y + _borderTop) * _borderStride) + _borderLeft, iw).CopyTo(_xyb[c].AsSpan(y * iw, iw));
+                    }
+                }
+            }
+            else if (_gaborish)
             {
                 JxlAdaptiveQuantization.GaborishInverse(_xyb, _blocksX * 8, _blocksY * 8, _parallel);
             }
@@ -2229,6 +2279,7 @@ internal sealed class JxlVarDctEncoder
         }
 
         _passUsed[pass] = (int)customize;
+        _usedThisChunk = (int)used;
     }
 
     /// <summary>Gets the order of a channel for an order id: the chosen one when it is sent, else the natural order.</summary>
@@ -2808,12 +2859,15 @@ internal sealed class JxlVarDctEncoder
     }
 
     /// <summary>Writes the sent coefficient orders as Lehmer codes against the natural order (EncodeCoeffOrders), the LLF skipped.</summary>
-    private void WriteOrders(JxlBitWriter w, int pass)
+    private void WriteOrders(JxlBitWriter w, int pass) => WriteOrders(w, _passOrders[pass], _passUsed[pass]);
+
+    /// <summary>Writes the coefficient orders sent (<paramref name="used"/>) as Lehmer codes of their permutation of the natural order.</summary>
+    private static void WriteOrders(JxlBitWriter w, int[][] orders, int used)
     {
         List<JxlToken> tokens = [];
         for (int ord = 0; ord < NumOrders; ord++)
         {
-            if ((_passUsed[pass] & (1 << ord)) == 0)
+            if ((used & (1 << ord)) == 0)
             {
                 continue;
             }
@@ -2829,7 +2883,7 @@ internal sealed class JxlVarDctEncoder
 
             for (int c = 0; c < 3; c++)
             {
-                int[] order = _passOrders[pass][(ord * 3) + c];
+                int[] order = orders[(ord * 3) + c];
                 int[] perm = new int[size];
                 for (int i = 0; i < size; i++)
                 {

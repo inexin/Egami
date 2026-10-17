@@ -58,6 +58,15 @@ internal sealed record JxlHistogramParams
 
     internal int MaxHistograms { get; init; } = int.MaxValue;
 
+    /// <summary>
+    /// Gets whether the code is built as libjxl's streaming mode builds one: an alphabet of 256 and the default hybrid integer
+    /// configuration everywhere, so codes built from parts of the image fit together.
+    /// </summary>
+    internal bool Streaming { get; init; }
+
+    /// <summary>Gets whether every symbol of the alphabet gets a count in every context (add_missing_symbols), so later data can use any.</summary>
+    internal bool AddMissingSymbols { get; init; }
+
     /// <summary>Gets libjxl's settings for Modular data at <paramref name="effort"/> (ForModular, lossless).</summary>
     internal static JxlHistogramParams ForModular(int effort) => new()
     {
@@ -211,7 +220,8 @@ internal sealed class JxlAnsEncodingHistogram
         AllowedIndex = new ushort[LogTab][];
         for (int shift = 0; shift < LogTab; shift++)
         {
-            (int Count, int StepLog, int DeltaLg2)[] ac = new (int, int, int)[TabSize];
+            // One entry past the last, as libjxl's table has: a bin at count 0 still looks one step further.
+            (int Count, int StepLog, int DeltaLg2)[] ac = new (int, int, int)[TabSize + 1];
             ushort[] ai = new ushort[TabSize];
             int last = -1;
             int slot = 0;
@@ -546,8 +556,9 @@ internal sealed class JxlAnsEncodingHistogram
     private bool Rebalance(JxlHistogram histo)
     {
         int shift = _method - 1;
-        long[] balanceInc = new long[LogTab - 1];
-        long[] balanceDec = new long[LogTab - 1];
+        // Room for a step of 2048 too, which libjxl's arrays leave out (a bin that large is normally the balancing one).
+        long[] balanceInc = new long[LogTab];
+        long[] balanceDec = new long[LogTab];
         (int Count, int StepLog, int DeltaLg2)[] ac = Allowed[shift];
         ushort[] ai = AllowedIndex[shift];
         List<(int Freq, int CountIndex, int Bin)> bins = new(256);
@@ -584,7 +595,9 @@ internal sealed class JxlAnsEncodingHistogram
         {
             int maxLog = ac[1].StepLog;
             long DeltaInc((int Freq, int CountIndex, int Bin) a) => (a.Freq * (long)ac[a.CountIndex].DeltaLg2) - balanceInc[ac[a.CountIndex].StepLog];
-            long DeltaDec((int Freq, int CountIndex, int Bin) a) => (a.Freq * (long)ac[a.CountIndex + 1].DeltaLg2) - balanceDec[ac[a.CountIndex + 1].StepLog];
+            // A count never goes to 0: libjxl's guard (the largest delta) can be outweighed when the balancing bin is nearly
+            // empty, as it is when every symbol has a count (streaming mode's add_missing_symbols).
+            long DeltaDec((int Freq, int CountIndex, int Bin) a) => ac[a.CountIndex + 1].Count == 0 ? long.MaxValue : (a.Freq * (long)ac[a.CountIndex + 1].DeltaLg2) - balanceDec[ac[a.CountIndex + 1].StepLog];
             while (true)
             {
                 for (int log = 0; log <= maxLog; log++)
@@ -688,6 +701,9 @@ internal sealed class JxlEntropyCode
     private static readonly JxlUintConfig Lz77LengthConfig = Config(0, 0, 0);
 
     private byte[] _contextMap = [];
+
+    // In a part (BuildPart), each cluster's histogram as written, for Merge.
+    private List<JxlBitWriter>? _histogramBits;
     private JxlUintConfig[] _configs = [];
     private ushort[][] _freq = [];
     private ushort[][] _reverse = [];
@@ -735,6 +751,17 @@ internal sealed class JxlEntropyCode
             {
                 (uint tok, _, _) = Split(t.IsLz77Length ? Lz77LengthConfig : config, t.Value);
                 builder[t.Context].Add(t.IsLz77Length ? tok + Lz77MinSymbol : tok);
+            }
+        }
+
+        if (p.AddMissingSymbols)
+        {
+            foreach (JxlHistogram h in builder)
+            {
+                for (uint symbol = 0; symbol < 256; symbol++)
+                {
+                    h.Add(symbol);
+                }
             }
         }
 
@@ -1283,7 +1310,7 @@ internal sealed class JxlEntropyCode
             _contextMap = [0];
         }
 
-        int logAlpha = ChooseUintConfigs(p, streams, clustered);
+        int logAlpha = p.Streaming ? StreamingConfigs(p, clustered.Count) : ChooseUintConfigs(p, streams, clustered);
         cost += 3;
         w.Write(0, 1); // ANS, not prefix codes
         w.Write((ulong)(logAlpha - 5), 2);
@@ -1302,6 +1329,13 @@ internal sealed class JxlEntropyCode
         {
             JxlAnsEncodingHistogram normalized = JxlAnsEncodingHistogram.ComputeBest(clustered[c], p.AnsStrategy);
             normalized.Encode(w);
+            if (_histogramBits is not null)
+            {
+                JxlBitWriter bits = new();
+                normalized.Encode(bits);
+                _histogramBits.Add(bits);
+            }
+
             cost += (long)MathF.Ceiling(normalized.Cost);
             ushort[] freq = new ushort[1 << logAlpha];
             int alphabet = clustered[c].AlphabetSize();
@@ -1321,6 +1355,156 @@ internal sealed class JxlEntropyCode
         }
 
         return cost;
+    }
+
+    /// <summary>The streaming mode's choice: the default configuration for every cluster and an alphabet of 256.</summary>
+    private int StreamingConfigs(JxlHistogramParams p, int count)
+    {
+        _configs = [.. Enumerable.Repeat(p.UintConfig, count)];
+        return 8;
+    }
+
+    /// <summary>
+    /// Builds the code of a part of the data (one LF group's HF tokens, as libjxl's streaming mode does) without writing it: the
+    /// clusters of <paramref name="previous"/> (for the first part, one flat distribution of every symbol, libjxl's fixed
+    /// histogram), then up to <paramref name="budget"/> new ones; with no budget left each context takes the existing cluster
+    /// that codes it cheapest. The part codes its own tokens with its own contexts; <see cref="Merge"/> writes them all.
+    /// </summary>
+    internal static JxlEntropyCode BuildPart(JxlHistogramParams p, int contexts, List<List<JxlToken>> streams, JxlEntropyCode? previous, int budget)
+    {
+        p = p with { Streaming = true, Rle = false };
+        JxlHistogram[] builder = new JxlHistogram[contexts];
+        for (int i = 0; i < contexts; i++)
+        {
+            builder[i] = new JxlHistogram();
+        }
+
+        foreach (List<JxlToken> stream in streams)
+        {
+            foreach (JxlToken t in stream)
+            {
+                builder[t.Context].Add(Split(p.UintConfig, t.Value).Token);
+            }
+        }
+
+        JxlEntropyCode code = new() { _histogramBits = [] };
+        List<JxlUintConfig> configs = [.. previous?._configs ?? []];
+        List<ushort[]> freq = [.. previous?._freq ?? []];
+        List<ushort[]> reverse = [.. previous?._reverse ?? []];
+        List<ushort[]> start = [.. previous?._start ?? []];
+        void Take(JxlEntropyCode part)
+        {
+            configs.AddRange(part._configs);
+            freq.AddRange(part._freq);
+            reverse.AddRange(part._reverse);
+            start.AddRange(part._start);
+            code._histogramBits.AddRange(part._histogramBits!);
+        }
+
+        if (previous is null)
+        {
+            JxlHistogram flat = new();
+            for (uint symbol = 0; symbol < 256; symbol++)
+            {
+                flat.Add(symbol);
+            }
+
+            JxlEntropyCode fixedPart = new() { _histogramBits = [] };
+            fixedPart.BuildCodes(new JxlBitCounter(), p, [], [flat]);
+            Take(fixedPart);
+        }
+
+        int before = freq.Count;
+        code._contextMap = new byte[contexts];
+        if (budget > 0)
+        {
+            JxlEntropyCode fresh = new() { _histogramBits = [] };
+            fresh.BuildCodes(new JxlBitCounter(), p with { MaxHistograms = budget }, streams, builder);
+            Take(fresh);
+            for (int i = 0; i < contexts; i++)
+            {
+                code._contextMap[i] = (byte)(before + fresh._contextMap[i]);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < contexts; i++)
+            {
+                double best = double.MaxValue;
+                int pick = 0;
+                int[] counts = builder[i].Counts;
+                for (int c = 0; c < freq.Count && builder[i].Total > 0; c++)
+                {
+                    double cost = 0;
+                    for (int sym = 0; sym < counts.Length && cost < best; sym++)
+                    {
+                        if (counts[sym] == 0)
+                        {
+                            continue;
+                        }
+
+                        int f = sym < freq[c].Length ? freq[c][sym] : 0;
+                        cost = f == 0 ? double.MaxValue : cost + (counts[sym] * (LogTab - Math.Log2(f)));
+                    }
+
+                    if (cost < best)
+                    {
+                        (best, pick) = (cost, c);
+                    }
+                }
+
+                code._contextMap[i] = (byte)pick;
+            }
+        }
+
+        code._configs = [.. configs];
+        code._freq = [.. freq];
+        code._reverse = [.. reverse];
+        code._start = [.. start];
+        return code;
+    }
+
+    /// <summary>Gets the number of clusters the code has.</summary>
+    internal int Clusters => _freq.Length;
+
+    /// <summary>
+    /// Writes one code made of <paramref name="parts"/> (built by <see cref="BuildPart"/>, each from the one before), each part's
+    /// contexts after the last's, as libjxl's streaming mode joins the HF codes of the LF groups for HF global.
+    /// </summary>
+    internal static void Merge(JxlBitWriter w, IReadOnlyList<JxlEntropyCode> parts)
+    {
+        WriteLz77Header(w, false);
+        JxlEntropyCode last = parts[^1];
+        List<JxlBitWriter> bits = [.. parts.SelectMany(part => part._histogramBits!)];
+
+        // libjxl's RemoveUnusedHistograms: clusters no context took (the fixed one, often) go, the rest in order of first use.
+        byte[] map = [.. parts.SelectMany(part => part._contextMap)];
+        int[] remap = new int[last.Clusters];
+        Array.Fill(remap, -1);
+        List<int> order = [];
+        for (int i = 0; i < map.Length; i++)
+        {
+            if (remap[map[i]] < 0)
+            {
+                remap[map[i]] = order.Count;
+                order.Add(map[i]);
+            }
+
+            map[i] = (byte)remap[map[i]];
+        }
+
+        WriteContextMap(w, map, order.Count);
+        w.Write(0, 1); // ANS
+        w.Write(8 - 5, 2);
+        foreach (int c in order)
+        {
+            WriteConfig(w, last._configs[c], 8);
+        }
+
+        foreach (int c in order)
+        {
+            w.AppendBits(bits[c]);
+        }
     }
 
     /// <summary>

@@ -337,7 +337,10 @@ XYB factors; `JxlPatchSearch.cs`), the photon noise model (enc_photon_noise), th
 kernel (DownsampleImage2_Sharper in enc_heuristics, enc_frame's resampling point) and the pixel-based chroma matrix scales
 (enc_frame's PixelStatsForChromacityAdjustment), SimplifyInvisible (enc_frame) and lossy Modular extra channels: the forward squeeze
 with its default steps and their cut, and the quantization tables (modular/transform/enc_squeeze, enc_modular), and the progressive
-mode: the HF split into passes and the LF frame's settings (enc_progressive_split, enc_frame's SetProgressiveMode, enc_cache). Its JPEG recompression is translated
+mode: the HF split into passes and the LF frame's settings (enc_progressive_split, enc_frame's SetProgressiveMode, enc_cache), and the
+streaming mode: when a frame goes in chunks (CanDoStreamingEncoding), the chunk border, the first chunk's global state, the coefficient
+orders kept across chunks, the HF histogram budget with its fixed flat histogram, unused histograms removed, and every symbol counted
+in the Modular distributions (enc_frame, enc_ans, enc_coeff_order; `JxlVarDctChunked.cs`). Its JPEG recompression is translated
 from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
 `JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
 (jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is

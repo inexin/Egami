@@ -37,6 +37,24 @@ internal sealed class JxlAdaptiveQuantization
         Mask1x1 = new float[xsize * ysize];
     }
 
+    /// <summary>Gets the part of the field and masks for the blocks from (<paramref name="bx0"/>, <paramref name="by0"/>), as a chunk with a border needs them.</summary>
+    internal JxlAdaptiveQuantization Crop(int bx0, int by0, int blocksX, int blocksY)
+    {
+        JxlAdaptiveQuantization c = new([], blocksX * 8, blocksY * 8);
+        for (int y = 0; y < blocksY; y++)
+        {
+            Array.Copy(QuantField, ((by0 + y) * _blocksX) + bx0, c.QuantField, y * blocksX, blocksX);
+            Array.Copy(Mask, ((by0 + y) * _blocksX) + bx0, c.Mask, y * blocksX, blocksX);
+        }
+
+        for (int y = 0; y < blocksY * 8; y++)
+        {
+            Array.Copy(Mask1x1, (((by0 * 8) + y) * _xsize) + (bx0 * 8), c.Mask1x1, y * blocksX * 8, blocksX * 8);
+        }
+
+        return c;
+    }
+
     /// <summary>Gets the initial quantization field, one value per block.</summary>
     internal float[] QuantField { get; }
 
