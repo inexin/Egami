@@ -13,7 +13,10 @@ namespace Egami.Fuzz;
 /// (brob, Exif, xml, jbrd, jhgm, jxlp) directly. jxlentropy feeds raw bits to the entropy decoder, the MA tree and Modular
 /// stream reader, and the ICC profile decoder, its first byte picking which. jxl-write runs the lossless encoder: the input picks a
 /// pixel type, size, effort and pixels, and the file must load back to exactly those pixels; jxl-jpeg recompresses its input as
-/// a JPEG, and a file it makes must load and rebuild the input byte for byte. Only EgamiExceptions may escape the readers.
+/// a JPEG, and a file it makes must load and rebuild the input byte for byte. jxl-lossy (Phase 2.9.7) runs the lossy encoder
+/// with options the input picks (effort, distance, progressive, photon noise, alpha distance, transparent colors) on pixels it
+/// gives, as small images or, now and then, one of several groups: the file must load at the raster's size with finite
+/// samples, and exact alpha (below distance 10) must come back exactly. Only EgamiExceptions may escape the readers.
 /// </summary>
 internal static class JxlFuzzTarget
 {
@@ -272,6 +275,125 @@ internal static class JxlFuzzTarget
                 throw new InvalidOperationException($"The lossless {typeof(T).Name} round trip at effort {options.Effort} differs in row {y}.");
             }
         }
+    }
+
+    public static void Lossy(byte[] data, EgamiContext context)
+    {
+        if (data.Length < 9)
+        {
+            return;
+        }
+
+        // Byte 1 picks the size: mostly up to 48 pixels a side, sometimes past one group (the input's pixels repeat over it).
+        bool large = data[1] >= 248;
+        int width = large ? 200 + (data[1] * 7 % 200) : 1 + (data[1] % 48);
+        float distance = data[3] < 128 ? 0.1f + (data[3] / 128f * 4) : 0.1f + ((data[3] - 128) / 127f * 24.9f);
+        JxlWriterOptions options = new()
+        {
+            Lossless = false,
+            Effort = 1 + (data[2] % 7),
+            Distance = distance,
+            Progressive = (data[4] & 1) != 0,
+            PhotonNoiseIso = (data[4] & 2) != 0 ? 100 + (data[5] * 100) : null,
+            AlphaDistance = (data[4] & 4) != 0 ? data[6] / 255f * 25 : 0,
+            KeepTransparentColors = (data[4] & 8) == 0,
+        };
+        switch (data[0] % 6)
+        {
+            case 0:
+                LossyTrip<Gray8>(data, width, large, options, context);
+                break;
+            case 1:
+                LossyTrip<Rgb8>(data, width, large, options, context);
+                break;
+            case 2:
+                LossyTrip<Rgba8>(data, width, large, options, context);
+                break;
+            case 3:
+                LossyTrip<Rgba16>(data, width, large, options, context);
+                break;
+            case 4:
+                LossyTrip<RgbaF32>(data, width, large, options, context);
+                break;
+            default:
+                LossyTrip<Cmyk16>(data, width, large, options, context);
+                break;
+        }
+    }
+
+    private static void LossyTrip<T>(byte[] data, int width, bool large, JxlWriterOptions options, EgamiContext context)
+        where T : unmanaged, IPixelType<T>
+    {
+        const int Header = 8;
+        int pixelBytes = T.Layout.BytesPerPixel;
+        int height = large ? 200 + (data[7] * 3 % 200) : Math.Clamp((data.Length - Header) / pixelBytes / width, 1, 48);
+        using Raster<T> raster = Raster.Create<T>(width, height, context);
+        int length = data.Length - Header;
+        for (int y = 0; y < height; y++)
+        {
+            Span<byte> row = MemoryMarshal.AsBytes(raster.Row(y));
+            for (int i = 0; i < row.Length; i++)
+            {
+                row[i] = data[Header + (((y * row.Length) + i) % length)];
+            }
+        }
+
+        if (typeof(T) == typeof(RgbaF32))
+        {
+            // Finite samples in a range the encoder takes; NaN and infinities have no lossy meaning.
+            for (int y = 0; y < height; y++)
+            {
+                Span<float> s = MemoryMarshal.Cast<T, float>(raster.Row(y));
+                for (int i = 0; i < s.Length; i++)
+                {
+                    s[i] = float.IsFinite(s[i]) ? Math.Clamp(s[i], -4, 4) : 0;
+                }
+            }
+        }
+
+        using MemoryStream file = new();
+        raster.Save(file, JxlFormat.Info, options);
+        using Raster<T> again = Raster.Load<T>(file.ToArray(), context);
+        if ((again.Width, again.Height) != (width, height))
+        {
+            throw new InvalidOperationException($"The lossy {typeof(T).Name} file loads at {again.Width}×{again.Height}, not {width}×{height}.");
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            if (typeof(T) == typeof(RgbaF32) && !AllFinite(MemoryMarshal.Cast<T, float>(again.Row(y))))
+            {
+                throw new InvalidOperationException($"The lossy {typeof(T).Name} file decodes to samples that are not finite in row {y}.");
+            }
+
+            // From distance 10 the image, alpha too, is coded at half size (as libjxl does), so alpha is exact below that only.
+            if (options.AlphaDistance == 0 && options.Distance < 10 && T.Layout.HasAlpha && typeof(T) != typeof(RgbaF32))
+            {
+                ReadOnlySpan<byte> a = MemoryMarshal.AsBytes(raster.Row(y)), b = MemoryMarshal.AsBytes(again.Row(y));
+                int channel = pixelBytes / 4;
+                for (int x = 0; x < width; x++)
+                {
+                    int at = (x * pixelBytes) + (3 * channel);
+                    if (!a.Slice(at, channel).SequenceEqual(b.Slice(at, channel)))
+                    {
+                        throw new InvalidOperationException($"Exact alpha differs at ({x}, {y}) in the lossy {typeof(T).Name} file at effort {options.Effort}: {Convert.ToHexString(a.Slice(at, channel))}, read back {Convert.ToHexString(b.Slice(at, channel))}.");
+                    }
+                }
+            }
+        }
+    }
+
+    private static bool AllFinite(ReadOnlySpan<float> s)
+    {
+        foreach (float v in s)
+        {
+            if (!float.IsFinite(v))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static void Recompress(byte[] data, EgamiContext context)

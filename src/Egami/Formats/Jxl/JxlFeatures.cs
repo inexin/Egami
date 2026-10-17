@@ -52,8 +52,19 @@ internal static class JxlFeatures
         int[] alphas = [.. image.ExtraChannels.Select((e, i) => (e, i)).Where(t => t.e.Type == JxlExtraChannelType.Alpha).Select(t => t.i)];
         JxlEntropyDecoder d = JxlEntropyDecoder.Read(r, 10);
         d.Begin(r);
-        long maxRefs = Math.Min(1 << 24, (long)frame.Width * frame.Height / 16);
+        // libjxl's limits (dec_patch_dictionary), on the frame's size padded to whole blocks: djxl decodes up to these.
+        (long codedWidth, long codedHeight) = frame.CodedSize;
+        if (!frame.Modular)
+        {
+            int bw = 8 << (frame.JpegUpsampling.Any(u => u is 1 or 2) ? 1 : 0);
+            int bh = 8 << (frame.JpegUpsampling.Any(u => u is 1 or 3) ? 1 : 0);
+            (codedWidth, codedHeight) = ((codedWidth + bw - 1) / bw * bw, (codedHeight + bh - 1) / bh * bh);
+        }
+
+        long maxRefs = 1024 + (codedWidth * codedHeight / 4);
         long maxPatches = maxRefs * 4;
+        long maxBlendings = maxPatches * 4;
+        long nextSize = 1;
         uint count = d.ReadUint(r, 0);
         if (count > maxRefs)
         {
@@ -74,9 +85,20 @@ internal static class JxlFeatures
             uint y0 = d.ReadUint(r, 3);
             uint width = d.ReadUint(r, 2) + 1;
             uint height = d.ReadUint(r, 2) + 1;
-            uint targets = d.ReadUint(r, 7) + 1;
+            uint idCount = d.ReadUint(r, 7);
+            if (idCount > maxPatches)
+            {
+                throw Corrupt(r, "The frame has more patches than its size allows.");
+            }
+
+            uint targets = idCount + 1;
             total += targets;
-            if (total > maxPatches || x0 > int.MaxValue || y0 > int.MaxValue || width > int.MaxValue || height > int.MaxValue)
+            if (nextSize < total)
+            {
+                nextSize = Math.Min(nextSize * 2, maxPatches);
+            }
+
+            if (total > maxPatches || nextSize * (extras + 1) > maxBlendings || x0 > int.MaxValue || y0 > int.MaxValue || width > int.MaxValue || height > int.MaxValue)
             {
                 throw Corrupt(r, "The frame has more patches than its size allows.");
             }

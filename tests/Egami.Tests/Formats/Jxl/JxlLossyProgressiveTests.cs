@@ -93,6 +93,22 @@ public class JxlLossyProgressiveTests
         }
     }
 
+    [Fact]
+    public void TinyFrameWithPatchesLoads()
+    {
+        // Task 16's fuzz finding: a 2×2 frame at effort 7 has patches, more than the 2.9.3 decoder's limit of one per 16 pixels
+        // allowed; djxl takes up to libjxl's 1,024 plus one per 4 pixels, and so does Egami now.
+        using Raster<Rgba8> source = Raster.Create<Rgba8>(2, 2);
+        source.Row(0)[0] = new Rgba8(0xFF, 0x00, 0x06, 0x04);
+        source.Row(0)[1] = new Rgba8(0x42, 0x52, 0x40, 0x39);
+        source.Row(1)[0] = new Rgba8(0x37, 0xE1, 0x69, 0x1E);
+        source.Row(1)[1] = new Rgba8(0x0B, 0xC6, 0x63, 0x2E);
+        byte[] file = Save(source, new JxlWriterOptions { Lossless = false, Effort = 7, Distance = 4.6f, Progressive = true });
+        using Raster<Rgba8> back = Raster.Load<Rgba8>(file);
+        Assert.Equal((2, 2), (back.Width, back.Height));
+        Assert.Equal(source.Row(1)[1].A, back.Row(1)[1].A);
+    }
+
     private static byte[] Save<TPixel>(Raster<TPixel> raster, JxlWriterOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
