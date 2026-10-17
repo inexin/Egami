@@ -63,6 +63,28 @@ public class Vp8EncoderTests
             Vp8TransformSimd.InverseTransformAdd(residual, p2, at);
             Assert.Equal(p1, p2);
 
+            // The decoder's two side-by-side blocks at once, and their DC-only add, against the scalar transform: in range of the
+            // 16-bit lanes, at their ±2048 edge, and past it (the 32-bit fallback).
+            short[] pair = new short[32];
+            for (int i = 0; i < 32; i++)
+            {
+                pair[i] = (short)(round % 7 == 0 ? random.Next(-32768, 32768) : round % 7 == 1 ? random.Next(-2048, 2049) : random.Next(-600, 600));
+            }
+
+            int pairAt = ((round & 1) * 8) + ((round >> 1 & 3) * 4 * S);
+            byte[] p3 = (byte[])b.Clone(), p4 = (byte[])b.Clone();
+            Vp8Dsp.InverseTransformAddScalar(pair.AsSpan(0, 16), p3, pairAt);
+            Vp8Dsp.InverseTransformAddScalar(pair.AsSpan(16, 16), p3, pairAt + 4);
+            Vp8TransformSimd.InverseTransformAddTwo(ref pair[0], ref p4[pairAt], S);
+            Assert.Equal(p3, p4);
+            short[] dcs = new short[32];
+            dcs[0] = pair[0];
+            dcs[16] = pair[16];
+            Vp8Dsp.InverseTransformAddScalar(dcs.AsSpan(0, 16), p3, pairAt);
+            Vp8Dsp.InverseTransformAddScalar(dcs.AsSpan(16, 16), p3, pairAt + 4);
+            Vp8TransformSimd.DcAddTwo(dcs[0], dcs[16], ref p4[pairAt], S);
+            Assert.Equal(p3, p4);
+
             Assert.Equal(Vp8EncDsp.HadamardWeightedScalar(a, at), Vp8TransformSimd.HadamardWeighted(a, at));
             Assert.Equal(ScalarSse(a, b, 0, 16, 16), Vp8TransformSimd.Sse(a, b, 0, 16, 16));
             Assert.Equal(ScalarSse(a, b, 16, 16, 8), Vp8TransformSimd.Sse(a, b, 16, 16, 8));

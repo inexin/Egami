@@ -83,8 +83,98 @@ internal static class Vp8TransformSimd
     /// <summary>The inverse DCT of <see cref="Vp8Dsp.InverseTransformAdd"/>, added to the block with clamping.</summary>
     internal static void InverseTransformAdd(ReadOnlySpan<short> input, Span<byte> buffer, int at, int stride = S)
     {
+        _ = input[15];
         _ = buffer.Slice(at + (3 * stride), 4);
-        ref short ri = ref MemoryMarshal.GetReference(input);
+        InverseTransformAdd(ref MemoryMarshal.GetReference(input), ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), at), stride);
+    }
+
+    /// <summary>
+    /// Adds the inverse DCT of two side-by-side blocks (32 coefficients at <paramref name="input"/>, the left block's first) to
+    /// the 8 × 4 pixels at <paramref name="dst"/>, both blocks at once in 16-bit lanes, as libwebp's TransformTwo and libvpx's
+    /// idct_dequant_full_2x do. pmulhw gives the scalar (a × k) >> 16 exactly (35468, past 16 bits, as a × (35468 − 65536) and a
+    /// added). While every coefficient is within ±2048 no lane leaves 16 bits (the largest intermediate is about 30,330), so the
+    /// result is the scalar transform's; a pair with a larger coefficient goes through the 32-bit kernel instead.
+    /// </summary>
+    internal static void InverseTransformAddTwo(ref short input, ref byte dst, int stride)
+    {
+        Vector128<short> q0 = Vector128.LoadUnsafe(ref input), q1 = Vector128.LoadUnsafe(ref input, 8);
+        Vector128<short> q2 = Vector128.LoadUnsafe(ref input, 16), q3 = Vector128.LoadUnsafe(ref input, 24);
+        Vector128<ushort> largest = Vector128.Max(Vector128.Max(Vector128.Abs(q0).AsUInt16(), Vector128.Abs(q1).AsUInt16()), Vector128.Max(Vector128.Abs(q2).AsUInt16(), Vector128.Abs(q3).AsUInt16()));
+        if (Vector128.GreaterThanAny(largest, Vector128.Create((ushort)2048)))
+        {
+            InverseTransformAdd(ref input, ref dst, stride);
+            InverseTransformAdd(ref Unsafe.Add(ref input, 16), ref Unsafe.Add(ref dst, 4), stride);
+            return;
+        }
+
+        // Row k of both blocks: the left block's in lanes 0 to 3, the right block's in lanes 4 to 7.
+        Vector128<short> i0 = Sse2.UnpackLow(q0.AsInt64(), q2.AsInt64()).AsInt16(), i1 = Sse2.UnpackHigh(q0.AsInt64(), q2.AsInt64()).AsInt16();
+        Vector128<short> i2 = Sse2.UnpackLow(q1.AsInt64(), q3.AsInt64()).AsInt16(), i3 = Sse2.UnpackHigh(q1.AsInt64(), q3.AsInt64()).AsInt16();
+
+        // The vertical pass over the columns (lanes), as the scalar one.
+        Vector128<short> a = i0 + i2, b = i0 - i2;
+        Vector128<short> c = Mul2(i1) - Mul1(i3), d = Mul1(i1) + Mul2(i3);
+        Vector128<short> t0 = a + d, t1 = b + c, t2 = b - c, t3 = a - d;
+        Transpose(ref t0, ref t1, ref t2, ref t3);
+
+        // The horizontal pass, the lanes now the rows; then back to rows of pixels.
+        Vector128<short> dc = t0 + Vector128.Create((short)4);
+        a = dc + t2;
+        b = dc - t2;
+        c = Mul2(t1) - Mul1(t3);
+        d = Mul1(t1) + Mul2(t3);
+        Vector128<short> r0 = (a + d) >> 3, r1 = (b + c) >> 3, r2 = (b - c) >> 3, r3 = (a - d) >> 3;
+        Transpose(ref r0, ref r1, ref r2, ref r3);
+        AddRow8(ref dst, r0);
+        AddRow8(ref Unsafe.Add(ref dst, stride), r1);
+        AddRow8(ref Unsafe.Add(ref dst, 2 * stride), r2);
+        AddRow8(ref Unsafe.Add(ref dst, 3 * stride), r3);
+    }
+
+    /// <summary>
+    /// Adds the DC-only transforms of two side-by-side blocks, (<paramref name="dcLeft"/> + 4) >> 3 and
+    /// (<paramref name="dcRight"/> + 4) >> 3, to the 8 × 4 pixels at <paramref name="dst"/>, clamped as the scalar code clamps.
+    /// </summary>
+    internal static void DcAddTwo(short dcLeft, short dcRight, ref byte dst, int stride)
+    {
+        // Two broadcasts and an unpack; building the vector from halves goes through the stack.
+        Vector128<short> add = Sse2.UnpackLow(Vector128.Create((short)((dcLeft + 4) >> 3)).AsInt64(), Vector128.Create((short)((dcRight + 4) >> 3)).AsInt64()).AsInt16();
+        AddRow8(ref dst, add);
+        AddRow8(ref Unsafe.Add(ref dst, stride), add);
+        AddRow8(ref Unsafe.Add(ref dst, 2 * stride), add);
+        AddRow8(ref Unsafe.Add(ref dst, 3 * stride), add);
+    }
+
+    /// <summary>Adds 8 residuals to the 8 pixels at <paramref name="at"/>; packuswb clamps to 0 to 255.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void AddRow8(ref byte at, Vector128<short> residual)
+    {
+        Vector128<short> pixels = Sse2.UnpackLow(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref at)).AsByte(), Vector128<byte>.Zero).AsInt16();
+        Unsafe.WriteUnaligned(ref at, Sse2.PackUnsignedSaturate(pixels + residual, pixels + residual).AsUInt64().ToScalar());
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Mul1(Vector128<short> a) => Sse2.MultiplyHigh(a, Vector128.Create((short)20091)) + a;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Mul2(Vector128<short> a) => Sse2.MultiplyHigh(a, Vector128.Create(unchecked((short)35468))) + a;
+
+    /// <summary>Transposes the 4 × 4 block in lanes 0 to 3 of the four vectors, and the one in lanes 4 to 7.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose(ref Vector128<short> r0, ref Vector128<short> r1, ref Vector128<short> r2, ref Vector128<short> r3)
+    {
+        Vector128<short> left01 = Sse2.UnpackLow(r0, r1), left23 = Sse2.UnpackLow(r2, r3);
+        Vector128<short> right01 = Sse2.UnpackHigh(r0, r1), right23 = Sse2.UnpackHigh(r2, r3);
+        Vector128<int> left0 = Sse2.UnpackLow(left01.AsInt32(), left23.AsInt32()), left1 = Sse2.UnpackHigh(left01.AsInt32(), left23.AsInt32());
+        Vector128<int> right0 = Sse2.UnpackLow(right01.AsInt32(), right23.AsInt32()), right1 = Sse2.UnpackHigh(right01.AsInt32(), right23.AsInt32());
+        r0 = Sse2.UnpackLow(left0.AsInt64(), right0.AsInt64()).AsInt16();
+        r1 = Sse2.UnpackHigh(left0.AsInt64(), right0.AsInt64()).AsInt16();
+        r2 = Sse2.UnpackLow(left1.AsInt64(), right1.AsInt64()).AsInt16();
+        r3 = Sse2.UnpackHigh(left1.AsInt64(), right1.AsInt64()).AsInt16();
+    }
+
+    private static void InverseTransformAdd(ref short ri, ref byte row, int stride)
+    {
         Vector128<int> i0 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref ri))).AsInt16());
         Vector128<int> i1 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 4)))).AsInt16());
         Vector128<int> i2 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 8)))).AsInt16());
@@ -106,7 +196,6 @@ internal static class Vp8TransformSimd
 
         // r_k holds output column k of each row; transpose to rows and add to the pixels.
         Transpose(ref r0, ref r1, ref r2, ref r3);
-        ref byte row = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), at);
         AddRow(ref row, r0);
         AddRow(ref Unsafe.Add(ref row, stride), r1);
         AddRow(ref Unsafe.Add(ref row, 2 * stride), r2);

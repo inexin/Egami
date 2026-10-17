@@ -1212,22 +1212,14 @@ internal sealed partial class Vp8Decoder : IDisposable
         else
         {
             Vp8Dsp.PredictBlock(EdgeMode(mb.YMode, mbx, mby), wy, Y0, 16);
-            for (int n = 0; n < 16; n++)
-            {
-                AddResidual(c.Codes[n], coefficients.Slice(n * 16, 16), wy, Y0 + ((n >> 2) * 4 * S) + ((n & 3) * 4));
-            }
+            AddResiduals(c, 0, 16, ref y0, S);
         }
 
         Vp8Dsp.BlockMode chroma = EdgeMode(mb.UvMode, mbx, mby);
         Vp8Dsp.PredictBlock(chroma, wu, C0, 8);
         Vp8Dsp.PredictBlock(chroma, wv, C0, 8);
-
-        for (int n = 0; n < 4; n++)
-        {
-            int at = C0 + ((n >> 1) * 4 * S) + ((n & 1) * 4);
-            AddResidual(c.Codes[16 + n], coefficients.Slice((16 + n) * 16, 16), wu, at);
-            AddResidual(c.Codes[20 + n], coefficients.Slice((20 + n) * 16, 16), wv, at);
-        }
+        AddResiduals(c, 16, 4, ref u0, S);
+        AddResiduals(c, 20, 4, ref v0, S);
 
         // Unfiltered bottom rows for the macroblock row below, and the pixels into the current row.
         if (mby < MbHeight - 1)
@@ -1253,6 +1245,43 @@ internal sealed partial class Vp8Decoder : IDisposable
         {
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref du, j * StrideC), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref u0, j * S)));
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref dv, j * StrideC), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref v0, j * S)));
+        }
+    }
+
+    /// <summary>
+    /// Adds the residuals of <paramref name="count"/> blocks from <paramref name="first"/> (16 luma blocks or 4 of one chroma
+    /// plane, four or two a row) to the pixels at <paramref name="dst"/>, two side-by-side blocks at a time: one 16-bit
+    /// transform for both when either has AC coefficients, one DC add for both when neither does, nothing when both are empty.
+    /// The caller has checked that the 16 × 16 or 8 × 8 pixels lie in their plane.
+    /// </summary>
+    private static void AddResiduals(Row c, int first, int count, ref byte dst, int stride)
+    {
+        ref byte codes = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.Codes), first);
+        ref short coefficients = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(c.Coefficients), first * 16);
+        int rowShift = count == 16 ? 2 : 1;
+        for (int n = 0; n < count; n += 2)
+        {
+            int left = Unsafe.Add(ref codes, n), right = Unsafe.Add(ref codes, n + 1);
+            if ((left | right) == 0)
+            {
+                continue;
+            }
+
+            ref byte at = ref Unsafe.Add(ref dst, ((n >> rowShift) * 4 * stride) + ((n & ((1 << rowShift) - 1)) * 4));
+            ref short pair = ref Unsafe.Add(ref coefficients, n * 16);
+            if (!Vp8TransformSimd.IsSupported)
+            {
+                AddResidual((byte)left, MemoryMarshal.CreateReadOnlySpan(ref pair, 16), MemoryMarshal.CreateSpan(ref at, (3 * stride) + 4), 0, stride);
+                AddResidual((byte)right, MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref pair, 16), 16), MemoryMarshal.CreateSpan(ref Unsafe.Add(ref at, 4), (3 * stride) + 4), 0, stride);
+            }
+            else if (left > 1 || right > 1)
+            {
+                Vp8TransformSimd.InverseTransformAddTwo(ref pair, ref at, stride);
+            }
+            else
+            {
+                Vp8TransformSimd.DcAddTwo(pair, Unsafe.Add(ref pair, 16), ref at, stride);
+            }
         }
     }
 
@@ -1284,18 +1313,12 @@ internal sealed partial class Vp8Decoder : IDisposable
         Vp8StageTimes.Lap(Vp8Stage.Inter);
         if (c.AnyCoefficients)
         {
-            ReadOnlySpan<short> coefficients = c.Coefficients;
-            for (int n = 0; n < 16; n++)
-            {
-                AddResidual(c.Codes[n], coefficients.Slice(n * 16, 16), RowsY, dy + ((n >> 2) * 4 * StrideY) + ((n & 3) * 4), StrideY);
-            }
-
-            for (int n = 0; n < 4; n++)
-            {
-                int at = dc + ((n >> 1) * 4 * StrideC) + ((n & 1) * 4);
-                AddResidual(c.Codes[16 + n], coefficients.Slice((16 + n) * 16, 16), RowsU, at, StrideC);
-                AddResidual(c.Codes[20 + n], coefficients.Slice((20 + n) * 16, 16), RowsV, at, StrideC);
-            }
+            _ = RowsY.Slice(dy + (15 * StrideY), 16);
+            _ = RowsU.Slice(dc + (7 * StrideC), 8);
+            _ = RowsV.Slice(dc + (7 * StrideC), 8);
+            AddResiduals(c, 0, 16, ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsY), dy), StrideY);
+            AddResiduals(c, 16, 4, ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsU), dc), StrideC);
+            AddResiduals(c, 20, 4, ref Unsafe.Add(ref MemoryMarshal.GetReference(RowsV), dc), StrideC);
         }
 
         _ = RowsY.Slice(dy + (15 * StrideY), 16);
