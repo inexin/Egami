@@ -1,1 +1,16 @@
 #nullable enable
+Egami.Drawing.GradientStop.GradientStop(float offset, Egami.Colors.InkColor! ink) -> void
+Egami.Drawing.GradientStop.Ink.get -> Egami.Colors.InkColor?
+Egami.Drawing.Mesh.Inks.get -> System.ReadOnlyMemory<Egami.Colors.InkColor!>
+Egami.Drawing.Mesh.WithInks(System.ReadOnlySpan<Egami.Colors.InkColor!> inks) -> Egami.Drawing.Mesh!
+Egami.Drawing.Overprint
+Egami.Drawing.Overprint.NonZero = 2 -> Egami.Drawing.Overprint
+Egami.Drawing.Overprint.Off = 0 -> Egami.Drawing.Overprint
+Egami.Drawing.Overprint.On = 1 -> Egami.Drawing.Overprint
+Egami.Drawing.Paint.Overprint.get -> Egami.Drawing.Overprint
+Egami.Drawing.Paint.Overprint.init -> void
+Egami.Drawing.Patch.CornerInks.get -> System.ReadOnlyMemory<Egami.Colors.InkColor!>
+Egami.Drawing.Patch.WithInks(System.ReadOnlySpan<Egami.Colors.InkColor!> cornerInks) -> Egami.Drawing.Patch!
+Egami.Drawing.SolidPaint.Ink.get -> Egami.Colors.InkColor?
+Egami.Drawing.SolidPaint.Ink.init -> void
+Egami.Drawing.SolidPaint.SolidPaint(Egami.Colors.InkColor! ink) -> void

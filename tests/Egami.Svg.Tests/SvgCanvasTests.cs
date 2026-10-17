@@ -776,6 +776,17 @@ public class SvgCanvasTests
         c.DrawAnnotation(new RectF(200, 260, 100, 30), Annotation.Url("https://example.com"));
     }
 
+    /// <summary>Phase 2.6.5 task 6: an ink paint is written as its appearance, the same as the RGB paint of that colour.</summary>
+    [Fact]
+    public void InkPaintsAreWrittenAsTheirAppearance()
+    {
+        Colors.InkColor red = Colors.InkColor.Spot("PANTONE 186 C", 0.8f, Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+        SolidPaint ink = new(red) { Overprint = Overprint.NonZero };
+        (string inkText, _) = Write(c => c.FillRect(new RectF(10, 10, 50, 30), ink));
+        (string rgbText, _) = Write(c => c.FillRect(new RectF(10, 10, 50, 30), new SolidPaint(ink.Color)));
+        Assert.Equal(rgbText, inkText);
+    }
+
     internal static (string Text, SvgDocument Document) Write(Action<Canvas> draw, SvgWriteOptions? options = null, float width = 100, float height = 80, string? name = null)
     {
         using MemoryStream stream = new();

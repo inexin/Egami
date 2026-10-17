@@ -336,4 +336,19 @@ public class Paints
 
         Assert.Equal(banner.GetPixel(70, 60), banner.GetPixel(150, 60));
     }
+
+    [Fact]
+    public void InkPaints()
+    {
+        using Raster<Rgba8> raster = Raster.Create(100, 60, Rgba8.White);
+        using RasterCanvas<Rgba8> canvas = raster.CreateCanvas();
+
+        #region ink-paints
+        // A spot colour, overprinting what is below. An ink canvas prints its plate; this RGB canvas draws its appearance.
+        var logo = Colors.InkColor.Spot("PANTONE 186 C", 1, Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+        canvas.FillRect(new RectF(10, 10, 80, 40), new SolidPaint(logo) { Overprint = Overprint.On });
+        #endregion
+
+        Assert.True(raster.GetPixel(50, 30).R > 150 && raster.GetPixel(50, 30).G < 80);
+    }
 }

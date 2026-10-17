@@ -86,6 +86,13 @@ colors from C#.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#custom-paint)]
 
+A colour can also be given as printing inks: `new SolidPaint(InkColor)`, a `GradientStop` with an `InkColor`, and
+`Mesh.WithInks` and `Patch.WithInks` for vertex and corner colours. An ink canvas prints the inks; every other canvas,
+SVG included, draws the colour's appearance in sRGB. `Paint.Overprint` (an `Overprint`) says which plates a paint prints on an
+ink canvas, as PDF's overprint does; RGB canvases ignore it. The [colour management guide](color-management.md) covers inks.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#ink-paints)]
+
 ## Layers
 
 `SaveLayer` sends later drawing into a layer that the matching `Restore` merges with an opacity, a blend mode, a filter (any chain

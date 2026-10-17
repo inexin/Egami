@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Egami.Colors;
 using Egami.Drawing.Shading;
 using Egami.Operations;
 using Egami.Pixels;
@@ -46,11 +47,28 @@ public readonly record struct GradientStop
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GradientStop"/> struct with a colour given as inks: an ink canvas blends the
+    /// inks' tints; every other canvas uses <see cref="Color"/>, the appearance in sRGB.
+    /// </summary>
+    /// <param name="offset">The position along the gradient, from 0 to 1.</param>
+    /// <param name="ink">The inks and their tints.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="offset"/> is outside 0 to 1.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="ink"/> is <see langword="null"/>.</exception>
+    public GradientStop(float offset, InkColor ink)
+        : this(offset, Inks.Appearance(ink ?? throw new ArgumentNullException(nameof(ink))))
+    {
+        Ink = ink;
+    }
+
     /// <summary>Gets the position along the gradient, from 0 to 1.</summary>
     public float Offset { get; }
 
-    /// <summary>Gets the color, with straight alpha.</summary>
+    /// <summary>Gets the color, with straight alpha: for an ink stop, its appearance in sRGB.</summary>
     public RgbaF32 Color { get; }
+
+    /// <summary>Gets the colour as inks, or <see langword="null"/> for an RGB stop.</summary>
+    public InkColor? Ink { get; }
 }
 
 /// <summary>What a gradient or an image paint does past its ends or edges, as Skia's tile modes.</summary>

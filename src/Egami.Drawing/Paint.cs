@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Egami.Colors;
 using Egami.Drawing.Shading;
 using Egami.Operations;
 using Egami.Pixels;
@@ -26,6 +27,7 @@ public abstract record class Paint : Egami.Fonts.Layout.ITextPaint
     private readonly BlendMode _blendMode;
     private readonly float _opacity = 1;
     private readonly Matrix3x2 _localMatrix = Matrix3x2.Identity;
+    private readonly Overprint _overprint;
 
     /// <summary>Initializes a new instance of the <see cref="Paint"/> class.</summary>
     private protected Paint()
@@ -78,6 +80,19 @@ public abstract record class Paint : Egami.Fonts.Layout.ITextPaint
     /// as in Skia and the reference library.
     /// </summary>
     public bool Dither { get; init; }
+
+    /// <summary>
+    /// Gets which plates the paint prints on an ink canvas, as PDF's overprint: <see cref="Overprint.Off"/> (the default) paints
+    /// every plate, knocking out what is below; <see cref="Overprint.On"/> only the inks the colour names; <see cref="Overprint.NonZero"/>
+    /// as On, leaving the plates of a CMYK colour's zero components alone (PDF's overprint mode 1). RGB canvases ignore it, as PDF
+    /// viewers do by default.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
+    public Overprint Overprint
+    {
+        get => _overprint;
+        init => _overprint = Enum.IsDefined(value) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, null);
+    }
 
     /// <summary>
     /// Gets a blur of the shape's coverage, applied before the paint is: a soft-edged shape, or with <see cref="BlurStyle.Outer"/> a
@@ -147,6 +162,7 @@ public abstract record class Paint : Egami.Fonts.Layout.ITextPaint
 public sealed record class SolidPaint : Paint
 {
     private readonly RgbaF32 _color;
+    private readonly InkColor? _ink;
 
     /// <summary>Initializes a new instance of the <see cref="SolidPaint"/> class.</summary>
     /// <param name="color">The color.</param>
@@ -161,6 +177,32 @@ public sealed record class SolidPaint : Paint
     public SolidPaint(Rgba8 color)
         : this(RgbaF32.FromRgba8(color))
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SolidPaint"/> class with a colour given as inks: an ink canvas prints its inks;
+    /// every other canvas draws <see cref="Color"/>, its appearance in sRGB (transparent when it has none).
+    /// </summary>
+    /// <param name="ink">The inks and their tints.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="ink"/> is <see langword="null"/>.</exception>
+    public SolidPaint(InkColor ink)
+    {
+        Ink = ink;
+    }
+
+    /// <summary>
+    /// Gets the colour as inks, or <see langword="null"/> for an RGB colour. Setting it sets <see cref="Color"/> to its appearance
+    /// in sRGB. An ink canvas prints the inks; other canvases draw <see cref="Color"/>.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">The value is <see langword="null"/>.</exception>
+    public InkColor? Ink
+    {
+        get => _ink;
+        init
+        {
+            _ink = value ?? throw new ArgumentNullException(nameof(value));
+            _color = Inks.Appearance(value);
+        }
     }
 
     /// <summary>Gets the color.</summary>

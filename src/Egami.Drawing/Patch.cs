@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Egami.Colors;
 using Egami.Pixels;
 
 namespace Egami.Drawing;
@@ -43,6 +44,7 @@ public sealed class Patch
     private readonly RgbaF32[]? _colors;
     private readonly float[]? _values;
     private readonly Vector2[]? _texCoords;
+    private InkColor[]? _inks;
 
     private Patch(PatchKind kind, ReadOnlySpan<Vector2> points, ReadOnlySpan<RgbaF32> colors, ReadOnlySpan<float> values, ReadOnlySpan<Vector2> texCoords)
     {
@@ -94,8 +96,11 @@ public sealed class Patch
     /// <summary>Gets the control points: 12 for a Coons patch, 16 for a tensor patch, in the orders the class describes.</summary>
     public ReadOnlyMemory<Vector2> Points => _points;
 
-    /// <summary>Gets the corner colors, or empty when there are none.</summary>
+    /// <summary>Gets the corner colors, or empty when there are none: for a patch with inks, their appearances in sRGB.</summary>
     public ReadOnlyMemory<RgbaF32> CornerColors => _colors;
+
+    /// <summary>Gets the corner colours as inks, or empty when the patch has none (see <see cref="WithInks"/>).</summary>
+    public ReadOnlyMemory<InkColor> CornerInks => _inks;
 
     /// <summary>Gets the corner values, or empty when there are none.</summary>
     public ReadOnlyMemory<float> CornerValues => _values;
@@ -141,6 +146,37 @@ public sealed class Patch
         }
 
         return new Patch(PatchKind.Tensor, points, cornerColors, cornerValues, cornerTexCoords);
+    }
+
+    /// <summary>
+    /// Returns this patch with its four corner colours given as inks: an ink canvas blends their tints across the surface (an ink
+    /// a corner does not name counts as 0 there); other canvases use the appearances in sRGB, which become <see cref="CornerColors"/>.
+    /// </summary>
+    /// <param name="cornerInks">Four corner colours, in the order of <see cref="CornerColors"/>.</param>
+    /// <returns>The new patch.</returns>
+    /// <exception cref="ArgumentException">There are not four, or the patch has corner values.</exception>
+    /// <exception cref="ArgumentNullException">A colour is <see langword="null"/>.</exception>
+    public Patch WithInks(ReadOnlySpan<InkColor> cornerInks)
+    {
+        if (_values is not null)
+        {
+            throw new ArgumentException("A patch has corner colors or corner values, not both.", nameof(cornerInks));
+        }
+
+        if (cornerInks.Length != 4)
+        {
+            throw new ArgumentException("A patch has four corner colours.", nameof(cornerInks));
+        }
+
+        RgbaF32[] colors = new RgbaF32[4];
+        for (int i = 0; i < 4; i++)
+        {
+            colors[i] = Inks.Appearance(cornerInks[i] ?? throw new ArgumentNullException(nameof(cornerInks)));
+        }
+
+        Patch patch = new(Kind, _points, colors, default, _texCoords);
+        patch._inks = cornerInks.ToArray();
+        return patch;
     }
 
     /// <summary>Returns the point of the surface at parameters (u, v).</summary>

@@ -1,5 +1,6 @@
 using System.Numerics;
 
+using Egami.Colors;
 using Egami.Pixels;
 
 namespace Egami.Drawing;
@@ -35,6 +36,7 @@ public sealed class Mesh
     private readonly Vector2[]? _texCoords;
     private readonly float[]? _values;
     private readonly int[]? _indices;
+    private InkColor[]? _inks;
 
     /// <summary>Initializes a new instance of the <see cref="Mesh"/> class.</summary>
     /// <param name="mode">How the vertices make triangles.</param>
@@ -111,8 +113,11 @@ public sealed class Mesh
     /// <summary>Gets the vertices.</summary>
     public ReadOnlyMemory<Vector2> Positions => _positions;
 
-    /// <summary>Gets the vertex colors, or empty when there are none.</summary>
+    /// <summary>Gets the vertex colors, or empty when there are none: for a mesh with inks, their appearances in sRGB.</summary>
     public ReadOnlyMemory<RgbaF32> Colors => _colors;
+
+    /// <summary>Gets the vertex colours as inks, or empty when the mesh has none (see <see cref="WithInks"/>).</summary>
+    public ReadOnlyMemory<InkColor> Inks => _inks;
 
     /// <summary>Gets the texture coordinates, or empty when there are none.</summary>
     public ReadOnlyMemory<Vector2> TexCoords => _texCoords;
@@ -130,6 +135,32 @@ public sealed class Mesh
     public int TriangleCount { get; }
 
     private int VertexReads => _indices?.Length ?? _positions.Length;
+
+    /// <summary>
+    /// Returns this mesh with a colour given as inks for each vertex: an ink canvas blends their tints across each triangle (an ink
+    /// a vertex does not name counts as 0 there); other canvases use the appearances in sRGB, which become <see cref="Colors"/>.
+    /// </summary>
+    /// <param name="inks">One colour per vertex.</param>
+    /// <returns>The new mesh.</returns>
+    /// <exception cref="ArgumentException">The count differs from the vertices', or the mesh has values.</exception>
+    /// <exception cref="ArgumentNullException">A colour is <see langword="null"/>.</exception>
+    public Mesh WithInks(ReadOnlySpan<InkColor> inks)
+    {
+        if (_values is not null)
+        {
+            throw new ArgumentException("A mesh has colors or values, not both.", nameof(inks));
+        }
+
+        RgbaF32[] colors = new RgbaF32[inks.Length];
+        for (int i = 0; i < inks.Length; i++)
+        {
+            colors[i] = Drawing.Inks.Appearance(inks[i] ?? throw new ArgumentNullException(nameof(inks)));
+        }
+
+        Mesh mesh = new(Mode, _positions, colors, _texCoords, default, _indices);
+        mesh._inks = inks.ToArray();
+        return mesh;
+    }
 
     /// <summary>Returns the vertex indices of triangle <paramref name="t"/>, in the order the mode gives them.</summary>
     internal (int A, int B, int C) Triangle(int t)
