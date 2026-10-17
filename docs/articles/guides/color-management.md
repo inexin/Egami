@@ -1,7 +1,7 @@
 # Color management
 
 Egami reads color information from every file and keeps it, but changes no pixel unless you ask: a file's numbers load as
-stored, exactly as in 1.0. Phase 2.1.2 adds the types that say what those numbers mean, and the conversions between them.
+stored. The types below say what those numbers mean, and convert between them.
 
 ## Profiles
 

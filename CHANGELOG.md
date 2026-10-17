@@ -808,7 +808,7 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   for 1,000 strings), and than the reference drawing library 2.1.7 at drawing a 2,000-word page (15 against 402 ms at 12 pixels).
 - Fuzz targets `font`, `cff` and `subset`. Shaping, bidi and wrapping come in 2.8; WOFF, WOFF2 and variable fonts in 2.7.2.
 
-### Regions and masks (in progress)
+### Regions and masks
 
 - `Within(Rect, …)` runs any same-size chain so that only pixels inside the rectangle change. Filters read the real pixels
   around it, so a blurred rectangle has no seam; flips mirror the rectangle; custom operations work unchanged. Steps that change
@@ -823,7 +823,7 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
 - `AlphaToGray`, `LuminanceToAlpha`, `CopyAlpha` and `Flatten` match ImageMagick's -alpha extract, copy and remove; the JPEG
   writer's Background option now runs on Flatten's arithmetic, with unchanged bytes.
 
-### Keying and arithmetic (in progress)
+### Keying and arithmetic
 
 - `MakeTransparent`, `ReplaceColor` and `FloodFill` equal ImageMagick's -transparent, -opaque and -floodfill with -fuzz at 8 and
   16 bits; the tolerance is ImageMagick's color distance, and `MakeTransparent`'s softness ramps alpha for clean edges. `FloodFill`

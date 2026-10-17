@@ -1,19 +1,24 @@
 # Egami
 
-Egami ("image" backwards) is an open source 2D imaging library for .NET that loads, edits and saves images.
+Egami ("image" backwards) is an open source 2D imaging library for .NET 10 that loads, edits, draws and saves images.
 
 - **MIT-licensed**, with no strings for commercial use.
-- **Fully managed C#**: no native binaries, no P/Invoke.
+- **Fully managed C#**: no native binaries, no P/Invoke, no third-party dependencies.
 - **Safe on untrusted files**: size limits are checked before allocating, and readers are fuzz-tested.
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
-- **Drawing** (Egami.Drawing 1.0): antialiased paths, shapes, strokes, clips and images on a canvas; boolean operations,
+- **Formats**: PNG and APNG, JPEG, GIF, WebP, BMP, TGA, QOI, the Netpbm formats, TIFF, Radiance and OpenEXR, JPEG XL, ICO and
+  CUR read and written; AVIF, JPEG 2000, JBIG2, CCITT fax and PSD read ([guide](docs/articles/guides/formats.md)).
+- **Drawing** (Egami.Drawing 1.1): antialiased paths, shapes, strokes, clips and images on a canvas; boolean operations,
   outlines, dashes, measuring, path effects and SVG path data on curves; gradients, image, noise and custom paints; layers with
   opacity, blend modes, filters and soft masks; blurred shapes and shadows; nine-patches, sprite atlases, Gouraud meshes and
   Coons and tensor patches; recorded drawings that replay at any scale, tile as patterns and save as .egdr files
   ([guide](docs/articles/guides/drawing.md)).
+- **Fonts, SVG, CSS and metafiles**: Egami.Fonts (fonts, shaping and paragraph layout), Egami.Svg, Egami.Css and
+  Egami.Metafiles (WMF, EMF and EMF+); see [Packages](docs/articles/packages.md).
 
-> **Status:** early development. Nothing is published to NuGet yet. Phase 1.1 provides the core types and a complete static PNG reader and writer; Phase 1.2 adds resize, geometry, color, filter and compositing operations; Phase 1.3 adds JPEG reading and writing, typed EXIF and `AutoOrient`; Phase 1.4 adds animation: GIF, APNG and editable frames;
-Phase 1.5 adds BMP, TGA, QOI and the Netpbm formats, and the 1.0 API. Full documentation is in [docs/](docs/index.md).
+> **Status:** early development. Nothing is published to NuGet yet. The core API (Egami 1.0) and Egami.Drawing are stable;
+> Egami.Fonts, Egami.Svg, Egami.Css and Egami.Metafiles are 0.x and may still change. Full documentation is in
+> [docs/](docs/index.md).
 
 ## Quick start
 
@@ -285,14 +290,15 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks -- --fi
 
 | Path | Contents |
 | --- | --- |
-| `src/Egami/` | The library, the only shipped project |
+| `src/Egami/` | The core library |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/` | The other packages ([Packages](docs/articles/packages.md)) |
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
 | `tests/Egami.DocSamples/` | The code the docs show, compiled and run with the tests |
 | `samples/` | One small console app per guide; `dotnet run --project samples/Formats` |
 | `tests/Egami.OutsideTests/` | Plugins written with only the public API: a pixel type, a memory source, operations, formats |
-| `tests/images/`, `tests/reference/` | PngSuite, the JPEG, GIF, APNG, BMP, TGA, QOI and PNM corpora and their reference decodes, with licenses |
+| `tests/images/`, `tests/reference/` | Test images for every format and their reference decodes, with licenses; large corpora are fetched into `.cache` (see CONTRIBUTING.md) |
 | `docs/` | The documentation site (DocFX): guides, cookbook, API reference. Build it with `docfx docs/docfx.json` (output in `docs/_site`) |
 | `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
 | `tools/` | Scripts that regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |

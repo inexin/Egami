@@ -360,10 +360,14 @@ public class Text
         // A Type1C font without /Encoding uses the CFF program's own encoding.
         CharacterMap? own = face.BuiltInEncoding;                  // platform 7, encoding 0: the Standard Encoding
         ushort forB = own?.GetGlyph('B') ?? 0;
+
+        // Every code the map gives a glyph, in code order, for a PDF writer's /Widths or a ToUnicode table.
+        int mapped = map?.GetMappings().Count() ?? 0;
         #endregion
 
         Assert.Equal(trueType.GetGlyph('A'), forA);
         Assert.Equal(face.GetGlyph('B'), forB);
+        Assert.True(mapped > 0);
 
         #region cffstrings
         // Converting a Type 1 font to CFF: standard glyph names take their standard SIDs, others go in the String INDEX.

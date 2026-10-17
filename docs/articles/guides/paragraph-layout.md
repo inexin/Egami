@@ -6,9 +6,6 @@ alignment and justification, line height, spacing, tabs, max lines and ellipsis,
 decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of `GlyphRun`s and
 decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.
 
-Phase 2.8.2 is landing: line breaking, rich text, line layout, vertical lines, metrics and hit testing are in; decorations
-and drawing follow, and this guide grows with them.
-
 ## Line breaking
 
 `LineBreaks.Enumerate` walks a text's break opportunities through a `LineBreakEnumerator` that allocates nothing. Each
@@ -161,8 +158,8 @@ clamped paragraph.
 
 A `TextDecoration` on a `TextStyle` draws underlines, overlines and line-throughs, solid, double, dotted, dashed or wavy.
 `TextLayout.Decorations` gives each as a `DecorationShape` per decorated stretch of a line: one position and thickness for the
-stretch, and its `Segments`, with gaps cut where glyph ink crosses an underline or overline (`SkipInk.Auto`, the default;
-Chinese, Japanese and Korean glyphs never cut). `AddTo` writes a shape's outline, and `TextLayout.ToPath` writes the whole layout,
+stretch, and its `Segments` (each a `DecorationSegment` from left to right), with gaps cut where glyph ink crosses an underline
+or overline (`SkipInk.Auto`, the default; Chinese, Japanese and Korean glyphs never cut). `AddTo` writes a shape's outline, and `TextLayout.ToPath` writes the whole layout,
 glyphs then decorations, to any `IGlyphOutlineSink`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#decorations)]

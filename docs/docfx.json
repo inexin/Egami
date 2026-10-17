@@ -14,6 +14,18 @@
         {
           "src": "../src/Egami.Fonts",
           "files": [ "Egami.Fonts.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Svg",
+          "files": [ "Egami.Svg.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Css",
+          "files": [ "Egami.Css.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Metafiles",
+          "files": [ "Egami.Metafiles.csproj" ]
         }
       ],
       "dest": "api",

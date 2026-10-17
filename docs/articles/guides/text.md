@@ -206,7 +206,8 @@ PDFium finds.
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cids)]
 
 - `CharacterMaps` lists every cmap subtable as stored and `FindCharacterMap` picks one by platform and encoding; a
-  `CharacterMap` maps the subtable's own codes (bytes for (1,0) and (3,0)), never translated. `BuiltInEncoding` is a name-keyed
+  `CharacterMap` maps the subtable's own codes (bytes for (1,0) and (3,0)), never translated, and `GetMappings` lists them all as
+  `CharacterMapping`s. `BuiltInEncoding` is a name-keyed
   CFF font's own encoding as a platform 7 map (0 Standard, 1 Expert, 2 custom). `GetGlyph(codePoint)` keeps choosing its one
   Unicode subtable as before.
 

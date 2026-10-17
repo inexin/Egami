@@ -1,5 +1,7 @@
 - name: Getting started
   href: getting-started.md
+- name: Packages
+  href: packages.md
 - name: Guides
   items:
     - name: Formats
@@ -68,6 +70,10 @@
       href: guides/ccitt.md
     - name: JPEG 2000
       href: guides/jpeg2000.md
+    - name: JPEG XL
+      href: guides/jxl.md
+    - name: AVIF
+      href: guides/avif.md
     - name: ICO and CUR
       href: guides/ico.md
     - name: PSD and PSB

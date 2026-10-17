@@ -68,6 +68,11 @@ jobs:
       # The public API baseline (PublicAPI.*.txt) and the analyzers run as part of this build; warnings are errors.
       - name: Build (analyzers and public API baseline)
         run: dotnet build Egami.slnx -c Release
+      - name: Docs complete
+        run: |
+          for package in src/*/; do
+            python3 tools/check-docs.py "$package"
+          done
       - name: No package references in src/
         run: |
           # Only build-time analyzers are allowed. Anything else would ship as a dependency.

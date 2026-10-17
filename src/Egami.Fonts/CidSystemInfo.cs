@@ -7,4 +7,7 @@ namespace Egami.Fonts;
 /// <param name="Registry">The registry, such as "Adobe".</param>
 /// <param name="Ordering">The ordering, such as "Japan1" or "Identity".</param>
 /// <param name="Supplement">The supplement number.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="cids"/>
+/// </example>
 public sealed record CidSystemInfo(string Registry, string Ordering, int Supplement);

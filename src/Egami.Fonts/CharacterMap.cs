@@ -5,6 +5,9 @@ namespace Egami.Fonts;
 /// <summary>A code and the glyph a <see cref="CharacterMap"/> gives it.</summary>
 /// <param name="Code">The character code, in the map's own encoding.</param>
 /// <param name="Glyph">The glyph id.</param>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="cmaps"/>
+/// </example>
 public readonly record struct CharacterMapping(int Code, ushort Glyph);
 
 /// <summary>
