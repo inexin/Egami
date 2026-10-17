@@ -13,7 +13,10 @@ public sealed partial class SvgCanvas
     private int _recordDepth;
     private string? _recordReason;
 
-    /// <inheritdoc/>
+    /// <inheritdoc path="/*[not(self::example)]"/>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Paints.cs" region="layers"/>
+    /// </example>
     protected override void OnSaveLayer(LayerOptions options)
     {
         PushLevel();

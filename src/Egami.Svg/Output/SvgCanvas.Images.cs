@@ -10,7 +10,10 @@ namespace Egami.Svg;
 
 public sealed partial class SvgCanvas
 {
-    /// <inheritdoc/>
+    /// <inheritdoc path="/*[not(self::example)]"/>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Drawing.cs" region="backend"/>
+    /// </example>
     protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
     {
         if (Recording())
@@ -23,7 +26,10 @@ public sealed partial class SvgCanvas
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc path="/*[not(self::example)]"/>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Advanced.cs" region="encoded-image"/>
+    /// </example>
     protected override void OnDrawEncodedImage(EncodedImage image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
     {
         if (Recording())

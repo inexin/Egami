@@ -171,7 +171,7 @@ public sealed partial class InkRaster : IDisposable
         Save(stream, options);
     }
 
-    /// <inheritdoc cref="Save(string, InkTiffOptions?)"/>
+    /// <inheritdoc cref="Save(string, InkTiffOptions?)" path="/*[not(self::param)]"/>
     /// <param name="stream">The stream to write to, at its position.</param>
     /// <param name="options">The compression and whether to keep alpha, or <see langword="null"/> for the defaults.</param>
     /// <example>
@@ -202,7 +202,7 @@ public sealed partial class InkRaster : IDisposable
         return Load(stream, profile, context);
     }
 
-    /// <inheritdoc cref="Load(string, ColorProfile?, EgamiContext?)"/>
+    /// <inheritdoc cref="Load(string, ColorProfile?, EgamiContext?)" path="/*[not(self::param)]"/>
     /// <param name="stream">The stream to read, from its position.</param>
     /// <param name="profile">The output profile when the file has none, or <see langword="null"/> for FOGRA39.</param>
     /// <param name="context">The context to allocate from and whose limits apply, or <see langword="null"/> for <see cref="EgamiContext.Default"/>.</param>

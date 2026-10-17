@@ -139,7 +139,10 @@ public sealed partial class SvgCanvas : Canvas
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc path="/*[not(self::example)]"/>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Drawing.cs" region="backend"/>
+    /// </example>
     protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
     {
         if (Recording())
