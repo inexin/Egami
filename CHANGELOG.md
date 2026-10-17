@@ -45,6 +45,21 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   for embedding. Conversions through it match Little CMS 2 within 0.03% of ink and 0.01 in L*a*b*. CMYK files without a
   profile still convert by the plain formula.
 
+### Printing with inks
+
+- Inks: `Colorant` (process, spot or technical, with an `InkAppearance` in CMYK, sRGB or Lab for where it cannot be printed),
+  `InkColor` (PDF's DeviceCMYK, Separation and DeviceN: `Cmyk`, `Spot`, `Mix`) and `InkSet` (a profile's process inks plus
+  spots, at most 64; `FromProfile`, `WithSpot`, `WithDisabled`).
+- n-colour ICC profiles (2CLR to FCLR) read as `ColorModel.NColor`, with `ChannelCount` and `ColorantNames`;
+  `ColorTransform.Apply(ReadOnlySpan<float>, Span<float>)` converts to and from any channel count. Conversions match Little
+  CMS 2.19 within 0.4 ΔE2000, its black point rules included.
+- `InkRaster`: a page as 8 or 16-bit plates plus alpha (`InkPlate`, each also a gray raster over the same memory), saved and
+  loaded as one separated TIFF with InkNames (`InkTiffOptions`); libtiff's tools read the files.
+- `InkRaster.Proof` shows the plates on screen (spots add their CMYK equivalent to the process inks, as Ghostscript's and
+  MuPDF's overprint simulation; within 1.1 ΔE2000 of Ghostscript's), optionally with the paper's tone (`ProofOptions`);
+  `MeasureCoverage` gives the largest total ink, where it is, the share over a limit and each plate's coverage (`InkCoverage`).
+- Fixed: a TIFF with an empty Deflate strip threw instead of loading the strip as empty.
+
 ### AVIF
 
 - `AvifFormat` reads AVIF (AV1 Image File Format over HEIF) stills, registered by default. The AV1 decoder, written from the
@@ -382,6 +397,20 @@ Additive to the 1.0 API: nothing in it changes or goes away.
   a picture. Egami.Drawing's layers use it to grow before a filter.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
+
+### Egami.Drawing 1.1.0
+
+- `InkCanvas` draws on an `InkRaster` with every `Canvas` call (`InkCanvasOptions`: what RGB means, intent, black point
+  compensation): RGB colours, gradients and images convert into the process inks; ink colours print their plates.
+  `Clear(InkColor)` and `DrawImage(InkRaster)` are its own. Blend modes, groups (isolated, non-isolated, knockout) and soft
+  masks follow ISO 32000-2 plate by plate; every plate is within 2 levels of Ghostscript 10.05's tiffsep on the gate scenes.
+- Ink paints: `SolidPaint(InkColor)`, `GradientStop(offset, InkColor)`, `Mesh.WithInks` and `Patch.WithInks`. Every other
+  backend draws their appearance.
+- `Paint.Overprint` (`Off`, `On`, `NonZero`, PDF's overprint and overprint mode 1): plates a fill does not paint keep what is
+  under them. RGB canvases ignore it, as PDF viewers do by default.
+- `LayerOptions.ColorSpace`: a layer blends in an RGB or gray space and converts into the inks as it merges; spots stay plates.
+- Pictures keep ink paints, overprint and layer colour spaces; .egdr 1.1 holds them in an INKS chunk, which 1.0 readers skip
+  to draw the appearances.
 
 ### Egami.Css 0.2.0
 

@@ -766,3 +766,21 @@ uses the CFF program's own encoding, `BuiltInEncoding`.
 `CcittFax.Decode` gives what the CCITTFaxDecode filter gives, byte-aligned Group 4 included; the image's `/Decode`, `/ImageMask`
 and color space then apply as after any filter. To load the data straight to `Gray8`, use `CcittFormat`; see the
 [CCITT guide](../guides/ccitt.md).
+
+## Separations of a CMYK page with spot colours
+
+[!code-csharp[](../../../tests/Egami.DocSamples/InkRecipes.cs#ink-separations)]
+
+`InkCanvas` draws on plates with any `Canvas` call; RGB images and colours convert through the ink set's profile. See
+[Printing inks](../guides/drawing.md#printing-inks).
+
+## A spot-colour label with overprint
+
+[!code-csharp[](../../../tests/Egami.DocSamples/InkRecipes.cs#ink-spot-label)]
+
+`Overprint.On` paints only the inks a colour names; `NonZero` also leaves the plates of a CMYK colour's zero components alone,
+as PDF's overprint mode 1.
+
+## Check total ink coverage before printing
+
+[!code-csharp[](../../../tests/Egami.DocSamples/InkRecipes.cs#ink-coverage)]
