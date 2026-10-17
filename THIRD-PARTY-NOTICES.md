@@ -327,7 +327,10 @@ through the opsin absorbance matrix and bias, cone responses clamped at zero, cu
 quantizer's global scale and DC quantizer (quantizer, InitialQuantDC in enc_adaptive_quantization), the per-effort heuristics
 (enc_heuristics, enc_frame's chromacity and loop filter settings), coefficient quantization with its thresholds and the Y round
 trip (enc_group), the LF and HF metadata streams and their trees (enc_modular, enc_cache), coefficient orders and tokens
-(enc_coeff_order, enc_entropy_coder; `JxlVarDctEncoder.cs`). Its JPEG recompression is translated
+(enc_coeff_order, enc_entropy_coder; `JxlVarDctEncoder.cs`), the per-block quantization adjustments (AdjustQuantBlockAC,
+AdjustQuantField), the adaptive quantization map with its masks and the inverse Gaborish (enc_adaptive_quantization,
+enc_gaborish, the Symmetric5 convolution; `JxlAdaptiveQuantization.cs`) and the chroma-from-luma search (enc_chroma_from_luma;
+`JxlChromaFromLuma.cs`). Its JPEG recompression is translated
 from libjxl 0.12.0 too: the JPEG reader with its padding bits, reset points and extra zero runs (jpeg/enc_jpeg_data_reader;
 `JxlJpegReader.cs`), and the jbrd box, chroma from luma search, DC contexts, coefficient orders and coefficient tokens
 (jpeg/enc_jpeg_data, jpeg/jpeg_data, enc_frame, enc_coeff_order, enc_entropy_coder; `JxlJpegEncoder.cs`). libjxl is

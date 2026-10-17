@@ -100,6 +100,10 @@ internal sealed class JxlVarDctEncoder
     // The LF image's extra precision bits (1 from effort 4, where LF values are quantized against the WP predictor).
     private int _lfPrecision;
 
+    // From effort 5: the adaptive quantization's masks, and whether Gaborish is on.
+    private JxlAdaptiveQuantization? _aq;
+    private bool _gaborish;
+
     private int _globalScale;
     private int _quantDc;
     private int _xQmScale;
@@ -143,6 +147,7 @@ internal sealed class JxlVarDctEncoder
     {
         JxlVarDctEncoder e = new(image, settings, intensityTarget);
         e.ChooseParameters();
+        e.ComputeChromaFromLuma();
         e.ComputeCoefficients();
         e.QuantizeLf();
         e.ComputeOrders();
@@ -227,11 +232,36 @@ internal sealed class JxlVarDctEncoder
     {
         float d = _settings.Distance;
         float quantDc = InitialQuantDc(d);
-        float q = 0.79f / d;
-        ComputeGlobalScaleAndQuant(quantDc, q, 0);
-        float invGlobalScale = (float)(1.0 * GlobalScaleDenom / _globalScale);
-        int raw = ClampQuant((q * invGlobalScale) + 0.5f);
-        Array.Fill(_quantField, raw);
+        // Gaborish from effort 5 above distance 0.5, as libjxl's LoopFilterFromParams.
+        _gaborish = Speed >= 5 && d > 0.5f;
+        if (Speed >= 5)
+        {
+            // InitialQuantField on the image before Gaborish, at a lower distance when Gaborish is off.
+            float iqfDistance = _gaborish ? d : d * 0.62f;
+            _aq = JxlAdaptiveQuantization.Compute(_xyb, _blocksX * 8, _blocksY * 8, iqfDistance, _parallel);
+            ComputeGlobalScaleAndQuant(quantDc, 0.39f / d, 0);
+            if (_gaborish)
+            {
+                JxlAdaptiveQuantization.GaborishInverse(_xyb, _blocksX * 8, _blocksY * 8, _parallel);
+            }
+
+            float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
+            float[] field = _aq.QuantField;
+            AdjustQuantField(field, d);
+            for (int i = 0; i < field.Length; i++)
+            {
+                _quantField[i] = ClampQuant((field[i] * inv) + 0.5f);
+            }
+        }
+        else
+        {
+            float q = 0.79f / d;
+            ComputeGlobalScaleAndQuant(quantDc, q, 0);
+            float invGlobalScale = (float)(1.0 * GlobalScaleDenom / _globalScale);
+            int raw = ClampQuant((q * invGlobalScale) + 0.5f);
+            Array.Fill(_quantField, raw);
+        }
+
         Array.Fill(_epfSharpness, (byte)4);
 
         _xQmScale = 3;
@@ -252,6 +282,144 @@ internal sealed class JxlVarDctEncoder
                 _epfIterations++;
             }
         }
+    }
+
+    /// <summary>
+    /// libjxl's AdjustQuantField: each varblock larger than 8×8 takes the largest quantization value of its blocks, moved towards
+    /// their mean above distance 1.54 for varblocks of four blocks or more.
+    /// </summary>
+    private void AdjustQuantField(float[] field, float distance)
+    {
+        float mixer = 1.0f;
+        const float Limit = 1.54138f;
+        const float Mul = 0.56391f;
+        if (distance > Limit)
+        {
+            mixer = MathF.Max(0, mixer - ((distance - Limit) * Mul));
+        }
+
+        for (int y = 0; y < _blocksY; y++)
+        {
+            for (int x = 0; x < _blocksX; x++)
+            {
+                int at = (y * _blocksX) + x;
+                if (_strategy[at] < 0)
+                {
+                    continue;
+                }
+
+                (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)_strategy[at]);
+                if (w8 * h8 == 1)
+                {
+                    continue;
+                }
+
+                float max = field[at];
+                float mean = 0;
+                for (int iy = 0; iy < h8; iy++)
+                {
+                    for (int ix = 0; ix < w8; ix++)
+                    {
+                        float v = field[at + ix + (iy * _blocksX)];
+                        mean += v;
+                        max = MathF.Max(v, max);
+                    }
+                }
+
+                mean /= w8 * h8;
+                if (w8 * h8 >= 4)
+                {
+                    max *= mixer;
+                    max += (1.0f - mixer) * mean;
+                }
+
+                for (int iy = 0; iy < h8; iy++)
+                {
+                    for (int ix = 0; ix < w8; ix++)
+                    {
+                        field[at + ix + (iy * _blocksX)] = max;
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Chooses each 64×64 tile's chroma-from-luma factors from effort 5 (CfLHeuristics::ComputeTile after the block sizes and
+    /// quantization field are known): fast least squares at efforts 5 and 6, Newton steps at 7.
+    /// </summary>
+    private void ComputeChromaFromLuma()
+    {
+        if (Speed < 5)
+        {
+            return;
+        }
+
+        JxlDequantMatrices matrices = JxlDequantMatrices.Defaults;
+        bool fast = Speed <= 6;
+        int stride = _blocksX * 8;
+        Parallel.For(0, _tilesX * _tilesY, _parallel, tile =>
+        {
+            int tx = tile % _tilesX;
+            int ty = tile / _tilesX;
+            int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
+            int x1 = Math.Min(x0 + TileBlocks, _blocksX), y1 = Math.Min(y0 + TileBlocks, _blocksY);
+            List<float> yx = [], xs = [], yb = [], bs = [];
+            float[] scratch = new float[64 * 64];
+            float[][] block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
+            for (int y = y0; y < y1; y++)
+            {
+                for (int x = x0; x < x1; x++)
+                {
+                    int at = (y * _blocksX) + x;
+                    if (_strategy[at] < 0)
+                    {
+                        continue;
+                    }
+
+                    JxlTransformType t = (JxlTransformType)_strategy[at];
+                    (int w8, int h8) = JxlTransforms8.Size(t);
+                    if (w8 + x0 > x1 || h8 + y0 > y1)
+                    {
+                        continue;
+                    }
+
+                    for (int c = 0; c < 3; c++)
+                    {
+                        Transform(t, _xyb[c], (y * 8 * stride) + (x * 8), stride, scratch, block[c]);
+                    }
+
+                    int cw = Math.Max(w8, h8);
+                    int ch = Math.Min(w8, h8);
+                    for (int iy = 0; iy < ch; iy++)
+                    {
+                        for (int ix = 0; ix < cw; ix++)
+                        {
+                            int k = (iy * cw * 8) + ix;
+                            block[0][k] = block[1][k] = block[2][k] = 0;
+                        }
+                    }
+
+                    float[] qmX = matrices.GetWide(0, t);
+                    float[] qmB = matrices.GetWide(2, t);
+                    float q = Scale * 128 * _quantField[at];
+                    int size = w8 * h8 * 64;
+                    for (int i = 0; i < size; i++)
+                    {
+                        float qx = q / qmX[i];
+                        float qb = q / qmB[i];
+                        yx.Add(block[1][i] * qx);
+                        xs.Add(block[0][i] * qx);
+                        yb.Add(block[1][i] * qb);
+                        bs.Add(block[2][i] * qb);
+                    }
+                }
+            }
+
+            int t2 = (ty * _tilesX) + tx;
+            _yToX[t2] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.ToArray(), xs.ToArray(), 0f, fast);
+            _yToB[t2] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.ToArray(), bs.ToArray(), 1f, fast);
+        });
     }
 
     /// <summary>libjxl's InitialQuantDC: the DC quantizer for a distance, with a gentler slope at high distances.</summary>
@@ -350,7 +518,7 @@ internal sealed class JxlVarDctEncoder
                     }
 
                     int quant = _quantField[at];
-                    QuantizeRoundtripY(matrices, t, w8, h8, quant, coeffs[1], quantized[1]);
+                    QuantizeRoundtripY(matrices, t, w8, h8, ref quant, coeffs, qmMul, quantized[1]);
                     for (int k = 0; k < size; k++)
                     {
                         coeffs[0][k] -= xFactor * coeffs[1][k];
@@ -477,9 +645,33 @@ internal sealed class JxlVarDctEncoder
     /// Quantizes Y (QuantizeRoundtripYBlockAC at effort 1 to 4: fixed thresholds) and replaces its coefficients with their
     /// dequantized values, biases included, as the decoder will see them.
     /// </summary>
-    private void QuantizeRoundtripY(JxlDequantMatrices matrices, JxlTransformType t, int w8, int h8, int quant, float[] block, int[] output)
+    private void QuantizeRoundtripY(JxlDequantMatrices matrices, JxlTransformType t, int w8, int h8, ref int quant, float[][] coeffs, float[] qmMul, int[] output)
     {
+        float[] block = coeffs[1];
         Span<float> thresholds = [0.56f, 0.62f, 0.62f, 0.62f];
+        if (Speed >= 5)
+        {
+            // The quantization value goes up where blocks would turn too flat or lose isolated high frequencies (effort 5 and up).
+            int original = quant;
+            int maxQuant = 0;
+            Span<float> thresY = stackalloc float[4];
+            foreach (int c in (ReadOnlySpan<int>)[1, 0, 2])
+            {
+                Span<float> thres = [0.58f, 0.64f, 0.64f, 0.64f];
+                int q = original;
+                AdjustQuantBlock(matrices, c, qmMul[c], t, w8, h8, thres, coeffs[c], ref q);
+                if (c == 1)
+                {
+                    thres.CopyTo(thresY);
+                }
+
+                maxQuant = Math.Max(q, maxQuant);
+            }
+
+            quant = maxQuant;
+            thresY.CopyTo(thresholds);
+        }
+
         QuantizeBlock(matrices, 1, 1f, t, w8, h8, thresholds, block, quant, output);
         float[] dm = matrices.GetWide(1, t);
         float invQac = (float)(1.0 * GlobalScaleDenom / _globalScale) / quant;
@@ -487,6 +679,180 @@ internal sealed class JxlVarDctEncoder
         for (int k = 0; k < size; k++)
         {
             block[k] = AdjustQuantBias(1, output[k]) * dm[k] * invQac;
+        }
+    }
+
+    /// <summary>
+    /// libjxl's AdjustQuantBlockAC (effort 5 and up): raises a block's quantization value when its quantized HF would vanish
+    /// from a quadrant with a noticeable error, when its highest frequencies stand alone, when a DCT8 block is nearly flat and
+    /// when a large varblock's error is high against its values; lowers it again in busy blocks.
+    /// </summary>
+    private void AdjustQuantBlock(JxlDequantMatrices matrices, int c, float qmMultiplier, JxlTransformType t, int w8, int h8, Span<float> thresholds, float[] block, ref int quant)
+    {
+        if (JxlTransforms8.IsSmall(t) && t != JxlTransformType.Dct8)
+        {
+            return;
+        }
+
+        float[] qm = matrices.GetWide(c, t);
+        float qac = Scale * quant;
+        int xsize = Math.Max(w8, h8);
+        int ysize = Math.Min(w8, h8);
+        if (xsize > 1 || ysize > 1)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                thresholds[i] = MathF.Max(0.54f, thresholds[i] - Math.Clamp(0.003f * xsize * ysize, 0f, 0.08f));
+            }
+        }
+
+        float sumHighest = 0;
+        float sumError = 0;
+        float sumVals = 0;
+        Span<float> hfNonZeros = stackalloc float[4];
+        Span<float> hfMaxError = stackalloc float[4];
+        hfNonZeros.Clear();
+        hfMaxError.Clear();
+        int cw = xsize * 8;
+        for (int y = 0; y < ysize * 8; y++)
+        {
+            for (int x = 0; x < cw; x++)
+            {
+                int pos = (y * cw) + x;
+                if (x < xsize && y < ysize)
+                {
+                    continue;
+                }
+
+                int hfix = ((y >= ysize * 8 / 2) ? 2 : 0) + ((x >= xsize * 8 / 2) ? 1 : 0);
+                float val = block[pos] * (qac * qmMultiplier / qm[pos]);
+                float v = MathF.Abs(val) < thresholds[hfix] ? 0 : MathF.Round(val, MidpointRounding.ToEven);
+                float error = MathF.Abs(val - v);
+                sumError += error;
+                sumVals += MathF.Abs(v);
+                if (c == 1 && v == 0 && hfMaxError[hfix] < error)
+                {
+                    hfMaxError[hfix] = error;
+                }
+
+                if (v != 0.0f)
+                {
+                    hfNonZeros[hfix] += MathF.Abs(v);
+                    bool inCorner = y >= 7 * ysize && x >= 7 * xsize;
+                    bool onBorder = y == (ysize * 8) - 1 || x == (xsize * 8) - 1;
+                    bool inLargerCorner = x >= 4 * xsize && y >= 4 * ysize;
+                    if (inCorner || (onBorder && inLargerCorner))
+                    {
+                        sumHighest += MathF.Abs(val);
+                    }
+                }
+            }
+        }
+
+        if (c == 1 && sumVals * 8 < xsize * ysize)
+        {
+            const float Limit = 0.46f;
+            const float KMul = 0.9999f;
+            int orig = quant;
+            int newQuant = quant;
+            for (int i = 1; i < 4; i++)
+            {
+                if (hfNonZeros[i] == 0 && hfMaxError[i] > Limit)
+                {
+                    newQuant = orig + 1;
+                    break;
+                }
+            }
+
+            quant = newQuant;
+            if (hfNonZeros[3] == 0 && hfMaxError[3] > Limit)
+            {
+                thresholds[3] = KMul * hfMaxError[3] * newQuant / orig;
+            }
+            else if ((hfNonZeros[1] == 0 && hfMaxError[1] > Limit) || (hfNonZeros[2] == 0 && hfMaxError[2] > Limit))
+            {
+                thresholds[1] = KMul * MathF.Max(hfMaxError[1], hfMaxError[2]) * newQuant / orig;
+                thresholds[2] = thresholds[1];
+            }
+            else if (hfNonZeros[0] == 0 && hfMaxError[0] > Limit)
+            {
+                thresholds[0] = KMul * hfMaxError[0] * newQuant / orig;
+            }
+        }
+
+        // High-frequency patterns with no medium frequencies around them.
+        {
+            float all = hfNonZeros[0] + hfNonZeros[1] + hfNonZeros[2] + hfNonZeros[3] + 1;
+            ReadOnlySpan<float> mul = [70, 30, 60];
+            if (mul[c] * sumHighest >= all)
+            {
+                quant += (int)(mul[c] * sumHighest / all);
+                quant = Math.Min(quant, QuantMax - 1);
+            }
+        }
+
+        if (t == JxlTransformType.Dct8 && hfNonZeros[0] + hfNonZeros[1] + hfNonZeros[2] + hfNonZeros[3] < 11)
+        {
+            quant = Math.Min(quant + 1, QuantMax - 1);
+        }
+
+        {
+            const double QuantNormalizer = 2.2942708343284721;
+            sumError = (float)(sumError * QuantNormalizer);
+            sumVals = (float)(sumVals * QuantNormalizer);
+            if ((int)t >= (int)JxlTransformType.Dct16)
+            {
+                int ix = t switch
+                {
+                    JxlTransformType.Dct32x16 or JxlTransformType.Dct16x32 => 1,
+                    JxlTransformType.Dct16 => 0,
+                    JxlTransformType.Dct32 => 2,
+                    _ => 3,
+                };
+                double[][] mul1 =
+                [
+                    [0.22080615753848404, 0.45797479824262011, 0.29859235095977965],
+                    [0.70109486510286834, 0.16185281305512639, 0.14387691730035473],
+                    [0.114985964456218638, 0.44656840441027695, 0.10587658215149048],
+                    [0.46849665264409396, 0.41239077937781954, 0.088667407767185444],
+                ];
+                double[][] mul2 =
+                [
+                    [0.27450281941822197, 1.1255766549984996, 0.98950459134128388],
+                    [0.4652168675598285, 0.40945807983455818, 0.36581899811751367],
+                    [0.28034972424715715, 0.9182653201929738, 1.5581531543057416],
+                    [0.26873118114033728, 0.68863712390392484, 1.2082185408666786],
+                ];
+                double limit = (mul1[ix][c] * xsize * ysize * 64) + (mul2[ix][c] * sumVals);
+                int step = (int)(sumError / limit);
+                step = Math.Clamp(step, 0, 2);
+                if (sumError > limit)
+                {
+                    quant = Math.Min(quant + step, QuantMax - 1);
+                }
+            }
+        }
+
+        {
+            // Lower the value in highly active areas.
+            int div = xsize * ysize;
+            float minNonZeros = MathF.Min(MathF.Min(hfNonZeros[0], hfNonZeros[1]), MathF.Min(hfNonZeros[2], hfNonZeros[3]));
+            int activity = 15;
+            if (minNonZeros < 15.0f * div)
+            {
+                activity = ((int)minNonZeros + (div / 2)) / div;
+            }
+
+            int qp = quant - activity;
+            if (c == 1)
+            {
+                for (int i = 1; i < 4; i++)
+                {
+                    thresholds[i] += 0.01f * activity;
+                }
+            }
+
+            quant = Math.Max(qp, Math.Max(4, quant / 2));
         }
     }
 
@@ -930,17 +1296,28 @@ internal sealed class JxlVarDctEncoder
         w.WriteU32(new JxlU32(0, 0, 1, 0, 2, 0, 3, 2), 0); // replace
         w.WriteBool(true); // last frame
         w.WriteU32(new JxlU32(0, 0, 0, 4, 16, 5, 48, 10), 0); // no name
-        w.WriteBool(false); // restoration filters given (the default has Gaborish)
-        w.WriteBool(false); // no Gaborish
-        w.Write((ulong)_epfIterations, 2);
-        if (_epfIterations > 0)
+        // The restoration filters: all default is Gaborish with its default weights and one EPF iteration.
+        bool defaults = _gaborish && _epfIterations == 1;
+        w.WriteBool(defaults);
+        if (!defaults)
         {
-            w.WriteBool(false); // default sharpness LUT
-            w.WriteBool(false); // default channel scales
-            w.WriteBool(false); // default sigma
+            w.WriteBool(_gaborish);
+            if (_gaborish)
+            {
+                w.WriteBool(false); // default Gaborish weights
+            }
+
+            w.Write((ulong)_epfIterations, 2);
+            if (_epfIterations > 0)
+            {
+                w.WriteBool(false); // default sharpness LUT
+                w.WriteBool(false); // default channel scales
+                w.WriteBool(false); // default sigma
+            }
+
+            w.WriteNoExtensions();
         }
 
-        w.WriteNoExtensions();
         w.WriteNoExtensions();
     }
 
