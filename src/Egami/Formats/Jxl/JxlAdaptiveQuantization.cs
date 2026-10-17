@@ -132,7 +132,7 @@ internal sealed class JxlAdaptiveQuantization
                 int x1 = x > 0 ? x - 1 : x;
                 float c = Y(x, y);
                 float b = 0.25f * (Y(x, y2) + Y(x, y1) + Y(x1, y) + Y(x2, y));
-                float gammac = RatioOfDerivatives(c + MatchGammaOffset, true);
+                float gammac = RatioOfDerivatives(c + MatchGammaOffset, false);
                 float diff = MathF.Abs(gammac * (c - b));
                 diff = (float)Math.Log(1 + (double)diff);
                 Mask1x1[(y * xsize) + x] = 1f / (diff + 0.01f);

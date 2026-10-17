@@ -5,9 +5,11 @@ using Egami.Pixels;
 namespace Egami.Tests.Formats.Jxl;
 
 /// <summary>
-/// Phase 2.9.7 tasks 6 and 7: the lossy encoder's visual tools. Adaptive quantization gives flat areas finer steps than
-/// texture; chroma from luma finds the factor that predicts chroma from luma; the inverse Gaborish and the decoder's Gaborish
-/// leave smooth content where it was; effort 5 files, which use all three, decode. The size against cjxl -e 5 is egami-compare's.
+/// Phase 2.9.7 tasks 6 to 8: the lossy encoder's visual tools. Adaptive quantization gives flat areas finer steps than texture;
+/// chroma from luma finds the factor that predicts chroma from luma; the inverse Gaborish and the decoder's Gaborish leave
+/// smooth content where it was; the block-size search merges smooth areas into large DCTs and keeps detail in 8×8 transforms;
+/// effort 5 files, which use them all, decode. Equality with libjxl's choices was checked with docker/jxldev in egami-compare,
+/// the size against cjxl at efforts 5 to 7 is egami-compare's.
 /// </summary>
 public class JxlLossyToolTests
 {
@@ -93,6 +95,48 @@ public class JxlLossyToolTests
 
             Assert.True(worst < 2e-3f, $"plane {c}: {worst}");
         }
+    }
+
+    [Fact]
+    public void SmoothAreasGetLargeTransformsAndDetailSmallOnes()
+    {
+        // Left 64×64 tile a gentle gradient, right tile noise.
+        int w = 128, h = 64;
+        float[][] xyb = [new float[w * h], new float[w * h], new float[w * h]];
+        Random random = new(7);
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                float v = x < 64 ? 0.3f + (0.002f * x) + (0.001f * y) : 0.25f + ((float)random.NextDouble() * 0.3f);
+                xyb[1][(y * w) + x] = v;
+                xyb[2][(y * w) + x] = v;
+            }
+        }
+
+        ParallelOptions single = new() { MaxDegreeOfParallelism = 1 };
+        JxlAdaptiveQuantization aq = JxlAdaptiveQuantization.Compute(xyb, w, h, 1, single);
+        JxlAdaptiveQuantization.GaborishInverse(xyb, w, h, single);
+        sbyte[] strategy = new sbyte[16 * 8];
+        bool[] first = new bool[16 * 8];
+        Array.Fill(first, true);
+        JxlAcStrategySearch search = new(xyb, 16, 8, aq.QuantField, aq.Mask1x1, 1, 6, strategy, first);
+        search.ProcessTile(0, 0, 8, 8, 0, 1);
+        search.ProcessTile(8, 0, 8, 8, 0, 1);
+        int smoothFirsts = 0, detailFirsts = 0;
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 16; x++)
+            {
+                if (first[(y * 16) + x])
+                {
+                    _ = x < 8 ? smoothFirsts++ : detailFirsts++;
+                }
+            }
+        }
+
+        Assert.True(smoothFirsts <= 4, $"the gradient tile has {smoothFirsts} varblocks");
+        Assert.True(detailFirsts >= 48, $"the noise tile has {detailFirsts} varblocks");
     }
 
     [Fact]

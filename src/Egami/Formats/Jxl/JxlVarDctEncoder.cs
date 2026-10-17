@@ -75,9 +75,10 @@ internal sealed class JxlVarDctEncoder
     // The XYB planes, padded to whole blocks by repeating the last column and row; row stride _blocksX * 8.
     private readonly float[][] _xyb;
 
-    // Per block: the varblock transform (for the first block of a varblock; -1 for the others), the raw quantization field and
-    // the EPF sharpness. Per 64×64 tile: the chroma-from-luma factors.
+    // Per block: the transform of the varblock it belongs to and whether it is that varblock's first (top left) block, the raw
+    // quantization field and the EPF sharpness. Per 64×64 tile: the chroma-from-luma factors.
     private readonly sbyte[] _strategy;
+    private readonly bool[] _isFirst;
     private readonly int[] _quantField;
     private readonly byte[] _epfSharpness;
     private readonly sbyte[] _yToX;
@@ -126,6 +127,8 @@ internal sealed class JxlVarDctEncoder
         _tilesY = Ceil(_blocksY, TileBlocks);
         int blocks = _blocksX * _blocksY;
         _strategy = new sbyte[blocks];
+        _isFirst = new bool[blocks];
+        Array.Fill(_isFirst, true);
         _quantField = new int[blocks];
         _epfSharpness = new byte[blocks];
         _yToX = new sbyte[_tilesX * _tilesY];
@@ -147,7 +150,6 @@ internal sealed class JxlVarDctEncoder
     {
         JxlVarDctEncoder e = new(image, settings, intensityTarget);
         e.ChooseParameters();
-        e.ComputeChromaFromLuma();
         e.ComputeCoefficients();
         e.QuantizeLf();
         e.ComputeOrders();
@@ -245,13 +247,35 @@ internal sealed class JxlVarDctEncoder
                 JxlAdaptiveQuantization.GaborishInverse(_xyb, _blocksX * 8, _blocksY * 8, _parallel);
             }
 
+            // Per 64×64 tile, as libjxl's process_tile: the chroma-from-luma factors on DCT8 first at effort 7, the block
+            // sizes, the quantization field over them, then the factors again for the chosen blocks.
             float inv = (float)(1.0 * GlobalScaleDenom / _globalScale);
-            float[] field = _aq.QuantField;
-            AdjustQuantField(field, d);
-            for (int i = 0; i < field.Length; i++)
+            float[] field = (float[])_aq.QuantField.Clone();
+            JxlAcStrategySearch search = new(_xyb, _blocksX, _blocksY, _aq.QuantField, _aq.Mask1x1, d, Speed, _strategy, _isFirst);
+            Parallel.For(0, _tilesX * _tilesY, _parallel, tile =>
             {
-                _quantField[i] = ClampQuant((field[i] * inv) + 0.5f);
-            }
+                int tx = tile % _tilesX;
+                int ty = tile / _tilesX;
+                int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
+                int w = Math.Min(TileBlocks, _blocksX - x0), h = Math.Min(TileBlocks, _blocksY - y0);
+                if (Speed >= 7)
+                {
+                    ChromaFromLumaTile(tx, ty, useDct8: true);
+                }
+
+                search.ProcessTile(x0, y0, w, h, _yToX[tile] / (float)ColorFactor, 1f + (_yToB[tile] / (float)ColorFactor));
+                AdjustQuantField(field, d, x0, y0, w, h);
+                for (int y = y0; y < y0 + h; y++)
+                {
+                    for (int x = x0; x < x0 + w; x++)
+                    {
+                        int at = (y * _blocksX) + x;
+                        _quantField[at] = ClampQuant((field[at] * inv) + 0.5f);
+                    }
+                }
+
+                ChromaFromLumaTile(tx, ty, useDct8: false);
+            });
         }
         else
         {
@@ -288,7 +312,7 @@ internal sealed class JxlVarDctEncoder
     /// libjxl's AdjustQuantField: each varblock larger than 8×8 takes the largest quantization value of its blocks, moved towards
     /// their mean above distance 1.54 for varblocks of four blocks or more.
     /// </summary>
-    private void AdjustQuantField(float[] field, float distance)
+    private void AdjustQuantField(float[] field, float distance, int x0, int y0, int w, int h)
     {
         float mixer = 1.0f;
         const float Limit = 1.54138f;
@@ -298,12 +322,12 @@ internal sealed class JxlVarDctEncoder
             mixer = MathF.Max(0, mixer - ((distance - Limit) * Mul));
         }
 
-        for (int y = 0; y < _blocksY; y++)
+        for (int y = y0; y < y0 + h; y++)
         {
-            for (int x = 0; x < _blocksX; x++)
+            for (int x = x0; x < x0 + w; x++)
             {
                 int at = (y * _blocksX) + x;
-                if (_strategy[at] < 0)
+                if (!_isFirst[at])
                 {
                     continue;
                 }
@@ -345,81 +369,73 @@ internal sealed class JxlVarDctEncoder
     }
 
     /// <summary>
-    /// Chooses each 64×64 tile's chroma-from-luma factors from effort 5 (CfLHeuristics::ComputeTile after the block sizes and
-    /// quantization field are known): fast least squares at efforts 5 and 6, Newton steps at 7.
+    /// Chooses a 64×64 tile's chroma-from-luma factors (CfLHeuristics::ComputeTile): over the tile's varblocks, the factors that
+    /// best predict X's and B's HF coefficients from Y's, each scaled by its step and weight. With <paramref name="useDct8"/>
+    /// (effort 7, before the block sizes) every block is a DCT8 at step 1; otherwise the chosen varblocks at their quantization
+    /// values, with fast least squares at efforts 5 and 6 and Newton steps at 7.
     /// </summary>
-    private void ComputeChromaFromLuma()
+    private void ChromaFromLumaTile(int tx, int ty, bool useDct8)
     {
-        if (Speed < 5)
-        {
-            return;
-        }
-
         JxlDequantMatrices matrices = JxlDequantMatrices.Defaults;
-        bool fast = Speed <= 6;
+        bool fast = !useDct8 && Speed <= 6;
         int stride = _blocksX * 8;
-        Parallel.For(0, _tilesX * _tilesY, _parallel, tile =>
+        int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
+        int x1 = Math.Min(x0 + TileBlocks, _blocksX), y1 = Math.Min(y0 + TileBlocks, _blocksY);
+        List<float> yx = [], xs = [], yb = [], bs = [];
+        float[] scratch = new float[64 * 64];
+        float[][] block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
+        for (int y = y0; y < y1; y++)
         {
-            int tx = tile % _tilesX;
-            int ty = tile / _tilesX;
-            int x0 = tx * TileBlocks, y0 = ty * TileBlocks;
-            int x1 = Math.Min(x0 + TileBlocks, _blocksX), y1 = Math.Min(y0 + TileBlocks, _blocksY);
-            List<float> yx = [], xs = [], yb = [], bs = [];
-            float[] scratch = new float[64 * 64];
-            float[][] block = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
-            for (int y = y0; y < y1; y++)
+            for (int x = x0; x < x1; x++)
             {
-                for (int x = x0; x < x1; x++)
+                int at = (y * _blocksX) + x;
+                if (!useDct8 && !_isFirst[at])
                 {
-                    int at = (y * _blocksX) + x;
-                    if (_strategy[at] < 0)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    JxlTransformType t = (JxlTransformType)_strategy[at];
-                    (int w8, int h8) = JxlTransforms8.Size(t);
-                    if (w8 + x0 > x1 || h8 + y0 > y1)
-                    {
-                        continue;
-                    }
+                JxlTransformType t = useDct8 ? JxlTransformType.Dct8 : (JxlTransformType)_strategy[at];
+                (int w8, int h8) = JxlTransforms8.Size(t);
+                if (w8 + x0 > x1 || h8 + y0 > y1)
+                {
+                    continue;
+                }
 
-                    for (int c = 0; c < 3; c++)
-                    {
-                        Transform(t, _xyb[c], (y * 8 * stride) + (x * 8), stride, scratch, block[c]);
-                    }
+                for (int c = 0; c < 3; c++)
+                {
+                    Transform(t, _xyb[c], (y * 8 * stride) + (x * 8), stride, scratch, block[c]);
+                }
 
-                    int cw = Math.Max(w8, h8);
-                    int ch = Math.Min(w8, h8);
-                    for (int iy = 0; iy < ch; iy++)
+                int cw = Math.Max(w8, h8);
+                int ch = Math.Min(w8, h8);
+                for (int iy = 0; iy < ch; iy++)
+                {
+                    for (int ix = 0; ix < cw; ix++)
                     {
-                        for (int ix = 0; ix < cw; ix++)
-                        {
-                            int k = (iy * cw * 8) + ix;
-                            block[0][k] = block[1][k] = block[2][k] = 0;
-                        }
-                    }
-
-                    float[] qmX = matrices.GetWide(0, t);
-                    float[] qmB = matrices.GetWide(2, t);
-                    float q = Scale * 128 * _quantField[at];
-                    int size = w8 * h8 * 64;
-                    for (int i = 0; i < size; i++)
-                    {
-                        float qx = q / qmX[i];
-                        float qb = q / qmB[i];
-                        yx.Add(block[1][i] * qx);
-                        xs.Add(block[0][i] * qx);
-                        yb.Add(block[1][i] * qb);
-                        bs.Add(block[2][i] * qb);
+                        int k = (iy * cw * 8) + ix;
+                        block[0][k] = block[1][k] = block[2][k] = 0;
                     }
                 }
-            }
 
-            int t2 = (ty * _tilesX) + tx;
-            _yToX[t2] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.ToArray(), xs.ToArray(), 0f, fast);
-            _yToB[t2] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.ToArray(), bs.ToArray(), 1f, fast);
-        });
+                float[] qmX = matrices.GetWide(0, t);
+                float[] qmB = matrices.GetWide(2, t);
+                float q = useDct8 ? 1 : Scale * 128 * _quantField[at];
+                int size = w8 * h8 * 64;
+                for (int i = 0; i < size; i++)
+                {
+                    float qx = q / qmX[i];
+                    float qb = q / qmB[i];
+                    yx.Add(block[1][i] * qx);
+                    xs.Add(block[0][i] * qx);
+                    yb.Add(block[1][i] * qb);
+                    bs.Add(block[2][i] * qb);
+                }
+            }
+        }
+
+        int tile = (ty * _tilesX) + tx;
+        _yToX[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yx.ToArray(), xs.ToArray(), 0f, fast);
+        _yToB[tile] = (sbyte)JxlChromaFromLuma.FindBestMultiplier(yb.ToArray(), bs.ToArray(), 1f, fast);
     }
 
     /// <summary>libjxl's InitialQuantDC: the DC quantizer for a distance, with a gentler slope at high distances.</summary>
@@ -501,6 +517,11 @@ internal sealed class JxlVarDctEncoder
                 for (int bx = gx0; bx < gx0 + gw; bx++)
                 {
                     int at = (by * _blocksX) + bx;
+                    if (!_isFirst[at])
+                    {
+                        continue;
+                    }
+
                     JxlTransformType t = (JxlTransformType)_strategy[at];
                     (int w8, int h8) = JxlTransforms8.Size(t);
                     int size = w8 * h8 * 64;
@@ -634,6 +655,13 @@ internal sealed class JxlVarDctEncoder
             int row = y * cw;
             for (int x = 0; x < cw; x++)
             {
+                // The lowest frequencies quantize to zero (libjxl's inverse weights are zero there): the LF image carries them.
+                if (x < cw / 8 && y < ch / 8)
+                {
+                    output[row + x] = 0;
+                    continue;
+                }
+
                 float threshold = thresholds[yfix + (x >= cw / 2 ? 1 : 0)];
                 float val = block[row + x] * (qac / qm[row + x]);
                 output[row + x] = MathF.Abs(val) >= threshold ? (int)MathF.Round(val, MidpointRounding.ToEven) : 0;
@@ -995,7 +1023,7 @@ internal sealed class JxlVarDctEncoder
             for (int x = 0; x < _blocksX; x++)
             {
                 int at = (y * _blocksX) + x;
-                int t = _strategy[at] >= 0 ? _strategy[at] : FirstStrategy(x, y);
+                int t = _strategy[at];
                 int ord = JxlTransforms8.OrderId((JxlTransformType)t);
                 int qf = _quantField[at] - 1;
                 qfCounts[qf]++;
@@ -1105,108 +1133,158 @@ internal sealed class JxlVarDctEncoder
         _qfThresholds = [.. qft];
     }
 
-    /// <summary>Gets the transform of the varblock a block belongs to when it is not the varblock's first block.</summary>
-    private int FirstStrategy(int x, int y)
-    {
-        for (int yy = y; yy >= 0; yy--)
-        {
-            for (int xx = x; xx >= 0; xx--)
-            {
-                int t = _strategy[(yy * _blocksX) + xx];
-                if (t >= 0)
-                {
-                    (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)t);
-                    if (xx + w8 > x && yy + h8 > y)
-                    {
-                        return t;
-                    }
-                }
-            }
-        }
-
-        return 0;
-    }
-
     /// <summary>
-    /// Chooses the coefficient orders (ComputeCoeffOrder): positions sorted by how often they are zero, counted in a sample of
-    /// the varblocks, ties kept in the natural order; an order equal to the natural one is not sent.
+    /// Chooses the coefficient orders (ComputeUsedOrders and ComputeCoeffOrder): for each transform order in use (up to 32×32,
+    /// and not on images under 5×5 blocks from effort 4), positions sorted by how often they are zero in a sample of the
+    /// varblocks, ties kept in the natural order; an order equal to the natural one is not sent. Efforts 1 to 3 customize DCT8
+    /// alone.
     /// </summary>
     private void ComputeOrders()
     {
-        // Only DCT8 is used from effort 1 to 3, which libjxl samples at half the blocks; it reads the sampled blocks' coefficients
-        // as if the skipped ones were not there.
-        long[][] numZeros = [new long[64], new long[64], new long[64]];
-        ulong s0 = 0x94D049BB133111EB, s1 = 0xBF58476D1CE4E5B9;
-        const ulong Threshold = 2147483647;
-        for (int g = 0; g < _groups; g++)
+        uint used;
+        uint customize;
+        if (Speed <= 3)
         {
-            (_, _, int gw, int gh) = GroupRect(g);
-            int offset = 0;
-            for (int i = 0; i < gw * gh; i++)
+            used = 1;
+            customize = 1;
+        }
+        else
+        {
+            used = 0;
+            customize = 0;
+            foreach (sbyte t in _strategy)
             {
-                ulong a = s0;
-                ulong b = s1;
-                ulong bits = a + b;
-                s0 = b;
-                a ^= a << 23;
-                a ^= b ^ (a >> 18) ^ (b >> 5);
-                s1 = a;
-                if ((bits >> 32) > Threshold)
+                int ord = JxlTransforms8.OrderId((JxlTransformType)t);
+                used |= 1u << ord;
+                if (ord <= 6)
                 {
-                    continue;
+                    customize |= 1u << ord;
                 }
+            }
 
-                for (int c = 0; c < 3; c++)
+            if (_blocksX < 5 && _blocksY < 5)
+            {
+                customize = 0;
+            }
+        }
+
+        // DCT8 alone is sampled at half the varblocks, which libjxl reads as if the skipped ones were not there.
+        long[][][] numZeros = new long[NumOrders][][];
+        if (customize != 0)
+        {
+            double fraction = customize == 1 ? 0.5 : 1.0;
+            ulong threshold = (ulong)((ulong.MaxValue >> 32) * fraction);
+            ulong s0 = 0x94D049BB133111EB, s1 = 0xBF58476D1CE4E5B9;
+            for (int g = 0; g < _groups; g++)
+            {
+                (int gx0, int gy0, int gw, int gh) = GroupRect(g);
+                int offset = 0;
+                for (int by = gy0; by < gy0 + gh; by++)
                 {
-                    int[] p = _coeffs[g][c];
-                    for (int k = 0; k < 64; k++)
+                    for (int bx = gx0; bx < gx0 + gw; bx++)
                     {
-                        if (p[offset + k] == 0)
+                        int at = (by * _blocksX) + bx;
+                        if (!_isFirst[at])
                         {
-                            numZeros[c][k]++;
+                            continue;
                         }
-                    }
 
-                    numZeros[c][0] = -1;
+                        ulong a = s0;
+                        ulong b = s1;
+                        ulong bits = a + b;
+                        s0 = b;
+                        a ^= a << 23;
+                        a ^= b ^ (a >> 18) ^ (b >> 5);
+                        s1 = a;
+                        if ((bits >> 32) > threshold)
+                        {
+                            continue;
+                        }
+
+                        JxlTransformType t = (JxlTransformType)_strategy[at];
+                        (int w8, int h8) = JxlTransforms8.Size(t);
+                        int size = w8 * h8 * 64;
+                        int ord = JxlTransforms8.OrderId(t);
+                        numZeros[ord] ??= [new long[size], new long[size], new long[size]];
+                        int cx = Math.Max(w8, h8);
+                        int cy = Math.Min(w8, h8);
+                        for (int c = 0; c < 3; c++)
+                        {
+                            int[] p = _coeffs[g][c];
+                            long[] zeros = numZeros[ord][c];
+                            for (int k = 0; k < size; k++)
+                            {
+                                if (offset + k < p.Length && p[offset + k] == 0)
+                                {
+                                    zeros[k]++;
+                                }
+                            }
+
+                            for (int iy = 0; iy < cy; iy++)
+                            {
+                                for (int ix = 0; ix < cx; ix++)
+                                {
+                                    zeros[(iy * 8 * cx) + ix] = -1;
+                                }
+                            }
+                        }
+
+                        offset += size;
+                    }
+                }
+            }
+        }
+
+        for (int ord = 0; ord < NumOrders; ord++)
+        {
+            if ((used & (1u << ord)) == 0 || (customize & (1u << ord)) == 0)
+            {
+                continue;
+            }
+
+            int[] natural = JxlHfPass.Natural(ord);
+            int sz = natural.Length;
+            float invSqrt = 1.0f / MathF.Sqrt(sz);
+            bool nondefault = false;
+            int[][] orders = new int[3][];
+            for (int c = 0; c < 3; c++)
+            {
+                long[] zeros = numZeros[ord]?[c] ?? new long[sz];
+                (ulong Key, int Pos)[] items = new (ulong, int)[sz];
+                for (int i = 0; i < sz; i++)
+                {
+                    int pos = natural[i];
+                    float count = (zeros[pos] * invSqrt) + 0.1f;
+                    ulong q = count <= 0 ? 0 : (ulong)count;
+                    items[i] = ((q << 16) | (uint)i, pos);
                 }
 
-                offset += 64;
+                Array.Sort(items, (x, y) => x.Key.CompareTo(y.Key));
+                orders[c] = new int[sz];
+                for (int i = 0; i < sz; i++)
+                {
+                    orders[c][i] = items[i].Pos;
+                    nondefault |= orders[c][i] != natural[i];
+                }
             }
-        }
 
-        int[] natural = JxlHfPass.Natural(0);
-        bool nondefault = false;
-        for (int c = 0; c < 3; c++)
-        {
-            (ulong Key, int Pos)[] items = new (ulong, int)[64];
-            for (int i = 0; i < 64; i++)
+            if (!nondefault)
             {
-                int pos = natural[i];
-                float count = (numZeros[c][pos] * 0.125f) + 0.1f;
-                ulong q = count <= 0 ? 0 : (ulong)count;
-                items[i] = ((q << 16) | (uint)i, pos);
+                customize &= ~(1u << ord);
+                continue;
             }
 
-            Array.Sort(items, (x, y) => x.Key.CompareTo(y.Key));
-            int[] order = new int[64];
-            for (int i = 0; i < 64; i++)
+            for (int c = 0; c < 3; c++)
             {
-                order[i] = items[i].Pos;
-                nondefault |= order[i] != natural[i];
+                _orders[(ord * 3) + c] = orders[c];
             }
-
-            _orders[c] = order;
         }
 
-        _usedOrders = nondefault ? 1 : 0;
-        if (!nondefault)
-        {
-            _orders[0] = _orders[1] = _orders[2] = natural;
-        }
+        _usedOrders = (int)customize;
     }
 
-    /// <summary>Gets the order of a channel for an order id: the chosen one for DCT8 when sent, else the natural order.</summary>
-    private int[] Order(int orderId, int c) => orderId == 0 && _usedOrders != 0 ? _orders[c] : JxlHfPass.Natural(orderId);
+    /// <summary>Gets the order of a channel for an order id: the chosen one when it is sent, else the natural order.</summary>
+    private int[] Order(int orderId, int c) => (_usedOrders & (1 << orderId)) != 0 ? _orders[(orderId * 3) + c] : JxlHfPass.Natural(orderId);
 
     /// <summary>Tokenizes a pass group's coefficients (TokenizeCoefficients), Y, X then B for each varblock.</summary>
     private List<JxlToken> TokenizeGroup(int g)
@@ -1221,7 +1299,7 @@ internal sealed class JxlVarDctEncoder
             for (int x = 0; x < w; x++)
             {
                 int at = ((y0 + y) * _blocksX) + x0 + x;
-                if (_strategy[at] < 0)
+                if (!_isFirst[at])
                 {
                     continue;
                 }
@@ -1526,7 +1604,7 @@ internal sealed class JxlVarDctEncoder
             {
                 int at = ((y0 + y) * _blocksX) + x0 + x;
                 epf.Data[(y * w) + x] = _epfSharpness[at];
-                if (_strategy[at] < 0)
+                if (!_isFirst[at])
                 {
                     continue;
                 }
@@ -1601,51 +1679,66 @@ internal sealed class JxlVarDctEncoder
         ];
     }
 
-    /// <summary>Writes the coefficient orders as Lehmer codes against the natural order (EncodeCoeffOrders).</summary>
+    /// <summary>Writes the sent coefficient orders as Lehmer codes against the natural order (EncodeCoeffOrders), the LLF skipped.</summary>
     private void WriteOrders(JxlBitWriter w)
     {
-        int[] natural = JxlHfPass.Natural(0);
-        int[] lut = new int[64];
-        for (int i = 0; i < 64; i++)
-        {
-            lut[natural[i]] = i;
-        }
-
         List<JxlToken> tokens = [];
-        for (int c = 0; c < 3; c++)
+        for (int ord = 0; ord < NumOrders; ord++)
         {
-            int[] perm = new int[64];
-            for (int i = 0; i < 64; i++)
+            if ((_usedOrders & (1 << ord)) == 0)
             {
-                perm[i] = lut[_orders[c][i]];
+                continue;
             }
 
-            int[] lehmer = new int[64];
-            bool[] taken = new bool[64];
-            for (int i = 0; i < 64; i++)
+            int[] natural = JxlHfPass.Natural(ord);
+            int size = natural.Length;
+            int skip = size / 64;
+            int[] lut = new int[size];
+            for (int i = 0; i < size; i++)
             {
-                int smaller = 0;
-                for (int v = 0; v < perm[i]; v++)
+                lut[natural[i]] = i;
+            }
+
+            for (int c = 0; c < 3; c++)
+            {
+                int[] order = _orders[(ord * 3) + c];
+                int[] perm = new int[size];
+                for (int i = 0; i < size; i++)
                 {
-                    smaller += taken[v] ? 0 : 1;
+                    perm[i] = lut[order[i]];
                 }
 
-                lehmer[i] = smaller;
-                taken[perm[i]] = true;
-            }
+                // Lehmer code: for each entry, how many of the values not yet taken are below it (a Fenwick tree counts them).
+                int[] lehmer = new int[size];
+                int[] tree = new int[size + 1];
+                for (int i = 0; i < size; i++)
+                {
+                    int taken = 0;
+                    for (int k = perm[i]; k > 0; k -= k & -k)
+                    {
+                        taken += tree[k];
+                    }
 
-            int end = 64;
-            while (end > 1 && lehmer[end - 1] == 0)
-            {
-                end--;
-            }
+                    lehmer[i] = perm[i] - taken;
+                    for (int k = perm[i] + 1; k <= size; k += k & -k)
+                    {
+                        tree[k]++;
+                    }
+                }
 
-            tokens.Add(new JxlToken(OrderContext(64), (uint)(end - 1)));
-            uint last = 0;
-            for (int i = 1; i < end; i++)
-            {
-                tokens.Add(new JxlToken(OrderContext(last), (uint)lehmer[i]));
-                last = (uint)lehmer[i];
+                int end = size;
+                while (end > skip && lehmer[end - 1] == 0)
+                {
+                    end--;
+                }
+
+                tokens.Add(new JxlToken(OrderContext((uint)size), (uint)(end - skip)));
+                uint last = 0;
+                for (int i = skip; i < end; i++)
+                {
+                    tokens.Add(new JxlToken(OrderContext(last), (uint)lehmer[i]));
+                    last = (uint)lehmer[i];
+                }
             }
         }
 
