@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Operations.Compose;
 using Egami.Operations.Geometry;
@@ -35,6 +36,8 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     private readonly float _scale;
     private readonly bool _luminance;
     private readonly BlendMode? _blend;
+    private readonly float[] _spotPower;
+    private readonly float[] _shinePower;
     private Vector3 _position;
 
     internal LightingOperation(Light light, LightingModel model, LightingOptions options)
@@ -68,6 +71,8 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         _scale = options.SurfaceScale;
         _luminance = options.Height == HeightSource.Luminance;
         _blend = options.Blend;
+        _spotPower = PowerTable(_exponent);
+        _shinePower = PowerTable(_shininess);
     }
 
     private enum LightKind
@@ -105,6 +110,7 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     /// the surface scale in. <paramref name="up"/> and <paramref name="down"/> are empty on the first and last rows; the edge
     /// stencils drop the missing neighbours and scale up the rest, as SVG's table of edge and corner kernels does.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     internal static void Normals(ReadOnlySpan<float> up, ReadOnlySpan<float> center, ReadOnlySpan<float> down, float scale, Span<float> nx, Span<float> ny, Span<float> scratch)
     {
         int w = center.Length;
@@ -113,7 +119,21 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         // Nx: columns smoothed (1, 2, 1) over the rows there are, then right minus left; the factor is 2 / (column distance ×
         // row weights), SVG's 1/4 inside, 1/3 on the top and bottom rows, 1/2 on the side columns and 2/3 at the corners.
         Span<float> v = scratch[..w];
-        for (int x = 0; x < w; x++)
+        int start = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            // The same sums as the loop below, eight columns at a time.
+            Vector256<float> two = Vector256.Create(2f);
+            for (; start <= w - Vector256<float>.Count; start += Vector256<float>.Count)
+            {
+                Vector256<float> sum = two * Vector256.Create(center[start..]);
+                sum = hasUp ? sum + Vector256.Create(up[start..]) : sum;
+                sum = hasDown ? sum + Vector256.Create(down[start..]) : sum;
+                sum.CopyTo(v[start..]);
+            }
+        }
+
+        for (int x = start; x < w; x++)
         {
             float s = 2 * center[x];
             if (hasUp)
@@ -161,9 +181,19 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         }
 
         Span<float> d = scratch[..w];
-        for (int x = 0; x < w; x++)
+        ReadOnlySpan<float> lower = hasDown ? down : center, upper = hasUp ? up : center;
+        start = 0;
+        if (Vector256.IsHardwareAccelerated)
         {
-            d[x] = (hasDown ? down[x] : center[x]) - (hasUp ? up[x] : center[x]);
+            for (; start <= w - Vector256<float>.Count; start += Vector256<float>.Count)
+            {
+                (Vector256.Create(lower[start..]) - Vector256.Create(upper[start..])).CopyTo(d[start..]);
+            }
+        }
+
+        for (int x = start; x < w; x++)
+        {
+            d[x] = lower[x] - upper[x];
         }
 
         if (w == 1)
@@ -188,6 +218,7 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         ny[w - 1] = side * (d[w - 2] + (2 * d[w - 1]));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void Band<TPixel>(OperationInput<TPixel> input, RowConverter<TPixel> converter, int start, int end)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -221,8 +252,19 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
                     {
                         // Alpha straight from the bytes, as the float row would have it.
                         ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(source.Row(loaded));
-                        int stride = Unsafe.SizeOf<TPixel>(), at = StoredRows<TPixel>.AlphaByte;
-                        for (int x = 0; x < width; x++)
+                        int stride = Unsafe.SizeOf<TPixel>(), at = StoredRows<TPixel>.AlphaByte, x = 0;
+                        if (stride == 4 && Vector256.IsHardwareAccelerated)
+                        {
+                            ReadOnlySpan<uint> pixels = MemoryMarshal.Cast<byte, uint>(bytes);
+                            Vector256<uint> low = Vector256.Create(0xFFu);
+                            Vector256<float> unit = Vector256.Create(1f / 255);
+                            for (; x <= width - Vector256<uint>.Count; x += Vector256<uint>.Count)
+                            {
+                                (Vector256.ConvertToSingle(((Vector256.Create(pixels[x..]) >>> (at * 8)) & low).AsInt32()) * unit).CopyTo(target[x..]);
+                            }
+                        }
+
+                        for (; x < width; x++)
                         {
                             target[x] = bytes[(x * stride) + at] * (1f / 255);
                         }
@@ -238,8 +280,15 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
                 ReadOnlySpan<float> up = y > 0 ? HeightRow(heights, y - 1, padded)[..width] : default;
                 ReadOnlySpan<float> down = y < height - 1 ? HeightRow(heights, y + 1, padded)[..width] : default;
                 Normals(up, center[..width], down, _scale, nx, ny, scratch);
-                Shade(y, center, nx, ny, map);
                 Span<TPixel> row = destination.Row(y);
+                if (_blend is null && RowConverter<TPixel>.FourByte)
+                {
+                    // Rgba8 and Bgra8 take the light straight to bytes.
+                    Shade(y, center, nx, ny, map, MemoryMarshal.AsBytes(row), typeof(TPixel) == typeof(Bgra8));
+                    continue;
+                }
+
+                Shade(y, center, nx, ny, map, default, false);
                 if (_blend is BlendMode mode)
                 {
                     ReliefRows.LoadStraight(source.Row(y), straight);
@@ -297,7 +346,21 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     }
 
     /// <summary>Lights row <paramref name="y"/> into <paramref name="map"/>: premultiplied RGBA, four floats per pixel.</summary>
-    private void Shade(int y, ReadOnlySpan<float> heights, ReadOnlySpan<float> nxRow, ReadOnlySpan<float> nyRow, Span<float> map)
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private unsafe void Shade(int y, ReadOnlySpan<float> heights, ReadOnlySpan<float> nxRow, ReadOnlySpan<float> nyRow, Span<float> map, Span<byte> bytes, bool bgr)
+    {
+        fixed (float* spotPower = _spotPower, shinePower = _shinePower)
+        {
+            Shade(y, heights, nxRow, nyRow, map, bytes, bgr, spotPower, shinePower);
+        }
+    }
+
+    /// <summary>
+    /// Lights row <paramref name="y"/>, into <paramref name="map"/> as premultiplied RGBA floats, or with <paramref name="bytes"/>
+    /// straight into them as Rgba8 (Bgra8 when <paramref name="bgr"/>), divided by alpha and rounded as the float map would be
+    /// stored.
+    /// </summary>
+    private unsafe void Shade(int y, ReadOnlySpan<float> heights, ReadOnlySpan<float> nxRow, ReadOnlySpan<float> nyRow, Span<float> map, Span<byte> bytes, bool bgr, float* spotPower, float* shinePower)
     {
         int width = map.Length / 4;
         Vector256<float> one = Vector256<float>.One, zero = Vector256<float>.Zero;
@@ -309,7 +372,7 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         for (int x0 = 0; x0 < width; x0 += 8)
         {
             Vector256<float> nX = Vector256.Create(nxRow.Slice(x0, 8)), nY = Vector256.Create(nyRow.Slice(x0, 8));
-            Vector256<float> inverse = one / Vector256.Sqrt((nX * nX) + (nY * nY) + one);
+            Vector256<float> inverse = InverseRoot((nX * nX) + (nY * nY) + one);
             nX *= inverse;
             nY *= inverse;
             Vector256<float> nZ = inverse;
@@ -327,8 +390,8 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
                 lx = Vector256.Create(_position.X) - (iota + Vector256.Create((float)x0));
                 ly = Vector256.Create(_position.Y) - py;
                 lz = Vector256.Create(_position.Z) - z;
-                Vector256<float> length = Vector256.Sqrt((lx * lx) + (ly * ly) + (lz * lz));
-                Vector256<float> unit = Vector256.ConditionalSelect(Vector256.GreaterThan(length, zero), one / length, zero);
+                Vector256<float> squared = (lx * lx) + (ly * ly) + (lz * lz);
+                Vector256<float> unit = Vector256.ConditionalSelect(Vector256.GreaterThan(squared, zero), InverseRoot(squared), zero);
                 lx *= unit;
                 ly *= unit;
                 lz *= unit;
@@ -339,7 +402,7 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
             {
                 Vector256<float> cosAngle = -((lx * _direction.X) + (ly * _direction.Y) + (lz * _direction.Z));
                 Vector256<float> cone = Vector256.Create(_cosCone);
-                Vector256<float> spot = Pow(cosAngle, _exponent);
+                Vector256<float> spot = Power(cosAngle, spotPower);
                 Vector256<float> soft = (cosAngle - cone) * (1 / ConeSoftness);
                 spot = Vector256.ConditionalSelect(Vector256.LessThan(cosAngle, cone + Vector256.Create(ConeSoftness)), spot * soft, spot);
                 spot = Vector256.ConditionalSelect(Vector256.LessThan(cosAngle, cone), zero, spot);
@@ -352,10 +415,10 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
             if (_specular)
             {
                 Vector256<float> hz = lz + one;
-                Vector256<float> length = Vector256.Sqrt((lx * lx) + (ly * ly) + (hz * hz));
-                Vector256<float> unit = Vector256.ConditionalSelect(Vector256.GreaterThan(length, zero), one / length, zero);
+                Vector256<float> squared = (lx * lx) + (ly * ly) + (hz * hz);
+                Vector256<float> unit = Vector256.ConditionalSelect(Vector256.GreaterThan(squared, zero), InverseRoot(squared), zero);
                 Vector256<float> dot = ((nX * lx) + (nY * ly) + (nZ * hz)) * unit;
-                coefficient = Pow(Vector256.Max(dot, zero), _shininess);
+                coefficient = Power(Vector256.Max(dot, zero), shinePower);
             }
             else
             {
@@ -366,6 +429,11 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
             g = Vector256.Min(Vector256.Max(coefficient * g, zero), one);
             b = Vector256.Min(Vector256.Max(coefficient * b, zero), one);
             Vector256<float> a = _specular ? Vector256.Max(Vector256.Max(r, g), b) : one;
+            if (!bytes.IsEmpty)
+            {
+                StoreBytes(bytes, x0, Math.Min(8, width - x0), bgr ? b : r, g, bgr ? r : b, a, !_specular);
+                continue;
+            }
 
             r.CopyTo(lanes);
             g.CopyTo(lanes[8..]);
@@ -383,22 +451,102 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         }
     }
 
-    /// <summary>x^e for x ≥ 0 (0 for x ≤ 0, or 1 when e is 0), as exp(e · ln x), the same on every lane.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<float> Pow(Vector256<float> x, float e)
+    /// <summary>
+    /// Returns x^<paramref name="e"/> at 4,096 even steps of x from 0 to 1, and a guard entry, for <see cref="Power"/>: 0^e is 0
+    /// (1 when e is 0), as the light's cone and shine have it.
+    /// </summary>
+    internal static float[] PowerTable(float e)
     {
-        if (e == 0)
+        float[] table = new float[PowerSteps + 2];
+        for (int i = 0; i <= PowerSteps; i++)
         {
-            return Vector256<float>.One;
+            table[i] = e == 0 ? 1 : (float)Math.Pow(i / (double)PowerSteps, e);
         }
 
-        if (e == 1)
+        table[PowerSteps + 1] = table[PowerSteps];
+        return table;
+    }
+
+    /// <summary>The steps of <see cref="PowerTable"/>: interpolating between them is within 0.03 of a level of x^e for e up to 128.</summary>
+    private const int PowerSteps = 4096;
+
+    /// <summary>x^e for each lane through a <see cref="PowerTable"/>, x clamped to 0..1, interpolated linearly between steps.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static unsafe Vector256<float> Power(Vector256<float> x, float* table)
+    {
+        Vector256<float> at = Vector256.Min(Vector256.Max(x, Vector256<float>.Zero), Vector256<float>.One) * PowerSteps;
+        Vector256<int> i = Vector256.ConvertToInt32(at);
+        Vector256<float> f = at - Vector256.ConvertToSingle(i), low, high;
+        if (Avx2.IsSupported)
         {
-            return Vector256.Max(x, Vector256<float>.Zero);
+            low = Avx2.GatherVector256(table, i, 4);
+            high = Avx2.GatherVector256(table + 1, i, 4);
+        }
+        else
+        {
+            low = Vector256.Create(table[i[0]], table[i[1]], table[i[2]], table[i[3]], table[i[4]], table[i[5]], table[i[6]], table[i[7]]);
+            high = Vector256.Create(table[i[0] + 1], table[i[1] + 1], table[i[2] + 1], table[i[3] + 1], table[i[4] + 1], table[i[5] + 1], table[i[6] + 1], table[i[7] + 1]);
         }
 
-        Vector256<float> positive = Vector256.GreaterThan(x, Vector256<float>.Zero);
-        Vector256<float> safe = Vector256.ConditionalSelect(positive, x, Vector256<float>.One);
-        return Vector256.ConditionalSelect(positive, Vector256.Exp(Vector256.Log(safe) * e), Vector256<float>.Zero);
+        return low + (f * (high - low));
+    }
+
+    /// <summary>1 / √x for each lane: the hardware's estimate refined by one Newton step where there is one, else exactly.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> InverseRoot(Vector256<float> x)
+    {
+        if (!Avx.IsSupported)
+        {
+            return Vector256<float>.One / Vector256.Sqrt(x);
+        }
+
+        Vector256<float> r = Avx.ReciprocalSqrt(x);
+        return r * (Vector256.Create(1.5f) - (Vector256.Create(0.5f) * x * r * r));
+    }
+
+    /// <summary>
+    /// Stores <paramref name="count"/> lit pixels from column <paramref name="x0"/> as four-byte pixels, the channels in the order
+    /// given: premultiplied channels divided by alpha (a diffuse map's alpha is 1), clamped and rounded as the float store does.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void StoreBytes(Span<byte> bytes, int x0, int count, Vector256<float> c0, Vector256<float> c1, Vector256<float> c2, Vector256<float> a, bool opaque)
+    {
+        Vector256<float> zero = Vector256<float>.Zero, one = Vector256<float>.One, scale = Vector256.Create(255f), half = Vector256.Create(0.5f);
+        Vector256<int> pixel;
+        if (opaque)
+        {
+            // A diffuse map is opaque: its colors are stored as they are, clamped.
+            pixel = Vector256.Create(255 << 24);
+            pixel |= Vector256.ConvertToInt32((Vector256.Min(Vector256.Max(c0, zero), one) * scale) + half);
+            pixel |= Vector256.ConvertToInt32((Vector256.Min(Vector256.Max(c1, zero), one) * scale) + half) << 8;
+            pixel |= Vector256.ConvertToInt32((Vector256.Min(Vector256.Max(c2, zero), one) * scale) + half) << 16;
+        }
+        else
+        {
+            // One division for the three colors.
+            Vector256<float> positive = Vector256.GreaterThan(a, zero), inverse = one / a;
+            pixel = Vector256.ConvertToInt32((Vector256.Min(Vector256.Max(a, zero), one) * scale) + half) << 24;
+            pixel |= Channel(c0, inverse, positive);
+            pixel |= Channel(c1, inverse, positive) << 8;
+            pixel |= Channel(c2, inverse, positive) << 16;
+        }
+
+        Span<uint> to = MemoryMarshal.Cast<byte, uint>(bytes).Slice(x0, count);
+        if (count == 8)
+        {
+            pixel.AsUInt32().CopyTo(to);
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            to[i] = pixel.AsUInt32()[i];
+        }
+
+        static Vector256<int> Channel(Vector256<float> c, Vector256<float> inverse, Vector256<float> positive)
+        {
+            Vector256<float> v = Vector256.ConditionalSelect(positive, Vector256.Min(Vector256.Max(c * inverse, Vector256<float>.Zero), Vector256<float>.One), Vector256<float>.Zero);
+            return Vector256.ConvertToInt32((v * Vector256.Create(255f)) + Vector256.Create(0.5f));
+        }
     }
 }
