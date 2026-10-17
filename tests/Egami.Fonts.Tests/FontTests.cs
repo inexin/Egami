@@ -18,5 +18,19 @@ public class FontTests
         Assert.Throws<InvalidOperationException>(() => font.GetGlyphExtents(1));
         Assert.Throws<InvalidOperationException>(() => font.Shape("A"));
         Assert.Throws<InvalidOperationException>(() => font.MeasureText("A"));
+        Assert.Throws<InvalidOperationException>(() => font.MeasureText("A".AsSpan()));
+    }
+
+    [Theory]
+    [InlineData("Hello AV office")]
+    [InlineData("two\nlines")]
+    [InlineData("\u0645\u0631\u062D\u0628\u0627 abc")]
+    [InlineData("")]
+    public void ASpanMeasuresAsTheString(string text)
+    {
+        Font font = new(TestFonts.Load("NotoSans-Regular.ttf"), 20);
+        string padded = "<<" + text + ">>";
+        Assert.Equal(font.MeasureText(text), font.MeasureText(padded.AsSpan(2, text.Length)));
+        Assert.Throws<ArgumentNullException>(() => font.MeasureText((string)null!));
     }
 }

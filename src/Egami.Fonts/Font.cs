@@ -226,6 +226,12 @@ public readonly record struct Font
     public GlyphRun Shape(string text, ShapingOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(text);
+        return Shape(text, text, options);
+    }
+
+    // Shapes text into one run, keeping source and clusters when source is given.
+    private GlyphRun Shape(ReadOnlySpan<char> text, string? source, ShapingOptions? options)
+    {
         _ = Typeface ?? throw new InvalidOperationException(NoTypeface);
         ShapingOptions o = options ?? ShapingOptions.Default;
         if (o.Fallback.Families.Count > 0 || o.Fallback.Resolver is not null)
@@ -239,19 +245,19 @@ public readonly record struct Font
             throw new ArgumentException("A glyph run has one font; shape spans in other fonts through TextShaper.Shape.", nameof(options));
         }
 
-        ShapedText shaped = TextShaper.Shape(text, this, o);
+        List<ShapedLine> lines = TextItemizer.ShapeLines(text, this, o);
         bool vertical = o.Direction == TextDirection.TopToBottom;
         float lineHeight = LineHeight;
         List<ushort> glyphs = new(text.Length);
         List<Vector2> positions = new(text.Length);
-        List<int> clusters = new(text.Length);
+        List<int>? clusters = source is null ? null : new(text.Length);
         List<float> advances = new(text.Length);
         Script? script = null;
         bool oneScript = true;
-        for (int l = 0; l < shaped.Lines.Count; l++)
+        for (int l = 0; l < lines.Count; l++)
         {
             float x = vertical ? -l * lineHeight : 0, y = vertical ? 0 : l * lineHeight;
-            foreach (ShapedRun run in shaped.Lines[l].Runs)
+            foreach (ShapedRun run in lines[l].Runs)
             {
                 oneScript &= script is null || script == run.Script;
                 script ??= run.Script;
@@ -260,7 +266,7 @@ public readonly record struct Font
                 {
                     glyphs.Add(run.Glyphs.GlyphIds[i]);
                     positions.Add(new Vector2(x + p[i].XOffset, y - p[i].YOffset));
-                    clusters.Add(run.Glyphs.Clusters[i]);
+                    clusters?.Add(run.Glyphs.Clusters[i]);
                     advances.Add(p[i].XAdvance);
                     x += p[i].XAdvance;
                     y -= p[i].YAdvance;
@@ -268,9 +274,9 @@ public readonly record struct Font
             }
         }
 
-        return new GlyphRun(this, [.. glyphs], [.. positions], text, [.. clusters], null, [.. advances])
+        return new GlyphRun(this, [.. glyphs], [.. positions], source, clusters is null ? null : [.. clusters], null, [.. advances])
         {
-            BidiLevel = shaped.ParagraphLevel,
+            BidiLevel = lines.Count == 0 ? 0 : lines[0].ParagraphLevel,
             Script = oneScript && script is Script s ? s : Script.Common,
             Language = o.Language,
         };
@@ -290,7 +296,26 @@ public readonly record struct Font
     /// </example>
     public TextMeasure MeasureText(string text, ShapingOptions? options = null)
     {
-        GlyphRun run = Shape(text, options);
+        ArgumentNullException.ThrowIfNull(text);
+        return MeasureText(text.AsSpan(), options);
+    }
+
+    /// <summary>
+    /// Measures text as <see cref="Shape(string, ShapingOptions?)"/> lays it out, as <see cref="MeasureText(string, ShapingOptions?)"/>
+    /// does, without making a string of it: a slice of a larger text or a buffer you reuse.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <param name="options">The shaping options, as for <see cref="Shape(string, ShapingOptions?)"/>; span ranges index
+    /// <paramref name="text"/>.</param>
+    /// <returns>The widest line's advance, the exact ink bounds, the line count and the vertical metrics.</returns>
+    /// <exception cref="ArgumentException"><paramref name="options"/> asks for fallback or a span in another font.</exception>
+    /// <exception cref="InvalidOperationException">The font is <c>default(Font)</c>, which has no typeface.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="measure-span"/>
+    /// </example>
+    public TextMeasure MeasureText(ReadOnlySpan<char> text, ShapingOptions? options = null)
+    {
+        GlyphRun run = Shape(text, null, options);
         FontExtents extents = Extents;
         int lines = 1;
         for (int i = 0; i < text.Length; i++)

@@ -268,6 +268,24 @@ public class Text
     }
 
     [Fact]
+    public void WordsMeasuredWithoutStrings()
+    {
+        var font = new Font(Typeface.FromFile(FontFile), 16);
+
+        #region measure-span
+        // Measure each word of a longer text in place: a span is measured without making a string of it.
+        ReadOnlySpan<char> text = "Measure every word of this sentence";
+        float widest = 0;
+        foreach (Range word in text.Split(' '))
+        {
+            widest = Math.Max(widest, font.MeasureText(text[word]).Advance);
+        }
+        #endregion
+
+        Assert.Equal(font.MeasureText("sentence").Advance, widest);
+    }
+
+    [Fact]
     public void SubsetForAPdf()
     {
         Typeface face = Typeface.FromFile(FontFile);

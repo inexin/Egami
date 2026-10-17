@@ -10,7 +10,10 @@ internal static class TextItemizer
 {
     private readonly record struct Run(int Start, int Length, int Level, Script Script, int Span, Font Font);
 
-    public static ShapedText Shape(string text, Font font, ShapingOptions options)
+    public static ShapedText Shape(string text, Font font, ShapingOptions options) => new(text, ShapeLines(text, font, options));
+
+    /// <summary>Shapes text into lines, as <see cref="Shape"/> does, without keeping the text.</summary>
+    public static List<ShapedLine> ShapeLines(ReadOnlySpan<char> text, Font font, ShapingOptions options)
     {
         TextSpan[] spans = CheckSpans(text, options.Spans);
         List<ShapedLine> lines = [];
@@ -28,18 +31,18 @@ internal static class TextItemizer
             lineStart = i + 1;
         }
 
-        return new ShapedText(text, lines);
+        return lines;
     }
 
     /// <summary>The length of the hard break at <paramref name="i"/>, or 0.</summary>
-    private static int BreakLength(string text, int i) => text[i] switch
+    private static int BreakLength(ReadOnlySpan<char> text, int i) => text[i] switch
     {
         '\r' => i + 1 < text.Length && text[i + 1] == '\n' ? 2 : 1,
         '\n' or '\u0085' or '\u2028' or '\u2029' => 1,
         _ => 0,
     };
 
-    private static TextSpan[] CheckSpans(string text, IReadOnlyList<TextSpan>? spans)
+    private static TextSpan[] CheckSpans(ReadOnlySpan<char> text, IReadOnlyList<TextSpan>? spans)
     {
         if (spans is null || spans.Count == 0)
         {
@@ -71,10 +74,10 @@ internal static class TextItemizer
         return sorted;
     }
 
-    private static ShapedLine ShapeLine(string text, int lineStart, int lineLength, Font font, ShapingOptions options, TextSpan[] spans)
+    private static ShapedLine ShapeLine(ReadOnlySpan<char> text, int lineStart, int lineLength, Font font, ShapingOptions options, TextSpan[] spans)
     {
         bool vertical = options.Direction == TextDirection.TopToBottom;
-        ReadOnlySpan<char> line = text.AsSpan(lineStart, lineLength);
+        ReadOnlySpan<char> line = text.Slice(lineStart, lineLength);
         if (lineLength > 0 && SimpleLine(line, options, spans) is Script simpleScript)
         {
             return ShapeSimpleLine(text, lineStart, lineLength, font, options, simpleScript);
@@ -232,7 +235,7 @@ internal static class TextItemizer
         return script;
     }
 
-    private static ShapedLine ShapeSimpleLine(string text, int lineStart, int lineLength, Font font, ShapingOptions options, Script script)
+    private static ShapedLine ShapeSimpleLine(ReadOnlySpan<char> text, int lineStart, int lineLength, Font font, ShapingOptions options, Script script)
     {
         RunProperties properties = new()
         {

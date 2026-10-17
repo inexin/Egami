@@ -2070,3 +2070,4 @@ static Egami.Fonts.CidSystemInfo.operator ==(Egami.Fonts.CidSystemInfo? left, Eg
 ~override Egami.Fonts.CharacterMapping.Equals(object obj) -> bool
 ~override Egami.Fonts.CharacterMapping.ToString() -> string
 Egami.Fonts.FontCollection.AddSystemFonts() -> int
+Egami.Fonts.Font.MeasureText(System.ReadOnlySpan<char> text, Egami.Fonts.Shaping.ShapingOptions? options = null) -> Egami.Fonts.TextMeasure

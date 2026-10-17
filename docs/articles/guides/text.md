@@ -159,6 +159,11 @@ box as `TextBounds`, the line count and the vertical metrics.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#measure)]
 
+`MeasureText` also takes a `ReadOnlySpan<char>`, so a slice of a longer text or a reused buffer is measured without making a
+string of it.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#measure-span)]
+
 ## Text as paths
 
 `FontExtensions` holds `GetGlyphPath`, `GetTextPath` and `GlyphRun.ToPath`, which give `Path`s in canvas units, y down, to stroke, clip to or combine.
