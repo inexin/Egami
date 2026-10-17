@@ -22,6 +22,9 @@ internal static class ByteBlur
     /// <summary>The rows in a band of the horizontal sweep: one per vector lane, two vectors per channel.</summary>
     internal const int Band = 32;
 
+    /// <summary>The rows in a band of a one-value plane's horizontal sweep: eight vectors, as many floats as a band of pixels.</summary>
+    internal const int PlaneBand = 64;
+
     /// <summary>The columns in a group of the vertical sweep.</summary>
     internal const int Group = 64;
 
@@ -98,10 +101,203 @@ internal static class ByteBlur
     }
 
     /// <summary>
+    /// Blurs a float plane of one value per pixel in place, <paramref name="x"/> across and <paramref name="y"/> down, with the
+    /// same two sweeps (DropShadow's alpha). Edges repeat the edge value.
+    /// </summary>
+    internal static void Run(PixelPlane<GrayF32> plane, BoxCascade x, BoxCascade y, int maxParallelism, CancellationToken cancellationToken)
+    {
+        int width = plane.Width, height = plane.Height;
+        int bands = (height + PlaneBand - 1) / PlaneBand;
+        Chunks.Run(bands, (long)width * height * 4, maxParallelism, (start, end) =>
+        {
+            using LaneBoxes lanes = new(x, PlaneBand);
+            float[] scratch = ArrayPool<float>.Shared.Rent(PlaneBand * width);
+            try
+            {
+                for (int b = start; b < end; b++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    AcrossPlane(lanes, plane, b * PlaneBand, scratch);
+                }
+            }
+            finally
+            {
+                ArrayPool<float>.Shared.Return(scratch);
+            }
+        }, cancellationToken);
+
+        int groups = (width + Group - 1) / Group;
+        Chunks.Run(groups, (long)width * height * 4, maxParallelism, (start, end) =>
+        {
+            using LaneBoxes lanes = new(y, Group);
+            for (int g = start; g < end; g++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                DownPlane(lanes, plane, g * Group);
+            }
+        }, cancellationToken);
+    }
+
+    /// <summary>The horizontal sweep of <see cref="Run(PixelPlane{GrayF32}, BoxCascade, BoxCascade, int, CancellationToken)"/> over the band from <paramref name="y0"/>, in place.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private static void AcrossPlane(LaneBoxes lanes, PixelPlane<GrayF32> plane, int y0, float[] scratch)
+    {
+        int width = plane.Width, rows = Math.Min(PlaneBand, plane.Height - y0);
+        Rows<GrayF32> access = new(plane);
+        Span<float> band = MemoryMarshal.Cast<byte, float>(rows == PlaneBand ? access.Band(y0, PlaneBand) : default);
+        bool direct = !band.IsEmpty;
+        if (!direct)
+        {
+            band = scratch.AsSpan(0, PlaneBand * width);
+            for (int j = 0; j < PlaneBand; j++)
+            {
+                MemoryMarshal.Cast<byte, float>(access[y0 + Math.Min(j, rows - 1)]).CopyTo(band[(j * width)..]);
+            }
+        }
+
+        // Eight columns at a time, column i, row j at i × PlaneBand + j: written back in place, as a column is stored only after every
+        // column it reads was loaded.
+        Span<float> columns = stackalloc float[8 * PlaneBand];
+        Span<float> made = stackalloc float[8 * PlaneBand];
+        int loaded = int.MinValue;
+        lanes.Start();
+        for (int s = -lanes.Reach; s < width + lanes.Reach; s++)
+        {
+            int x = Math.Clamp(s, 0, width - 1), block = x >> 3;
+            if (block != loaded)
+            {
+                TransposeColumns(band, width, block * 8, Math.Min(8, width - (block * 8)), columns, load: true);
+                loaded = block;
+            }
+
+            Copy(columns.Slice((x & 7) * PlaneBand, PlaneBand), lanes.Input());
+            if (lanes.Advance(out int o))
+            {
+                int i = o & 7;
+                Copy(lanes.Output, made.Slice(i * PlaneBand, PlaneBand));
+                if (i == 7 || o == width - 1)
+                {
+                    TransposeColumns(band, width, o - i, i + 1, made, load: false);
+                }
+            }
+        }
+
+        if (!direct)
+        {
+            for (int j = 0; j < rows; j++)
+            {
+                band.Slice(j * width, width).CopyTo(MemoryMarshal.Cast<byte, float>(access[y0 + j]));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Moves <paramref name="count"/> columns from <paramref name="x0"/> between the band's rows and <paramref name="columns"/>
+    /// (column i, row j at i × <see cref="PlaneBand"/> + j): into the columns when <paramref name="load"/>, back into the rows otherwise.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private static void TransposeColumns(Span<float> band, int width, int x0, int count, Span<float> columns, bool load)
+    {
+        if (Fast && count == 8)
+        {
+            if (band.Length < ((PlaneBand - 1) * width) + x0 + 8 || columns.Length < 8 * PlaneBand)
+            {
+                throw new ArgumentException("The band is too short.", nameof(band));
+            }
+
+            ref float rows = ref Unsafe.Add(ref MemoryMarshal.GetReference(band), x0);
+            ref float cells = ref MemoryMarshal.GetReference(columns);
+            for (int half = 0; half < PlaneBand; half += 8)
+            {
+                ref float from = ref Unsafe.Add(ref rows, half * width);
+                if (load)
+                {
+                    Vector256<float> m0 = Vector256.LoadUnsafe(ref from), m1 = Vector256.LoadUnsafe(ref from, (nuint)width);
+                    Vector256<float> m2 = Vector256.LoadUnsafe(ref from, (nuint)(2 * width)), m3 = Vector256.LoadUnsafe(ref from, (nuint)(3 * width));
+                    Vector256<float> m4 = Vector256.LoadUnsafe(ref from, (nuint)(4 * width)), m5 = Vector256.LoadUnsafe(ref from, (nuint)(5 * width));
+                    Vector256<float> m6 = Vector256.LoadUnsafe(ref from, (nuint)(6 * width)), m7 = Vector256.LoadUnsafe(ref from, (nuint)(7 * width));
+                    Transpose(ref m0, ref m1, ref m2, ref m3, ref m4, ref m5, ref m6, ref m7);
+                    ref float to = ref Unsafe.Add(ref cells, half);
+                    m0.StoreUnsafe(ref to);
+                    m1.StoreUnsafe(ref to, PlaneBand);
+                    m2.StoreUnsafe(ref to, 2 * PlaneBand);
+                    m3.StoreUnsafe(ref to, 3 * PlaneBand);
+                    m4.StoreUnsafe(ref to, 4 * PlaneBand);
+                    m5.StoreUnsafe(ref to, 5 * PlaneBand);
+                    m6.StoreUnsafe(ref to, 6 * PlaneBand);
+                    m7.StoreUnsafe(ref to, 7 * PlaneBand);
+                }
+                else
+                {
+                    ref float at = ref Unsafe.Add(ref cells, half);
+                    Vector256<float> m0 = Vector256.LoadUnsafe(ref at), m1 = Vector256.LoadUnsafe(ref at, PlaneBand);
+                    Vector256<float> m2 = Vector256.LoadUnsafe(ref at, 2 * PlaneBand), m3 = Vector256.LoadUnsafe(ref at, 3 * PlaneBand);
+                    Vector256<float> m4 = Vector256.LoadUnsafe(ref at, 4 * PlaneBand), m5 = Vector256.LoadUnsafe(ref at, 5 * PlaneBand);
+                    Vector256<float> m6 = Vector256.LoadUnsafe(ref at, 6 * PlaneBand), m7 = Vector256.LoadUnsafe(ref at, 7 * PlaneBand);
+                    Transpose(ref m0, ref m1, ref m2, ref m3, ref m4, ref m5, ref m6, ref m7);
+                    m0.StoreUnsafe(ref from);
+                    m1.StoreUnsafe(ref from, (nuint)width);
+                    m2.StoreUnsafe(ref from, (nuint)(2 * width));
+                    m3.StoreUnsafe(ref from, (nuint)(3 * width));
+                    m4.StoreUnsafe(ref from, (nuint)(4 * width));
+                    m5.StoreUnsafe(ref from, (nuint)(5 * width));
+                    m6.StoreUnsafe(ref from, (nuint)(6 * width));
+                    m7.StoreUnsafe(ref from, (nuint)(7 * width));
+                }
+            }
+
+            return;
+        }
+
+        for (int j = 0; j < PlaneBand; j++)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                ref float cell = ref columns[(i * PlaneBand) + j];
+                ref float pixel = ref band[(j * width) + x0 + i];
+                if (load)
+                {
+                    cell = pixel;
+                }
+                else
+                {
+                    pixel = cell;
+                }
+            }
+        }
+    }
+
+    /// <summary>The vertical sweep of <see cref="Run(PixelPlane{GrayF32}, BoxCascade, BoxCascade, int, CancellationToken)"/> over the group of columns from <paramref name="x0"/>, in place.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private static void DownPlane(LaneBoxes lanes, PixelPlane<GrayF32> plane, int x0)
+    {
+        int height = plane.Height, reach = lanes.Reach, count = Math.Min(Group, plane.Width - x0);
+        Rows<GrayF32> reader = new(plane), writer = new(plane), ahead = new(plane);
+        lanes.Start();
+        for (int s = -reach; s < height + reach; s++)
+        {
+            int v = Math.Clamp(s, 0, height - 1);
+            if (Sse.IsSupported)
+            {
+                Prefetch(ahead[Math.Min(v + Ahead, height - 1)].Slice(x0 * 4, count * 4));
+            }
+
+            Span<float> target = lanes.Input();
+            MemoryMarshal.Cast<byte, float>(reader[v]).Slice(x0, count).CopyTo(target);
+            target[count..].Clear();
+            if (lanes.Advance(out int o))
+            {
+                lanes.Output[..count].CopyTo(MemoryMarshal.Cast<byte, float>(writer[o]).Slice(x0, count));
+            }
+        }
+    }
+
+    /// <summary>
     /// The horizontal sweep over the band of rows from <paramref name="y0"/>. A position is one column of the band: a vector pair
     /// per channel, each lane a row. Columns load and store eight at a time, transposed. The band's rows are read and written in
     /// place when the planes are contiguous, else through <paramref name="scratch"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void Across<TPixel>(LaneBoxes lanes, Layout layout, PixelPlane<TPixel> source, PixelPlane<TPixel> destination, PixelPlane<Gray16>? plane, int y0, byte[] scratch, int[] translucent)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -223,6 +419,7 @@ internal static class ByteBlur
     }
 
     /// <summary>Loads <paramref name="count"/> columns of the band from <paramref name="x0"/>, channel-major, premultiplied if asked.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     internal static void LoadColumns(Layout layout, ReadOnlySpan<byte> band, int x0, int count, bool premultiply, Span<float> columns)
     {
         int channels = layout.Channels, alpha = layout.Alpha, rowBytes = layout.RowBytes, stride = channels * Band;
@@ -290,6 +487,7 @@ internal static class ByteBlur
     /// <see cref="LoadColumns"/>'s vector path for linear light: eight rows of eight pixels transposed, colors looked up in
     /// <paramref name="linear"/> eight at a time.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static unsafe void LoadLinear(ReadOnlySpan<byte> band, int x0, int rowBytes, int stride, int alpha, bool premultiply, float[] linear, Span<float> columns)
     {
         if (band.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
@@ -344,6 +542,7 @@ internal static class ByteBlur
     /// Stores <paramref name="count"/> columns from <paramref name="x0"/> into the band's rows: bytes over the copy of the source,
     /// or 16-bit values into <paramref name="deep"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     internal static void StoreColumns(Layout layout, Span<byte> band, Span<ushort> deep, int x0, int count, ReadOnlySpan<float> columns)
     {
         int channels = layout.Channels, rowBytes = layout.RowBytes, stride = channels * Band;
@@ -422,6 +621,7 @@ internal static class ByteBlur
     /// <see cref="StoreColumns"/>'s vector path for 16-bit values: each column's four channels rounded to v × 256, saturating,
     /// and interleaved into one 64-bit pixel per row.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void StoreDeep(Span<ushort> deep, int x0, int rowBytes, int stride, ReadOnlySpan<float> columns)
     {
         if (deep.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
@@ -465,6 +665,7 @@ internal static class ByteBlur
     /// The vertical sweep over the group of columns from <paramref name="x0"/>, in place on the destination. A position is one row
     /// of the group, its values as floats in order. Rows are stored straight, alpha divided out where a translucent row is in reach.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void Down<TPixel>(LaneBoxes lanes, Layout layout, PixelPlane<TPixel> image, PixelPlane<Gray16>? plane, int x0, int[] translucent)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
@@ -525,6 +726,7 @@ internal static class ByteBlur
     }
 
     /// <summary>Loads bytes as floats; the rest of <paramref name="target"/> is cleared.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void Widen(ReadOnlySpan<byte> row, Span<float> target)
     {
         int i = 0;
@@ -550,6 +752,7 @@ internal static class ByteBlur
     }
 
     /// <summary>Loads 16-bit values (v × 256) as floats of 0..255; the rest of <paramref name="target"/> is cleared.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void Widen(ReadOnlySpan<ushort> row, Span<float> target)
     {
         int i = 0;
@@ -578,6 +781,7 @@ internal static class ByteBlur
     /// Stores floats of 0..255 as bytes. With <paramref name="divide"/> at the alpha channel, colors are divided by alpha;
     /// otherwise every value is rounded, and an <paramref name="alpha"/> channel is set opaque.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void Narrow(ReadOnlySpan<float> values, Span<byte> row, int channels, int divide, int alpha)
     {
         if (divide < 0)
@@ -632,6 +836,7 @@ internal static class ByteBlur
     /// Stores linear floats of 0..255 as encoded bytes through <paramref name="curve"/>, as <see cref="Narrow"/> does: colors
     /// divided by alpha when <paramref name="divide"/> is the alpha channel, else alpha set opaque.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void Encode(ReadOnlySpan<float> values, Span<byte> row, int channels, int divide, int alpha, Colors.LinearCurve curve)
     {
         byte[] table = curve.EncodeFrom16;
@@ -913,6 +1118,7 @@ internal sealed class LaneBoxes : IDisposable
     /// <summary>Runs every pass the new source position lets run.</summary>
     /// <param name="position">The final position made, when there is one.</param>
     /// <returns><see langword="true"/> if <see cref="Output"/> holds final position <paramref name="position"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     internal bool Advance(out int position)
     {
         for (int p = 0; p < _passes; p++)
@@ -961,6 +1167,7 @@ internal sealed class LaneBoxes : IDisposable
     /// then slides the window sum on to o + 1. The ring holds exactly in[o − r − 1 .. o + r + 1], the newest at the head, so the
     /// oldest is the slot after it. The first position sums its window from scratch.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void Step(int p, bool first, Span<float> target)
     {
         int slots = _slots[p], head = _heads[p], width = _width;

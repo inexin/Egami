@@ -39,6 +39,7 @@ public class BytePathTests
     [InlineData("blur-150-linear")]
     [InlineData("box-20")]
     [InlineData("shadow")]
+    [InlineData("shadow-fraction")]
     [InlineData("light-spot")]
     [InlineData("emboss")]
     public void SameOnOneThreadAndAllOnTranslucentPixels(string chain)
@@ -60,7 +61,10 @@ public class BytePathTests
     public void OtherByteTypesWithinALevel(string type)
     {
         using Raster<Rgba8> source = Input("translucent");
-        foreach (string chain in new[] { "fast-20", "fast-uneven", "blur-150", "fast-7-linear" })
+        // A shadow grows a transparent canvas, which a type without alpha cannot hold the same way as the float copy.
+        bool alpha = type is not ("rgb" or "gray");
+        string[] chains = alpha ? ["fast-20", "fast-uneven", "blur-150", "fast-7-linear", "shadow", "shadow-fraction", "shadow-only"] : ["fast-20", "fast-uneven", "blur-150", "fast-7-linear"];
+        foreach (string chain in chains)
         {
             int gap = type switch
             {

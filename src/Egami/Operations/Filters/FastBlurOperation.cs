@@ -179,11 +179,7 @@ internal sealed class FastBlurOperation : IRasterOperation, INeedsNewPlane, ILin
     }
 }
 
-/// <summary>
-/// The fast Gaussian blur on a float plane, in place: the horizontal passes row by row, then the vertical passes down strips of
-/// columns, each strip from the top of the image to the bottom. Every running sum starts at the same place whatever the thread
-/// count, so the result is the same on one thread and on all of them. Edges repeat the edge pixel.
-/// </summary>
+/// <summary>The box passes' strip widths, and padding a row for them (Canny's smoothing shares it).</summary>
 internal static class FastBlur
 {
     /// <summary>The pixels in a strip of the vertical pass.</summary>
@@ -205,67 +201,6 @@ internal static class FastBlur
             first.CopyTo(padded.Slice(i * channels));
             last.CopyTo(padded.Slice((pad + width + i) * channels));
         }
-    }
-
-    /// <summary>Blurs <paramref name="plane"/>, whose rows hold <paramref name="channels"/> floats per pixel (1 or 4).</summary>
-    internal static void Run<TFloat>(PixelPlane<TFloat> plane, int channels, BoxCascade x, BoxCascade y, int maxParallelism, CancellationToken cancellationToken)
-        where TFloat : unmanaged, IPixelType<TFloat>
-    {
-        int width = plane.Width, height = plane.Height;
-        int padded = (width + (2 * x.Reach)) * channels;
-        RowRunner.Run(height, (long)width * channels * 4, maxParallelism, (start, end) =>
-        {
-            float[] line = ArrayPool<float>.Shared.Rent(padded);
-            try
-            {
-                Span<float> buffer = line.AsSpan(0, padded);
-                for (int v = start; v < end; v++)
-                {
-                    Span<float> row = MemoryMarshal.Cast<TFloat, float>(plane.Row(v));
-                    LoadPadded(row, buffer, width, channels, x.Reach);
-                    x.Horizontal(buffer, width, channels);
-                    buffer[..row.Length].CopyTo(row);
-                }
-            }
-            finally
-            {
-                ArrayPool<float>.Shared.Return(line);
-            }
-        }, cancellationToken);
-
-        int strips = (width + Strip - 1) / Strip;
-        Chunks.Run(strips, (long)height * width * channels * 4, maxParallelism, (start, end) =>
-        {
-            using PlaneStrips<TFloat> vertical = new(plane, channels, y);
-            for (int s = start; s < end; s++)
-            {
-                vertical.Blur(s * Strip, Math.Min(Strip, width - (s * Strip)));
-            }
-        }, cancellationToken);
-    }
-
-    /// <summary>The vertical passes down strips of a float plane, writing each strip back in place.</summary>
-    private sealed class PlaneStrips<TFloat>(PixelPlane<TFloat> plane, int channels, BoxCascade cascade) : BoxCascade.Vertical(cascade, Strip * channels)
-        where TFloat : unmanaged, IPixelType<TFloat>
-    {
-        private int _x0;
-        private int _count;
-
-        /// <summary>Blurs the strip of <paramref name="count"/> pixels from column <paramref name="x0"/>, top to bottom.</summary>
-        internal void Blur(int x0, int count)
-        {
-            _x0 = x0 * channels;
-            _count = count * channels;
-            Run(0, plane.Height, _count);
-        }
-
-        // Writing a row back is safe: every row it reads past was loaded already, and rows past the bottom all map to the last
-        // row, which is written last.
-        protected override void Load(int v, Span<float> target) => Floats(Math.Clamp(v, 0, plane.Height - 1)).CopyTo(target);
-
-        protected override void Store(int y, Span<float> row) => row.CopyTo(Floats(y));
-
-        private Span<float> Floats(int y) => MemoryMarshal.Cast<TFloat, float>(plane.Row(y)).Slice(_x0, _count);
     }
 }
 

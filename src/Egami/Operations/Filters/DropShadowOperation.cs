@@ -15,7 +15,8 @@ namespace Egami.Operations.Filters;
 /// over it source-over, on premultiplied encoded values. The alpha lives in a float plane wide enough that the blur never meets
 /// its edge, so the shadow fades as if the canvas went on. With Expand the canvas grows by 3σ plus the offset on the sides the
 /// shadow reaches past the image; without it the size stays and the step works inside scopes (on the whole image, since the blur
-/// reads it all).
+/// reads it all). The fast blur runs ByteBlur's streaming sweeps on the plane; four-byte types with alpha fill the plane from the
+/// alpha bytes and compose eight pixels at a time (<see cref="ShadowBytes"/>).
 /// </summary>
 internal sealed class DropShadowOperation : IRasterOperation, INeedsNewPlane, IUpdatesMetadata, Scopes.INeighbourhoodStep
 {
@@ -102,17 +103,33 @@ internal sealed class DropShadowOperation : IRasterOperation, INeedsNewPlane, IU
         try
         {
             // Plane pixel (i, j) is canvas pixel (i − extX, j − extY), which reads the image at (i − extX − left − dx, …).
-            Fill(input, alpha, source, extX + left + _dx, extY + top + _dy);
+            bool bytes = ShadowBytes.Supports<TPixel>();
+            if (bytes)
+            {
+                ShadowBytes.Fill(alpha, source, extX + left + _dx, extY + top + _dy, input.Context.MaxParallelism, input.CancellationToken);
+            }
+            else
+            {
+                Fill(input, alpha, source, extX + left + _dx, extY + top + _dy);
+            }
+
             if (_fast)
             {
-                FastBlur.Run(alpha, 1, bx!, by!, input.Context.MaxParallelism, input.CancellationToken);
+                ByteBlur.Run(alpha, bx!, by!, input.Context.MaxParallelism, input.CancellationToken);
             }
             else if (wx is not null || wy is not null)
             {
                 Exact(input, alpha, wx ?? [1], wy ?? [1], memory);
             }
 
-            Compose(input, alpha, source, destination, extX, extY, left, top);
+            if (bytes)
+            {
+                ShadowBytes.Compose(alpha, source, destination, _color, _shadowOnly, extX, extY, left, top, input.Context.MaxParallelism, input.CancellationToken);
+            }
+            else
+            {
+                Compose(input, alpha, source, destination, extX, extY, left, top);
+            }
         }
         finally
         {
