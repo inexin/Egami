@@ -1,0 +1,69 @@
+# Egami
+
+> Egami is an MIT-licensed, fully managed 2D imaging library for .NET 10: it loads, edits, draws and saves images, with no
+> native code and no third-party dependencies. The packages are Egami (rasters, pixel types, formats, operations, color
+> management, metadata), Egami.Drawing (vector drawing on a canvas), Egami.Fonts (fonts, shaping and paragraph layout),
+> Egami.Svg (SVG), Egami.Css (CSS) and Egami.Metafiles (WMF, EMF and EMF+).
+
+Egami's own names: `Raster<TPixel>` and `Raster` hold images, pixel types such as `Rgba8` and `RgbaF32` say how pixels are
+stored, `Raster.Load` and `Save` read and write files, `Raster.Probe` reads a file's size and format without decoding it,
+`Apply` edits an image in place and `Derive` makes a new one, through a chain of operations, and `EgamiContext` holds the
+settings, safety limits and registered formats a call uses.
+
+
+## Docs
+
+- [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html): Egami loads, edits and saves images in .NET 10, in fully managed code.
+- [Packages](https://inexin.github.io/Egami/v1/articles/packages.html): Egami is a family of packages.
+- [Diagnostics](https://inexin.github.io/Egami/v1/articles/diagnostics.html): Egami can tell an app what it recovered from, what it lost on purpose and what it decided on the caller's behalf, through one optional handler on `EgamiContext`.
+- [Cookbook](https://inexin.github.io/Egami/v1/articles/cookbook/index.html): Task-sized recipes.
+- [Performance](https://inexin.github.io/Egami/v1/articles/performance.html): Tips that keep loading, editing and saving fast, how to run the benchmarks, and Egami's numbers.
+
+## Guides
+
+- [Formats](https://inexin.github.io/Egami/v1/articles/guides/formats.html): Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, and Windows icons and …
+- [Resizing and geometry](https://inexin.github.io/Egami/v1/articles/guides/resizing-and-geometry.html): Every operation is a step in a chain you record in a lambda.
+- [Pixel types](https://inexin.github.io/Egami/v1/articles/guides/pixel-types.html): A raster stores one pixel type, chosen when you load or create it.
+- [HDR files](https://inexin.github.io/Egami/v1/articles/guides/hdr.html): Egami reads and writes Radiance pictures (.hdr) and OpenEXR images (.exr), lists the images of Multi-Picture JPEG files, and reads, keeps and writes the gain maps of Ultra HDR, ISO 21496-1 and Apple …
+- [Color](https://inexin.github.io/Egami/v1/articles/guides/color.html): Color operations follow the W3C Filter Effects definitions, so they match what a browser's CSS `filter` does.
+- [Color management](https://inexin.github.io/Egami/v1/articles/guides/color-management.html): Egami reads color information from every file and keeps it, but changes no pixel unless you ask.
+- [Tone and color](https://inexin.github.io/Egami/v1/articles/guides/tone-and-color.html): Egami has the tone and color tools photo editors have.
+- [Filters](https://inexin.github.io/Egami/v1/articles/guides/filters.html): `Blur(sigma)` computes the exact Gaussian, so its cost grows with sigma.
+- [Edges and morphology](https://inexin.github.io/Egami/v1/articles/guides/edges-and-morphology.html): Edge operators measure how fast the image changes at each pixel; Canny's detector turns that into thin edge lines; and morphology grows, shrinks and cleans up shapes by taking the maximum or minimum …
+- [Lighting and relief](https://inexin.github.io/Egami/v1/articles/guides/lighting-and-relief.html): Three steps treat an image as a height field and light it.
+- [Effects and shadows](https://inexin.github.io/Egami/v1/articles/guides/effects.html): The editor's effects menu.
+- [Compositing](https://inexin.github.io/Egami/v1/articles/guides/compositing.html): `DrawImage` draws one raster onto another with source-over blending.
+- [Drawing](https://inexin.github.io/Egami/v1/articles/guides/drawing.html): Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a `Canvas`.
+- [The .egdr format](https://inexin.github.io/Egami/v1/articles/guides/egdr-format.html): An Egami drawing file holds a recorded `Picture`.
+- [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html): Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code.
+- [Unicode text and shaping](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html): Egami.Fonts carries its own Unicode 17.0 data and the Unicode algorithms text shaping builds on.
+- [Paragraph layout](https://inexin.github.io/Egami/v1/articles/guides/paragraph-layout.html): Egami.Fonts lays out paragraphs in the `Egami.Fonts.Layout` namespace.
+- [SVG](https://inexin.github.io/Egami/v1/articles/guides/svg.html): Egami.Svg reads SVG 1.1 and SVG 2 files into an editable element tree, saves them back, and draws them through Egami.Drawing's canvas, so the same document renders to a raster, to a PDF page or back …
+- [CSS](https://inexin.github.io/Egami/v1/articles/guides/css.html): Egami.Css parses and applies CSS in managed code, with no dependencies.
+- [Windows metafiles](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html): Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange.
+- [Regions, masks and channels](https://inexin.github.io/Egami/v1/articles/guides/regions-and-masks.html): Any chain that keeps the image's size can run on part of the image.
+- [Keying and arithmetic](https://inexin.github.io/Egami/v1/articles/guides/keying-and-arithmetic.html): Operations that ImageMagick users expect.
+- [Comparing and measuring](https://inexin.github.io/Egami/v1/articles/guides/analysis.html): Calls that look at images rather than change them.
+- [Palettes and dithering](https://inexin.github.io/Egami/v1/articles/guides/palettes.html): The palette machinery behind the GIF, palette PNG, BMP and TGA writers, opened up.
+- [Animation](https://inexin.github.io/Egami/v1/articles/guides/animation.html): A raster holds one or more frames, all the size of the raster and the same pixel type.
+- [Metadata](https://inexin.github.io/Egami/v1/articles/guides/metadata.html): `raster.Metadata` holds what a file says beside its pixels.
+- [JPEG](https://inexin.github.io/Egami/v1/articles/guides/jpeg.html): JPEG files load like any other.
+- [WebP](https://inexin.github.io/Egami/v1/articles/guides/webp.html): Egami reads and writes WebP.
+- [VP8 video frames](https://inexin.github.io/Egami/v1/articles/guides/vp8.html): `Vp8StreamDecoder` decodes VP8 video (RFC 6386) a frame at a time.
+- [TIFF](https://inexin.github.io/Egami/v1/articles/guides/tiff.html): Egami reads and writes TIFF and BigTIFF, written from the TIFF 6.0 specification, Adobe's technical notes and supplements and the BigTIFF design note, starting from the reader in Lars's ClassicMac.
+- [JBIG2](https://inexin.github.io/Egami/v1/articles/guides/jbig2.html): Egami reads JBIG2 (ITU-T T.88 | ISO/IEC 14492), the bi-level format of scanned documents and of the JBIG2Decode images in PDF, written from the 2018 edition of T.88 and the PDF specification.
+- [CCITT fax](https://inexin.github.io/Egami/v1/articles/guides/ccitt.html): Egami decodes raw CCITT fax data.
+- [JPEG 2000](https://inexin.github.io/Egami/v1/articles/guides/jpeg2000.html): Egami reads JPEG 2000 (ITU-T T.800 | ISO/IEC 15444-1, all of Part 1), written from the 2019 edition of T.800, T.801's JPX boxes and the PDF specification's JPXDecode filter.
+- [JPEG XL](https://inexin.github.io/Egami/v1/articles/guides/jxl.html): Egami reads and writes JPEG XL (ISO/IEC 18181), written from the specification with no native code.
+- [AVIF](https://inexin.github.io/Egami/v1/articles/guides/avif.html): Egami reads AVIF still images, written from the AV1 and HEIF specifications with no native code.
+- [ICO and CUR](https://inexin.github.io/Egami/v1/articles/guides/ico.html): Egami reads and writes Windows icons (.ico) and cursors (.cur), written from Microsoft's documentation of the icon directory.
+- [PSD and PSB](https://inexin.github.io/Egami/v1/articles/guides/psd.html): Egami reads Adobe Photoshop documents (.psd) and large documents (.psb), written from Adobe's Photoshop File Format Specification.
+- [Planar YUV](https://inexin.github.io/Egami/v1/articles/guides/planar-yuv.html): A `YuvRaster` holds a picture as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane.
+- [Custom operations and formats](https://inexin.github.io/Egami/v1/articles/guides/extending.html): Everything here uses only Egami's public API; Egami's own test suite has an outside project that does each of these things.
+- [Memory and threading](https://inexin.github.io/Egami/v1/articles/guides/memory-and-threading.html): A raster remembers the context it was loaded or created with, and its operations use it.
+- [Security](https://inexin.github.io/Egami/v1/articles/guides/security.html): Egami is built to open files from people you do not trust.
+
+## Optional
+
+- [API reference](https://inexin.github.io/Egami/v1/api/Egami.html): every public type and member of every package.
+- [Source and changelog](https://github.com/inexin/Egami): the repository, CHANGELOG.md and CONTRIBUTING.md.
