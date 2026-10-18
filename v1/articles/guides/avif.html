@@ -133,6 +133,11 @@ duck.Save(&quot;duck-lossless.avif&quot;, new AvifWriterOptions { Lossless = tru
 <p>Lossy color is 4:2:0 below Quality 90 and 4:4:4 from 90, or the <code>Chroma</code> you choose; gray images are written 4:0:0. 8-bit pixels
 are written at 8 bits and deeper pixels at 10, or at the <code>BitDepth</code> you choose (8, 10 or 12). Transparency goes in an alpha item,
 a second AV1 image, kept exactly unless <code>AlphaQuality</code> is below 100.</p>
+<p><code>Effort</code>, 0 to 10, trades encoding time for size: it is 10 minus avifenc's speed, and the default 4 works like avifenc's
+default speed 6. The encoder weighs partitions, prediction modes and transforms by the bits they cost and the error they leave,
+spends finer quantizer steps on flat areas, where banding shows, and picks the deblocking and CDEF filters. Screenshots, text and
+graphics are recognized: their few colors are coded as palettes, and repeated content as copies of what came before (intra block
+copy).</p>
 <pre><code class="lang-csharp">// A transparent image keeps its alpha as a second AV1 image; AlphaQuality below 100 codes it lossy too.
 using Raster&lt;Rgba8&gt; logo = Raster.Create&lt;Rgba8&gt;(64, 64);
 logo.Save(&quot;logo.avif&quot;, new AvifWriterOptions { Quality = 80, AlphaQuality = 100 });
