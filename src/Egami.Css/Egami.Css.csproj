@@ -5,6 +5,7 @@
     <PackageId>Egami.Css</PackageId>
     <Version>1.0.0</Version>
     <Description>CSS for Egami: the CSS Syntax 3 tokenizer and parser, Selectors 4 matching, the cascade with custom properties and var(), media queries, the box, background, list, table and page properties with @page and its margin boxes, and value parsers (colors, lengths, calc(), transforms, fonts, page sizes), in managed code with no dependencies.</Description>
+    <PackageTags>$(EgamiPackageTags);css;selectors;cascade</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>

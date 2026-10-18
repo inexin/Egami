@@ -4,6 +4,7 @@
     <RootNamespace>Egami</RootNamespace>
     <PackageId>Egami</PackageId>
     <Description>A fully managed, MIT-licensed 2D imaging library for .NET.</Description>
+    <PackageTags>$(EgamiPackageTags);image;png;jpeg;gif;webp;tiff;bmp;avif;jpegxl;jxl;openexr;hdr;resize;color-management;exif</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>

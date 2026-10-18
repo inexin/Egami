@@ -5,6 +5,7 @@
     <PackageId>Egami.Metafiles</PackageId>
     <Version>0.1.1</Version>
     <Description>Windows metafiles for Egami: plays WMF, EMF and EMF+ pictures onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output and rasterize on any OS, in managed code.</Description>
+    <PackageTags>$(EgamiPackageTags);wmf;emf;emf-plus;metafile</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>

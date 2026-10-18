@@ -17,6 +17,8 @@
     <PackageProjectUrl>https://github.com/inexin/Egami</PackageProjectUrl>
     <RepositoryUrl>https://github.com/inexin/Egami</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <!-- Tags every package shares; each package adds its own in its project file. -->
+    <EgamiPackageTags>egami;imaging;graphics;managed;dotnet</EgamiPackageTags>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

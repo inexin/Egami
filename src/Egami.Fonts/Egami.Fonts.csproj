@@ -8,6 +8,7 @@
          package is on a feed the build can reach, so package validation also checks binary compatibility with it. -->
     <EnablePackageValidation>true</EnablePackageValidation>
     <Description>TrueType and OpenType (CFF) fonts for Egami: faces, glyph outlines, metrics, kerning, installed fonts and subsetting, in managed code.</Description>
+    <PackageTags>$(EgamiPackageTags);fonts;opentype;truetype;woff;text-shaping;text-layout</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
