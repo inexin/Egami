@@ -4,7 +4,7 @@ Egami.Metafiles plays Windows metafiles.
 
 - Reads WMF, EMF and EMF+ (and WMZ and EMZ) and plays them onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG
   output and rasterize on any OS.
-- Its API is 0.x and may still change.
+- Draws them at a DPI or a size onto rasters, or stretched to a box on any canvas, as Word does.
 
 See the [Windows metafiles guide](https://github.com/inexin/Egami/blob/main/docs/articles/guides/metafiles.md).
 

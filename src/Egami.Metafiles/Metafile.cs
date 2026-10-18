@@ -84,8 +84,26 @@ public sealed class Metafile
     {
         ArgumentNullException.ThrowIfNull(stream);
         options ??= MetafileLoadOptions.Default;
-        EgamiContext context = options.EffectiveContext;
-        byte[] data = MetafileReader.ReadAll(stream, context.Limits);
+        return Read(MetafileReader.ReadAll(stream, options.EffectiveContext.Limits), options.EffectiveContext);
+    }
+
+    /// <summary>Reads WMF, EMF, WMZ or EMZ bytes, such as a picture taken out of a Word or PowerPoint file.</summary>
+    /// <param name="data">The file's bytes; they are copied, so the memory can be reused once this returns.</param>
+    /// <param name="options">How to read it, or <see langword="null"/> for the defaults.</param>
+    /// <returns>The metafile.</returns>
+    /// <exception cref="CorruptDataException">The data is no WMF or EMF file, or its header is broken.</exception>
+    /// <exception cref="LimitExceededException">The data, or EMZ or WMZ data once inflated, is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-bytes"/>
+    /// </example>
+    public static Metafile Load(ReadOnlyMemory<byte> data, MetafileLoadOptions? options = null)
+    {
+        options ??= MetafileLoadOptions.Default;
+        return Read(MetafileReader.ReadAll(data, options.EffectiveContext.Limits), options.EffectiveContext);
+    }
+
+    private static Metafile Read(byte[] data, EgamiContext context)
+    {
         MetafileReport report = new();
         MetafileContent content = MetafileReader.Read(data, report);
         if (content.Kind == MetafileKind.Wmf && content.PlaceableBox is null)
@@ -103,7 +121,7 @@ public sealed class Metafile
 
     /// <summary>
     /// Draws the picture on a canvas: in points from the canvas's origin (the frame's corner there), or with its frame stretched
-    /// to <paramref name="box"/> exactly, as Word stretches a picture to its frame (design question 10). Drawing calls only the
+    /// to <paramref name="box"/> exactly, as Word stretches a picture to its frame. Drawing calls only the
     /// public canvas API, so a raster canvas, a PDF page, SvgCanvas or a PictureRecorder receive the same calls. It never throws
     /// on content: what it cannot draw is skipped and reported to the context's diagnostics.
     /// </summary>

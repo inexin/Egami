@@ -107,6 +107,20 @@ public class Metafiles
     }
 
     [Fact]
+    public void LoadFromBytes()
+    {
+        byte[] bytes = File.ReadAllBytes(Chart);
+        #region metafile-bytes
+        // A picture taken out of a document, already in memory: no stream needed.
+        Metafile picture = Metafile.Load(bytes);
+        using Raster<Rgba8> page = Raster.Create<Rgba8>(200, 150);
+        using RasterCanvas<Rgba8> canvas = page.CreateCanvas();
+        picture.Draw(canvas, new RectF(0, 0, 200, 150));
+        #endregion
+        Assert.Equal(MetafileKind.Emf, picture.Kind);
+    }
+
+    [Fact]
     public void PlayTheGdiPart()
     {
         string path = Chart;
