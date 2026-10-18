@@ -63,7 +63,7 @@ branch, add the new version at the top of `docs/versions.json` and build each fo
 ## Releases
 
 A tag `v<version>` (the version of `src/Egami`) runs `.github/workflows/release.yml`: it tests, packs Egami, Egami.Drawing,
-Egami.Fonts, Egami.Svg and Egami.Css at the versions in their project files, and pushes them to nuget.org with trusted
+Egami.Fonts, Egami.Svg, Egami.Css and Egami.Metafiles at the versions in their project files, and pushes them to nuget.org with trusted
 publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet API key: a trusted publishing
 policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
 nuget.org account name. Only maintainers tag releases.

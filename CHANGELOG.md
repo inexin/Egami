@@ -1078,7 +1078,7 @@ The first public release. The API is frozen: 1.x versions add to it without brea
 - `ICssElement` is frozen as it is; a member added in 1.x comes as a default interface method, as `MatchesPseudoClass` already
   is, so your element trees keep compiling.
 
-## Egami.Metafiles 0.1.1 (unreleased)
+## Egami.Metafiles 0.1.1 (2026-10-18)
 
 The first release; its API may still change while it is 0.x.
 
