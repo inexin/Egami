@@ -29,6 +29,13 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     /// <inheritdoc/>
     public void IntraBlock(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
     {
+        PredictIntraBlock(tile, plane, x, y, txSize);
+        FinishIntraBlock(tile, plane, x, y, txSize, txType, eob, coeffs);
+    }
+
+    /// <summary>Writes one transform block's intra prediction (chroma from luma included) into the frame, before its residual.</summary>
+    internal void PredictIntraBlock(Av1TileState tile, int plane, int x, int y, int txSize)
+    {
         Av1BlockInfo b = tile.Block;
         ushort[] dst = _frame.Planes![plane];
         int stride = _frame.Strides[plane];
@@ -44,7 +51,15 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
         {
             PredictCfl(b, plane, txSize, dst, offset, stride);
         }
+    }
 
+    /// <summary>Adds one transform block's residual to its prediction, and keeps a luma block for chroma from luma.</summary>
+    internal void FinishIntraBlock(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
+    {
+        Av1BlockInfo b = tile.Block;
+        ushort[] dst = _frame.Planes![plane];
+        int stride = _frame.Strides[plane];
+        int offset = (y * stride) + x;
         if (eob > 0)
         {
             Av1InverseTransform.Add(coeffs, txSize, txType, _frame.Header.LosslessArray[b.SegmentId], eob, dst, offset, stride, _bitDepth);
@@ -52,7 +67,8 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
 
         if (plane == 0 && StoreCflRequired(tile))
         {
-            StoreCfl(tile, rowOff, colOff, txSize, dst, offset, stride);
+            (int col4, int row4) = tile.PlaneOrigin(plane);
+            StoreCfl(tile, (y >> 2) - row4, (x >> 2) - col4, txSize, dst, offset, stride);
         }
     }
 
