@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Egami.Metafiles.Reading;
@@ -43,12 +44,31 @@ internal static class MetafileReader
     internal static byte[] ReadAll(Stream stream, SafetyLimits limits)
     {
         byte[] data = ReadBounded(stream, limits.MaxTotalBytes);
-        if (!IsGzip(data))
+        return IsGzip(data) ? Inflate(new MemoryStream(data, writable: false), limits) : data;
+    }
+
+    /// <summary>Copies the bytes, inflating gzip, within the context's total byte limit.</summary>
+    internal static byte[] ReadAll(ReadOnlyMemory<byte> data, SafetyLimits limits)
+    {
+        if (data.Length > limits.MaxTotalBytes)
         {
-            return data;
+            throw new LimitExceededException(nameof(SafetyLimits.MaxTotalBytes), limits.MaxTotalBytes, data.Length);
         }
 
-        using GZipStream gzip = new(new MemoryStream(data, writable: false), CompressionMode.Decompress);
+        if (!IsGzip(data.Span))
+        {
+            return data.ToArray();
+        }
+
+        MemoryStream input = MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
+            ? new MemoryStream(segment.Array!, segment.Offset, segment.Count, writable: false)
+            : new MemoryStream(data.ToArray(), writable: false);
+        return Inflate(input, limits);
+    }
+
+    private static byte[] Inflate(MemoryStream input, SafetyLimits limits)
+    {
+        using GZipStream gzip = new(input, CompressionMode.Decompress);
         try
         {
             return ReadBounded(gzip, limits.MaxTotalBytes);

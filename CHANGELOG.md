@@ -1078,6 +1078,14 @@ The first public release. The API is frozen: 1.x versions add to it without brea
 - `ICssElement` is frozen as it is; a member added in 1.x comes as a default interface method, as `MatchesPseudoClass` already
   is, so your element trees keep compiling.
 
+## Egami.Metafiles 1.0.0 (unreleased)
+
+The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. It is 0.1.1's API plus one overload; nothing
+was removed or renamed.
+
+- `Metafile.Load(ReadOnlyMemory<byte>)` reads a picture already in memory, such as one taken out of a Word or PowerPoint
+  file, without wrapping it in a stream.
+
 ## Egami.Metafiles 0.1.1 (2026-10-18)
 
 The first release; its API may still change while it is 0.x.

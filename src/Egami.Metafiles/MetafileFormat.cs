@@ -7,7 +7,7 @@ using Egami.Pixels;
 namespace Egami.Metafiles;
 
 /// <summary>
-/// WMF, EMF and EMF+ (and WMZ, EMZ) as an Egami format (design question 16): registered with
+/// WMF, EMF and EMF+ (and WMZ, EMZ) as an Egami format: registered with
 /// <see cref="EgamiContext.WithFormat"/>, <c>Raster.Load</c> draws a metafile at its own size at 96 DPI (or
 /// <see cref="MetafileDecodeOptions.Dpi"/>) onto a transparent <see cref="Rgba8"/> raster, and <c>Raster.Probe</c> gives that
 /// size from the header without drawing. Text uses the installed fonts. For your own fonts, a target size, a background or the

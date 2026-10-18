@@ -65,6 +65,32 @@ public class ContainerTests
     }
 
     [Fact]
+    public void BytesLoadAsTheStreamDoes()
+    {
+        byte[] raw = File.ReadAllBytes(TestFiles.SyntheticPath("gdi-shapes-basic.emf"));
+        using MemoryStream gz = new();
+        using (GZipStream zip = new(gz, CompressionLevel.Fastest, leaveOpen: true))
+        {
+            zip.Write(raw);
+        }
+
+        Metafile fromStream = Metafile.Load(new MemoryStream(raw));
+        byte[] padded = [0, .. raw, 0];
+        foreach (ReadOnlyMemory<byte> data in new ReadOnlyMemory<byte>[] { raw, gz.ToArray(), padded.AsMemory(1, raw.Length) })
+        {
+            Metafile fromBytes = Metafile.Load(data);
+            Assert.Equal(fromStream.Kind, fromBytes.Kind);
+            Assert.Equal(fromStream.Frame, fromBytes.Frame);
+            Assert.Equal(raw, fromBytes.Content.Data);
+        }
+
+        MetafileLoadOptions small = new() { Context = EgamiContext.Default with { Limits = SafetyLimits.Default with { MaxTotalBytes = 100 } } };
+        Assert.Throws<LimitExceededException>(() => Metafile.Load(raw, small));
+        Assert.Throws<LimitExceededException>(() => Metafile.Load(gz.ToArray(), small));
+        Assert.Throws<CorruptDataException>(() => Metafile.Load(ReadOnlyMemory<byte>.Empty));
+    }
+
+    [Fact]
     public void ContinuedEmfPlusObjectsAreJoined()
     {
         // The image scenarios hold bitmaps larger than one EMF+ record, so GDI+ splits them with the continue flag.

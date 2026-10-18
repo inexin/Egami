@@ -5,12 +5,10 @@ EMF (Enhanced Metafile) and EMF+ (GDI+ records inside an EMF), and their gzip fo
 Egami.Drawing's canvas, so a chart pasted from Excel stays vector on a PDF page or in SVG output and rasterizes the same on
 any OS. It only reads and plays: it does not write metafiles. It is fully managed.
 
-Egami.Metafiles is at 0.1 (0.1.1) and its API may still change before 1.0.
-
 ## Loading
 
-`Metafile.Load` reads a file or stream; gzip is detected by its first bytes. `Metafile.Kind` says what it holds (a
-`MetafileKind`: `Wmf`, `Emf`, `EmfPlusDual` or `EmfPlusOnly`), and the header gives the picture's size:
+`Metafile.Load` reads a file, a stream or bytes in memory; gzip is detected by its first bytes. `Metafile.Kind` says what
+it holds (a `MetafileKind`: `Wmf`, `Emf`, `EmfPlusDual` or `EmfPlusOnly`), and the header gives the picture's size:
 
 - `Size` and `Frame` are in points: an EMF's frame rectangle (0.01 mm), a placeable WMF's box and units per inch, or, for a
   WMF without a placeable header, its window extent at 96 DPI (with a `Metafile.NoPlaceableHeader` warning).
@@ -21,6 +19,10 @@ Loading is lenient: a record that runs past the end of the file ends the walk wi
 inflate to) and the diagnostics handler.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-limits)]
+
+A picture taken out of a document is often already in memory; `Load` takes the bytes as they are.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-bytes)]
 
 ## Drawing
 

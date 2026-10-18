@@ -36,7 +36,7 @@ image.Save("photo-small.png");
 | Egami.Fonts | TrueType and OpenType fonts, text shaping and paragraph layout |
 | Egami.Svg | Reads, edits, saves and draws SVG |
 | Egami.Css | CSS parsing, selectors and the cascade |
-| Egami.Metafiles | Plays WMF, EMF and EMF+ pictures (0.x: its API may still change) |
+| Egami.Metafiles | Plays WMF, EMF and EMF+ pictures |
 
 Egami, Egami.Drawing, Egami.Fonts, Egami.Svg and Egami.Css 1.0.0 are on [NuGet](https://www.nuget.org/packages?q=Egami);
 Egami.Metafiles is not published yet.

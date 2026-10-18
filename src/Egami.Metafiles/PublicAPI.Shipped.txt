@@ -6,6 +6,7 @@ Egami.Metafiles.Metafile.Draw(Egami.Drawing.Canvas! canvas, Egami.Drawing.RectF?
 Egami.Metafiles.Metafile.Frame.get -> Egami.Drawing.RectF
 Egami.Metafiles.Metafile.Kind.get -> Egami.Metafiles.MetafileKind
 static Egami.Metafiles.Metafile.Load(System.IO.Stream! stream, Egami.Metafiles.MetafileLoadOptions? options = null) -> Egami.Metafiles.Metafile!
+static Egami.Metafiles.Metafile.Load(System.ReadOnlyMemory<byte> data, Egami.Metafiles.MetafileLoadOptions? options = null) -> Egami.Metafiles.Metafile!
 static Egami.Metafiles.Metafile.Load(string! path, Egami.Metafiles.MetafileLoadOptions? options = null) -> Egami.Metafiles.Metafile!
 Egami.Metafiles.Metafile.Rasterize<TPixel>(Egami.Metafiles.MetafileRenderOptions? options = null) -> Egami.Raster<TPixel>!
 Egami.Metafiles.Metafile.Size.get -> System.Numerics.Vector2

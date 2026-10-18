@@ -4,7 +4,7 @@ using Egami.Pixels;
 
 namespace Egami.Metafiles;
 
-/// <summary>Which records of an EMF+ dual file play (design question 5).</summary>
+/// <summary>Which records of an EMF+ dual file play.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Metafiles.cs" region="metafile-gdi"/>
 /// </example>
@@ -63,7 +63,7 @@ public sealed record class MetafileRenderOptions
     public RgbaF32 Background { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether GDI records are drawn antialiased; <see langword="true"/> by default (design question 6).
+    /// Gets a value indicating whether GDI records are drawn antialiased; <see langword="true"/> by default.
     /// <see langword="false"/> gives GDI's own aliased look, for comparing pixels with Windows. EMF+ records follow the file's
     /// own smoothing mode either way.
     /// </summary>
@@ -77,7 +77,7 @@ public sealed record class MetafileRenderOptions
 
     /// <summary>
     /// Gets faces to use for faces the fonts lack, by name (case-insensitive), tried after the built-in table of
-    /// metric-compatible open fonts (Arial to Liberation Sans, Calibri to Carlito and so on; design question 8).
+    /// metric-compatible open fonts (Arial to Liberation Sans, Calibri to Carlito and so on).
     /// </summary>
     public IReadOnlyDictionary<string, string>? FontSubstitutions { get; init; }
 
