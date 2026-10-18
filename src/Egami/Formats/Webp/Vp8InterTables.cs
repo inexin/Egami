@@ -92,23 +92,4 @@ internal static class Vp8InterTables
 
     /// <summary>The parts of each split layout.</summary>
     internal static ReadOnlySpan<byte> SplitParts => [2, 2, 4, 16];
-
-    /// <summary>The six-tap filters for the eight eighth-pixel positions (section 18.3), taps at −2 to +3.</summary>
-    internal static ReadOnlySpan<short> SixTap =>
-    [
-        0, 0, 128, 0, 0, 0,
-        0, -6, 123, 12, -1, 0,
-        2, -11, 108, 36, -8, 1,
-        0, -9, 93, 50, -6, 0,
-        3, -16, 77, 77, -16, 3,
-        0, -6, 50, 93, -9, 0,
-        1, -8, 36, 108, -11, 2,
-        0, -1, 12, 123, -6, 0,
-    ];
-
-    /// <summary>The bilinear filters of versions 1 to 3 for the eight eighth-pixel positions, taps at 0 and +1.</summary>
-    internal static ReadOnlySpan<short> Bilinear =>
-    [
-        128, 0, 112, 16, 96, 32, 80, 48, 64, 64, 48, 80, 32, 96, 16, 112,
-    ];
 }

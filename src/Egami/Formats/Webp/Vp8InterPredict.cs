@@ -135,7 +135,7 @@ internal static class Vp8InterPredict
 
         internal Taps256(int filter)
         {
-            ReadOnlySpan<short> taps = Vp8InterTables.SixTap.Slice(filter * 6, 6);
+            ReadOnlySpan<short> taps = Vp8Tables.SixTap.AsSpan(filter * 6, 6);
             _f0 = Vector256.Create((ushort)taps[0]);
             _f1 = Vector256.Create((ushort)-taps[1]);
             _f2 = Vector256.Create((ushort)taps[2]);
@@ -189,8 +189,8 @@ internal static class Vp8InterPredict
 
     private static void SixTap(ReadOnlySpan<byte> src, int at, int stride, int w, int h, int fx, int fy, Span<byte> dst, int dstAt, int dstStride)
     {
-        ReadOnlySpan<short> hf = Vp8InterTables.SixTap.Slice(fx * 6, 6);
-        ReadOnlySpan<short> vf = Vp8InterTables.SixTap.Slice(fy * 6, 6);
+        ReadOnlySpan<short> hf = Vp8Tables.SixTap.AsSpan(fx * 6, 6);
+        ReadOnlySpan<short> vf = Vp8Tables.SixTap.AsSpan(fy * 6, 6);
         if (fy == 0)
         {
             Pass(src, at, stride, 1, w, h, hf, dst, dstAt, dstStride);
@@ -227,8 +227,8 @@ internal static class Vp8InterPredict
 
     private static void Bilinear(ReadOnlySpan<byte> src, int at, int stride, int w, int h, int fx, int fy, Span<byte> dst, int dstAt, int dstStride)
     {
-        int h0 = Vp8InterTables.Bilinear[2 * fx], h1 = Vp8InterTables.Bilinear[(2 * fx) + 1];
-        int v0 = Vp8InterTables.Bilinear[2 * fy], v1 = Vp8InterTables.Bilinear[(2 * fy) + 1];
+        int h0 = Vp8Tables.Bilinear[2 * fx], h1 = Vp8Tables.Bilinear[(2 * fx) + 1];
+        int v0 = Vp8Tables.Bilinear[2 * fy], v1 = Vp8Tables.Bilinear[(2 * fy) + 1];
 
         // Horizontal over h + 1 rows, then vertical; neither can leave 0 to 255.
         Span<byte> first = stackalloc byte[16 * 17];
@@ -275,7 +275,7 @@ internal static class Vp8InterPredict
     /// <summary>One six-tap pass on 8 pixels at a time, 16 on a 16-wide block: taps at -2 to +3 steps of <paramref name="step"/>.</summary>
     private static void SixTapPass(ref byte src, int stride, int step, int w, int h, int filter, ref byte dst, int dstStride)
     {
-        ReadOnlySpan<short> taps = Vp8InterTables.SixTap.Slice(filter * 6, 6);
+        ReadOnlySpan<short> taps = Vp8Tables.SixTap.AsSpan(filter * 6, 6);
         if (w == 16)
         {
             SixTapPass16(ref src, stride, step, h, taps, ref dst, dstStride);
@@ -365,8 +365,8 @@ internal static class Vp8InterPredict
     [SkipLocalsInit]
     private static void BilinearVector(ref byte src, int stride, int w, int h, int fx, int fy, ref byte dst, int dstStride)
     {
-        Vector128<ushort> h0 = Vector128.Create((ushort)Vp8InterTables.Bilinear[2 * fx]), h1 = Vector128.Create((ushort)Vp8InterTables.Bilinear[(2 * fx) + 1]);
-        Vector128<ushort> v0 = Vector128.Create((ushort)Vp8InterTables.Bilinear[2 * fy]), v1 = Vector128.Create((ushort)Vp8InterTables.Bilinear[(2 * fy) + 1]);
+        Vector128<ushort> h0 = Vector128.Create((ushort)Vp8Tables.Bilinear[2 * fx]), h1 = Vector128.Create((ushort)Vp8Tables.Bilinear[(2 * fx) + 1]);
+        Vector128<ushort> v0 = Vector128.Create((ushort)Vp8Tables.Bilinear[2 * fy]), v1 = Vector128.Create((ushort)Vp8Tables.Bilinear[(2 * fy) + 1]);
         Vector128<ushort> round = Vector128.Create((ushort)64);
         Span<byte> first = stackalloc byte[(16 * 17) + Slack];
         ref byte f = ref MemoryMarshal.GetReference(first);

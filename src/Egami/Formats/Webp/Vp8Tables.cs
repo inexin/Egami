@@ -314,8 +314,9 @@ internal static class Vp8Tables
         238, 1, 255, 128, 128, 128, 128, 128, 128, 128, 128,
     ];
 
+    // Arrays, not span properties: a span over a constant table of shorts allocates on each read in unoptimized (Debug) code.
     /// <summary>Gets the DC quantizer step for each index 0 to 127 (section 14.1).</summary>
-    internal static ReadOnlySpan<short> DcTable =>
+    internal static readonly short[] DcTable =
     [
         4, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 15, 16, 17, 17,
         18, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 25, 25, 26, 27, 28,
@@ -328,7 +329,7 @@ internal static class Vp8Tables
     ];
 
     /// <summary>Gets the AC quantizer step for each index 0 to 127 (section 14.1).</summary>
-    internal static ReadOnlySpan<short> AcTable =>
+    internal static readonly short[] AcTable =
     [
         4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
         20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
@@ -338,5 +339,26 @@ internal static class Vp8Tables
         110, 112, 114, 116, 119, 122, 125, 128, 131, 134, 137, 140, 143, 146, 149, 152,
         155, 158, 161, 164, 167, 170, 173, 177, 181, 185, 189, 193, 197, 201, 205, 209,
         213, 217, 221, 225, 229, 234, 239, 245, 249, 254, 259, 264, 269, 274, 279, 284,
+    ];
+
+    // The filter taps live here with the quantizer steps, not in Vp8InterTables: every key frame reads these, so the first inter
+    // frame of a stream does not run a static constructor.
+    /// <summary>The six-tap filters for the eight eighth-pixel positions (section 18.3), taps at −2 to +3.</summary>
+    internal static readonly short[] SixTap =
+    [
+        0, 0, 128, 0, 0, 0,
+        0, -6, 123, 12, -1, 0,
+        2, -11, 108, 36, -8, 1,
+        0, -9, 93, 50, -6, 0,
+        3, -16, 77, 77, -16, 3,
+        0, -6, 50, 93, -9, 0,
+        1, -8, 36, 108, -11, 2,
+        0, -1, 12, 123, -6, 0,
+    ];
+
+    /// <summary>The bilinear filters of versions 1 to 3 for the eight eighth-pixel positions, taps at 0 and +1.</summary>
+    internal static readonly short[] Bilinear =
+    [
+        128, 0, 112, 16, 96, 32, 80, 48, 64, 64, 48, 80, 32, 96, 16, 112,
     ];
 }
