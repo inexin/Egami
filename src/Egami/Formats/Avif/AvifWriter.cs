@@ -55,6 +55,92 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
     /// <summary>Gets the base_q_idx libaom codes a quality with, through libavif's tune IQ mapping.</summary>
     internal static int QIndexFor(int quality) => QuantizerToQIndex[QualityToQuantizer[Math.Clamp(quality, 0, 100)]];
 
+    /// <summary>
+    /// Writes YUV planes as they are, with no color conversion or chroma resampling: their matrix, range and chroma siting go into
+    /// the file, and alpha into an alpha item. Lossless keeps every sample in its YUV plane.
+    /// </summary>
+    internal static void WritePlanes<TSample>(YuvRaster<TSample> yuv, Stream output, AvifWriterOptions options, EgamiContext context)
+        where TSample : unmanaged
+    {
+        int width = yuv.Width, height = yuv.Height;
+        (int primaries, int transfer) = yuv.Metadata.CodePoints is ColorCodePoints points ? (points.Primaries, points.TransferCharacteristics) : (1, 13);
+        int matrix = yuv.ChromaFormat == ChromaFormat.Yuv400 ? 2 : yuv.Color.ToH273();
+        List<ushort[]> planes = [Samples(yuv.Y)];
+        if (yuv.U is YuvPlane<TSample> u && yuv.V is YuvPlane<TSample> v)
+        {
+            planes.Add(Samples(u));
+            planes.Add(Samples(v));
+        }
+
+        Av1EncoderInput color = new()
+        {
+            Width = width,
+            Height = height,
+            BitDepth = yuv.BitDepth,
+            Chroma = yuv.ChromaFormat,
+            Planes = [.. planes],
+            ColorPrimaries = primaries,
+            TransferCharacteristics = transfer,
+            MatrixCoefficients = matrix,
+            FullRange = yuv.Color.Range == YuvRange.Full,
+            ChromaSamplePosition = yuv.Color.Siting switch { ChromaSiting.TopLeft => 2, ChromaSiting.Left => 1, _ => 0 },
+        };
+        bool lossless = options.Lossless ?? false;
+        Av1Encoder colorStream = Av1Encoder.Encode(color, new Av1EncoderSettings
+        {
+            Lossless = lossless,
+            QIndex = QIndexFor(options.Quality),
+            Effort = options.Effort,
+            Parallelism = context.MaxParallelism,
+        });
+        Av1Encoder? alphaStream = null;
+        if (yuv.A is YuvPlane<TSample> a)
+        {
+            Av1EncoderInput alpha = new()
+            {
+                Width = width,
+                Height = height,
+                BitDepth = yuv.BitDepth,
+                Chroma = ChromaFormat.Yuv400,
+                Planes = [Samples(a)],
+                FullRange = true,
+            };
+            alphaStream = Av1Encoder.Encode(alpha, new Av1EncoderSettings
+            {
+                Lossless = options.AlphaQuality == 100,
+                QIndex = QIndexFor(options.AlphaQuality),
+                Effort = options.Effort,
+                Parallelism = context.MaxParallelism,
+            });
+        }
+
+        WriteFile(output, width, height, colorStream, alphaStream, primaries, transfer, matrix);
+
+        static ushort[] Samples(YuvPlane<TSample> plane)
+        {
+            ushort[] samples = new ushort[plane.Width * plane.Height];
+            for (int y = 0; y < plane.Height; y++)
+            {
+                Span<TSample> row = plane.Row(y);
+                Span<ushort> to = samples.AsSpan(y * plane.Width, plane.Width);
+                if (typeof(TSample) == typeof(byte))
+                {
+                    Span<byte> bytes = System.Runtime.InteropServices.MemoryMarshal.Cast<TSample, byte>(row);
+                    for (int x = 0; x < to.Length; x++)
+                    {
+                        to[x] = bytes[x];
+                    }
+                }
+                else
+                {
+                    System.Runtime.InteropServices.MemoryMarshal.Cast<TSample, ushort>(row).CopyTo(to);
+                }
+            }
+
+            return samples;
+        }
+    }
+
     /// <summary>Encodes an image and writes its file.</summary>
     internal static void WriteImage(Raster raster, RasterMetadata metadata, AvifWriterOptions options, EgamiContext context, Stream output)
     {
@@ -75,6 +161,7 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         using Raster<Rgba16> rgba = raster.As<Rgba16>();
         Av1EncoderInput color = lossless || gray
             ? DirectPlanes(rgba, chroma == ChromaFormat.Yuv400, bitDepth, primaries, transfer, matrix)
+            : chroma == ChromaFormat.Yuv420 && bitDepth == 8 && options.Effort >= 5 ? SharpPlanes(raster, primaries, transfer, matrix)
             : ConvertedPlanes(raster, chroma, bitDepth, primaries, transfer, matrix);
         Av1Encoder colorStream = Av1Encoder.Encode(color, new Av1EncoderSettings
         {
@@ -255,6 +342,52 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
             for (int y = 0; y < plane.Height; y++)
             {
                 plane.Row(y).CopyTo(samples.AsSpan(y * plane.Width));
+            }
+
+            return samples;
+        }
+    }
+
+    /// <summary>
+    /// The image converted to 8-bit 4:2:0 with sharp RGB to YUV (libwebp's sharpyuv, as libavif uses it from effort 5): luma and
+    /// chroma refined together so the upsampled image comes back closest to the source, and sharp colored edges keep their color.
+    /// </summary>
+    private static Av1EncoderInput SharpPlanes(Raster raster, int primaries, int transfer, int matrix)
+    {
+        int width = raster.Width, height = raster.Height;
+        using Raster<Bgra8> bgra = raster.As<Bgra8>();
+        uint[] argb = new uint[width * height];
+        for (int y = 0; y < height; y++)
+        {
+            System.Runtime.InteropServices.MemoryMarshal.Cast<Bgra8, uint>(bgra.Row(y)).CopyTo(argb.AsSpan(y * width, width));
+        }
+
+        Webp.Vp8Planes planes = new(width, height);
+        YuvKernels8.FromRgbCoefficients k = YuvKernels8.FromRgbCoefficients.For(new YuvColor(YuvMatrix.Bt601, YuvRange.Full, ChromaSiting.Left));
+        Webp.WebpSharpYuv.Convert(argb, width, height, planes, in k);
+        int cw = (width + 1) >> 1, ch = (height + 1) >> 1;
+        return new Av1EncoderInput
+        {
+            Width = width,
+            Height = height,
+            BitDepth = 8,
+            Chroma = ChromaFormat.Yuv420,
+            Planes = [Plane(planes.Y, planes.Stride, width, height), Plane(planes.U, planes.ChromaStride, cw, ch), Plane(planes.V, planes.ChromaStride, cw, ch)],
+            ColorPrimaries = primaries,
+            TransferCharacteristics = transfer,
+            MatrixCoefficients = matrix,
+            FullRange = true,
+        };
+
+        static ushort[] Plane(byte[] source, int stride, int w, int h)
+        {
+            ushort[] samples = new ushort[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    samples[(y * w) + x] = source[(y * stride) + x];
+                }
             }
 
             return samples;

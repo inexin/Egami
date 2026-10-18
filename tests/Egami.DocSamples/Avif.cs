@@ -63,6 +63,14 @@ public class Avif
         logo.Save("logo.avif", new AvifWriterOptions { Quality = 80, AlphaQuality = 100 });
         #endregion
 
+        #region write-yuv
+        // YUV planes are written as they are: no conversion or resampling, their matrix, range and siting in the file.
+        using YuvRaster planes = YuvRaster.Load("duck.avif");
+        planes.Save("duck-planes.avif", new AvifWriterOptions { Lossless = true });
+        #endregion
+
+        using YuvRaster again = YuvRaster.Load("duck-planes.avif");
+        Assert.Equal((planes.ChromaFormat, planes.BitDepth, planes.Color), (again.ChromaFormat, again.BitDepth, again.Color));
         Assert.True(new FileInfo("duck-q35.avif").Length < new FileInfo("duck-q60.avif").Length);
         using Raster lossless = Raster.Load("duck-lossless.avif");
         Assert.True(((AvifDetails)lossless.Metadata.FormatDetails!).Lossless);

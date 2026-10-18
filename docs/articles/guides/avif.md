@@ -49,6 +49,12 @@ copy).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-write)]
 
+From effort 5, 8-bit 4:2:0 images are converted with sharp RGB to YUV, as libavif does: luma and chroma are refined together so
+sharp colored edges keep their color. A `YuvRaster` is written as its planes are, at 8, 10 or 12 bits, with no conversion or
+chroma resampling; its matrix, range and chroma siting go into the file, and `Lossless` keeps every sample of the planes.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#write-yuv)]
+
 Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.
 
 ## HDR

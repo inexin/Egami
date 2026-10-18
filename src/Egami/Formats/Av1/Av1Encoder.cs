@@ -25,6 +25,9 @@ internal sealed class Av1EncoderInput
     internal int MatrixCoefficients { get; init; } = 2;
 
     internal bool FullRange { get; init; }
+
+    /// <summary>Gets the AV1 chroma_sample_position of 4:2:0 planes: 0 unknown, 1 vertical (left), 2 colocated (top left).</summary>
+    internal int ChromaSamplePosition { get; init; }
 }
 
 /// <summary>How an AV1 frame is encoded.</summary>
@@ -297,6 +300,7 @@ internal sealed class Av1Encoder
             FullRange = input.FullRange,
             SubsamplingX = ssx,
             SubsamplingY = ssy,
+            ChromaSamplePosition = ssx == 1 && ssy == 1 ? input.ChromaSamplePosition : 0,
         };
 
         // Read back, so the header the frames use is exactly what a decoder sees.
