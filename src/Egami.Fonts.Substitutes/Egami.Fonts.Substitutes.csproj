@@ -4,6 +4,8 @@
     <RootNamespace>Egami.Fonts.Substitutes</RootNamespace>
     <PackageId>Egami.Fonts.Substitutes</PackageId>
     <Version>1.0.0</Version>
+    <!-- 1.0 froze the API (PublicAPI.Shipped.txt). Later 1.x versions set PackageValidationBaselineVersion to 1.0.0 once that
+         package is on a feed the build can reach, so package validation also checks binary compatibility with it. -->
     <EnablePackageValidation>true</EnablePackageValidation>
     <Description>Open, metric-compatible substitutes for the fonts documents name most, for Egami.Fonts: Liberation Sans, Serif and Mono for Helvetica, Arial, Times, Times New Roman, Courier and Courier New, Carlito for Calibri and Caladea for Cambria (SIL OFL 1.1).</Description>
     <PackageTags>$(EgamiPackageTags);fonts;liberation;carlito;caladea;metric-compatible</PackageTags>

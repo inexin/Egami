@@ -1,4 +1,1 @@
 #nullable enable
-Egami.Fonts.Substitutes.SubstituteFonts
-static Egami.Fonts.Substitutes.SubstituteFonts.Collection.get -> Egami.Fonts.FontCollection!
-static Egami.Fonts.Substitutes.SubstituteFonts.Find(string! familyName, Egami.Fonts.FontStyle style) -> Egami.Fonts.Typeface?
