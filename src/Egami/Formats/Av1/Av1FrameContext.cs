@@ -132,9 +132,13 @@ internal sealed class Av1FrameContext
     {
         foreach ((int offset, int count) in AllCdfs)
         {
-            Cdf[offset + count] = 0;
+            // count probabilities, the terminating 0, then the counter.
+            Cdf[offset + count + 1] = 0;
         }
     }
+
+    /// <summary>Gets every CDF: its offset and its number of symbols.</summary>
+    internal static IEnumerable<(int Offset, int Symbols)> Cdfs => AllCdfs.Select(c => (c.Offset, c.Count + 1));
 
     private static Table Add(ushort[][] table) => Add(table, table.Length, 0);
 
