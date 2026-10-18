@@ -1,0 +1,37 @@
+name: Feature request
+description: A format, operation, option or API that Egami lacks.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - Egami
+        - Egami.Drawing
+        - Egami.Fonts
+        - Egami.Svg
+        - Egami.Css
+        - Egami.Metafiles
+        - A new package
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you want to do
+      description: The task you are trying to get done, and what stops you today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help
+      description: The API or behavior you have in mind, with a code sketch if you have one.
+  - type: textarea
+    id: elsewhere
+    attributes:
+      label: Specifications and other libraries
+      description: >-
+        The specification it follows, and how other libraries do it, if you know. Please link to them rather than paste
+        their code: Egami is written from specifications and permissively licensed sources only (see CONTRIBUTING.md).

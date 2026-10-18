@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/inexin/Egami/security/advisories/new
+    about: >-
+      Egami reads untrusted files, so a crash, hang or runaway memory use on bad input is a security bug. Report it privately
+      here, not in a public issue, and attach the file there. See SECURITY.md.
+  - name: Documentation
+    url: https://inexin.github.io/Egami/v1/
+    about: Getting started, the guides, the cookbook and the API reference.

@@ -1,0 +1,58 @@
+name: Bug report
+description: Something in Egami gives a wrong result, throws or is slower than it should be.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        A crash, hang or runaway memory use on a file you did not make is a security bug: please report it privately
+        through the Security tab instead (see SECURITY.md).
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - Egami
+        - Egami.Drawing
+        - Egami.Fonts
+        - Egami.Svg
+        - Egami.Css
+        - Egami.Metafiles
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The package version, or the commit if you build from source.
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, with the exception and its stack trace if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: For a wrong image, what another program (a browser, ImageMagick, libvips, libjpeg-turbo ...) shows.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Code to reproduce it
+      description: The smallest code that shows it. Attach the input file if one is needed and you may share it.
+      render: csharp
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, CPU architecture and .NET version (`dotnet --version`).
+      placeholder: Windows 11 x64, .NET 10.0.100
