@@ -1,7 +1,7 @@
 name: Release
 
-# A tag v<version>, the version of src/Egami, publishes every package: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css
-# and Egami.Metafiles, each at the version in its own project file. The push uses nuget.org trusted
+# A tag v<version>, the version of src/Egami, publishes the 1.0 packages: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg and
+# Egami.Css, each at the version in its own project file. Egami.Metafiles is 0.x and stays out. The push uses nuget.org trusted
 # publishing: NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet key. The
 # trusted publishing policy on nuget.org names this repository, this workflow file and the nuget environment, and the nuget
 # environment requires Lars's approval before the job starts. The secret NUGET_USER is the nuget.org account name.
@@ -41,7 +41,7 @@ jobs:
         run: dotnet test Egami.slnx -c Release
       - name: Pack
         run: |
-          for package in Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css Egami.Metafiles; do
+          for package in Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css; do
             dotnet pack "src/$package" -c Release --no-build -o artifacts/nuget
           done
       - uses: actions/upload-artifact@v7
