@@ -1,0 +1,95 @@
+name: Docs
+
+# Builds the DocFX site into one folder per major version on the gh-pages branch:
+#   v1/, v2/, ...   the docs of each major version
+#   versions.json   the version picker's list, always taken from main
+#   index.html      sends readers to the newest version
+# A push to main rebuilds the folder of the first entry in docs/versions.json. To rebuild an older major version, run the
+# workflow by hand with that version's branch or tag and its folder.
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', 'src/**', 'tests/Egami.DocSamples/**', '.github/workflows/docs.yml']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch or tag to build (for example release/1.x)
+        required: true
+        default: main
+      folder:
+        description: Folder to write (for example v1/); leave empty for the newest version in docs/versions.json
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || 'main' }}
+          path: source
+          persist-credentials: false
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          path: main
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: source/global.json
+      - run: dotnet tool install --global docfx --version 2.78.3
+      - name: Build
+        run: docfx source/docs/docfx.json
+      - name: Pick the folder
+        id: folder
+        env:
+          FOLDER: ${{ inputs.folder }}
+        run: |
+          if [ -z "$FOLDER" ]; then
+            FOLDER=$(jq -r '.[0].path' main/docs/versions.json)
+          fi
+          case "$FOLDER" in
+            v[0-9]*/) ;;
+            *) echo "Folder must look like v1/, got '$FOLDER'"; exit 1 ;;
+          esac
+          echo "path=$FOLDER" >> "$GITHUB_OUTPUT"
+      - name: Publish to gh-pages
+        env:
+          FOLDER: ${{ steps.folder.outputs.path }}
+          REF: ${{ inputs.ref || 'main' }}
+        run: |
+          if git -C main fetch --depth 1 origin gh-pages:refs/remotes/origin/gh-pages; then
+            git -C main worktree add -B gh-pages ../pages origin/gh-pages
+          else
+            git -C main worktree add --orphan -b gh-pages ../pages
+          fi
+          rm -rf "pages/$FOLDER"
+          mkdir -p "pages/$FOLDER"
+          cp -R source/docs/_site/. "pages/$FOLDER"
+          cp main/docs/versions.json pages/versions.json
+          newest=$(jq -r '.[0].path' main/docs/versions.json)
+          printf '<!DOCTYPE html>\n<meta charset="utf-8">\n<meta http-equiv="refresh" content="0; url=%s">\n<link rel="canonical" href="%s">\n<a href="%s">Egami docs</a>\n' \
+            "$newest" "$newest" "$newest" > pages/index.html
+          touch pages/.nojekyll
+          commit=$(git -C source rev-parse --short HEAD)
+          cd pages
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "Docs: ${FOLDER%/} from $REF ($commit)"
+          git push origin gh-pages
