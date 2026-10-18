@@ -48,7 +48,8 @@ Every user-visible change updates the docs in the same commit:
 - Code shown in docs lives in `tests/Egami.DocSamples/` as `#region` blocks and is compiled and run with the tests; guides
   include it with `[!code-csharp[](../../../tests/Egami.DocSamples/File.cs#region)]`. XML `<example>` tags point at the same
   regions. Never paste untested code into a guide.
-- An entry under `## Unreleased` in `CHANGELOG.md`, grouped by feature or package version.
+- An entry in `CHANGELOG.md` under the package's next version (`## Egami.Fonts 1.1.0 (unreleased)`; add that heading if it is
+  not there yet), grouped by feature.
 - A new package also goes into `docs/docfx.json` (API reference) and `docs/articles/packages.md`.
 - `python tools/check-docs.py <package folder>` must pass for every package you touched.
 

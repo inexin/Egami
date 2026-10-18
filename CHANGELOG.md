@@ -3,9 +3,54 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Unreleased
+## Egami 1.0.0 (unreleased)
 
-Additive to the 1.0 API: nothing in it changes or goes away.
+The first public release.
+
+### Formats
+
+- PNG and APNG: every color type and bit depth, interlaced, transparency, text, EXIF, XMP, ICC; writing with adaptive filtering,
+  built palettes and changed-rectangle animation.
+- JPEG: baseline and progressive, any subsampling, gray, CMYK and YCCK, scaled decode, pixels identical to libjpeg-turbo;
+  writing at quality 1 to 100 with optimized Huffman tables, EXIF, XMP and ICC.
+- GIF: every disposal, interlaced, transparency, loop count; writing with exact or quantized palettes (Wu's quantizer,
+  Floyd–Steinberg or ordered dithering) and frame optimization.
+- BMP: every Windows and OS/2 2.x header, 1 to 32 bits, RLE4, RLE8, RLE24, bit fields, embedded PNG and JPEG; writing 24 and
+  32-bit and 1, 2, 4 and 8-bit palettes.
+- TGA: color-mapped, true-color and gray, raw and RLE, all origins, the TGA 2.0 footer and extension area.
+- QOI: the whole format, with output byte-identical to the reference encoder.
+- PBM, PGM, PPM and PAM: plain and binary, any maxval.
+
+### Operations
+
+Resize, fit and cover with six filters, in encoded or linear light; crop, pad, flip, rotate, auto-orient; brightness, contrast,
+saturation, hue, sepia, grayscale, invert, opacity and color matrices; Gaussian and box blur, unsharp mask and any convolution;
+source-over drawing of whole images or areas. Chains are planned before they run and run in parallel bands of rows.
+
+### Core
+
+- Nine pixel types, and outside pixel types through `IPixelType<TSelf>`.
+- Editable frames for animations; per-frame delays and loop counts.
+- Typed EXIF reading and editing; XMP, ICC, text and resolution kept through edits and saves.
+- Safety limits checked before any allocation; lenient or strict recovery from damaged files.
+- Pooled pixel memory with live usage counts and opt-in leak tracking.
+- Custom operations and formats through public interfaces, including animated formats.
+
+### Diagnostics
+
+- `EgamiContext.Diagnostics` takes an `Action<EgamiDiagnostic>` that receives Egami's warnings and notable decisions, so one line
+  sends them to `ILogger`, Serilog or the console; Egami takes no logging dependency. Off by default and free: with no handler
+  nothing is built, and a load or save allocates exactly what it would without diagnostics.
+- Each `EgamiDiagnostic` has a level (`Warning`, `Info`, `Debug`; `EgamiContext.DiagnosticLevel` sets the lowest delivered), a
+  source, a stable id such as `Png.ChecksumMismatch`, a message, and the byte offset and frame when known. Every id is listed in
+  the diagnostics article.
+- `RasterMetadata.Warnings` is an `IReadOnlyList<EgamiDiagnostic>`: every problem a lenient read recovered from, with its id. One
+  id is kept at most 10 times per call, then counted; the handler gets the same list as each call ends.
+- Saves report what they lose without being asked (alpha, depth, CMYK inks, frames, metadata the format cannot hold), and Info
+  and Debug events say what Egami chose: the format detected, a scaled decode, conversion on load, writer settings, parallel
+  bands, chain planning.
+- `EgamiContext.StartDiagnostics()` and `EgamiInput.Diagnostics` let format plug-ins and other libraries report through the same
+  handler, filter and cap; `EgamiInput.Warn` takes an id.
 
 ### Package icons
 
@@ -29,24 +74,6 @@ Additive to the 1.0 API: nothing in it changes or goes away.
 - `Lighting` takes the spot cone and specular shine from a power table and writes Rgba8 and Bgra8 bytes directly: on a
   2000 × 2000 logo a distant light takes 15 ms (was 27) and a specular spot 38 ms (was 70), within a level of before.
 - `Emboss` reads and writes Rgba8 and Bgra8 bytes directly, twice as fast with the same pixels.
-
-### Windows metafiles (new package Egami.Metafiles 0.1)
-
-- `Metafile` reads WMF (placeable or not), EMF and EMF+ files and their gzip forms WMZ and EMZ, and plays them onto any
-  Egami.Drawing canvas, so pictures from Word, Excel and Visio stay vectors in PDF and SVG output and rasterize on any OS.
-  `Draw` stretches the picture's frame to a box as Word does; `Rasterize` draws at a DPI or a size. Kind, size, frame,
-  DPI and description come from the header, matching GDI+ and Pillow on 2,106 of 2,111 corpus files (the other five are WMFs
-  without a placeable header, sized by their window extent).
-- The GDI records play as GDI does: map modes, world transform, pens, brushes, hatches and pattern brushes, paths, clip
-  regions, bitmaps and raster operations, gradients and text. Drawn aliased, the test files match Windows GDI within a mean of
-  one level and 99% of pixels within 16 levels; text within a looser bound. Text keeps the file's glyph positions in a
-  substitute face (Carlito for Calibri, Liberation for Arial, Times New Roman and Courier New, and your own substitutions).
-- EMF+ records play as GDI+ plays them: transforms and containers, clips, gradients (path gradients as meshes), pens with
-  dashes, compound lines and caps, images (JPEG and PNG passed to PDF unchanged, nested metafiles as vectors), image
-  effects, `DrawString` and `DrawDriverString`; dual files draw their EMF+ records, or their GDI part with
-  `MetafilePlayback.Gdi`.
-- `MetafileFormat` lets `Raster.Load` and `Raster.Probe` read metafiles (opt-in, as SVG). Drawing the 2,111-file corpus
-  takes 0.74 times what GDI+ takes.
 
 ### FOGRA39 print profile
 
@@ -434,436 +461,6 @@ equal to libwebp's.
 - `RasterOps.InnerShadow`: a shadow inside the alpha shape, cast by everything outside it, as an editor's inner shadow layer
   style; exactly the chain written by hand.
 
-### Egami.Fonts 1.0.0
-
-The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Glyph ids stay `ushort` for all of 1.x.
-Settled in the 1.0 API review, changes from 0.2.0:
-
-- Fixed: shaping a run longer than 65,536 characters threw on a thread that had shaped a short run before, because the shaper
-  kept the short run's limits. Each run now gets limits from its own length.
-- Breaking: `FontCollection.System` is read-only; `Add`, `AddFile` and `AddDirectory` on it throw `InvalidOperationException`.
-  To match your own fonts beside the installed ones, call the new `FontCollection.AddSystemFonts` on a collection of your own:
-  it copies the installed-font index, and the faces load with that collection's options.
-- Breaking: `IndicSyllabicCategory`, `IndicPositionalCategory` and `UnicodeData.GetIndicSyllabicCategory` and
-  `GetIndicPositionalCategory` are internal. The shaper still uses them; they were shaping data rather than a public feature.
-- `default(Font)` has no typeface: its metrics, advances, `Shape` and `MeasureText` now throw `InvalidOperationException`
-  instead of a `NullReferenceException` or `ArgumentNullException` from deeper in.
-- `Font.MeasureText(ReadOnlySpan<char>, ShapingOptions?)` measures a slice of a longer text or a reused buffer without making a
-  string of it. Measuring a string allocates about 8% less than before.
-- `IGlyphOutlineSink`, `IColorPaintVisitor`, `IFontFallbackResolver` and `ITextPaint` are frozen as they are; a member added
-  in 1.x comes as a default interface method, so your implementations keep compiling.
-- `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
-  face on each call.
-
-### Egami.Metafiles 0.1.1
-
-- It depends on Egami.Drawing 1.0.0 and Egami.Fonts 1.0.0; nothing else changes.
-
-### Egami.Css 1.0.0
-
-The API is stable now: 1.x versions add to it without breaking your code. Changes from 0.2.0:
-
-- `CssAttribute`, `CssPage`, `CssRange` and `CssTransformOrigin` declare their `ToString`, so it is annotated as returning a
-  non-null string. The text is the same as before.
-- `ICssElement` is frozen as it is; a member added in 1.x comes as a default interface method, as `MatchesPseudoClass` already
-  is, so your element trees keep compiling.
-
-### Egami.Svg 1.0.0
-
-The API is stable now: 1.x versions add to it without breaking your code. It runs on Egami.Css 1.0.0 and Egami.Fonts 1.0.0;
-nothing else changed from 0.1.0.
-
-### Egami.Css 0.2.0
-
-Additive to 0.1.0, for Egap's HTML reader (Egap Phase 6 Design Q15). See [CSS](docs/articles/guides/css.md).
-
-- `CssPropertyRegistry.CreateDefault` knows the box properties (`margin`, `padding`, `border` with its sides and
-  `border-radius`, `width` and `height` with their `min-` and `max-` forms, `box-sizing`), backgrounds (the `background-*`
-  layers and the `background` shorthand), `list-style`, the table properties, `float`, `clear`, `overflow`, the
-  fragmentation properties (`break-*`, `orphans`, `widows`, `page` and the legacy `page-break-*` as shorthands) and
-  `content` with the counters, each with its value grammar, so invalid declarations are dropped as browsers drop them.
-- `@page` is interpreted: `CssPageRule` with `CssPageSelector`s (page type names and `:first`, `:left`, `:right`,
-  `:blank`, with their specificity) and `CssPageMarginRule`s for the sixteen `CssMarginBox`es. `CssCascade.CascadePage`
-  cascades them for a `CssPage` into a `CssPageStyle`, and `CssPageSize` reads `size`, page size names included.
-- `overflow` is now a shorthand of `overflow-x` and `overflow-y`; Egami.Svg reads the two longhands and draws as before.
-
-### Egami.Svg 0.1.0 and Egami.Css 0.1.0
-
-Two new packages, first released at 0.1; their API may still change while they are 0.x. See [SVG](docs/articles/guides/svg.md) and [CSS](docs/articles/guides/css.md).
-
-- `SvgDocument` loads SVG and SVGZ into an editable tree of `SvgElement`, `SvgAttribute` and text, with a locked-down XML reader:
-  internal DTD entities are capped, nothing outside the file is opened unless an `SvgLoadOptions.Resolver` allows it
-  (`SvgResolvers.SameDirectory`), and element, depth and size limits come from `SafetyLimits`. A lenient load reports what it
-  skips as `Svg.*` warnings; a strict one throws `SvgException` with the line and column. `Save` writes the tree back with its
-  declaration, DOCTYPE, comments and foreign namespaces, numbers set in code at `SvgSaveOptions.Precision`.
-- Styles cascade with Egami.Css: `style` elements with media queries, the `style` attribute and presentation attributes.
-- Drawing follows resvg where SVG leaves a choice: shapes, fills, strokes, paint-order, markers, nested svg, use and symbol,
-  linear and radial gradients, patterns, Inkscape's mesh gradients, clip paths, masks, opacity, blend modes, raster and SVG
-  images and switch. `Rasterize` draws into a new raster at the document's size, a scale or a target size; `Draw` draws on any
-  Egami.Drawing canvas, the whole document or one element by id; `RenderTree` exposes the resolved `SvgNode` tree.
-- Text: x, y, dx, dy and rotate lists, tspan, tref and textPath, text-anchor, the baseline properties, letter-spacing,
-  word-spacing, textLength and lengthAdjust, decorations, vertical writing and font variations, laid out as resvg lays text
-  out and drawn as `SvgTextRun` glyph runs (`SvgRenderOptions.TextAsPaths` draws outlines). `SvgLoadOptions.Fonts`
-  (`SvgFontOptions`) gives the fonts: the caller's collection, the document's `@font-face` rules, then the machine's unless
-  turned off. SVG 2's wrapped text: `inline-size` lines as 2.8.2's paragraph layout fills them, and `shape-inside` text flowed
-  into shapes as Inkscape flows it (16 of 20 samples match Inkscape's export).
-- OpenType SVG glyphs: `SvgGlyphRenderer.Instance` draws an SVG table's glyphs in color. Egami.Drawing gains the hook it
-  plugs into, `IColorGlyphRenderer` on `CanvasOptions.ColorGlyphs`, asked after COLR version 1 and before COLR version 0,
-  sbix and CBDT.
-- Filters: every SVG 1.1 primitive, feDropShadow and the CSS filter functions, in linearRGB or sRGB, run in a raster lined up
-  with the device pixels (`SvgRenderOptions.FilterScale` sets its resolution on vector canvases). feGaussianBlur is SVG's three
-  box blurs on premultiplied colors; feConvolveMatrix and the lighting primitives follow the specification's kernels.
-- `SvgCanvas` writes any Egami.Drawing canvas drawing as SVG: paths, strokes and dashes, gradients, patterns, pictures,
-  clips, layers with opacity, CSS blend modes and masks, images and text as glyph outlines or `text` elements, with shared
-  `defs` (`SvgWriteOptions`). What SVG cannot express is drawn by Egami into an embedded PNG and reported as
-  `Svg.FallbackImage`. Read back by Egami.Svg its files draw like the canvas calls, and Chromium and Inkscape open them cleanly.
-- `SvgFormat.Info` registers SVG and SVGZ as an Egami format with `EgamiContext.WithFormat`, so `Raster.Load` draws a file at
-  its own size (times `SvgDecodeOptions.Scale`) and `Raster.Probe` gives the size without drawing. It is found by its `svg`
-  root, opens nothing outside the file, and only reads. Detection now passes data shorter than the longest registered
-  signature to every format, as `SignatureMatcher` describes, so short SVG files are found.
-- Gates: on resvg's own test suite, 94 to 100% of the shapes, painting, structure, paint-server and masking tests match resvg's
-  reference renders (at most 0.5% of pixels differ, allowing a one-pixel shift; deviations are listed with reasons in
-  egami-compare), 99% of the filter tests and 98.7% of the text tests (78% of the text tests are also close to
-  Chromium's renders); 196 of the 200 corpus files
-  match resvg's CLI. Seven of eight mesh samples match Inkscape's export.
-- Speed, one thread, on 200 real files: loading and drawing them takes 0.92 s, against 2.0 s for Svg.Skia, 3.1 s for the resvg
-  CLI (which also writes PNG; Egami does that in 1.4 s) and 9.5 s for resvg's library with text on (0.69 s with text off).
-  resvg's text chapter takes 0.12 s against Svg.Skia's 0.45 s and resvg's 26 s; its filter chapter 0.91 s against 1.25 s and
-  12 s.
-- A fuzz target for Load, Rasterize and Save (`svg` in tests/Egami.Fuzz); its first runs found image data that was damaged
-  after its header made drawing throw, and images are now decoded when the document is read.
-- Egami.Css parses CSS Syntax 3, matches Selectors 4 over any `ICssElement` tree, cascades with specificity, `!important`,
-  custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts. It stays a preview
-  until Egap's HTML reader has used it.
-
-### Egami.Fonts 0.2.0: font data for PDF
-
-What a PDF font needs to reach its glyphs, public before Egami.Fonts 1.0. See [Font data for PDF](docs/articles/guides/text.md#font-data-for-pdf).
-
-- `Typeface.GetGlyphName` and `TryGetGlyphByName`: names from a name-keyed CFF font's charset (the Expert and ExpertSubset
-  charsets included) or the post table, versions 1, 2 and 2.5.
-- `Typeface.CidSystemInfo` (`CidSystemInfo`), `GetCid` and `TryGetGlyphByCid` for CID-keyed CFF, bare or in OpenType.
-- `Typeface.CharacterMaps` and `FindCharacterMap`: every cmap subtable as stored (`CharacterMap`, `CharacterMapping`), with
-  format 2 newly read; `Typeface.BuiltInEncoding`, a CFF font's own encoding as a platform 7 map, as FreeType gives it.
-- `CffStandardStrings`: the 391 CFF standard strings and the Standard and Expert encodings.
-- On the 1,723 font programs embedded in Egap's PDF corpus, names, CIDs, subtables and built-in encodings equal FreeType's and
-  fontTools' (FreeType's where they differ: the first of overlapping format 4 segments wins, and a code past the font's glyphs
-  maps to 0). The Expert Encoding gives code 175 Macronsmall, as pdf.js does, where FreeType repeats Dotaccentsmall.
-- Fixes: a CID-keyed CFF font's Font DICT FontMatrix now applies before the Top DICT's, so a font whose Font DICTs scale by
-  1/2048 (pdf.js's text_clip_cff_cid.pdf) draws its glyphs at their size rather than about twice it; outlines and advances
-  equal FreeType's on every CID-keyed CFF in the corpus. A CFF DICT with a reserved operator (pdf.js's bug1308536.pdf) loads,
-  the operator skipped as FreeType, PDFium and pdf.js skip it. A cmap format 6 subtable whose count runs past the table keeps
-  the entries there are.
-- A `fontdata` fuzz target reads every name, CID, subtable and encoding of what loads; the font targets do too.
-
-### Egami.Fonts 0.1.0
-
-Egami.Fonts' first release, beside Egami.Drawing 0.1.0: everything in the 1.0.0 previews below, from reading faces to shaping
-and paragraph layout. Its API may still change while it is 0.x.
-
-### Egami.Fonts 1.0.0-preview.4: paragraph layout
-
-Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same preview package. See
-[Paragraph layout](docs/articles/guides/paragraph-layout.md).
-
-- `LineBreaks.Enumerate`: UAX #14 break opportunities (Unicode 17) with CSS's `word-break`, `overflow-wrap` and `line-break`
-  strictness and the Chinese, Japanese and Korean rules; LineBreakTest.txt passes in full.
-- `Paragraph.Create` takes a string or `RichText` (`RichTextBuilder`: nested `TextStyle` spans and inline `Placeholder` boxes)
-  and a `ParagraphStyle`; `Layout(width)` gives a `TextLayout` of `TextLine`s and `LayoutRun`s with shaped glyph runs, per
-  character font fallback in CSS's order, bidi per line, alignment and justification (`TextJustify`), tabs and tab stops,
-  line heights and struts, soft hyphens, balanced filling, `MaxLines` and `MaxHeight` with an ellipsis, and vertical writing
-  (`WritingMode`, `TextOrientation`). `LineFlow` lays out a line at a time at changing widths, for columns and wrap-around.
-- Interaction: `HitTest`, `GetCaret` (with a second caret at bidi boundaries and GDEF ligature carets), `MoveCaret`,
-  `GetSelectionRects`, word and line boundaries; min-content and max-content widths, ink bounds and placeholder boxes.
-- Decorations: underline, overline and line-through, solid, double, dotted, dashed or wavy, with skip-ink, as
-  `TextLayout.Decorations`; `TextLayout.ToPath` writes glyphs and decorations to an outline sink.
-- Gates: line breaks, line boxes, glyph origins, intrinsic widths, ellipses, hit tests, carets, selections and decoration ink
-  equal headless Chromium 129's on a corpus of eleven scripts at five widths and the feature cases (the few differences are
-  Chromium's own, listed in the tests). Breaking 1 MB of mixed text takes 17 ms;
-  a 2,000-word page at three widths 7.8 ms; 10,000 hit tests 19 ms.
-- Fuzz target `paragraph`, and a robustness suite on the same harness.
-
-### Egami.Drawing 1.0.0
-
-The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Settled in the 1.0 API review, changes from 0.1.0:
-
-- `CanvasOptions.ColorGlyphs` is `ColorGlyphRenderer`; `Canvas.ColorGlyphRenderer`, `DrawColorGlyphs` and `DrawRendererGlyphs`
-  are `protected`, so other backends draw color glyphs as the raster backend does.
-- `OnDrawLattice` is `OnDrawImageLattice`; `OnDrawImageMask` takes its arguments in `DrawImageMask`'s order.
-- `EncodedImage.FromBytes` and `FromFile` are `EncodedImage.Load`, from a path, a stream or bytes, as `Raster.Load`.
-- `PathOps.Combine` is `Path.Combine`; `Path.Offset` is `Path.Inflate`.
-- `Patch.Coons` and `Patch.Tensor` take corner texture coordinates before values, as `Mesh` does; `Patch.ToTensorNet` returns
-  read-only memory; `DrawMesh`'s paint is optional, as `DrawPatch`'s.
-- `NoiseType` is `NoisePaintKind` (`Fractal`, `Turbulence`, `Simplex`), `NoisePaint.Type` is `Kind`, and the tile parameter is
-  `tileSize` everywhere.
-- `TextAnchor.Middle` and `VerticalAlign.Middle` are `Center`.
-- New hook `OnClear`, so a document backend can write a clear; `GlyphCache.ByteLimit` is documented as process-wide.
-- Fixed: a non-isolated layer merged with a blend mode other than source-over blended the backdrop it started from with itself;
-  the backdrop's part is now removed first, as PDF's non-isolated groups require (ISO 32000 11.4.8). Found by Egap's renderer.
-
-Printing with inks:
-
-- `InkCanvas` draws on an `InkRaster` with every `Canvas` call (`InkCanvasOptions`: what RGB means, intent, black point
-  compensation): RGB colours, gradients and images convert into the process inks; ink colours print their plates.
-  `Clear(InkColor)` and `DrawImage(InkRaster)` are its own. Blend modes, groups (isolated, non-isolated, knockout) and soft
-  masks follow ISO 32000-2 plate by plate; every plate is within 2 levels of Ghostscript 10.05's tiffsep on the gate scenes.
-- Ink paints: `SolidPaint(InkColor)`, `GradientStop(offset, InkColor)`, `Mesh.WithInks` and `Patch.WithInks`. Every other
-  backend draws their appearance.
-- `Paint.Overprint` (`Off`, `On`, `NonZero`, PDF's overprint and overprint mode 1): plates a fill does not paint keep what is
-  under them. RGB canvases ignore it, as PDF viewers do by default.
-- `LayerOptions.ColorSpace`: a layer blends in an RGB or gray space and converts into the inks as it merges; spots stay plates.
-- Pictures keep ink paints, overprint and layer colour spaces; .egdr 1.1 holds them in an INKS chunk, which 1.0 readers skip
-  to draw the appearances.
-
-### Egami.Drawing 0.1.0
-
-Egami.Drawing's first release: everything in the 1.0.0 previews below, from the canvas and paths of 2.6.1 to the meshes,
-patches, pictures and document hooks of 2.6.4 and the text drawing since. Its API may still change while it is 0.x; 1.0 freezes
-it once Egap's PDF canvas has drawn real pages through the canvas hooks.
-
-- `LayerOptions.Knockout` for PDF's knockout groups and `DrawImageMask` (hook `OnDrawImageMask`) for its stencil masks, drawn
-  exactly by the raster backend; pictures and .egdr keep them (for Egap's PDF renderer).
-- `Canvas.RasterizeFallback` scales a paint's mask blur with the raster, so a blur drawn through a PDF page's fallback at
-  300 dpi keeps its size; layer filter and backdrop chains run on the raster's pixels as they are (found by Egap's PDF canvas).
-
-### Egami.Drawing 1.0.0-preview.7
-
-- `Canvas.DrawTextLayout` draws a laid-out paragraph in CSS's order (shadows, backgrounds, underlines, glyphs and placeholders,
-  line-throughs), skipping lines outside the clip; an ellipsis or a soft hyphen's hyphen is marked content with ActualText.
-  `Canvas.DrawText` into a `RectF` with `VerticalAlign` lays out and draws in one call, and `TextLayout.ToPath(origin)` gives a
-  `Path`. Drawn paragraphs are within 2 levels of the exact coverage on over 99% of pixels, closer than SkiaSharp, and drawing
-  costs at most 10% over drawing the glyph runs alone.
-
-### Egami.Fonts 1.0.0-preview.3: text shaping
-
-OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's, in the same preview package. See
-[Unicode text and shaping](docs/articles/guides/unicode-text.md).
-
-- Unicode 17.0 in `Egami.Fonts.Unicode`, from Egami's own tables (never the runtime's): `UnicodeData` (categories, scripts and
-  script extensions, bidi, joining, combining, Indic, vertical orientation, East Asian width, emoji properties), `Bidi.Resolve`
-  (UAX #9 with isolates, brackets and mirroring; `BidiResult.Reorder` for a line), `TextSegmenter` graphemes and words (UAX #29)
-  and `Script` with its OpenType tags. Unicode's BidiTest, BidiCharacterTest, GraphemeBreakTest and WordBreakTest pass in full.
-- `TextShaper.ShapeRun` shapes one run into a reusable `GlyphBuffer` (glyph ids, UTF-16 clusters, `GlyphFlags`, positions) with
-  every GSUB and GPOS lookup type, FeatureVariations, the variation deltas of variable fonts, vertical runs (vmtx, VORG, VVAR) and
-  HarfBuzz's script shapers: Arabic and its family (with fallback shaping from the presentation forms), Hebrew, the nine Indic
-  scripts, Khmer, Myanmar, Thai and Lao, Hangul and the Universal Shaping Engine. `RunProperties` give the script, BCP 47 language,
-  direction, `FontFeature`s (HarfBuzz's syntax: `FontFeature.Parse("liga=0")`) and `ClusterLevel`.
-- `TextShaper.Shape` shapes whole text: lines at hard breaks, bidi, script and span runs (`ShapingOptions`, `TextSpan`) and font
-  fallback per grapheme cluster (`FontFallback`, `IFontFallbackResolver`, the opt-in `SystemFontFallback`), returning `ShapedText`.
-- `Font.Shape` and `Font.MeasureText` take `ShapingOptions` and shape with all of the font's features; text without ligature or
-  mark rules gives 2.7.1's glyphs and positions. `GlyphRun` gains `BidiLevel`, `Script` and `Language`.
-- `Typeface.Layout` lists scripts, language systems and features and gives `GetClosure`, hb-subset's GSUB closure;
-  `SubsetOptions.LayoutClosure` keeps it and the layout tables, for subsets that are shaped again.
-- Gates: glyphs, clusters, positions and flags equal hb-shape 14.5.1's on all 276 AOTS tests, 4,974 of HarfBuzz's 4,987
-  in-house tests (the rest test fonts without outlines, the Zawgyi encoding, repeated axis tags, other shapers and output Egami
-  leaves out) and 24 corpus runs in 15 scripts; the closure equals HarfBuzz's on 1,116 cases. Shaping English, Arabic and
-  Hindi pages takes 3.7, 7.5 and 13.4 ms, about half HarfBuzzSharp's speed.
-- Fuzz targets `shaping` and `bidi`.
-- From the API review: a font with no glyph data (a subset made for shaping) loads with empty glyphs and a `Font.MissingTable`
-  warning; `WithVariations` sets every axis of a repeated tag; the cmap subtable is chosen as HarfBuzz chooses it (a symbol
-  subtable first, Windows 3.1 Arabic font pages through their private use characters), for drawing and shaping alike.
-
-### Egami.Drawing 1.0.0-preview.6
-
-- `Canvas.DrawText` takes `ShapingOptions` and draws shaped text (with fallback fonts when the options list them);
-  `Canvas.DrawShapedText` draws a `ShapedText` shaped once. Latin text draws as before, at the same speed.
-
-### Egami.Fonts 1.0.0-preview.2
-
-Web, variable and color fonts, in the same preview package. See [Variable fonts](docs/articles/guides/text.md#variable-fonts),
-[Color fonts](docs/articles/guides/text.md#color-fonts) and [Faces](docs/articles/guides/text.md#faces).
-
-- WOFF and WOFF2 load wherever TrueType and OpenType do (`Typeface.FromFile`, `FromMemory`, `FontLoader`, `FontCollection`
-  directory scans): WOFF with the BCL's zlib, WOFF2 with its Brotli decoder and the glyf, loca and hmtx transforms, WOFF2
-  collections too. `Typeface.Container` says which container a face came in; `GetWoffMetadata` and `GetWoffPrivateData` return the
-  extra blocks. Every decoded table equals fontTools' and the reference woff2 decoder's. Four WOFF2 files load in 15 to 21 ms.
-- Variable fonts: `Typeface.VariationAxes` (`VariationAxis`), `NamedInstances` (`NamedInstance`), `IsVariable`, `Variations`, and
-  `WithVariations` and `WithNamedInstance`, which return a face at a position sharing the font's memory (positions are cached).
-  `FontVariation` with `Weight`, `Width`, `Slant`, `Italic` and `OpticalSize`; avar 1 and 2; gvar with shared and private points,
-  intermediate regions, IUP, composites and phantom points; CFF2 with blend and vsindex; HVAR, MVAR and GDEF variation deltas, so
-  outlines, advances, extents, kerning and font metrics all vary. Each equals fontTools at 25 positions of five variable fonts.
-  Names and PostScript names follow the position.
-- `FontCollection` matching picks a position inside a variable family's weight, width and slant ranges by CSS Fonts 4 rules, as
-  well as its named instances. `Font.OpticalSizing` (Auto by default) sets the opsz axis to the font size;
-  `Font.EffectiveTypeface` is the face drawn.
-- Static instances: `SubsetOptions.Variations`, or subsetting a face at a position, writes a static TrueType or CFF font with the
-  outlines, advances and metrics at that position and no variation tables, equal to fontTools' instancer; glyphs keep their
-  overlaps and are marked OVERLAP_SIMPLE or OVERLAP_COMPOUND as fontTools marks them. They open in fontTools and FreeType. An
-  instance subset to 200 glyphs takes under 1 ms.
-- Color fonts: `Typeface.ColorFormats`, `Palettes` (`FontPaletteInfo`, from CPAL), `HasColorGlyph`, `TryGetColorGlyph` and
-  `TryGetSvgDocument`. COLR v0 layers and the full COLR v1 paint graph (solid, linear, radial and sweep gradients with their color
-  lines, glyph and color-glyph references, transforms, composites, clip boxes, variable paints) come as `ColorGlyph` trees with a
-  visitor; sbix and CBDT images as `BitmapColorGlyph` with the strike nearest the size. `FontPalette` (Default, Light, Dark, an
-  index and color overrides) and `Font.Palette`; `Font.ColorGlyphs` turns color off. Paint trees, colors, clips and images equal
-  fontTools'; cycles and graphs deeper than 64 paints are cut with the `Font.BadColorGlyph` warning.
-- Rendering settings for canvases: `Font.Hinting` (`FontHinting.Light`: vertical-only snapping to blue zones from CFF or measured
-  from TrueType outlines, up to 48 pixels per em; no x value or advance moves), `Font.Subpixel` (quarter-pixel glyph origins, on
-  by default), `Font.Edging` (`FontEdging.Antialias`, `Alias`, `Lcd`), `Font.AllowSynthesis` with synthetic bold (an outset by
-  the size) and italic (a 14-degree slant), in outlines and bounds too.
-- `GlyphRun.CreateTransformed` and `GlyphRun.Transforms` (`GlyphTransform`, Skia's RSXform): a run whose glyphs each have their
-  own turn and scale, kept as text.
-- `FontOutlines.None` for bitmap-only faces. New warnings `Font.BadContainer` and `Font.BadColorGlyph`.
-- Fuzz targets `woff2`, `gvar`, `cff2`, `colr` and `instance`; their first 10-minute runs found five crashes, all fixed and kept as
-  regressions, and the reruns were clean.
-
-### Egami.Drawing 1.0.0-preview.5
-
-Text quality, text on a path and color glyphs. See [Rendering quality](docs/articles/guides/text.md#rendering-quality),
-[Text on a path](docs/articles/guides/text.md#text-on-a-path) and [Color fonts](docs/articles/guides/text.md#color-fonts).
-
-- The raster canvas draws `Font.Hinting`, `Subpixel` and `Edging`: each subpixel phase, edging and hinting gets its own cached
-  mask; LCD edging renders at three times the resolution along `CanvasOptions.PixelGeometry` with a 5-tap filter, and falls back to
-  grayscale with the `Text.LcdFallback` warning where it cannot be drawn (no geometry, a layer, a paint other than solid
-  source-over). Synthetic bold and italic draw on every backend. Glyphs whose contours overlap (variable fonts, and instances
-  marked so) are merged before rasterizing, so overlaps do not darken their edges.
-- `DrawTextOnPath` and `Font.ShapeOnPath` with `TextOnPathOptions` (start offset or fraction, anchor, baseline shift, side,
-  wrapping on closed paths), by SVG's textPath rules; the result is a transformed glyph run, so a PDF backend keeps it as text.
-  Transformed runs draw on the raster canvas through paths for turned glyphs and masks for the rest.
-- Color glyphs draw in color through ordinary canvas calls (clips by glyph outlines, solid and gradient fills, transforms and
-  layers with blend modes; images for sbix and CBDT), so every backend gets them; on a raster they are cached as premultiplied
-  images per palette and color. The glyph is one group under the paint's alpha; the paint's color fills foreground entries.
-  `PictureRecorder` and .egdr files keep color glyphs as the calls they draw with.
-- Gates against SkiaSharp 4.153: variable text at 12 to 48 pixels in five fonts and subpixel-positioned text at 9 to 24 pixels in
-  four within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area; COLR v0 and v1 glyphs within
-  a mean level of SkiaSharp's own drawing at 24 to 96 pixels, sbix and CBDT within 2. Aliased, LCD, light-hinted and synthetic text
-  are recorded against SkiaSharp's nearest settings.
-- Speed (ms, 1 thread): a 2,000-word page in Roboto Flex at 16 pixels draws in 20 at its default and at weight 700, width 75 alike;
-  a page of 500 COLR v0 emoji in 2.7 cold and 1.6 warm, and of COLR v1 emoji in 15 cold and
-  2.1 warm; plain text is within 10% of 2.7.1 (11.0 against 10.7 at 12 pixels).
-- Fixed: a curve under a transform so large that rounding split it again and again overflowed the stack.
-
-### Egami.Drawing 1.0.0-preview.4
-
-Advanced drawing, in the same preview package. See [Nine-patches and lattices](docs/articles/guides/drawing.md#nine-patches-and-lattices),
-[Meshes and patches](docs/articles/guides/drawing.md#meshes-and-patches), [Recorded drawings](docs/articles/guides/drawing.md#recorded-drawings)
-and [the .egdr format](docs/articles/guides/egdr-format.md).
-
-- `DrawImageNinePatch` and `DrawImageLattice` with `Lattice` (x and y divisions, bounds, `LatticeCellKind` and cell colors), as
-  Skia's; fixed spans shrink in proportion when the destination is small. The raster backend draws the cells as one mesh, so they
-  meet without seams, each sampled inside its own part of the image. `NinePatch.FromAndroid` reads .9.png markers into the
-  image, its lattice and its content padding. Within a mean level of SkiaSharp's drawImageNine and drawImageLattice.
-- `DrawAtlas` with `SpriteTransform` (Skia's RSXform) and optional colors combined by a blend mode; each sprite blends on its own.
-  Within a mean level of SkiaSharp's drawAtlas. 10,000 16-pixel sprites draw in 23 ms.
-- `Mesh` (`MeshMode` `Triangles`, `Strip` or `Fan`, with colors, texture coordinates, values and indices) and `DrawMesh`: the
-  triangles' union is filled once, antialiased on its outer edge only, so meshes have no cracks; Gouraud colors in the canvas's
-  color space, textures mapped through any paint, and per-vertex values mapped through gradient stops for PDF's mesh shadings.
-  Within a mean level of SkiaSharp's drawVertices.
-- `Patch.Coons` and `Patch.Tensor` with corner colors, values or texture coordinates and `DrawPatch`, cut into triangles until
-  they stray less than a quarter of a device pixel, later parts covering earlier ones where a patch folds, as PDF requires.
-  Within a mean level of SkiaSharp's drawPatch.
-- `PictureRecorder` records any canvas code into an immutable `Picture`: `DrawPicture` replays it under a matrix, with a paint
-  that merges it as one layer or as an image cached at the current scale; `Playback`, `ToRaster`. `PicturePaint` tiles a
-  drawing as a pattern rendered at the device scale. Within a mean level of SkiaSharp's drawPicture and picture shaders.
-- `Picture.Save` and `Picture.Load`: Egami's own documented binary format, .egdr, versioned and chunked, with images as PNG;
-  loading checks every count and number, honors `SafetyLimits` and bounds nesting and replay, and has a fuzz target (`egdr`).
-- For document backends: `DrawImage` with an `EncodedImage` (a file's bytes, probed and decoded only when needed, so a PDF page
-  can embed a JPEG as it is), `DrawAnnotation` with `Annotation` links and destinations as Skia's drawAnnotation, and
-  `BeginMarkedContent` and `EndMarkedContent` with `MarkedContent` tags for tagged PDF; hooks `OnDrawEncodedImage` (decodes by
-  default), `OnDrawAnnotation`, `OnBeginMarkedContent` and `OnEndMarkedContent` (nothing by default). Pictures and .egdr keep
-  them.
-- Backends get `OnDrawLattice`, `OnDrawAtlas`, `OnDrawMesh`, `OnDrawPatch` and `OnDrawPicture`, with defaults: images per cell or
-  sprite, meshes through the raster fallback, patches as meshes, drawings replayed.
-- Fixed: `DrawImage` under a transform that collapses the image threw; it draws nothing. Scaling overlapping `RoundRect` radii
-  was not idempotent; scaled radii now round down.
-
-### Egami.Drawing 1.0.0-preview.3
-
-Paints and layers, in the same preview package. See [Gradients](docs/articles/guides/drawing.md#gradients),
-[Layers](docs/articles/guides/drawing.md#layers) and [Blurs and shadows](docs/articles/guides/drawing.md#blurs-and-shadows).
-
-- Gradients: `LinearGradient`, `RadialGradient`, `ConicalGradient` (two circles, as the HTML canvas, Skia and PDF) and
-  `SweepGradient`, with `GradientStop`s, `TileMode` (`Clamp`, `Repeat`, `Mirror`, `Decal`), PDF's one-sided extend
-  (`ExtendStart`, `ExtendEnd`), mixing in encoded sRGB, linear sRGB, Oklab or Oklch with CSS Color 4's hue methods
-  (`GradientInterpolation`), premultiplied by default, and ordered `Dither` (off by default). Every paint has a `LocalMatrix`.
-  Within a mean level of SkiaSharp's gradients on every kind and tile mode.
-- `ImagePaint`: an image as a paint, tiled per axis, sampled with Egami's filters and from a `MipChain` level when shrunk; a
-  whole-pixel shift copies rows. Within a mean level of SkiaSharp's image shaders.
-- `NoisePaint`: SVG feTurbulence's `Fractal` and `Turbulence` (within a mean level of SkiaSharp's noise shaders unstitched) and
-  `Simplex`, smoother and exactly tileable.
-- `BlendPaint` (two paints with any blend mode), `Paint.WithColorMatrix` (`ColorMatrixPaint`) and `CustomPaint` (rows from C#,
-  the same at any core count; vector backends use the raster fallback).
-- Layers: `SaveLayer` with `LayerOptions` (`Bounds`, `Opacity`, `BlendMode`, `Filter` as any chain of Egami operations,
-  `Backdrop`, `Mask`, `Isolated`) and `SaveLayer(opacity)`; backends get `OnSaveLayer` and `OnRestoreLayer`. Layers are
-  premultiplied in the canvas's class and cover only their bounds in the clip, grown by the filter's reach. `SoftMask` with
-  `SoftMaskKind.Alpha` or `Luminosity`, a backdrop color and a transfer curve, as PDF soft masks. Within a mean level of SkiaSharp's
-  saveLayer with alpha and blend modes.
-- `Paint.Blur` with `MaskBlur` and `BlurStyle` (`Normal`, `Solid`, `Outer`, `Inner`), on Egami's fast blur, as Skia's blur mask
-  filter (within a mean level of SkiaSharp's in every style); axis-aligned rectangles are blurred exactly from the error
-  function. `DrawShadow` with `ShadowOptions`: ambient and spot shadows after Skia's shadow model.
-- Speed (ms, 2048 × 2048, 1 thread and 24 cores): a full-frame linear gradient 26 and 3.8;
-  radial 22 and 2.9; a tiled image brush 5.6 and 0.8. A full-frame half-opacity
-  layer costs 1.38 times the drawing inside it at 1 thread and 1.14 at 24.
-
-### Egami.Drawing 1.0.0-preview.2
-
-Path geometry, in the same preview package. See [Path geometry](docs/articles/guides/drawing.md#path-geometry).
-
-- Boolean operations on the curves themselves: `Path.Op` with `PathOp` (`Union`, `Intersect`, `Difference`, `Xor`,
-  `ReverseDifference`) and shortcuts, `Path.Simplify`, and `PathOps.Combine` for many paths in one pass. Results keep the inputs'
-  lines, quadratics and cubics, cut exactly where outlines cross, with outer contours clockwise and holes counterclockwise. Each
-  input keeps its fill rule. Area identities hold on 100,000 random cases and 10,000 nearly parallel ones, and results are within
-  a mean level of SkiaSharp's PathOps on the 2.6.2 corpus.
-- `Stroke.ToPath`: the outline a pen draws, which fills to exactly the stroke's pixels; `simplify: true` removes its overlaps.
-  `Path.Offset` grows or shrinks an area with a join.
-- `Stroke.Dash` with `DashPattern` (absolute lengths and a phase, as PDF, SVG and Skia; `Scaled` for width-relative patterns),
-  received by backends as data and cut along the curves by the raster backend.
-- `PathMeasure` and `ContourMeasure`: lengths by adaptive Gauss–Legendre quadrature (within 1e-4 units, and 1e-3 of SkiaSharp's
-  PathMeasure), positions, tangents, placing matrices and curve-keeping pieces.
-- `PathEffect`: `Dash`, `Corner`, `Trim`, `Jitter` (seeded, the same on every thread and machine), `Stamp` with `StampStyle`,
-  `Hatch` and `HatchPath`, combined with `Then` and `Plus`; `path.Apply` or `Stroke.Effect`. Within a mean level of SkiaSharp's
-  matching effects.
-- SVG path data: `Path.ParseSvg` (every command of SVG 1.1 and 2, compact numbers, arc flags without separators; throws
-  `SvgPathException` with the character position, or keeps what comes before an error with `lenient: true`), `TryParseSvg`, and
-  `ToSvg` with `SvgPathFormat` (absolute or relative, compact, a precision; relative offsets never drift). Fuzzed for 20 minutes.
-- Boolean speed (ms, 1 thread, best of 7): 100 random 12-gon pairs under four operations 28 against SkiaSharp's 39;
-  50 curved pairs 12.5 against 4.7; 200 letters unioned 24 against 503.
-
-### Egami.Drawing 1.0.0-preview.1
-
-A new package, over Egami's public API only, that draws antialiased paths, shapes, strokes, clips and images on a canvas. A
-preview: its API may change before 1.0. See the [Drawing guide](docs/articles/guides/drawing.md). Text arrives with Egami.Fonts,
-below.
-
-- `Canvas` is abstract: public calls are checked and tracked (transform, clip bounds, save stack) and each ends in one protected
-  hook, so other backends (a PDF page, a recorder) see shapes and pens as data. `RasterCanvas<TPixel>` draws into any pixel type;
-  `raster.CreateCanvas()` and the `Draw` operation step (per frame, inside `Within`) are the ways in.
-- `Path` (immutable lines, quadratics and cubics with a `FillRule`) and `PathBuilder` with SVG endpoint arcs, tangent arcs, rectangles,
-  round rectangles with per-corner radii (`RoundRect`, scaled as CSS does), ovals and polygons; `Contains`, `TightBounds`,
-  `IsConvex`, `Reverse` and `Transform` by a matrix or a homography.
-- Exact-area antialiasing: every pixel gets its covered area to 1/255, abutting shapes leave no seams, and results are identical at
-  any core count. Fills are within a mean level of SkiaSharp and closer than SkiaSharp to the exact area.
-- `Stroke` with butt, round and square caps, miter, round and bevel joins and a miter limit; width 0 is a one-pixel hairline.
-- Antialiased clips by rectangle, round rectangle or path, intersecting or cutting out; pixel-aligned rectangles are free, and a
-  fill through a mask costs about 1.16 times the plain fill.
-- `DrawImage` under the transform and clip with Egami's samplers; at whole-pixel placement it equals `DrawImage` in a chain.
-- Speed (ms, 1 thread): 1,000 small shapes 4.0, a 4000×4000 star 19.8 (4.8 on 24 cores), 10,000 icons 109, 200 thick curves
-  40, 10,000 hairlines 48.
-
-### Egami.Fonts 1.0.0-preview.1 and text on the canvas
-
-A new package, over Egami's public API only, that reads TrueType and OpenType fonts in managed code; Egami.Drawing uses it to draw
-text. A preview: its API may change before 1.0. See the [Fonts and text guide](docs/articles/guides/text.md).
-
-- `Typeface` loads TrueType, OpenType CFF (CID-keyed too), collections and bare CFF streams as PDF embeds them, lazily from one
-  block of memory; leniently by default, with `Font.*` diagnostics and documented defaults for missing or damaged tables, or
-  strictly. Names in every language, `FontStyle`, `FontEmbedding` (reported, never enforced), cmap formats 0, 4, 6, 10, 12, 13 and
-  14 with symbol and Mac Roman fonts, glyph outlines through `IGlyphOutlineSink` (TrueType quadratics, a Type 2 charstring
-  interpreter with subroutines, flex and seac), advances, glyph bounds, `FontExtents` by the browsers' vertical-metrics rule, and
-  GPOS pair kerning (or the kern table). Every table field, mapped code point, outline point, bound and sampled kerning pair of
-  the test fonts equals fontTools'.
-- `FontCollection` with `FontCollection.System`, found without native calls (503 installed faces indexed in 152 ms on first use),
-  names in any language, CSS Fonts 4 style matching with the synthesis a lighter or upright face wants, and generic families.
-- `FontSubsetter` writes TrueType, OpenType CFF or bare CID-keyed CFF subsets with composite and seac closure, dense or kept glyph
-  ids and unused CFF subroutines dropped; every subset re-loads with its glyphs unchanged and opens in fontTools and FreeType;
-  200 glyphs from a 16 MB CJK font in about 2 ms.
-- `Font` (a typeface at an em size in canvas units), `Font.Shape` (cmap, pair kerning, newlines) and `MeasureText`; `GlyphRun`
-  keeps the source text and a cluster per glyph. `Canvas.DrawText`, `DrawGlyphRun` and the `OnDrawGlyphRun` hook; small glyphs
-  are drawn from `GlyphCache` masks at whole pixels, which changes speed, not pixels; `GetGlyphPath`, `GetTextPath` and
-  `GlyphRun.ToPath`. Drawn text is within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area.
-- Speed: nine fonts load in 0.18 ms, 1,000 strings match and measure in 3.3 ms, and a 2,000-word page draws in 15 ms at 12
-  pixels.
-- Fuzz targets `font`, `cff` and `subset`. Shaping, bidi and wrapping come in 2.8; WOFF, WOFF2 and variable fonts in 2.7.2.
-
 ### Regions and masks
 
 - `Within(Rect, …)` runs any same-size chain so that only pixels inside the rectangle change. Filters read the real pixels
@@ -986,7 +583,7 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   `DrawImage` about 35% faster than on `Rgba8`.
 - `Alpha8`: an alpha-only mask. It reads as black with that alpha; converting a color to it keeps only the alpha.
 
-### Formats
+### PFM and more direct pixel types
 
 - PFM float maps (PF and Pf) in the Netpbm family: both byte orders, loaded as `RgbF32` or `GrayF32` in linear light, written
   little-endian; `.pfm` saves as PFM, and `PnmDetails` gains `Scale` and `LittleEndian`. New enum value `PnmKind.FloatMap`.
@@ -1062,51 +659,441 @@ text. A preview: its API may change before 1.0. See the [Fonts and text guide](d
   types no wider than 8 bits, and an unknown layout without alpha is written as RGB. Color operations never read premultiplied
   bytes as straight values.
 
-## 1.0.0 (unreleased)
+## Egami.Drawing 1.0.0 (unreleased)
 
-The first public release.
+The first public release. The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it.
 
-### Formats
+### Canvas, paths and shapes
 
-- PNG and APNG: every color type and bit depth, interlaced, transparency, text, EXIF, XMP, ICC; writing with adaptive filtering,
-  built palettes and changed-rectangle animation.
-- JPEG: baseline and progressive, any subsampling, gray, CMYK and YCCK, scaled decode, pixels identical to libjpeg-turbo;
-  writing at quality 1 to 100 with optimized Huffman tables, EXIF, XMP and ICC.
-- GIF: every disposal, interlaced, transparency, loop count; writing with exact or quantized palettes (Wu's quantizer,
-  Floyd–Steinberg or ordered dithering) and frame optimization.
-- BMP: every Windows and OS/2 2.x header, 1 to 32 bits, RLE4, RLE8, RLE24, bit fields, embedded PNG and JPEG; writing 24 and
-  32-bit and 1, 2, 4 and 8-bit palettes.
-- TGA: color-mapped, true-color and gray, raw and RLE, all origins, the TGA 2.0 footer and extension area.
-- QOI: the whole format, with output byte-identical to the reference encoder.
-- PBM, PGM, PPM and PAM: plain and binary, any maxval.
+Over Egami's public API only, it draws antialiased paths, shapes, strokes, clips and images on a canvas. See the
+[Drawing guide](docs/articles/guides/drawing.md). Text comes with Egami.Fonts, below.
 
-### Operations
+- `Canvas` is abstract: public calls are checked and tracked (transform, clip bounds, save stack) and each ends in one protected
+  hook, so other backends (a PDF page, a recorder) see shapes and pens as data. `RasterCanvas<TPixel>` draws into any pixel type;
+  `raster.CreateCanvas()` and the `Draw` operation step (per frame, inside `Within`) are the ways in.
+- `Path` (immutable lines, quadratics and cubics with a `FillRule`) and `PathBuilder` with SVG endpoint arcs, tangent arcs, rectangles,
+  round rectangles with per-corner radii (`RoundRect`, scaled as CSS does), ovals and polygons; `Contains`, `TightBounds`,
+  `IsConvex`, `Reverse` and `Transform` by a matrix or a homography.
+- Exact-area antialiasing: every pixel gets its covered area to 1/255, abutting shapes leave no seams, and results are identical at
+  any core count. Fills are within a mean level of SkiaSharp and closer than SkiaSharp to the exact area.
+- `Stroke` with butt, round and square caps, miter, round and bevel joins and a miter limit; width 0 is a one-pixel hairline.
+- Antialiased clips by rectangle, round rectangle or path, intersecting or cutting out; pixel-aligned rectangles are free, and a
+  fill through a mask costs about 1.16 times the plain fill.
+- `DrawImage` under the transform and clip with Egami's samplers; at whole-pixel placement it equals `DrawImage` in a chain.
+- Speed (ms, 1 thread): 1,000 small shapes 4.0, a 4000×4000 star 19.8 (4.8 on 24 cores), 10,000 icons 109, 200 thick curves
+  40, 10,000 hairlines 48.
 
-Resize, fit and cover with six filters, in encoded or linear light; crop, pad, flip, rotate, auto-orient; brightness, contrast,
-saturation, hue, sepia, grayscale, invert, opacity and color matrices; Gaussian and box blur, unsharp mask and any convolution;
-source-over drawing of whole images or areas. Chains are planned before they run and run in parallel bands of rows.
+### Path geometry
 
-### Core
+Path geometry. See [Path geometry](docs/articles/guides/drawing.md#path-geometry).
 
-- Nine pixel types, and outside pixel types through `IPixelType<TSelf>`.
-- Editable frames for animations; per-frame delays and loop counts.
-- Typed EXIF reading and editing; XMP, ICC, text and resolution kept through edits and saves.
-- Safety limits checked before any allocation; lenient or strict recovery from damaged files.
-- Pooled pixel memory with live usage counts and opt-in leak tracking.
-- Custom operations and formats through public interfaces, including animated formats.
+- Boolean operations on the curves themselves: `Path.Op` with `PathOp` (`Union`, `Intersect`, `Difference`, `Xor`,
+  `ReverseDifference`) and shortcuts, `Path.Simplify`, and `PathOps.Combine` for many paths in one pass. Results keep the inputs'
+  lines, quadratics and cubics, cut exactly where outlines cross, with outer contours clockwise and holes counterclockwise. Each
+  input keeps its fill rule. Area identities hold on 100,000 random cases and 10,000 nearly parallel ones, and results are within
+  a mean level of SkiaSharp's PathOps on the 2.6.2 corpus.
+- `Stroke.ToPath`: the outline a pen draws, which fills to exactly the stroke's pixels; `simplify: true` removes its overlaps.
+  `Path.Offset` grows or shrinks an area with a join.
+- `Stroke.Dash` with `DashPattern` (absolute lengths and a phase, as PDF, SVG and Skia; `Scaled` for width-relative patterns),
+  received by backends as data and cut along the curves by the raster backend.
+- `PathMeasure` and `ContourMeasure`: lengths by adaptive Gauss–Legendre quadrature (within 1e-4 units, and 1e-3 of SkiaSharp's
+  PathMeasure), positions, tangents, placing matrices and curve-keeping pieces.
+- `PathEffect`: `Dash`, `Corner`, `Trim`, `Jitter` (seeded, the same on every thread and machine), `Stamp` with `StampStyle`,
+  `Hatch` and `HatchPath`, combined with `Then` and `Plus`; `path.Apply` or `Stroke.Effect`. Within a mean level of SkiaSharp's
+  matching effects.
+- SVG path data: `Path.ParseSvg` (every command of SVG 1.1 and 2, compact numbers, arc flags without separators; throws
+  `SvgPathException` with the character position, or keeps what comes before an error with `lenient: true`), `TryParseSvg`, and
+  `ToSvg` with `SvgPathFormat` (absolute or relative, compact, a precision; relative offsets never drift). Fuzzed for 20 minutes.
+- Boolean speed (ms, 1 thread, best of 7): 100 random 12-gon pairs under four operations 28 against SkiaSharp's 39;
+  50 curved pairs 12.5 against 4.7; 200 letters unioned 24 against 503.
 
-### Diagnostics
+### Paints and layers
 
-- `EgamiContext.Diagnostics` takes an `Action<EgamiDiagnostic>` that receives Egami's warnings and notable decisions, so one line
-  sends them to `ILogger`, Serilog or the console; Egami takes no logging dependency. Off by default and free: with no handler
-  nothing is built, and a load or save allocates exactly what it would without diagnostics.
-- Each `EgamiDiagnostic` has a level (`Warning`, `Info`, `Debug`; `EgamiContext.DiagnosticLevel` sets the lowest delivered), a
-  source, a stable id such as `Png.ChecksumMismatch`, a message, and the byte offset and frame when known. Every id is listed in
-  the diagnostics article.
-- `RasterMetadata.Warnings` is an `IReadOnlyList<EgamiDiagnostic>`: every problem a lenient read recovered from, with its id. One
-  id is kept at most 10 times per call, then counted; the handler gets the same list as each call ends.
-- Saves report what they lose without being asked (alpha, depth, CMYK inks, frames, metadata the format cannot hold), and Info
-  and Debug events say what Egami chose: the format detected, a scaled decode, conversion on load, writer settings, parallel
-  bands, chain planning.
-- `EgamiContext.StartDiagnostics()` and `EgamiInput.Diagnostics` let format plug-ins and other libraries report through the same
-  handler, filter and cap; `EgamiInput.Warn` takes an id.
+Paints and layers. See [Gradients](docs/articles/guides/drawing.md#gradients),
+[Layers](docs/articles/guides/drawing.md#layers) and [Blurs and shadows](docs/articles/guides/drawing.md#blurs-and-shadows).
+
+- Gradients: `LinearGradient`, `RadialGradient`, `ConicalGradient` (two circles, as the HTML canvas, Skia and PDF) and
+  `SweepGradient`, with `GradientStop`s, `TileMode` (`Clamp`, `Repeat`, `Mirror`, `Decal`), PDF's one-sided extend
+  (`ExtendStart`, `ExtendEnd`), mixing in encoded sRGB, linear sRGB, Oklab or Oklch with CSS Color 4's hue methods
+  (`GradientInterpolation`), premultiplied by default, and ordered `Dither` (off by default). Every paint has a `LocalMatrix`.
+  Within a mean level of SkiaSharp's gradients on every kind and tile mode.
+- `ImagePaint`: an image as a paint, tiled per axis, sampled with Egami's filters and from a `MipChain` level when shrunk; a
+  whole-pixel shift copies rows. Within a mean level of SkiaSharp's image shaders.
+- `NoisePaint`: SVG feTurbulence's `Fractal` and `Turbulence` (within a mean level of SkiaSharp's noise shaders unstitched) and
+  `Simplex`, smoother and exactly tileable.
+- `BlendPaint` (two paints with any blend mode), `Paint.WithColorMatrix` (`ColorMatrixPaint`) and `CustomPaint` (rows from C#,
+  the same at any core count; vector backends use the raster fallback).
+- Layers: `SaveLayer` with `LayerOptions` (`Bounds`, `Opacity`, `BlendMode`, `Filter` as any chain of Egami operations,
+  `Backdrop`, `Mask`, `Isolated`) and `SaveLayer(opacity)`; backends get `OnSaveLayer` and `OnRestoreLayer`. Layers are
+  premultiplied in the canvas's class and cover only their bounds in the clip, grown by the filter's reach. `SoftMask` with
+  `SoftMaskKind.Alpha` or `Luminosity`, a backdrop color and a transfer curve, as PDF soft masks. Within a mean level of SkiaSharp's
+  saveLayer with alpha and blend modes.
+- `Paint.Blur` with `MaskBlur` and `BlurStyle` (`Normal`, `Solid`, `Outer`, `Inner`), on Egami's fast blur, as Skia's blur mask
+  filter (within a mean level of SkiaSharp's in every style); axis-aligned rectangles are blurred exactly from the error
+  function. `DrawShadow` with `ShadowOptions`: ambient and spot shadows after Skia's shadow model.
+- Speed (ms, 2048 × 2048, 1 thread and 24 cores): a full-frame linear gradient 26 and 3.8;
+  radial 22 and 2.9; a tiled image brush 5.6 and 0.8. A full-frame half-opacity
+  layer costs 1.38 times the drawing inside it at 1 thread and 1.14 at 24.
+
+### Advanced drawing
+
+Advanced drawing. See [Nine-patches and lattices](docs/articles/guides/drawing.md#nine-patches-and-lattices),
+[Meshes and patches](docs/articles/guides/drawing.md#meshes-and-patches), [Recorded drawings](docs/articles/guides/drawing.md#recorded-drawings)
+and [the .egdr format](docs/articles/guides/egdr-format.md).
+
+- `DrawImageNinePatch` and `DrawImageLattice` with `Lattice` (x and y divisions, bounds, `LatticeCellKind` and cell colors), as
+  Skia's; fixed spans shrink in proportion when the destination is small. The raster backend draws the cells as one mesh, so they
+  meet without seams, each sampled inside its own part of the image. `NinePatch.FromAndroid` reads .9.png markers into the
+  image, its lattice and its content padding. Within a mean level of SkiaSharp's drawImageNine and drawImageLattice.
+- `DrawAtlas` with `SpriteTransform` (Skia's RSXform) and optional colors combined by a blend mode; each sprite blends on its own.
+  Within a mean level of SkiaSharp's drawAtlas. 10,000 16-pixel sprites draw in 23 ms.
+- `Mesh` (`MeshMode` `Triangles`, `Strip` or `Fan`, with colors, texture coordinates, values and indices) and `DrawMesh`: the
+  triangles' union is filled once, antialiased on its outer edge only, so meshes have no cracks; Gouraud colors in the canvas's
+  color space, textures mapped through any paint, and per-vertex values mapped through gradient stops for PDF's mesh shadings.
+  Within a mean level of SkiaSharp's drawVertices.
+- `Patch.Coons` and `Patch.Tensor` with corner colors, values or texture coordinates and `DrawPatch`, cut into triangles until
+  they stray less than a quarter of a device pixel, later parts covering earlier ones where a patch folds, as PDF requires.
+  Within a mean level of SkiaSharp's drawPatch.
+- `PictureRecorder` records any canvas code into an immutable `Picture`: `DrawPicture` replays it under a matrix, with a paint
+  that merges it as one layer or as an image cached at the current scale; `Playback`, `ToRaster`. `PicturePaint` tiles a
+  drawing as a pattern rendered at the device scale. Within a mean level of SkiaSharp's drawPicture and picture shaders.
+- `Picture.Save` and `Picture.Load`: Egami's own documented binary format, .egdr, versioned and chunked, with images as PNG;
+  loading checks every count and number, honors `SafetyLimits` and bounds nesting and replay, and has a fuzz target (`egdr`).
+- For document backends: `DrawImage` with an `EncodedImage` (a file's bytes, probed and decoded only when needed, so a PDF page
+  can embed a JPEG as it is), `DrawAnnotation` with `Annotation` links and destinations as Skia's drawAnnotation, and
+  `BeginMarkedContent` and `EndMarkedContent` with `MarkedContent` tags for tagged PDF; hooks `OnDrawEncodedImage` (decodes by
+  default), `OnDrawAnnotation`, `OnBeginMarkedContent` and `OnEndMarkedContent` (nothing by default). Pictures and .egdr keep
+  them.
+- Backends get `OnDrawLattice`, `OnDrawAtlas`, `OnDrawMesh`, `OnDrawPatch` and `OnDrawPicture`, with defaults: images per cell or
+  sprite, meshes through the raster fallback, patches as meshes, drawings replayed.
+- Fixed: `DrawImage` under a transform that collapses the image threw; it draws nothing. Scaling overlapping `RoundRect` radii
+  was not idempotent; scaled radii now round down.
+
+### Text quality, text on a path and color glyphs
+
+Text quality, text on a path and color glyphs. See [Rendering quality](docs/articles/guides/text.md#rendering-quality),
+[Text on a path](docs/articles/guides/text.md#text-on-a-path) and [Color fonts](docs/articles/guides/text.md#color-fonts).
+
+- The raster canvas draws `Font.Hinting`, `Subpixel` and `Edging`: each subpixel phase, edging and hinting gets its own cached
+  mask; LCD edging renders at three times the resolution along `CanvasOptions.PixelGeometry` with a 5-tap filter, and falls back to
+  grayscale with the `Text.LcdFallback` warning where it cannot be drawn (no geometry, a layer, a paint other than solid
+  source-over). Synthetic bold and italic draw on every backend. Glyphs whose contours overlap (variable fonts, and instances
+  marked so) are merged before rasterizing, so overlaps do not darken their edges.
+- `DrawTextOnPath` and `Font.ShapeOnPath` with `TextOnPathOptions` (start offset or fraction, anchor, baseline shift, side,
+  wrapping on closed paths), by SVG's textPath rules; the result is a transformed glyph run, so a PDF backend keeps it as text.
+  Transformed runs draw on the raster canvas through paths for turned glyphs and masks for the rest.
+- Color glyphs draw in color through ordinary canvas calls (clips by glyph outlines, solid and gradient fills, transforms and
+  layers with blend modes; images for sbix and CBDT), so every backend gets them; on a raster they are cached as premultiplied
+  images per palette and color. The glyph is one group under the paint's alpha; the paint's color fills foreground entries.
+  `PictureRecorder` and .egdr files keep color glyphs as the calls they draw with.
+- Gates against SkiaSharp 4.153: variable text at 12 to 48 pixels in five fonts and subpixel-positioned text at 9 to 24 pixels in
+  four within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area; COLR v0 and v1 glyphs within
+  a mean level of SkiaSharp's own drawing at 24 to 96 pixels, sbix and CBDT within 2. Aliased, LCD, light-hinted and synthetic text
+  are recorded against SkiaSharp's nearest settings.
+- Speed (ms, 1 thread): a 2,000-word page in Roboto Flex at 16 pixels draws in 20 at its default and at weight 700, width 75 alike;
+  a page of 500 COLR v0 emoji in 2.7 cold and 1.6 warm, and of COLR v1 emoji in 15 cold and
+  2.1 warm; plain text is within 10% of 2.7.1 (11.0 against 10.7 at 12 pixels).
+- Fixed: a curve under a transform so large that rounding split it again and again overflowed the stack.
+
+### Shaped text
+
+- `Canvas.DrawText` takes `ShapingOptions` and draws shaped text (with fallback fonts when the options list them);
+  `Canvas.DrawShapedText` draws a `ShapedText` shaped once. Latin text draws as before, at the same speed.
+
+### Paragraphs
+
+- `Canvas.DrawTextLayout` draws a laid-out paragraph in CSS's order (shadows, backgrounds, underlines, glyphs and placeholders,
+  line-throughs), skipping lines outside the clip; an ellipsis or a soft hyphen's hyphen is marked content with ActualText.
+  `Canvas.DrawText` into a `RectF` with `VerticalAlign` lays out and draws in one call, and `TextLayout.ToPath(origin)` gives a
+  `Path`. Drawn paragraphs are within 2 levels of the exact coverage on over 99% of pixels, closer than SkiaSharp, and drawing
+  costs at most 10% over drawing the glyph runs alone.
+
+### Document backends
+
+- `LayerOptions.Knockout` for PDF's knockout groups and `DrawImageMask` (hook `OnDrawImageMask`) for its stencil masks, drawn
+  exactly by the raster backend; pictures and .egdr keep them (for Egap's PDF renderer).
+- `Canvas.RasterizeFallback` scales a paint's mask blur with the raster, so a blur drawn through a PDF page's fallback at
+  300 dpi keeps its size; layer filter and backdrop chains run on the raster's pixels as they are (found by Egap's PDF canvas).
+
+### Printing with inks
+
+- `InkCanvas` draws on an `InkRaster` with every `Canvas` call (`InkCanvasOptions`: what RGB means, intent, black point
+  compensation): RGB colours, gradients and images convert into the process inks; ink colours print their plates.
+  `Clear(InkColor)` and `DrawImage(InkRaster)` are its own. Blend modes, groups (isolated, non-isolated, knockout) and soft
+  masks follow ISO 32000-2 plate by plate; every plate is within 2 levels of Ghostscript 10.05's tiffsep on the gate scenes.
+- Ink paints: `SolidPaint(InkColor)`, `GradientStop(offset, InkColor)`, `Mesh.WithInks` and `Patch.WithInks`. Every other
+  backend draws their appearance.
+- `Paint.Overprint` (`Off`, `On`, `NonZero`, PDF's overprint and overprint mode 1): plates a fill does not paint keep what is
+  under them. RGB canvases ignore it, as PDF viewers do by default.
+- `LayerOptions.ColorSpace`: a layer blends in an RGB or gray space and converts into the inks as it merges; spots stay plates.
+- Pictures keep ink paints, overprint and layer colour spaces; .egdr 1.1 holds them in an INKS chunk, which 1.0 readers skip
+  to draw the appearances.
+
+### Changes from the previews
+
+Renamed or changed in the 1.0 API review, for code written against the previews:
+
+- `CanvasOptions.ColorGlyphs` is `ColorGlyphRenderer`; `Canvas.ColorGlyphRenderer`, `DrawColorGlyphs` and `DrawRendererGlyphs`
+  are `protected`, so other backends draw color glyphs as the raster backend does.
+- `OnDrawLattice` is `OnDrawImageLattice`; `OnDrawImageMask` takes its arguments in `DrawImageMask`'s order.
+- `EncodedImage.FromBytes` and `FromFile` are `EncodedImage.Load`, from a path, a stream or bytes, as `Raster.Load`.
+- `PathOps.Combine` is `Path.Combine`; `Path.Offset` is `Path.Inflate`.
+- `Patch.Coons` and `Patch.Tensor` take corner texture coordinates before values, as `Mesh` does; `Patch.ToTensorNet` returns
+  read-only memory; `DrawMesh`'s paint is optional, as `DrawPatch`'s.
+- `NoiseType` is `NoisePaintKind` (`Fractal`, `Turbulence`, `Simplex`), `NoisePaint.Type` is `Kind`, and the tile parameter is
+  `tileSize` everywhere.
+- `TextAnchor.Middle` and `VerticalAlign.Middle` are `Center`.
+- New hook `OnClear`, so a document backend can write a clear; `GlyphCache.ByteLimit` is documented as process-wide.
+- Fixed: a non-isolated layer merged with a blend mode other than source-over blended the backdrop it started from with itself;
+  the backdrop's part is now removed first, as PDF's non-isolated groups require (ISO 32000 11.4.8). Found by Egap's renderer.
+
+## Egami.Fonts 1.0.0 (unreleased)
+
+The first public release. The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Glyph ids stay
+`ushort` for all of 1.x.
+
+### Fonts and text on the canvas
+
+A new package, over Egami's public API only, that reads TrueType and OpenType fonts in managed code; Egami.Drawing uses it to draw
+text. See the [Fonts and text guide](docs/articles/guides/text.md).
+
+- `Typeface` loads TrueType, OpenType CFF (CID-keyed too), collections and bare CFF streams as PDF embeds them, lazily from one
+  block of memory; leniently by default, with `Font.*` diagnostics and documented defaults for missing or damaged tables, or
+  strictly. Names in every language, `FontStyle`, `FontEmbedding` (reported, never enforced), cmap formats 0, 4, 6, 10, 12, 13 and
+  14 with symbol and Mac Roman fonts, glyph outlines through `IGlyphOutlineSink` (TrueType quadratics, a Type 2 charstring
+  interpreter with subroutines, flex and seac), advances, glyph bounds, `FontExtents` by the browsers' vertical-metrics rule, and
+  GPOS pair kerning (or the kern table). Every table field, mapped code point, outline point, bound and sampled kerning pair of
+  the test fonts equals fontTools'.
+- `FontCollection` with `FontCollection.System`, found without native calls (503 installed faces indexed in 152 ms on first use),
+  names in any language, CSS Fonts 4 style matching with the synthesis a lighter or upright face wants, and generic families.
+- `FontSubsetter` writes TrueType, OpenType CFF or bare CID-keyed CFF subsets with composite and seac closure, dense or kept glyph
+  ids and unused CFF subroutines dropped; every subset re-loads with its glyphs unchanged and opens in fontTools and FreeType;
+  200 glyphs from a 16 MB CJK font in about 2 ms.
+- `Font` (a typeface at an em size in canvas units), `Font.Shape` (cmap, pair kerning, newlines) and `MeasureText`; `GlyphRun`
+  keeps the source text and a cluster per glyph. `Canvas.DrawText`, `DrawGlyphRun` and the `OnDrawGlyphRun` hook; small glyphs
+  are drawn from `GlyphCache` masks at whole pixels, which changes speed, not pixels; `GetGlyphPath`, `GetTextPath` and
+  `GlyphRun.ToPath`. Drawn text is within a mean level of SkiaSharp filling the same glyphs and closer than it to the exact area.
+- Speed: nine fonts load in 0.18 ms, 1,000 strings match and measure in 3.3 ms, and a 2,000-word page draws in 15 ms at 12
+  pixels.
+- Fuzz targets `font`, `cff` and `subset`.
+
+### Web, variable and color fonts
+
+Web, variable and color fonts. See [Variable fonts](docs/articles/guides/text.md#variable-fonts),
+[Color fonts](docs/articles/guides/text.md#color-fonts) and [Faces](docs/articles/guides/text.md#faces).
+
+- WOFF and WOFF2 load wherever TrueType and OpenType do (`Typeface.FromFile`, `FromMemory`, `FontLoader`, `FontCollection`
+  directory scans): WOFF with the BCL's zlib, WOFF2 with its Brotli decoder and the glyf, loca and hmtx transforms, WOFF2
+  collections too. `Typeface.Container` says which container a face came in; `GetWoffMetadata` and `GetWoffPrivateData` return the
+  extra blocks. Every decoded table equals fontTools' and the reference woff2 decoder's. Four WOFF2 files load in 15 to 21 ms.
+- Variable fonts: `Typeface.VariationAxes` (`VariationAxis`), `NamedInstances` (`NamedInstance`), `IsVariable`, `Variations`, and
+  `WithVariations` and `WithNamedInstance`, which return a face at a position sharing the font's memory (positions are cached).
+  `FontVariation` with `Weight`, `Width`, `Slant`, `Italic` and `OpticalSize`; avar 1 and 2; gvar with shared and private points,
+  intermediate regions, IUP, composites and phantom points; CFF2 with blend and vsindex; HVAR, MVAR and GDEF variation deltas, so
+  outlines, advances, extents, kerning and font metrics all vary. Each equals fontTools at 25 positions of five variable fonts.
+  Names and PostScript names follow the position.
+- `FontCollection` matching picks a position inside a variable family's weight, width and slant ranges by CSS Fonts 4 rules, as
+  well as its named instances. `Font.OpticalSizing` (Auto by default) sets the opsz axis to the font size;
+  `Font.EffectiveTypeface` is the face drawn.
+- Static instances: `SubsetOptions.Variations`, or subsetting a face at a position, writes a static TrueType or CFF font with the
+  outlines, advances and metrics at that position and no variation tables, equal to fontTools' instancer; glyphs keep their
+  overlaps and are marked OVERLAP_SIMPLE or OVERLAP_COMPOUND as fontTools marks them. They open in fontTools and FreeType. An
+  instance subset to 200 glyphs takes under 1 ms.
+- Color fonts: `Typeface.ColorFormats`, `Palettes` (`FontPaletteInfo`, from CPAL), `HasColorGlyph`, `TryGetColorGlyph` and
+  `TryGetSvgDocument`. COLR v0 layers and the full COLR v1 paint graph (solid, linear, radial and sweep gradients with their color
+  lines, glyph and color-glyph references, transforms, composites, clip boxes, variable paints) come as `ColorGlyph` trees with a
+  visitor; sbix and CBDT images as `BitmapColorGlyph` with the strike nearest the size. `FontPalette` (Default, Light, Dark, an
+  index and color overrides) and `Font.Palette`; `Font.ColorGlyphs` turns color off. Paint trees, colors, clips and images equal
+  fontTools'; cycles and graphs deeper than 64 paints are cut with the `Font.BadColorGlyph` warning.
+- Rendering settings for canvases: `Font.Hinting` (`FontHinting.Light`: vertical-only snapping to blue zones from CFF or measured
+  from TrueType outlines, up to 48 pixels per em; no x value or advance moves), `Font.Subpixel` (quarter-pixel glyph origins, on
+  by default), `Font.Edging` (`FontEdging.Antialias`, `Alias`, `Lcd`), `Font.AllowSynthesis` with synthetic bold (an outset by
+  the size) and italic (a 14-degree slant), in outlines and bounds too.
+- `GlyphRun.CreateTransformed` and `GlyphRun.Transforms` (`GlyphTransform`, Skia's RSXform): a run whose glyphs each have their
+  own turn and scale, kept as text.
+- `FontOutlines.None` for bitmap-only faces. New warnings `Font.BadContainer` and `Font.BadColorGlyph`.
+- Fuzz targets `woff2`, `gvar`, `cff2`, `colr` and `instance`; their first 10-minute runs found five crashes, all fixed and kept as
+  regressions, and the reruns were clean.
+
+### Text shaping
+
+OpenType shaping in managed code, a translation of HarfBuzz 14.5.1's. See
+[Unicode text and shaping](docs/articles/guides/unicode-text.md).
+
+- Unicode 17.0 in `Egami.Fonts.Unicode`, from Egami's own tables (never the runtime's): `UnicodeData` (categories, scripts and
+  script extensions, bidi, joining, combining, Indic, vertical orientation, East Asian width, emoji properties), `Bidi.Resolve`
+  (UAX #9 with isolates, brackets and mirroring; `BidiResult.Reorder` for a line), `TextSegmenter` graphemes and words (UAX #29)
+  and `Script` with its OpenType tags. Unicode's BidiTest, BidiCharacterTest, GraphemeBreakTest and WordBreakTest pass in full.
+- `TextShaper.ShapeRun` shapes one run into a reusable `GlyphBuffer` (glyph ids, UTF-16 clusters, `GlyphFlags`, positions) with
+  every GSUB and GPOS lookup type, FeatureVariations, the variation deltas of variable fonts, vertical runs (vmtx, VORG, VVAR) and
+  HarfBuzz's script shapers: Arabic and its family (with fallback shaping from the presentation forms), Hebrew, the nine Indic
+  scripts, Khmer, Myanmar, Thai and Lao, Hangul and the Universal Shaping Engine. `RunProperties` give the script, BCP 47 language,
+  direction, `FontFeature`s (HarfBuzz's syntax: `FontFeature.Parse("liga=0")`) and `ClusterLevel`.
+- `TextShaper.Shape` shapes whole text: lines at hard breaks, bidi, script and span runs (`ShapingOptions`, `TextSpan`) and font
+  fallback per grapheme cluster (`FontFallback`, `IFontFallbackResolver`, the opt-in `SystemFontFallback`), returning `ShapedText`.
+- `Font.Shape` and `Font.MeasureText` take `ShapingOptions` and shape with all of the font's features; text without ligature or
+  mark rules gives 2.7.1's glyphs and positions. `GlyphRun` gains `BidiLevel`, `Script` and `Language`.
+- `Typeface.Layout` lists scripts, language systems and features and gives `GetClosure`, hb-subset's GSUB closure;
+  `SubsetOptions.LayoutClosure` keeps it and the layout tables, for subsets that are shaped again.
+- Gates: glyphs, clusters, positions and flags equal hb-shape 14.5.1's on all 276 AOTS tests, 4,974 of HarfBuzz's 4,987
+  in-house tests (the rest test fonts without outlines, the Zawgyi encoding, repeated axis tags, other shapers and output Egami
+  leaves out) and 24 corpus runs in 15 scripts; the closure equals HarfBuzz's on 1,116 cases. Shaping English, Arabic and
+  Hindi pages takes 3.7, 7.5 and 13.4 ms, about half HarfBuzzSharp's speed.
+- Fuzz targets `shaping` and `bidi`.
+- From the API review: a font with no glyph data (a subset made for shaping) loads with empty glyphs and a `Font.MissingTable`
+  warning; `WithVariations` sets every axis of a repeated tag; the cmap subtable is chosen as HarfBuzz chooses it (a symbol
+  subtable first, Windows 3.1 Arabic font pages through their private use characters), for drawing and shaping alike.
+
+### Paragraph layout
+
+Wrapped, aligned and interactive text in `Egami.Fonts.Layout`. See
+[Paragraph layout](docs/articles/guides/paragraph-layout.md).
+
+- `LineBreaks.Enumerate`: UAX #14 break opportunities (Unicode 17) with CSS's `word-break`, `overflow-wrap` and `line-break`
+  strictness and the Chinese, Japanese and Korean rules; LineBreakTest.txt passes in full.
+- `Paragraph.Create` takes a string or `RichText` (`RichTextBuilder`: nested `TextStyle` spans and inline `Placeholder` boxes)
+  and a `ParagraphStyle`; `Layout(width)` gives a `TextLayout` of `TextLine`s and `LayoutRun`s with shaped glyph runs, per
+  character font fallback in CSS's order, bidi per line, alignment and justification (`TextJustify`), tabs and tab stops,
+  line heights and struts, soft hyphens, balanced filling, `MaxLines` and `MaxHeight` with an ellipsis, and vertical writing
+  (`WritingMode`, `TextOrientation`). `LineFlow` lays out a line at a time at changing widths, for columns and wrap-around.
+- Interaction: `HitTest`, `GetCaret` (with a second caret at bidi boundaries and GDEF ligature carets), `MoveCaret`,
+  `GetSelectionRects`, word and line boundaries; min-content and max-content widths, ink bounds and placeholder boxes.
+- Decorations: underline, overline and line-through, solid, double, dotted, dashed or wavy, with skip-ink, as
+  `TextLayout.Decorations`; `TextLayout.ToPath` writes glyphs and decorations to an outline sink.
+- Gates: line breaks, line boxes, glyph origins, intrinsic widths, ellipses, hit tests, carets, selections and decoration ink
+  equal headless Chromium 129's on a corpus of eleven scripts at five widths and the feature cases (the few differences are
+  Chromium's own, listed in the tests). Breaking 1 MB of mixed text takes 17 ms;
+  a 2,000-word page at three widths 7.8 ms; 10,000 hit tests 19 ms.
+- Fuzz target `paragraph`, and a robustness suite on the same harness.
+
+### Font data for PDF
+
+What a PDF font needs to reach its glyphs, public before Egami.Fonts 1.0. See [Font data for PDF](docs/articles/guides/text.md#font-data-for-pdf).
+
+- `Typeface.GetGlyphName` and `TryGetGlyphByName`: names from a name-keyed CFF font's charset (the Expert and ExpertSubset
+  charsets included) or the post table, versions 1, 2 and 2.5.
+- `Typeface.CidSystemInfo` (`CidSystemInfo`), `GetCid` and `TryGetGlyphByCid` for CID-keyed CFF, bare or in OpenType.
+- `Typeface.CharacterMaps` and `FindCharacterMap`: every cmap subtable as stored (`CharacterMap`, `CharacterMapping`), with
+  format 2 newly read; `Typeface.BuiltInEncoding`, a CFF font's own encoding as a platform 7 map, as FreeType gives it.
+- `CffStandardStrings`: the 391 CFF standard strings and the Standard and Expert encodings.
+- On the 1,723 font programs embedded in Egap's PDF corpus, names, CIDs, subtables and built-in encodings equal FreeType's and
+  fontTools' (FreeType's where they differ: the first of overlapping format 4 segments wins, and a code past the font's glyphs
+  maps to 0). The Expert Encoding gives code 175 Macronsmall, as pdf.js does, where FreeType repeats Dotaccentsmall.
+- Fixes: a CID-keyed CFF font's Font DICT FontMatrix now applies before the Top DICT's, so a font whose Font DICTs scale by
+  1/2048 (pdf.js's text_clip_cff_cid.pdf) draws its glyphs at their size rather than about twice it; outlines and advances
+  equal FreeType's on every CID-keyed CFF in the corpus. A CFF DICT with a reserved operator (pdf.js's bug1308536.pdf) loads,
+  the operator skipped as FreeType, PDFium and pdf.js skip it. A cmap format 6 subtable whose count runs past the table keeps
+  the entries there are.
+- A `fontdata` fuzz target reads every name, CID, subtable and encoding of what loads; the font targets do too.
+
+### Changes from the previews
+
+Renamed or changed in the 1.0 API review, for code written against the previews:
+
+- Fixed: shaping a run longer than 65,536 characters threw on a thread that had shaped a short run before, because the shaper
+  kept the short run's limits. Each run now gets limits from its own length.
+- Breaking: `FontCollection.System` is read-only; `Add`, `AddFile` and `AddDirectory` on it throw `InvalidOperationException`.
+  To match your own fonts beside the installed ones, call the new `FontCollection.AddSystemFonts` on a collection of your own:
+  it copies the installed-font index, and the faces load with that collection's options.
+- Breaking: `IndicSyllabicCategory`, `IndicPositionalCategory` and `UnicodeData.GetIndicSyllabicCategory` and
+  `GetIndicPositionalCategory` are internal. The shaper still uses them; they were shaping data rather than a public feature.
+- `default(Font)` has no typeface: its metrics, advances, `Shape` and `MeasureText` now throw `InvalidOperationException`
+  instead of a `NullReferenceException` or `ArgumentNullException` from deeper in.
+- `Font.MeasureText(ReadOnlySpan<char>, ShapingOptions?)` measures a slice of a longer text or a reused buffer without making a
+  string of it. Measuring a string allocates about 8% less than before.
+- `IGlyphOutlineSink`, `IColorPaintVisitor`, `IFontFallbackResolver` and `ITextPaint` are frozen as they are; a member added
+  in 1.x comes as a default interface method, so your implementations keep compiling.
+- `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
+  face on each call.
+
+## Egami.Svg 1.0.0 (unreleased)
+
+The first public release. The API is frozen: 1.x versions add to it without breaking your code. See [SVG](docs/articles/guides/svg.md).
+
+- `SvgDocument` loads SVG and SVGZ into an editable tree of `SvgElement`, `SvgAttribute` and text, with a locked-down XML reader:
+  internal DTD entities are capped, nothing outside the file is opened unless an `SvgLoadOptions.Resolver` allows it
+  (`SvgResolvers.SameDirectory`), and element, depth and size limits come from `SafetyLimits`. A lenient load reports what it
+  skips as `Svg.*` warnings; a strict one throws `SvgException` with the line and column. `Save` writes the tree back with its
+  declaration, DOCTYPE, comments and foreign namespaces, numbers set in code at `SvgSaveOptions.Precision`.
+- Styles cascade with Egami.Css: `style` elements with media queries, the `style` attribute and presentation attributes.
+- Drawing follows resvg where SVG leaves a choice: shapes, fills, strokes, paint-order, markers, nested svg, use and symbol,
+  linear and radial gradients, patterns, Inkscape's mesh gradients, clip paths, masks, opacity, blend modes, raster and SVG
+  images and switch. `Rasterize` draws into a new raster at the document's size, a scale or a target size; `Draw` draws on any
+  Egami.Drawing canvas, the whole document or one element by id; `RenderTree` exposes the resolved `SvgNode` tree.
+- Text: x, y, dx, dy and rotate lists, tspan, tref and textPath, text-anchor, the baseline properties, letter-spacing,
+  word-spacing, textLength and lengthAdjust, decorations, vertical writing and font variations, laid out as resvg lays text
+  out and drawn as `SvgTextRun` glyph runs (`SvgRenderOptions.TextAsPaths` draws outlines). `SvgLoadOptions.Fonts`
+  (`SvgFontOptions`) gives the fonts: the caller's collection, the document's `@font-face` rules, then the machine's unless
+  turned off. SVG 2's wrapped text: `inline-size` lines as 2.8.2's paragraph layout fills them, and `shape-inside` text flowed
+  into shapes as Inkscape flows it (16 of 20 samples match Inkscape's export).
+- OpenType SVG glyphs: `SvgGlyphRenderer.Instance` draws an SVG table's glyphs in color. Egami.Drawing gains the hook it
+  plugs into, `IColorGlyphRenderer` on `CanvasOptions.ColorGlyphs`, asked after COLR version 1 and before COLR version 0,
+  sbix and CBDT.
+- Filters: every SVG 1.1 primitive, feDropShadow and the CSS filter functions, in linearRGB or sRGB, run in a raster lined up
+  with the device pixels (`SvgRenderOptions.FilterScale` sets its resolution on vector canvases). feGaussianBlur is SVG's three
+  box blurs on premultiplied colors; feConvolveMatrix and the lighting primitives follow the specification's kernels.
+- `SvgCanvas` writes any Egami.Drawing canvas drawing as SVG: paths, strokes and dashes, gradients, patterns, pictures,
+  clips, layers with opacity, CSS blend modes and masks, images and text as glyph outlines or `text` elements, with shared
+  `defs` (`SvgWriteOptions`). What SVG cannot express is drawn by Egami into an embedded PNG and reported as
+  `Svg.FallbackImage`. Read back by Egami.Svg its files draw like the canvas calls, and Chromium and Inkscape open them cleanly.
+- `SvgFormat.Info` registers SVG and SVGZ as an Egami format with `EgamiContext.WithFormat`, so `Raster.Load` draws a file at
+  its own size (times `SvgDecodeOptions.Scale`) and `Raster.Probe` gives the size without drawing. It is found by its `svg`
+  root, opens nothing outside the file, and only reads. Detection now passes data shorter than the longest registered
+  signature to every format, as `SignatureMatcher` describes, so short SVG files are found.
+- Gates: on resvg's own test suite, 94 to 100% of the shapes, painting, structure, paint-server and masking tests match resvg's
+  reference renders (at most 0.5% of pixels differ, allowing a one-pixel shift; deviations are listed with reasons in
+  egami-compare), 99% of the filter tests and 98.7% of the text tests (78% of the text tests are also close to
+  Chromium's renders); 196 of the 200 corpus files
+  match resvg's CLI. Seven of eight mesh samples match Inkscape's export.
+- Speed, one thread, on 200 real files: loading and drawing them takes 0.92 s, against 2.0 s for Svg.Skia, 3.1 s for the resvg
+  CLI (which also writes PNG; Egami does that in 1.4 s) and 9.5 s for resvg's library with text on (0.69 s with text off).
+  resvg's text chapter takes 0.12 s against Svg.Skia's 0.45 s and resvg's 26 s; its filter chapter 0.91 s against 1.25 s and
+  12 s.
+- A fuzz target for Load, Rasterize and Save (`svg` in tests/Egami.Fuzz); its first runs found image data that was damaged
+  after its header made drawing throw, and images are now decoded when the document is read.
+
+## Egami.Css 1.0.0 (unreleased)
+
+The first public release. The API is frozen: 1.x versions add to it without breaking your code. See [CSS](docs/articles/guides/css.md).
+
+- Egami.Css parses CSS Syntax 3, matches Selectors 4 over any `ICssElement` tree, cascades with specificity, `!important`,
+  custom properties and `var()`, evaluates media queries, and parses colors, lengths, transforms and fonts.
+
+### Pages, boxes and the document properties
+
+- `CssPropertyRegistry.CreateDefault` knows the box properties (`margin`, `padding`, `border` with its sides and
+  `border-radius`, `width` and `height` with their `min-` and `max-` forms, `box-sizing`), backgrounds (the `background-*`
+  layers and the `background` shorthand), `list-style`, the table properties, `float`, `clear`, `overflow`, the
+  fragmentation properties (`break-*`, `orphans`, `widows`, `page` and the legacy `page-break-*` as shorthands) and
+  `content` with the counters, each with its value grammar, so invalid declarations are dropped as browsers drop them.
+- `@page` is interpreted: `CssPageRule` with `CssPageSelector`s (page type names and `:first`, `:left`, `:right`,
+  `:blank`, with their specificity) and `CssPageMarginRule`s for the sixteen `CssMarginBox`es. `CssCascade.CascadePage`
+  cascades them for a `CssPage` into a `CssPageStyle`, and `CssPageSize` reads `size`, page size names included.
+- `overflow` is now a shorthand of `overflow-x` and `overflow-y`; Egami.Svg reads the two longhands and draws as before.
+
+### Changes from the previews
+
+- `CssAttribute`, `CssPage`, `CssRange` and `CssTransformOrigin` declare their `ToString`, so it is annotated as returning a
+  non-null string. The text is the same as before.
+- `ICssElement` is frozen as it is; a member added in 1.x comes as a default interface method, as `MatchesPseudoClass` already
+  is, so your element trees keep compiling.
+
+## Egami.Metafiles 0.1.1 (unreleased)
+
+The first release; its API may still change while it is 0.x.
+
+- `Metafile` reads WMF (placeable or not), EMF and EMF+ files and their gzip forms WMZ and EMZ, and plays them onto any
+  Egami.Drawing canvas, so pictures from Word, Excel and Visio stay vectors in PDF and SVG output and rasterize on any OS.
+  `Draw` stretches the picture's frame to a box as Word does; `Rasterize` draws at a DPI or a size. Kind, size, frame,
+  DPI and description come from the header, matching GDI+ and Pillow on 2,106 of 2,111 corpus files (the other five are WMFs
+  without a placeable header, sized by their window extent).
+- The GDI records play as GDI does: map modes, world transform, pens, brushes, hatches and pattern brushes, paths, clip
+  regions, bitmaps and raster operations, gradients and text. Drawn aliased, the test files match Windows GDI within a mean of
+  one level and 99% of pixels within 16 levels; text within a looser bound. Text keeps the file's glyph positions in a
+  substitute face (Carlito for Calibri, Liberation for Arial, Times New Roman and Courier New, and your own substitutions).
+- EMF+ records play as GDI+ plays them: transforms and containers, clips, gradients (path gradients as meshes), pens with
+  dashes, compound lines and caps, images (JPEG and PNG passed to PDF unchanged, nested metafiles as vectors), image
+  effects, `DrawString` and `DrawDriverString`; dual files draw their EMF+ records, or their GDI part with
+  `MetafilePlayback.Gdi`.
+- `MetafileFormat` lets `Raster.Load` and `Raster.Probe` read metafiles (opt-in, as SVG). Drawing the 2,111-file corpus
+  takes 0.74 times what GDI+ takes.
